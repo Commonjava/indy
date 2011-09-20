@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
+import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.WebApplicationException;
@@ -45,6 +46,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.commonjava.util.logging.Logger;
+import org.commonjava.web.maven.proxy.change.event.FileStorageEvent;
 import org.commonjava.web.maven.proxy.conf.ProxyConfiguration;
 import org.commonjava.web.maven.proxy.model.Repository;
 
@@ -56,6 +58,9 @@ public class Downloader
 
     @Inject
     private ProxyConfiguration config;
+
+    @Inject
+    private Event<FileStorageEvent> fileEvent;
 
     private HttpClient client;
 
@@ -203,6 +208,8 @@ public class Downloader
                 out = new FileOutputStream( target );
 
                 copy( in, out );
+
+                fireFileEvent( FileStorageEvent.Type.DOWNLOAD, repository, path, target );
             }
             finally
             {
@@ -244,6 +251,15 @@ public class Downloader
         }
 
         return proceed;
+    }
+
+    private void fireFileEvent( final FileStorageEvent.Type type, final Repository repository,
+                                final String path, final File target )
+    {
+        if ( fileEvent != null )
+        {
+            fileEvent.fire( new FileStorageEvent( type, repository.getName(), path, target ) );
+        }
     }
 
     private void cleanup( final HttpGet request )
