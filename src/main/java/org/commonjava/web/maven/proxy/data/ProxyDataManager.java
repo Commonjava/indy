@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -20,6 +21,10 @@ import org.commonjava.couch.db.model.ViewRequest;
 import org.commonjava.couch.model.CouchDocRef;
 import org.commonjava.couch.model.DenormalizationException;
 import org.commonjava.couch.util.JoinString;
+import org.commonjava.web.maven.proxy.change.event.GroupUpdateEvent;
+import org.commonjava.web.maven.proxy.change.event.ProxyManagerDeleteEvent;
+import org.commonjava.web.maven.proxy.change.event.ProxyManagerUpdateType;
+import org.commonjava.web.maven.proxy.change.event.RepositoryUpdateEvent;
 import org.commonjava.web.maven.proxy.conf.ProxyConfiguration;
 import org.commonjava.web.maven.proxy.data.ProxyAppDescription.View;
 import org.commonjava.web.maven.proxy.model.Group;
@@ -40,6 +45,15 @@ public class ProxyDataManager
 
     @Inject
     private CouchDBConfiguration couchConfig;
+
+    @Inject
+    private Event<RepositoryUpdateEvent> repoEvent;
+
+    @Inject
+    private Event<GroupUpdateEvent> groupEvent;
+
+    @Inject
+    private Event<ProxyManagerDeleteEvent> delEvent;
 
     public ProxyDataManager()
     {}
@@ -154,6 +168,7 @@ public class ProxyDataManager
         try
         {
             couch.store( repos, false, false );
+            fireRepositoryEvent( ProxyManagerUpdateType.ADD_OR_UPDATE, repos );
         }
         catch ( CouchDBException e )
         {
@@ -175,6 +190,9 @@ public class ProxyDataManager
         {
             repository.calculateDenormalizedFields();
             boolean result = couch.store( repository, skipIfExists );
+
+            fireRepositoryEvent( skipIfExists ? ProxyManagerUpdateType.ADD
+                            : ProxyManagerUpdateType.ADD_OR_UPDATE, repository );
 
             userMgr.createPermissions( Repository.NAMESPACE, repository.getName(),
                                        Permission.ADMIN, Permission.READ );
@@ -207,6 +225,7 @@ public class ProxyDataManager
         try
         {
             couch.store( groups, false, false );
+            fireGroupEvent( ProxyManagerUpdateType.ADD_OR_UPDATE, groups );
         }
         catch ( CouchDBException e )
         {
@@ -246,6 +265,9 @@ public class ProxyDataManager
 
             boolean result = couch.store( group, skipIfExists );
 
+            fireGroupEvent( skipIfExists ? ProxyManagerUpdateType.ADD
+                            : ProxyManagerUpdateType.ADD_OR_UPDATE, group );
+
             userMgr.createPermissions( Group.NAMESPACE, group.getName(), Permission.ADMIN,
                                        Permission.READ );
 
@@ -269,17 +291,18 @@ public class ProxyDataManager
         }
     }
 
-    public void deleteRepository( final Repository proxy )
+    public void deleteRepository( final Repository repo )
         throws ProxyDataException
     {
         try
         {
-            couch.delete( proxy );
+            couch.delete( repo );
+            fireDeleteEvent( ProxyManagerDeleteEvent.Type.REPOSITORY, repo.getName() );
         }
         catch ( CouchDBException e )
         {
             throw new ProxyDataException( "Failed to delete proxy configuration: %s. Reason: %s",
-                                          e, proxy.getName(), e.getMessage() );
+                                          e, repo.getName(), e.getMessage() );
         }
     }
 
@@ -289,6 +312,7 @@ public class ProxyDataManager
         try
         {
             couch.delete( new CouchDocRef( namespaceId( Repository.NAMESPACE, name ) ) );
+            fireDeleteEvent( ProxyManagerDeleteEvent.Type.REPOSITORY, name );
         }
         catch ( CouchDBException e )
         {
@@ -303,6 +327,7 @@ public class ProxyDataManager
         try
         {
             couch.delete( group );
+            fireDeleteEvent( ProxyManagerDeleteEvent.Type.GROUP, group.getName() );
         }
         catch ( CouchDBException e )
         {
@@ -318,6 +343,7 @@ public class ProxyDataManager
         try
         {
             couch.delete( new CouchDocRef( namespaceId( Group.NAMESPACE, name ) ) );
+            fireDeleteEvent( ProxyManagerDeleteEvent.Type.GROUP, name );
         }
         catch ( CouchDBException e )
         {
@@ -356,6 +382,57 @@ public class ProxyDataManager
             throw new ProxyDataException(
                                           "Failed to initialize admin user/privilege information in proxy-management database: %s. Reason: %s",
                                           e, couchConfig.getDatabaseUrl(), e.getMessage() );
+        }
+    }
+
+    private void fireDeleteEvent( final ProxyManagerDeleteEvent.Type type, final String... names )
+    {
+        if ( delEvent != null )
+        {
+            delEvent.fire( new ProxyManagerDeleteEvent( type, names ) );
+        }
+    }
+
+    private void fireRepositoryEvent( final ProxyManagerUpdateType type, final Repository... repos )
+    {
+        if ( repoEvent != null )
+        {
+            repoEvent.fire( new RepositoryUpdateEvent( type, repos ) );
+        }
+    }
+
+    private void fireGroupEvent( final ProxyManagerUpdateType type, final Group... groups )
+    {
+        if ( groupEvent != null )
+        {
+            groupEvent.fire( new GroupUpdateEvent( type, groups ) );
+        }
+    }
+
+    @SuppressWarnings( "unused" )
+    private void fireDeleteEvent( final ProxyManagerDeleteEvent.Type type,
+                                  final Collection<String> names )
+    {
+        if ( delEvent != null )
+        {
+            delEvent.fire( new ProxyManagerDeleteEvent( type, names ) );
+        }
+    }
+
+    private void fireRepositoryEvent( final ProxyManagerUpdateType type,
+                                      final Collection<Repository> repos )
+    {
+        if ( repoEvent != null )
+        {
+            repoEvent.fire( new RepositoryUpdateEvent( type, repos ) );
+        }
+    }
+
+    private void fireGroupEvent( final ProxyManagerUpdateType type, final Collection<Group> groups )
+    {
+        if ( groupEvent != null )
+        {
+            groupEvent.fire( new GroupUpdateEvent( type, groups ) );
         }
     }
 }
