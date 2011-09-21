@@ -56,7 +56,7 @@ public class InstallerListener
 
             dataManager.storeGroup( new Group( "public", "central" ), true );
 
-            changeListener.startup();
+            changeListener.startup( false );
         }
         catch ( ProxyDataException e )
         {

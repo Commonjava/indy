@@ -44,7 +44,7 @@ public class DefaultProxyConfiguration
         return repositoryRootDirectory;
     }
 
-    @ConfigName( "repositoy.root.dir" )
+    @ConfigName( "repository.root.dir" )
     public void setRepositoryRootDirectory( final File repositoryRootDirectory )
     {
         this.repositoryRootDirectory = repositoryRootDirectory;

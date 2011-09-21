@@ -41,7 +41,7 @@ public class ProxyConfigurationFactory
     extends DefaultConfigurationListener
 {
 
-    private static final String CONFIG_PATH = "/etc/artifact-proxy/main.conf";
+    private static final String CONFIG_PATH = "/etc/aprox/main.conf";
 
     private DefaultProxyConfiguration proxyConfig;
 
