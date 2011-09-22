@@ -8,13 +8,14 @@
 
 <link type="text/css" href="css/display.css" rel="stylesheet" />
 
-<script type="text/javascript" src="js/settings.js"></script>
 <script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
+<script type="text/javascript" src="js/settings.js"></script>
 <script type="text/javascript" src="js/jquery-ui-1.8.16.custom.min.js"></script>
-<script type="text/javascript" src="js/jQuery.Table.js"></script>
+
+<script type="text/javascript" src="js/jquery.dataTables.min.js"></script>
 
 <script type="text/javascript" src="js/debug.js"></script>
-<script type="text/javascript" src="js/users.js"></script>
+<script type="text/javascript" src="js/access-control.js"></script>
 </head>
 <body>
  <div id="tab-acl">
@@ -25,10 +26,11 @@
    <table border="1" id="acl-user-list">
     <thead>
      <tr>
-      <th>{username}</th>
-      <th>{firstName}</th>
-      <th>{lastName}</th>
-      <th>{email}</th>
+      <th>Username</th>
+      <th>First Name</th>
+      <th>Last Name</th>
+      <th>Email Address</th>
+      <!-- th>Controls</th -->
      </tr>
     </thead>
     <tbody>
@@ -37,6 +39,7 @@
       <td>{firstName}</td>
       <td>{lastName}</td>
       <td>{email}</td>
+      <!-- td>{controls}</td -->
      </tr>
     </tbody>
    </table>
@@ -53,6 +56,24 @@
     <div>Nam dui erat, auctor a, dignissim quis.</div>
    </div>
   </div>
+ </div>
+ <div style="display: none;">
+  <table>
+   <tr id="acl-user-template">
+    <td><span class="acl-user-template-username">username</span>
+    </td>
+    <td><span class="acl-user-template-firstname">First</span>
+    </td>
+    <td><span class="acl-user-template-lastname">Last</span>
+    </td>
+    <td><span class="acl-user-template-email">user@nowhere.com</span>
+    </td>
+   </tr>
+  </table>
+    <!-- 
+    <td><span class="acl-user-template-ctl"><img src="images/edit.png" border="0"/></span>
+    </td>
+    -->
  </div>
 </body>
 </html>
