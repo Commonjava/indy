@@ -55,7 +55,7 @@ public class AbstractProxyDataManagerTest
         umConfig = new DefaultUserManagerConfig( "admin@nowhere.com", "password", "Admin", "User" );
 
         CouchDBConfiguration couchConfig =
-            new DefaultCouchDBConfiguration( "http://developer.commonjava.org/db/test-aprox" );
+            new DefaultCouchDBConfiguration( "http://localhost:5984/test-aprox" );
 
         couch = new CouchManager( couchConfig );
 

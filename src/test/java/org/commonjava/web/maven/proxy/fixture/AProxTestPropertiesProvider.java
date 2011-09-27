@@ -33,8 +33,7 @@ public class AProxTestPropertiesProvider
     {
         Properties props = new Properties();
 
-        props.put( TestPropertyDefinitions.DATABASE_URL,
-                   "http://developer.commonjava.org/db/test-aprox" );
+        props.put( TestPropertyDefinitions.DATABASE_URL, "http://localhost:5984/test-aprox" );
 
         return props;
     }

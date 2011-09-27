@@ -23,8 +23,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.commonjava.couch.model.AbstractCouchDocument;
-import org.commonjava.couch.model.DenormalizationException;
 import org.commonjava.couch.model.DenormalizedCouchDoc;
+import org.commonjava.util.logging.Logger;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -34,6 +34,8 @@ public class Repository
     implements DenormalizedCouchDoc
 {
     public static final String NAMESPACE = "repository";
+
+    private static final Logger LOGGER = new Logger( Repository.class );
 
     private String name;
 
@@ -173,19 +175,23 @@ public class Repository
 
     @Override
     public void calculateDenormalizedFields()
-        throws DenormalizationException
     {
         setCouchDocId( namespaceId( NAMESPACE, name ) );
 
-        URL url;
+        URL url = null;
         try
         {
             url = new URL( this.url );
         }
         catch ( MalformedURLException e )
         {
-            throw new DenormalizationException( "Failed to parse repository URL: '%s'. Reason: %s",
-                                                e, this.url, e.getMessage() );
+            LOGGER.error( "Failed to parse repository URL: '%s'. Reason: %s", e, this.url,
+                          e.getMessage() );
+        }
+
+        if ( url == null )
+        {
+            return;
         }
 
         String userInfo = url.getUserInfo();

@@ -3,10 +3,12 @@ var roleSectionId = "acl-roles";
 var permSectionId = "acl-perms";
 
 var userListId = "#acl-user-list";
-var roleListId = "acl-role-list";
-var permListId = "acl-perm-list";
+var roleListId = "#acl-role-list";
+var permListId = "#acl-perm-list";
 
 var aclUserListTable;
+var aclRoleListTable;
+var aclPermListTable;
   
 $(function() {
   $(document).ready( loadUserList() );
@@ -18,12 +20,20 @@ $(function() {
   $("#tab-acl").bind('accordionchange', function(event, ui) {
     var id = $(ui.newHeader).parent().attr('id');
 
+    alert(id);
     if (id === userSectionId) {
-      loadUserList();
+//      if ( aclUserListTable == null ){
+        loadUserList();
+//      }
+    } else if (id === roleSectionId) {
+//      if( aclRoleListTable == null ){
+        loadRoleList();
+//      }
+    } else if (id === permSectionId) {
+//      if( aclPermListTable == null ){
+        loadPermissionList();
+//      }
     } else {
-      $(userListId + "_wrapper").hide();
-      
-      alert(id);
     }
 
   });
@@ -37,7 +47,6 @@ function loadUserList(){
   else{
     var userListUrl = userBase + "list";
     
-    $(userListId + "_wrapper").show();
     $(userListId).dataTable({
       "bSort" : true,
       "bProcessing" : true,
@@ -48,6 +57,48 @@ function loadUserList(){
          { "mDataProp" : "firstName" },
          { "mDataProp" : "lastName" },
          { "mDataProp" : "email" },
+       ],
+    });
+    
+    aclUserListTable = $(userListId);
+  }
+}
+
+function loadRoleList(){
+  if ( aclRoleListTable ){
+    aclUserListTable.dataTable({ "bRetrieve" : true });
+  }
+  else{
+    var roleListUrl = roleBase + "list";
+    
+    $(roleListId).dataTable({
+      "bSort" : true,
+      "bProcessing" : true,
+      "sAjaxSource" : roleListUrl,
+      "sAjaxDataProp" : "items",
+      "aoColumns" : [
+         { "mDataProp" : "name" },
+       ],
+    });
+    
+    aclUserListTable = $(userListId);
+  }
+}
+
+function loadPermissionList(){
+  if ( aclPermListTable ){
+    aclPermListTable.dataTable({ "bRetrieve" : true });
+  }
+  else{
+    var permListUrl = permBase + "list";
+    
+    $(permListId).dataTable({
+      "bSort" : true,
+      "bProcessing" : true,
+      "sAjaxSource" : permListUrl,
+      "sAjaxDataProp" : "items",
+      "aoColumns" : [
+         { "mDataProp" : "name" },
        ],
     });
     

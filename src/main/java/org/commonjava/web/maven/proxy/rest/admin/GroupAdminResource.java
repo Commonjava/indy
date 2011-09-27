@@ -40,7 +40,6 @@ import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.commonjava.auth.couch.model.Permission;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.common.model.Listing;
-import org.commonjava.web.common.ser.DenormalizerPostProcessor;
 import org.commonjava.web.common.ser.JsonSerializer;
 import org.commonjava.web.maven.proxy.data.ProxyDataException;
 import org.commonjava.web.maven.proxy.data.ProxyDataManager;
@@ -75,9 +74,7 @@ public class GroupAdminResource
         SecurityUtils.getSubject().isPermitted( Permission.name( Group.NAMESPACE, Permission.ADMIN ) );
 
         @SuppressWarnings( "unchecked" )
-        Group group =
-            restSerializer.fromRequestBody( request, Group.class,
-                                            new DenormalizerPostProcessor<Group>() );
+        Group group = restSerializer.fromRequestBody( request, Group.class );
 
         logger.info( "\n\nGot group: %s\n\n", group );
 
@@ -112,9 +109,7 @@ public class GroupAdminResource
         SecurityUtils.getSubject().isPermitted( Permission.name( Group.NAMESPACE, Permission.ADMIN ) );
 
         @SuppressWarnings( "unchecked" )
-        Group group =
-            restSerializer.fromRequestBody( request, Group.class,
-                                            new DenormalizerPostProcessor<Group>() );
+        Group group = restSerializer.fromRequestBody( request, Group.class );
 
         ResponseBuilder builder;
         try

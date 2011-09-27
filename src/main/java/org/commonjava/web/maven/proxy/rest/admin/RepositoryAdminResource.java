@@ -40,7 +40,6 @@ import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.commonjava.auth.couch.model.Permission;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.common.model.Listing;
-import org.commonjava.web.common.ser.DenormalizerPostProcessor;
 import org.commonjava.web.common.ser.JsonSerializer;
 import org.commonjava.web.maven.proxy.data.ProxyDataException;
 import org.commonjava.web.maven.proxy.data.ProxyDataManager;
@@ -76,9 +75,7 @@ public class RepositoryAdminResource
                                                                  Permission.ADMIN ) );
 
         @SuppressWarnings( "unchecked" )
-        Repository repository =
-            restSerializer.fromRequestBody( request, Repository.class,
-                                            new DenormalizerPostProcessor<Repository>() );
+        Repository repository = restSerializer.fromRequestBody( request, Repository.class );
 
         logger.info( "\n\nGot proxy: %s\n\n", repository );
 
@@ -113,9 +110,7 @@ public class RepositoryAdminResource
                                                                  Permission.ADMIN ) );
 
         @SuppressWarnings( "unchecked" )
-        Repository repository =
-            restSerializer.fromRequestBody( request, Repository.class,
-                                            new DenormalizerPostProcessor<Repository>() );
+        Repository repository = restSerializer.fromRequestBody( request, Repository.class );
 
         ResponseBuilder builder;
         try

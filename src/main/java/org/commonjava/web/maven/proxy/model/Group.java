@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.commonjava.couch.model.AbstractCouchDocument;
-import org.commonjava.couch.model.DenormalizationException;
 import org.commonjava.couch.model.DenormalizedCouchDoc;
 
 import com.google.gson.annotations.Expose;
@@ -169,7 +168,6 @@ public class Group
 
     @Override
     public void calculateDenormalizedFields()
-        throws DenormalizationException
     {
         setCouchDocId( namespaceId( NAMESPACE, name ) );
     }

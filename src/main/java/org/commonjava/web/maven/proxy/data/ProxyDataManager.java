@@ -34,9 +34,7 @@ import org.commonjava.auth.couch.model.Permission;
 import org.commonjava.couch.conf.CouchDBConfiguration;
 import org.commonjava.couch.db.CouchDBException;
 import org.commonjava.couch.db.CouchManager;
-import org.commonjava.couch.db.model.ViewRequest;
 import org.commonjava.couch.model.CouchDocRef;
-import org.commonjava.couch.model.DenormalizationException;
 import org.commonjava.couch.util.JoinString;
 import org.commonjava.web.maven.proxy.change.event.GroupUpdateEvent;
 import org.commonjava.web.maven.proxy.change.event.ProxyManagerDeleteEvent;
@@ -164,8 +162,7 @@ public class ProxyDataManager
     {
         try
         {
-            ProxyViewRequest req = new ProxyViewRequest( config, View.REPOSITORY_GROUPS );
-            req.setParameter( ViewRequest.KEY, repo );
+            ProxyViewRequest req = new ProxyViewRequest( config, View.REPOSITORY_GROUPS, repo );
 
             List<Group> groups = couch.getViewListing( req, Group.class );
 
@@ -205,7 +202,6 @@ public class ProxyDataManager
     {
         try
         {
-            repository.calculateDenormalizedFields();
             boolean result = couch.store( repository, skipIfExists );
 
             fireRepositoryEvent( skipIfExists ? ProxyManagerUpdateType.ADD
@@ -217,12 +213,6 @@ public class ProxyDataManager
             return result;
         }
         catch ( CouchDBException e )
-        {
-            throw new ProxyDataException(
-                                          "Failed to store repository configuration: %s. Reason: %s",
-                                          e, repository.getName(), e.getMessage() );
-        }
-        catch ( DenormalizationException e )
         {
             throw new ProxyDataException(
                                           "Failed to store repository configuration: %s. Reason: %s",
@@ -262,8 +252,6 @@ public class ProxyDataManager
     {
         try
         {
-            group.calculateDenormalizedFields();
-
             Set<String> missing = new HashSet<String>();
             for ( String repoName : group.getConstituents() )
             {
@@ -295,11 +283,6 @@ public class ProxyDataManager
             throw new ProxyDataException(
                                           "Failed to store proxy-group configuration: %s. Reason: %s",
                                           e, group.getName(), e.getMessage() );
-        }
-        catch ( DenormalizationException e )
-        {
-            throw new ProxyDataException( "Failed to store group configuration: %s. Reason: %s", e,
-                                          group.getName(), e.getMessage() );
         }
         catch ( UserDataException e )
         {
