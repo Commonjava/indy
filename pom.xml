@@ -103,9 +103,24 @@
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-core</artifactId>
     </dependency>
+    <dependency>
+    	<groupId>org.apache.maven</groupId>
+    	<artifactId>maven-repository-metadata</artifactId>
+    </dependency>
   </dependencies>
   
   <build>
     <finalName>${project.artifactId}</finalName>
   </build>
+  <dependencyManagement>
+  	<dependencies>
+  		<dependency>
+  			<groupId>org.apache.maven</groupId>
+  			<artifactId>maven</artifactId>
+  			<version>3.0.3</version>
+  			<scope>import</scope>
+  			<type>pom</type>
+  		</dependency>
+  	</dependencies>
+  </dependencyManagement>
 </project>

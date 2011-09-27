@@ -31,7 +31,9 @@ import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.cjtest.fixture.TestUserManagerConfigProducer;
+import org.codehaus.plexus.util.Os;
 import org.commonjava.auth.couch.data.UserAppDescription;
 import org.commonjava.couch.change.CouchChangeListener;
 import org.commonjava.web.maven.proxy.change.RepositoryDeletionListener;
@@ -74,7 +76,9 @@ public class AbstractAProxLiveTest
         builder.withExtraPackages( true, RESTApplication.class.getPackage(),
                                    Repository.class.getPackage(),
                                    ProxyDataManager.class.getPackage(),
-                                   RepositoryDeletionListener.class.getPackage() );
+                                   RepositoryDeletionListener.class.getPackage(),
+                                   Os.class.getPackage(), // grab all of plexus-utils
+                                   Metadata.class.getPackage() );
 
         builder.withAllStandards();
         builder.withApplication( new ProxyAppDescription() );

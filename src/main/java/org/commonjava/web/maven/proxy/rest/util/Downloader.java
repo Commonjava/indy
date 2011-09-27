@@ -26,7 +26,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
@@ -91,6 +93,7 @@ public class Downloader
 
     public File downloadFirst( final List<Repository> repos, final String path )
     {
+        File result = null;
         File target = null;
 
         for ( Repository repo : repos )
@@ -102,7 +105,36 @@ public class Downloader
             {
                 if ( download( repo, path, target, true ) )
                 {
+                    result = target;
                     break;
+                }
+            }
+            else
+            {
+                logger.info( "Using stored copy from repository: %s for: %s", repo.getName(), path );
+                result = target;
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    public Set<File> downloadAll( final List<Repository> repos, final String path )
+    {
+        Set<File> targets = new LinkedHashSet<File>();
+
+        File target = null;
+        for ( Repository repo : repos )
+        {
+            File dir = new File( config.getRepositoryRootDirectory(), repo.getName() );
+            target = new File( dir, path );
+
+            if ( !target.exists() )
+            {
+                if ( download( repo, path, target, true ) )
+                {
+                    targets.add( target );
                 }
             }
             else
@@ -112,7 +144,7 @@ public class Downloader
             }
         }
 
-        return target;
+        return targets;
     }
 
     public File download( final Repository repo, final String path )
@@ -174,8 +206,7 @@ public class Downloader
             StatusLine line = response.getStatusLine();
             if ( line.getStatusCode() != HttpStatus.SC_OK )
             {
-                logger.error( "Repository remote request failed: %s\nResponse status: %s", url,
-                              line );
+                logger.error( "%s : %s", line, url );
                 if ( !suppressFailures )
                 {
                     throw new WebApplicationException(

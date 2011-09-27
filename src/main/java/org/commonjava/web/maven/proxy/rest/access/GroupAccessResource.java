@@ -38,7 +38,7 @@ import org.commonjava.web.maven.proxy.data.ProxyDataException;
 import org.commonjava.web.maven.proxy.data.ProxyDataManager;
 import org.commonjava.web.maven.proxy.model.Group;
 import org.commonjava.web.maven.proxy.model.Repository;
-import org.commonjava.web.maven.proxy.rest.util.Downloader;
+import org.commonjava.web.maven.proxy.rest.util.group.GroupHandlerChain;
 
 @Path( "/group" )
 @RequestScoped
@@ -51,7 +51,7 @@ public class GroupAccessResource
     private ProxyDataManager proxyManager;
 
     @Inject
-    private Downloader downloader;
+    private GroupHandlerChain handlerChain;
 
     // @Context
     // private UriInfo uriInfo;
@@ -69,10 +69,11 @@ public class GroupAccessResource
         // 2. empty path (directory request for proxy root)
 
         List<Repository> repos;
+        Group group;
 
         try
         {
-            Group group = proxyManager.getGroup( name );
+            group = proxyManager.getGroup( name );
             if ( group == null )
             {
                 throw new WebApplicationException(
@@ -91,7 +92,12 @@ public class GroupAccessResource
                                                Response.status( Status.INTERNAL_SERVER_ERROR ).build() );
         }
 
-        File target = downloader.downloadFirst( repos, path );
+        File target = handlerChain.retrieve( group, repos, path );
+
+        if ( target == null )
+        {
+            return Response.status( Status.NOT_FOUND ).build();
+        }
 
         String mimeType = new MimetypesFileTypeMap().getContentType( target );
         return Response.ok( target, mimeType ).build();
