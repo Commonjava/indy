@@ -117,8 +117,8 @@ public class GroupAdminResourceTest
         throws Exception
     {
         Group grp =
-            new Group( "test", new StoreKey( StoreType.repository, "central" ),
-                       new StoreKey( StoreType.repository, "repo2" ) );
+            new Group( "test", new StoreKey( StoreType.repository, "repo2" ), 
+                        new StoreKey( StoreType.repository, "central" ) );
 
         post( BASE_URL, grp, HttpStatus.SC_CREATED );
 
@@ -131,8 +131,8 @@ public class GroupAdminResourceTest
         assertThat( repos, notNullValue() );
         assertThat( repos.size(), equalTo( 2 ) );
 
-        assertThat( repos.get( 0 ), equalTo( new StoreKey( StoreType.repository, "central" ) ) );
-        assertThat( repos.get( 1 ), equalTo( new StoreKey( StoreType.repository, "repo2" ) ) );
+        assertThat( repos.get( 0 ), equalTo( new StoreKey( StoreType.repository, "repo2" ) ) );
+        assertThat( repos.get( 1 ), equalTo( new StoreKey( StoreType.repository, "central" ) ) );
     }
 
     @Test

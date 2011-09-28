@@ -1,7 +1,7 @@
 function(doc){
 	if ( ['group', 'repository', 'deploy_store'].indexOf( doc.doctype ) > -1 && doc.constituents ){
-		for( idx in doc.constituents ){
-			emit(doc.name, {'_id': doc.constituents[idx]});
+		for( var i=0; i<doc.constituents.length; i++){
+			emit([doc.name,i], {'_id': doc.constituents[i]});
 		}
 	}
 }

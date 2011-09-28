@@ -134,6 +134,23 @@ public class GroupDataManagerTest
     }
 
     @Test
+    public void createGroupAndRetrieveReposForThatGroupInOrder()
+        throws ProxyDataException
+    {
+        Group grp = new Group( "test", "repo2", "central" );
+
+        manager.storeGroup( grp );
+
+        List<Repository> repos = manager.getRepositoriesForGroup( grp.getName() );
+
+        assertThat( repos, notNullValue() );
+        assertThat( repos.size(), equalTo( 2 ) );
+
+        assertThat( repos.get( 0 ).getName(), equalTo( "repo2" ) );
+        assertThat( repos.get( 1 ).getName(), equalTo( "central" ) );
+    }
+
+    @Test
     public void createGroupAndRetrieveRepositoryConstituents()
         throws ProxyDataException
     {

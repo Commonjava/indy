@@ -205,9 +205,10 @@ public class ProxyDataManager
     {
         try
         {
-            List<ArtifactStore> stores =
-                couch.getViewListing( new ProxyViewRequest( config, View.GROUP_STORES, groupName ),
-                                      ArtifactStore.class );
+            ProxyViewRequest req = new ProxyViewRequest( config, View.GROUP_STORES );
+            req.setFullRangeForBaseKey( groupName );
+            
+            List<ArtifactStore> stores = couch.getViewListing( req, ArtifactStore.class );
 
             if ( stores != null )
             {
