@@ -30,6 +30,7 @@ import org.commonjava.couch.io.CouchAppReader;
 import org.commonjava.couch.io.CouchHttpClient;
 import org.commonjava.couch.io.Serializer;
 import org.commonjava.web.maven.proxy.conf.DefaultProxyConfiguration;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
@@ -82,7 +83,7 @@ public class AbstractProxyDataManagerTest
         manager.install();
     }
 
-    // @After
+    @After
     public void teardownDB()
         throws Exception
     {
