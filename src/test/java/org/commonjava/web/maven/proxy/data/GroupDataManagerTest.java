@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.commonjava.web.maven.proxy.model.ArtifactStore;
 import org.commonjava.web.maven.proxy.model.Group;
 import org.commonjava.web.maven.proxy.model.Repository;
 import org.hamcrest.BaseMatcher;
@@ -139,7 +140,7 @@ public class GroupDataManagerTest
         assertThat( result, notNullValue() );
         assertThat( result.size(), equalTo( 2 ) );
 
-        Repository repo = result.get( 0 );
+        ArtifactStore repo = result.get( 0 );
         assertThat( repo, notNullValue() );
         assertThat( repo.getName(), equalTo( "central" ) );
 

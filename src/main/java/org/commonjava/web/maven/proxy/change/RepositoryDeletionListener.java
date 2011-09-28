@@ -35,8 +35,8 @@ import org.commonjava.couch.util.ChangeSynchronizer;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.maven.proxy.data.ProxyDataException;
 import org.commonjava.web.maven.proxy.data.ProxyDataManager;
+import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreType;
 import org.commonjava.web.maven.proxy.model.Group;
-import org.commonjava.web.maven.proxy.model.Repository;
 
 @Singleton
 public class RepositoryDeletionListener
@@ -56,13 +56,13 @@ public class RepositoryDeletionListener
     @Override
     public boolean canProcess( final String id, final boolean deleted )
     {
-        return deleted && id.startsWith( Repository.NAMESPACE );
+        return deleted && id.startsWith( StoreType.repository.name() );
     }
 
     @Override
     public void documentChanged( final CouchDocChange change )
     {
-        String repo = nonNamespaceId( Repository.NAMESPACE, change.getId() );
+        String repo = nonNamespaceId( StoreType.repository.name(), change.getId() );
         try
         {
             Set<Group> groups = proxyDataManager.getGroupsForRepository( repo );

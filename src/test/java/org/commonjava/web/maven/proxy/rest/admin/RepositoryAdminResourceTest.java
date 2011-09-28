@@ -30,6 +30,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.commonjava.web.common.model.Listing;
 import org.commonjava.web.maven.proxy.AbstractAProxLiveTest;
+import org.commonjava.web.maven.proxy.model.ArtifactStore;
 import org.commonjava.web.maven.proxy.model.Repository;
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
@@ -91,7 +92,7 @@ public class RepositoryAdminResourceTest
     public void createAndDeleteCentralRepoProxy_ByName()
         throws Exception
     {
-        Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
+        ArtifactStore repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
         post( BASE_URL, repo, HttpStatus.SC_CREATED );
 
         delete( BASE_URL + "/" + repo.getName() );
@@ -103,10 +104,10 @@ public class RepositoryAdminResourceTest
     public void createTwoReposAndRetrieveAll()
         throws Exception
     {
-        Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
+        ArtifactStore repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
         post( BASE_URL, repo, HttpStatus.SC_CREATED );
 
-        Repository repo2 = new Repository( "test", "http://www.google.com" );
+        ArtifactStore repo2 = new Repository( "test", "http://www.google.com" );
         post( BASE_URL, repo2, HttpStatus.SC_CREATED );
 
         Listing<Repository> result =
@@ -130,7 +131,7 @@ public class RepositoryAdminResourceTest
             }
         } );
 
-        Repository r = repositories.get( 0 );
+        ArtifactStore r = repositories.get( 0 );
         assertThat( r.getName(), equalTo( repo.getName() ) );
 
         r = repositories.get( 1 );

@@ -17,30 +17,27 @@
  ******************************************************************************/
 package org.commonjava.web.maven.proxy.model;
 
-import static org.commonjava.couch.util.IdUtils.namespaceId;
-
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.commonjava.couch.model.AbstractCouchDocument;
 import org.commonjava.couch.model.DenormalizedCouchDoc;
 import org.commonjava.util.logging.Logger;
 
-import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 public class Repository
-    extends AbstractCouchDocument
+    extends AbstractArtifactStore
     implements DenormalizedCouchDoc
 {
-    public static final String NAMESPACE = "repository";
-
     private static final Logger LOGGER = new Logger( Repository.class );
 
-    private String name;
+    private static final int DEFAULT_TIMEOUT_SECONDS = 120;
 
     @SerializedName( "url" )
     private String url;
+
+    @SerializedName( "timeout_seconds" )
+    private int timeoutSeconds;
 
     private String host;
 
@@ -50,26 +47,15 @@ public class Repository
 
     private String password;
 
-    @Expose( deserialize = false )
-    private final String doctype = NAMESPACE;
-
     Repository()
-    {}
+    {
+        super( StoreType.repository );
+    }
 
     public Repository( final String name, final String remoteUrl )
     {
-        setName( name );
+        super( StoreType.repository, name );
         this.url = remoteUrl;
-    }
-
-    public String getName()
-    {
-        return name;
-    }
-
-    void setName( final String name )
-    {
-        this.name = name;
     }
 
     public String getUrl()
@@ -83,54 +69,10 @@ public class Repository
     }
 
     @Override
-    public int hashCode()
-    {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ( ( name == null ) ? 0 : name.hashCode() );
-        return result;
-    }
-
-    @Override
-    public boolean equals( final Object obj )
-    {
-        if ( this == obj )
-        {
-            return true;
-        }
-        if ( !super.equals( obj ) )
-        {
-            return false;
-        }
-        if ( getClass() != obj.getClass() )
-        {
-            return false;
-        }
-        Repository other = (Repository) obj;
-        if ( name == null )
-        {
-            if ( other.name != null )
-            {
-                return false;
-            }
-        }
-        else if ( !name.equals( other.name ) )
-        {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
     public String toString()
     {
         return String.format( "Repository [id='%s', rev='%s', name=%s, remoteUrl=%s]",
-                              getCouchDocId(), getCouchDocRev(), name, url );
-    }
-
-    public String getDoctype()
-    {
-        return doctype;
+                              getCouchDocId(), getCouchDocRev(), getName(), url );
     }
 
     public String getUser()
@@ -176,7 +118,7 @@ public class Repository
     @Override
     public void calculateDenormalizedFields()
     {
-        setCouchDocId( namespaceId( NAMESPACE, name ) );
+        super.calculateDenormalizedFields();
 
         URL url = null;
         try
@@ -229,6 +171,16 @@ public class Repository
         {
             port = url.getPort();
         }
+    }
+
+    public int getTimeoutSeconds()
+    {
+        return timeoutSeconds < 0 ? DEFAULT_TIMEOUT_SECONDS : timeoutSeconds;
+    }
+
+    public void setTimeoutSeconds( final int timeoutSeconds )
+    {
+        this.timeoutSeconds = timeoutSeconds;
     }
 
 }

@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.commonjava.web.maven.proxy.model.ArtifactStore;
 import org.commonjava.web.maven.proxy.model.Repository;
 import org.junit.Test;
 
@@ -72,7 +73,7 @@ public class RepositoryDataManagerTest
 
         manager.deleteRepository( repo.getName() );
 
-        Repository result = manager.getRepository( repo.getName() );
+        ArtifactStore result = manager.getRepository( repo.getName() );
 
         assertThat( result, nullValue() );
     }
@@ -86,7 +87,7 @@ public class RepositoryDataManagerTest
 
         manager.deleteRepository( repo );
 
-        Repository result = manager.getRepository( repo.getName() );
+        ArtifactStore result = manager.getRepository( repo.getName() );
 
         assertThat( result, nullValue() );
     }
@@ -116,7 +117,7 @@ public class RepositoryDataManagerTest
             }
         } );
 
-        Repository r = repositories.get( 0 );
+        ArtifactStore r = repositories.get( 0 );
         assertThat( r.getName(), equalTo( repo.getName() ) );
 
         r = repositories.get( 1 );

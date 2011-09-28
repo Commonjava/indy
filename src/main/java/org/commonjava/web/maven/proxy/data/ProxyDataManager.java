@@ -42,6 +42,7 @@ import org.commonjava.web.maven.proxy.change.event.ProxyManagerUpdateType;
 import org.commonjava.web.maven.proxy.change.event.RepositoryUpdateEvent;
 import org.commonjava.web.maven.proxy.conf.ProxyConfiguration;
 import org.commonjava.web.maven.proxy.data.ProxyAppDescription.View;
+import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreType;
 import org.commonjava.web.maven.proxy.model.Group;
 import org.commonjava.web.maven.proxy.model.Repository;
 
@@ -87,8 +88,8 @@ public class ProxyDataManager
     {
         try
         {
-            return couch.getDocument( new CouchDocRef( namespaceId( Repository.NAMESPACE, name ) ),
-                                      Repository.class );
+            return couch.getDocument( new CouchDocRef( namespaceId( StoreType.repository.name(),
+                                                                    name ) ), Repository.class );
         }
         catch ( CouchDBException e )
         {
@@ -102,7 +103,7 @@ public class ProxyDataManager
     {
         try
         {
-            return couch.getDocument( new CouchDocRef( namespaceId( Group.NAMESPACE, name ) ),
+            return couch.getDocument( new CouchDocRef( namespaceId( StoreType.group.name(), name ) ),
                                       Group.class );
         }
         catch ( CouchDBException e )
@@ -207,7 +208,7 @@ public class ProxyDataManager
             fireRepositoryEvent( skipIfExists ? ProxyManagerUpdateType.ADD
                             : ProxyManagerUpdateType.ADD_OR_UPDATE, repository );
 
-            userMgr.createPermissions( Repository.NAMESPACE, repository.getName(),
+            userMgr.createPermissions( StoreType.repository.name(), repository.getName(),
                                        Permission.ADMIN, Permission.READ );
 
             return result;
@@ -255,7 +256,8 @@ public class ProxyDataManager
             Set<String> missing = new HashSet<String>();
             for ( String repoName : group.getConstituents() )
             {
-                if ( !couch.exists( new CouchDocRef( namespaceId( Repository.NAMESPACE, repoName ) ) ) )
+                if ( !couch.exists( new CouchDocRef( namespaceId( StoreType.repository.name(),
+                                                                  repoName ) ) ) )
                 {
                     missing.add( repoName );
                 }
@@ -273,7 +275,7 @@ public class ProxyDataManager
             fireGroupEvent( skipIfExists ? ProxyManagerUpdateType.ADD
                             : ProxyManagerUpdateType.ADD_OR_UPDATE, group );
 
-            userMgr.createPermissions( Group.NAMESPACE, group.getName(), Permission.ADMIN,
+            userMgr.createPermissions( StoreType.group.name(), group.getName(), Permission.ADMIN,
                                        Permission.READ );
 
             return result;
@@ -311,7 +313,7 @@ public class ProxyDataManager
     {
         try
         {
-            couch.delete( new CouchDocRef( namespaceId( Repository.NAMESPACE, name ) ) );
+            couch.delete( new CouchDocRef( namespaceId( StoreType.repository.name(), name ) ) );
             fireDeleteEvent( ProxyManagerDeleteEvent.Type.REPOSITORY, name );
         }
         catch ( CouchDBException e )
@@ -342,7 +344,7 @@ public class ProxyDataManager
     {
         try
         {
-            couch.delete( new CouchDocRef( namespaceId( Group.NAMESPACE, name ) ) );
+            couch.delete( new CouchDocRef( namespaceId( StoreType.group.name(), name ) ) );
             fireDeleteEvent( ProxyManagerDeleteEvent.Type.GROUP, name );
         }
         catch ( CouchDBException e )
@@ -365,10 +367,10 @@ public class ProxyDataManager
             userMgr.install();
             userMgr.setupAdminInformation();
 
-            userMgr.storePermission( new Permission( Repository.NAMESPACE, Permission.ADMIN ) );
-            userMgr.storePermission( new Permission( Group.NAMESPACE, Permission.ADMIN ) );
-            userMgr.storePermission( new Permission( Repository.NAMESPACE, Permission.READ ) );
-            userMgr.storePermission( new Permission( Group.NAMESPACE, Permission.READ ) );
+            userMgr.storePermission( new Permission( StoreType.repository.name(), Permission.ADMIN ) );
+            userMgr.storePermission( new Permission( StoreType.group.name(), Permission.ADMIN ) );
+            userMgr.storePermission( new Permission( StoreType.repository.name(), Permission.READ ) );
+            userMgr.storePermission( new Permission( StoreType.group.name(), Permission.READ ) );
         }
         catch ( CouchDBException e )
         {

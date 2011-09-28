@@ -17,7 +17,6 @@
  ******************************************************************************/
 package org.commonjava.web.maven.proxy.rest.util;
 
-import static org.apache.commons.io.FileUtils.forceDelete;
 import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -29,9 +28,10 @@ import java.util.List;
 
 import org.commonjava.web.maven.proxy.conf.DefaultProxyConfiguration;
 import org.commonjava.web.maven.proxy.model.Repository;
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 public class DownloaderTest
 {
@@ -42,25 +42,19 @@ public class DownloaderTest
 
     private File repoRoot;
 
+    @Rule
+    public final TemporaryFolder tempFolder = new TemporaryFolder();
+
     @Before
     public void setupTest()
         throws IOException
     {
-        repoRoot = File.createTempFile( "repo.root.", ".dir" );
-        repoRoot.delete();
-        repoRoot.mkdirs();
+        repoRoot = tempFolder.newFolder( "repository" );
 
         config = new DefaultProxyConfiguration();
         config.setRepositoryRootDirectory( repoRoot );
 
         downloader = new Downloader( config );
-    }
-
-    @After
-    public void teardownTest()
-        throws IOException
-    {
-        forceDelete( repoRoot );
     }
 
     @Test
@@ -90,6 +84,8 @@ public class DownloaderTest
         repos.add( repo2 );
 
         File downloaded = downloader.downloadFirst( repos, path );
+        assertThat( downloaded.exists(), equalTo( true ) );
+
         String pom = readFileToString( downloaded );
 
         assertThat( pom.contains( "<artifactId>maven-model</artifactId>" ), equalTo( true ) );

@@ -22,6 +22,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.commonjava.couch.model.DenormalizationException;
+import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreType;
 import org.junit.Test;
 
 public class RepositoryTest
@@ -34,7 +35,8 @@ public class RepositoryTest
         Repository repo = new Repository( "test", "http://www.nowhere.com/" );
         repo.calculateDenormalizedFields();
 
-        assertThat( repo.getCouchDocId(), equalTo( namespaceId( Repository.NAMESPACE, "test" ) ) );
+        assertThat( repo.getCouchDocId(),
+                    equalTo( namespaceId( StoreType.repository.name(), "test" ) ) );
     }
 
     @Test

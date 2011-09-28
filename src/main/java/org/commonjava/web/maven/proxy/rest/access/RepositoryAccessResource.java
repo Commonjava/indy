@@ -35,6 +35,7 @@ import org.commonjava.auth.couch.model.Permission;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.maven.proxy.data.ProxyDataException;
 import org.commonjava.web.maven.proxy.data.ProxyDataManager;
+import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreType;
 import org.commonjava.web.maven.proxy.model.Repository;
 import org.commonjava.web.maven.proxy.rest.util.Downloader;
 
@@ -59,7 +60,7 @@ public class RepositoryAccessResource
     public Response getContent( @PathParam( "name" ) final String name,
                                 @PathParam( "path" ) final String path )
     {
-        SecurityUtils.getSubject().isPermitted( Permission.name( Repository.NAMESPACE, name,
+        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.repository.name(), name,
                                                                  Permission.READ ) );
 
         // TODO:

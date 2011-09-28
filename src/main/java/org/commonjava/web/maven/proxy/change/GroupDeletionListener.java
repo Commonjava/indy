@@ -31,7 +31,7 @@ import org.commonjava.couch.change.dispatch.CouchChangeJ2EEEvent;
 import org.commonjava.couch.change.dispatch.ThreadableListener;
 import org.commonjava.couch.util.ChangeSynchronizer;
 import org.commonjava.util.logging.Logger;
-import org.commonjava.web.maven.proxy.model.Group;
+import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreType;
 
 @Singleton
 public class GroupDeletionListener
@@ -48,13 +48,13 @@ public class GroupDeletionListener
     @Override
     public boolean canProcess( final String id, final boolean deleted )
     {
-        return deleted && id.startsWith( Group.NAMESPACE );
+        return deleted && id.startsWith( StoreType.group.name() );
     }
 
     @Override
     public void documentChanged( final CouchDocChange change )
     {
-        String repo = nonNamespaceId( Group.NAMESPACE, change.getId() );
+        String repo = nonNamespaceId( StoreType.group.name(), change.getId() );
 
         try
         {

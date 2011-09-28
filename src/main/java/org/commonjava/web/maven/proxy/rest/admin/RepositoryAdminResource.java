@@ -43,6 +43,7 @@ import org.commonjava.web.common.model.Listing;
 import org.commonjava.web.common.ser.JsonSerializer;
 import org.commonjava.web.maven.proxy.data.ProxyDataException;
 import org.commonjava.web.maven.proxy.data.ProxyDataManager;
+import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreType;
 import org.commonjava.web.maven.proxy.model.Repository;
 
 import com.google.gson.reflect.TypeToken;
@@ -71,7 +72,7 @@ public class RepositoryAdminResource
     @Consumes( { MediaType.APPLICATION_JSON } )
     public Response create()
     {
-        SecurityUtils.getSubject().isPermitted( Permission.name( Repository.NAMESPACE,
+        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.repository.name(),
                                                                  Permission.ADMIN ) );
 
         @SuppressWarnings( "unchecked" )
@@ -106,7 +107,7 @@ public class RepositoryAdminResource
     @Consumes( { MediaType.APPLICATION_JSON } )
     public Response store( @PathParam( "name" ) final String name )
     {
-        SecurityUtils.getSubject().isPermitted( Permission.name( Repository.NAMESPACE,
+        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.repository.name(),
                                                                  Permission.ADMIN ) );
 
         @SuppressWarnings( "unchecked" )
@@ -144,7 +145,7 @@ public class RepositoryAdminResource
     @Produces( { MediaType.APPLICATION_JSON } )
     public Response getAll()
     {
-        SecurityUtils.getSubject().isPermitted( Permission.name( Repository.NAMESPACE,
+        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.repository.name(),
                                                                  Permission.ADMIN ) );
 
         try
@@ -167,7 +168,7 @@ public class RepositoryAdminResource
     @Path( "/{name}" )
     public Response get( @PathParam( "name" ) final String name )
     {
-        SecurityUtils.getSubject().isPermitted( Permission.name( Repository.NAMESPACE,
+        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.repository.name(),
                                                                  Permission.ADMIN ) );
 
         try
@@ -195,7 +196,7 @@ public class RepositoryAdminResource
     @Path( "/{name}" )
     public Response delete( @PathParam( "name" ) final String name )
     {
-        SecurityUtils.getSubject().isPermitted( Permission.name( Repository.NAMESPACE,
+        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.repository.name(),
                                                                  Permission.ADMIN ) );
 
         ResponseBuilder builder;

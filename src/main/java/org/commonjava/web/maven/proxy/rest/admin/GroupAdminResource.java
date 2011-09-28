@@ -43,6 +43,7 @@ import org.commonjava.web.common.model.Listing;
 import org.commonjava.web.common.ser.JsonSerializer;
 import org.commonjava.web.maven.proxy.data.ProxyDataException;
 import org.commonjava.web.maven.proxy.data.ProxyDataManager;
+import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreType;
 import org.commonjava.web.maven.proxy.model.Group;
 
 import com.google.gson.reflect.TypeToken;
@@ -71,7 +72,8 @@ public class GroupAdminResource
     @Consumes( { MediaType.APPLICATION_JSON } )
     public Response create()
     {
-        SecurityUtils.getSubject().isPermitted( Permission.name( Group.NAMESPACE, Permission.ADMIN ) );
+        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.group.name(),
+                                                                 Permission.ADMIN ) );
 
         @SuppressWarnings( "unchecked" )
         Group group = restSerializer.fromRequestBody( request, Group.class );
@@ -106,7 +108,8 @@ public class GroupAdminResource
     @Consumes( { MediaType.APPLICATION_JSON } )
     public Response store( @PathParam( "name" ) final String name )
     {
-        SecurityUtils.getSubject().isPermitted( Permission.name( Group.NAMESPACE, Permission.ADMIN ) );
+        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.group.name(),
+                                                                 Permission.ADMIN ) );
 
         @SuppressWarnings( "unchecked" )
         Group group = restSerializer.fromRequestBody( request, Group.class );
@@ -141,7 +144,8 @@ public class GroupAdminResource
     @Produces( { MediaType.APPLICATION_JSON } )
     public Response getAll()
     {
-        SecurityUtils.getSubject().isPermitted( Permission.name( Group.NAMESPACE, Permission.ADMIN ) );
+        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.group.name(),
+                                                                 Permission.ADMIN ) );
 
         try
         {
@@ -162,7 +166,8 @@ public class GroupAdminResource
     @Path( "/{name}" )
     public Response get( @PathParam( "name" ) final String name )
     {
-        SecurityUtils.getSubject().isPermitted( Permission.name( Group.NAMESPACE, Permission.ADMIN ) );
+        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.group.name(),
+                                                                 Permission.ADMIN ) );
 
         try
         {
@@ -189,7 +194,8 @@ public class GroupAdminResource
     @Path( "/{name}" )
     public Response delete( @PathParam( "name" ) final String name )
     {
-        SecurityUtils.getSubject().isPermitted( Permission.name( Group.NAMESPACE, Permission.ADMIN ) );
+        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.group.name(),
+                                                                 Permission.ADMIN ) );
 
         ResponseBuilder builder;
         try

@@ -36,9 +36,10 @@ import org.commonjava.auth.couch.model.Permission;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.maven.proxy.data.ProxyDataException;
 import org.commonjava.web.maven.proxy.data.ProxyDataManager;
+import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreType;
 import org.commonjava.web.maven.proxy.model.Group;
 import org.commonjava.web.maven.proxy.model.Repository;
-import org.commonjava.web.maven.proxy.rest.util.group.GroupHandlerChain;
+import org.commonjava.web.maven.proxy.rest.util.retrieve.GroupRetrieverChain;
 
 @Path( "/group" )
 @RequestScoped
@@ -51,7 +52,7 @@ public class GroupAccessResource
     private ProxyDataManager proxyManager;
 
     @Inject
-    private GroupHandlerChain handlerChain;
+    private GroupRetrieverChain handlerChain;
 
     // @Context
     // private UriInfo uriInfo;
@@ -61,7 +62,7 @@ public class GroupAccessResource
     public Response getProxyContent( @PathParam( "name" ) final String name,
                                      @PathParam( "path" ) final String path )
     {
-        SecurityUtils.getSubject().isPermitted( Permission.name( Group.NAMESPACE, name,
+        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.group.name(), name,
                                                                  Permission.READ ) );
 
         // TODO:

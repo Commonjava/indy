@@ -22,6 +22,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.commonjava.couch.model.DenormalizationException;
+import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreType;
 import org.junit.Test;
 
 public class GroupTest
@@ -34,7 +35,7 @@ public class GroupTest
         Group grp = new Group( "test" );
         grp.calculateDenormalizedFields();
 
-        assertThat( grp.getCouchDocId(), equalTo( namespaceId( Group.NAMESPACE, "test" ) ) );
+        assertThat( grp.getCouchDocId(), equalTo( namespaceId( StoreType.group.name(), "test" ) ) );
     }
 
 }

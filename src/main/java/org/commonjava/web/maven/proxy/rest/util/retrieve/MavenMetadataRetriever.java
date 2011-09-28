@@ -1,4 +1,4 @@
-package org.commonjava.web.maven.proxy.rest.util.group;
+package org.commonjava.web.maven.proxy.rest.util.retrieve;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 
@@ -9,23 +9,38 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.commonjava.util.logging.Logger;
+import org.commonjava.web.maven.proxy.change.event.FileStorageEvent;
 import org.commonjava.web.maven.proxy.conf.ProxyConfiguration;
 import org.commonjava.web.maven.proxy.model.Group;
 import org.commonjava.web.maven.proxy.model.Repository;
 import org.commonjava.web.maven.proxy.rest.util.Downloader;
 
-public class MavenMetadataHandler
-    implements GroupPathHandler
+@Singleton
+public class MavenMetadataRetriever
+    implements GroupPathRetriever
 {
 
     private static final String METADATA_NAME = "maven-metadata.xml";
 
     private final Logger logger = new Logger( getClass() );
+
+    @Inject
+    private Downloader downloader;
+
+    @Inject
+    private ProxyConfiguration config;
+
+    @Inject
+    private Event<FileStorageEvent> fileEvent;
 
     @Override
     public boolean canHandle( final String path )
@@ -34,8 +49,7 @@ public class MavenMetadataHandler
     }
 
     @Override
-    public File handle( final Group group, final List<Repository> repos, final String path,
-                        final Downloader downloader, final ProxyConfiguration config )
+    public File handle( final Group group, final List<Repository> repos, final String path )
     {
         File dir = new File( config.getRepositoryRootDirectory(), group.getName() );
         File target = new File( dir, path );
@@ -87,6 +101,12 @@ public class MavenMetadataHandler
 
                     writer = new FileWriter( target );
                     new MetadataXpp3Writer().write( writer, master );
+
+                    if ( fileEvent != null )
+                    {
+                        fileEvent.fire( new FileStorageEvent( FileStorageEvent.Type.GENERATE,
+                                                              group, path, target ) );
+                    }
                 }
                 catch ( IOException e )
                 {

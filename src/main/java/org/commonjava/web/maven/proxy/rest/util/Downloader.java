@@ -26,6 +26,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -65,6 +66,8 @@ public class Downloader
     private Event<FileStorageEvent> fileEvent;
 
     private HttpClient client;
+
+    private final Set<String> pendingUrls = new HashSet<String>();
 
     private TLRepositoryCredentialsProvider credProvider;
 
@@ -167,10 +170,142 @@ public class Downloader
     public boolean download( final Repository repository, final String path, final File target,
                              final boolean suppressFailures )
     {
+        String url = buildDownloadUrl( repository, path, suppressFailures );
+
+        if ( !continueDownload( url, repository.getTimeoutSeconds(), suppressFailures ) )
+        {
+            return target.exists();
+        }
+
         credProvider.bind( repository );
 
-        boolean proceed = true;
+        logger.info( "Trying: %s", url );
 
+        HttpGet request = new HttpGet( url );
+        try
+        {
+            InputStream in = executeGet( request, url, suppressFailures );
+            writeTarget( target, in, url, repository, path, suppressFailures );
+        }
+        finally
+        {
+            cleanup( request );
+            synchronized ( pendingUrls )
+            {
+                pendingUrls.remove( url );
+                pendingUrls.notifyAll();
+            }
+        }
+
+        return target.exists();
+    }
+
+    private void writeTarget( final File target, final InputStream in, final String url,
+                              final Repository repository, final String path,
+                              final boolean suppressFailures )
+    {
+        FileOutputStream out = null;
+        if ( in != null )
+        {
+            try
+            {
+                File targetDir = target.getParentFile();
+                if ( !targetDir.exists() && !targetDir.mkdirs() )
+                {
+                    logger.error( "Cannot create repository local storage directory: %s", targetDir );
+                    throw new WebApplicationException(
+                                                       Response.status( Status.INTERNAL_SERVER_ERROR ).build() );
+                }
+
+                out = new FileOutputStream( target );
+
+                copy( in, out );
+
+                if ( fileEvent != null )
+                {
+                    fileEvent.fire( new FileStorageEvent( FileStorageEvent.Type.DOWNLOAD,
+                                                          repository, path, target ) );
+                }
+            }
+            catch ( IOException e )
+            {
+                logger.error( "Failed to write to local proxy store: %s\nOriginal URL: %s. Reason: %s",
+                              e, target, url, e.getMessage() );
+
+                if ( !suppressFailures )
+                {
+                    throw new WebApplicationException(
+                                                       Response.status( Status.INTERNAL_SERVER_ERROR ).build() );
+                }
+            }
+            finally
+            {
+                closeQuietly( in );
+                closeQuietly( out );
+            }
+        }
+    }
+
+    private InputStream executeGet( final HttpGet request, final String url,
+                                    final boolean suppressFailures )
+    {
+        InputStream result = null;
+
+        try
+        {
+            HttpResponse response = client.execute( request );
+            StatusLine line = response.getStatusLine();
+            if ( line.getStatusCode() != HttpStatus.SC_OK )
+            {
+                logger.warn( "%s : %s", line, url );
+                if ( !suppressFailures )
+                {
+                    throw new WebApplicationException(
+                                                       Response.status( Status.INTERNAL_SERVER_ERROR ).build() );
+                }
+            }
+            else
+            {
+                result = response.getEntity().getContent();
+            }
+        }
+        catch ( ClientProtocolException e )
+        {
+            logger.warn( "Repository remote request failed for: %s. Reason: %s", e, url,
+                         e.getMessage() );
+
+            if ( !suppressFailures )
+            {
+                throw new WebApplicationException(
+                                                   Response.status( Status.INTERNAL_SERVER_ERROR ).build() );
+            }
+            else
+            {
+                result = null;
+            }
+        }
+        catch ( IOException e )
+        {
+            logger.warn( "Repository remote request failed for: %s. Reason: %s", e, url,
+                         e.getMessage() );
+
+            if ( !suppressFailures )
+            {
+                throw new WebApplicationException(
+                                                   Response.status( Status.INTERNAL_SERVER_ERROR ).build() );
+            }
+            else
+            {
+                result = null;
+            }
+        }
+
+        return result;
+    }
+
+    private String buildDownloadUrl( final Repository repository, final String path,
+                                     final boolean suppressFailures )
+    {
         String remoteBase = repository.getUrl();
         String url = null;
         try
@@ -184,113 +319,60 @@ public class Downloader
 
             if ( !suppressFailures )
             {
-                throw new WebApplicationException( Response.status( Status.BAD_REQUEST ).build() );
+                throw new WebApplicationException( Status.BAD_REQUEST );
             }
             else
             {
-                proceed = false;
+                url = null;
             }
         }
 
-        if ( !proceed )
-        {
-            return false;
-        }
-
-        logger.info( "Trying: %s", url );
-
-        HttpGet request = new HttpGet( url );
-        try
-        {
-            HttpResponse response = client.execute( request );
-            StatusLine line = response.getStatusLine();
-            if ( line.getStatusCode() != HttpStatus.SC_OK )
-            {
-                logger.error( "%s : %s", line, url );
-                if ( !suppressFailures )
-                {
-                    throw new WebApplicationException(
-                                                       Response.status( Status.INTERNAL_SERVER_ERROR ).build() );
-                }
-                else
-                {
-                    proceed = false;
-                }
-            }
-
-            if ( !proceed )
-            {
-                return false;
-            }
-
-            FileOutputStream out = null;
-            InputStream in = null;
-            try
-            {
-                File targetDir = target.getParentFile();
-                if ( !targetDir.exists() && !targetDir.mkdirs() )
-                {
-                    logger.error( "Cannot create repository local storage directory: %s", targetDir );
-                    throw new WebApplicationException(
-                                                       Response.status( Status.INTERNAL_SERVER_ERROR ).build() );
-                }
-
-                in = response.getEntity().getContent();
-                out = new FileOutputStream( target );
-
-                copy( in, out );
-
-                fireFileEvent( FileStorageEvent.Type.DOWNLOAD, repository, path, target );
-            }
-            finally
-            {
-                closeQuietly( in );
-                closeQuietly( out );
-            }
-        }
-        catch ( ClientProtocolException e )
-        {
-            logger.error( "Repository remote request failed for: %s. Reason: %s", e, url,
-                          e.getMessage() );
-            if ( !suppressFailures )
-            {
-                throw new WebApplicationException(
-                                                   Response.status( Status.INTERNAL_SERVER_ERROR ).build() );
-            }
-            else
-            {
-                proceed = false;
-            }
-        }
-        catch ( IOException e )
-        {
-            logger.error( "Repository remote request failed for: %s. Reason: %s", e, url,
-                          e.getMessage() );
-            if ( !suppressFailures )
-            {
-                throw new WebApplicationException(
-                                                   Response.status( Status.INTERNAL_SERVER_ERROR ).build() );
-            }
-            else
-            {
-                proceed = false;
-            }
-        }
-        finally
-        {
-            cleanup( request );
-        }
-
-        return proceed;
+        return url;
     }
 
-    private void fireFileEvent( final FileStorageEvent.Type type, final Repository repository,
-                                final String path, final File target )
+    private boolean continueDownload( final String url, final int timeoutSeconds,
+                                      final boolean suppressFailures )
     {
-        if ( fileEvent != null )
+        synchronized ( pendingUrls )
         {
-            fileEvent.fire( new FileStorageEvent( type, repository.getName(), path, target ) );
+            if ( pendingUrls.contains( url ) )
+            {
+                long timeout = System.currentTimeMillis() + ( timeoutSeconds * 1000 );
+                do
+                {
+                    if ( System.currentTimeMillis() > timeout )
+                    {
+                        if ( !suppressFailures )
+                        {
+                            throw new WebApplicationException( Status.NO_CONTENT );
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    try
+                    {
+                        pendingUrls.wait( 1000 );
+                    }
+                    catch ( InterruptedException e )
+                    {
+                        break;
+                    }
+
+                }
+                while ( !pendingUrls.contains( url ) );
+
+                return false;
+            }
+            else
+            {
+                pendingUrls.add( url );
+            }
         }
+
+        return true;
     }
 
     private void cleanup( final HttpGet request )
