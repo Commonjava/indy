@@ -25,45 +25,45 @@ public class Group
     extends AbstractArtifactStore
 {
 
-    private List<String> constituents;
+    private List<StoreKey> constituents;
 
     Group()
     {
         super( StoreType.group );
     }
 
-    public Group( final String name, final List<String> constituents )
+    public Group( final String name, final List<StoreKey> constituents )
     {
         super( StoreType.group, name );
         this.constituents = constituents;
     }
 
-    public Group( final String name, final String... constituents )
+    public Group( final String name, final StoreKey... constituents )
     {
         super( StoreType.group, name );
-        this.constituents = new ArrayList<String>( Arrays.asList( constituents ) );
+        this.constituents = new ArrayList<StoreKey>( Arrays.asList( constituents ) );
     }
 
-    public List<String> getConstituents()
+    public List<StoreKey> getConstituents()
     {
         return constituents;
     }
 
-    public boolean addConstituent( final ArtifactStore repository )
+    public boolean addConstituent( final ArtifactStore store )
     {
-        if ( repository == null )
+        if ( store == null )
         {
             return false;
         }
 
-        return addConstituent( repository.getName() );
+        return addConstituent( store.getKey() );
     }
 
-    public synchronized boolean addConstituent( final String repository )
+    public synchronized boolean addConstituent( final StoreKey repository )
     {
         if ( constituents == null )
         {
-            constituents = new ArrayList<String>();
+            constituents = new ArrayList<StoreKey>();
         }
 
         return constituents.add( repository );
@@ -79,7 +79,7 @@ public class Group
         return constituents == null ? false : constituents.remove( repository );
     }
 
-    public void setConstituents( final List<String> constituents )
+    public void setConstituents( final List<StoreKey> constituents )
     {
         this.constituents = constituents;
     }

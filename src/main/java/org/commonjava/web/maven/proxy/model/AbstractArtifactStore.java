@@ -1,7 +1,5 @@
 package org.commonjava.web.maven.proxy.model;
 
-import static org.commonjava.couch.util.IdUtils.namespaceId;
-
 import org.commonjava.couch.model.AbstractCouchDocument;
 import org.commonjava.couch.model.DenormalizedCouchDoc;
 
@@ -13,6 +11,8 @@ public abstract class AbstractArtifactStore
 {
 
     private String name;
+
+    private StoreKey key;
 
     @Expose( deserialize = false )
     private final StoreType doctype;
@@ -26,6 +26,7 @@ public abstract class AbstractArtifactStore
     {
         this.doctype = doctype;
         this.name = name;
+        this.key = new StoreKey( doctype, name );
     }
 
     /*
@@ -54,9 +55,16 @@ public abstract class AbstractArtifactStore
     }
 
     @Override
+    public StoreKey getKey()
+    {
+        return key;
+    }
+
+    @Override
     public void calculateDenormalizedFields()
     {
-        setCouchDocId( namespaceId( doctype.name(), name ) );
+        this.key = new StoreKey( doctype, name );
+        setCouchDocId( key.toString() );
     }
 
     @Override

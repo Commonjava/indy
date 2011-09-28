@@ -27,6 +27,8 @@ import org.commonjava.couch.db.CouchDBException;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.maven.proxy.data.ProxyDataException;
 import org.commonjava.web.maven.proxy.data.ProxyDataManager;
+import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreKey;
+import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreType;
 import org.commonjava.web.maven.proxy.model.Group;
 import org.commonjava.web.maven.proxy.model.Repository;
 
@@ -54,7 +56,8 @@ public class InstallerListener
                                                          "http://repo1.maven.apache.org/maven2/" ),
                                          true );
 
-            dataManager.storeGroup( new Group( "public", "central" ), true );
+            dataManager.storeGroup( new Group( "public", new StoreKey( StoreType.repository,
+                                                                       "central" ) ), true );
 
             changeListener.startup( false );
         }

@@ -11,37 +11,45 @@ var aclRoleListTable;
 var aclPermListTable;
   
 $(function() {
-  $(document).ready( loadUserList() );
-
-  $("#tab-acl").accordion({
-    header : "h3"
+  $(document).ready( function(){
+    loadUserList();
+    $(roleListId).hide();
+    $(permListId).hide();
+  });
+  
+  $(userListId + " tbody").click( function( evt ){
+    alert( evt.target.parentNode );
+    loadRoleList();
   });
 
-  $("#tab-acl").bind('accordionchange', function(event, ui) {
-    var id = $(ui.newHeader).parent().attr('id');
-
-    alert(id);
-    if (id === userSectionId) {
-//      if ( aclUserListTable == null ){
-        loadUserList();
-//      }
-    } else if (id === roleSectionId) {
-//      if( aclRoleListTable == null ){
-        loadRoleList();
-//      }
-    } else if (id === permSectionId) {
-//      if( aclPermListTable == null ){
-        loadPermissionList();
-//      }
-    } else {
-    }
-
-  });
+  // $("#tab-acl").accordion({
+  //   header : "h3"
+  // });
+  // 
+  // $("#tab-acl").bind('accordionchange', function(event, ui) {
+  //   var id = $(ui.newHeader).parent().attr('id');
+  // 
+  //   if (id === userSectionId) {
+  //    if ( aclUserListTable == null ){
+  //       loadUserList();
+  //    }
+  //   } else if (id === roleSectionId) {
+  //    if( aclRoleListTable == null ){
+  //       loadRoleList();
+  //    }
+  //   } else if (id === permSectionId) {
+  //    if( aclPermListTable == null ){
+  //       loadPermissionList();
+  //    }
+  //   } else {
+  //   }
+  // 
+  // });
 
 });
 
 function loadUserList(){
-  if ( aclUserListTable ){
+  if ( aclUserListTable != null ){
     aclUserListTable.dataTable({ "bRetrieve" : true });
   }
   else{
@@ -65,7 +73,7 @@ function loadUserList(){
 }
 
 function loadRoleList(){
-  if ( aclRoleListTable ){
+  if ( aclRoleListTable != null ){
     aclUserListTable.dataTable({ "bRetrieve" : true });
   }
   else{
@@ -81,12 +89,14 @@ function loadRoleList(){
        ],
     });
     
-    aclUserListTable = $(userListId);
+    aclRoleListTable = $(roleListId);
   }
+  
+  aclRoleListTable.show();
 }
 
 function loadPermissionList(){
-  if ( aclPermListTable ){
+  if ( aclPermListTable != null ){
     aclPermListTable.dataTable({ "bRetrieve" : true });
   }
   else{
@@ -102,6 +112,6 @@ function loadPermissionList(){
        ],
     });
     
-    aclUserListTable = $(userListId);
+    aclPermListTable = $(permListId);
   }
 }
