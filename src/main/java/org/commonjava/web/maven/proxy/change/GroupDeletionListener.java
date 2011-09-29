@@ -17,8 +17,6 @@
  ******************************************************************************/
 package org.commonjava.web.maven.proxy.change;
 
-import static org.commonjava.couch.util.IdUtils.nonNamespaceId;
-
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -54,7 +52,7 @@ public class GroupDeletionListener
     @Override
     public void documentChanged( final CouchDocChange change )
     {
-        String repo = nonNamespaceId( StoreType.group.name(), change.getId() );
+        String group = change.getId();
 
         try
         {
@@ -65,8 +63,8 @@ public class GroupDeletionListener
         }
         catch ( UserDataException e )
         {
-            logger.error( "Failed to remove permissions for deleted group: %s. Error: %s", e, repo,
-                          e.getMessage() );
+            logger.error( "Failed to remove permissions for deleted group: %s. Error: %s", e,
+                          group, e.getMessage() );
         }
     }
 

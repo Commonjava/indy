@@ -28,6 +28,8 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.commonjava.web.maven.proxy.model.ArtifactStore;
+import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreKey;
+import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreType;
 import org.commonjava.web.maven.proxy.model.Group;
 import org.commonjava.web.maven.proxy.model.Repository;
 import org.hamcrest.BaseMatcher;
@@ -48,7 +50,9 @@ public class GroupDataManagerTest
     }
 
     @Test
-    @SuppressWarnings( { "unchecked", "rawtypes" } )
+    @SuppressWarnings( {
+        "unchecked",
+        "rawtypes" } )
     public void createAndRetrieveEmptyGroup()
         throws ProxyDataException
     {
@@ -110,7 +114,9 @@ public class GroupDataManagerTest
     public void createAndRetrieveGroupWithTwoConstituents()
         throws ProxyDataException
     {
-        Group grp = new Group( "test", "central", "repo2" );
+        Group grp =
+            new Group( "test", new StoreKey( StoreType.repository, "central" ),
+                       new StoreKey( StoreType.repository, "repo2" ) );
 
         manager.storeGroup( grp );
 
@@ -119,19 +125,21 @@ public class GroupDataManagerTest
         assertThat( result, notNullValue() );
         assertThat( result.getName(), equalTo( grp.getName() ) );
 
-        List<String> repos = result.getConstituents();
+        List<StoreKey> repos = result.getConstituents();
         assertThat( repos, notNullValue() );
         assertThat( repos.size(), equalTo( 2 ) );
 
-        assertThat( repos.get( 0 ), equalTo( "central" ) );
-        assertThat( repos.get( 1 ), equalTo( "repo2" ) );
+        assertThat( repos.get( 0 ), equalTo( new StoreKey( StoreType.repository, "central" ) ) );
+        assertThat( repos.get( 1 ), equalTo( new StoreKey( StoreType.repository, "repo2" ) ) );
     }
 
     @Test
     public void createGroupAndRetrieveRepositoryConstituents()
         throws ProxyDataException
     {
-        Group grp = new Group( "test", "central", "repo2" );
+        Group grp =
+            new Group( "test", new StoreKey( StoreType.repository, "central" ),
+                       new StoreKey( StoreType.repository, "repo2" ) );
 
         manager.storeGroup( grp );
 

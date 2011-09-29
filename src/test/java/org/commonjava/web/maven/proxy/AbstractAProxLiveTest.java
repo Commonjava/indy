@@ -22,6 +22,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 
@@ -80,11 +81,19 @@ public class AbstractAProxLiveTest
                                    Os.class.getPackage(), // grab all of plexus-utils
                                    Metadata.class.getPackage() );
 
+        builder.withStandardPackages();
+        builder.withLog4jProperties();
+        builder.withStandardAuthentication();
         builder.withAllStandards();
         builder.withApplication( new ProxyAppDescription() );
         builder.withApplication( new UserAppDescription() );
 
-        return builder.build();
+        WebArchive archive = builder.build();
+
+        String basedir = System.getProperty( "basedir", "." );
+        archive.addAsWebInfResource( new File( basedir, "src/main/resources/META-INF/beans.xml" ) );
+
+        return archive;
     }
 
     @Before

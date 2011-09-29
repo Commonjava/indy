@@ -31,8 +31,11 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.commonjava.web.common.model.Listing;
 import org.commonjava.web.maven.proxy.AbstractAProxLiveTest;
+import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreKey;
+import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreType;
 import org.commonjava.web.maven.proxy.model.Group;
 import org.commonjava.web.maven.proxy.model.Repository;
+import org.commonjava.web.maven.proxy.model.io.StoreKeySerializer;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.jboss.arquillian.junit.Arquillian;
@@ -50,16 +53,24 @@ public class GroupAdminResourceTest
     private static final String BASE_URL = "http://localhost:8080/test/api/1.0/admin/group";
 
     @Before
+    public void registerSerializer()
+    {
+        serializer.registerSerializationAdapters( new StoreKeySerializer() );
+    }
+
+    @Before
     public void seedRepositoriesForGroupTests()
         throws Exception
     {
         proxyManager.storeRepository( new Repository( "central",
-                                                     "http://repo1.maven.apache.org/maven2/" ) );
+                                                      "http://repo1.maven.apache.org/maven2/" ) );
         proxyManager.storeRepository( new Repository( "repo2", "http://repo1.maven.org/maven2/" ) );
     }
 
     @Test
-    @SuppressWarnings( { "unchecked", "rawtypes" } )
+    @SuppressWarnings( {
+        "unchecked",
+        "rawtypes" } )
     public void createAndRetrieveEmptyGroup()
         throws Exception
     {
@@ -105,7 +116,9 @@ public class GroupAdminResourceTest
     public void createAndRetrieveGroupWithTwoConstituents()
         throws Exception
     {
-        Group grp = new Group( "test", "central", "repo2" );
+        Group grp =
+            new Group( "test", new StoreKey( StoreType.repository, "central" ),
+                       new StoreKey( StoreType.repository, "repo2" ) );
 
         post( BASE_URL, grp, HttpStatus.SC_CREATED );
 
@@ -114,12 +127,12 @@ public class GroupAdminResourceTest
         assertThat( result, notNullValue() );
         assertThat( result.getName(), equalTo( grp.getName() ) );
 
-        List<String> repos = result.getConstituents();
+        List<StoreKey> repos = result.getConstituents();
         assertThat( repos, notNullValue() );
         assertThat( repos.size(), equalTo( 2 ) );
 
-        assertThat( repos.get( 0 ), equalTo( "central" ) );
-        assertThat( repos.get( 1 ), equalTo( "repo2" ) );
+        assertThat( repos.get( 0 ), equalTo( new StoreKey( StoreType.repository, "central" ) ) );
+        assertThat( repos.get( 1 ), equalTo( new StoreKey( StoreType.repository, "repo2" ) ) );
     }
 
     @Test

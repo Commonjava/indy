@@ -71,10 +71,10 @@ public class Group
 
     public boolean removeConstituent( final ArtifactStore constituent )
     {
-        return constituent == null ? false : removeConstituent( constituent.getName() );
+        return constituent == null ? false : removeConstituent( constituent.getKey() );
     }
 
-    public boolean removeConstituent( final String repository )
+    public boolean removeConstituent( final StoreKey repository )
     {
         return constituents == null ? false : constituents.remove( repository );
     }

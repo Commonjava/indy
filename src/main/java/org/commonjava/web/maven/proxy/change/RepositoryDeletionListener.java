@@ -17,8 +17,6 @@
  ******************************************************************************/
 package org.commonjava.web.maven.proxy.change;
 
-import static org.commonjava.couch.util.IdUtils.nonNamespaceId;
-
 import java.util.Set;
 
 import javax.enterprise.event.Observes;
@@ -35,6 +33,7 @@ import org.commonjava.couch.util.ChangeSynchronizer;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.maven.proxy.data.ProxyDataException;
 import org.commonjava.web.maven.proxy.data.ProxyDataManager;
+import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreKey;
 import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreType;
 import org.commonjava.web.maven.proxy.model.Group;
 
@@ -62,13 +61,13 @@ public class RepositoryDeletionListener
     @Override
     public void documentChanged( final CouchDocChange change )
     {
-        String repo = nonNamespaceId( StoreType.repository.name(), change.getId() );
+        String repo = change.getId();
         try
         {
             Set<Group> groups = proxyDataManager.getGroupsForRepository( repo );
             for ( Group group : groups )
             {
-                group.removeConstituent( repo );
+                group.removeConstituent( StoreKey.fromString( repo ) );
             }
 
             proxyDataManager.storeGroups( groups );

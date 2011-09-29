@@ -86,18 +86,18 @@ public class RepositoryDeletionListenerTest
         Repository repo = new Repository( "test", "http://repo1.maven.apache.org/maven2/" );
         proxyManager.storeRepository( repo );
 
-        Group group = new Group( "testGroup", repo.getName() );
+        Group group = new Group( "testGroup", repo.getKey() );
         proxyManager.storeGroup( group );
 
         assertThat( group.getConstituents(), notNullValue() );
         assertThat( group.getConstituents().size(), equalTo( 1 ) );
-        assertThat( group.getConstituents().iterator().next(), equalTo( repo.getName() ) );
+        assertThat( group.getConstituents().iterator().next(), equalTo( repo.getKey() ) );
 
         Group check = proxyManager.getGroup( group.getName() );
 
         assertThat( check.getConstituents(), notNullValue() );
         assertThat( check.getConstituents().size(), equalTo( 1 ) );
-        assertThat( check.getConstituents().iterator().next(), equalTo( repo.getName() ) );
+        assertThat( check.getConstituents().iterator().next(), equalTo( repo.getKey() ) );
 
         proxyManager.deleteRepository( repo.getName() );
 

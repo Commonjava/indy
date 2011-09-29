@@ -29,6 +29,8 @@ import org.apache.http.client.ClientProtocolException;
 import org.commonjava.web.maven.proxy.AbstractAProxLiveTest;
 import org.commonjava.web.maven.proxy.data.ProxyDataException;
 import org.commonjava.web.maven.proxy.fixture.ProxyConfigProvider;
+import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreKey;
+import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreType;
 import org.commonjava.web.maven.proxy.model.Group;
 import org.commonjava.web.maven.proxy.model.Repository;
 import org.jboss.arquillian.junit.Arquillian;
@@ -71,9 +73,10 @@ public class GroupAccessResourceTest
     {
         proxyManager.storeRepository( new Repository( "dummy", "http://www.nowhere.com/" ) );
         proxyManager.storeRepository( new Repository( "central",
-                                                     "http://repo1.maven.apache.org/maven2/" ) );
+                                                      "http://repo1.maven.apache.org/maven2/" ) );
 
-        proxyManager.storeGroup( new Group( "test", "dummy", "central" ) );
+        proxyManager.storeGroup( new Group( "test", new StoreKey( StoreType.repository, "dummy" ),
+                                            new StoreKey( StoreType.repository, "central" ) ) );
     }
 
     @Test

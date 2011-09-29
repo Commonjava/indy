@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -34,6 +35,7 @@ import org.commonjava.auth.couch.model.Permission;
 import org.commonjava.couch.conf.CouchDBConfiguration;
 import org.commonjava.couch.db.CouchDBException;
 import org.commonjava.couch.db.CouchManager;
+import org.commonjava.couch.io.Serializer;
 import org.commonjava.couch.model.CouchDocRef;
 import org.commonjava.couch.util.JoinString;
 import org.commonjava.web.maven.proxy.change.event.GroupUpdateEvent;
@@ -42,9 +44,11 @@ import org.commonjava.web.maven.proxy.change.event.ProxyManagerUpdateType;
 import org.commonjava.web.maven.proxy.change.event.RepositoryUpdateEvent;
 import org.commonjava.web.maven.proxy.conf.ProxyConfiguration;
 import org.commonjava.web.maven.proxy.data.ProxyAppDescription.View;
+import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreKey;
 import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreType;
 import org.commonjava.web.maven.proxy.model.Group;
 import org.commonjava.web.maven.proxy.model.Repository;
+import org.commonjava.web.maven.proxy.model.io.StoreKeySerializer;
 
 @Singleton
 public class ProxyDataManager
@@ -71,16 +75,29 @@ public class ProxyDataManager
     @Inject
     private Event<ProxyManagerDeleteEvent> delEvent;
 
+    @Inject
+    private Serializer serializer;
+
     public ProxyDataManager()
     {}
 
     public ProxyDataManager( final ProxyConfiguration config, final UserDataManager userMgr,
-                             final CouchDBConfiguration couchConfig, final CouchManager couch )
+                             final CouchDBConfiguration couchConfig, final CouchManager couch,
+                             final Serializer serializer )
     {
         this.config = config;
         this.userMgr = userMgr;
         this.couchConfig = couchConfig;
         this.couch = couch;
+        this.serializer = serializer;
+
+        registerSerializationAdapters();
+    }
+
+    @PostConstruct
+    protected void registerSerializationAdapters()
+    {
+        serializer.registerSerializationAdapters( new StoreKeySerializer() );
     }
 
     public Repository getRepository( final String name )
@@ -253,13 +270,12 @@ public class ProxyDataManager
     {
         try
         {
-            Set<String> missing = new HashSet<String>();
-            for ( String repoName : group.getConstituents() )
+            Set<StoreKey> missing = new HashSet<StoreKey>();
+            for ( StoreKey repo : group.getConstituents() )
             {
-                if ( !couch.exists( new CouchDocRef( namespaceId( StoreType.repository.name(),
-                                                                  repoName ) ) ) )
+                if ( !couch.exists( new CouchDocRef( repo.toString() ) ) )
                 {
-                    missing.add( repoName );
+                    missing.add( repo );
                 }
             }
 

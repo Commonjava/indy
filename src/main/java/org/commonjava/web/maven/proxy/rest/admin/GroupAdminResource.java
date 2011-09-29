@@ -17,6 +17,7 @@
  ******************************************************************************/
 package org.commonjava.web.maven.proxy.rest.admin;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -45,6 +46,7 @@ import org.commonjava.web.maven.proxy.data.ProxyDataException;
 import org.commonjava.web.maven.proxy.data.ProxyDataManager;
 import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreType;
 import org.commonjava.web.maven.proxy.model.Group;
+import org.commonjava.web.maven.proxy.model.io.StoreKeySerializer;
 
 import com.google.gson.reflect.TypeToken;
 
@@ -67,6 +69,12 @@ public class GroupAdminResource
 
     @Context
     private HttpServletRequest request;
+
+    @PostConstruct
+    protected void registerSerializationAdapters()
+    {
+        restSerializer.registerSerializationAdapters( new StoreKeySerializer() );
+    }
 
     @POST
     @Consumes( { MediaType.APPLICATION_JSON } )

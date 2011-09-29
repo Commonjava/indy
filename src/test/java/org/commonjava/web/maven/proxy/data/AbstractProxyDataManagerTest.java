@@ -26,6 +26,9 @@ import org.commonjava.auth.couch.data.UserDataManager;
 import org.commonjava.couch.conf.CouchDBConfiguration;
 import org.commonjava.couch.conf.DefaultCouchDBConfiguration;
 import org.commonjava.couch.db.CouchManager;
+import org.commonjava.couch.io.CouchAppReader;
+import org.commonjava.couch.io.CouchHttpClient;
+import org.commonjava.couch.io.Serializer;
 import org.commonjava.web.maven.proxy.conf.DefaultProxyConfiguration;
 import org.junit.After;
 import org.junit.Before;
@@ -57,12 +60,16 @@ public class AbstractProxyDataManagerTest
         CouchDBConfiguration couchConfig =
             new DefaultCouchDBConfiguration( "http://localhost:5984/test-aprox" );
 
-        couch = new CouchManager( couchConfig );
+        Serializer serializer = new Serializer();
+
+        couch =
+            new CouchManager( couchConfig, new CouchHttpClient( couchConfig, serializer ),
+                              serializer, new CouchAppReader() );
 
         passwordManager = new PasswordManager();
         userManager = new UserDataManager( umConfig, passwordManager, couch );
 
-        manager = new ProxyDataManager( config, userManager, couchConfig, couch );
+        manager = new ProxyDataManager( config, userManager, couchConfig, couch, serializer );
     }
 
     @Before

@@ -32,7 +32,9 @@ import org.commonjava.web.common.model.Listing;
 import org.commonjava.web.maven.proxy.AbstractAProxLiveTest;
 import org.commonjava.web.maven.proxy.model.ArtifactStore;
 import org.commonjava.web.maven.proxy.model.Repository;
+import org.commonjava.web.maven.proxy.model.io.StoreKeySerializer;
 import org.jboss.arquillian.junit.Arquillian;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -44,6 +46,12 @@ public class RepositoryAdminResourceTest
 {
 
     private static final String BASE_URL = "http://localhost:8080/test/api/1.0/admin/repository";
+
+    @Before
+    public void registerSerializer()
+    {
+        serializer.registerSerializationAdapters( new StoreKeySerializer() );
+    }
 
     @Test
     public void createAndRetrieveCentralRepoProxy()
