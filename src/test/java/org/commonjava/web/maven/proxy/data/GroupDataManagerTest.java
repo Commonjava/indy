@@ -28,10 +28,10 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.commonjava.web.maven.proxy.model.ArtifactStore;
-import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreKey;
-import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreType;
 import org.commonjava.web.maven.proxy.model.Group;
 import org.commonjava.web.maven.proxy.model.Repository;
+import org.commonjava.web.maven.proxy.model.StoreKey;
+import org.commonjava.web.maven.proxy.model.StoreType;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Before;
@@ -143,7 +143,7 @@ public class GroupDataManagerTest
 
         manager.storeGroup( grp );
 
-        List<Repository> result = manager.getRepositoriesForGroup( grp.getName() );
+        List<ArtifactStore> result = manager.getOrderedConcreteStoresInGroup( grp.getName() );
 
         assertThat( result, notNullValue() );
         assertThat( result.size(), equalTo( 2 ) );

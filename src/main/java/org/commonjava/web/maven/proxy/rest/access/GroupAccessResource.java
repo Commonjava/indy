@@ -18,17 +18,24 @@
 package org.commonjava.web.maven.proxy.rest.access;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
@@ -36,9 +43,11 @@ import org.commonjava.auth.couch.model.Permission;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.maven.proxy.data.ProxyDataException;
 import org.commonjava.web.maven.proxy.data.ProxyDataManager;
-import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreType;
+import org.commonjava.web.maven.proxy.model.ArtifactStore;
+import org.commonjava.web.maven.proxy.model.DeployPoint;
 import org.commonjava.web.maven.proxy.model.Group;
-import org.commonjava.web.maven.proxy.model.Repository;
+import org.commonjava.web.maven.proxy.model.StoreType;
+import org.commonjava.web.maven.proxy.rest.util.FileManager;
 import org.commonjava.web.maven.proxy.rest.util.retrieve.GroupRetrieverChain;
 
 @Path( "/group" )
@@ -54,8 +63,11 @@ public class GroupAccessResource
     @Inject
     private GroupRetrieverChain handlerChain;
 
-    // @Context
-    // private UriInfo uriInfo;
+    @Inject
+    private FileManager fileManager;
+
+    @Context
+    private UriInfo uriInfo;
 
     @GET
     @Path( "/{name}{path: (/.+)?}" )
@@ -69,7 +81,7 @@ public class GroupAccessResource
         // 1. directory request (ends with "/")...browse somehow??
         // 2. empty path (directory request for proxy root)
 
-        List<Repository> repos;
+        List<ArtifactStore> stores;
         Group group;
 
         try
@@ -83,7 +95,7 @@ public class GroupAccessResource
                                                                                                    + " not found." ).build() );
             }
 
-            repos = proxyManager.getRepositoriesForGroup( name );
+            stores = proxyManager.getOrderedConcreteStoresInGroup( name );
         }
         catch ( ProxyDataException e )
         {
@@ -93,7 +105,7 @@ public class GroupAccessResource
                                                Response.status( Status.INTERNAL_SERVER_ERROR ).build() );
         }
 
-        File target = handlerChain.retrieve( group, repos, path );
+        File target = handlerChain.retrieve( group, stores, path );
 
         if ( target == null )
         {
@@ -104,4 +116,65 @@ public class GroupAccessResource
         return Response.ok( target, mimeType ).build();
     }
 
+    @PUT
+    @Path( "/{name}/{path: (.+)}" )
+    public Response createContent( @PathParam( "name" ) final String name,
+                                   @PathParam( "path" ) final String path,
+                                   @Context final HttpServletRequest request )
+    {
+        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.repository.name(), name,
+                                                                 Permission.READ ) );
+
+        List<ArtifactStore> stores;
+        Group group;
+
+        try
+        {
+            group = proxyManager.getGroup( name );
+            if ( group == null )
+            {
+                throw new WebApplicationException(
+                                                   Response.status( Status.NOT_FOUND ).entity( "Repository group: "
+                                                                                                   + name
+                                                                                                   + " not found." ).build() );
+            }
+
+            stores = proxyManager.getOrderedConcreteStoresInGroup( name );
+        }
+        catch ( ProxyDataException e )
+        {
+            logger.error( "Failed to retrieve repository-group information: %s. Reason: %s", e,
+                          name, e.getMessage() );
+            throw new WebApplicationException(
+                                               Response.status( Status.INTERNAL_SERVER_ERROR ).build() );
+        }
+
+        List<DeployPoint> deployPoints = new ArrayList<DeployPoint>();
+        if ( stores != null )
+        {
+            for ( ArtifactStore store : stores )
+            {
+                if ( store instanceof DeployPoint )
+                {
+                    deployPoints.add( (DeployPoint) store );
+                }
+            }
+        }
+
+        ResponseBuilder builder;
+        try
+        {
+            DeployPoint deploy = fileManager.upload( deployPoints, path, request.getInputStream() );
+
+            builder =
+                Response.created( uriInfo.getAbsolutePathBuilder().path( deploy.getName() ).path( path ).build() );
+        }
+        catch ( IOException e )
+        {
+            logger.error( "Failed to open stream from request: %s", e, e.getMessage() );
+            builder = Response.status( Status.INTERNAL_SERVER_ERROR );
+        }
+
+        return builder.build();
+    }
 }

@@ -3,7 +3,7 @@ package org.commonjava.web.maven.proxy.model.io;
 import java.lang.reflect.Type;
 
 import org.commonjava.couch.io.json.SerializationAdapter;
-import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreKey;
+import org.commonjava.web.maven.proxy.model.StoreKey;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;

@@ -22,7 +22,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.commonjava.couch.model.DenormalizationException;
-import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreType;
 import org.junit.Test;
 
 public class RepositoryTest

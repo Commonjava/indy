@@ -44,16 +44,16 @@ import org.commonjava.web.common.model.Listing;
 import org.commonjava.web.common.ser.JsonSerializer;
 import org.commonjava.web.maven.proxy.data.ProxyDataException;
 import org.commonjava.web.maven.proxy.data.ProxyDataManager;
-import org.commonjava.web.maven.proxy.model.Group;
+import org.commonjava.web.maven.proxy.model.DeployPoint;
 import org.commonjava.web.maven.proxy.model.StoreType;
 import org.commonjava.web.maven.proxy.model.io.StoreKeySerializer;
 
 import com.google.gson.reflect.TypeToken;
 
-@Path( "/admin/group" )
+@Path( "/admin/deploy" )
 @RequestScoped
 @RequiresAuthentication
-public class GroupAdminResource
+public class DeployPointAdminResource
 {
 
     private final Logger logger = new Logger( getClass() );
@@ -80,26 +80,25 @@ public class GroupAdminResource
     @Consumes( { MediaType.APPLICATION_JSON } )
     public Response create()
     {
-        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.group.name(),
+        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.repository.name(),
                                                                  Permission.ADMIN ) );
 
         @SuppressWarnings( "unchecked" )
-        Group group = restSerializer.fromRequestBody( request, Group.class );
+        DeployPoint deploy = restSerializer.fromRequestBody( request, DeployPoint.class );
 
-        logger.info( "\n\nGot group: %s\n\n", group );
+        logger.info( "\n\nGot proxy: %s\n\n", deploy );
 
         ResponseBuilder builder;
         try
         {
-            boolean added = proxyManager.storeGroup( group, true );
-            if ( added )
+            if ( proxyManager.storeDeployPoint( deploy, true ) )
             {
                 builder =
-                    Response.created( uriInfo.getAbsolutePathBuilder().path( group.getName() ).build() );
+                    Response.created( uriInfo.getAbsolutePathBuilder().path( deploy.getName() ).build() );
             }
             else
             {
-                builder = Response.status( Status.CONFLICT ).entity( "Group already exists." );
+                builder = Response.status( Status.CONFLICT ).entity( "Repository already exists." );
             }
         }
         catch ( ProxyDataException e )
@@ -116,26 +115,27 @@ public class GroupAdminResource
     @Consumes( { MediaType.APPLICATION_JSON } )
     public Response store( @PathParam( "name" ) final String name )
     {
-        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.group.name(),
+        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.repository.name(),
                                                                  Permission.ADMIN ) );
 
         @SuppressWarnings( "unchecked" )
-        Group group = restSerializer.fromRequestBody( request, Group.class );
+        DeployPoint deploy = restSerializer.fromRequestBody( request, DeployPoint.class );
 
         ResponseBuilder builder;
         try
         {
-            Group toUpdate = proxyManager.getGroup( name );
+            DeployPoint toUpdate = proxyManager.getDeployPoint( name );
             if ( toUpdate == null )
             {
-                toUpdate = group;
+                toUpdate = deploy;
             }
             else
             {
-                toUpdate.setConstituents( group.getConstituents() );
+                toUpdate.setAllowReleases( deploy.isAllowReleases() );
+                toUpdate.setAllowSnapshots( deploy.isAllowSnapshots() );
             }
 
-            proxyManager.storeGroup( toUpdate );
+            proxyManager.storeDeployPoint( toUpdate );
             builder = Response.created( uriInfo.getAbsolutePathBuilder().build() );
         }
         catch ( ProxyDataException e )
@@ -152,13 +152,14 @@ public class GroupAdminResource
     @Produces( { MediaType.APPLICATION_JSON } )
     public Response getAll()
     {
-        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.group.name(),
+        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.repository.name(),
                                                                  Permission.ADMIN ) );
 
         try
         {
-            Listing<Group> listing = new Listing<Group>( proxyManager.getAllGroups() );
-            TypeToken<Listing<Group>> tt = new TypeToken<Listing<Group>>()
+            Listing<DeployPoint> listing =
+                new Listing<DeployPoint>( proxyManager.getAllDeployPoints() );
+            TypeToken<Listing<DeployPoint>> tt = new TypeToken<Listing<DeployPoint>>()
             {};
 
             return Response.ok().entity( restSerializer.toString( listing, tt.getType() ) ).build();
@@ -174,21 +175,21 @@ public class GroupAdminResource
     @Path( "/{name}" )
     public Response get( @PathParam( "name" ) final String name )
     {
-        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.group.name(),
+        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.repository.name(),
                                                                  Permission.ADMIN ) );
 
         try
         {
-            Group group = proxyManager.getGroup( name );
-            logger.info( "Returning group: %s", group );
+            DeployPoint deploy = proxyManager.getDeployPoint( name );
+            logger.info( "Returning repository: %s", deploy );
 
-            if ( group != null )
+            if ( deploy == null )
             {
-                return Response.ok().entity( restSerializer.toString( group ) ).build();
+                return Response.status( Status.NOT_FOUND ).build();
             }
             else
             {
-                return Response.status( Status.NOT_FOUND ).build();
+                return Response.ok().entity( restSerializer.toString( deploy ) ).build();
             }
         }
         catch ( ProxyDataException e )
@@ -202,13 +203,13 @@ public class GroupAdminResource
     @Path( "/{name}" )
     public Response delete( @PathParam( "name" ) final String name )
     {
-        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.group.name(),
+        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.repository.name(),
                                                                  Permission.ADMIN ) );
 
         ResponseBuilder builder;
         try
         {
-            proxyManager.deleteGroup( name );
+            proxyManager.deleteRepository( name );
             builder = Response.ok();
         }
         catch ( ProxyDataException e )

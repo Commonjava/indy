@@ -26,9 +26,9 @@ import javax.inject.Inject;
 
 import org.commonjava.auth.couch.model.Permission;
 import org.commonjava.web.maven.proxy.AbstractAProxLiveTest;
-import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreType;
 import org.commonjava.web.maven.proxy.model.Group;
 import org.commonjava.web.maven.proxy.model.Repository;
+import org.commonjava.web.maven.proxy.model.StoreType;
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,7 +39,7 @@ public class RepositoryDeletionListenerTest
 {
 
     @Inject
-    private RepositoryDeletionListener repositoryListener;
+    private StoreDeletionListener repositoryListener;
 
     @Test
     public void repositoryRolesRemovedWhenRepositoryDeleted()

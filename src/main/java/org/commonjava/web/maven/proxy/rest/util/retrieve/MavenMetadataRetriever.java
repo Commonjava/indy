@@ -20,9 +20,9 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.maven.proxy.change.event.FileStorageEvent;
 import org.commonjava.web.maven.proxy.conf.ProxyConfiguration;
+import org.commonjava.web.maven.proxy.model.ArtifactStore;
 import org.commonjava.web.maven.proxy.model.Group;
-import org.commonjava.web.maven.proxy.model.Repository;
-import org.commonjava.web.maven.proxy.rest.util.Downloader;
+import org.commonjava.web.maven.proxy.rest.util.FileManager;
 
 @Singleton
 public class MavenMetadataRetriever
@@ -34,7 +34,7 @@ public class MavenMetadataRetriever
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private Downloader downloader;
+    private FileManager downloader;
 
     @Inject
     private ProxyConfiguration config;
@@ -49,7 +49,7 @@ public class MavenMetadataRetriever
     }
 
     @Override
-    public File handle( final Group group, final List<Repository> repos, final String path )
+    public File handle( final Group group, final List<ArtifactStore> stores, final String path )
     {
         File dir = new File( config.getRepositoryRootDirectory(), group.getName() );
         File target = new File( dir, path );
@@ -60,7 +60,7 @@ public class MavenMetadataRetriever
         }
         else
         {
-            Set<File> files = downloader.downloadAll( repos, path );
+            Set<File> files = downloader.downloadAll( stores, path );
 
             Metadata master = new Metadata();
             MetadataXpp3Reader reader = new MetadataXpp3Reader();

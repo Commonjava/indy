@@ -51,10 +51,12 @@ import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.maven.proxy.change.event.FileStorageEvent;
 import org.commonjava.web.maven.proxy.conf.ProxyConfiguration;
+import org.commonjava.web.maven.proxy.model.ArtifactStore;
+import org.commonjava.web.maven.proxy.model.DeployPoint;
 import org.commonjava.web.maven.proxy.model.Repository;
 
 @Singleton
-public class Downloader
+public class FileManager
 {
 
     private final Logger logger = new Logger( getClass() );
@@ -71,10 +73,10 @@ public class Downloader
 
     private TLRepositoryCredentialsProvider credProvider;
 
-    public Downloader()
+    public FileManager()
     {}
 
-    public Downloader( final ProxyConfiguration config )
+    public FileManager( final ProxyConfiguration config )
     {
         this.config = config;
         setup();
@@ -94,19 +96,20 @@ public class Downloader
         client = hc;
     }
 
-    public File downloadFirst( final List<Repository> repos, final String path )
+    public File downloadFirst( final List<ArtifactStore> stores, final String path )
     {
         File result = null;
         File target = null;
 
-        for ( Repository repo : repos )
+        for ( ArtifactStore store : stores )
         {
-            File dir = new File( config.getRepositoryRootDirectory(), repo.getName() );
+            File dir = new File( config.getRepositoryRootDirectory(), store.getName() );
             target = new File( dir, path );
 
             if ( !target.exists() )
             {
-                if ( download( repo, path, target, true ) )
+                if ( ( store instanceof Repository )
+                    && download( (Repository) store, path, target, true ) )
                 {
                     result = target;
                     break;
@@ -114,7 +117,8 @@ public class Downloader
             }
             else
             {
-                logger.info( "Using stored copy from repository: %s for: %s", repo.getName(), path );
+                logger.info( "Using stored copy from artifact store: %s for: %s", store.getName(),
+                             path );
                 result = target;
                 break;
             }
@@ -123,26 +127,29 @@ public class Downloader
         return result;
     }
 
-    public Set<File> downloadAll( final List<Repository> repos, final String path )
+    public Set<File> downloadAll( final List<ArtifactStore> stores, final String path )
     {
         Set<File> targets = new LinkedHashSet<File>();
 
         File target = null;
-        for ( Repository repo : repos )
+        for ( ArtifactStore store : stores )
         {
-            File dir = new File( config.getRepositoryRootDirectory(), repo.getName() );
+            File dir = new File( config.getRepositoryRootDirectory(), store.getName() );
             target = new File( dir, path );
 
             if ( !target.exists() )
             {
-                if ( download( repo, path, target, true ) )
+                if ( ( store instanceof Repository )
+                    && download( (Repository) store, path, target, true ) )
                 {
                     targets.add( target );
                 }
             }
             else
             {
-                logger.info( "Using stored copy from repository: %s for: %s", repo.getName(), path );
+                logger.info( "Using stored copy from artifact store: %s for: %s", store.getName(),
+                             path );
+                targets.add( target );
                 break;
             }
         }
@@ -150,18 +157,25 @@ public class Downloader
         return targets;
     }
 
-    public File download( final Repository repo, final String path )
+    public File download( final ArtifactStore store, final String path )
     {
-        File dir = new File( config.getRepositoryRootDirectory(), repo.getName() );
+        File dir = new File( config.getRepositoryRootDirectory(), store.getName() );
         File target = new File( dir, path );
 
         if ( !target.exists() )
         {
-            download( repo, path, target, false );
+            if ( store instanceof Repository )
+            {
+                download( (Repository) store, path, target, false );
+            }
+            else
+            {
+                target = null;
+            }
         }
         else
         {
-            logger.info( "Using stored copy from repository: %s for: %s", repo.getName(), path );
+            logger.info( "Using stored copy from artifact store: %s for: %s", store.getName(), path );
         }
 
         return target;
@@ -381,6 +395,62 @@ public class Downloader
         request.abort();
         client.getConnectionManager().closeExpiredConnections();
         client.getConnectionManager().closeIdleConnections( 2, TimeUnit.SECONDS );
+    }
+
+    public void upload( final DeployPoint deploy, final String path, final InputStream stream )
+    {
+        File dir = new File( config.getRepositoryRootDirectory(), deploy.getName() );
+        File target = new File( dir, path );
+
+        // TODO: Need some protection for released files!
+        // if ( target.exists() )
+        // {
+        // throw new WebApplicationException(
+        // Response.status( Status.BAD_REQUEST ).entity( "Deployment path already exists." ).build() );
+        // }
+
+        File targetDir = target.getParentFile();
+        targetDir.mkdirs();
+        FileOutputStream out = null;
+        try
+        {
+            out = new FileOutputStream( target );
+            copy( stream, out );
+
+            if ( fileEvent != null )
+            {
+                fileEvent.fire( new FileStorageEvent( FileStorageEvent.Type.UPLOAD, deploy, path,
+                                                      target ) );
+            }
+        }
+        catch ( IOException e )
+        {
+            logger.error( "Failed to store: %s in deploy store: %s. Reason: %s", e, path,
+                          deploy.getName(), e.getMessage() );
+
+            throw new WebApplicationException(
+                                               Response.status( Status.INTERNAL_SERVER_ERROR ).build() );
+        }
+        finally
+        {
+            closeQuietly( out );
+        }
+    }
+
+    public DeployPoint upload( final List<DeployPoint> deployPoints, final String path,
+                               final InputStream stream )
+    {
+        // TODO: Need to match the upload snapshot status to an appropriate deploy point...
+        if ( deployPoints.isEmpty() )
+        {
+            throw new WebApplicationException(
+                                               Response.status( Status.BAD_REQUEST ).entity( "No deployment locations available." ).build() );
+        }
+
+        DeployPoint deploy = deployPoints.get( 0 );
+        upload( deploy, path, stream );
+
+        return deploy;
     }
 
 }

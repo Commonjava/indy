@@ -44,8 +44,8 @@ import org.commonjava.web.common.model.Listing;
 import org.commonjava.web.common.ser.JsonSerializer;
 import org.commonjava.web.maven.proxy.data.ProxyDataException;
 import org.commonjava.web.maven.proxy.data.ProxyDataManager;
-import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreType;
 import org.commonjava.web.maven.proxy.model.Repository;
+import org.commonjava.web.maven.proxy.model.StoreType;
 import org.commonjava.web.maven.proxy.model.io.StoreKeySerializer;
 
 import com.google.gson.reflect.TypeToken;

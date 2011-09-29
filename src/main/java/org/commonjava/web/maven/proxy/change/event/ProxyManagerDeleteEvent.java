@@ -27,7 +27,7 @@ public class ProxyManagerDeleteEvent
 
     public enum Type
     {
-        REPOSITORY, GROUP;
+        REPOSITORY, DEPLOY_POINT, GROUP;
     }
 
     private final Type type;

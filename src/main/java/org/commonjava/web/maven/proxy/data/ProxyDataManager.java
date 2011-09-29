@@ -19,6 +19,7 @@ package org.commonjava.web.maven.proxy.data;
 
 import static org.commonjava.couch.util.IdUtils.namespaceId;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -38,16 +39,18 @@ import org.commonjava.couch.db.CouchManager;
 import org.commonjava.couch.io.Serializer;
 import org.commonjava.couch.model.CouchDocRef;
 import org.commonjava.couch.util.JoinString;
-import org.commonjava.web.maven.proxy.change.event.GroupUpdateEvent;
+import org.commonjava.web.maven.proxy.change.event.ArtifactStoreUpdateEvent;
 import org.commonjava.web.maven.proxy.change.event.ProxyManagerDeleteEvent;
 import org.commonjava.web.maven.proxy.change.event.ProxyManagerUpdateType;
-import org.commonjava.web.maven.proxy.change.event.RepositoryUpdateEvent;
 import org.commonjava.web.maven.proxy.conf.ProxyConfiguration;
 import org.commonjava.web.maven.proxy.data.ProxyAppDescription.View;
-import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreKey;
-import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreType;
+import org.commonjava.web.maven.proxy.model.ArtifactStore;
+import org.commonjava.web.maven.proxy.model.DeployPoint;
 import org.commonjava.web.maven.proxy.model.Group;
 import org.commonjava.web.maven.proxy.model.Repository;
+import org.commonjava.web.maven.proxy.model.StoreKey;
+import org.commonjava.web.maven.proxy.model.StoreType;
+import org.commonjava.web.maven.proxy.model.io.StoreDeserializer;
 import org.commonjava.web.maven.proxy.model.io.StoreKeySerializer;
 
 @Singleton
@@ -67,10 +70,7 @@ public class ProxyDataManager
     private CouchDBConfiguration couchConfig;
 
     @Inject
-    private Event<RepositoryUpdateEvent> repoEvent;
-
-    @Inject
-    private Event<GroupUpdateEvent> groupEvent;
+    private Event<ArtifactStoreUpdateEvent> storeEvent;
 
     @Inject
     private Event<ProxyManagerDeleteEvent> delEvent;
@@ -97,7 +97,22 @@ public class ProxyDataManager
     @PostConstruct
     protected void registerSerializationAdapters()
     {
-        serializer.registerSerializationAdapters( new StoreKeySerializer() );
+        serializer.registerSerializationAdapters( new StoreKeySerializer(), new StoreDeserializer() );
+    }
+
+    public DeployPoint getDeployPoint( final String name )
+        throws ProxyDataException
+    {
+        try
+        {
+            return couch.getDocument( new CouchDocRef( namespaceId( StoreType.deploy_point.name(),
+                                                                    name ) ), DeployPoint.class );
+        }
+        catch ( CouchDBException e )
+        {
+            throw new ProxyDataException( "Failed to retrieve deploy-store: %s. Reason: %s", e,
+                                          name, e.getMessage() );
+        }
     }
 
     public Repository getRepository( final String name )
@@ -110,7 +125,7 @@ public class ProxyDataManager
         }
         catch ( CouchDBException e )
         {
-            throw new ProxyDataException( "Failed to retrieve proxy: %s. Reason: %s", e, name,
+            throw new ProxyDataException( "Failed to retrieve repository: %s. Reason: %s", e, name,
                                           e.getMessage() );
         }
     }
@@ -125,8 +140,8 @@ public class ProxyDataManager
         }
         catch ( CouchDBException e )
         {
-            throw new ProxyDataException( "Failed to retrieve proxy-group: %s. Reason: %s", e,
-                                          name, e.getMessage() );
+            throw new ProxyDataException( "Failed to retrieve group: %s. Reason: %s", e, name,
+                                          e.getMessage() );
         }
     }
 
@@ -140,7 +155,7 @@ public class ProxyDataManager
         }
         catch ( CouchDBException e )
         {
-            throw new ProxyDataException( "Failed to retrieve proxy-group listing. Reason: %s", e,
+            throw new ProxyDataException( "Failed to retrieve group listing. Reason: %s", e,
                                           e.getMessage() );
         }
     }
@@ -155,32 +170,74 @@ public class ProxyDataManager
         }
         catch ( CouchDBException e )
         {
-            throw new ProxyDataException( "Failed to retrieve proxy listing. Reason: %s", e,
+            throw new ProxyDataException( "Failed to retrieve repository listing. Reason: %s", e,
                                           e.getMessage() );
         }
     }
 
-    public List<Repository> getRepositoriesForGroup( final String groupName )
+    public List<DeployPoint> getAllDeployPoints()
         throws ProxyDataException
     {
         try
         {
-            return couch.getViewListing( new ProxyViewRequest( config, View.GROUP_REPOSITORIES,
-                                                               groupName ), Repository.class );
+            return couch.getViewListing( new ProxyViewRequest( config, View.ALL_REPOSITORIES ),
+                                         DeployPoint.class );
         }
         catch ( CouchDBException e )
         {
-            throw new ProxyDataException( "Failed to retrieve proxies in group: %s. Reason: %s", e,
+            throw new ProxyDataException( "Failed to retrieve deploy-store listing. Reason: %s", e,
+                                          e.getMessage() );
+        }
+    }
+
+    public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
+        throws ProxyDataException
+    {
+        List<ArtifactStore> result = new ArrayList<ArtifactStore>();
+        findOrderedConcreteStores( groupName, result );
+
+        return result;
+    }
+
+    private void findOrderedConcreteStores( final String groupName,
+                                            final List<ArtifactStore> accumStores )
+        throws ProxyDataException
+    {
+        try
+        {
+            List<ArtifactStore> stores =
+                couch.getViewListing( new ProxyViewRequest( config, View.GROUP_STORES, groupName ),
+                                      ArtifactStore.class );
+
+            if ( stores != null )
+            {
+                for ( ArtifactStore store : stores )
+                {
+                    if ( store instanceof Group )
+                    {
+                        findOrderedConcreteStores( store.getName(), accumStores );
+                    }
+                    else
+                    {
+                        accumStores.add( store );
+                    }
+                }
+            }
+        }
+        catch ( CouchDBException e )
+        {
+            throw new ProxyDataException( "Failed to retrieve stores in group: %s. Reason: %s", e,
                                           groupName, e.getMessage() );
         }
     }
 
-    public Set<Group> getGroupsForRepository( final String repo )
+    public Set<Group> getGroupsContaining( final StoreKey repo )
         throws ProxyDataException
     {
         try
         {
-            ProxyViewRequest req = new ProxyViewRequest( config, View.REPOSITORY_GROUPS, repo );
+            ProxyViewRequest req =
+                new ProxyViewRequest( config, View.STORE_GROUPS, repo.toString() );
 
             List<Group> groups = couch.getViewListing( req, Group.class );
 
@@ -194,13 +251,63 @@ public class ProxyDataManager
         }
     }
 
+    public void storeDeployPoints( final Collection<DeployPoint> deploys )
+        throws ProxyDataException
+    {
+        try
+        {
+            couch.store( deploys, false, false );
+            fireStoreEvent( ProxyManagerUpdateType.ADD_OR_UPDATE, deploys );
+        }
+        catch ( CouchDBException e )
+        {
+            throw new ProxyDataException( "Failed to update %d deploy-stores. Reason: %s", e,
+                                          deploys.size(), e.getMessage() );
+        }
+    }
+
+    public boolean storeDeployPoint( final DeployPoint deploy )
+        throws ProxyDataException
+    {
+        return storeDeployPoint( deploy, false );
+    }
+
+    public boolean storeDeployPoint( final DeployPoint deploy, final boolean skipIfExists )
+        throws ProxyDataException
+    {
+        try
+        {
+            boolean result = couch.store( deploy, skipIfExists );
+
+            fireStoreEvent( skipIfExists ? ProxyManagerUpdateType.ADD
+                            : ProxyManagerUpdateType.ADD_OR_UPDATE, deploy );
+
+            userMgr.createPermissions( StoreType.deploy_point.name(), deploy.getName(),
+                                       Permission.ADMIN, Permission.READ, Permission.CREATE );
+
+            return result;
+        }
+        catch ( CouchDBException e )
+        {
+            throw new ProxyDataException(
+                                          "Failed to store deploy-store configuration: %s. Reason: %s",
+                                          e, deploy.getName(), e.getMessage() );
+        }
+        catch ( UserDataException e )
+        {
+            throw new ProxyDataException(
+                                          "Failed to create permissions for deploy-store: %s. Reason: %s",
+                                          e, deploy.getName(), e.getMessage() );
+        }
+    }
+
     public void storeRepositories( final Collection<Repository> repos )
         throws ProxyDataException
     {
         try
         {
             couch.store( repos, false, false );
-            fireRepositoryEvent( ProxyManagerUpdateType.ADD_OR_UPDATE, repos );
+            fireStoreEvent( ProxyManagerUpdateType.ADD_OR_UPDATE, repos );
         }
         catch ( CouchDBException e )
         {
@@ -222,7 +329,7 @@ public class ProxyDataManager
         {
             boolean result = couch.store( repository, skipIfExists );
 
-            fireRepositoryEvent( skipIfExists ? ProxyManagerUpdateType.ADD
+            fireStoreEvent( skipIfExists ? ProxyManagerUpdateType.ADD
                             : ProxyManagerUpdateType.ADD_OR_UPDATE, repository );
 
             userMgr.createPermissions( StoreType.repository.name(), repository.getName(),
@@ -250,7 +357,7 @@ public class ProxyDataManager
         try
         {
             couch.store( groups, false, false );
-            fireGroupEvent( ProxyManagerUpdateType.ADD_OR_UPDATE, groups );
+            fireStoreEvent( ProxyManagerUpdateType.ADD_OR_UPDATE, groups );
         }
         catch ( CouchDBException e )
         {
@@ -288,7 +395,7 @@ public class ProxyDataManager
 
             boolean result = couch.store( group, skipIfExists );
 
-            fireGroupEvent( skipIfExists ? ProxyManagerUpdateType.ADD
+            fireStoreEvent( skipIfExists ? ProxyManagerUpdateType.ADD
                             : ProxyManagerUpdateType.ADD_OR_UPDATE, group );
 
             userMgr.createPermissions( StoreType.group.name(), group.getName(), Permission.ADMIN,
@@ -298,14 +405,45 @@ public class ProxyDataManager
         }
         catch ( CouchDBException e )
         {
-            throw new ProxyDataException(
-                                          "Failed to store proxy-group configuration: %s. Reason: %s",
-                                          e, group.getName(), e.getMessage() );
+            throw new ProxyDataException( "Failed to store group configuration: %s. Reason: %s", e,
+                                          group.getName(), e.getMessage() );
         }
         catch ( UserDataException e )
         {
             throw new ProxyDataException( "Failed to create permissions for group: %s. Reason: %s",
                                           e, group.getName(), e.getMessage() );
+        }
+    }
+
+    public void deleteDeployPoint( final DeployPoint deploy )
+        throws ProxyDataException
+    {
+        try
+        {
+            couch.delete( deploy );
+            fireDeleteEvent( ProxyManagerDeleteEvent.Type.DEPLOY_POINT, deploy.getName() );
+        }
+        catch ( CouchDBException e )
+        {
+            throw new ProxyDataException(
+                                          "Failed to delete deploy-store configuration: %s. Reason: %s",
+                                          e, deploy.getName(), e.getMessage() );
+        }
+    }
+
+    public void deleteDeployPoint( final String name )
+        throws ProxyDataException
+    {
+        try
+        {
+            couch.delete( new CouchDocRef( namespaceId( StoreType.deploy_point.name(), name ) ) );
+            fireDeleteEvent( ProxyManagerDeleteEvent.Type.DEPLOY_POINT, name );
+        }
+        catch ( CouchDBException e )
+        {
+            throw new ProxyDataException(
+                                          "Failed to delete deploy-store configuration: %s. Reason: %s",
+                                          e, name, e.getMessage() );
         }
     }
 
@@ -349,8 +487,7 @@ public class ProxyDataManager
         }
         catch ( CouchDBException e )
         {
-            throw new ProxyDataException(
-                                          "Failed to delete proxy-group configuration: %s. Reason: %s",
+            throw new ProxyDataException( "Failed to delete group configuration: %s. Reason: %s",
                                           e, group.getName(), e.getMessage() );
         }
     }
@@ -365,8 +502,7 @@ public class ProxyDataManager
         }
         catch ( CouchDBException e )
         {
-            throw new ProxyDataException(
-                                          "Failed to delete proxy-group configuration: %s. Reason: %s",
+            throw new ProxyDataException( "Failed to delete group configuration: %s. Reason: %s",
                                           e, name, e.getMessage() );
         }
     }
@@ -411,19 +547,11 @@ public class ProxyDataManager
         }
     }
 
-    private void fireRepositoryEvent( final ProxyManagerUpdateType type, final Repository... repos )
+    private void fireStoreEvent( final ProxyManagerUpdateType type, final Repository... repos )
     {
-        if ( repoEvent != null )
+        if ( storeEvent != null )
         {
-            repoEvent.fire( new RepositoryUpdateEvent( type, repos ) );
-        }
-    }
-
-    private void fireGroupEvent( final ProxyManagerUpdateType type, final Group... groups )
-    {
-        if ( groupEvent != null )
-        {
-            groupEvent.fire( new GroupUpdateEvent( type, groups ) );
+            storeEvent.fire( new ArtifactStoreUpdateEvent( type, repos ) );
         }
     }
 
@@ -437,20 +565,22 @@ public class ProxyDataManager
         }
     }
 
-    private void fireRepositoryEvent( final ProxyManagerUpdateType type,
-                                      final Collection<Repository> repos )
+    @SuppressWarnings( "unchecked" )
+    private void fireStoreEvent( final ProxyManagerUpdateType type,
+                                 final Collection<? extends ArtifactStore> stores )
     {
-        if ( repoEvent != null )
+        if ( storeEvent != null )
         {
-            repoEvent.fire( new RepositoryUpdateEvent( type, repos ) );
+            storeEvent.fire( new ArtifactStoreUpdateEvent( type, (Collection<ArtifactStore>) stores ) );
         }
     }
 
-    private void fireGroupEvent( final ProxyManagerUpdateType type, final Collection<Group> groups )
+    private void fireStoreEvent( final ProxyManagerUpdateType type, final ArtifactStore... stores )
     {
-        if ( groupEvent != null )
+        if ( storeEvent != null )
         {
-            groupEvent.fire( new GroupUpdateEvent( type, groups ) );
+            storeEvent.fire( new ArtifactStoreUpdateEvent( type, stores ) );
         }
     }
+
 }

@@ -27,10 +27,10 @@ import org.commonjava.couch.db.CouchDBException;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.maven.proxy.data.ProxyDataException;
 import org.commonjava.web.maven.proxy.data.ProxyDataManager;
-import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreKey;
-import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreType;
 import org.commonjava.web.maven.proxy.model.Group;
 import org.commonjava.web.maven.proxy.model.Repository;
+import org.commonjava.web.maven.proxy.model.StoreKey;
+import org.commonjava.web.maven.proxy.model.StoreType;
 
 @WebListener
 public class InstallerListener

@@ -33,12 +33,12 @@ import org.commonjava.couch.util.ChangeSynchronizer;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.maven.proxy.data.ProxyDataException;
 import org.commonjava.web.maven.proxy.data.ProxyDataManager;
-import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreKey;
-import org.commonjava.web.maven.proxy.model.ArtifactStore.StoreType;
 import org.commonjava.web.maven.proxy.model.Group;
+import org.commonjava.web.maven.proxy.model.StoreKey;
+import org.commonjava.web.maven.proxy.model.StoreType;
 
 @Singleton
-public class RepositoryDeletionListener
+public class StoreDeletionListener
     implements ThreadableListener
 {
 
@@ -55,41 +55,44 @@ public class RepositoryDeletionListener
     @Override
     public boolean canProcess( final String id, final boolean deleted )
     {
-        return deleted && id.startsWith( StoreType.repository.name() );
+        return deleted
+            && ( id.startsWith( StoreType.repository.name() )
+                || id.startsWith( StoreType.deploy_point.name() ) || id.startsWith( StoreType.group.name() ) );
     }
 
     @Override
     public void documentChanged( final CouchDocChange change )
     {
-        String repo = change.getId();
+        String id = change.getId();
+        StoreKey key = StoreKey.fromString( id );
         try
         {
-            Set<Group> groups = proxyDataManager.getGroupsForRepository( repo );
+            Set<Group> groups = proxyDataManager.getGroupsContaining( key );
             for ( Group group : groups )
             {
-                group.removeConstituent( StoreKey.fromString( repo ) );
+                group.removeConstituent( StoreKey.fromString( id ) );
             }
 
             proxyDataManager.storeGroups( groups );
 
-            userDataManager.deletePermission( Permission.name( change.getId(), Permission.ADMIN ) );
-            userDataManager.deletePermission( Permission.name( change.getId(), Permission.READ ) );
+            userDataManager.deletePermission( Permission.name( id, Permission.ADMIN ) );
+            userDataManager.deletePermission( Permission.name( id, Permission.READ ) );
 
             changeSync.setChanged();
         }
         catch ( ProxyDataException e )
         {
-            logger.error( "Failed to remove group constituent listings for repository: %s. Error: %s",
-                          e, repo, e.getMessage() );
+            logger.error( "Failed to remove group constituent listings for: %s. Error: %s", e, id,
+                          e.getMessage() );
         }
         catch ( UserDataException e )
         {
-            logger.error( "Failed to remove permissions for deleted repository: %s. Error: %s", e,
-                          repo, e.getMessage() );
+            logger.error( "Failed to remove permissions for deleted store: %s. Error: %s", e, id,
+                          e.getMessage() );
         }
     }
 
-    public void repositoryDeleted( @Observes final CouchChangeJ2EEEvent event )
+    public void storeDeleted( @Observes final CouchChangeJ2EEEvent event )
     {
         CouchDocChange change = event.getChange();
         if ( canProcess( change.getId(), change.isDeleted() ) )

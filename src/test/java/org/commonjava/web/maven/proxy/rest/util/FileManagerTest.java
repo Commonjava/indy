@@ -27,16 +27,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.commonjava.web.maven.proxy.conf.DefaultProxyConfiguration;
+import org.commonjava.web.maven.proxy.model.ArtifactStore;
 import org.commonjava.web.maven.proxy.model.Repository;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class DownloaderTest
+public class FileManagerTest
 {
 
-    private Downloader downloader;
+    private FileManager downloader;
 
     private DefaultProxyConfiguration config;
 
@@ -54,7 +55,7 @@ public class DownloaderTest
         config = new DefaultProxyConfiguration();
         config.setRepositoryRootDirectory( repoRoot );
 
-        downloader = new Downloader( config );
+        downloader = new FileManager( config );
     }
 
     @Test
@@ -79,7 +80,7 @@ public class DownloaderTest
 
         String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
 
-        List<Repository> repos = new ArrayList<Repository>();
+        List<ArtifactStore> repos = new ArrayList<ArtifactStore>();
         repos.add( repo );
         repos.add( repo2 );
 

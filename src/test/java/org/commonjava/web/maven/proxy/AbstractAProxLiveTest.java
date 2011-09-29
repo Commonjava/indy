@@ -37,7 +37,7 @@ import org.cjtest.fixture.TestUserManagerConfigProducer;
 import org.codehaus.plexus.util.Os;
 import org.commonjava.auth.couch.data.UserAppDescription;
 import org.commonjava.couch.change.CouchChangeListener;
-import org.commonjava.web.maven.proxy.change.RepositoryDeletionListener;
+import org.commonjava.web.maven.proxy.change.StoreDeletionListener;
 import org.commonjava.web.maven.proxy.conf.DefaultProxyConfiguration;
 import org.commonjava.web.maven.proxy.conf.ProxyConfiguration;
 import org.commonjava.web.maven.proxy.data.ProxyAppDescription;
@@ -77,7 +77,7 @@ public class AbstractAProxLiveTest
         builder.withExtraPackages( true, RESTApplication.class.getPackage(),
                                    Repository.class.getPackage(),
                                    ProxyDataManager.class.getPackage(),
-                                   RepositoryDeletionListener.class.getPackage(),
+                                   StoreDeletionListener.class.getPackage(),
                                    Os.class.getPackage(), // grab all of plexus-utils
                                    Metadata.class.getPackage() );
 

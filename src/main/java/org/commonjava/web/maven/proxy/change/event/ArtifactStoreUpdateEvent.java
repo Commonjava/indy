@@ -20,22 +20,23 @@ package org.commonjava.web.maven.proxy.change.event;
 import java.util.Collection;
 
 import org.commonjava.couch.change.j2ee.AbstractUpdateEvent;
-import org.commonjava.web.maven.proxy.model.Repository;
+import org.commonjava.web.maven.proxy.model.ArtifactStore;
 
-public class RepositoryUpdateEvent
-    extends AbstractUpdateEvent<Repository>
+public class ArtifactStoreUpdateEvent
+    extends AbstractUpdateEvent<ArtifactStore>
 {
 
     private final ProxyManagerUpdateType type;
 
-    public RepositoryUpdateEvent( final ProxyManagerUpdateType type,
-                                  final Collection<Repository> changes )
+    public ArtifactStoreUpdateEvent( final ProxyManagerUpdateType type,
+                                     final Collection<ArtifactStore> changes )
     {
         super( changes );
         this.type = type;
     }
 
-    public RepositoryUpdateEvent( final ProxyManagerUpdateType type, final Repository... changes )
+    public ArtifactStoreUpdateEvent( final ProxyManagerUpdateType type,
+                                     final ArtifactStore... changes )
     {
         super( changes );
         this.type = type;

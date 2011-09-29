@@ -7,9 +7,9 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.commonjava.web.maven.proxy.model.ArtifactStore;
 import org.commonjava.web.maven.proxy.model.Group;
-import org.commonjava.web.maven.proxy.model.Repository;
-import org.commonjava.web.maven.proxy.rest.util.Downloader;
+import org.commonjava.web.maven.proxy.rest.util.FileManager;
 
 @Singleton
 public class GroupRetrieverChain
@@ -19,19 +19,19 @@ public class GroupRetrieverChain
     private Retrievers retrievers;
 
     @Inject
-    private Downloader downloader;
+    private FileManager downloader;
 
-    public File retrieve( final Group group, final List<Repository> repos, final String path )
+    public File retrieve( final Group group, final List<ArtifactStore> stores, final String path )
     {
         for ( GroupPathRetriever handler : retrievers.getRetrievers() )
         {
             if ( handler.canHandle( path ) )
             {
-                return handler.handle( group, repos, path );
+                return handler.handle( group, stores, path );
             }
         }
 
-        return downloader.downloadFirst( repos, path );
+        return downloader.downloadFirst( stores, path );
     }
 
     @Singleton

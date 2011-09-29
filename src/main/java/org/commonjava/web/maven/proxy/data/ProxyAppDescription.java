@@ -30,8 +30,8 @@ public class ProxyAppDescription
 
     public enum View
     {
-        ALL_GROUPS( "all-groups" ), ALL_REPOSITORIES( "all-repositories" ), GROUP_REPOSITORIES(
-            "group-repositories" ), REPOSITORY_GROUPS( "repository-groups" );
+        ALL_GROUPS( "all-groups" ), ALL_REPOSITORIES( "all-repositories" ), ALL_DEPLOY_POINTS(
+            "all-deploy-points" ), GROUP_STORES( "group-stores" ), STORE_GROUPS( "store-groups" );
 
         String name;
 
