@@ -22,6 +22,7 @@ import static org.commonjava.couch.util.IdUtils.namespaceId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -37,6 +38,7 @@ import org.commonjava.couch.conf.CouchDBConfiguration;
 import org.commonjava.couch.db.CouchDBException;
 import org.commonjava.couch.db.CouchManager;
 import org.commonjava.couch.io.Serializer;
+import org.commonjava.couch.model.CouchApp;
 import org.commonjava.couch.model.CouchDocRef;
 import org.commonjava.couch.util.JoinString;
 import org.commonjava.web.maven.proxy.change.event.ArtifactStoreUpdateEvent;
@@ -56,6 +58,7 @@ import org.commonjava.web.maven.proxy.model.io.StoreKeySerializer;
 @Singleton
 public class ProxyDataManager
 {
+    // private final Logger logger = new Logger( getClass() );
 
     @Inject
     private UserDataManager userMgr;
@@ -203,32 +206,53 @@ public class ProxyDataManager
                                             final List<ArtifactStore> accumStores )
         throws ProxyDataException
     {
-        try
-        {
-            ProxyViewRequest req = new ProxyViewRequest( config, View.GROUP_STORES );
-            req.setFullRangeForBaseKey( groupName );
-            
-            List<ArtifactStore> stores = couch.getViewListing( req, ArtifactStore.class );
+        LinkedList<String> todo = new LinkedList<String>();
+        Set<String> done = new HashSet<String>();
 
-            if ( stores != null )
+        todo.addLast( groupName );
+        while ( !todo.isEmpty() )
+        {
+            String group = todo.removeFirst();
+
+            done.add( group );
+            try
             {
-                for ( ArtifactStore store : stores )
+                // logger.info( "Grabbing constituents of: '%s'", group );
+
+                ProxyViewRequest req = new ProxyViewRequest( config, View.GROUP_STORES );
+                req.setFullRangeForBaseKey( group );
+
+                List<ArtifactStore> stores = couch.getViewListing( req, ArtifactStore.class );
+
+                if ( stores != null )
                 {
-                    if ( store instanceof Group )
+                    for ( ArtifactStore store : stores )
                     {
-                        findOrderedConcreteStores( store.getName(), accumStores );
-                    }
-                    else
-                    {
-                        accumStores.add( store );
+                        if ( store == null )
+                        {
+                            continue;
+                        }
+
+                        // logger.info( "Found constituent: '%s'", store.getKey() );
+                        if ( store instanceof Group )
+                        {
+                            if ( !done.contains( store.getName() ) )
+                            {
+                                todo.addLast( store.getName() );
+                            }
+                        }
+                        else
+                        {
+                            accumStores.add( store );
+                        }
                     }
                 }
             }
-        }
-        catch ( CouchDBException e )
-        {
-            throw new ProxyDataException( "Failed to retrieve stores in group: %s. Reason: %s", e,
-                                          groupName, e.getMessage() );
+            catch ( CouchDBException e )
+            {
+                throw new ProxyDataException( "Failed to retrieve stores in group: %s. Reason: %s",
+                                              e, groupName, e.getMessage() );
+            }
         }
     }
 
@@ -512,9 +536,16 @@ public class ProxyDataManager
         throws ProxyDataException
     {
         ProxyAppDescription description = new ProxyAppDescription();
+        CouchApp app = new CouchApp( ProxyAppDescription.APP_NAME, description );
 
         try
         {
+            if ( couch.dbExists() )
+            {
+                // static in Couch, so safe to forcibly reload.
+                couch.delete( app );
+            }
+
             couch.initialize( description );
 
             userMgr.install();

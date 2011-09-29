@@ -4,6 +4,8 @@ import static org.commonjava.couch.util.IdUtils.namespaceId;
 
 public final class StoreKey
 {
+    // private static final Logger logger = new Logger( StoreKey.class );
+
     private final StoreType type;
 
     private final String name;
@@ -90,6 +92,8 @@ public final class StoreKey
             name = id.substring( idx + 1 );
             type = StoreType.valueOf( id.substring( 0, idx ) );
         }
+
+        // logger.info( "parsed store-key with type: '%s' and name: '%s'", type, name );
 
         return new StoreKey( type, name );
     }

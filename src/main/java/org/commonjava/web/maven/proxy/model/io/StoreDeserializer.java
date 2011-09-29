@@ -19,6 +19,8 @@ public class StoreDeserializer
     implements SerializationAdapter, JsonDeserializer<ArtifactStore>
 {
 
+    // private final Logger logger = new Logger( getClass() );
+
     @Override
     public Type typeLiteral()
     {
@@ -34,23 +36,23 @@ public class StoreDeserializer
         StoreKey key = StoreKey.fromString( id );
 
         StoreType type = key.getType();
+        // logger.info( "Parsing store of type: %s", type );
 
         ArtifactStore result = null;
-        if ( type == StoreType.repository )
+        if ( type == StoreType.deploy_point )
         {
-            result = context.deserialize( json, Repository.class );
-        }
-        else if ( type == StoreType.deploy_point )
-        {
+            // logger.info( "Parsing deploy-point store..." );
             result = context.deserialize( json, DeployPoint.class );
         }
         else if ( type == StoreType.group )
         {
+            // logger.info( "Parsing group store..." );
             result = context.deserialize( json, Group.class );
         }
         else
         {
-            throw new JsonParseException( "No such store type for id: '" + id + "'" );
+            // logger.info( "Parsing repository store..." );
+            result = context.deserialize( json, Repository.class );
         }
 
         return result;

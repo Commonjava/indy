@@ -45,6 +45,10 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
         }
 
         File target = fileManager.download( store, path );
+        if ( target == null )
+        {
+            return Response.status( Status.NOT_FOUND ).build();
+        }
 
         String mimeType = new MimetypesFileTypeMap().getContentType( target );
         return Response.ok( target, mimeType ).build();

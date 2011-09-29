@@ -103,6 +103,12 @@ public class FileManager
 
         for ( ArtifactStore store : stores )
         {
+            if ( store == null )
+            {
+                continue;
+            }
+
+            // logger.info( "Checking: %s for: %s...", store.getKey(), path );
             File dir = new File( config.getRepositoryRootDirectory(), store.getName() );
             target = new File( dir, path );
 
@@ -443,6 +449,7 @@ public class FileManager
         // TODO: Need to match the upload snapshot status to an appropriate deploy point...
         if ( deployPoints.isEmpty() )
         {
+            logger.warn( "Cannot deploy. No valid deploy points in group." );
             throw new WebApplicationException(
                                                Response.status( Status.BAD_REQUEST ).entity( "No deployment locations available." ).build() );
         }

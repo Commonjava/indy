@@ -95,6 +95,7 @@ public class GroupAccessResource
                                                                                                    + " not found." ).build() );
             }
 
+            // logger.info( "Retrieving ordered stores for group: '%s'", name );
             stores = proxyManager.getOrderedConcreteStoresInGroup( name );
         }
         catch ( ProxyDataException e )
@@ -105,6 +106,7 @@ public class GroupAccessResource
                                                Response.status( Status.INTERNAL_SERVER_ERROR ).build() );
         }
 
+        // logger.info( "Download: %s\nFrom: %s", path, stores );
         File target = handlerChain.retrieve( group, stores, path );
 
         if ( target == null )
@@ -122,7 +124,7 @@ public class GroupAccessResource
                                    @PathParam( "path" ) final String path,
                                    @Context final HttpServletRequest request )
     {
-        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.repository.name(), name,
+        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.group.name(), name,
                                                                  Permission.READ ) );
 
         List<ArtifactStore> stores;
@@ -154,6 +156,7 @@ public class GroupAccessResource
         {
             for ( ArtifactStore store : stores )
             {
+                logger.info( "Looking for deploy-points...processing: %s", store.getKey() );
                 if ( store instanceof DeployPoint )
                 {
                     deployPoints.add( (DeployPoint) store );
