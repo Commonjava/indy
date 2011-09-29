@@ -109,8 +109,7 @@ public class FileManager
             }
 
             // logger.info( "Checking: %s for: %s...", store.getKey(), path );
-            File dir = new File( config.getRepositoryRootDirectory(), store.getName() );
-            target = new File( dir, path );
+            target = formatStorageReference( store, path );
 
             if ( !target.exists() )
             {
@@ -140,8 +139,7 @@ public class FileManager
         File target = null;
         for ( ArtifactStore store : stores )
         {
-            File dir = new File( config.getRepositoryRootDirectory(), store.getName() );
-            target = new File( dir, path );
+            target = formatStorageReference( store, path );
 
             if ( !target.exists() )
             {
@@ -165,8 +163,7 @@ public class FileManager
 
     public File download( final ArtifactStore store, final String path )
     {
-        File dir = new File( config.getRepositoryRootDirectory(), store.getName() );
-        File target = new File( dir, path );
+        File target = formatStorageReference( store, path );
 
         if ( !target.exists() )
         {
@@ -405,8 +402,7 @@ public class FileManager
 
     public void upload( final DeployPoint deploy, final String path, final InputStream stream )
     {
-        File dir = new File( config.getRepositoryRootDirectory(), deploy.getName() );
-        File target = new File( dir, path );
+        File target = formatStorageReference( deploy, path );
 
         // TODO: Need some protection for released files!
         // if ( target.exists() )
@@ -458,6 +454,12 @@ public class FileManager
         upload( deploy, path, stream );
 
         return deploy;
+    }
+
+    public File formatStorageReference( final ArtifactStore store, final String path )
+    {
+        return new File( new File( config.getRepositoryRootDirectory(), store.getDoctype().name()
+            + "-" + store.getName() ), path );
     }
 
 }
