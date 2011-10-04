@@ -30,6 +30,12 @@
   <name>AProx Maven Artifact Proxy</name>
   <packaging>war</packaging>
   
+  <scm>
+    <connection>scm:git:http://jdcasey@github.com/jdcasey/aprox.git</connection>
+    <developerConnection>scm:git:git@github.com:jdcasey/aprox.git</developerConnection>
+    <url>http://github.com/jdcasey/aprox</url>
+  </scm>
+  
   <dependencies>
     <dependency>
       <groupId>org.apache.shiro</groupId>
