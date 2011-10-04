@@ -22,10 +22,11 @@
   <parent>
     <groupId>org.commonjava.couch.web</groupId>
     <artifactId>couch-web</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
   </parent>
   
   <artifactId>aprox</artifactId>
+  <version>1.0-SNAPSHOT</version>
   <name>AProx Maven Artifact Proxy</name>
   <packaging>war</packaging>
   
@@ -112,6 +113,7 @@
   <build>
     <finalName>${project.artifactId}</finalName>
   </build>
+  
   <dependencyManagement>
   	<dependencies>
   		<dependency>
