@@ -24,10 +24,12 @@
     <version>1.0</version>
   </parent>
   
-  <artifactId>aprox</artifactId>
+  <groupId>org.commonjava.aprox</groupId>
+  <artifactId>aprox-parent</artifactId>
   <version>0.2-SNAPSHOT</version>
-  <name>AProx Maven Artifact Proxy</name>
-  <packaging>war</packaging>
+  <packaging>pom</packaging>
+  
+  <name>AProx Maven Artifact Proxy :: Parent POM</name>
   
   <scm>
     <connection>scm:git:http://jdcasey@github.com/jdcasey/aprox.git</connection>
@@ -35,99 +37,11 @@
     <url>http://github.com/jdcasey/aprox</url>
   </scm>
   
-  <dependencies>
-    <dependency>
-      <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-web</artifactId>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-ext</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jcl-over-slf4j</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jul-to-slf4j</artifactId>
-    </dependency>
-  
-    <dependency>
-      <groupId>org.commonjava.util</groupId>
-      <artifactId>configuration-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.util</groupId>
-      <artifactId>configuration-dotconf</artifactId>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.commonjava.couch</groupId>
-      <artifactId>shiro-couch</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.couch</groupId>
-      <artifactId>couch-user-manager</artifactId>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.commonjava.couch.web</groupId>
-      <artifactId>web-common</artifactId>
-    </dependency>
-  	<dependency>
-  		<groupId>org.commonjava.couch.web</groupId>
-  		<artifactId>restful-user-manager</artifactId>
-  	</dependency>
-  	
-    <dependency>
-      <groupId>org.jboss.arquillian.junit</groupId>
-      <artifactId>arquillian-junit-container</artifactId>
-    </dependency>
-    <dependency>
-       <groupId>org.jboss.as</groupId>
-       <artifactId>jboss-as-arquillian-container-managed</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.couch</groupId>
-      <artifactId>couch-test-harness</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.couch.web</groupId>
-      <artifactId>couch-as7-test-harness</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-core</artifactId>
-    </dependency>
-    <dependency>
-    	<groupId>org.apache.maven</groupId>
-    	<artifactId>maven-repository-metadata</artifactId>
-    </dependency>
-  </dependencies>
-  
-  <build>
-    <finalName>${project.artifactId}</finalName>
-  </build>
-  
-  <dependencyManagement>
-  	<dependencies>
-  		<dependency>
-  			<groupId>org.apache.maven</groupId>
-  			<artifactId>maven</artifactId>
-  			<version>3.0.3</version>
-  			<scope>import</scope>
-  			<type>pom</type>
-  		</dependency>
-  	</dependencies>
-  </dependencyManagement>
+  <modules>
+    <module>aprox-core</module>
+    <module>aprox-rest-min</module>
+    <module>aprox-basic</module>
+    <!-- <module>aprox-depbase</module>
+    <module>aprox-meadci</module> -->
+  </modules>
 </project>
