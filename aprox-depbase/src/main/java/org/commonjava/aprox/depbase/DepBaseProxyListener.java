@@ -10,10 +10,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
-import org.apache.maven.model.Parent;
-import org.apache.maven.model.Plugin;
 import org.apache.maven.model.building.DefaultModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuilder;
 import org.apache.maven.model.building.ModelBuildingException;
@@ -28,10 +25,7 @@ import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.rest.util.FileManager;
 import org.commonjava.aprox.depbase.maven.ArtifactStoreModelResolver;
 import org.commonjava.depbase.data.DepbaseDataException;
-import org.commonjava.depbase.data.DepbaseDataManager;
-import org.commonjava.depbase.model.DependencyRelationship;
-import org.commonjava.depbase.model.ProjectId;
-import org.commonjava.depbase.model.ProjectMetadata;
+import org.commonjava.depbase.util.MavenModelProcessor;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
@@ -39,9 +33,6 @@ public class DepBaseProxyListener
 {
 
     private final Logger logger = new Logger( getClass() );
-
-    @Inject
-    private DepbaseDataManager depbase;
 
     @Inject
     private ProxyDataManager aprox;
@@ -52,6 +43,9 @@ public class DepBaseProxyListener
     @Inject
     @Named( "MAE" )
     private ModelBuilder modelBuilder;
+
+    @Inject
+    private MavenModelProcessor modelProcessor;
 
     public void handleFileEvent( @Observes final FileStorageEvent event )
     {
@@ -73,106 +67,14 @@ public class DepBaseProxyListener
             return;
         }
 
-        ProjectId id =
-            new ProjectId( model.getGroupId(), model.getArtifactId(), model.getVersion() );
-
-        ProjectMetadata pm = new ProjectMetadata( id );
-
-        storeParentRelationship( id, pm, model, event );
-        storeDependencyRelationships( id, pm, model, event );
-        storePluginRelationships( id, pm, model, event );
-
         try
         {
-            depbase.storeProjectMetadata( pm );
+            modelProcessor.storeModelRelationships( model );
         }
         catch ( DepbaseDataException e )
         {
-            logger.error( "Cannot store project summary metadata for POM: %s. Reason: %s", e,
-                          event.getPath(), e.getMessage() );
-        }
-    }
-
-    protected void storePluginRelationships( final ProjectId id, final ProjectMetadata pm,
-                                             final Model model, final FileStorageEvent event )
-    {
-        List<Plugin> plugins =
-            model.getBuild() == null ? new ArrayList<Plugin>() : model.getBuild().getPlugins();
-
-        List<ProjectId> pluginIds = new ArrayList<ProjectId>( plugins.size() );
-        for ( Plugin plugin : plugins )
-        {
-            if ( plugin == null )
-            {
-                continue;
-            }
-
-            pluginIds.add( new ProjectId( plugin.getGroupId(), plugin.getArtifactId(),
-                                          plugin.getVersion() ) );
-        }
-
-        try
-        {
-            depbase.storePluginUsages( id, pluginIds );
-        }
-        catch ( DepbaseDataException e )
-        {
-            logger.error( "Cannot store %d project relationships (plugin usages) for POM: %s. Reason: %s",
-                          e, pluginIds.size(), event.getPath(), e.getMessage() );
-        }
-        pm.setPluginCount( pluginIds.size() );
-    }
-
-    protected void storeDependencyRelationships( final ProjectId id, final ProjectMetadata pm,
-                                                 final Model model, final FileStorageEvent event )
-    {
-        List<Dependency> deps = model.getDependencies();
-        List<DependencyRelationship> depRels = new ArrayList<DependencyRelationship>( deps.size() );
-        int idx = 0;
-        for ( Dependency dep : deps )
-        {
-            if ( dep == null )
-            {
-                continue;
-            }
-
-            ProjectId did = new ProjectId( dep.getGroupId(), dep.getArtifactId(), dep.getVersion() );
-            depRels.add( new DependencyRelationship( id, did, dep.getType(), dep.getClassifier(),
-                                                     dep.getScope(), idx ) );
-            idx++;
-        }
-
-        try
-        {
-            depbase.storeDependencies( depRels );
-        }
-        catch ( DepbaseDataException e )
-        {
-            logger.error( "Cannot store %d project relationships (dependencies) for POM: %s. Reason: %s",
-                          e, depRels.size(), event.getPath(), e.getMessage() );
-        }
-        pm.setDependencyCount( depRels.size() );
-    }
-
-    protected void storeParentRelationship( final ProjectId id, final ProjectMetadata pm,
-                                            final Model model, final FileStorageEvent event )
-    {
-        Parent parent = model.getParent();
-        if ( parent != null )
-        {
-            ProjectId parentId =
-                new ProjectId( parent.getGroupId(), parent.getArtifactId(), parent.getVersion() );
-            pm.setParent( parentId );
-
-            try
-            {
-                depbase.storeParent( id, parentId );
-            }
-            catch ( DepbaseDataException e )
-            {
-                logger.error( "Cannot store project relationships (parent) for POM: %s. Reason: %s",
-                              e, event.getPath(), e.getMessage() );
-            }
+            logger.error( "Failed to store relationships for POM: %s. Reason: %s", e,
+                          model.getId(), e.getMessage() );
         }
     }
 
