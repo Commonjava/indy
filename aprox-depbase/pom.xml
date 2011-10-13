@@ -11,7 +11,7 @@
   <artifactId>aprox-depbase</artifactId>
   <packaging>war</packaging>
 
-  <name>AProx Maven Artifact Proxy :: Parent POM</name>
+  <name>AProx Maven Artifact Proxy :: DepBase Listener WAR</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
