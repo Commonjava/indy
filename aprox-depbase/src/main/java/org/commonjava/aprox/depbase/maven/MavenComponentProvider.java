@@ -1,4 +1,4 @@
-package org.commonjava.aprox.depbase;
+package org.commonjava.aprox.depbase.maven;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Named;

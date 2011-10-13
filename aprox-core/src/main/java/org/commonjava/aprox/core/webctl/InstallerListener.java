@@ -48,7 +48,7 @@ public class InstallerListener
     @Override
     public void contextInitialized( final ServletContextEvent sce )
     {
-        logger.info( "Verfiying that CouchDB + applications + basic data is installed..." );
+        logger.info( "Verfiying that AProx CouchDB + applications + basic data is installed..." );
         try
         {
             dataManager.install();

@@ -26,6 +26,7 @@ import org.commonjava.aprox.core.data.ProxyDataManager;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.rest.util.FileManager;
+import org.commonjava.aprox.depbase.maven.ArtifactStoreModelResolver;
 import org.commonjava.depbase.data.DepbaseDataException;
 import org.commonjava.depbase.data.DepbaseDataManager;
 import org.commonjava.depbase.model.DependencyRelationship;

@@ -1,4 +1,4 @@
-package org.commonjava.aprox.depbase;
+package org.commonjava.aprox.depbase.maven;
 
 import java.io.File;
 import java.net.URI;
