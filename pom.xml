@@ -41,7 +41,7 @@
     <module>aprox-core</module>
     <module>aprox-rest-min</module>
     <module>aprox-basic</module>
-    <!-- <module>aprox-depbase</module>
-    <module>aprox-meadci</module> -->
+    <module>aprox-depbase</module>
+    <!-- <module>aprox-meadci</module> -->
   </modules>
 </project>

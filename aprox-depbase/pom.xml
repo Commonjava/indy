@@ -3,13 +3,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.commonjava.couch.web</groupId>
-    <artifactId>couch-web</artifactId>
-    <version>1.0</version>
+    <groupId>org.commonjava.aprox</groupId>
+    <artifactId>aprox-parent</artifactId>
+    <version>0.2-SNAPSHOT</version>
   </parent>
   
   <artifactId>aprox-depbase</artifactId>
-  <version>0.1-SNAPSHOT</version>
   <packaging>war</packaging>
 
   <name>AProx Maven Artifact Proxy :: Parent POM</name>
@@ -20,13 +19,28 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.couch.web</groupId>
-      <artifactId>aprox</artifactId>
-      <version>0.1</version>
-    </dependency>
-    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
     </dependency>
+    <dependency>
+    	<groupId>org.commonjava.aprox</groupId>
+    	<artifactId>aprox-core</artifactId>
+    	<version>${project.version}</version>
+    </dependency>
+	<dependency>
+	  <groupId>org.commonjava.web.depbase</groupId>
+	  <artifactId>depbase-db</artifactId>
+	  <version>0.1-SNAPSHOT</version>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.maven</groupId>
+		<artifactId>maven-model-builder</artifactId>
+		<version>3.0.3</version>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.maven.mae</groupId>
+		<artifactId>mae-booter</artifactId>
+		<version>1.0-alpha-1-SNAPSHOT</version>
+	</dependency>
   </dependencies>
 </project>
