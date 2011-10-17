@@ -15,7 +15,7 @@
  * License along with this program.  If not, see 
  * <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package org.commonjava.aprox.core.conf;
+package org.commonjava.aprox.depbase.conf;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 
@@ -28,33 +28,26 @@ import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
 
-import org.commonjava.aprox.core.inject.AproxData;
-import org.commonjava.auth.couch.conf.DefaultUserManagerConfig;
-import org.commonjava.auth.couch.conf.UserManagerConfiguration;
 import org.commonjava.couch.conf.CouchDBConfiguration;
 import org.commonjava.couch.conf.DefaultCouchDBConfiguration;
+import org.commonjava.depbase.inject.DepbaseData;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.DefaultConfigurationListener;
 import org.commonjava.web.config.dotconf.DotConfConfigurationReader;
 
 @Singleton
-public class ProxyConfigurationFactory
+public class DepbaseAproxConfigurationFactory
     extends DefaultConfigurationListener
 {
 
-    private static final String CONFIG_PATH = "/etc/aprox/main.conf";
-
-    private DefaultProxyConfiguration proxyConfig;
-
-    private DefaultUserManagerConfig userManagerConfig;
+    private static final String CONFIG_PATH = "/etc/aprox/depbase.conf";
 
     private DefaultCouchDBConfiguration couchConfig;
 
-    public ProxyConfigurationFactory()
+    public DepbaseAproxConfigurationFactory()
         throws ConfigurationException
     {
-        super( DefaultProxyConfiguration.class, DefaultUserManagerConfig.class,
-               DefaultCouchDBConfiguration.class );
+        super( DefaultCouchDBConfiguration.class );
     }
 
     @PostConstruct
@@ -79,20 +72,7 @@ public class ProxyConfigurationFactory
     }
 
     @Produces
-    public ProxyConfiguration getProxyConfiguration()
-    {
-        return proxyConfig;
-    }
-
-    @Produces
-    @Default
-    public UserManagerConfiguration getUserManagerConfiguration()
-    {
-        return userManagerConfig;
-    }
-
-    @Produces
-    @AproxData
+    @DepbaseData
     @Default
     public CouchDBConfiguration getCouchDBConfiguration()
     {
@@ -103,8 +83,6 @@ public class ProxyConfigurationFactory
     public void configurationComplete()
         throws ConfigurationException
     {
-        proxyConfig = getConfiguration( DefaultProxyConfiguration.class );
-        userManagerConfig = getConfiguration( DefaultUserManagerConfig.class );
         couchConfig = getConfiguration( DefaultCouchDBConfiguration.class );
     }
 

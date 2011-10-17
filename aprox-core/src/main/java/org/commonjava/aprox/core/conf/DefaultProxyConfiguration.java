@@ -22,6 +22,8 @@ import java.io.File;
 import javax.enterprise.inject.Alternative;
 import javax.inject.Named;
 
+import org.commonjava.couch.conf.CouchDBConfiguration;
+import org.commonjava.couch.conf.DefaultCouchDBConfiguration;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 import org.commonjava.web.config.section.ConfigurationSectionListener;
@@ -30,6 +32,7 @@ import org.commonjava.web.config.section.ConfigurationSectionListener;
 @Alternative
 @Named( "unused" )
 public class DefaultProxyConfiguration
+    extends DefaultCouchDBConfiguration
     implements ProxyConfiguration
 {
 
@@ -37,6 +40,8 @@ public class DefaultProxyConfiguration
         new File( "/var/lib/artifact-proxy/repositories" );
 
     private File repositoryRootDirectory = DEFAULT_REPO_ROOT_DIR;
+
+    private CouchDBConfiguration dbConfig;
 
     @Override
     public File getRepositoryRootDirectory()
@@ -50,4 +55,14 @@ public class DefaultProxyConfiguration
         this.repositoryRootDirectory = repositoryRootDirectory;
     }
 
+    @Override
+    public CouchDBConfiguration getDatabaseConfig()
+    {
+        if ( dbConfig == null )
+        {
+            dbConfig = new DefaultCouchDBConfiguration( getDatabaseUrl(), getMaxConnections() );
+        }
+
+        return dbConfig;
+    }
 }

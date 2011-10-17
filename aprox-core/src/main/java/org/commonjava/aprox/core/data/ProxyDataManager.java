@@ -36,6 +36,7 @@ import org.commonjava.aprox.core.change.event.ProxyManagerDeleteEvent;
 import org.commonjava.aprox.core.change.event.ProxyManagerUpdateType;
 import org.commonjava.aprox.core.conf.ProxyConfiguration;
 import org.commonjava.aprox.core.data.ProxyAppDescription.View;
+import org.commonjava.aprox.core.inject.AproxData;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
@@ -64,12 +65,14 @@ public class ProxyDataManager
     private UserDataManager userMgr;
 
     @Inject
+    @AproxData
     private CouchManager couch;
 
     @Inject
     private ProxyConfiguration config;
 
     @Inject
+    @AproxData
     private CouchDBConfiguration couchConfig;
 
     @Inject

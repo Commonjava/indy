@@ -42,10 +42,13 @@ import org.commonjava.aprox.core.data.ProxyAppDescription;
 import org.commonjava.aprox.core.data.ProxyDataManager;
 import org.commonjava.aprox.core.fixture.AProxTestPropertiesProvider;
 import org.commonjava.aprox.core.fixture.ProxyConfigProvider;
+import org.commonjava.aprox.core.inject.AproxData;
+import org.commonjava.aprox.core.inject.AproxDataProviders;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.rest.RESTApplication;
 import org.commonjava.auth.couch.data.UserAppDescription;
 import org.commonjava.couch.change.CouchChangeListener;
+import org.commonjava.couch.db.CouchManager;
 import org.commonjava.web.test.AbstractRESTCouchTest;
 import org.commonjava.web.test.fixture.TestWarArchiveBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -61,7 +64,12 @@ public class AbstractAProxLiveTest
     protected ProxyDataManager proxyManager;
 
     @Inject
+    @AproxData
     protected CouchChangeListener changeListener;
+
+    @Inject
+    @AproxData
+    private CouchManager couch;
 
     @Deployment
     public static WebArchive createWar()
@@ -72,13 +80,13 @@ public class AbstractAProxLiveTest
         builder.withExtraClasses( AbstractAProxLiveTest.class, AProxTestPropertiesProvider.class,
                                   ProxyConfigProvider.class, ProxyConfiguration.class,
                                   TestUserManagerConfigProducer.class,
-                                  DefaultProxyConfiguration.class );
+                                  DefaultProxyConfiguration.class, AproxDataProviders.class );
 
         builder.withExtraPackages( true, RESTApplication.class.getPackage(),
                                    Repository.class.getPackage(),
                                    ProxyDataManager.class.getPackage(),
-                                   StoreDeletionListener.class.getPackage(),
-                                   Os.class.getPackage(), // grab all of plexus-utils
+                                   StoreDeletionListener.class.getPackage(), Os.class.getPackage(), // grab all of
+                                                                                                    // plexus-utils
                                    Metadata.class.getPackage() );
 
         builder.withStandardPackages();
@@ -134,6 +142,12 @@ public class AbstractAProxLiveTest
         copy( response.getEntity().getContent(), sw );
 
         return sw.toString();
+    }
+
+    @Override
+    protected CouchManager getCouchManager()
+    {
+        return couch;
     }
 
 }
