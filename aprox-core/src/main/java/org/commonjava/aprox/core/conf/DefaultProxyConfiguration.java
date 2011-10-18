@@ -56,7 +56,7 @@ public class DefaultProxyConfiguration
     }
 
     @Override
-    public CouchDBConfiguration getDatabaseConfig()
+    public synchronized CouchDBConfiguration getDatabaseConfig()
     {
         if ( dbConfig == null )
         {
