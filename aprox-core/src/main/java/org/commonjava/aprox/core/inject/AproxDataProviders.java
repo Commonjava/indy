@@ -6,25 +6,17 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.commonjava.couch.change.CouchChangeListener;
-import org.commonjava.couch.change.dispatch.CouchChangeDispatcher;
 import org.commonjava.couch.conf.CouchDBConfiguration;
+import org.commonjava.couch.db.CouchFactory;
 import org.commonjava.couch.db.CouchManager;
-import org.commonjava.couch.io.CouchAppReader;
 import org.commonjava.couch.io.CouchHttpClient;
-import org.commonjava.couch.io.Serializer;
 
 @Singleton
 public class AproxDataProviders
 {
 
     @Inject
-    private Serializer serializer;
-
-    @Inject
-    private CouchAppReader appReader;
-
-    @Inject
-    private CouchChangeDispatcher dispatcher;
+    private CouchFactory factory;
 
     @Inject
     @AproxData
@@ -44,9 +36,7 @@ public class AproxDataProviders
         System.out.println( "Returning change listener for user DB" );
         if ( changeListener == null )
         {
-            changeListener =
-                new CouchChangeListener( dispatcher, getHttpClient(), config, getCouchManager(),
-                                         serializer );
+            changeListener = factory.getChangeListener( config );
         }
 
         return changeListener;
@@ -59,7 +49,7 @@ public class AproxDataProviders
     {
         if ( couchManager == null )
         {
-            couchManager = new CouchManager( config, getHttpClient(), serializer, appReader );
+            couchManager = factory.getCouchManager( config );
         }
 
         return couchManager;
@@ -72,7 +62,7 @@ public class AproxDataProviders
     {
         if ( httpClient == null )
         {
-            httpClient = new CouchHttpClient( config, serializer );
+            httpClient = factory.getHttpClient( config );
         }
 
         return httpClient;
