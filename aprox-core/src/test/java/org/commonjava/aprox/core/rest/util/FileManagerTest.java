@@ -29,7 +29,6 @@ import java.util.List;
 import org.commonjava.aprox.core.conf.DefaultProxyConfiguration;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.Repository;
-import org.commonjava.aprox.core.rest.util.FileManager;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

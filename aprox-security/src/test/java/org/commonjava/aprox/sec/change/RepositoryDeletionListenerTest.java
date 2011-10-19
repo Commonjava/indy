@@ -15,7 +15,7 @@
  * License along with this program.  If not, see 
  * <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package org.commonjava.aprox.core.change;
+package org.commonjava.aprox.sec.change;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -24,11 +24,10 @@ import static org.junit.Assert.assertThat;
 
 import javax.inject.Inject;
 
-import org.commonjava.aprox.core.AbstractAProxLiveTest;
-import org.commonjava.aprox.core.change.StoreDeletionListener;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.StoreType;
+import org.commonjava.aprox.sec.AbstractAProxSecLiveTest;
 import org.commonjava.auth.couch.model.Permission;
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
@@ -36,7 +35,7 @@ import org.junit.runner.RunWith;
 
 @RunWith( Arquillian.class )
 public class RepositoryDeletionListenerTest
-    extends AbstractAProxLiveTest
+    extends AbstractAProxSecLiveTest
 {
 
     @Inject

@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Copyright (C) 2011  John Casey
   
@@ -17,7 +18,6 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  
   <parent>
     <groupId>org.commonjava.couch.web</groupId>
     <artifactId>couch-web</artifactId>
@@ -27,6 +27,7 @@
   <groupId>org.commonjava.aprox</groupId>
   <artifactId>aprox-parent</artifactId>
   <version>0.2-SNAPSHOT</version>
+  
   <packaging>pom</packaging>
   
   <name>AProx Maven Artifact Proxy :: Parent POM</name>
@@ -43,5 +44,39 @@
     <module>aprox-basic</module>
     <module>aprox-depbase</module>
     <!-- <module>aprox-meadci</module> -->
+    <module>aprox-security</module>
   </modules>
+  
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.codehaus.enunciate</groupId>
+          <artifactId>maven-enunciate-slim-plugin</artifactId>
+          <version>1.24</version>
+          
+          <dependencies>
+            <dependency>
+              <groupId>org.codehaus.enunciate</groupId>
+              <artifactId>enunciate-docs</artifactId>
+              <version>1.24</version>
+            </dependency>
+          </dependencies>
+          
+          <executions>
+            <execution>
+              <id>enunciate-rest-api</id>
+              <goals>
+                <goal>docs</goal>
+              </goals>
+              <configuration>
+                <docsDir>docs/1.0</docsDir>
+                <includeExampleXml>false</includeExampleXml>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 </project>

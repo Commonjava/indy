@@ -20,10 +20,8 @@ package org.commonjava.aprox.core.data;
 import static org.commonjava.couch.test.fixture.LoggingFixture.setupLogging;
 
 import org.apache.log4j.Level;
-import org.commonjava.aprox.core.conf.DefaultProxyConfiguration;
-import org.commonjava.auth.couch.conf.DefaultUserManagerConfig;
-import org.commonjava.auth.couch.data.PasswordManager;
-import org.commonjava.auth.couch.data.UserDataManager;
+import org.commonjava.aprox.core.conf.ProxyConfiguration;
+import org.commonjava.aprox.core.fixture.ProxyConfigProvider;
 import org.commonjava.couch.db.CouchManager;
 import org.commonjava.couch.io.CouchAppReader;
 import org.commonjava.couch.io.CouchHttpClient;
@@ -36,40 +34,38 @@ public class AbstractProxyDataManagerTest
 {
     protected static ProxyDataManager manager;
 
-    protected static DefaultProxyConfiguration config;
+    protected static ProxyConfiguration config;
 
-    protected static DefaultUserManagerConfig umConfig;
+    // protected static DefaultUserManagerConfig umConfig;
 
     protected static CouchManager couch;
 
-    protected static PasswordManager passwordManager;
-
-    protected static UserDataManager userManager;
+    // protected static PasswordManager passwordManager;
+    //
+    // protected static UserDataManager userManager;
 
     @BeforeClass
     public static void setupManager()
     {
         setupLogging( Level.DEBUG );
 
-        config = new DefaultProxyConfiguration();
+        config = new ProxyConfigProvider().getProxyConfiguration();
 
-        umConfig =
-            new DefaultUserManagerConfig( "admin@nowhere.com", "password", "Admin", "User",
-                                          "http://localhost:5984/test-aprox" );
+        // umConfig =
+        // new DefaultUserManagerConfig( "admin@nowhere.com", "password", "Admin", "User",
+        // "http://localhost:5984/test-aprox" );
 
         Serializer serializer = new Serializer();
 
         couch =
-            new CouchManager( umConfig.getDatabaseConfig(),
-                              new CouchHttpClient( umConfig.getDatabaseConfig(), serializer ),
+            new CouchManager( config.getDatabaseConfig(),
+                              new CouchHttpClient( config.getDatabaseConfig(), serializer ),
                               serializer, new CouchAppReader() );
 
-        passwordManager = new PasswordManager();
-        userManager = new UserDataManager( umConfig, passwordManager, couch );
+        // passwordManager = new PasswordManager();
+        // userManager = new UserDataManager( umConfig, passwordManager, couch );
 
-        manager =
-            new ProxyDataManager( config, userManager, umConfig.getDatabaseConfig(), couch,
-                                  serializer );
+        manager = new ProxyDataManager( config, couch, serializer );
     }
 
     @Before

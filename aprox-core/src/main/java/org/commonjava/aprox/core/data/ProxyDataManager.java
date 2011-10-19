@@ -45,9 +45,6 @@ import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.aprox.core.model.io.StoreDeserializer;
 import org.commonjava.aprox.core.model.io.StoreKeySerializer;
-import org.commonjava.auth.couch.data.UserDataException;
-import org.commonjava.auth.couch.data.UserDataManager;
-import org.commonjava.auth.couch.model.Permission;
 import org.commonjava.couch.conf.CouchDBConfiguration;
 import org.commonjava.couch.db.CouchDBException;
 import org.commonjava.couch.db.CouchManager;
@@ -60,9 +57,6 @@ import org.commonjava.couch.util.JoinString;
 public class ProxyDataManager
 {
     // private final Logger logger = new Logger( getClass() );
-
-    @Inject
-    private UserDataManager userMgr;
 
     @Inject
     @AproxData
@@ -87,13 +81,11 @@ public class ProxyDataManager
     public ProxyDataManager()
     {}
 
-    public ProxyDataManager( final ProxyConfiguration config, final UserDataManager userMgr,
-                             final CouchDBConfiguration couchConfig, final CouchManager couch,
+    public ProxyDataManager( final ProxyConfiguration config, final CouchManager couch,
                              final Serializer serializer )
     {
         this.config = config;
-        this.userMgr = userMgr;
-        this.couchConfig = couchConfig;
+        this.couchConfig = config.getDatabaseConfig();
         this.couch = couch;
         this.serializer = serializer;
 
@@ -310,21 +302,12 @@ public class ProxyDataManager
             fireStoreEvent( skipIfExists ? ProxyManagerUpdateType.ADD
                             : ProxyManagerUpdateType.ADD_OR_UPDATE, deploy );
 
-            userMgr.createPermissions( StoreType.deploy_point.name(), deploy.getName(),
-                                       Permission.ADMIN, Permission.READ, Permission.CREATE );
-
             return result;
         }
         catch ( CouchDBException e )
         {
             throw new ProxyDataException(
                                           "Failed to store deploy-store configuration: %s. Reason: %s",
-                                          e, deploy.getName(), e.getMessage() );
-        }
-        catch ( UserDataException e )
-        {
-            throw new ProxyDataException(
-                                          "Failed to create permissions for deploy-store: %s. Reason: %s",
                                           e, deploy.getName(), e.getMessage() );
         }
     }
@@ -360,21 +343,12 @@ public class ProxyDataManager
             fireStoreEvent( skipIfExists ? ProxyManagerUpdateType.ADD
                             : ProxyManagerUpdateType.ADD_OR_UPDATE, repository );
 
-            userMgr.createPermissions( StoreType.repository.name(), repository.getName(),
-                                       Permission.ADMIN, Permission.READ );
-
             return result;
         }
         catch ( CouchDBException e )
         {
             throw new ProxyDataException(
                                           "Failed to store repository configuration: %s. Reason: %s",
-                                          e, repository.getName(), e.getMessage() );
-        }
-        catch ( UserDataException e )
-        {
-            throw new ProxyDataException(
-                                          "Failed to create permissions for repository: %s. Reason: %s",
                                           e, repository.getName(), e.getMessage() );
         }
     }
@@ -426,20 +400,12 @@ public class ProxyDataManager
             fireStoreEvent( skipIfExists ? ProxyManagerUpdateType.ADD
                             : ProxyManagerUpdateType.ADD_OR_UPDATE, group );
 
-            userMgr.createPermissions( StoreType.group.name(), group.getName(), Permission.ADMIN,
-                                       Permission.READ );
-
             return result;
         }
         catch ( CouchDBException e )
         {
             throw new ProxyDataException( "Failed to store group configuration: %s. Reason: %s", e,
                                           group.getName(), e.getMessage() );
-        }
-        catch ( UserDataException e )
-        {
-            throw new ProxyDataException( "Failed to create permissions for group: %s. Reason: %s",
-                                          e, group.getName(), e.getMessage() );
         }
     }
 
@@ -550,14 +516,6 @@ public class ProxyDataManager
             }
 
             couch.initialize( description );
-
-            userMgr.install();
-            userMgr.setupAdminInformation();
-
-            userMgr.storePermission( new Permission( StoreType.repository.name(), Permission.ADMIN ) );
-            userMgr.storePermission( new Permission( StoreType.group.name(), Permission.ADMIN ) );
-            userMgr.storePermission( new Permission( StoreType.repository.name(), Permission.READ ) );
-            userMgr.storePermission( new Permission( StoreType.group.name(), Permission.READ ) );
         }
         catch ( CouchDBException e )
         {
@@ -565,12 +523,6 @@ public class ProxyDataManager
                                           "Failed to initialize proxy-management database: %s (application: %s). Reason: %s",
                                           e, couchConfig.getDatabaseUrl(),
                                           description.getAppName(), e.getMessage() );
-        }
-        catch ( UserDataException e )
-        {
-            throw new ProxyDataException(
-                                          "Failed to initialize admin user/privilege information in proxy-management database: %s. Reason: %s",
-                                          e, couchConfig.getDatabaseUrl(), e.getMessage() );
         }
     }
 

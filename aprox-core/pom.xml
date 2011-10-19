@@ -29,15 +29,6 @@
   
   <dependencies>
     <dependency>
-      <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-web</artifactId>
-    </dependency>
-    
-    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
@@ -64,23 +55,15 @@
     </dependency>
     
     <dependency>
-      <groupId>org.commonjava.couch</groupId>
-      <artifactId>shiro-couch</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.couch</groupId>
-      <artifactId>couch-user-manager</artifactId>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-repository-metadata</artifactId>
     </dependency>
     
     <dependency>
       <groupId>org.commonjava.couch.web</groupId>
       <artifactId>web-common</artifactId>
     </dependency>
-  	<dependency>
-  		<groupId>org.commonjava.couch.web</groupId>
-  		<artifactId>restful-user-manager</artifactId>
-  	</dependency>
-  	
+    
     <dependency>
       <groupId>org.jboss.arquillian.junit</groupId>
       <artifactId>arquillian-junit-container</artifactId>
@@ -90,11 +73,11 @@
        <artifactId>jboss-as-arquillian-container-managed</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.couch</groupId>
+      <groupId>org.commonjava.couch.test</groupId>
       <artifactId>couch-test-harness</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.couch.web</groupId>
+      <groupId>org.commonjava.couch.test</groupId>
       <artifactId>couch-as7-test-harness</artifactId>
     </dependency>
     <dependency>
@@ -102,20 +85,66 @@
       <artifactId>hamcrest-core</artifactId>
     </dependency>
     <dependency>
-    	<groupId>org.apache.maven</groupId>
-    	<artifactId>maven-repository-metadata</artifactId>
+      <groupId>org.commonjava.couch</groupId>
+      <artifactId>couch-app-support</artifactId>
+    </dependency>
+    <dependency>
+    	<groupId>org.jboss.weld.se</groupId>
+    	<artifactId>weld-se-core</artifactId>
     </dependency>
   </dependencies>
   
   <dependencyManagement>
-  	<dependencies>
-  		<dependency>
-  			<groupId>org.apache.maven</groupId>
-  			<artifactId>maven</artifactId>
-  			<version>3.0.3</version>
-  			<scope>import</scope>
-  			<type>pom</type>
-  		</dependency>
-  	</dependencies>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven</artifactId>
+        <version>3.0.3</version>
+        <scope>import</scope>
+        <type>pom</type>
+      </dependency>
+    </dependencies>
   </dependencyManagement>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.enunciate</groupId>
+        <artifactId>maven-enunciate-slim-plugin</artifactId>
+      </plugin>
+    </plugins>
+    <pluginManagement>
+    	<plugins>
+    		<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+    		<plugin>
+    			<groupId>org.eclipse.m2e</groupId>
+    			<artifactId>lifecycle-mapping</artifactId>
+    			<version>1.0.0</version>
+    			<configuration>
+    				<lifecycleMappingMetadata>
+    					<pluginExecutions>
+    						<pluginExecution>
+    							<pluginExecutionFilter>
+    								<groupId>
+    									org.codehaus.enunciate
+    								</groupId>
+    								<artifactId>
+    									maven-enunciate-slim-plugin
+    								</artifactId>
+    								<versionRange>[1.24,)</versionRange>
+    								<goals>
+    									<goal>docs</goal>
+    								</goals>
+    							</pluginExecutionFilter>
+    							<action>
+    								<ignore></ignore>
+    							</action>
+    						</pluginExecution>
+    					</pluginExecutions>
+    				</lifecycleMappingMetadata>
+    			</configuration>
+    		</plugin>
+    	</plugins>
+    </pluginManagement>
+  </build>
 </project>

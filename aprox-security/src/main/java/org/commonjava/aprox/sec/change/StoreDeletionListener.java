@@ -15,7 +15,7 @@
  * License along with this program.  If not, see 
  * <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package org.commonjava.aprox.core.change;
+package org.commonjava.aprox.sec.change;
 
 import java.util.Set;
 

@@ -15,7 +15,7 @@
  * License along with this program.  If not, see 
  * <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package org.commonjava.aprox.core.webctl;
+package org.commonjava.aprox.sec.webctl;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.annotation.WebListener;

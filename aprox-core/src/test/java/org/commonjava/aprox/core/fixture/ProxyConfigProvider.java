@@ -19,25 +19,48 @@ package org.commonjava.aprox.core.fixture;
 
 import java.io.File;
 
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
+import javax.inject.Singleton;
 
 import org.commonjava.aprox.core.conf.DefaultProxyConfiguration;
 import org.commonjava.aprox.core.conf.ProxyConfiguration;
+import org.commonjava.aprox.core.inject.AproxData;
+import org.commonjava.couch.conf.CouchDBConfiguration;
+import org.commonjava.web.test.fixture.TestData;
 
+@Singleton
 public class ProxyConfigProvider
 {
 
     public static final String REPO_ROOT_DIR = "repo.root.dir";
 
+    private static final String DB_URL = "http://localhost:5984/test-aprox";
+
+    private DefaultProxyConfiguration config;
+
     @Produces
+    @TestData
     public ProxyConfiguration getProxyConfiguration()
     {
-        DefaultProxyConfiguration config = new DefaultProxyConfiguration();
+        if ( config == null )
+        {
+            config = new DefaultProxyConfiguration( DB_URL );
 
-        config.setRepositoryRootDirectory( new File( System.getProperty( REPO_ROOT_DIR ),
-                                                     "target/repo-downloads" ) );
+            config.setRepositoryRootDirectory( new File( System.getProperty( REPO_ROOT_DIR ),
+                                                         "target/repo-downloads" ) );
+        }
 
         return config;
+    }
+
+    @Produces
+    @AproxData
+    @TestData
+    @Default
+    public CouchDBConfiguration getCouchConfiguration()
+    {
+        return getProxyConfiguration().getDatabaseConfig();
     }
 
 }

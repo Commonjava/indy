@@ -1,4 +1,4 @@
-package org.commonjava.aprox.core.rest.access;
+package org.commonjava.aprox.core.rest.access.impl;
 
 import java.io.File;
 
@@ -13,15 +13,14 @@ import javax.ws.rs.core.Response.Status;
 
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.rest.util.FileManager;
-import org.commonjava.auth.couch.model.Permission;
 
-public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
+public abstract class AbstractSimpleAccessResourceImpl<T extends ArtifactStore>
 {
 
     @Inject
     private FileManager fileManager;
 
-    protected AbstractSimpleAccessResource()
+    protected AbstractSimpleAccessResourceImpl()
     {}
 
     @GET
@@ -29,8 +28,6 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
     public Response getContent( @PathParam( "name" ) final String name,
                                 @PathParam( "path" ) final String path )
     {
-        checkPermission( name, Permission.READ );
-
         // TODO:
         // 1. directory request (ends with "/")...browse somehow??
         // 2. empty path (directory request for proxy root)
@@ -53,8 +50,6 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
         String mimeType = new MimetypesFileTypeMap().getContentType( target );
         return Response.ok( target, mimeType ).build();
     }
-
-    protected abstract void checkPermission( String name, String access );
 
     protected abstract T getArtifactStore( String name );
 

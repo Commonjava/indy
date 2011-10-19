@@ -29,8 +29,6 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
 
 import org.commonjava.aprox.core.inject.AproxData;
-import org.commonjava.auth.couch.conf.DefaultUserManagerConfig;
-import org.commonjava.auth.couch.conf.UserManagerConfiguration;
 import org.commonjava.couch.conf.CouchDBConfiguration;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.DefaultConfigurationListener;
@@ -45,12 +43,10 @@ public class ProxyConfigurationFactory
 
     private DefaultProxyConfiguration proxyConfig;
 
-    private DefaultUserManagerConfig userManagerConfig;
-
     public ProxyConfigurationFactory()
         throws ConfigurationException
     {
-        super( DefaultProxyConfiguration.class, DefaultUserManagerConfig.class );
+        super( DefaultProxyConfiguration.class );
     }
 
     @PostConstruct
@@ -81,13 +77,6 @@ public class ProxyConfigurationFactory
     }
 
     @Produces
-    @Default
-    public UserManagerConfiguration getUserManagerConfiguration()
-    {
-        return userManagerConfig;
-    }
-
-    @Produces
     @AproxData
     @Default
     public CouchDBConfiguration getCouchDBConfiguration()
@@ -100,7 +89,6 @@ public class ProxyConfigurationFactory
         throws ConfigurationException
     {
         proxyConfig = getConfiguration( DefaultProxyConfiguration.class );
-        userManagerConfig = getConfiguration( DefaultUserManagerConfig.class );
     }
 
 }

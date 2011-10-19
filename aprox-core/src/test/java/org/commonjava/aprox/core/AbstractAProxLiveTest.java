@@ -33,9 +33,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.maven.artifact.repository.metadata.Metadata;
-import org.cjtest.fixture.TestUserManagerConfigProducer;
 import org.codehaus.plexus.util.Os;
-import org.commonjava.aprox.core.change.StoreDeletionListener;
 import org.commonjava.aprox.core.conf.DefaultProxyConfiguration;
 import org.commonjava.aprox.core.conf.ProxyConfiguration;
 import org.commonjava.aprox.core.data.ProxyAppDescription;
@@ -46,7 +44,6 @@ import org.commonjava.aprox.core.inject.AproxData;
 import org.commonjava.aprox.core.inject.AproxDataProviders;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.rest.RESTApplication;
-import org.commonjava.auth.couch.data.UserAppDescription;
 import org.commonjava.couch.change.CouchChangeListener;
 import org.commonjava.couch.db.CouchManager;
 import org.commonjava.web.test.AbstractRESTCouchTest;
@@ -79,27 +76,26 @@ public class AbstractAProxLiveTest
 
         builder.withExtraClasses( AbstractAProxLiveTest.class, AProxTestPropertiesProvider.class,
                                   ProxyConfigProvider.class, ProxyConfiguration.class,
-                                  TestUserManagerConfigProducer.class,
-                                  DefaultProxyConfiguration.class, AproxDataProviders.class );
+                                  DefaultProxyConfiguration.class );
 
         builder.withExtraPackages( true, RESTApplication.class.getPackage(),
                                    Repository.class.getPackage(),
                                    ProxyDataManager.class.getPackage(),
-                                   StoreDeletionListener.class.getPackage(), Os.class.getPackage(), // grab all of
-                                                                                                    // plexus-utils
-                                   Metadata.class.getPackage() );
+                                   /* StoreDeletionListener.class.getPackage(), */
+                                   Os.class.getPackage(), // grab all of plexus-utils
+                                   Metadata.class.getPackage(),
+                                   AproxDataProviders.class.getPackage() );
 
         builder.withStandardPackages();
         builder.withLog4jProperties();
-        builder.withStandardAuthentication();
         builder.withAllStandards();
         builder.withApplication( new ProxyAppDescription() );
-        builder.withApplication( new UserAppDescription() );
+        // builder.withApplication( new UserAppDescription() );
 
         WebArchive archive = builder.build();
 
         String basedir = System.getProperty( "basedir", "." );
-        archive.addAsWebInfResource( new File( basedir, "src/main/resources/META-INF/beans.xml" ) );
+        archive.addAsWebInfResource( new File( basedir, "src/test/resources/META-INF/beans.xml" ) );
 
         return archive;
     }

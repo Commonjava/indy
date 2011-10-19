@@ -43,6 +43,14 @@ public class DefaultProxyConfiguration
 
     private CouchDBConfiguration dbConfig;
 
+    public DefaultProxyConfiguration()
+    {}
+
+    public DefaultProxyConfiguration( final String dbUrl )
+    {
+        setDatabaseUrl( dbUrl );
+    }
+
     @Override
     public File getRepositoryRootDirectory()
     {
