@@ -28,7 +28,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
 import org.commonjava.aprox.core.AbstractAProxLiveTest;
 import org.commonjava.aprox.core.data.ProxyDataException;
-import org.commonjava.aprox.core.fixture.ProxyConfigProvider;
+import org.commonjava.aprox.core.fixture.AProxTestPropertiesProvider;
 import org.commonjava.aprox.core.model.Repository;
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.AfterClass;
@@ -51,7 +51,7 @@ public class RepositoryAccessResourceTest
         throws IOException
     {
         repoRoot = File.createTempFile( "repo.root.", ".dir" );
-        System.setProperty( ProxyConfigProvider.REPO_ROOT_DIR, repoRoot.getAbsolutePath() );
+        System.setProperty( AProxTestPropertiesProvider.REPO_ROOT_DIR, repoRoot.getAbsolutePath() );
     }
 
     @AfterClass
@@ -69,7 +69,7 @@ public class RepositoryAccessResourceTest
         throws ProxyDataException
     {
         proxyManager.storeRepository( new Repository( "central",
-                                                     "http://repo1.maven.apache.org/maven2/" ) );
+                                                      "http://repo1.maven.apache.org/maven2/" ) );
     }
 
     @Test

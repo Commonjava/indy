@@ -15,7 +15,7 @@
  * License along with this program.  If not, see 
  * <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package org.commonjava.aprox.sec.change;
+package org.commonjava.aprox.core.change;
 
 import java.util.Set;
 
@@ -28,9 +28,6 @@ import org.commonjava.aprox.core.data.ProxyDataManager;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
-import org.commonjava.auth.couch.data.UserDataException;
-import org.commonjava.auth.couch.data.UserDataManager;
-import org.commonjava.auth.couch.model.Permission;
 import org.commonjava.couch.change.CouchDocChange;
 import org.commonjava.couch.change.dispatch.CouchChangeJ2EEEvent;
 import org.commonjava.couch.change.dispatch.ThreadableListener;
@@ -38,7 +35,7 @@ import org.commonjava.couch.util.ChangeSynchronizer;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
-public class StoreDeletionListener
+public class GroupConsistencyListener
     implements ThreadableListener
 {
 
@@ -46,9 +43,6 @@ public class StoreDeletionListener
 
     @Inject
     private ProxyDataManager proxyDataManager;
-
-    @Inject
-    private UserDataManager userDataManager;
 
     private final ChangeSynchronizer changeSync = new ChangeSynchronizer();
 
@@ -75,19 +69,11 @@ public class StoreDeletionListener
 
             proxyDataManager.storeGroups( groups );
 
-            userDataManager.deletePermission( Permission.name( id, Permission.ADMIN ) );
-            userDataManager.deletePermission( Permission.name( id, Permission.READ ) );
-
             changeSync.setChanged();
         }
         catch ( ProxyDataException e )
         {
             logger.error( "Failed to remove group constituent listings for: %s. Error: %s", e, id,
-                          e.getMessage() );
-        }
-        catch ( UserDataException e )
-        {
-            logger.error( "Failed to remove permissions for deleted store: %s. Error: %s", e, id,
                           e.getMessage() );
         }
     }

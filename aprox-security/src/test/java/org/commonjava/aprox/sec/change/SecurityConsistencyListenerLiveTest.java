@@ -24,6 +24,7 @@ import static org.junit.Assert.assertThat;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.core.model.Group;
+import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.aprox.sec.AbstractAProxSecLiveTest;
 import org.commonjava.auth.couch.model.Permission;
@@ -32,12 +33,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith( Arquillian.class )
-public class GroupDeletionListenerTest
+public class SecurityConsistencyListenerLiveTest
     extends AbstractAProxSecLiveTest
 {
 
     @Inject
-    private StoreDeletionListener groupListener;
+    private SecurityConsistencyListener listener;
 
     @Test
     public void groupRolesRemovedWhenGroupDeleted()
@@ -61,7 +62,7 @@ public class GroupDeletionListenerTest
         System.out.println( "Waiting up to 20s for permission deletions to propagate..." );
         long start = System.currentTimeMillis();
 
-        groupListener.waitForChange( 20000, 1000 );
+        listener.waitForChange( 20000, 1000 );
 
         long elapsed = System.currentTimeMillis() - start;
         System.out.println( "Continuing test after " + elapsed + " ms." );
@@ -74,6 +75,44 @@ public class GroupDeletionListenerTest
         perm =
             userManager.getPermission( Permission.name( StoreType.group.name(), group.getName(),
                                                         Permission.READ ) );
+        assertThat( perm, nullValue() );
+    }
+
+    @Test
+    public void repositoryRolesRemovedWhenRepositoryDeleted()
+        throws Exception
+    {
+        Repository repo = new Repository( "test", "http://repo1.maven.apache.org/maven2/" );
+        proxyManager.storeRepository( repo );
+
+        Permission perm =
+            userManager.getPermission( Permission.name( StoreType.repository.name(),
+                                                        repo.getName(), Permission.ADMIN ) );
+        assertThat( perm, notNullValue() );
+
+        perm =
+            userManager.getPermission( Permission.name( StoreType.repository.name(),
+                                                        repo.getName(), Permission.READ ) );
+        assertThat( perm, notNullValue() );
+
+        proxyManager.deleteRepository( repo.getName() );
+
+        System.out.println( "Waiting up to 20s for permission deletions to propagate..." );
+        long start = System.currentTimeMillis();
+
+        listener.waitForChange( 20000, 1000 );
+
+        long elapsed = System.currentTimeMillis() - start;
+        System.out.println( "Continuing test after " + elapsed + " ms." );
+
+        perm =
+            userManager.getPermission( Permission.name( StoreType.repository.name(),
+                                                        repo.getName(), Permission.ADMIN ) );
+        assertThat( perm, nullValue() );
+
+        perm =
+            userManager.getPermission( Permission.name( StoreType.repository.name(),
+                                                        repo.getName(), Permission.READ ) );
         assertThat( perm, nullValue() );
     }
 

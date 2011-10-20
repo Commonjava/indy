@@ -22,9 +22,9 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.URL;
 
 import javax.inject.Inject;
 
@@ -35,22 +35,27 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.cjtest.fixture.TestUserManagerConfigProducer;
 import org.codehaus.plexus.util.Os;
+import org.commonjava.aprox.core.change.MavenMetadataUploadListener;
 import org.commonjava.aprox.core.conf.DefaultProxyConfiguration;
 import org.commonjava.aprox.core.conf.ProxyConfiguration;
 import org.commonjava.aprox.core.data.ProxyAppDescription;
 import org.commonjava.aprox.core.data.ProxyDataManager;
-import org.commonjava.aprox.core.fixture.AProxTestPropertiesProvider;
-import org.commonjava.aprox.core.fixture.ProxyConfigProvider;
 import org.commonjava.aprox.core.inject.AproxData;
 import org.commonjava.aprox.core.inject.AproxDataProviders;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.rest.RESTApplication;
-import org.commonjava.aprox.sec.change.StoreDeletionListener;
+import org.commonjava.aprox.sec.change.SecurityConsistencyListener;
+import org.commonjava.aprox.sec.fixture.AProxSecTestPropertiesProvider;
+import org.commonjava.aprox.sec.fixture.ProxyConfigProvider;
+import org.commonjava.aprox.sec.rest.access.RepositoryAccessResourceSecurity;
+import org.commonjava.aprox.sec.rest.admin.RepositoryAdminResourceSecurity;
+import org.commonjava.aprox.sec.webctl.ShiroBasicAuthenticationFilter;
 import org.commonjava.auth.couch.data.UserAppDescription;
 import org.commonjava.couch.change.CouchChangeListener;
 import org.commonjava.couch.db.CouchManager;
 import org.commonjava.couch.user.fixture.TestUserWarArchiveBuilder;
 import org.commonjava.couch.user.web.test.AbstractUserRESTCouchTest;
+import org.commonjava.web.test.fixture.TestData;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
@@ -75,21 +80,29 @@ public class AbstractAProxSecLiveTest
     public static WebArchive createWar()
     {
         TestUserWarArchiveBuilder builder =
-            new TestUserWarArchiveBuilder( AProxTestPropertiesProvider.class );
+            new TestUserWarArchiveBuilder( AProxSecTestPropertiesProvider.class );
 
-        builder.withExtraClasses( AbstractAProxSecLiveTest.class,
-                                  AProxTestPropertiesProvider.class, ProxyConfigProvider.class,
-                                  ProxyConfiguration.class, TestUserManagerConfigProducer.class,
-                                  DefaultProxyConfiguration.class, AproxDataProviders.class );
+        builder.withExtraClasses( AbstractAProxSecLiveTest.class, ProxyConfiguration.class,
+                                  DefaultProxyConfiguration.class,
+                                  TestUserManagerConfigProducer.class );
 
-        builder.withExtraPackages( true, RESTApplication.class.getPackage(),
+        builder.withExtraPackages( true,
+                                   RESTApplication.class.getPackage(),
+                                   RepositoryAccessResourceSecurity.class.getPackage(),
+                                   RepositoryAdminResourceSecurity.class.getPackage(),
+                                   ShiroBasicAuthenticationFilter.class.getPackage(),
+                                   ProxyConfigProvider.class.getPackage(),
                                    Repository.class.getPackage(),
                                    ProxyDataManager.class.getPackage(),
-                                   StoreDeletionListener.class.getPackage(), Os.class.getPackage(), // grab all of
-                                                                                                    // plexus-utils
-                                   Metadata.class.getPackage() );
+                                   MavenMetadataUploadListener.class.getPackage(),
+                                   SecurityConsistencyListener.class.getPackage(),
+                                   Os.class.getPackage(), // grab all of plexus-utils
+                                   Metadata.class.getPackage(),
+                                   AproxDataProviders.class.getPackage(),
+                                   AProxSecTestPropertiesProvider.class.getPackage() );
 
         builder.withStandardPackages();
+        builder.withTestUserManagerConfigProducer();
         builder.withLog4jProperties();
         builder.withStandardAuthentication();
         builder.withAllStandards();
@@ -98,8 +111,23 @@ public class AbstractAProxSecLiveTest
 
         WebArchive archive = builder.build();
 
-        String basedir = System.getProperty( "basedir", "." );
-        archive.addAsWebInfResource( new File( basedir, "src/main/resources/META-INF/beans.xml" ) );
+        String path = "META-INF/beans.arq.xml";
+        URL resource = Thread.currentThread().getContextClassLoader().getResource( path );
+        if ( resource != null )
+        {
+            archive.addAsWebInfResource( resource, "classes/META-INF/beans.xml" );
+        }
+        else
+        {
+            throw new IllegalStateException(
+                                             "Cannot find beans.xml ARQ resource from AS7 test harness!. Path: "
+                                                 + path + ", Classloader: "
+                                                 + TestData.class.getClassLoader() );
+        }
+
+        // String basedir = System.getProperty( "basedir", "." );
+        // archive.addAsWebInfResource( new File( basedir, "src/test/resources/META-INF/beans.xml" ),
+        // "classes/beans.xml" );
 
         return archive;
     }

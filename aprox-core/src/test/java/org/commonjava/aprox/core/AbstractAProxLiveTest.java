@@ -34,6 +34,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.codehaus.plexus.util.Os;
+import org.commonjava.aprox.core.change.MavenMetadataUploadListener;
 import org.commonjava.aprox.core.conf.DefaultProxyConfiguration;
 import org.commonjava.aprox.core.conf.ProxyConfiguration;
 import org.commonjava.aprox.core.data.ProxyAppDescription;
@@ -75,13 +76,14 @@ public class AbstractAProxLiveTest
             new TestWarArchiveBuilder( AProxTestPropertiesProvider.class );
 
         builder.withExtraClasses( AbstractAProxLiveTest.class, AProxTestPropertiesProvider.class,
-                                  ProxyConfigProvider.class, ProxyConfiguration.class,
-                                  DefaultProxyConfiguration.class );
+                                  ProxyConfiguration.class, DefaultProxyConfiguration.class );
 
-        builder.withExtraPackages( true, RESTApplication.class.getPackage(),
+        builder.withExtraPackages( true,
+                                   ProxyConfigProvider.class.getPackage(),
+                                   RESTApplication.class.getPackage(),
                                    Repository.class.getPackage(),
                                    ProxyDataManager.class.getPackage(),
-                                   /* StoreDeletionListener.class.getPackage(), */
+                                   MavenMetadataUploadListener.class.getPackage(),
                                    Os.class.getPackage(), // grab all of plexus-utils
                                    Metadata.class.getPackage(),
                                    AproxDataProviders.class.getPackage() );

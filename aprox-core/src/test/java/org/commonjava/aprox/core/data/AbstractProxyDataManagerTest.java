@@ -19,8 +19,11 @@ package org.commonjava.aprox.core.data;
 
 import static org.commonjava.couch.test.fixture.LoggingFixture.setupLogging;
 
+import java.util.Properties;
+
 import org.apache.log4j.Level;
 import org.commonjava.aprox.core.conf.ProxyConfiguration;
+import org.commonjava.aprox.core.fixture.AProxTestPropertiesProvider;
 import org.commonjava.aprox.core.fixture.ProxyConfigProvider;
 import org.commonjava.couch.db.CouchManager;
 import org.commonjava.couch.io.CouchAppReader;
@@ -49,7 +52,8 @@ public class AbstractProxyDataManagerTest
     {
         setupLogging( Level.DEBUG );
 
-        config = new ProxyConfigProvider().getProxyConfiguration();
+        Properties testProperties = new AProxTestPropertiesProvider().getTestProperties();
+        config = new ProxyConfigProvider( testProperties ).getProxyConfiguration();
 
         // umConfig =
         // new DefaultUserManagerConfig( "admin@nowhere.com", "password", "Admin", "User",

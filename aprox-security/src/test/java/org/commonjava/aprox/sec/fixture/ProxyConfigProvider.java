@@ -15,7 +15,7 @@
  * License along with this program.  If not, see 
  * <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package org.commonjava.aprox.core.fixture;
+package org.commonjava.aprox.sec.fixture;
 
 import java.io.File;
 import java.util.Properties;
@@ -60,10 +60,10 @@ public class ProxyConfigProvider
         {
             config =
                 new DefaultProxyConfiguration(
-                                               testProperties.getProperty( AProxTestPropertiesProvider.APROX_DATABASE_URL ) );
+                                               testProperties.getProperty( AProxSecTestPropertiesProvider.APROX_DATABASE_URL ) );
 
             config.setRepositoryRootDirectory( new File(
-                                                         testProperties.getProperty( AProxTestPropertiesProvider.REPO_ROOT_DIR ) ) );
+                                                         testProperties.getProperty( AProxSecTestPropertiesProvider.REPO_ROOT_DIR ) ) );
         }
 
         return config;

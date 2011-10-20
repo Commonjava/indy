@@ -54,6 +54,7 @@ public class AproxCreationListener
                 {
                     String[] verbs = store.getDoctype().isWritable() ? ALL_PERMS : READONLY_PERMS;
 
+                    logger.info( "Creating permissions for new store: %s", store );
                     userMgr.createPermissions( store.getDoctype().name(), store.getName(), verbs );
                 }
                 catch ( UserDataException e )

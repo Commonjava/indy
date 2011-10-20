@@ -28,6 +28,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.commonjava.aprox.core.change.MavenMetadataUploadListener;
 import org.commonjava.aprox.core.conf.DefaultProxyConfiguration;
 import org.commonjava.aprox.core.conf.ProxyConfiguration;
 import org.commonjava.aprox.core.data.ProxyAppDescription;
@@ -38,8 +39,10 @@ import org.commonjava.aprox.core.inject.AproxData;
 import org.commonjava.aprox.core.inject.AproxDataProviders;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.Repository;
+import org.commonjava.couch.conf.CouchDBConfiguration;
 import org.commonjava.couch.db.CouchManager;
 import org.commonjava.web.test.AbstractRESTCouchTest;
+import org.commonjava.web.test.fixture.TestData;
 import org.commonjava.web.test.fixture.TestWarArchiveBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -105,12 +108,15 @@ public class FileManagerLiveTest
             new TestWarArchiveBuilder( AProxTestPropertiesProvider.class );
 
         builder.withExtraClasses( FileManager.class, TLRepositoryCredentialsProvider.class,
-                                  AProxTestPropertiesProvider.class, ProxyConfigProvider.class,
-                                  ProxyConfiguration.class, DefaultProxyConfiguration.class );
+                                  AProxTestPropertiesProvider.class, ProxyConfiguration.class,
+                                  DefaultProxyConfiguration.class );
 
         builder.withExtraPackages( true, AproxDataProviders.class.getPackage(),
-                                   ArtifactStore.class.getPackage(),
-                                   ProxyDataManager.class.getPackage() );
+                                   ProxyConfigProvider.class.getPackage(),
+                                   TestData.class.getPackage(), ArtifactStore.class.getPackage(),
+                                   ProxyDataManager.class.getPackage(),
+                                   CouchDBConfiguration.class.getPackage(), // Isn't this already in there??
+                                   MavenMetadataUploadListener.class.getPackage() );
 
         builder.withStandardPackages();
         builder.withLog4jProperties();
@@ -121,7 +127,7 @@ public class FileManagerLiveTest
         WebArchive archive = builder.build();
 
         String basedir = System.getProperty( "basedir", "." );
-        archive.addAsWebInfResource( new File( basedir, "src/main/resources/META-INF/beans.xml" ) );
+        archive.addAsWebInfResource( new File( basedir, "src/test/resources/META-INF/beans.xml" ) );
 
         return archive;
     }

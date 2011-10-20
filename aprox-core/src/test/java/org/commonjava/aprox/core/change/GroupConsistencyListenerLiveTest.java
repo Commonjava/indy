@@ -15,69 +15,28 @@
  * License along with this program.  If not, see 
  * <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package org.commonjava.aprox.sec.change;
+package org.commonjava.aprox.core.change;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import javax.inject.Inject;
 
+import org.commonjava.aprox.core.AbstractAProxLiveTest;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.model.Repository;
-import org.commonjava.aprox.core.model.StoreType;
-import org.commonjava.aprox.sec.AbstractAProxSecLiveTest;
-import org.commonjava.auth.couch.model.Permission;
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith( Arquillian.class )
-public class RepositoryDeletionListenerTest
-    extends AbstractAProxSecLiveTest
+public class GroupConsistencyListenerLiveTest
+    extends AbstractAProxLiveTest
 {
 
     @Inject
-    private StoreDeletionListener repositoryListener;
-
-    @Test
-    public void repositoryRolesRemovedWhenRepositoryDeleted()
-        throws Exception
-    {
-        Repository repo = new Repository( "test", "http://repo1.maven.apache.org/maven2/" );
-        proxyManager.storeRepository( repo );
-
-        Permission perm =
-            userManager.getPermission( Permission.name( StoreType.repository.name(),
-                                                        repo.getName(), Permission.ADMIN ) );
-        assertThat( perm, notNullValue() );
-
-        perm =
-            userManager.getPermission( Permission.name( StoreType.repository.name(),
-                                                        repo.getName(), Permission.READ ) );
-        assertThat( perm, notNullValue() );
-
-        proxyManager.deleteRepository( repo.getName() );
-
-        System.out.println( "Waiting up to 20s for permission deletions to propagate..." );
-        long start = System.currentTimeMillis();
-
-        repositoryListener.waitForChange( 20000, 1000 );
-
-        long elapsed = System.currentTimeMillis() - start;
-        System.out.println( "Continuing test after " + elapsed + " ms." );
-
-        perm =
-            userManager.getPermission( Permission.name( StoreType.repository.name(),
-                                                        repo.getName(), Permission.ADMIN ) );
-        assertThat( perm, nullValue() );
-
-        perm =
-            userManager.getPermission( Permission.name( StoreType.repository.name(),
-                                                        repo.getName(), Permission.READ ) );
-        assertThat( perm, nullValue() );
-    }
+    private GroupConsistencyListener listener;
 
     @Test
     public void groupsContainingRepositoryModifiedWhenRepositoryDeleted()
@@ -104,7 +63,7 @@ public class RepositoryDeletionListenerTest
         System.out.println( "Waiting up to 20s for deletions to propagate..." );
         long start = System.currentTimeMillis();
 
-        repositoryListener.waitForChange( 20000, 1000 );
+        listener.waitForChange( 20000, 1000 );
 
         long elapsed = System.currentTimeMillis() - start;
         System.out.println( "Continuing test after " + elapsed + " ms." );

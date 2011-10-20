@@ -15,7 +15,7 @@
  * License along with this program.  If not, see 
  * <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package org.commonjava.aprox.core.fixture;
+package org.commonjava.aprox.sec.fixture;
 
 import java.util.Properties;
 
@@ -26,12 +26,14 @@ import javax.inject.Singleton;
 import org.commonjava.couch.test.fixture.TestPropertyDefinitions;
 
 @Singleton
-public class AProxTestPropertiesProvider
+public class AProxSecTestPropertiesProvider
 {
 
     public static final String REPO_ROOT_DIR = "repo.root.dir";
 
     public static final String APROX_DATABASE_URL = "aprox.db.url";
+
+    public static final String USER_DATABASE_URL = "user.db.url";
 
     @Produces
     @Named( TestPropertyDefinitions.NAMED )
@@ -40,6 +42,7 @@ public class AProxTestPropertiesProvider
         Properties props = new Properties();
 
         props.put( APROX_DATABASE_URL, "http://localhost:5984/test-aprox" );
+        props.put( USER_DATABASE_URL, "http://localhost:5984/test-user" );
         props.put( REPO_ROOT_DIR, System.getProperty( REPO_ROOT_DIR, "target/repo-downloads" ) );
 
         return props;

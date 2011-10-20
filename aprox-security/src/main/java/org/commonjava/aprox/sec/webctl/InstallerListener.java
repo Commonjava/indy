@@ -15,20 +15,16 @@
  * License along with this program.  If not, see 
  * <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package org.commonjava.aprox.core.webctl;
+package org.commonjava.aprox.sec.webctl;
 
 import javax.inject.Inject;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
-import org.commonjava.aprox.core.data.ProxyDataException;
-import org.commonjava.aprox.core.data.ProxyDataManager;
-import org.commonjava.aprox.core.inject.AproxData;
-import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.model.Repository;
-import org.commonjava.aprox.core.model.StoreKey;
-import org.commonjava.aprox.core.model.StoreType;
+import org.commonjava.auth.couch.data.UserDataException;
+import org.commonjava.auth.couch.data.UserDataManager;
+import org.commonjava.auth.couch.inject.UserData;
 import org.commonjava.couch.change.CouchChangeListener;
 import org.commonjava.couch.db.CouchDBException;
 import org.commonjava.util.logging.Logger;
@@ -41,29 +37,24 @@ public class InstallerListener
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private ProxyDataManager dataManager;
+    private UserDataManager dataManager;
 
     @Inject
-    @AproxData
+    @UserData
     private CouchChangeListener changeListener;
 
     @Override
     public void contextInitialized( final ServletContextEvent sce )
     {
-        logger.info( "Verfiying that AProx CouchDB + applications + basic data is installed..." );
+        logger.info( "Verfiying that User CouchDB + applications + basic data is installed..." );
         try
         {
             dataManager.install();
-            dataManager.storeRepository( new Repository( "central",
-                                                         "http://repo1.maven.apache.org/maven2/" ),
-                                         true );
-
-            dataManager.storeGroup( new Group( "public", new StoreKey( StoreType.repository,
-                                                                       "central" ) ), true );
+            dataManager.setupAdminInformation();
 
             changeListener.startup( false );
         }
-        catch ( ProxyDataException e )
+        catch ( UserDataException e )
         {
             throw new RuntimeException( "Failed to install proxy database: " + e.getMessage(), e );
         }
