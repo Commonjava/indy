@@ -18,6 +18,8 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>aprox-core</artifactId>
       <version>${project.version}</version>
+      <type>war</type>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

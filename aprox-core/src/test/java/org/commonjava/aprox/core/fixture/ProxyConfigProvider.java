@@ -18,38 +18,26 @@
 package org.commonjava.aprox.core.fixture;
 
 import java.io.File;
-import java.util.Properties;
 
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.commonjava.aprox.core.conf.DefaultProxyConfiguration;
 import org.commonjava.aprox.core.conf.ProxyConfiguration;
 import org.commonjava.aprox.core.inject.AproxData;
 import org.commonjava.couch.conf.CouchDBConfiguration;
-import org.commonjava.couch.test.fixture.TestPropertyDefinitions;
-import org.commonjava.web.test.fixture.TestData;
+import org.commonjava.couch.test.fixture.TestData;
 
 @Singleton
 public class ProxyConfigProvider
 {
 
+    public static final String REPO_ROOT_DIR = "repo.root.dir";
+
+    public static final String APROX_DATABASE_URL = "aprox.db.url";
+
     private DefaultProxyConfiguration config;
-
-    @Inject
-    @Named( TestPropertyDefinitions.NAMED )
-    private Properties testProperties;
-
-    public ProxyConfigProvider( final Properties testProperties )
-    {
-        this.testProperties = testProperties;
-    }
-
-    ProxyConfigProvider()
-    {}
 
     @Produces
     // @TestData
@@ -58,12 +46,8 @@ public class ProxyConfigProvider
     {
         if ( config == null )
         {
-            config =
-                new DefaultProxyConfiguration(
-                                               testProperties.getProperty( AProxTestPropertiesProvider.APROX_DATABASE_URL ) );
-
-            config.setRepositoryRootDirectory( new File(
-                                                         testProperties.getProperty( AProxTestPropertiesProvider.REPO_ROOT_DIR ) ) );
+            config = new DefaultProxyConfiguration( "http://localhost:5984/test-aprox" );
+            config.setRepositoryRootDirectory( new File( System.getProperty( REPO_ROOT_DIR, "target/repo-downloads" ) ) );
         }
 
         return config;

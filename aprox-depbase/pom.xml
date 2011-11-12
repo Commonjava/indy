@@ -35,7 +35,7 @@
 	<dependency>
 		<groupId>org.apache.maven.mae</groupId>
 		<artifactId>mae-booter</artifactId>
-		<version>1.0-alpha-1-SNAPSHOT</version>
+		<version>1.0-alpha-1</version>
 	</dependency>
 	<dependency>
 		<groupId>org.commonjava.depbase</groupId>

@@ -9,13 +9,19 @@
   </parent>
   
   <artifactId>aprox-security</artifactId>
-  <name>AProx Maven Artifact Proxy :: Core</name>
+  <name>AProx Maven Artifact Proxy :: RBAC Overlay</name>
 
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>aprox-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>aprox-core</artifactId>
       <version>${project.version}</version>
+      <type>war</type>
     </dependency>
     
     <dependency>
@@ -29,6 +35,7 @@
   	<dependency>
   		<groupId>org.commonjava.couch.web</groupId>
   		<artifactId>restful-user-manager</artifactId>
+  		<type>war</type>
   	</dependency>
     
     <dependency>

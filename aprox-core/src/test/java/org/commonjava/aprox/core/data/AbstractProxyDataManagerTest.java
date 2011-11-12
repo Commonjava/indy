@@ -19,11 +19,8 @@ package org.commonjava.aprox.core.data;
 
 import static org.commonjava.couch.test.fixture.LoggingFixture.setupLogging;
 
-import java.util.Properties;
-
 import org.apache.log4j.Level;
 import org.commonjava.aprox.core.conf.ProxyConfiguration;
-import org.commonjava.aprox.core.fixture.AProxTestPropertiesProvider;
 import org.commonjava.aprox.core.fixture.ProxyConfigProvider;
 import org.commonjava.couch.db.CouchManager;
 import org.commonjava.couch.io.CouchAppReader;
@@ -52,19 +49,18 @@ public class AbstractProxyDataManagerTest
     {
         setupLogging( Level.DEBUG );
 
-        Properties testProperties = new AProxTestPropertiesProvider().getTestProperties();
-        config = new ProxyConfigProvider( testProperties ).getProxyConfiguration();
+        config = new ProxyConfigProvider().getProxyConfiguration();
 
         // umConfig =
         // new DefaultUserManagerConfig( "admin@nowhere.com", "password", "Admin", "User",
         // "http://localhost:5984/test-aprox" );
 
-        Serializer serializer = new Serializer();
+        final Serializer serializer = new Serializer();
 
         couch =
             new CouchManager( config.getDatabaseConfig(),
-                              new CouchHttpClient( config.getDatabaseConfig(), serializer ),
-                              serializer, new CouchAppReader() );
+                              new CouchHttpClient( config.getDatabaseConfig(), serializer ), serializer,
+                              new CouchAppReader() );
 
         // passwordManager = new PasswordManager();
         // userManager = new UserDataManager( umConfig, passwordManager, couch );

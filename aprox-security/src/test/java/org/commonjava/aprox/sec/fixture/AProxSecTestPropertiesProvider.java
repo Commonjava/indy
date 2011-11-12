@@ -20,10 +20,9 @@ package org.commonjava.aprox.sec.fixture;
 import java.util.Properties;
 
 import javax.enterprise.inject.Produces;
-import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.commonjava.couch.test.fixture.TestPropertyDefinitions;
+import org.commonjava.couch.test.fixture.TestData;
 
 @Singleton
 public class AProxSecTestPropertiesProvider
@@ -36,10 +35,10 @@ public class AProxSecTestPropertiesProvider
     public static final String USER_DATABASE_URL = "user.db.url";
 
     @Produces
-    @Named( TestPropertyDefinitions.NAMED )
+    @TestData
     public Properties getTestProperties()
     {
-        Properties props = new Properties();
+        final Properties props = new Properties();
 
         props.put( APROX_DATABASE_URL, "http://localhost:5984/test-aprox" );
         props.put( USER_DATABASE_URL, "http://localhost:5984/test-user" );

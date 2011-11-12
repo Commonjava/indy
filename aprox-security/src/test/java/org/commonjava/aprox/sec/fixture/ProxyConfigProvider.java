@@ -23,15 +23,13 @@ import java.util.Properties;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.commonjava.aprox.core.conf.DefaultProxyConfiguration;
 import org.commonjava.aprox.core.conf.ProxyConfiguration;
 import org.commonjava.aprox.core.inject.AproxData;
 import org.commonjava.couch.conf.CouchDBConfiguration;
-import org.commonjava.couch.test.fixture.TestPropertyDefinitions;
-import org.commonjava.web.test.fixture.TestData;
+import org.commonjava.couch.test.fixture.TestData;
 
 @Singleton
 public class ProxyConfigProvider
@@ -40,7 +38,7 @@ public class ProxyConfigProvider
     private DefaultProxyConfiguration config;
 
     @Inject
-    @Named( TestPropertyDefinitions.NAMED )
+    @TestData
     private Properties testProperties;
 
     public ProxyConfigProvider( final Properties testProperties )
@@ -49,7 +47,8 @@ public class ProxyConfigProvider
     }
 
     ProxyConfigProvider()
-    {}
+    {
+    }
 
     @Produces
     // @TestData

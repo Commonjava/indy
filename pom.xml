@@ -39,10 +39,12 @@
   </scm>
   
   <modules>
+    <module>aprox-api</module>
+    <module>aprox-configfile</module>
     <module>aprox-core</module>
     <module>aprox-rest-min</module>
     <module>aprox-basic</module>
-    <module>aprox-depbase</module>
+    <!-- <module>aprox-depbase</module> -->
     <!-- <module>aprox-meadci</module> -->
     <module>aprox-security</module>
   </modules>
@@ -76,7 +78,45 @@
             </execution>
           </executions>
         </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.10</version>
+          <configuration>
+            <excludes>
+              <exclude>**/fixture/*.java</exclude>
+              <exclude>**/live/*.java</exclude>
+              <exclude>**/live/**/*.java</exclude>
+            </excludes>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>2.10</version>
+          <configuration>
+            <excludes>
+              <exclude>**/fixture/*.java</exclude>
+            </excludes>
+            <includes>
+              <include>**/live/*.java</include>
+              <include>**/live/**/*.java</include>
+            </includes>
+          </configuration>
+          <executions>
+            <execution>
+              <id>integration-tests</id>
+              <goals>
+                <goal>integration-test</goal>
+                <goal>verify</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
       </plugins>
     </pluginManagement>
+    <plugins>
+      <plugin>
+        <artifactId>maven-failsafe-plugin</artifactId>
+      </plugin>
+    </plugins>
   </build>
 </project>
