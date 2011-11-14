@@ -26,6 +26,7 @@ import org.commonjava.aprox.core.data.ProxyDataManager;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.StoreType;
+import org.commonjava.aprox.sec.change.SecurityConsistencyListener;
 import org.commonjava.aprox.sec.fixture.AproxDataLiteral;
 import org.commonjava.auth.couch.data.UserDataManager;
 import org.commonjava.auth.couch.model.Permission;

@@ -42,42 +42,42 @@
     <module>aprox-api</module>
     <module>aprox-configfile</module>
     <module>aprox-core</module>
-    <module>aprox-rest-min</module>
-    <module>aprox-basic</module>
+    <module>aprox-security</module>
+    <module>wars</module>
+    
+    <!-- TODO: Are these WARs? Do they NEED WAR projects to wrap them with the core?? -->
     <!-- <module>aprox-depbase</module> -->
     <!-- <module>aprox-meadci</module> -->
-    <module>aprox-security</module>
   </modules>
+  
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-api</artifactId>
+        <version>0.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-configfile</artifactId>
+        <version>0.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-core</artifactId>
+        <version>0.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-security</artifactId>
+        <version>0.2-SNAPSHOT</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   
   <build>
     <pluginManagement>
       <plugins>
-        <plugin>
-          <groupId>org.codehaus.enunciate</groupId>
-          <artifactId>maven-enunciate-slim-plugin</artifactId>
-          <version>1.24</version>
-          
-          <dependencies>
-            <dependency>
-              <groupId>org.codehaus.enunciate</groupId>
-              <artifactId>enunciate-docs</artifactId>
-              <version>1.24</version>
-            </dependency>
-          </dependencies>
-          
-          <executions>
-            <execution>
-              <id>enunciate-rest-api</id>
-              <goals>
-                <goal>docs</goal>
-              </goals>
-              <configuration>
-                <docsDir>docs/1.0</docsDir>
-                <includeExampleXml>false</includeExampleXml>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.10</version>
@@ -89,34 +89,24 @@
             </excludes>
           </configuration>
         </plugin>
-        <plugin>
-          <artifactId>maven-failsafe-plugin</artifactId>
-          <version>2.10</version>
-          <configuration>
-            <excludes>
-              <exclude>**/fixture/*.java</exclude>
-            </excludes>
-            <includes>
-              <include>**/live/*.java</include>
-              <include>**/live/**/*.java</include>
-            </includes>
-          </configuration>
-          <executions>
-            <execution>
-              <id>integration-tests</id>
-              <goals>
-                <goal>integration-test</goal>
-                <goal>verify</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
       </plugins>
     </pluginManagement>
-    <plugins>
-      <plugin>
-        <artifactId>maven-failsafe-plugin</artifactId>
-      </plugin>
-    </plugins>
   </build>
+  
+  <profiles>
+    <profile>
+      <id>run-its</id>
+      <activation>
+        <property>
+          <name>maven.test.skip</name>
+          <value>true</value>
+        </property>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      
+      <modules>
+        <module>integration-tests</module>
+      </modules>
+    </profile>
+  </profiles>
 </project>
