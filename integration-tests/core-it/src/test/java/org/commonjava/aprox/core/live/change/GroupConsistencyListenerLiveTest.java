@@ -24,10 +24,11 @@ import static org.junit.Assert.assertThat;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.core.change.GroupConsistencyListener;
-import org.commonjava.aprox.core.fixture.ProxyConfigProvider;
 import org.commonjava.aprox.core.live.AbstractAProxLiveTest;
+import org.commonjava.aprox.core.live.fixture.ProxyConfigProvider;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.model.Repository;
+import org.commonjava.aprox.core.webctl.InstallerListener;
 import org.commonjava.web.test.fixture.TestWarArchiveBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -45,6 +46,7 @@ public class GroupConsistencyListenerLiveTest
     {
         return new TestWarArchiveBuilder( GroupConsistencyListenerLiveTest.class ).withExtraClasses( AbstractAProxLiveTest.class,
                                                                                                      ProxyConfigProvider.class )
+                                                                                  .withoutBuildClasses( InstallerListener.class )
                                                                                   .build();
     }
 

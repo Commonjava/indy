@@ -29,8 +29,8 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.core.data.ProxyDataManager;
-import org.commonjava.aprox.core.fixture.ProxyConfigProvider;
 import org.commonjava.aprox.core.inject.AproxData;
+import org.commonjava.aprox.core.live.fixture.ProxyConfigProvider;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.rest.util.FileManager;

@@ -22,7 +22,7 @@
       http://java.sun.com/xml/ns/javaee 
       http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
       
-<!--   <alternatives>
+  <alternatives>
     <stereotype>org.commonjava.web.test.fixture.TestData</stereotype>
   </alternatives>
- --></beans>
+</beans>

@@ -29,8 +29,8 @@ import java.util.List;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.commonjava.aprox.core.fixture.ProxyConfigProvider;
 import org.commonjava.aprox.core.live.AbstractAProxLiveTest;
+import org.commonjava.aprox.core.live.fixture.ProxyConfigProvider;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.StoreKey;

@@ -36,7 +36,6 @@ import org.commonjava.aprox.core.inject.AproxData;
 import org.commonjava.couch.change.CouchChangeListener;
 import org.commonjava.couch.db.CouchManager;
 import org.commonjava.web.test.AbstractRESTCouchTest;
-import org.junit.After;
 import org.junit.Before;
 
 public class AbstractAProxLiveTest
@@ -62,7 +61,7 @@ public class AbstractAProxLiveTest
         changeListener.startup();
     }
 
-    @After
+    // @After
     public final void teardownAProxLiveTest()
         throws Exception
     {

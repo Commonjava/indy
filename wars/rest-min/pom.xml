@@ -15,15 +15,19 @@
   <dependencies>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-core</artifactId>
+      <artifactId>aprox-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-configfile</artifactId>
+      <artifactId>aprox-core</artifactId>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-core-dotconf</artifactId>
     </dependency>
   </dependencies>
   

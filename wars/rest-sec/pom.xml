@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.commonjava.aprox.wars</groupId>
+    <artifactId>aprox-wars</artifactId>
+    <version>0.2-SNAPSHOT</version>
+  </parent>
+  
+  <artifactId>aprox-rest-sec</artifactId>
+  <packaging>war</packaging>
+  
+  <name>AProx Maven Artifact Proxy :: REST WAR with RBAC Security</name>
+  
+  <dependencies>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-security</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-core-dotconf</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-sec-dotconf</artifactId>
+    </dependency>
+  </dependencies>
+  
+  <!-- <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-war-plugin</artifactId>
+          <configuration>
+            <overlays>
+              <overlay>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>aprox-core</artifactId>
+              </overlay>
+            </overlays>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build> -->
+  
+</project>

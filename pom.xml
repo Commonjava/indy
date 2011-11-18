@@ -39,10 +39,10 @@
   </scm>
   
   <modules>
-    <module>aprox-api</module>
-    <module>aprox-configfile</module>
-    <module>aprox-core</module>
-    <module>aprox-security</module>
+    <module>api</module>
+    <module>core</module>
+    <module>security</module>
+    <module>config</module>
     <module>wars</module>
     
     <!-- TODO: Are these WARs? Do they NEED WAR projects to wrap them with the core?? -->
@@ -59,17 +59,22 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-configfile</artifactId>
-        <version>0.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-core</artifactId>
         <version>0.2-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-security</artifactId>
+        <version>0.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-core-dotconf</artifactId>
+        <version>0.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-sec-dotconf</artifactId>
         <version>0.2-SNAPSHOT</version>
       </dependency>
     </dependencies>
@@ -99,7 +104,7 @@
       <activation>
         <property>
           <name>maven.test.skip</name>
-          <value>true</value>
+          <value>!true</value>
         </property>
         <activeByDefault>true</activeByDefault>
       </activation>
