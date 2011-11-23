@@ -54,7 +54,8 @@ import org.commonjava.couch.model.CouchDocRef;
 import org.commonjava.couch.util.JoinString;
 
 @Singleton
-public class DefaultProxyDataManager implements ProxyDataManager
+public class DefaultProxyDataManager
+    implements ProxyDataManager
 {
     // private final Logger logger = new Logger( getClass() );
 
@@ -79,10 +80,11 @@ public class DefaultProxyDataManager implements ProxyDataManager
     private Serializer serializer;
 
     public DefaultProxyDataManager()
-    {}
+    {
+    }
 
     public DefaultProxyDataManager( final ProxyConfiguration config, final CouchManager couch,
-                             final Serializer serializer )
+                                    final Serializer serializer )
     {
         this.config = config;
         this.couchConfig = config.getDatabaseConfig();
@@ -98,7 +100,8 @@ public class DefaultProxyDataManager implements ProxyDataManager
         serializer.registerSerializationAdapters( new StoreKeySerializer(), new StoreDeserializer() );
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.commonjava.aprox.core.data.ProxyDataManager#getDeployPoint(java.lang.String)
      */
     @Override
@@ -107,17 +110,17 @@ public class DefaultProxyDataManager implements ProxyDataManager
     {
         try
         {
-            return couch.getDocument( new CouchDocRef( namespaceId( StoreType.deploy_point.name(),
-                                                                    name ) ), DeployPoint.class );
+            return couch.getDocument( new CouchDocRef( namespaceId( StoreType.deploy_point.name(), name ) ),
+                                      DeployPoint.class );
         }
-        catch ( CouchDBException e )
+        catch ( final CouchDBException e )
         {
-            throw new ProxyDataException( "Failed to retrieve deploy-store: %s. Reason: %s", e,
-                                          name, e.getMessage() );
+            throw new ProxyDataException( "Failed to retrieve deploy-store: %s. Reason: %s", e, name, e.getMessage() );
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.commonjava.aprox.core.data.ProxyDataManager#getRepository(java.lang.String)
      */
     @Override
@@ -126,17 +129,17 @@ public class DefaultProxyDataManager implements ProxyDataManager
     {
         try
         {
-            return couch.getDocument( new CouchDocRef( namespaceId( StoreType.repository.name(),
-                                                                    name ) ), Repository.class );
+            return couch.getDocument( new CouchDocRef( namespaceId( StoreType.repository.name(), name ) ),
+                                      Repository.class );
         }
-        catch ( CouchDBException e )
+        catch ( final CouchDBException e )
         {
-            throw new ProxyDataException( "Failed to retrieve repository: %s. Reason: %s", e, name,
-                                          e.getMessage() );
+            throw new ProxyDataException( "Failed to retrieve repository: %s. Reason: %s", e, name, e.getMessage() );
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.commonjava.aprox.core.data.ProxyDataManager#getGroup(java.lang.String)
      */
     @Override
@@ -145,17 +148,16 @@ public class DefaultProxyDataManager implements ProxyDataManager
     {
         try
         {
-            return couch.getDocument( new CouchDocRef( namespaceId( StoreType.group.name(), name ) ),
-                                      Group.class );
+            return couch.getDocument( new CouchDocRef( namespaceId( StoreType.group.name(), name ) ), Group.class );
         }
-        catch ( CouchDBException e )
+        catch ( final CouchDBException e )
         {
-            throw new ProxyDataException( "Failed to retrieve group: %s. Reason: %s", e, name,
-                                          e.getMessage() );
+            throw new ProxyDataException( "Failed to retrieve group: %s. Reason: %s", e, name, e.getMessage() );
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.commonjava.aprox.core.data.ProxyDataManager#getAllGroups()
      */
     @Override
@@ -164,17 +166,16 @@ public class DefaultProxyDataManager implements ProxyDataManager
     {
         try
         {
-            return couch.getViewListing( new ProxyViewRequest( config, View.ALL_GROUPS ),
-                                         Group.class );
+            return couch.getViewListing( new ProxyViewRequest( config, View.ALL_GROUPS ), Group.class );
         }
-        catch ( CouchDBException e )
+        catch ( final CouchDBException e )
         {
-            throw new ProxyDataException( "Failed to retrieve group listing. Reason: %s", e,
-                                          e.getMessage() );
+            throw new ProxyDataException( "Failed to retrieve group listing. Reason: %s", e, e.getMessage() );
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.commonjava.aprox.core.data.ProxyDataManager#getAllRepositories()
      */
     @Override
@@ -183,17 +184,16 @@ public class DefaultProxyDataManager implements ProxyDataManager
     {
         try
         {
-            return couch.getViewListing( new ProxyViewRequest( config, View.ALL_REPOSITORIES ),
-                                         Repository.class );
+            return couch.getViewListing( new ProxyViewRequest( config, View.ALL_REPOSITORIES ), Repository.class );
         }
-        catch ( CouchDBException e )
+        catch ( final CouchDBException e )
         {
-            throw new ProxyDataException( "Failed to retrieve repository listing. Reason: %s", e,
-                                          e.getMessage() );
+            throw new ProxyDataException( "Failed to retrieve repository listing. Reason: %s", e, e.getMessage() );
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.commonjava.aprox.core.data.ProxyDataManager#getAllDeployPoints()
      */
     @Override
@@ -202,54 +202,52 @@ public class DefaultProxyDataManager implements ProxyDataManager
     {
         try
         {
-            return couch.getViewListing( new ProxyViewRequest( config, View.ALL_REPOSITORIES ),
-                                         DeployPoint.class );
+            return couch.getViewListing( new ProxyViewRequest( config, View.ALL_REPOSITORIES ), DeployPoint.class );
         }
-        catch ( CouchDBException e )
+        catch ( final CouchDBException e )
         {
-            throw new ProxyDataException( "Failed to retrieve deploy-store listing. Reason: %s", e,
-                                          e.getMessage() );
+            throw new ProxyDataException( "Failed to retrieve deploy-store listing. Reason: %s", e, e.getMessage() );
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.commonjava.aprox.core.data.ProxyDataManager#getOrderedConcreteStoresInGroup(java.lang.String)
      */
     @Override
     public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
         throws ProxyDataException
     {
-        List<ArtifactStore> result = new ArrayList<ArtifactStore>();
+        final List<ArtifactStore> result = new ArrayList<ArtifactStore>();
         findOrderedConcreteStores( groupName, result );
 
         return result;
     }
 
-    private void findOrderedConcreteStores( final String groupName,
-                                            final List<ArtifactStore> accumStores )
+    private void findOrderedConcreteStores( final String groupName, final List<ArtifactStore> accumStores )
         throws ProxyDataException
     {
-        LinkedList<String> todo = new LinkedList<String>();
-        Set<String> done = new HashSet<String>();
+        final LinkedList<String> todo = new LinkedList<String>();
+        final Set<String> done = new HashSet<String>();
 
         todo.addLast( groupName );
         while ( !todo.isEmpty() )
         {
-            String group = todo.removeFirst();
+            final String group = todo.removeFirst();
 
             done.add( group );
             try
             {
                 // logger.info( "Grabbing constituents of: '%s'", group );
 
-                ProxyViewRequest req = new ProxyViewRequest( config, View.GROUP_STORES );
+                final ProxyViewRequest req = new ProxyViewRequest( config, View.GROUP_STORES );
                 req.setFullRangeForBaseKey( group );
 
-                List<ArtifactStore> stores = couch.getViewListing( req, ArtifactStore.class );
+                final List<ArtifactStore> stores = couch.getViewListing( req, ArtifactStore.class );
 
                 if ( stores != null )
                 {
-                    for ( ArtifactStore store : stores )
+                    for ( final ArtifactStore store : stores )
                     {
                         if ( store == null )
                         {
@@ -271,16 +269,18 @@ public class DefaultProxyDataManager implements ProxyDataManager
                     }
                 }
             }
-            catch ( CouchDBException e )
+            catch ( final CouchDBException e )
             {
-                throw new ProxyDataException( "Failed to retrieve stores in group: %s. Reason: %s",
-                                              e, groupName, e.getMessage() );
+                throw new ProxyDataException( "Failed to retrieve stores in group: %s. Reason: %s", e, groupName,
+                                              e.getMessage() );
             }
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.commonjava.aprox.core.data.ProxyDataManager#getGroupsContaining(org.commonjava.aprox.core.model.StoreKey)
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.commonjava.aprox.core.data.ProxyDataManager#getGroupsContaining(org.commonjava.aprox.core.model.StoreKey)
      */
     @Override
     public Set<Group> getGroupsContaining( final StoreKey repo )
@@ -288,22 +288,21 @@ public class DefaultProxyDataManager implements ProxyDataManager
     {
         try
         {
-            ProxyViewRequest req =
-                new ProxyViewRequest( config, View.STORE_GROUPS, repo.toString() );
+            final ProxyViewRequest req = new ProxyViewRequest( config, View.STORE_GROUPS, repo.toString() );
 
-            List<Group> groups = couch.getViewListing( req, Group.class );
+            final List<Group> groups = couch.getViewListing( req, Group.class );
 
             return new HashSet<Group>( groups );
         }
-        catch ( CouchDBException e )
+        catch ( final CouchDBException e )
         {
-            throw new ProxyDataException(
-                                          "Failed to lookup groups containing repository: %s. Reason: %s",
-                                          e, repo, e.getMessage() );
+            throw new ProxyDataException( "Failed to lookup groups containing repository: %s. Reason: %s", e, repo,
+                                          e.getMessage() );
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.commonjava.aprox.core.data.ProxyDataManager#storeDeployPoints(java.util.Collection)
      */
     @Override
@@ -315,15 +314,17 @@ public class DefaultProxyDataManager implements ProxyDataManager
             couch.store( deploys, false, false );
             fireStoreEvent( ProxyManagerUpdateType.ADD_OR_UPDATE, deploys );
         }
-        catch ( CouchDBException e )
+        catch ( final CouchDBException e )
         {
-            throw new ProxyDataException( "Failed to update %d deploy-stores. Reason: %s", e,
-                                          deploys.size(), e.getMessage() );
+            throw new ProxyDataException( "Failed to update %d deploy-stores. Reason: %s", e, deploys.size(),
+                                          e.getMessage() );
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.commonjava.aprox.core.data.ProxyDataManager#storeDeployPoint(org.commonjava.aprox.core.model.DeployPoint)
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.commonjava.aprox.core.data.ProxyDataManager#storeDeployPoint(org.commonjava.aprox.core.model.DeployPoint)
      */
     @Override
     public boolean storeDeployPoint( final DeployPoint deploy )
@@ -332,8 +333,11 @@ public class DefaultProxyDataManager implements ProxyDataManager
         return storeDeployPoint( deploy, false );
     }
 
-    /* (non-Javadoc)
-     * @see org.commonjava.aprox.core.data.ProxyDataManager#storeDeployPoint(org.commonjava.aprox.core.model.DeployPoint, boolean)
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.commonjava.aprox.core.data.ProxyDataManager#storeDeployPoint(org.commonjava.aprox.core.model.DeployPoint,
+     * boolean)
      */
     @Override
     public boolean storeDeployPoint( final DeployPoint deploy, final boolean skipIfExists )
@@ -341,22 +345,21 @@ public class DefaultProxyDataManager implements ProxyDataManager
     {
         try
         {
-            boolean result = couch.store( deploy, skipIfExists );
+            final boolean result = couch.store( deploy, skipIfExists );
 
-            fireStoreEvent( skipIfExists ? ProxyManagerUpdateType.ADD
-                            : ProxyManagerUpdateType.ADD_OR_UPDATE, deploy );
+            fireStoreEvent( skipIfExists ? ProxyManagerUpdateType.ADD : ProxyManagerUpdateType.ADD_OR_UPDATE, deploy );
 
             return result;
         }
-        catch ( CouchDBException e )
+        catch ( final CouchDBException e )
         {
-            throw new ProxyDataException(
-                                          "Failed to store deploy-store configuration: %s. Reason: %s",
-                                          e, deploy.getName(), e.getMessage() );
+            throw new ProxyDataException( "Failed to store deploy-store configuration: %s. Reason: %s", e,
+                                          deploy.getName(), e.getMessage() );
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.commonjava.aprox.core.data.ProxyDataManager#storeRepositories(java.util.Collection)
      */
     @Override
@@ -368,14 +371,15 @@ public class DefaultProxyDataManager implements ProxyDataManager
             couch.store( repos, false, false );
             fireStoreEvent( ProxyManagerUpdateType.ADD_OR_UPDATE, repos );
         }
-        catch ( CouchDBException e )
+        catch ( final CouchDBException e )
         {
-            throw new ProxyDataException( "Failed to update %d repositories. Reason: %s", e,
-                                          repos.size(), e.getMessage() );
+            throw new ProxyDataException( "Failed to update %d repositories. Reason: %s", e, repos.size(),
+                                          e.getMessage() );
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.commonjava.aprox.core.data.ProxyDataManager#storeRepository(org.commonjava.aprox.core.model.Repository)
      */
     @Override
@@ -385,8 +389,10 @@ public class DefaultProxyDataManager implements ProxyDataManager
         return storeRepository( proxy, false );
     }
 
-    /* (non-Javadoc)
-     * @see org.commonjava.aprox.core.data.ProxyDataManager#storeRepository(org.commonjava.aprox.core.model.Repository, boolean)
+    /*
+     * (non-Javadoc)
+     * @see org.commonjava.aprox.core.data.ProxyDataManager#storeRepository(org.commonjava.aprox.core.model.Repository,
+     * boolean)
      */
     @Override
     public boolean storeRepository( final Repository repository, final boolean skipIfExists )
@@ -394,22 +400,22 @@ public class DefaultProxyDataManager implements ProxyDataManager
     {
         try
         {
-            boolean result = couch.store( repository, skipIfExists );
+            final boolean result = couch.store( repository, skipIfExists );
 
-            fireStoreEvent( skipIfExists ? ProxyManagerUpdateType.ADD
-                            : ProxyManagerUpdateType.ADD_OR_UPDATE, repository );
+            fireStoreEvent( skipIfExists ? ProxyManagerUpdateType.ADD : ProxyManagerUpdateType.ADD_OR_UPDATE,
+                            repository );
 
             return result;
         }
-        catch ( CouchDBException e )
+        catch ( final CouchDBException e )
         {
-            throw new ProxyDataException(
-                                          "Failed to store repository configuration: %s. Reason: %s",
-                                          e, repository.getName(), e.getMessage() );
+            throw new ProxyDataException( "Failed to store repository configuration: %s. Reason: %s", e,
+                                          repository.getName(), e.getMessage() );
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.commonjava.aprox.core.data.ProxyDataManager#storeGroups(java.util.Collection)
      */
     @Override
@@ -421,14 +427,15 @@ public class DefaultProxyDataManager implements ProxyDataManager
             couch.store( groups, false, false );
             fireStoreEvent( ProxyManagerUpdateType.ADD_OR_UPDATE, groups );
         }
-        catch ( CouchDBException e )
+        catch ( final CouchDBException e )
         {
-            throw new ProxyDataException( "Failed to update %d repository groups. Reason: %s", e,
-                                          groups.size(), e.getMessage() );
+            throw new ProxyDataException( "Failed to update %d repository groups. Reason: %s", e, groups.size(),
+                                          e.getMessage() );
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.commonjava.aprox.core.data.ProxyDataManager#storeGroup(org.commonjava.aprox.core.model.Group)
      */
     @Override
@@ -438,7 +445,8 @@ public class DefaultProxyDataManager implements ProxyDataManager
         return storeGroup( group, false );
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.commonjava.aprox.core.data.ProxyDataManager#storeGroup(org.commonjava.aprox.core.model.Group, boolean)
      */
     @Override
@@ -447,8 +455,8 @@ public class DefaultProxyDataManager implements ProxyDataManager
     {
         try
         {
-            Set<StoreKey> missing = new HashSet<StoreKey>();
-            for ( StoreKey repo : group.getConstituents() )
+            final Set<StoreKey> missing = new HashSet<StoreKey>();
+            for ( final StoreKey repo : group.getConstituents() )
             {
                 if ( !couch.exists( new CouchDocRef( repo.toString() ) ) )
                 {
@@ -463,22 +471,23 @@ public class DefaultProxyDataManager implements ProxyDataManager
                                               group.getName(), new JoinString( ", ", missing ) );
             }
 
-            boolean result = couch.store( group, skipIfExists );
+            final boolean result = couch.store( group, skipIfExists );
 
-            fireStoreEvent( skipIfExists ? ProxyManagerUpdateType.ADD
-                            : ProxyManagerUpdateType.ADD_OR_UPDATE, group );
+            fireStoreEvent( skipIfExists ? ProxyManagerUpdateType.ADD : ProxyManagerUpdateType.ADD_OR_UPDATE, group );
 
             return result;
         }
-        catch ( CouchDBException e )
+        catch ( final CouchDBException e )
         {
-            throw new ProxyDataException( "Failed to store group configuration: %s. Reason: %s", e,
-                                          group.getName(), e.getMessage() );
+            throw new ProxyDataException( "Failed to store group configuration: %s. Reason: %s", e, group.getName(),
+                                          e.getMessage() );
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.commonjava.aprox.core.data.ProxyDataManager#deleteDeployPoint(org.commonjava.aprox.core.model.DeployPoint)
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.commonjava.aprox.core.data.ProxyDataManager#deleteDeployPoint(org.commonjava.aprox.core.model.DeployPoint)
      */
     @Override
     public void deleteDeployPoint( final DeployPoint deploy )
@@ -487,17 +496,17 @@ public class DefaultProxyDataManager implements ProxyDataManager
         try
         {
             couch.delete( deploy );
-            fireDeleteEvent( ProxyManagerDeleteEvent.Type.DEPLOY_POINT, deploy.getName() );
+            fireDeleteEvent( StoreType.deploy_point, deploy.getName() );
         }
-        catch ( CouchDBException e )
+        catch ( final CouchDBException e )
         {
-            throw new ProxyDataException(
-                                          "Failed to delete deploy-store configuration: %s. Reason: %s",
-                                          e, deploy.getName(), e.getMessage() );
+            throw new ProxyDataException( "Failed to delete deploy-store configuration: %s. Reason: %s", e,
+                                          deploy.getName(), e.getMessage() );
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.commonjava.aprox.core.data.ProxyDataManager#deleteDeployPoint(java.lang.String)
      */
     @Override
@@ -507,17 +516,17 @@ public class DefaultProxyDataManager implements ProxyDataManager
         try
         {
             couch.delete( new CouchDocRef( namespaceId( StoreType.deploy_point.name(), name ) ) );
-            fireDeleteEvent( ProxyManagerDeleteEvent.Type.DEPLOY_POINT, name );
+            fireDeleteEvent( StoreType.deploy_point, name );
         }
-        catch ( CouchDBException e )
+        catch ( final CouchDBException e )
         {
-            throw new ProxyDataException(
-                                          "Failed to delete deploy-store configuration: %s. Reason: %s",
-                                          e, name, e.getMessage() );
+            throw new ProxyDataException( "Failed to delete deploy-store configuration: %s. Reason: %s", e, name,
+                                          e.getMessage() );
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.commonjava.aprox.core.data.ProxyDataManager#deleteRepository(org.commonjava.aprox.core.model.Repository)
      */
     @Override
@@ -527,16 +536,17 @@ public class DefaultProxyDataManager implements ProxyDataManager
         try
         {
             couch.delete( repo );
-            fireDeleteEvent( ProxyManagerDeleteEvent.Type.REPOSITORY, repo.getName() );
+            fireDeleteEvent( StoreType.repository, repo.getName() );
         }
-        catch ( CouchDBException e )
+        catch ( final CouchDBException e )
         {
-            throw new ProxyDataException( "Failed to delete proxy configuration: %s. Reason: %s",
-                                          e, repo.getName(), e.getMessage() );
+            throw new ProxyDataException( "Failed to delete proxy configuration: %s. Reason: %s", e, repo.getName(),
+                                          e.getMessage() );
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.commonjava.aprox.core.data.ProxyDataManager#deleteRepository(java.lang.String)
      */
     @Override
@@ -546,16 +556,17 @@ public class DefaultProxyDataManager implements ProxyDataManager
         try
         {
             couch.delete( new CouchDocRef( namespaceId( StoreType.repository.name(), name ) ) );
-            fireDeleteEvent( ProxyManagerDeleteEvent.Type.REPOSITORY, name );
+            fireDeleteEvent( StoreType.repository, name );
         }
-        catch ( CouchDBException e )
+        catch ( final CouchDBException e )
         {
-            throw new ProxyDataException( "Failed to delete proxy configuration: %s. Reason: %s",
-                                          e, name, e.getMessage() );
+            throw new ProxyDataException( "Failed to delete proxy configuration: %s. Reason: %s", e, name,
+                                          e.getMessage() );
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.commonjava.aprox.core.data.ProxyDataManager#deleteGroup(org.commonjava.aprox.core.model.Group)
      */
     @Override
@@ -565,16 +576,17 @@ public class DefaultProxyDataManager implements ProxyDataManager
         try
         {
             couch.delete( group );
-            fireDeleteEvent( ProxyManagerDeleteEvent.Type.GROUP, group.getName() );
+            fireDeleteEvent( StoreType.group, group.getName() );
         }
-        catch ( CouchDBException e )
+        catch ( final CouchDBException e )
         {
-            throw new ProxyDataException( "Failed to delete group configuration: %s. Reason: %s",
-                                          e, group.getName(), e.getMessage() );
+            throw new ProxyDataException( "Failed to delete group configuration: %s. Reason: %s", e, group.getName(),
+                                          e.getMessage() );
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.commonjava.aprox.core.data.ProxyDataManager#deleteGroup(java.lang.String)
      */
     @Override
@@ -584,24 +596,25 @@ public class DefaultProxyDataManager implements ProxyDataManager
         try
         {
             couch.delete( new CouchDocRef( namespaceId( StoreType.group.name(), name ) ) );
-            fireDeleteEvent( ProxyManagerDeleteEvent.Type.GROUP, name );
+            fireDeleteEvent( StoreType.group, name );
         }
-        catch ( CouchDBException e )
+        catch ( final CouchDBException e )
         {
-            throw new ProxyDataException( "Failed to delete group configuration: %s. Reason: %s",
-                                          e, name, e.getMessage() );
+            throw new ProxyDataException( "Failed to delete group configuration: %s. Reason: %s", e, name,
+                                          e.getMessage() );
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.commonjava.aprox.core.data.ProxyDataManager#install()
      */
     @Override
     public void install()
         throws ProxyDataException
     {
-        ProxyAppDescription description = new ProxyAppDescription();
-        CouchApp app = new CouchApp( ProxyAppDescription.APP_NAME, description );
+        final ProxyAppDescription description = new ProxyAppDescription();
+        final CouchApp app = new CouchApp( ProxyAppDescription.APP_NAME, description );
 
         try
         {
@@ -613,16 +626,15 @@ public class DefaultProxyDataManager implements ProxyDataManager
 
             couch.initialize( description );
         }
-        catch ( CouchDBException e )
+        catch ( final CouchDBException e )
         {
             throw new ProxyDataException(
                                           "Failed to initialize proxy-management database: %s (application: %s). Reason: %s",
-                                          e, couchConfig.getDatabaseUrl(),
-                                          description.getAppName(), e.getMessage() );
+                                          e, couchConfig.getDatabaseUrl(), description.getAppName(), e.getMessage() );
         }
     }
 
-    private void fireDeleteEvent( final ProxyManagerDeleteEvent.Type type, final String... names )
+    private void fireDeleteEvent( final StoreType type, final String... names )
     {
         if ( delEvent != null )
         {
@@ -639,8 +651,7 @@ public class DefaultProxyDataManager implements ProxyDataManager
     }
 
     @SuppressWarnings( "unused" )
-    private void fireDeleteEvent( final ProxyManagerDeleteEvent.Type type,
-                                  final Collection<String> names )
+    private void fireDeleteEvent( final StoreType type, final Collection<String> names )
     {
         if ( delEvent != null )
         {
@@ -649,8 +660,7 @@ public class DefaultProxyDataManager implements ProxyDataManager
     }
 
     @SuppressWarnings( "unchecked" )
-    private void fireStoreEvent( final ProxyManagerUpdateType type,
-                                 final Collection<? extends ArtifactStore> stores )
+    private void fireStoreEvent( final ProxyManagerUpdateType type, final Collection<? extends ArtifactStore> stores )
     {
         if ( storeEvent != null )
         {

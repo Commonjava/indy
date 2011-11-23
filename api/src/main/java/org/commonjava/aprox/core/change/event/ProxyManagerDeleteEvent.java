@@ -19,32 +19,28 @@ package org.commonjava.aprox.core.change.event;
 
 import java.util.Collection;
 
+import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.couch.change.j2ee.AbstractUpdateEvent;
 
 public class ProxyManagerDeleteEvent
     extends AbstractUpdateEvent<String>
 {
 
-    public enum Type
-    {
-        REPOSITORY, DEPLOY_POINT, GROUP;
-    }
+    private final StoreType type;
 
-    private final Type type;
-
-    public ProxyManagerDeleteEvent( final Type type, final Collection<String> names )
+    public ProxyManagerDeleteEvent( final StoreType type, final Collection<String> names )
     {
         super( names );
         this.type = type;
     }
 
-    public ProxyManagerDeleteEvent( final Type type, final String... names )
+    public ProxyManagerDeleteEvent( final StoreType type, final String... names )
     {
         super( names );
         this.type = type;
     }
 
-    public Type getType()
+    public StoreType getType()
     {
         return type;
     }
