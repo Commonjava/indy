@@ -28,6 +28,7 @@ import javax.inject.Singleton;
 
 import org.commonjava.aprox.core.inject.AproxData;
 import org.commonjava.couch.conf.CouchDBConfiguration;
+import org.commonjava.couch.inject.Production;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.DefaultConfigurationListener;
 import org.commonjava.web.config.dotconf.DotConfConfigurationReader;
@@ -69,12 +70,14 @@ public class ProxyConfigurationFactory
     }
 
     @Produces
+    @Production
     public ProxyConfiguration getProxyConfiguration()
     {
         return proxyConfig;
     }
 
     @Produces
+    @Production
     @AproxData
     @Default
     public CouchDBConfiguration getCouchDBConfiguration()

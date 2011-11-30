@@ -31,6 +31,7 @@ import javax.inject.Singleton;
 import org.commonjava.aprox.core.conf.ProxyConfiguration;
 import org.commonjava.auth.couch.conf.DefaultUserManagerConfig;
 import org.commonjava.auth.couch.conf.UserManagerConfiguration;
+import org.commonjava.couch.inject.Production;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.DefaultConfigurationListener;
 import org.commonjava.web.config.dotconf.DotConfConfigurationReader;
@@ -95,6 +96,7 @@ public class AproxSecConfigurationFactory
     }
 
     @Produces
+    @Production
     @Default
     public UserManagerConfiguration getUserManagerConfiguration()
     {
