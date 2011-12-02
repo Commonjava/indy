@@ -34,6 +34,10 @@
       <groupId>org.commonjava.couch</groupId>
       <artifactId>couch-app-support</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.couch.web</groupId>
+      <artifactId>web-common</artifactId>
+    </dependency>
   </dependencies>
   
   <build>

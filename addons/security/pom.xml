@@ -45,11 +45,10 @@
       <groupId>org.commonjava.couch</groupId>
       <artifactId>couch-user-manager</artifactId>
     </dependency>
-  	<dependency>
-  		<groupId>org.commonjava.couch.web</groupId>
-  		<artifactId>restful-user-manager</artifactId>
-  		<type>war</type>
-  	</dependency>
+    <dependency>
+      <groupId>org.commonjava.couch.web</groupId>
+      <artifactId>restful-user-manager</artifactId>
+    </dependency>
     
     <dependency>
       <groupId>org.commonjava.util</groupId>
@@ -94,8 +93,8 @@
       <artifactId>hamcrest-core</artifactId>
     </dependency>
     <dependency>
-    	<groupId>org.jboss.weld.se</groupId>
-    	<artifactId>weld-se-core</artifactId>
+      <groupId>org.jboss.weld.se</groupId>
+      <artifactId>weld-se-core</artifactId>
     </dependency>
   </dependencies>
   

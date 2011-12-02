@@ -29,7 +29,7 @@ import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.aprox.sec.change.SecurityConsistencyListener;
 import org.commonjava.aprox.sec.fixture.ProxyConfigProvider;
 import org.commonjava.aprox.sec.live.AbstractAProxSecLiveTest;
-import org.commonjava.auth.couch.model.Permission;
+import org.commonjava.couch.rbac.Permission;
 import org.commonjava.web.test.fixture.TestWarArchiveBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;

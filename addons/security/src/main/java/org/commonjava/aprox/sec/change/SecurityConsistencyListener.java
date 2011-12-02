@@ -25,9 +25,9 @@ import org.commonjava.aprox.core.change.event.ProxyManagerDeleteEvent;
 import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.auth.couch.data.UserDataException;
 import org.commonjava.auth.couch.data.UserDataManager;
-import org.commonjava.auth.couch.model.Permission;
 import org.commonjava.couch.change.CouchDocChange;
 import org.commonjava.couch.change.dispatch.ThreadableListener;
+import org.commonjava.couch.rbac.Permission;
 import org.commonjava.couch.util.ChangeSynchronizer;
 import org.commonjava.util.logging.Logger;
 

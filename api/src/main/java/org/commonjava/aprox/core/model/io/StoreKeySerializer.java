@@ -19,6 +19,7 @@ import java.lang.reflect.Type;
 
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.couch.io.json.SerializationAdapter;
+import org.commonjava.web.common.ser.WebSerializationAdapter;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -29,7 +30,7 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 public class StoreKeySerializer
-    implements SerializationAdapter, JsonSerializer<StoreKey>, JsonDeserializer<StoreKey>
+    implements WebSerializationAdapter, SerializationAdapter, JsonSerializer<StoreKey>, JsonDeserializer<StoreKey>
 {
 
     @Override
@@ -39,17 +40,15 @@ public class StoreKeySerializer
     }
 
     @Override
-    public StoreKey deserialize( final JsonElement json, final Type typeOfT,
-                                 final JsonDeserializationContext context )
+    public StoreKey deserialize( final JsonElement json, final Type typeOfT, final JsonDeserializationContext context )
         throws JsonParseException
     {
-        String id = json.getAsString();
+        final String id = json.getAsString();
         return StoreKey.fromString( id );
     }
 
     @Override
-    public JsonElement serialize( final StoreKey src, final Type typeOfSrc,
-                                  final JsonSerializationContext context )
+    public JsonElement serialize( final StoreKey src, final Type typeOfSrc, final JsonSerializationContext context )
     {
         return new JsonPrimitive( src.toString() );
     }

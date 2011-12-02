@@ -26,7 +26,7 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.aprox.core.rest.access.DeployPointAccessResource;
-import org.commonjava.auth.couch.model.Permission;
+import org.commonjava.couch.rbac.Permission;
 
 @Decorator
 @RequiresAuthentication
