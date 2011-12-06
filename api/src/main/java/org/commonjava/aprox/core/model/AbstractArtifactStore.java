@@ -27,6 +27,7 @@ public abstract class AbstractArtifactStore
 
     private String name;
 
+    @Expose( serialize = false, deserialize = false )
     private StoreKey key;
 
     @Expose( deserialize = false )
@@ -106,7 +107,7 @@ public abstract class AbstractArtifactStore
         {
             return false;
         }
-        AbstractArtifactStore other = (AbstractArtifactStore) obj;
+        final AbstractArtifactStore other = (AbstractArtifactStore) obj;
         if ( name == null )
         {
             if ( other.name != null )
