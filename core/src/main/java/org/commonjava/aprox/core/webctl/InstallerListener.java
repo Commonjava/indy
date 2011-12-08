@@ -23,8 +23,7 @@ import javax.servlet.annotation.WebListener;
 import org.commonjava.aprox.core.data.ProxyDataException;
 import org.commonjava.aprox.core.data.ProxyDataManager;
 import org.commonjava.aprox.core.inject.AproxData;
-import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.model.Repository;
+import org.commonjava.aprox.core.model.ModelFactory;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.couch.change.CouchChangeListener;
@@ -45,6 +44,9 @@ public class InstallerListener
     @AproxData
     private CouchChangeListener changeListener;
 
+    @Inject
+    private ModelFactory modelFactory;
+
     @Override
     public void contextInitialized( final ServletContextEvent sce )
     {
@@ -52,23 +54,21 @@ public class InstallerListener
         try
         {
             dataManager.install();
-            dataManager.storeRepository( new Repository( "central",
-                                                         "http://repo1.maven.apache.org/maven2/" ),
-                                         true );
+            dataManager.storeRepository( modelFactory.createRepository( "central",
+                                                                        "http://repo1.maven.apache.org/maven2/" ), true );
 
-            dataManager.storeGroup( new Group( "public", new StoreKey( StoreType.repository,
-                                                                       "central" ) ), true );
+            dataManager.storeGroup( modelFactory.createGroup( "public", new StoreKey( StoreType.repository, "central" ) ),
+                                    true );
 
             changeListener.startup( false );
         }
-        catch ( ProxyDataException e )
+        catch ( final ProxyDataException e )
         {
             throw new RuntimeException( "Failed to install proxy database: " + e.getMessage(), e );
         }
-        catch ( CouchDBException e )
+        catch ( final CouchDBException e )
         {
-            throw new RuntimeException( "Failed to start CouchDB changes listener: "
-                + e.getMessage(), e );
+            throw new RuntimeException( "Failed to start CouchDB changes listener: " + e.getMessage(), e );
         }
 
         logger.info( "...done." );
@@ -81,10 +81,9 @@ public class InstallerListener
         {
             changeListener.shutdown();
         }
-        catch ( CouchDBException e )
+        catch ( final CouchDBException e )
         {
-            throw new RuntimeException( "Failed to shutdown CouchDB changes listener: "
-                + e.getMessage(), e );
+            throw new RuntimeException( "Failed to shutdown CouchDB changes listener: " + e.getMessage(), e );
         }
     }
 

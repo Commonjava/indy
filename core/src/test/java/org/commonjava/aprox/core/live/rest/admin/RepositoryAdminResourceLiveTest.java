@@ -20,7 +20,6 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -28,12 +27,10 @@ import java.util.List;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.commonjava.aprox.core.live.AbstractAProxLiveTest;
-import org.commonjava.aprox.core.live.fixture.ProxyConfigProvider;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.io.StoreKeySerializer;
 import org.commonjava.web.common.model.Listing;
-import org.commonjava.web.test.fixture.TestWarArchiveBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -48,36 +45,32 @@ public class RepositoryAdminResourceLiveTest
     extends AbstractAProxLiveTest
 {
 
-    private static final String BASE_URL = "http://localhost:8080/test/api/1.0/admin/repository";
+    private static final String BASE_URL = "/admin/repository";
 
     @Deployment
     public static WebArchive createWar()
     {
-        return new TestWarArchiveBuilder( RepositoryAdminResourceLiveTest.class ).withExtraClasses( AbstractAProxLiveTest.class,
-                                                                                                    ProxyConfigProvider.class )
-                                                                                 .withLibrariesIn( new File(
-                                                                                                             "target/dependency" ) )
-                                                                                 .withLog4jProperties()
-                                                                                 .build();
+        return createWar( RepositoryAdminResourceLiveTest.class );
     }
 
     @Before
     public void registerSerializer()
     {
-        serializer.registerSerializationAdapters( new StoreKeySerializer() );
+        webFixture.getSerializer()
+                  .registerSerializationAdapters( new StoreKeySerializer() );
     }
 
     @Test
     public void createAndRetrieveCentralRepoProxy()
         throws Exception
     {
-        final Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
-        final HttpResponse response = post( BASE_URL, repo, HttpStatus.SC_CREATED );
+        final Repository repo = modelFactory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" );
+        final HttpResponse response = webFixture.post( webFixture.resourceUrl( BASE_URL ), repo, HttpStatus.SC_CREATED );
 
-        final String repoUrl = BASE_URL + "/" + repo.getName();
-        assertLocationHeader( response, repoUrl );
+        final String repoUrl = webFixture.resourceUrl( BASE_URL, repo.getName() );
+        webFixture.assertLocationHeader( response, repoUrl );
 
-        final Repository result = get( repoUrl, Repository.class );
+        final Repository result = webFixture.get( repoUrl, Repository.class );
 
         assertThat( result.getName(), equalTo( repo.getName() ) );
         assertThat( result.getUrl(), equalTo( repo.getUrl() ) );
@@ -89,14 +82,15 @@ public class RepositoryAdminResourceLiveTest
     public void createCentralRepoProxyTwiceAndRetrieveOne()
         throws Exception
     {
-        final Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
-        post( BASE_URL, repo, HttpStatus.SC_CREATED );
+        final Repository repo = modelFactory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" );
+        webFixture.post( webFixture.resourceUrl( BASE_URL ), repo, HttpStatus.SC_CREATED );
 
-        post( BASE_URL, repo, HttpStatus.SC_CONFLICT );
+        webFixture.post( webFixture.resourceUrl( BASE_URL ), repo, HttpStatus.SC_CONFLICT );
 
-        final Listing<Repository> result = getListing( BASE_URL + "/list", new TypeToken<Listing<Repository>>()
-        {
-        } );
+        final Listing<Repository> result =
+            webFixture.getListing( webFixture.resourceUrl( BASE_URL, "/list" ), new TypeToken<Listing<Repository>>()
+            {
+            } );
 
         assertThat( result, notNullValue() );
 
@@ -114,27 +108,28 @@ public class RepositoryAdminResourceLiveTest
     public void createAndDeleteCentralRepoProxy_ByName()
         throws Exception
     {
-        final ArtifactStore repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
-        post( BASE_URL, repo, HttpStatus.SC_CREATED );
+        final ArtifactStore repo = modelFactory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" );
+        webFixture.post( webFixture.resourceUrl( BASE_URL ), repo, HttpStatus.SC_CREATED );
 
-        delete( BASE_URL + "/" + repo.getName() );
+        webFixture.delete( webFixture.resourceUrl( BASE_URL, repo.getName() ) );
 
-        get( BASE_URL + "/" + repo.getName(), HttpStatus.SC_NOT_FOUND );
+        webFixture.get( webFixture.resourceUrl( BASE_URL, repo.getName() ), HttpStatus.SC_NOT_FOUND );
     }
 
     @Test
     public void createTwoReposAndRetrieveAll()
         throws Exception
     {
-        final ArtifactStore repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
-        post( BASE_URL, repo, HttpStatus.SC_CREATED );
+        final ArtifactStore repo = modelFactory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" );
+        webFixture.post( webFixture.resourceUrl( BASE_URL ), repo, HttpStatus.SC_CREATED );
 
-        final ArtifactStore repo2 = new Repository( "test", "http://www.google.com" );
-        post( BASE_URL, repo2, HttpStatus.SC_CREATED );
+        final ArtifactStore repo2 = modelFactory.createRepository( "test", "http://www.google.com" );
+        webFixture.post( webFixture.resourceUrl( BASE_URL ), repo2, HttpStatus.SC_CREATED );
 
-        final Listing<Repository> result = getListing( BASE_URL + "/list", new TypeToken<Listing<Repository>>()
-        {
-        } );
+        final Listing<Repository> result =
+            webFixture.getListing( webFixture.resourceUrl( BASE_URL, "/list" ), new TypeToken<Listing<Repository>>()
+            {
+            } );
 
         assertThat( result, notNullValue() );
 

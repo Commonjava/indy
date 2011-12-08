@@ -21,7 +21,6 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -29,14 +28,11 @@ import java.util.List;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.commonjava.aprox.core.live.AbstractAProxLiveTest;
-import org.commonjava.aprox.core.live.fixture.ProxyConfigProvider;
 import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.aprox.core.model.io.StoreKeySerializer;
 import org.commonjava.web.common.model.Listing;
-import org.commonjava.web.test.fixture.TestWarArchiveBuilder;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -53,31 +49,27 @@ public class GroupAdminResourceLiveTest
     extends AbstractAProxLiveTest
 {
 
-    private static final String BASE_URL = "http://localhost:8080/test/api/1.0/admin/group";
+    private static final String BASE_URL = "/admin/group";
 
     @Deployment
     public static WebArchive createWar()
     {
-        return new TestWarArchiveBuilder( GroupAdminResourceLiveTest.class ).withExtraClasses( AbstractAProxLiveTest.class,
-                                                                                               ProxyConfigProvider.class )
-                                                                            .withLibrariesIn( new File(
-                                                                                                        "target/dependency" ) )
-                                                                            .withLog4jProperties()
-                                                                            .build();
+        return createWar( GroupAdminResourceLiveTest.class );
     }
 
     @Before
     public void registerSerializer()
     {
-        serializer.registerSerializationAdapters( new StoreKeySerializer() );
+        webFixture.getSerializer()
+                  .registerSerializationAdapters( new StoreKeySerializer() );
     }
 
     @Before
     public void seedRepositoriesForGroupTests()
         throws Exception
     {
-        proxyManager.storeRepository( new Repository( "central", "http://repo1.maven.apache.org/maven2/" ) );
-        proxyManager.storeRepository( new Repository( "repo2", "http://repo1.maven.org/maven2/" ) );
+        proxyManager.storeRepository( modelFactory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" ) );
+        proxyManager.storeRepository( modelFactory.createRepository( "repo2", "http://repo1.maven.org/maven2/" ) );
     }
 
     @Test
@@ -85,12 +77,12 @@ public class GroupAdminResourceLiveTest
     public void createAndRetrieveEmptyGroup()
         throws Exception
     {
-        final Group grp = new Group( "test" );
+        final Group grp = modelFactory.createGroup( "test" );
 
-        final HttpResponse response = post( BASE_URL, grp, HttpStatus.SC_CREATED );
-        assertLocationHeader( response, BASE_URL + "/" + grp.getName() );
+        final HttpResponse response = webFixture.post( webFixture.resourceUrl( BASE_URL ), grp, HttpStatus.SC_CREATED );
+        webFixture.assertLocationHeader( response, BASE_URL + "/" + grp.getName() );
 
-        final Group result = get( BASE_URL + "/" + grp.getName(), Group.class );
+        final Group result = webFixture.get( webFixture.resourceUrl( BASE_URL, grp.getName() ), Group.class );
 
         assertThat( result, notNullValue() );
         assertThat( result.getName(), equalTo( grp.getName() ) );
@@ -114,13 +106,13 @@ public class GroupAdminResourceLiveTest
     public void createAndDeleteGroup()
         throws Exception
     {
-        final Group grp = new Group( "test" );
+        final Group grp = modelFactory.createGroup( "test" );
 
-        post( BASE_URL, grp, HttpStatus.SC_CREATED );
+        webFixture.post( webFixture.resourceUrl( BASE_URL ), grp, HttpStatus.SC_CREATED );
 
-        delete( BASE_URL + "/" + grp.getName() );
+        webFixture.delete( webFixture.resourceUrl( BASE_URL, grp.getName() ) );
 
-        get( BASE_URL + "/" + grp.getName(), HttpStatus.SC_NOT_FOUND );
+        webFixture.get( webFixture.resourceUrl( BASE_URL, grp.getName() ), HttpStatus.SC_NOT_FOUND );
     }
 
     @Test
@@ -128,12 +120,12 @@ public class GroupAdminResourceLiveTest
         throws Exception
     {
         final Group grp =
-            new Group( "test", new StoreKey( StoreType.repository, "repo2" ), new StoreKey( StoreType.repository,
-                                                                                            "central" ) );
+            modelFactory.createGroup( "test", new StoreKey( StoreType.repository, "repo2" ),
+                                      new StoreKey( StoreType.repository, "central" ) );
 
-        post( BASE_URL, grp, HttpStatus.SC_CREATED );
+        webFixture.post( webFixture.resourceUrl( BASE_URL ), grp, HttpStatus.SC_CREATED );
 
-        final Group result = get( BASE_URL + "/" + grp.getName(), Group.class );
+        final Group result = webFixture.get( webFixture.resourceUrl( BASE_URL, grp.getName() ), Group.class );
 
         assertThat( result, notNullValue() );
         assertThat( result.getName(), equalTo( grp.getName() ) );
@@ -150,14 +142,15 @@ public class GroupAdminResourceLiveTest
     public void createSameGroupTwiceAndRetrieveOne()
         throws Exception
     {
-        final Group grp = new Group( "test" );
+        final Group grp = modelFactory.createGroup( "test" );
 
-        post( BASE_URL, grp, HttpStatus.SC_CREATED );
-        post( BASE_URL, grp, HttpStatus.SC_CONFLICT );
+        webFixture.post( webFixture.resourceUrl( BASE_URL ), grp, HttpStatus.SC_CREATED );
+        webFixture.post( webFixture.resourceUrl( BASE_URL ), grp, HttpStatus.SC_CONFLICT );
 
-        final Listing<Group> result = getListing( BASE_URL + "/list", new TypeToken<Listing<Group>>()
-        {
-        } );
+        final Listing<Group> result =
+            webFixture.getListing( webFixture.resourceUrl( BASE_URL, "/list" ), new TypeToken<Listing<Group>>()
+            {
+            } );
 
         assertThat( result, notNullValue() );
 
@@ -169,15 +162,16 @@ public class GroupAdminResourceLiveTest
     public void createTwoGroupsAndRetrieveBoth()
         throws Exception
     {
-        final Group grp = new Group( "test" );
-        final Group grp2 = new Group( "test2" );
+        final Group grp = modelFactory.createGroup( "test" );
+        final Group grp2 = modelFactory.createGroup( "test2" );
 
-        post( BASE_URL, grp, HttpStatus.SC_CREATED );
-        post( BASE_URL, grp2, HttpStatus.SC_CREATED );
+        webFixture.post( webFixture.resourceUrl( BASE_URL ), grp, HttpStatus.SC_CREATED );
+        webFixture.post( webFixture.resourceUrl( BASE_URL ), grp2, HttpStatus.SC_CREATED );
 
-        final Listing<Group> result = getListing( BASE_URL + "/list", new TypeToken<Listing<Group>>()
-        {
-        } );
+        final Listing<Group> result =
+            webFixture.getListing( webFixture.resourceUrl( BASE_URL, "/list" ), new TypeToken<Listing<Group>>()
+            {
+            } );
 
         assertThat( result, notNullValue() );
 

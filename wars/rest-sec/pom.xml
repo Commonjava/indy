@@ -25,7 +25,7 @@
   <artifactId>aprox-rest-sec</artifactId>
   <packaging>war</packaging>
   
-  <name>AProx Maven Artifact Proxy :: REST WAR with RBAC Security</name>
+  <name>AProx :: REST WAR with RBAC Security</name>
   
   <dependencies>
     <dependency>
@@ -41,16 +41,12 @@
       <artifactId>aprox-security</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-db-couch</artifactId>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-core-dotconf</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-sec-dotconf</artifactId>
     </dependency>
   </dependencies>
   

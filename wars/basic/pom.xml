@@ -11,7 +11,7 @@
   <artifactId>aprox-basic</artifactId>
   <packaging>war</packaging>
 
-  <name>AProx Maven Artifact Proxy :: Basic WAR</name>
+  <name>AProx :: Basic WAR</name>
   
   <dependencies>
     <dependency>

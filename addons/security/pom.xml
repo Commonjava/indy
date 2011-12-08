@@ -24,7 +24,7 @@
   </parent>
   
   <artifactId>aprox-security</artifactId>
-  <name>AProx Maven Artifact Proxy :: RBAC Overlay</name>
+  <name>AProx :: RBAC Overlay</name>
 
   <dependencies>
     <dependency>

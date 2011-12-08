@@ -15,32 +15,42 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.change.event;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 
 import org.commonjava.aprox.core.model.StoreType;
-import org.commonjava.couch.change.j2ee.AbstractUpdateEvent;
 
 public class ProxyManagerDeleteEvent
-    extends AbstractUpdateEvent<String>
+    implements Iterable<String>
 {
 
     private final StoreType type;
 
+    private final Collection<String> names;
+
     public ProxyManagerDeleteEvent( final StoreType type, final Collection<String> names )
     {
-        super( names );
         this.type = type;
+        this.names = Collections.unmodifiableCollection( names );
     }
 
     public ProxyManagerDeleteEvent( final StoreType type, final String... names )
     {
-        super( names );
+        this.names = Collections.unmodifiableCollection( Arrays.asList( names ) );
         this.type = type;
     }
 
     public StoreType getType()
     {
         return type;
+    }
+
+    @Override
+    public Iterator<String> iterator()
+    {
+        return names.iterator();
     }
 
 }

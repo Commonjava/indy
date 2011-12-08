@@ -15,86 +15,24 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.model;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-public class Group
-    extends AbstractArtifactStore
+public interface Group
+    extends ArtifactStore
 {
 
-    private List<StoreKey> constituents;
+    List<StoreKey> getConstituents();
 
-    Group()
-    {
-        super( StoreType.group );
-    }
+    boolean addConstituent( final ArtifactStore store );
 
-    public Group( final String name, final List<StoreKey> constituents )
-    {
-        super( StoreType.group, name );
-        this.constituents = constituents;
-    }
+    boolean addConstituent( final StoreKey repository );
 
-    public Group( final String name, final StoreKey... constituents )
-    {
-        super( StoreType.group, name );
-        this.constituents = new ArrayList<StoreKey>( Arrays.asList( constituents ) );
-    }
+    boolean removeConstituent( final ArtifactStore constituent );
 
-    public List<StoreKey> getConstituents()
-    {
-        return constituents;
-    }
+    boolean removeConstituent( final StoreKey repository );
 
-    public boolean addConstituent( final ArtifactStore store )
-    {
-        if ( store == null )
-        {
-            return false;
-        }
+    void setConstituents( final List<StoreKey> constituents );
 
-        return addConstituent( store.getKey() );
-    }
-
-    public synchronized boolean addConstituent( final StoreKey repository )
-    {
-        if ( constituents == null )
-        {
-            constituents = new ArrayList<StoreKey>();
-        }
-
-        return constituents.add( repository );
-    }
-
-    public boolean removeConstituent( final ArtifactStore constituent )
-    {
-        return constituent == null ? false : removeConstituent( constituent.getKey() );
-    }
-
-    public boolean removeConstituent( final StoreKey repository )
-    {
-        return constituents == null ? false : constituents.remove( repository );
-    }
-
-    public void setConstituents( final List<StoreKey> constituents )
-    {
-        this.constituents = constituents;
-    }
-
-    public void setConstituentProxies( final List<Repository> constituents )
-    {
-        this.constituents = null;
-        for ( ArtifactStore proxy : constituents )
-        {
-            addConstituent( proxy );
-        }
-    }
-
-    @Override
-    public String toString()
-    {
-        return String.format( "Group [name=%s, constituents=%s]", getName(), constituents );
-    }
+    void setConstituentProxies( final List<Repository> constituents );
 
 }

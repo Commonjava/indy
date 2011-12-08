@@ -28,7 +28,7 @@
   
   <packaging>pom</packaging>
   
-  <name>AProx Maven Artifact Proxy :: Parent POM</name>
+  <name>AProx :: Parent POM</name>
   
   <scm>
     <connection>scm:git:http://jdcasey@github.com/jdcasey/aprox.git</connection>
@@ -39,13 +39,10 @@
   <modules>
     <module>api</module>
     <module>core</module>
-    <module>config</module>
+    <module>db</module>
+    <module>test</module>
     <module>addons</module>
     <module>wars</module>
-    
-    <!-- TODO: Are these WARs? Do they NEED WAR projects to wrap them with the core?? -->
-    <!-- <module>aprox-depbase</module> -->
-    <!-- <module>aprox-meadci</module> -->
   </modules>
   
   <dependencyManagement>
@@ -67,12 +64,17 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-core-dotconf</artifactId>
+        <artifactId>aprox-db-couch</artifactId>
         <version>0.2-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-sec-dotconf</artifactId>
+        <artifactId>aprox-db-flat</artifactId>
+        <version>0.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-db-memory</artifactId>
         <version>0.2-SNAPSHOT</version>
       </dependency>
     </dependencies>

@@ -23,7 +23,7 @@
   </parent>
   
   <artifactId>aprox-api</artifactId>
-  <name>AProx Maven Artifact Proxy :: API</name>
+  <name>AProx :: API</name>
   
   <dependencies>
     <dependency>
@@ -31,8 +31,8 @@
       <artifactId>configuration-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.couch</groupId>
-      <artifactId>couch-app-support</artifactId>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.couch.web</groupId>

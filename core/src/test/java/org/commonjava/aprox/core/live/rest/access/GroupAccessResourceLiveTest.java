@@ -27,8 +27,6 @@ import org.apache.http.client.ClientProtocolException;
 import org.commonjava.aprox.core.data.ProxyDataException;
 import org.commonjava.aprox.core.live.AbstractAProxLiveTest;
 import org.commonjava.aprox.core.live.fixture.ProxyConfigProvider;
-import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.web.test.fixture.TestWarArchiveBuilder;
@@ -46,7 +44,7 @@ public class GroupAccessResourceLiveTest
     extends AbstractAProxLiveTest
 {
 
-    private static final String BASE_URL = "http://localhost:8080/test/api/1.0/group/test/";
+    private static final String BASE_URL = "/group/test/";
 
     private static File repoRoot;
 
@@ -83,11 +81,11 @@ public class GroupAccessResourceLiveTest
     public void setupTest()
         throws ProxyDataException
     {
-        proxyManager.storeRepository( new Repository( "dummy", "http://www.nowhere.com/" ) );
-        proxyManager.storeRepository( new Repository( "central", "http://repo1.maven.apache.org/maven2/" ) );
+        proxyManager.storeRepository( modelFactory.createRepository( "dummy", "http://www.nowhere.com/" ) );
+        proxyManager.storeRepository( modelFactory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" ) );
 
-        proxyManager.storeGroup( new Group( "test", new StoreKey( StoreType.repository, "dummy" ),
-                                            new StoreKey( StoreType.repository, "central" ) ) );
+        proxyManager.storeGroup( modelFactory.createGroup( "test", new StoreKey( StoreType.repository, "dummy" ),
+                                                           new StoreKey( StoreType.repository, "central" ) ) );
     }
 
     @Test
@@ -95,7 +93,9 @@ public class GroupAccessResourceLiveTest
         throws ClientProtocolException, IOException
     {
         final String response =
-            getString( BASE_URL + "org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom", HttpStatus.SC_OK );
+            webFixture.getString( webFixture.resourceUrl( BASE_URL,
+                                                          "org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom" ),
+                                  HttpStatus.SC_OK );
         assertThat( response.contains( "<artifactId>maven-model</artifactId>" ), equalTo( true ) );
     }
 

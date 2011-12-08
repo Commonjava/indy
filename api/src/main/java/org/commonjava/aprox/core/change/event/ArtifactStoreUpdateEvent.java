@@ -15,34 +15,42 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.change.event;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 
 import org.commonjava.aprox.core.model.ArtifactStore;
-import org.commonjava.couch.change.j2ee.AbstractUpdateEvent;
 
 public class ArtifactStoreUpdateEvent
-    extends AbstractUpdateEvent<ArtifactStore>
+    implements Iterable<ArtifactStore>
 {
 
     private final ProxyManagerUpdateType type;
 
-    public ArtifactStoreUpdateEvent( final ProxyManagerUpdateType type,
-                                     final Collection<ArtifactStore> changes )
+    private final Collection<ArtifactStore> changes;
+
+    public ArtifactStoreUpdateEvent( final ProxyManagerUpdateType type, final Collection<ArtifactStore> changes )
     {
-        super( changes );
         this.type = type;
+        this.changes = Collections.unmodifiableCollection( changes );
     }
 
-    public ArtifactStoreUpdateEvent( final ProxyManagerUpdateType type,
-                                     final ArtifactStore... changes )
+    public ArtifactStoreUpdateEvent( final ProxyManagerUpdateType type, final ArtifactStore... changes )
     {
-        super( changes );
+        this.changes = Collections.unmodifiableCollection( Arrays.asList( changes ) );
         this.type = type;
     }
 
     public ProxyManagerUpdateType getType()
     {
         return type;
+    }
+
+    @Override
+    public Iterator<ArtifactStore> iterator()
+    {
+        return changes.iterator();
     }
 
 }

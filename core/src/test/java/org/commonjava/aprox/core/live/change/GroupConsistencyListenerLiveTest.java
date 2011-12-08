@@ -19,16 +19,12 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-import java.io.File;
-
 import javax.inject.Inject;
 
 import org.commonjava.aprox.core.change.GroupConsistencyListener;
 import org.commonjava.aprox.core.live.AbstractAProxLiveTest;
-import org.commonjava.aprox.core.live.fixture.ProxyConfigProvider;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.model.Repository;
-import org.commonjava.web.test.fixture.TestWarArchiveBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -43,12 +39,7 @@ public class GroupConsistencyListenerLiveTest
     @Deployment
     public static WebArchive createWar()
     {
-        return new TestWarArchiveBuilder( GroupConsistencyListenerLiveTest.class ).withExtraClasses( AbstractAProxLiveTest.class,
-                                                                                                     ProxyConfigProvider.class )
-                                                                                  .withLibrariesIn( new File(
-                                                                                                              "target/dependency" ) )
-                                                                                  .withLog4jProperties()
-                                                                                  .build();
+        return createWar( GroupConsistencyListenerLiveTest.class );
     }
 
     @Inject
@@ -58,10 +49,10 @@ public class GroupConsistencyListenerLiveTest
     public void groupsContainingRepositoryModifiedWhenRepositoryDeleted()
         throws Exception
     {
-        final Repository repo = new Repository( "test", "http://repo1.maven.apache.org/maven2/" );
+        final Repository repo = modelFactory.createRepository( "test", "http://repo1.maven.apache.org/maven2/" );
         proxyManager.storeRepository( repo );
 
-        final Group group = new Group( "testGroup", repo.getKey() );
+        final Group group = modelFactory.createGroup( "testGroup", repo.getKey() );
         proxyManager.storeGroup( group );
 
         assertThat( group.getConstituents(), notNullValue() );

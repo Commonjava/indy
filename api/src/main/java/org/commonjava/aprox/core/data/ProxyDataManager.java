@@ -37,19 +37,19 @@ public interface ProxyDataManager
     Group getGroup( final String name )
         throws ProxyDataException;
 
-    List<Group> getAllGroups()
+    List<? extends Group> getAllGroups()
         throws ProxyDataException;
 
-    List<Repository> getAllRepositories()
+    List<? extends Repository> getAllRepositories()
         throws ProxyDataException;
 
-    List<DeployPoint> getAllDeployPoints()
+    List<? extends DeployPoint> getAllDeployPoints()
         throws ProxyDataException;
 
-    List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
+    List<? extends ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
         throws ProxyDataException;
 
-    Set<Group> getGroupsContaining( final StoreKey repo )
+    Set<? extends Group> getGroupsContaining( final StoreKey repo )
         throws ProxyDataException;
 
     void storeDeployPoints( final Collection<DeployPoint> deploys )

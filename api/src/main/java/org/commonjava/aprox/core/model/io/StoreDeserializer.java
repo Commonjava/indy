@@ -23,7 +23,7 @@ import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
-import org.commonjava.couch.io.json.SerializationAdapter;
+import org.commonjava.web.common.ser.WebSerializationAdapter;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -31,10 +31,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 
 public class StoreDeserializer
-    implements SerializationAdapter, JsonDeserializer<ArtifactStore>
+    implements WebSerializationAdapter, JsonDeserializer<ArtifactStore>
 {
-
-    // private final Logger logger = new Logger( getClass() );
 
     @Override
     public Type typeLiteral()
@@ -47,10 +45,12 @@ public class StoreDeserializer
                                       final JsonDeserializationContext context )
         throws JsonParseException
     {
-        String id = json.getAsJsonObject().get( "_id" ).getAsString();
-        StoreKey key = StoreKey.fromString( id );
+        final String id = json.getAsJsonObject()
+                              .get( "_id" )
+                              .getAsString();
+        final StoreKey key = StoreKey.fromString( id );
 
-        StoreType type = key.getType();
+        final StoreType type = key.getType();
         // logger.info( "Parsing store of type: %s", type );
 
         ArtifactStore result = null;

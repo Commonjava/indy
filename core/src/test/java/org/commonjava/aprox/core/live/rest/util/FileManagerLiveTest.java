@@ -26,52 +26,35 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import org.commonjava.aprox.core.data.ProxyDataManager;
-import org.commonjava.aprox.core.inject.AproxData;
-import org.commonjava.aprox.core.live.fixture.ProxyConfigProvider;
+import org.commonjava.aprox.core.live.AbstractAProxLiveTest;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.rest.util.FileManager;
-import org.commonjava.couch.db.CouchManager;
-import org.commonjava.web.test.AbstractRESTCouchTest;
-import org.commonjava.web.test.fixture.TestWarArchiveBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith( Arquillian.class )
 public class FileManagerLiveTest
-    extends AbstractRESTCouchTest
+    extends AbstractAProxLiveTest
 {
 
     @Deployment
     public static WebArchive createWar()
     {
-        return new TestWarArchiveBuilder( FileManagerLiveTest.class ).withExtraClasses( ProxyConfigProvider.class )
-                                                                     .withLibrariesIn( new File( "target/dependency" ) )
-                                                                     .withLog4jProperties()
-                                                                     .build();
+        return createWar( FileManagerLiveTest.class );
     }
 
     @Inject
     private FileManager downloader;
 
-    @Inject
-    protected ProxyDataManager proxyManager;
-
-    @Inject
-    @AproxData
-    private CouchManager couch;
-
     @Test
     public void downloadOnePOMFromSingleRepository()
         throws IOException
     {
-        final Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
+        final Repository repo = modelFactory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" );
         final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
 
         final File downloaded = downloader.download( repo, path );
@@ -84,8 +67,8 @@ public class FileManagerLiveTest
     public void downloadOnePOMFromSecondRepositoryAfterDummyRepoFails()
         throws IOException
     {
-        final Repository repo = new Repository( "dummy", "http://www.nowhere.com/" );
-        final Repository repo2 = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
+        final Repository repo = modelFactory.createRepository( "dummy", "http://www.nowhere.com/" );
+        final Repository repo2 = modelFactory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" );
 
         final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
 
@@ -99,26 +82,6 @@ public class FileManagerLiveTest
         final String pom = readFileToString( downloaded );
 
         assertThat( pom.contains( "<artifactId>maven-model</artifactId>" ), equalTo( true ) );
-    }
-
-    @Before
-    public final void setupAProxLiveTest()
-        throws Exception
-    {
-        proxyManager.install();
-    }
-
-    @After
-    public final void teardownAProxLiveTest()
-        throws Exception
-    {
-        couch.dropDatabase();
-    }
-
-    @Override
-    protected CouchManager getCouchManager()
-    {
-        return couch;
     }
 
 }

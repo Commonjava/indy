@@ -26,7 +26,7 @@
   <artifactId>aprox-meadci</artifactId>
   <version>0.1-SNAPSHOT</version>
 
-  <name>AProx Artifact Proxy :: MEAD/CI Auto-Configure</name>
+  <name>AProx :: MEAD/CI Auto-Configure</name>
 
   <dependencies>
     <dependency>

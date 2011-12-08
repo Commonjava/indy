@@ -27,7 +27,7 @@
   <artifactId>aprox-wars</artifactId>
   <packaging>pom</packaging>
 
-  <name>AProx Maven Artifact Proxy :: WARs</name>
+  <name>AProx :: WARs</name>
   
   <modules>
     <module>rest-min</module>

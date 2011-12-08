@@ -15,46 +15,16 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.model;
 
-import com.google.gson.annotations.SerializedName;
-
-public class DeployPoint
-    extends AbstractArtifactStore
+public interface DeployPoint
+    extends ArtifactStore
 {
 
-    @SerializedName( "allow_snapshots" )
-    private boolean allowSnapshots = false;
+    boolean isAllowSnapshots();
 
-    @SerializedName( "allow_releases" )
-    private boolean allowReleases = true;
+    void setAllowSnapshots( final boolean allowSnapshots );
 
-    DeployPoint()
-    {
-        super( StoreType.deploy_point );
-    }
+    boolean isAllowReleases();
 
-    public DeployPoint( final String name )
-    {
-        super( StoreType.deploy_point, name );
-    }
-
-    public boolean isAllowSnapshots()
-    {
-        return allowSnapshots;
-    }
-
-    public void setAllowSnapshots( final boolean allowSnapshots )
-    {
-        this.allowSnapshots = allowSnapshots;
-    }
-
-    public boolean isAllowReleases()
-    {
-        return allowReleases;
-    }
-
-    public void setAllowReleases( final boolean allowReleases )
-    {
-        this.allowReleases = allowReleases;
-    }
+    void setAllowReleases( final boolean allowReleases );
 
 }

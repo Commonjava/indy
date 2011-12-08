@@ -15,87 +15,45 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.live;
 
-import static org.apache.commons.io.IOUtils.copy;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
-
-import java.io.IOException;
-import java.io.StringWriter;
+import java.io.File;
 
 import javax.inject.Inject;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.StatusLine;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpGet;
 import org.commonjava.aprox.core.data.ProxyDataManager;
-import org.commonjava.aprox.core.inject.AproxData;
-import org.commonjava.couch.change.CouchChangeListener;
-import org.commonjava.couch.db.CouchManager;
-import org.commonjava.web.test.AbstractRESTCouchTest;
+import org.commonjava.aprox.core.live.fixture.ProxyConfigProvider;
+import org.commonjava.aprox.core.model.ModelFactory;
+import org.commonjava.web.test.fixture.TestWarArchiveBuilder;
+import org.commonjava.web.test.fixture.WebFixture;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
+import org.junit.Rule;
 
 public class AbstractAProxLiveTest
-    extends AbstractRESTCouchTest
 {
 
     @Inject
     protected ProxyDataManager proxyManager;
 
     @Inject
-    @AproxData
-    protected CouchChangeListener changeListener;
+    protected ModelFactory modelFactory;
 
-    @Inject
-    @AproxData
-    private CouchManager couch;
+    @Rule
+    public WebFixture webFixture = new WebFixture();
 
     @Before
     public final void setupAProxLiveTest()
         throws Exception
     {
         proxyManager.install();
-        changeListener.startup();
     }
 
-    // @After
-    public final void teardownAProxLiveTest()
-        throws Exception
+    protected static WebArchive createWar( final Class<?> testClass )
     {
-        changeListener.shutdown();
-        while ( changeListener.isRunning() )
-        {
-            synchronized ( changeListener )
-            {
-                System.out.println( "Waiting 2s for change listener to shutdown..." );
-                changeListener.wait( 2000 );
-            }
-        }
-
-        couch.dropDatabase();
-    }
-
-    protected String getString( final String url, final int expectedStatus )
-        throws ClientProtocolException, IOException
-    {
-        final HttpResponse response = http.execute( new HttpGet( url ) );
-        final StatusLine sl = response.getStatusLine();
-
-        assertThat( sl.getStatusCode(), equalTo( expectedStatus ) );
-        assertThat( response.getEntity(), notNullValue() );
-
-        final StringWriter sw = new StringWriter();
-        copy( response.getEntity()
-                      .getContent(), sw );
-
-        return sw.toString();
-    }
-
-    @Override
-    protected CouchManager getCouchManager()
-    {
-        return couch;
+        return new TestWarArchiveBuilder( testClass ).withExtraClasses( AbstractAProxLiveTest.class,
+                                                                        ProxyConfigProvider.class )
+                                                     .withLibrariesIn( new File( "target/dependency" ) )
+                                                     .withLog4jProperties()
+                                                     .build();
     }
 
 }

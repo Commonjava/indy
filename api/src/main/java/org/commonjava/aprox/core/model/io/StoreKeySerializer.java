@@ -18,7 +18,6 @@ package org.commonjava.aprox.core.model.io;
 import java.lang.reflect.Type;
 
 import org.commonjava.aprox.core.model.StoreKey;
-import org.commonjava.couch.io.json.SerializationAdapter;
 import org.commonjava.web.common.ser.WebSerializationAdapter;
 
 import com.google.gson.JsonDeserializationContext;
@@ -30,7 +29,7 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 public class StoreKeySerializer
-    implements WebSerializationAdapter, SerializationAdapter, JsonSerializer<StoreKey>, JsonDeserializer<StoreKey>
+    implements WebSerializationAdapter, JsonSerializer<StoreKey>, JsonDeserializer<StoreKey>
 {
 
     @Override

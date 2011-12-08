@@ -17,13 +17,9 @@ package org.commonjava.aprox.core.conf;
 
 import java.io.File;
 
-import org.commonjava.couch.conf.CouchDBConfiguration;
-
 public interface ProxyConfiguration
 {
 
     File getRepositoryRootDirectory();
-
-    CouchDBConfiguration getDatabaseConfig();
 
 }

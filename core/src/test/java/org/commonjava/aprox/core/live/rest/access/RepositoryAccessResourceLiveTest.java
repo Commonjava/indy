@@ -27,7 +27,6 @@ import org.apache.http.client.ClientProtocolException;
 import org.commonjava.aprox.core.data.ProxyDataException;
 import org.commonjava.aprox.core.live.AbstractAProxLiveTest;
 import org.commonjava.aprox.core.live.fixture.ProxyConfigProvider;
-import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.web.test.fixture.TestWarArchiveBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -43,7 +42,7 @@ public class RepositoryAccessResourceLiveTest
     extends AbstractAProxLiveTest
 {
 
-    private static final String BASE_URL = "http://localhost:8080/test/api/1.0/repository/central/";
+    private static final String BASE_URL = "/repository/central/";
 
     private static File repoRoot;
 
@@ -80,7 +79,7 @@ public class RepositoryAccessResourceLiveTest
     public void setupTest()
         throws ProxyDataException
     {
-        proxyManager.storeRepository( new Repository( "central", "http://repo1.maven.apache.org/maven2/" ) );
+        proxyManager.storeRepository( modelFactory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" ) );
     }
 
     @Test
@@ -88,7 +87,9 @@ public class RepositoryAccessResourceLiveTest
         throws ClientProtocolException, IOException
     {
         final String response =
-            getString( BASE_URL + "org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom", HttpStatus.SC_OK );
+            webFixture.getString( webFixture.resourceUrl( BASE_URL,
+                                                          "org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom" ),
+                                  HttpStatus.SC_OK );
         assertThat( response.contains( "<artifactId>maven-model</artifactId>" ), equalTo( true ) );
     }
 

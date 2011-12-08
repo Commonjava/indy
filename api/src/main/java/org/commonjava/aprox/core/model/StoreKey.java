@@ -15,7 +15,6 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.model;
 
-import static org.commonjava.couch.util.IdUtils.namespaceId;
 
 public final class StoreKey
 {
@@ -44,7 +43,7 @@ public final class StoreKey
     @Override
     public String toString()
     {
-        return namespaceId( type.name(), name );
+        return type.name() + ":" + name;
     }
 
     @Override
@@ -72,7 +71,7 @@ public final class StoreKey
         {
             return false;
         }
-        StoreKey other = (StoreKey) obj;
+        final StoreKey other = (StoreKey) obj;
         if ( name == null )
         {
             if ( other.name != null )
@@ -93,7 +92,7 @@ public final class StoreKey
 
     public static StoreKey fromString( final String id )
     {
-        int idx = id.indexOf( ':' );
+        final int idx = id.indexOf( ':' );
 
         String name;
         StoreType type;
