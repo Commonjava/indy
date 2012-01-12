@@ -17,7 +17,6 @@ package org.commonjava.aprox.depbase.conf;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,10 +24,8 @@ import java.io.InputStream;
 import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.commonjava.aprox.core.conf.ProxyConfiguration;
 import org.commonjava.couch.conf.CouchDBConfiguration;
 import org.commonjava.couch.conf.DefaultCouchDBConfiguration;
 import org.commonjava.depbase.inject.DepbaseData;
@@ -43,12 +40,7 @@ public class DepbaseAproxConfigurationFactory
 
     private static final String CONFIG_PATH = "/etc/aprox/depbase.conf";
 
-    private static final String DEFAULT_DB_NAME = "depbase";
-
     private DefaultCouchDBConfiguration couchConfig;
-
-    @Inject
-    private ProxyConfiguration proxyConfig;
 
     public DepbaseAproxConfigurationFactory()
         throws ConfigurationException
@@ -60,28 +52,20 @@ public class DepbaseAproxConfigurationFactory
     protected void load()
         throws ConfigurationException
     {
-        final File configFile = new File( CONFIG_PATH );
-        if ( configFile.isFile() )
+        InputStream stream = null;
+        try
         {
-            InputStream stream = null;
-            try
-            {
-                stream = new FileInputStream( configFile );
-                new DotConfConfigurationReader( this ).loadConfiguration( stream );
-            }
-            catch ( final IOException e )
-            {
-                throw new ConfigurationException( "Cannot open configuration file: %s. Reason: %s", e, CONFIG_PATH,
-                                                  e.getMessage() );
-            }
-            finally
-            {
-                closeQuietly( stream );
-            }
+            stream = new FileInputStream( CONFIG_PATH );
+            new DotConfConfigurationReader( this ).loadConfiguration( stream );
         }
-        else
+        catch ( final IOException e )
         {
-            couchConfig = new DefaultCouchDBConfiguration( proxyConfig.getDatabaseConfig(), DEFAULT_DB_NAME );
+            throw new ConfigurationException( "Cannot open configuration file: %s. Reason: %s", e, CONFIG_PATH,
+                                              e.getMessage() );
+        }
+        finally
+        {
+            closeQuietly( stream );
         }
     }
 

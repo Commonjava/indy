@@ -21,20 +21,17 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.commonjava.aprox.core.change.event.ProxyManagerDeleteEvent;
 import org.commonjava.aprox.core.data.ProxyDataException;
 import org.commonjava.aprox.core.data.ProxyDataManager;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
-import org.commonjava.couch.change.CouchDocChange;
-import org.commonjava.couch.change.dispatch.CouchChangeJ2EEEvent;
-import org.commonjava.couch.change.dispatch.ThreadableListener;
 import org.commonjava.couch.util.ChangeSynchronizer;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
 public class GroupConsistencyListener
-    implements ThreadableListener
 {
 
     private final Logger logger = new Logger( getClass() );
@@ -44,51 +41,57 @@ public class GroupConsistencyListener
 
     private final ChangeSynchronizer changeSync = new ChangeSynchronizer();
 
-    @Override
-    public boolean canProcess( final String id, final boolean deleted )
+    private void processChanged( final StoreKey key )
     {
-        return deleted
-            && ( id.startsWith( StoreType.repository.name() )
-                || id.startsWith( StoreType.deploy_point.name() ) || id.startsWith( StoreType.group.name() ) );
-    }
-
-    @Override
-    public void documentChanged( final CouchDocChange change )
-    {
-        String id = change.getId();
-        StoreKey key = StoreKey.fromString( id );
         try
         {
-            Set<Group> groups = proxyDataManager.getGroupsContaining( key );
-            for ( Group group : groups )
+            final Set<? extends Group> groups = proxyDataManager.getGroupsContaining( key );
+            for ( final Group group : groups )
             {
-                group.removeConstituent( StoreKey.fromString( id ) );
+                group.removeConstituent( key );
             }
 
             proxyDataManager.storeGroups( groups );
 
             changeSync.setChanged();
         }
-        catch ( ProxyDataException e )
+        catch ( final ProxyDataException e )
         {
-            logger.error( "Failed to remove group constituent listings for: %s. Error: %s", e, id,
-                          e.getMessage() );
+            logger.error( "Failed to remove group constituent listings for: %s. Error: %s", e, key, e.getMessage() );
         }
     }
 
-    public void storeDeleted( @Observes final CouchChangeJ2EEEvent event )
+    // public void storeDeleted( @Observes final CouchChangeJ2EEEvent event )
+    // {
+    // final CouchDocChange change = event.getChange();
+    // final String id = change.getId();
+    //
+    // final boolean canProcess =
+    // change.isDeleted()
+    // && ( id.startsWith( StoreType.repository.name() ) || id.startsWith( StoreType.deploy_point.name() ) ||
+    // id.startsWith( StoreType.group.name() ) );
+    //
+    // if ( canProcess )
+    // {
+    // final StoreKey key = StoreKey.fromString( id );
+    // processChanged( key );
+    // }
+    // }
+
+    public void storeDeleted( @Observes final ProxyManagerDeleteEvent event )
     {
-        CouchDocChange change = event.getChange();
-        if ( canProcess( change.getId(), change.isDeleted() ) )
+        logger.info( "Processing proxy-manager store deletion: %s", event );
+        final StoreType type = event.getType();
+        for ( final String name : event )
         {
-            documentChanged( change );
+            final StoreKey key = new StoreKey( type, name );
+            processChanged( key );
         }
     }
 
-    @Override
-    public void waitForChange( final long totalMillis, final long pollingMillis )
+    public void waitForChange( final long total, final long poll )
     {
-        changeSync.waitForChange( totalMillis, pollingMillis );
+        changeSync.waitForChange( total, poll );
     }
 
 }

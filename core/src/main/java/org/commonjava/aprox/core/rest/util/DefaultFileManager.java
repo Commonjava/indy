@@ -54,7 +54,8 @@ import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
-public class DefaultFileManager implements FileManager
+public class DefaultFileManager
+    implements FileManager
 {
 
     private final Logger logger = new Logger( getClass() );
@@ -72,7 +73,8 @@ public class DefaultFileManager implements FileManager
     private TLRepositoryCredentialsProvider credProvider;
 
     public DefaultFileManager()
-    {}
+    {
+    }
 
     public DefaultFileManager( final ProxyConfiguration config )
     {
@@ -83,27 +85,28 @@ public class DefaultFileManager implements FileManager
     @PostConstruct
     protected void setup()
     {
-        ThreadSafeClientConnManager ccm = new ThreadSafeClientConnManager();
+        final ThreadSafeClientConnManager ccm = new ThreadSafeClientConnManager();
         ccm.setMaxTotal( 20 );
 
         credProvider = new TLRepositoryCredentialsProvider();
 
-        DefaultHttpClient hc = new DefaultHttpClient( ccm );
+        final DefaultHttpClient hc = new DefaultHttpClient( ccm );
         hc.setCredentialsProvider( credProvider );
 
         client = hc;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.commonjava.aprox.core.rest.util.FileManager#downloadFirst(java.util.List, java.lang.String)
      */
     @Override
-    public File downloadFirst( final List<ArtifactStore> stores, final String path )
+    public File downloadFirst( final List<? extends ArtifactStore> stores, final String path )
     {
         File result = null;
         File target = null;
 
-        for ( ArtifactStore store : stores )
+        for ( final ArtifactStore store : stores )
         {
             if ( store == null )
             {
@@ -115,8 +118,7 @@ public class DefaultFileManager implements FileManager
 
             if ( !target.exists() )
             {
-                if ( ( store instanceof Repository )
-                    && download( (Repository) store, path, target, true ) )
+                if ( ( store instanceof Repository ) && download( (Repository) store, path, target, true ) )
                 {
                     result = target;
                     break;
@@ -124,8 +126,7 @@ public class DefaultFileManager implements FileManager
             }
             else
             {
-                logger.info( "Using stored copy from artifact store: %s for: %s", store.getName(),
-                             path );
+                logger.info( "Using stored copy from artifact store: %s for: %s", store.getName(), path );
                 result = target;
                 break;
             }
@@ -134,31 +135,30 @@ public class DefaultFileManager implements FileManager
         return result;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.commonjava.aprox.core.rest.util.FileManager#downloadAll(java.util.List, java.lang.String)
      */
     @Override
-    public Set<File> downloadAll( final List<ArtifactStore> stores, final String path )
+    public Set<File> downloadAll( final List<? extends ArtifactStore> stores, final String path )
     {
-        Set<File> targets = new LinkedHashSet<File>();
+        final Set<File> targets = new LinkedHashSet<File>();
 
         File target = null;
-        for ( ArtifactStore store : stores )
+        for ( final ArtifactStore store : stores )
         {
             target = formatStorageReference( store, path );
 
             if ( !target.exists() )
             {
-                if ( ( store instanceof Repository )
-                    && download( (Repository) store, path, target, true ) )
+                if ( ( store instanceof Repository ) && download( (Repository) store, path, target, true ) )
                 {
                     targets.add( target );
                 }
             }
             else
             {
-                logger.info( "Using stored copy from artifact store: %s for: %s", store.getName(),
-                             path );
+                logger.info( "Using stored copy from artifact store: %s for: %s", store.getName(), path );
                 targets.add( target );
                 break;
             }
@@ -167,8 +167,10 @@ public class DefaultFileManager implements FileManager
         return targets;
     }
 
-    /* (non-Javadoc)
-     * @see org.commonjava.aprox.core.rest.util.FileManager#download(org.commonjava.aprox.core.model.ArtifactStore, java.lang.String)
+    /*
+     * (non-Javadoc)
+     * @see org.commonjava.aprox.core.rest.util.FileManager#download(org.commonjava.aprox.core.model.ArtifactStore,
+     * java.lang.String)
      */
     @Override
     public File download( final ArtifactStore store, final String path )
@@ -194,14 +196,16 @@ public class DefaultFileManager implements FileManager
         return target;
     }
 
-    /* (non-Javadoc)
-     * @see org.commonjava.aprox.core.rest.util.FileManager#download(org.commonjava.aprox.core.model.Repository, java.lang.String, java.io.File, boolean)
+    /*
+     * (non-Javadoc)
+     * @see org.commonjava.aprox.core.rest.util.FileManager#download(org.commonjava.aprox.core.model.Repository,
+     * java.lang.String, java.io.File, boolean)
      */
     @Override
     public boolean download( final Repository repository, final String path, final File target,
                              final boolean suppressFailures )
     {
-        String url = buildDownloadUrl( repository, path, suppressFailures );
+        final String url = buildDownloadUrl( repository, path, suppressFailures );
 
         if ( !continueDownload( url, repository.getTimeoutSeconds(), suppressFailures ) )
         {
@@ -212,10 +216,10 @@ public class DefaultFileManager implements FileManager
 
         logger.info( "Trying: %s", url );
 
-        HttpGet request = new HttpGet( url );
+        final HttpGet request = new HttpGet( url );
         try
         {
-            InputStream in = executeGet( request, url, suppressFailures );
+            final InputStream in = executeGet( request, url, suppressFailures );
             writeTarget( target, in, url, repository, path, suppressFailures );
         }
         finally
@@ -231,21 +235,20 @@ public class DefaultFileManager implements FileManager
         return target.exists();
     }
 
-    private void writeTarget( final File target, final InputStream in, final String url,
-                              final Repository repository, final String path,
-                              final boolean suppressFailures )
+    private void writeTarget( final File target, final InputStream in, final String url, final Repository repository,
+                              final String path, final boolean suppressFailures )
     {
         FileOutputStream out = null;
         if ( in != null )
         {
             try
             {
-                File targetDir = target.getParentFile();
+                final File targetDir = target.getParentFile();
                 if ( !targetDir.exists() && !targetDir.mkdirs() )
                 {
                     logger.error( "Cannot create repository local storage directory: %s", targetDir );
-                    throw new WebApplicationException(
-                                                       Response.status( Status.INTERNAL_SERVER_ERROR ).build() );
+                    throw new WebApplicationException( Response.status( Status.INTERNAL_SERVER_ERROR )
+                                                               .build() );
                 }
 
                 out = new FileOutputStream( target );
@@ -254,19 +257,18 @@ public class DefaultFileManager implements FileManager
 
                 if ( fileEvent != null )
                 {
-                    fileEvent.fire( new FileStorageEvent( FileStorageEvent.Type.DOWNLOAD,
-                                                          repository, path, target ) );
+                    fileEvent.fire( new FileStorageEvent( FileStorageEvent.Type.DOWNLOAD, repository, path, target ) );
                 }
             }
-            catch ( IOException e )
+            catch ( final IOException e )
             {
-                logger.error( "Failed to write to local proxy store: %s\nOriginal URL: %s. Reason: %s",
-                              e, target, url, e.getMessage() );
+                logger.error( "Failed to write to local proxy store: %s\nOriginal URL: %s. Reason: %s", e, target, url,
+                              e.getMessage() );
 
                 if ( !suppressFailures )
                 {
-                    throw new WebApplicationException(
-                                                       Response.status( Status.INTERNAL_SERVER_ERROR ).build() );
+                    throw new WebApplicationException( Response.status( Status.INTERNAL_SERVER_ERROR )
+                                                               .build() );
                 }
             }
             finally
@@ -277,53 +279,51 @@ public class DefaultFileManager implements FileManager
         }
     }
 
-    private InputStream executeGet( final HttpGet request, final String url,
-                                    final boolean suppressFailures )
+    private InputStream executeGet( final HttpGet request, final String url, final boolean suppressFailures )
     {
         InputStream result = null;
 
         try
         {
-            HttpResponse response = client.execute( request );
-            StatusLine line = response.getStatusLine();
+            final HttpResponse response = client.execute( request );
+            final StatusLine line = response.getStatusLine();
             if ( line.getStatusCode() != HttpStatus.SC_OK )
             {
                 logger.warn( "%s : %s", line, url );
                 if ( !suppressFailures )
                 {
-                    throw new WebApplicationException(
-                                                       Response.status( Status.INTERNAL_SERVER_ERROR ).build() );
+                    throw new WebApplicationException( Response.status( Status.INTERNAL_SERVER_ERROR )
+                                                               .build() );
                 }
             }
             else
             {
-                result = response.getEntity().getContent();
+                result = response.getEntity()
+                                 .getContent();
             }
         }
-        catch ( ClientProtocolException e )
+        catch ( final ClientProtocolException e )
         {
-            logger.warn( "Repository remote request failed for: %s. Reason: %s", e, url,
-                         e.getMessage() );
+            logger.warn( "Repository remote request failed for: %s. Reason: %s", e, url, e.getMessage() );
 
             if ( !suppressFailures )
             {
-                throw new WebApplicationException(
-                                                   Response.status( Status.INTERNAL_SERVER_ERROR ).build() );
+                throw new WebApplicationException( Response.status( Status.INTERNAL_SERVER_ERROR )
+                                                           .build() );
             }
             else
             {
                 result = null;
             }
         }
-        catch ( IOException e )
+        catch ( final IOException e )
         {
-            logger.warn( "Repository remote request failed for: %s. Reason: %s", e, url,
-                         e.getMessage() );
+            logger.warn( "Repository remote request failed for: %s. Reason: %s", e, url, e.getMessage() );
 
             if ( !suppressFailures )
             {
-                throw new WebApplicationException(
-                                                   Response.status( Status.INTERNAL_SERVER_ERROR ).build() );
+                throw new WebApplicationException( Response.status( Status.INTERNAL_SERVER_ERROR )
+                                                           .build() );
             }
             else
             {
@@ -334,19 +334,17 @@ public class DefaultFileManager implements FileManager
         return result;
     }
 
-    private String buildDownloadUrl( final Repository repository, final String path,
-                                     final boolean suppressFailures )
+    private String buildDownloadUrl( final Repository repository, final String path, final boolean suppressFailures )
     {
-        String remoteBase = repository.getUrl();
+        final String remoteBase = repository.getUrl();
         String url = null;
         try
         {
             url = buildUrl( remoteBase, path );
         }
-        catch ( MalformedURLException e )
+        catch ( final MalformedURLException e )
         {
-            logger.error( "Invalid URL for path: %s in remote URL: %s. Reason: %s", e, path,
-                          remoteBase, e.getMessage() );
+            logger.error( "Invalid URL for path: %s in remote URL: %s. Reason: %s", e, path, remoteBase, e.getMessage() );
 
             if ( !suppressFailures )
             {
@@ -361,14 +359,13 @@ public class DefaultFileManager implements FileManager
         return url;
     }
 
-    private boolean continueDownload( final String url, final int timeoutSeconds,
-                                      final boolean suppressFailures )
+    private boolean continueDownload( final String url, final int timeoutSeconds, final boolean suppressFailures )
     {
         synchronized ( pendingUrls )
         {
             if ( pendingUrls.contains( url ) )
             {
-                long timeout = System.currentTimeMillis() + ( timeoutSeconds * 1000 );
+                final long timeout = System.currentTimeMillis() + ( timeoutSeconds * 1000 );
                 do
                 {
                     if ( System.currentTimeMillis() > timeout )
@@ -387,7 +384,7 @@ public class DefaultFileManager implements FileManager
                     {
                         pendingUrls.wait( 1000 );
                     }
-                    catch ( InterruptedException e )
+                    catch ( final InterruptedException e )
                     {
                         break;
                     }
@@ -410,17 +407,21 @@ public class DefaultFileManager implements FileManager
     {
         credProvider.clear();
         request.abort();
-        client.getConnectionManager().closeExpiredConnections();
-        client.getConnectionManager().closeIdleConnections( 2, TimeUnit.SECONDS );
+        client.getConnectionManager()
+              .closeExpiredConnections();
+        client.getConnectionManager()
+              .closeIdleConnections( 2, TimeUnit.SECONDS );
     }
 
-    /* (non-Javadoc)
-     * @see org.commonjava.aprox.core.rest.util.FileManager#upload(org.commonjava.aprox.core.model.DeployPoint, java.lang.String, java.io.InputStream)
+    /*
+     * (non-Javadoc)
+     * @see org.commonjava.aprox.core.rest.util.FileManager#upload(org.commonjava.aprox.core.model.DeployPoint,
+     * java.lang.String, java.io.InputStream)
      */
     @Override
     public void upload( final DeployPoint deploy, final String path, final InputStream stream )
     {
-        File target = formatStorageReference( deploy, path );
+        final File target = formatStorageReference( deploy, path );
 
         // TODO: Need some protection for released files!
         // if ( target.exists() )
@@ -429,7 +430,7 @@ public class DefaultFileManager implements FileManager
         // Response.status( Status.BAD_REQUEST ).entity( "Deployment path already exists." ).build() );
         // }
 
-        File targetDir = target.getParentFile();
+        final File targetDir = target.getParentFile();
         targetDir.mkdirs();
         FileOutputStream out = null;
         try
@@ -439,17 +440,16 @@ public class DefaultFileManager implements FileManager
 
             if ( fileEvent != null )
             {
-                fileEvent.fire( new FileStorageEvent( FileStorageEvent.Type.UPLOAD, deploy, path,
-                                                      target ) );
+                fileEvent.fire( new FileStorageEvent( FileStorageEvent.Type.UPLOAD, deploy, path, target ) );
             }
         }
-        catch ( IOException e )
+        catch ( final IOException e )
         {
-            logger.error( "Failed to store: %s in deploy store: %s. Reason: %s", e, path,
-                          deploy.getName(), e.getMessage() );
+            logger.error( "Failed to store: %s in deploy store: %s. Reason: %s", e, path, deploy.getName(),
+                          e.getMessage() );
 
-            throw new WebApplicationException(
-                                               Response.status( Status.INTERNAL_SERVER_ERROR ).build() );
+            throw new WebApplicationException( Response.status( Status.INTERNAL_SERVER_ERROR )
+                                                       .build() );
         }
         finally
         {
@@ -457,35 +457,41 @@ public class DefaultFileManager implements FileManager
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.commonjava.aprox.core.rest.util.FileManager#upload(java.util.List, java.lang.String, java.io.InputStream)
+    /*
+     * (non-Javadoc)
+     * @see org.commonjava.aprox.core.rest.util.FileManager#upload(java.util.List, java.lang.String,
+     * java.io.InputStream)
      */
     @Override
-    public DeployPoint upload( final List<DeployPoint> deployPoints, final String path,
+    public DeployPoint upload( final List<? extends DeployPoint> deployPoints, final String path,
                                final InputStream stream )
     {
         // TODO: Need to match the upload snapshot status to an appropriate deploy point...
         if ( deployPoints.isEmpty() )
         {
             logger.warn( "Cannot deploy. No valid deploy points in group." );
-            throw new WebApplicationException(
-                                               Response.status( Status.BAD_REQUEST ).entity( "No deployment locations available." ).build() );
+            throw new WebApplicationException( Response.status( Status.BAD_REQUEST )
+                                                       .entity( "No deployment locations available." )
+                                                       .build() );
         }
 
-        DeployPoint deploy = deployPoints.get( 0 );
+        final DeployPoint deploy = deployPoints.get( 0 );
         upload( deploy, path, stream );
 
         return deploy;
     }
 
-    /* (non-Javadoc)
-     * @see org.commonjava.aprox.core.rest.util.FileManager#formatStorageReference(org.commonjava.aprox.core.model.ArtifactStore, java.lang.String)
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.commonjava.aprox.core.rest.util.FileManager#formatStorageReference(org.commonjava.aprox.core.model.ArtifactStore
+     * , java.lang.String)
      */
     @Override
     public File formatStorageReference( final ArtifactStore store, final String path )
     {
-        return new File( new File( config.getRepositoryRootDirectory(), store.getDoctype().name()
-            + "-" + store.getName() ), path );
+        return new File( new File( config.getRepositoryRootDirectory(), store.getDoctype()
+                                                                             .name() + "-" + store.getName() ), path );
     }
 
 }

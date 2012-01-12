@@ -69,14 +69,14 @@ public class DepBaseProxyListener
             return;
         }
 
-        ArtifactStore originatingStore = event.getStore();
-        List<ArtifactStore> stores = getRelevantStores( originatingStore );
+        final ArtifactStore originatingStore = event.getStore();
+        final List<ArtifactStore> stores = getRelevantStores( originatingStore );
         if ( stores == null )
         {
             return;
         }
 
-        Model model = loadModel( event, stores );
+        final Model model = loadModel( event, stores );
         if ( model == null )
         {
             return;
@@ -86,16 +86,15 @@ public class DepBaseProxyListener
         {
             modelProcessor.storeModelRelationships( model );
         }
-        catch ( DepbaseDataException e )
+        catch ( final DepbaseDataException e )
         {
-            logger.error( "Failed to store relationships for POM: %s. Reason: %s", e,
-                          model.getId(), e.getMessage() );
+            logger.error( "Failed to store relationships for POM: %s. Reason: %s", e, model.getId(), e.getMessage() );
         }
     }
 
     protected Model loadModel( final FileStorageEvent event, final List<ArtifactStore> stores )
     {
-        ModelBuildingRequest request = new DefaultModelBuildingRequest();
+        final ModelBuildingRequest request = new DefaultModelBuildingRequest();
         request.setPomFile( new File( event.getStorageLocation() ) );
         request.setModelResolver( new ArtifactStoreModelResolver( fileManager, stores ) );
 
@@ -104,10 +103,9 @@ public class DepBaseProxyListener
         {
             result = modelBuilder.build( request );
         }
-        catch ( ModelBuildingException e )
+        catch ( final ModelBuildingException e )
         {
-            logger.error( "Cannot build model instance for POM: %s. Reason: %s", e,
-                          event.getPath(), e.getMessage() );
+            logger.error( "Cannot build model instance for POM: %s. Reason: %s", e, event.getPath(), e.getMessage() );
         }
 
         if ( result == null )
@@ -125,19 +123,20 @@ public class DepBaseProxyListener
 
         try
         {
-            Set<Group> groups = aprox.getGroupsContaining( originatingStore.getKey() );
-            for ( Group group : groups )
+            final Set<? extends Group> groups = aprox.getGroupsContaining( originatingStore.getKey() );
+            for ( final Group group : groups )
             {
                 if ( group == null )
                 {
                     continue;
                 }
 
-                List<ArtifactStore> orderedStores =
+                final List<? extends ArtifactStore> orderedStores =
                     aprox.getOrderedConcreteStoresInGroup( group.getName() );
+
                 if ( orderedStores != null )
                 {
-                    for ( ArtifactStore as : orderedStores )
+                    for ( final ArtifactStore as : orderedStores )
                     {
                         if ( as == null || stores.contains( as ) )
                         {
@@ -149,10 +148,10 @@ public class DepBaseProxyListener
                 }
             }
         }
-        catch ( ProxyDataException e )
+        catch ( final ProxyDataException e )
         {
-            logger.error( "Cannot lookup full store list for groups containing artifact store: %s. Reason: %s",
-                          e, originatingStore.getKey(), e.getMessage() );
+            logger.error( "Cannot lookup full store list for groups containing artifact store: %s. Reason: %s", e,
+                          originatingStore.getKey(), e.getMessage() );
             stores = null;
         }
 

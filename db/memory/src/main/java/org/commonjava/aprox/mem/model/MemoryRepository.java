@@ -46,11 +46,21 @@ public class MemoryRepository
 
     private String password;
 
+    MemoryRepository()
+    {
+        super( StoreType.repository );
+    }
+
     public MemoryRepository( final String name, final String remoteUrl )
     {
         super( StoreType.repository, name );
         this.url = remoteUrl;
         calculateFields();
+    }
+
+    MemoryRepository( final String name )
+    {
+        super( StoreType.repository, name );
     }
 
     @Override
@@ -176,6 +186,13 @@ public class MemoryRepository
     public void setTimeoutSeconds( final int timeoutSeconds )
     {
         this.timeoutSeconds = timeoutSeconds;
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format( "MemoryRepository [url=%s, timeoutSeconds=%s, host=%s, port=%s, user=%s, password=%s, getName()=%s, getKey()=%s]",
+                              url, timeoutSeconds, host, port, user, password, getName(), getKey() );
     }
 
 }

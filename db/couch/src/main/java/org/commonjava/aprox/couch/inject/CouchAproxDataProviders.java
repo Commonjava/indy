@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package org.commonjava.aprox.core.inject;
+package org.commonjava.aprox.couch.inject;
 
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.commonjava.aprox.core.inject.AproxData;
 import org.commonjava.couch.change.CouchChangeListener;
 import org.commonjava.couch.conf.CouchDBConfiguration;
 import org.commonjava.couch.db.CouchFactory;
@@ -27,7 +28,7 @@ import org.commonjava.couch.db.CouchManager;
 import org.commonjava.couch.io.CouchHttpClient;
 
 @Singleton
-public class AproxDataProviders
+public class CouchAproxDataProviders
 {
 
     @Inject

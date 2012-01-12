@@ -24,14 +24,23 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.apache.log4j.Level;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.ModelFactory;
 import org.commonjava.aprox.core.model.Repository;
+import org.commonjava.util.logging.Log4jUtil;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public abstract class RepositoryDataManagerTCK
     extends AbstractProxyDataManagerTCK
 {
+
+    @BeforeClass
+    public static void setupLogging()
+    {
+        Log4jUtil.configure( Level.DEBUG );
+    }
 
     @Test
     public void createAndRetrieveCentralRepoProxy()
@@ -63,7 +72,7 @@ public abstract class RepositoryDataManagerTCK
 
         manager.storeRepository( repo, true );
 
-        final List<Repository> result = manager.getAllRepositories();
+        final List<? extends Repository> result = manager.getAllRepositories();
 
         assertThat( result, notNullValue() );
         assertThat( result.size(), equalTo( 1 ) );
@@ -116,7 +125,7 @@ public abstract class RepositoryDataManagerTCK
         final Repository repo2 = factory.createRepository( "test", "http://www.google.com" );
         manager.storeRepository( repo2 );
 
-        final List<Repository> repositories = manager.getAllRepositories();
+        final List<? extends Repository> repositories = manager.getAllRepositories();
 
         assertThat( repositories, notNullValue() );
         assertThat( repositories.size(), equalTo( 2 ) );

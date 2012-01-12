@@ -23,7 +23,6 @@ import javax.inject.Singleton;
 
 import org.commonjava.aprox.core.conf.DefaultProxyConfiguration;
 import org.commonjava.aprox.core.conf.ProxyConfiguration;
-import org.commonjava.aprox.core.inject.AproxData;
 import org.commonjava.auth.couch.conf.DefaultUserManagerConfig;
 import org.commonjava.auth.couch.conf.UserManagerConfiguration;
 import org.commonjava.auth.couch.inject.UserData;
@@ -74,21 +73,11 @@ public class ProxyConfigProvider
     {
         if ( config == null )
         {
-            config = new DefaultProxyConfiguration( "http://localhost:5984/test-aprox" );
-
-            config.setRepositoryRootDirectory( new File( System.getProperty( REPO_ROOT_DIR, "target/repo-downloads" ) ) );
+            config =
+                new DefaultProxyConfiguration( new File( System.getProperty( REPO_ROOT_DIR, "target/repo-downloads" ) ) );
         }
 
         return config;
-    }
-
-    @Produces
-    @AproxData
-    // @TestData
-    // @Default
-    public CouchDBConfiguration getCouchConfiguration()
-    {
-        return getProxyConfiguration().getDatabaseConfig();
     }
 
     // @Produces

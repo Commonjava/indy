@@ -23,76 +23,33 @@ import javax.inject.Singleton;
 
 import org.commonjava.aprox.core.change.event.ProxyManagerDeleteEvent;
 import org.commonjava.aprox.core.model.StoreType;
-import org.commonjava.auth.couch.data.UserDataException;
-import org.commonjava.auth.couch.data.UserDataManager;
-import org.commonjava.couch.change.CouchDocChange;
-import org.commonjava.couch.change.dispatch.ThreadableListener;
-import org.commonjava.couch.rbac.Permission;
+import org.commonjava.aprox.sec.data.AProxSecDataManager;
 import org.commonjava.couch.util.ChangeSynchronizer;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
 public class SecurityConsistencyListener
-    implements ThreadableListener
 {
 
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private UserDataManager userDataManager;
+    private AProxSecDataManager dataManager;
 
-    private final ChangeSynchronizer changeSync = new ChangeSynchronizer();
-
-    @Override
-    public boolean canProcess( final String id, final boolean deleted )
-    {
-        logger.info( "\n\n\n\nProcessing change: %s (deleted? %b)\n\n\n\n", id, deleted );
-        return deleted
-            && ( id.startsWith( StoreType.repository.name() ) || id.startsWith( StoreType.deploy_point.name() ) || id.startsWith( StoreType.group.name() ) );
-    }
-
-    @Override
-    public void documentChanged( final CouchDocChange change )
-    {
-        final String id = change.getId();
-        try
-        {
-            logger.info( "\n\n\n\nDeleting permissions for group: %s\n\n\n\n", id );
-            userDataManager.deletePermission( Permission.name( id, Permission.ADMIN ) );
-            userDataManager.deletePermission( Permission.name( id, Permission.READ ) );
-
-            changeSync.setChanged();
-        }
-        catch ( final UserDataException e )
-        {
-            logger.error( "Failed to remove permissions for deleted store: %s. Error: %s", e, id, e.getMessage() );
-        }
-    }
+    @Inject
+    private ChangeSynchronizer changeSync;
 
     public void storeDeleted( @Observes final ProxyManagerDeleteEvent event )
     {
         logger.info( "\n\n\n\nProcessing JEE change notification: %s\n\n\n\n", event );
         final StoreType type = event.getType();
-        final Collection<String> names = event.getChanges();
+        final Collection<String> names = event.getNames();
         for ( final String name : names )
         {
-            try
-            {
-                logger.info( "\n\n\n\nDeleting permissions for store: %s:%s\n\n\n\n", type.name(), name );
-                userDataManager.deletePermission( Permission.name( type.name(), name, Permission.ADMIN ) );
-                userDataManager.deletePermission( Permission.name( type.name(), name, Permission.READ ) );
-
-                changeSync.setChanged();
-            }
-            catch ( final UserDataException e )
-            {
-                logger.error( "Failed to remove permissions for deleted store: %s:%s. Error: %s", e, type.name(), name,
-                              e.getMessage() );
-            }
+            dataManager.deleteStorePermissions( type, name );
         }
     }
 
-    @Override
     public void waitForChange( final long totalMillis, final long pollingMillis )
     {
         changeSync.waitForChange( totalMillis, pollingMillis );

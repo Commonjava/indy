@@ -25,9 +25,14 @@ public abstract class AbstractArtifactStore
 
     private String name;
 
-    private final StoreKey key;
+    private StoreKey key;
 
     private final StoreType doctype;
+
+    protected AbstractArtifactStore( final StoreType type )
+    {
+        doctype = type;
+    }
 
     protected AbstractArtifactStore( final StoreType doctype, final String name )
     {
@@ -49,6 +54,7 @@ public abstract class AbstractArtifactStore
     protected void setName( final String name )
     {
         this.name = name;
+        this.key = new StoreKey( doctype, name );
     }
 
     /*

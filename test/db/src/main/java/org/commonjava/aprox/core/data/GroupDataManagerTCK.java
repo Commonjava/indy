@@ -25,19 +25,28 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.apache.log4j.Level;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.model.ModelFactory;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
+import org.commonjava.util.logging.Log4jUtil;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public abstract class GroupDataManagerTCK
     extends AbstractProxyDataManagerTCK
 {
+
+    @BeforeClass
+    public static void setupLogging()
+    {
+        Log4jUtil.configure( Level.DEBUG );
+    }
 
     @Before
     public void seedRepositoriesForGroupTests()
@@ -157,7 +166,7 @@ public abstract class GroupDataManagerTCK
 
         manager.storeGroup( grp );
 
-        final List<ArtifactStore> repos = manager.getOrderedConcreteStoresInGroup( grp.getName() );
+        final List<? extends ArtifactStore> repos = manager.getOrderedConcreteStoresInGroup( grp.getName() );
 
         assertThat( repos, notNullValue() );
         assertThat( repos.size(), equalTo( 2 ) );
@@ -181,7 +190,7 @@ public abstract class GroupDataManagerTCK
 
         manager.storeGroup( grp );
 
-        final List<ArtifactStore> result = manager.getOrderedConcreteStoresInGroup( grp.getName() );
+        final List<? extends ArtifactStore> result = manager.getOrderedConcreteStoresInGroup( grp.getName() );
 
         assertThat( result, notNullValue() );
         assertThat( result.size(), equalTo( 2 ) );
@@ -207,7 +216,7 @@ public abstract class GroupDataManagerTCK
         manager.storeGroup( grp, true );
         manager.storeGroup( grp, true );
 
-        final List<Group> result = manager.getAllGroups();
+        final List<? extends Group> result = manager.getAllGroups();
 
         assertThat( result, notNullValue() );
         assertThat( result.size(), equalTo( 1 ) );
@@ -226,7 +235,7 @@ public abstract class GroupDataManagerTCK
         manager.storeGroup( grp );
         manager.storeGroup( grp2 );
 
-        final List<Group> result = manager.getAllGroups();
+        final List<? extends Group> result = manager.getAllGroups();
 
         assertThat( result, notNullValue() );
         assertThat( result.size(), equalTo( 2 ) );

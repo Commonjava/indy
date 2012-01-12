@@ -36,9 +36,9 @@ public class GroupRetrieverChain
     @Inject
     private FileManager downloader;
 
-    public File retrieve( final Group group, final List<ArtifactStore> stores, final String path )
+    public File retrieve( final Group group, final List<? extends ArtifactStore> stores, final String path )
     {
-        for ( GroupPathRetriever handler : retrievers.getRetrievers() )
+        for ( final GroupPathRetriever handler : retrievers.getRetrievers() )
         {
             if ( handler.canHandle( path ) )
             {

@@ -49,10 +49,10 @@ public class MavenMetadataRetriever
     }
 
     @Override
-    public File handle( final Group group, final List<ArtifactStore> stores, final String path )
+    public File handle( final Group group, final List<? extends ArtifactStore> stores, final String path )
     {
-        File dir = new File( config.getRepositoryRootDirectory(), group.getName() );
-        File target = new File( dir, path );
+        final File dir = new File( config.getRepositoryRootDirectory(), group.getName() );
+        final File target = new File( dir, path );
 
         if ( target.exists() )
         {
@@ -60,7 +60,7 @@ public class MavenMetadataRetriever
         }
         else
         {
-            Set<File> files = downloader.downloadAll( stores, path );
+            final Set<File> files = downloader.downloadAll( stores, path );
             if ( merger.merge( files, target, group, path ) )
             {
                 return target;

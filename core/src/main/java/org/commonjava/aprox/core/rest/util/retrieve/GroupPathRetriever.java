@@ -26,6 +26,6 @@ public interface GroupPathRetriever
 
     boolean canHandle( String path );
 
-    File handle( Group group, List<ArtifactStore> stores, String path );
+    File handle( Group group, List<? extends ArtifactStore> stores, String path );
 
 }

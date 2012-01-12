@@ -80,7 +80,7 @@ public class GroupAdminResourceLiveTest
         final Group grp = modelFactory.createGroup( "test" );
 
         final HttpResponse response = webFixture.post( webFixture.resourceUrl( BASE_URL ), grp, HttpStatus.SC_CREATED );
-        webFixture.assertLocationHeader( response, BASE_URL + "/" + grp.getName() );
+        webFixture.assertLocationHeader( response, webFixture.resourceUrl( BASE_URL, grp.getName() ) );
 
         final Group result = webFixture.get( webFixture.resourceUrl( BASE_URL, grp.getName() ), Group.class );
 
@@ -154,7 +154,7 @@ public class GroupAdminResourceLiveTest
 
         assertThat( result, notNullValue() );
 
-        final List<Group> items = result.getItems();
+        final List<? extends Group> items = result.getItems();
         assertThat( items.size(), equalTo( 1 ) );
     }
 
@@ -175,7 +175,7 @@ public class GroupAdminResourceLiveTest
 
         assertThat( result, notNullValue() );
 
-        final List<Group> items = result.getItems();
+        final List<? extends Group> items = result.getItems();
         assertThat( items.size(), equalTo( 2 ) );
 
         Collections.sort( items, new Comparator<Group>()

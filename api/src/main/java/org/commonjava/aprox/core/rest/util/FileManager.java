@@ -27,9 +27,9 @@ import org.commonjava.aprox.core.model.Repository;
 public interface FileManager
 {
 
-    File downloadFirst( final List<ArtifactStore> stores, final String path );
+    File downloadFirst( final List<? extends ArtifactStore> stores, final String path );
 
-    Set<File> downloadAll( final List<ArtifactStore> stores, final String path );
+    Set<File> downloadAll( final List<? extends ArtifactStore> stores, final String path );
 
     File download( final ArtifactStore store, final String path );
 
@@ -37,7 +37,7 @@ public interface FileManager
 
     void upload( final DeployPoint deploy, final String path, final InputStream stream );
 
-    DeployPoint upload( final List<DeployPoint> deployPoints, final String path, final InputStream stream );
+    DeployPoint upload( final List<? extends DeployPoint> deployPoints, final String path, final InputStream stream );
 
     File formatStorageReference( final ArtifactStore store, final String path );
 

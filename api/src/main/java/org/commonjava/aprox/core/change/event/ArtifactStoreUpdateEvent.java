@@ -53,4 +53,9 @@ public class ArtifactStoreUpdateEvent
         return changes.iterator();
     }
 
+    public Collection<ArtifactStore> getChanges()
+    {
+        return changes;
+    }
+
 }

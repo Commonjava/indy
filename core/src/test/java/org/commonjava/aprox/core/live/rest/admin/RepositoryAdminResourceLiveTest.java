@@ -94,7 +94,7 @@ public class RepositoryAdminResourceLiveTest
 
         assertThat( result, notNullValue() );
 
-        final List<Repository> items = result.getItems();
+        final List<? extends Repository> items = result.getItems();
 
         assertThat( items, notNullValue() );
         assertThat( items.size(), equalTo( 1 ) );
@@ -133,7 +133,7 @@ public class RepositoryAdminResourceLiveTest
 
         assertThat( result, notNullValue() );
 
-        final List<Repository> repositories = result.getItems();
+        final List<? extends Repository> repositories = result.getItems();
 
         assertThat( repositories, notNullValue() );
         assertThat( repositories.size(), equalTo( 2 ) );

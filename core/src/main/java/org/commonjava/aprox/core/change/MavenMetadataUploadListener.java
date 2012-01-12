@@ -50,7 +50,7 @@ public class MavenMetadataUploadListener
 
     public void reMergeUploadedMetadata( @Observes final FileStorageEvent event )
     {
-        String path = event.getPath();
+        final String path = event.getPath();
         if ( !path.endsWith( MavenMetadataMerger.METADATA_NAME ) )
         {
             return;
@@ -58,27 +58,28 @@ public class MavenMetadataUploadListener
 
         try
         {
-            Set<Group> groups = dataManager.getGroupsContaining( event.getStore().getKey() );
+            final Set<? extends Group> groups = dataManager.getGroupsContaining( event.getStore()
+                                                                                      .getKey() );
 
             if ( groups != null )
             {
-                for ( Group group : groups )
+                for ( final Group group : groups )
                 {
                     reMergeMavenMetadata( group, event.getPath() );
                 }
             }
         }
-        catch ( ProxyDataException e )
+        catch ( final ProxyDataException e )
         {
             logger.warn( "Failed to regenerate maven-metadata.xml for groups after deployment to: %s"
-                             + "\nCannot retrieve associated groups: %s", e,
-                         event.getStore().getKey(), e.getMessage() );
+                + "\nCannot retrieve associated groups: %s", e, event.getStore()
+                                                                     .getKey(), e.getMessage() );
         }
     }
 
     private void reMergeMavenMetadata( final Group group, final String path )
     {
-        File target = fileManager.formatStorageReference( group, path );
+        final File target = fileManager.formatStorageReference( group, path );
 
         if ( !target.exists() )
         {
@@ -87,15 +88,14 @@ public class MavenMetadataUploadListener
 
         try
         {
-            List<ArtifactStore> stores =
-                dataManager.getOrderedConcreteStoresInGroup( group.getName() );
+            final List<? extends ArtifactStore> stores = dataManager.getOrderedConcreteStoresInGroup( group.getName() );
 
-            Set<File> files = new LinkedHashSet<File>();
+            final Set<File> files = new LinkedHashSet<File>();
             if ( stores != null )
             {
-                for ( ArtifactStore store : stores )
+                for ( final ArtifactStore store : stores )
                 {
-                    File file = fileManager.formatStorageReference( store, path );
+                    final File file = fileManager.formatStorageReference( store, path );
 
                     if ( file.exists() )
                     {
@@ -106,11 +106,10 @@ public class MavenMetadataUploadListener
 
             merger.merge( files, target, group, path );
         }
-        catch ( ProxyDataException e )
+        catch ( final ProxyDataException e )
         {
             logger.warn( "Failed to regenerate maven-metadata.xml for groups after deployment to: %s"
-                             + "\nCannot retrieve storage locations associated with: %s", e,
-                         group.getKey(), e.getMessage() );
+                + "\nCannot retrieve storage locations associated with: %s", e, group.getKey(), e.getMessage() );
         }
     }
 

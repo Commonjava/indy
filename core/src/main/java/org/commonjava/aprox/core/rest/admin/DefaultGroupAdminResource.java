@@ -15,7 +15,6 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.rest.admin;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -37,13 +36,9 @@ import javax.ws.rs.core.UriInfo;
 import org.commonjava.aprox.core.data.ProxyDataException;
 import org.commonjava.aprox.core.data.ProxyDataManager;
 import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.model.io.StoreKeySerializer;
-import org.commonjava.aprox.core.rest.admin.GroupAdminResource;
+import org.commonjava.aprox.core.model.io.AProxModelSerializer;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.common.model.Listing;
-import org.commonjava.web.common.ser.JsonSerializer;
-
-import com.google.gson.reflect.TypeToken;
 
 @Path( "/admin/group" )
 @RequestScoped
@@ -57,19 +52,13 @@ public class DefaultGroupAdminResource
     private ProxyDataManager proxyManager;
 
     @Inject
-    private JsonSerializer restSerializer;
+    private AProxModelSerializer modelSerializer;
 
     @Context
     private UriInfo uriInfo;
 
     @Context
     private HttpServletRequest request;
-
-    @PostConstruct
-    protected void registerSerializationAdapters()
-    {
-        restSerializer.registerSerializationAdapters( new StoreKeySerializer() );
-    }
 
     /*
      * (non-Javadoc)
@@ -80,26 +69,27 @@ public class DefaultGroupAdminResource
     @Consumes( { MediaType.APPLICATION_JSON } )
     public Response create()
     {
-        @SuppressWarnings( "unchecked" )
-        Group group = restSerializer.fromRequestBody( request, Group.class );
+        final Group group = modelSerializer.groupFromRequestBody( request );
 
         logger.info( "\n\nGot group: %s\n\n", group );
 
         ResponseBuilder builder;
         try
         {
-            boolean added = proxyManager.storeGroup( group, true );
+            final boolean added = proxyManager.storeGroup( group, true );
             if ( added )
             {
-                builder =
-                    Response.created( uriInfo.getAbsolutePathBuilder().path( group.getName() ).build() );
+                builder = Response.created( uriInfo.getAbsolutePathBuilder()
+                                                   .path( group.getName() )
+                                                   .build() );
             }
             else
             {
-                builder = Response.status( Status.CONFLICT ).entity( "Group already exists." );
+                builder = Response.status( Status.CONFLICT )
+                                  .entity( "Group already exists." );
             }
         }
-        catch ( ProxyDataException e )
+        catch ( final ProxyDataException e )
         {
             logger.error( "Failed to create proxy: %s. Reason: %s", e, e.getMessage() );
             builder = Response.status( Status.INTERNAL_SERVER_ERROR );
@@ -118,8 +108,7 @@ public class DefaultGroupAdminResource
     @Consumes( { MediaType.APPLICATION_JSON } )
     public Response store( @PathParam( "name" ) final String name )
     {
-        @SuppressWarnings( "unchecked" )
-        Group group = restSerializer.fromRequestBody( request, Group.class );
+        final Group group = modelSerializer.groupFromRequestBody( request );
 
         ResponseBuilder builder;
         try
@@ -135,9 +124,10 @@ public class DefaultGroupAdminResource
             }
 
             proxyManager.storeGroup( toUpdate );
-            builder = Response.created( uriInfo.getAbsolutePathBuilder().build() );
+            builder = Response.created( uriInfo.getAbsolutePathBuilder()
+                                               .build() );
         }
-        catch ( ProxyDataException e )
+        catch ( final ProxyDataException e )
         {
             logger.error( "Failed to save proxy: %s. Reason: %s", e, e.getMessage() );
             builder = Response.status( Status.INTERNAL_SERVER_ERROR );
@@ -158,13 +148,13 @@ public class DefaultGroupAdminResource
     {
         try
         {
-            Listing<Group> listing = new Listing<Group>( proxyManager.getAllGroups() );
-            TypeToken<Listing<Group>> tt = new TypeToken<Listing<Group>>()
-            {};
+            final Listing<Group> listing = new Listing<Group>( proxyManager.getAllGroups() );
 
-            return Response.ok().entity( restSerializer.toString( listing, tt.getType() ) ).build();
+            return Response.ok()
+                           .entity( modelSerializer.groupListingToString( listing ) )
+                           .build();
         }
-        catch ( ProxyDataException e )
+        catch ( final ProxyDataException e )
         {
             logger.error( e.getMessage(), e );
             throw new WebApplicationException( Status.INTERNAL_SERVER_ERROR );
@@ -182,19 +172,22 @@ public class DefaultGroupAdminResource
     {
         try
         {
-            Group group = proxyManager.getGroup( name );
+            final Group group = proxyManager.getGroup( name );
             logger.info( "Returning group: %s", group );
 
             if ( group != null )
             {
-                return Response.ok().entity( restSerializer.toString( group ) ).build();
+                return Response.ok()
+                               .entity( modelSerializer.toString( group ) )
+                               .build();
             }
             else
             {
-                return Response.status( Status.NOT_FOUND ).build();
+                return Response.status( Status.NOT_FOUND )
+                               .build();
             }
         }
-        catch ( ProxyDataException e )
+        catch ( final ProxyDataException e )
         {
             logger.error( e.getMessage(), e );
             throw new WebApplicationException( Status.INTERNAL_SERVER_ERROR );
@@ -216,7 +209,7 @@ public class DefaultGroupAdminResource
             proxyManager.deleteGroup( name );
             builder = Response.ok();
         }
-        catch ( ProxyDataException e )
+        catch ( final ProxyDataException e )
         {
             logger.error( e.getMessage(), e );
             builder = Response.status( Status.INTERNAL_SERVER_ERROR );

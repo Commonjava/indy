@@ -32,6 +32,11 @@ public class MemoryGroup
 
     private List<StoreKey> constituents;
 
+    MemoryGroup()
+    {
+        super( StoreType.group );
+    }
+
     public MemoryGroup( final String name, final List<StoreKey> constituents )
     {
         super( StoreType.group, name );
@@ -103,7 +108,8 @@ public class MemoryGroup
     @Override
     public String toString()
     {
-        return String.format( "Group [name=%s, constituents=%s]", getName(), constituents );
+        return String.format( "MemoryGroup [constituents=%s, getName()=%s, getKey()=%s]", constituents, getName(),
+                              getKey() );
     }
 
 }

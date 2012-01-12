@@ -15,27 +15,22 @@
  ******************************************************************************/
 package org.commonjava.aprox.sec.live;
 
-import static org.apache.commons.io.IOUtils.copy;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
-
-import java.io.IOException;
-import java.io.StringWriter;
-
+import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.StatusLine;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpGet;
 import org.commonjava.aprox.core.data.ProxyDataManager;
 import org.commonjava.aprox.core.inject.AproxData;
+import org.commonjava.auth.couch.inject.UserData;
 import org.commonjava.couch.change.CouchChangeListener;
+import org.commonjava.couch.conf.CouchDBConfiguration;
+import org.commonjava.couch.conf.DefaultCouchDBConfiguration;
 import org.commonjava.couch.db.CouchManager;
 import org.commonjava.couch.user.web.test.AbstractUserRESTCouchTest;
+import org.commonjava.web.test.fixture.WebFixture;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 
 public class AbstractAProxSecLiveTest
     extends AbstractUserRESTCouchTest
@@ -51,6 +46,9 @@ public class AbstractAProxSecLiveTest
     @Inject
     @AproxData
     private CouchManager couch;
+
+    @Rule
+    public WebFixture http = new WebFixture();
 
     @Before
     public final void setupAProxLiveTest()
@@ -77,26 +75,32 @@ public class AbstractAProxSecLiveTest
         couch.dropDatabase();
     }
 
-    protected String getString( final String url, final int expectedStatus )
-        throws ClientProtocolException, IOException
-    {
-        final HttpResponse response = http.execute( new HttpGet( url ) );
-        final StatusLine sl = response.getStatusLine();
-
-        assertThat( sl.getStatusCode(), equalTo( expectedStatus ) );
-        assertThat( response.getEntity(), notNullValue() );
-
-        final StringWriter sw = new StringWriter();
-        copy( response.getEntity()
-                      .getContent(), sw );
-
-        return sw.toString();
-    }
-
     @Override
     protected CouchManager getCouchManager()
     {
         return couch;
+    }
+
+    @Singleton
+    public static final class ConfigProvider
+    {
+        @Inject
+        @UserData
+        private CouchDBConfiguration userConfig;
+
+        private DefaultCouchDBConfiguration conf;
+
+        @Produces
+        @AproxData
+        public synchronized CouchDBConfiguration getAproxCouchConfig()
+        {
+            if ( conf == null )
+            {
+                conf = new DefaultCouchDBConfiguration( userConfig, "test-aprox" );
+            }
+
+            return conf;
+        }
     }
 
 }

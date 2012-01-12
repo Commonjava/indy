@@ -20,6 +20,7 @@ import java.lang.reflect.Type;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.web.common.ser.WebSerializationAdapter;
 
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
@@ -31,12 +32,6 @@ import com.google.gson.JsonSerializer;
 public class StoreKeySerializer
     implements WebSerializationAdapter, JsonSerializer<StoreKey>, JsonDeserializer<StoreKey>
 {
-
-    @Override
-    public Type typeLiteral()
-    {
-        return StoreKey.class;
-    }
 
     @Override
     public StoreKey deserialize( final JsonElement json, final Type typeOfT, final JsonDeserializationContext context )
@@ -53,27 +48,9 @@ public class StoreKeySerializer
     }
 
     @Override
-    public int hashCode()
+    public void register( final GsonBuilder gsonBuilder )
     {
-        return 47;
-    }
-
-    @Override
-    public boolean equals( final Object obj )
-    {
-        if ( this == obj )
-        {
-            return true;
-        }
-        if ( obj == null )
-        {
-            return false;
-        }
-        if ( getClass() != obj.getClass() )
-        {
-            return false;
-        }
-        return true;
+        gsonBuilder.registerTypeAdapter( StoreKey.class, this );
     }
 
 }

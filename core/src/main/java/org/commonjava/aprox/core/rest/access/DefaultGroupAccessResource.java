@@ -40,7 +40,6 @@ import org.commonjava.aprox.core.data.ProxyDataManager;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.rest.access.GroupAccessResource;
 import org.commonjava.aprox.core.rest.util.FileManager;
 import org.commonjava.aprox.core.rest.util.retrieve.GroupRetrieverChain;
 import org.commonjava.util.logging.Logger;
@@ -72,14 +71,13 @@ public class DefaultGroupAccessResource
     @Override
     @GET
     @Path( "/{name}{path: (/.+)?}" )
-    public Response getProxyContent( @PathParam( "name" ) final String name,
-                                     @PathParam( "path" ) final String path )
+    public Response getProxyContent( @PathParam( "name" ) final String name, @PathParam( "path" ) final String path )
     {
         // TODO:
         // 1. directory request (ends with "/")...browse somehow??
         // 2. empty path (directory request for proxy root)
 
-        List<ArtifactStore> stores;
+        List<? extends ArtifactStore> stores;
         Group group;
 
         try
@@ -87,33 +85,33 @@ public class DefaultGroupAccessResource
             group = proxyManager.getGroup( name );
             if ( group == null )
             {
-                throw new WebApplicationException(
-                                                   Response.status( Status.NOT_FOUND ).entity( "Repository group: "
-                                                                                                   + name
-                                                                                                   + " not found." ).build() );
+                throw new WebApplicationException( Response.status( Status.NOT_FOUND )
+                                                           .entity( "Repository group: " + name + " not found." )
+                                                           .build() );
             }
 
             // logger.info( "Retrieving ordered stores for group: '%s'", name );
             stores = proxyManager.getOrderedConcreteStoresInGroup( name );
         }
-        catch ( ProxyDataException e )
+        catch ( final ProxyDataException e )
         {
-            logger.error( "Failed to retrieve repository-group information: %s. Reason: %s", e,
-                          name, e.getMessage() );
-            throw new WebApplicationException(
-                                               Response.status( Status.INTERNAL_SERVER_ERROR ).build() );
+            logger.error( "Failed to retrieve repository-group information: %s. Reason: %s", e, name, e.getMessage() );
+            throw new WebApplicationException( Response.status( Status.INTERNAL_SERVER_ERROR )
+                                                       .build() );
         }
 
         // logger.info( "Download: %s\nFrom: %s", path, stores );
-        File target = handlerChain.retrieve( group, stores, path );
+        final File target = handlerChain.retrieve( group, stores, path );
 
         if ( target == null )
         {
-            return Response.status( Status.NOT_FOUND ).build();
+            return Response.status( Status.NOT_FOUND )
+                           .build();
         }
 
-        String mimeType = new MimetypesFileTypeMap().getContentType( target );
-        return Response.ok( target, mimeType ).build();
+        final String mimeType = new MimetypesFileTypeMap().getContentType( target );
+        return Response.ok( target, mimeType )
+                       .build();
     }
 
     /*
@@ -124,11 +122,10 @@ public class DefaultGroupAccessResource
     @Override
     @PUT
     @Path( "/{name}/{path: (.+)}" )
-    public Response createContent( @PathParam( "name" ) final String name,
-                                   @PathParam( "path" ) final String path,
+    public Response createContent( @PathParam( "name" ) final String name, @PathParam( "path" ) final String path,
                                    @Context final HttpServletRequest request )
     {
-        List<ArtifactStore> stores;
+        List<? extends ArtifactStore> stores;
         Group group;
 
         try
@@ -136,26 +133,24 @@ public class DefaultGroupAccessResource
             group = proxyManager.getGroup( name );
             if ( group == null )
             {
-                throw new WebApplicationException(
-                                                   Response.status( Status.NOT_FOUND ).entity( "Repository group: "
-                                                                                                   + name
-                                                                                                   + " not found." ).build() );
+                throw new WebApplicationException( Response.status( Status.NOT_FOUND )
+                                                           .entity( "Repository group: " + name + " not found." )
+                                                           .build() );
             }
 
             stores = proxyManager.getOrderedConcreteStoresInGroup( name );
         }
-        catch ( ProxyDataException e )
+        catch ( final ProxyDataException e )
         {
-            logger.error( "Failed to retrieve repository-group information: %s. Reason: %s", e,
-                          name, e.getMessage() );
-            throw new WebApplicationException(
-                                               Response.status( Status.INTERNAL_SERVER_ERROR ).build() );
+            logger.error( "Failed to retrieve repository-group information: %s. Reason: %s", e, name, e.getMessage() );
+            throw new WebApplicationException( Response.status( Status.INTERNAL_SERVER_ERROR )
+                                                       .build() );
         }
 
-        List<DeployPoint> deployPoints = new ArrayList<DeployPoint>();
+        final List<DeployPoint> deployPoints = new ArrayList<DeployPoint>();
         if ( stores != null )
         {
-            for ( ArtifactStore store : stores )
+            for ( final ArtifactStore store : stores )
             {
                 logger.info( "Looking for deploy-points...processing: %s", store.getKey() );
                 if ( store instanceof DeployPoint )
@@ -168,12 +163,14 @@ public class DefaultGroupAccessResource
         ResponseBuilder builder;
         try
         {
-            DeployPoint deploy = fileManager.upload( deployPoints, path, request.getInputStream() );
+            final DeployPoint deploy = fileManager.upload( deployPoints, path, request.getInputStream() );
 
-            builder =
-                Response.created( uriInfo.getAbsolutePathBuilder().path( deploy.getName() ).path( path ).build() );
+            builder = Response.created( uriInfo.getAbsolutePathBuilder()
+                                               .path( deploy.getName() )
+                                               .path( path )
+                                               .build() );
         }
-        catch ( IOException e )
+        catch ( final IOException e )
         {
             logger.error( "Failed to open stream from request: %s", e, e.getMessage() );
             builder = Response.status( Status.INTERNAL_SERVER_ERROR );

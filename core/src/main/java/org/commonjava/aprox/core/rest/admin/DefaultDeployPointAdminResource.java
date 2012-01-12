@@ -15,7 +15,6 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.rest.admin;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -37,13 +36,9 @@ import javax.ws.rs.core.UriInfo;
 import org.commonjava.aprox.core.data.ProxyDataException;
 import org.commonjava.aprox.core.data.ProxyDataManager;
 import org.commonjava.aprox.core.model.DeployPoint;
-import org.commonjava.aprox.core.model.io.StoreKeySerializer;
-import org.commonjava.aprox.core.rest.admin.DeployPointAdminResource;
+import org.commonjava.aprox.core.model.io.AProxModelSerializer;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.common.model.Listing;
-import org.commonjava.web.common.ser.JsonSerializer;
-
-import com.google.gson.reflect.TypeToken;
 
 @Path( "/admin/deploy" )
 @RequestScoped
@@ -57,19 +52,13 @@ public class DefaultDeployPointAdminResource
     private ProxyDataManager proxyManager;
 
     @Inject
-    private JsonSerializer restSerializer;
+    private AProxModelSerializer modelSerializer;
 
     @Context
     private UriInfo uriInfo;
 
     @Context
     private HttpServletRequest request;
-
-    @PostConstruct
-    protected void registerSerializationAdapters()
-    {
-        restSerializer.registerSerializationAdapters( new StoreKeySerializer() );
-    }
 
     /*
      * (non-Javadoc)
@@ -80,8 +69,7 @@ public class DefaultDeployPointAdminResource
     @Consumes( { MediaType.APPLICATION_JSON } )
     public Response create()
     {
-        @SuppressWarnings( "unchecked" )
-        DeployPoint deploy = restSerializer.fromRequestBody( request, DeployPoint.class );
+        final DeployPoint deploy = modelSerializer.deployPointFromRequestBody( request );
 
         logger.info( "\n\nGot proxy: %s\n\n", deploy );
 
@@ -90,15 +78,17 @@ public class DefaultDeployPointAdminResource
         {
             if ( proxyManager.storeDeployPoint( deploy, true ) )
             {
-                builder =
-                    Response.created( uriInfo.getAbsolutePathBuilder().path( deploy.getName() ).build() );
+                builder = Response.created( uriInfo.getAbsolutePathBuilder()
+                                                   .path( deploy.getName() )
+                                                   .build() );
             }
             else
             {
-                builder = Response.status( Status.CONFLICT ).entity( "Repository already exists." );
+                builder = Response.status( Status.CONFLICT )
+                                  .entity( "Repository already exists." );
             }
         }
-        catch ( ProxyDataException e )
+        catch ( final ProxyDataException e )
         {
             logger.error( "Failed to create proxy: %s. Reason: %s", e, e.getMessage() );
             builder = Response.status( Status.INTERNAL_SERVER_ERROR );
@@ -117,8 +107,7 @@ public class DefaultDeployPointAdminResource
     @Consumes( { MediaType.APPLICATION_JSON } )
     public Response store( @PathParam( "name" ) final String name )
     {
-        @SuppressWarnings( "unchecked" )
-        DeployPoint deploy = restSerializer.fromRequestBody( request, DeployPoint.class );
+        final DeployPoint deploy = modelSerializer.deployPointFromRequestBody( request );
 
         ResponseBuilder builder;
         try
@@ -135,9 +124,10 @@ public class DefaultDeployPointAdminResource
             }
 
             proxyManager.storeDeployPoint( toUpdate );
-            builder = Response.created( uriInfo.getAbsolutePathBuilder().build() );
+            builder = Response.created( uriInfo.getAbsolutePathBuilder()
+                                               .build() );
         }
-        catch ( ProxyDataException e )
+        catch ( final ProxyDataException e )
         {
             logger.error( "Failed to save proxy: %s. Reason: %s", e, e.getMessage() );
             builder = Response.status( Status.INTERNAL_SERVER_ERROR );
@@ -158,14 +148,13 @@ public class DefaultDeployPointAdminResource
     {
         try
         {
-            Listing<DeployPoint> listing =
-                new Listing<DeployPoint>( proxyManager.getAllDeployPoints() );
-            TypeToken<Listing<DeployPoint>> tt = new TypeToken<Listing<DeployPoint>>()
-            {};
+            final Listing<DeployPoint> listing = new Listing<DeployPoint>( proxyManager.getAllDeployPoints() );
 
-            return Response.ok().entity( restSerializer.toString( listing, tt.getType() ) ).build();
+            return Response.ok()
+                           .entity( modelSerializer.deployPointListingToString( listing ) )
+                           .build();
         }
-        catch ( ProxyDataException e )
+        catch ( final ProxyDataException e )
         {
             logger.error( e.getMessage(), e );
             throw new WebApplicationException( Status.INTERNAL_SERVER_ERROR );
@@ -183,19 +172,22 @@ public class DefaultDeployPointAdminResource
     {
         try
         {
-            DeployPoint deploy = proxyManager.getDeployPoint( name );
+            final DeployPoint deploy = proxyManager.getDeployPoint( name );
             logger.info( "Returning repository: %s", deploy );
 
             if ( deploy == null )
             {
-                return Response.status( Status.NOT_FOUND ).build();
+                return Response.status( Status.NOT_FOUND )
+                               .build();
             }
             else
             {
-                return Response.ok().entity( restSerializer.toString( deploy ) ).build();
+                return Response.ok()
+                               .entity( modelSerializer.toString( deploy ) )
+                               .build();
             }
         }
-        catch ( ProxyDataException e )
+        catch ( final ProxyDataException e )
         {
             logger.error( e.getMessage(), e );
             throw new WebApplicationException( Status.INTERNAL_SERVER_ERROR );
@@ -217,7 +209,7 @@ public class DefaultDeployPointAdminResource
             proxyManager.deleteRepository( name );
             builder = Response.ok();
         }
-        catch ( ProxyDataException e )
+        catch ( final ProxyDataException e )
         {
             logger.error( e.getMessage(), e );
             builder = Response.status( Status.INTERNAL_SERVER_ERROR );

@@ -85,6 +85,12 @@
     	<groupId>org.jboss.weld.se</groupId>
     	<artifactId>weld-se-core</artifactId>
     </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>aprox-test-db</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   
   <build>

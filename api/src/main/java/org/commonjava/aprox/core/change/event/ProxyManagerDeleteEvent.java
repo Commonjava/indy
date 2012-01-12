@@ -53,4 +53,15 @@ public class ProxyManagerDeleteEvent
         return names.iterator();
     }
 
+    public Collection<String> getNames()
+    {
+        return names;
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format( "ProxyManagerDeleteEvent [type=%s, names=%s]", type, names );
+    }
+
 }

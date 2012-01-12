@@ -19,7 +19,7 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-parent</artifactId>
+    <artifactId>aprox-addons</artifactId>
     <version>0.2-SNAPSHOT</version>
   </parent>
   
@@ -95,6 +95,15 @@
     <dependency>
       <groupId>org.jboss.weld.se</groupId>
       <artifactId>weld-se-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-db-couch</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.couch.test</groupId>
+      <artifactId>web-test-harness</artifactId>
     </dependency>
   </dependencies>
   

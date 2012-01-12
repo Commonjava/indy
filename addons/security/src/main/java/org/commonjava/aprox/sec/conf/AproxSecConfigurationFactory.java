@@ -25,10 +25,8 @@ import java.io.InputStream;
 import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.commonjava.aprox.core.conf.ProxyConfiguration;
 import org.commonjava.auth.couch.conf.DefaultUserManagerConfig;
 import org.commonjava.auth.couch.conf.UserManagerConfiguration;
 import org.commonjava.couch.inject.Production;
@@ -51,12 +49,9 @@ public class AproxSecConfigurationFactory
 
     private static final String DEFAULT_ADMIN_EMAIL = "admin@changeme.foo";
 
-    private static final String DEFAULT_DB_NAME = "aprox-users";
+    private static final String DEFAULT_DB_URL = "http://localhost:5984/aprox-users";
 
     private DefaultUserManagerConfig userManagerConfig;
-
-    @Inject
-    private ProxyConfiguration proxyConfig;
 
     public AproxSecConfigurationFactory()
         throws ConfigurationException
@@ -91,7 +86,7 @@ public class AproxSecConfigurationFactory
         {
             userManagerConfig =
                 new DefaultUserManagerConfig( DEFAULT_ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD, DEFAULT_ADMIN_FIRST_NAME,
-                                              DEFAULT_ADMIN_LAST_NAME, proxyConfig.getDatabaseConfig(), DEFAULT_DB_NAME );
+                                              DEFAULT_ADMIN_LAST_NAME, DEFAULT_DB_URL );
         }
     }
 

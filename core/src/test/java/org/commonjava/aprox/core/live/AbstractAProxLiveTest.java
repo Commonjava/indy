@@ -45,6 +45,8 @@ public class AbstractAProxLiveTest
         throws Exception
     {
         proxyManager.install();
+        webFixture.getSerializer()
+                  .registerSerializationAdapters( modelFactory );
     }
 
     protected static WebArchive createWar( final Class<?> testClass )

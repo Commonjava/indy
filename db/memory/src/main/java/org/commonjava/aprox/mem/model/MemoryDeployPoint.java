@@ -31,6 +31,11 @@ public class MemoryDeployPoint
     @SerializedName( "allow_releases" )
     private boolean allowReleases = true;
 
+    public MemoryDeployPoint()
+    {
+        super( StoreType.deploy_point );
+    }
+
     public MemoryDeployPoint( final String name )
     {
         super( StoreType.deploy_point, name );
@@ -58,6 +63,13 @@ public class MemoryDeployPoint
     public void setAllowReleases( final boolean allowReleases )
     {
         this.allowReleases = allowReleases;
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format( "MemoryDeployPoint [allowSnapshots=%s, allowReleases=%s, getName()=%s, getKey()=%s]",
+                              allowSnapshots, allowReleases, getName(), getKey() );
     }
 
 }

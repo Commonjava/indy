@@ -43,13 +43,13 @@ import org.commonjava.aprox.core.model.ModelFactory;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
-import org.commonjava.aprox.core.model.io.StoreDeserializer;
 import org.commonjava.aprox.core.model.io.StoreKeySerializer;
 import org.commonjava.aprox.couch.data.ProxyAppDescription.View;
 import org.commonjava.aprox.couch.model.ArtifactStoreDoc;
 import org.commonjava.aprox.couch.model.DeployPointDoc;
 import org.commonjava.aprox.couch.model.GroupDoc;
 import org.commonjava.aprox.couch.model.RepositoryDoc;
+import org.commonjava.aprox.couch.model.io.StoreDocDeserializer;
 import org.commonjava.couch.conf.CouchDBConfiguration;
 import org.commonjava.couch.db.CouchDBException;
 import org.commonjava.couch.db.CouchManager;
@@ -92,12 +92,13 @@ public class CouchProxyDataManager
     }
 
     public CouchProxyDataManager( final ProxyConfiguration config, final CouchDBConfiguration couchConfig,
-                                  final CouchManager couch, final Serializer serializer )
+                                  final CouchManager couch, final Serializer serializer, final ModelFactory modelFactory )
     {
         this.config = config;
         this.couchConfig = couchConfig;
         this.couch = couch;
         this.serializer = serializer;
+        this.modelFactory = modelFactory;
 
         registerSerializationAdapters();
     }
@@ -105,7 +106,7 @@ public class CouchProxyDataManager
     @PostConstruct
     protected void registerSerializationAdapters()
     {
-        serializer.registerSerializationAdapters( new StoreKeySerializer(), new StoreDeserializer() );
+        serializer.registerSerializationAdapters( new StoreKeySerializer(), new StoreDocDeserializer(), modelFactory );
     }
 
     /*
@@ -138,7 +139,7 @@ public class CouchProxyDataManager
         try
         {
             return couch.getDocument( new CouchDocRef( namespaceId( StoreType.repository.name(), name ) ),
-                                      Repository.class );
+                                      RepositoryDoc.class );
         }
         catch ( final CouchDBException e )
         {
@@ -169,12 +170,13 @@ public class CouchProxyDataManager
      * @see org.commonjava.aprox.core.data.ProxyDataManager#getAllGroups()
      */
     @Override
-    public List<? extends Group> getAllGroups()
+    public List<Group> getAllGroups()
         throws ProxyDataException
     {
         try
         {
-            return couch.getViewListing( new ProxyViewRequest( config, View.ALL_GROUPS ), GroupDoc.class );
+            return new ArrayList<Group>( couch.getViewListing( new ProxyViewRequest( config, View.ALL_GROUPS ),
+                                                               GroupDoc.class ) );
         }
         catch ( final CouchDBException e )
         {
@@ -187,12 +189,14 @@ public class CouchProxyDataManager
      * @see org.commonjava.aprox.core.data.ProxyDataManager#getAllRepositories()
      */
     @Override
-    public List<? extends Repository> getAllRepositories()
+    public List<Repository> getAllRepositories()
         throws ProxyDataException
     {
         try
         {
-            return couch.getViewListing( new ProxyViewRequest( config, View.ALL_REPOSITORIES ), RepositoryDoc.class );
+            return new ArrayList<Repository>(
+                                              couch.getViewListing( new ProxyViewRequest( config, View.ALL_REPOSITORIES ),
+                                                                    RepositoryDoc.class ) );
         }
         catch ( final CouchDBException e )
         {
@@ -205,12 +209,14 @@ public class CouchProxyDataManager
      * @see org.commonjava.aprox.core.data.ProxyDataManager#getAllDeployPoints()
      */
     @Override
-    public List<? extends DeployPoint> getAllDeployPoints()
+    public List<DeployPoint> getAllDeployPoints()
         throws ProxyDataException
     {
         try
         {
-            return couch.getViewListing( new ProxyViewRequest( config, View.ALL_REPOSITORIES ), DeployPointDoc.class );
+            return new ArrayList<DeployPoint>( couch.getViewListing( new ProxyViewRequest( config,
+                                                                                           View.ALL_REPOSITORIES ),
+                                                                     DeployPointDoc.class ) );
         }
         catch ( final CouchDBException e )
         {
@@ -223,7 +229,7 @@ public class CouchProxyDataManager
      * @see org.commonjava.aprox.core.data.ProxyDataManager#getOrderedConcreteStoresInGroup(java.lang.String)
      */
     @Override
-    public List<? extends ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
+    public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
         throws ProxyDataException
     {
         final List<ArtifactStore> result = new ArrayList<ArtifactStore>();
@@ -291,7 +297,7 @@ public class CouchProxyDataManager
      * org.commonjava.aprox.core.data.ProxyDataManager#getGroupsContaining(org.commonjava.aprox.core.model.StoreKey)
      */
     @Override
-    public Set<? extends Group> getGroupsContaining( final StoreKey repo )
+    public Set<Group> getGroupsContaining( final StoreKey repo )
         throws ProxyDataException
     {
         try
@@ -314,7 +320,7 @@ public class CouchProxyDataManager
      * @see org.commonjava.aprox.core.data.ProxyDataManager#storeDeployPoints(java.util.Collection)
      */
     @Override
-    public void storeDeployPoints( final Collection<DeployPoint> deploys )
+    public void storeDeployPoints( final Collection<? extends DeployPoint> deploys )
         throws ProxyDataException
     {
         try
@@ -389,7 +395,7 @@ public class CouchProxyDataManager
      * @see org.commonjava.aprox.core.data.ProxyDataManager#storeRepositories(java.util.Collection)
      */
     @Override
-    public void storeRepositories( final Collection<Repository> repos )
+    public void storeRepositories( final Collection<? extends Repository> repos )
         throws ProxyDataException
     {
         try
@@ -446,7 +452,7 @@ public class CouchProxyDataManager
      * @see org.commonjava.aprox.core.data.ProxyDataManager#storeGroups(java.util.Collection)
      */
     @Override
-    public void storeGroups( final Collection<Group> groups )
+    public void storeGroups( final Collection<? extends Group> groups )
         throws ProxyDataException
     {
         try

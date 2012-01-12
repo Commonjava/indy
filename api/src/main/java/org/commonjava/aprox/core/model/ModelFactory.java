@@ -2,8 +2,17 @@ package org.commonjava.aprox.core.model;
 
 import java.util.List;
 
+import org.commonjava.web.common.ser.WebSerializationAdapter;
+
 public interface ModelFactory
+    extends WebSerializationAdapter
 {
+
+    Class<? extends Group> getGroupType();
+
+    Class<? extends Repository> getRepositoryType();
+
+    Class<? extends DeployPoint> getDeployPointType();
 
     DeployPoint createDeployPoint( final String name );
 

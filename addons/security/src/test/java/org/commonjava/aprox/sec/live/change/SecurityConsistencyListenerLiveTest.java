@@ -24,6 +24,7 @@ import java.io.File;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.core.model.Group;
+import org.commonjava.aprox.core.model.ModelFactory;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.aprox.sec.change.SecurityConsistencyListener;
@@ -56,11 +57,14 @@ public class SecurityConsistencyListenerLiveTest
     @Inject
     private SecurityConsistencyListener listener;
 
+    @Inject
+    private ModelFactory modelFactory;
+
     @Test
     public void groupRolesRemovedWhenGroupDeleted()
         throws Exception
     {
-        final Group group = new Group( "test" );
+        final Group group = modelFactory.createGroup( "test" );
 
         System.out.println( "Storing test group..." );
         proxyManager.storeGroup( group );
@@ -98,7 +102,7 @@ public class SecurityConsistencyListenerLiveTest
     public void repositoryRolesRemovedWhenRepositoryDeleted()
         throws Exception
     {
-        final Repository repo = new Repository( "test", "http://repo1.maven.apache.org/maven2/" );
+        final Repository repo = modelFactory.createRepository( "test", "http://repo1.maven.apache.org/maven2/" );
         proxyManager.storeRepository( repo );
 
         Permission perm =

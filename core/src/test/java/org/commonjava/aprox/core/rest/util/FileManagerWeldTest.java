@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.Repository;
+import org.commonjava.aprox.mem.model.MemoryRepository;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.junit.Before;
@@ -39,19 +40,21 @@ public class FileManagerWeldTest
     @Before
     public void setup()
     {
-        WeldContainer weld = new Weld().initialize();
-        downloader = weld.instance().select( DefaultFileManager.class ).get();
+        final WeldContainer weld = new Weld().initialize();
+        downloader = weld.instance()
+                         .select( DefaultFileManager.class )
+                         .get();
     }
 
     @Test
     public void downloadOnePOMFromSingleRepository()
         throws IOException
     {
-        Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
-        String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
+        final Repository repo = new MemoryRepository( "central", "http://repo1.maven.apache.org/maven2/" );
+        final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
 
-        File downloaded = downloader.download( repo, path );
-        String pom = readFileToString( downloaded );
+        final File downloaded = downloader.download( repo, path );
+        final String pom = readFileToString( downloaded );
 
         assertThat( pom.contains( "<artifactId>maven-model</artifactId>" ), equalTo( true ) );
     }
@@ -60,19 +63,19 @@ public class FileManagerWeldTest
     public void downloadOnePOMFromSecondRepositoryAfterDummyRepoFails()
         throws IOException
     {
-        Repository repo = new Repository( "dummy", "http://www.nowhere.com/" );
-        Repository repo2 = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
+        final Repository repo = new MemoryRepository( "dummy", "http://www.nowhere.com/" );
+        final Repository repo2 = new MemoryRepository( "central", "http://repo1.maven.apache.org/maven2/" );
 
-        String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
+        final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
 
-        List<ArtifactStore> repos = new ArrayList<ArtifactStore>();
+        final List<ArtifactStore> repos = new ArrayList<ArtifactStore>();
         repos.add( repo );
         repos.add( repo2 );
 
-        File downloaded = downloader.downloadFirst( repos, path );
+        final File downloaded = downloader.downloadFirst( repos, path );
         assertThat( downloaded.exists(), equalTo( true ) );
 
-        String pom = readFileToString( downloaded );
+        final String pom = readFileToString( downloaded );
 
         assertThat( pom.contains( "<artifactId>maven-model</artifactId>" ), equalTo( true ) );
     }

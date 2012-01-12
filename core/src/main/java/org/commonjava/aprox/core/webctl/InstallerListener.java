@@ -22,12 +22,9 @@ import javax.servlet.annotation.WebListener;
 
 import org.commonjava.aprox.core.data.ProxyDataException;
 import org.commonjava.aprox.core.data.ProxyDataManager;
-import org.commonjava.aprox.core.inject.AproxData;
 import org.commonjava.aprox.core.model.ModelFactory;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
-import org.commonjava.couch.change.CouchChangeListener;
-import org.commonjava.couch.db.CouchDBException;
 import org.commonjava.util.logging.Logger;
 
 @WebListener
@@ -39,10 +36,6 @@ public class InstallerListener
 
     @Inject
     private ProxyDataManager dataManager;
-
-    @Inject
-    @AproxData
-    private CouchChangeListener changeListener;
 
     @Inject
     private ModelFactory modelFactory;
@@ -59,16 +52,10 @@ public class InstallerListener
 
             dataManager.storeGroup( modelFactory.createGroup( "public", new StoreKey( StoreType.repository, "central" ) ),
                                     true );
-
-            changeListener.startup( false );
         }
         catch ( final ProxyDataException e )
         {
             throw new RuntimeException( "Failed to install proxy database: " + e.getMessage(), e );
-        }
-        catch ( final CouchDBException e )
-        {
-            throw new RuntimeException( "Failed to start CouchDB changes listener: " + e.getMessage(), e );
         }
 
         logger.info( "...done." );
@@ -77,14 +64,6 @@ public class InstallerListener
     @Override
     public void contextDestroyed( final ServletContextEvent sce )
     {
-        try
-        {
-            changeListener.shutdown();
-        }
-        catch ( final CouchDBException e )
-        {
-            throw new RuntimeException( "Failed to shutdown CouchDB changes listener: " + e.getMessage(), e );
-        }
     }
 
 }

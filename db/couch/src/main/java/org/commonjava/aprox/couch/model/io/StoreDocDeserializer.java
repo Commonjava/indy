@@ -13,36 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package org.commonjava.aprox.core.model.io;
+package org.commonjava.aprox.couch.model.io;
 
 import java.lang.reflect.Type;
-import java.security.acl.Group;
 
-import org.commonjava.aprox.core.model.ArtifactStore;
-import org.commonjava.aprox.core.model.DeployPoint;
-import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
+import org.commonjava.aprox.couch.model.ArtifactStoreDoc;
+import org.commonjava.aprox.couch.model.DeployPointDoc;
+import org.commonjava.aprox.couch.model.GroupDoc;
+import org.commonjava.aprox.couch.model.RepositoryDoc;
 import org.commonjava.web.common.ser.WebSerializationAdapter;
 
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 
-public class StoreDeserializer
-    implements WebSerializationAdapter, JsonDeserializer<ArtifactStore>
+public class StoreDocDeserializer
+    implements WebSerializationAdapter, JsonDeserializer<ArtifactStoreDoc>
 {
 
     @Override
-    public Type typeLiteral()
-    {
-        return ArtifactStore.class;
-    }
-
-    @Override
-    public ArtifactStore deserialize( final JsonElement json, final Type typeOfT,
-                                      final JsonDeserializationContext context )
+    public ArtifactStoreDoc deserialize( final JsonElement json, final Type typeOfT,
+                                         final JsonDeserializationContext context )
         throws JsonParseException
     {
         final String id = json.getAsJsonObject()
@@ -53,24 +48,30 @@ public class StoreDeserializer
         final StoreType type = key.getType();
         // logger.info( "Parsing store of type: %s", type );
 
-        ArtifactStore result = null;
+        ArtifactStoreDoc result = null;
         if ( type == StoreType.deploy_point )
         {
             // logger.info( "Parsing deploy-point store..." );
-            result = context.deserialize( json, DeployPoint.class );
+            result = context.deserialize( json, DeployPointDoc.class );
         }
         else if ( type == StoreType.group )
         {
             // logger.info( "Parsing group store..." );
-            result = context.deserialize( json, Group.class );
+            result = context.deserialize( json, GroupDoc.class );
         }
         else
         {
             // logger.info( "Parsing repository store..." );
-            result = context.deserialize( json, Repository.class );
+            result = context.deserialize( json, RepositoryDoc.class );
         }
 
         return result;
+    }
+
+    @Override
+    public void register( final GsonBuilder gsonBuilder )
+    {
+        gsonBuilder.registerTypeAdapter( ArtifactStoreDoc.class, this );
     }
 
 }
