@@ -24,10 +24,12 @@ import java.io.InputStream;
 import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.commonjava.couch.conf.CouchDBConfiguration;
 import org.commonjava.couch.conf.DefaultCouchDBConfiguration;
+import org.commonjava.couch.inject.Production;
 import org.commonjava.depbase.inject.DepbaseData;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.DefaultConfigurationListener;
@@ -71,6 +73,8 @@ public class DepbaseAproxConfigurationFactory
 
     @Produces
     @DepbaseData
+    @Production
+    @Named( "depbaseCouchDBConfiguration" )
     @Default
     public CouchDBConfiguration getCouchDBConfiguration()
     {

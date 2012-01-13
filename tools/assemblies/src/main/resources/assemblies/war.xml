@@ -1,0 +1,37 @@
+<assembly>
+  <id>war</id>
+  <formats>
+    <format>war</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  
+  <dependencySets>
+    <dependencySet>
+      <includes>
+        <include>org.commonjava*</include>
+      </includes>
+      <outputDirectory>WEB-INF/classes</outputDirectory>
+      <unpack>true</unpack>
+      <unpackOptions>
+        <excludes>
+          <exclude>META-INF/beans.xml</exclude>
+        </excludes>
+      </unpackOptions>
+    </dependencySet>
+    
+    <dependencySet>
+      <excludes>
+        <exclude>org.commonjava*</exclude>
+      </excludes>
+      <outputDirectory>WEB-INF/lib</outputDirectory>
+      <unpack>false</unpack>
+    </dependencySet>
+  </dependencySets>
+  
+  <fileSets>
+    <fileSet>
+      <directory>src/main/webapp</directory>
+      <outputDirectory>/</outputDirectory>
+    </fileSet>
+  </fileSets>
+</assembly>

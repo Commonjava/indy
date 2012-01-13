@@ -24,6 +24,7 @@ import java.io.InputStream;
 import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.commonjava.aprox.core.inject.AproxData;
@@ -73,6 +74,7 @@ public class CouchProxyConfigurationFactory
     @Produces
     @Production
     @AproxData
+    @Named( "aproxCouchDBConfiguration" )
     @Default
     public CouchDBConfiguration getCouchDBConfiguration()
     {

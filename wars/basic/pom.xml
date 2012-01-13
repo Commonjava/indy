@@ -9,7 +9,7 @@
   </parent>
   
   <artifactId>aprox-basic</artifactId>
-  <packaging>war</packaging>
+  <!-- <packaging>war</packaging> -->
 
   <name>AProx :: Basic WAR</name>
   
@@ -23,4 +23,19 @@
       <artifactId>junit</artifactId>
     </dependency>
   </dependencies>
+  
+  <build>
+    <finalName>aprox</finalName>
+    
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptorRefs>
+            <descriptorRef>war</descriptorRef>
+          </descriptorRefs>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

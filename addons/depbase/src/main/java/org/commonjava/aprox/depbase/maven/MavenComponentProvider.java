@@ -16,74 +16,39 @@
 package org.commonjava.aprox.depbase.maven;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Named;
+import javax.enterprise.inject.Default;
+import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
 
-import org.apache.maven.mae.MAEException;
-import org.apache.maven.mae.app.AbstractMAEApplication;
-import org.apache.maven.mae.boot.embed.MAEEmbedderBuilder;
-import org.apache.maven.mae.internal.container.ComponentSelector;
 import org.apache.maven.model.building.ModelBuilder;
-import org.apache.maven.model.resolution.ModelResolver;
-import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.component.annotations.Requirement;
-
-import com.google.inject.Provides;
+import org.commonjava.util.logging.Logger;
 
 @Singleton
-@Component( role = MavenComponentProvider.class )
 public class MavenComponentProvider
-    extends AbstractMAEApplication
 {
+    private final Logger logger = new Logger( getClass() );
 
-    @Requirement
-    private ModelBuilder modelBuilder;
+    private MAELoader mae;
 
-    @Provides
-    @Named( "MAE" )
+    @Produces
+    @Default
     public ModelBuilder getModelBuilder()
     {
-        return modelBuilder;
+        return mae.getModelBuilder();
+    }
+
+    public MavenComponentProvider()
+    {
+        logger.info( "Constructor for MavenComponentProvider..." );
     }
 
     @PostConstruct
     public void loadMAE()
     {
-        try
-        {
-            super.load();
-        }
-        catch ( final MAEException e )
-        {
-            throw new RuntimeException( "Failed to initialize MAE container. Cannot load Maven components. Reason: "
-                + e.getMessage(), e );
-        }
-    }
+        logger.info( "Loading MAE components..." );
+        mae = new MAELoader();
 
-    @Override
-    public String getId()
-    {
-        return "depbase-aprox";
-    }
-
-    @Override
-    public String getName()
-    {
-        return "DepBase-AProx-Bridge";
-    }
-
-    @Override
-    protected void configureBuilder( final MAEEmbedderBuilder builder )
-        throws MAEException
-    {
-        builder.withClassScanningEnabled( false );
-        super.configureBuilder( builder );
-    }
-
-    @Override
-    public ComponentSelector getComponentSelector()
-    {
-        return new ComponentSelector().setSelection( ModelResolver.class, "aprox" );
+        logger.info( "ModelBuilder is: %s", mae.getModelBuilder() );
     }
 
 }

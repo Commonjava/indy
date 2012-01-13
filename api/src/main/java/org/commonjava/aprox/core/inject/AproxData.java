@@ -24,11 +24,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import javax.inject.Named;
 import javax.inject.Qualifier;
 
 @Qualifier
-@Named
 @Retention( RetentionPolicy.RUNTIME )
 @Target( { METHOD, FIELD, PARAMETER, TYPE } )
 public @interface AproxData

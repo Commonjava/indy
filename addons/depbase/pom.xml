@@ -24,7 +24,6 @@
   </parent>
   
   <artifactId>aprox-depbase</artifactId>
-  <packaging>war</packaging>
 
   <name>AProx :: DepBase Listener</name>
 
@@ -40,7 +39,6 @@
     <dependency>
     	<groupId>org.commonjava.aprox</groupId>
     	<artifactId>aprox-core</artifactId>
-    	<version>${project.version}</version>
     </dependency>
 	<dependency>
 		<groupId>org.apache.maven</groupId>
@@ -57,5 +55,61 @@
 		<artifactId>depbase-db</artifactId>
 		<version>0.1-SNAPSHOT</version>
 	</dependency>
+    <dependency>
+      <groupId>org.jboss.arquillian.junit</groupId>
+      <artifactId>arquillian-junit-container</artifactId>
+    </dependency>
+    <dependency>
+       <groupId>org.jboss.as</groupId>
+       <artifactId>jboss-as-arquillian-container-managed</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.couch.test</groupId>
+      <artifactId>couch-test-harness</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.couch.test</groupId>
+      <artifactId>couch-as7-test-harness</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-db-couch</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.couch.test</groupId>
+      <artifactId>web-test-harness</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-component-metadata</artifactId>
+        <version>1.5.5</version>
+        <executions>
+          <execution>
+          	<id>descriptors</id>
+          	<goals>
+              <goal>generate-metadata</goal>
+              <goal>generate-test-metadata</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-failsafe-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+  
 </project>

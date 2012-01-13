@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Copyright 2011 John Casey
   
@@ -14,8 +13,17 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" version="3.0">
-  <welcome-file-list>
-    <welcome-file>index.html</welcome-file>
-  </welcome-file-list>
-</web-app>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.commonjava.aprox.tools</groupId>
+    <artifactId>aprox-tools</artifactId>
+    <version>0.2-SNAPSHOT</version>
+  </parent>
+  
+  <artifactId>aprox-assemblies</artifactId>
+
+  <name>AProx :: Assemblies</name>
+</project>

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import javax.annotation.PostConstruct;
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
 
@@ -68,6 +69,7 @@ public class ProxyConfigurationFactory
 
     @Produces
     @Production
+    @Default
     public ProxyConfiguration getProxyConfiguration()
     {
         return proxyConfig;

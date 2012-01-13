@@ -35,8 +35,7 @@ public class FileStorageEvent
 
     private final String storageLocation;
 
-    public FileStorageEvent( final Type type, final ArtifactStore store, final String path,
-                             final File storageLocation )
+    public FileStorageEvent( final Type type, final ArtifactStore store, final String path, final File storageLocation )
     {
         this.type = type;
         this.store = store;
@@ -44,8 +43,7 @@ public class FileStorageEvent
         this.storageLocation = storageLocation.getAbsolutePath();
     }
 
-    public FileStorageEvent( final Type type, final ArtifactStore store, final String path,
-                             final String storageLocation )
+    public FileStorageEvent( final Type type, final ArtifactStore store, final String path, final String storageLocation )
     {
         this.type = type;
         this.store = store;
@@ -71,6 +69,13 @@ public class FileStorageEvent
     public ArtifactStore getStore()
     {
         return store;
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format( "FileStorageEvent [type=%s, store=%s, path=%s, storageLocation=%s]", type, store, path,
+                              storageLocation );
     }
 
 }

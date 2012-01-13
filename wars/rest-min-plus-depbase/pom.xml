@@ -22,10 +22,10 @@
     <version>0.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-rest-sec</artifactId>
+  <artifactId>aprox-rest-min-plus-depbase</artifactId>
   <!-- <packaging>war</packaging> -->
   
-  <name>AProx :: REST WAR with RBAC Security</name>
+  <name>AProx :: Minimal REST WAR with DepBase Support</name>
   
   <dependencies>
     <dependency>
@@ -38,11 +38,11 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-security</artifactId>
+      <artifactId>aprox-db-couch</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-db-couch</artifactId>
+      <artifactId>aprox-depbase</artifactId>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -56,11 +56,6 @@
     <plugins>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <configuration>
-          <descriptorRefs>
-            <descriptorRef>war</descriptorRef>
-          </descriptorRefs>
-        </configuration>
       </plugin>
     </plugins>
   </build>

@@ -22,7 +22,6 @@ import java.util.Set;
 
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.maven.model.Model;
@@ -56,7 +55,6 @@ public class DepBaseProxyListener
     private FileManager fileManager;
 
     @Inject
-    @Named( "MAE" )
     private ModelBuilder modelBuilder;
 
     @Inject
@@ -69,6 +67,7 @@ public class DepBaseProxyListener
             return;
         }
 
+        logger.info( "Processing depbase info for: %s", event );
         final ArtifactStore originatingStore = event.getStore();
         final List<ArtifactStore> stores = getRelevantStores( originatingStore );
         if ( stores == null )

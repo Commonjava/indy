@@ -33,5 +33,39 @@
     <module>rest-min</module>
     <module>rest-sec</module>
     <module>basic</module>
+    <module>rest-min-plus-depbase</module>
   </modules>
+  
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>2.2.1</version>
+          <dependencies>
+            <dependency>
+              <groupId>org.commonjava.aprox.tools</groupId>
+              <artifactId>aprox-assemblies</artifactId>
+              <version>${project.version}</version>
+            </dependency>
+          </dependencies>
+          <executions>
+            <execution>
+              <id>war</id>
+              <goals>
+                <goal>single</goal>
+              </goals>
+              <phase>package</phase>
+              <configuration>
+                <descriptorRefs>
+                  <descriptorRef>war</descriptorRef>
+                </descriptorRefs>
+                <appendAssemblyId>false</appendAssemblyId>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 </project>

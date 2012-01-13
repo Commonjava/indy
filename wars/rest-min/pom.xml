@@ -23,7 +23,7 @@
   </parent>
   
   <artifactId>aprox-rest-min</artifactId>
-  <packaging>war</packaging>
+  <!-- <packaging>war</packaging> -->
   
   <name>AProx :: Minimal REST WAR</name>
   
@@ -45,6 +45,16 @@
       <artifactId>junit</artifactId>
     </dependency>
   </dependencies>
+  
+  <build>
+    <finalName>aprox</finalName>
+    
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
   
   <!-- <build>
     <pluginManagement>
