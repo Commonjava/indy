@@ -67,6 +67,12 @@ public class DepBaseProxyListener
             return;
         }
 
+        if ( !event.getPath()
+                   .endsWith( ".pom" ) )
+        {
+            return;
+        }
+
         logger.info( "Processing depbase info for: %s", event );
         final ArtifactStore originatingStore = event.getStore();
         final List<ArtifactStore> stores = getRelevantStores( originatingStore );
