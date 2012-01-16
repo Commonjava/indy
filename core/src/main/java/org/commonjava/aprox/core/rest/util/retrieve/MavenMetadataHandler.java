@@ -16,28 +16,26 @@
 package org.commonjava.aprox.core.rest.util.retrieve;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.commonjava.aprox.core.conf.ProxyConfiguration;
 import org.commonjava.aprox.core.model.ArtifactStore;
+import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.rest.util.FileManager;
 import org.commonjava.aprox.core.rest.util.MavenMetadataMerger;
 
 @Singleton
-public class MavenMetadataRetriever
-    implements GroupPathRetriever
+public class MavenMetadataHandler
+    implements GroupPathHandler
 {
 
     @Inject
-    private FileManager downloader;
-
-    @Inject
-    private ProxyConfiguration config;
+    private FileManager fileManager;
 
     @Inject
     private MavenMetadataMerger merger;
@@ -49,10 +47,9 @@ public class MavenMetadataRetriever
     }
 
     @Override
-    public File handle( final Group group, final List<? extends ArtifactStore> stores, final String path )
+    public File retrieve( final Group group, final List<? extends ArtifactStore> stores, final String path )
     {
-        final File dir = new File( config.getRepositoryRootDirectory(), group.getName() );
-        final File target = new File( dir, path );
+        final File target = fileManager.formatStorageReference( group, path );
 
         if ( target.exists() )
         {
@@ -60,7 +57,7 @@ public class MavenMetadataRetriever
         }
         else
         {
-            final Set<File> files = downloader.downloadAll( stores, path );
+            final Set<File> files = fileManager.downloadAll( stores, path );
             if ( merger.merge( files, target, group, path ) )
             {
                 return target;
@@ -68,6 +65,20 @@ public class MavenMetadataRetriever
         }
 
         return null;
+    }
+
+    @Override
+    public DeployPoint store( final Group group, final List<? extends ArtifactStore> stores, final String path,
+                              final InputStream stream )
+    {
+        if ( path.endsWith( "maven-metadata.xml" ) )
+        {
+            // delete so it'll be recomputed.
+            final File target = fileManager.formatStorageReference( group, path );
+            target.delete();
+        }
+
+        return fileManager.upload( stores, path, stream );
     }
 
 }

@@ -17,6 +17,7 @@ package org.commonjava.aprox.core.rest.util;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.apache.commons.io.IOUtils.copy;
+import static org.apache.commons.lang.StringUtils.isEmpty;
 import static org.commonjava.couch.util.UrlUtils.buildUrl;
 
 import java.io.File;
@@ -113,8 +114,8 @@ public class DefaultFileManager
                 continue;
             }
 
-            // logger.info( "Checking: %s for: %s...", store.getKey(), path );
             target = formatStorageReference( store, path );
+            logger.info( "Checking for existence of: '%s' (in: %s)", target, store );
 
             if ( !target.exists() )
             {
@@ -421,6 +422,23 @@ public class DefaultFileManager
     @Override
     public void upload( final DeployPoint deploy, final String path, final InputStream stream )
     {
+        final ArtifactPathInfo pathInfo = parsePathInfo( path );
+        if ( pathInfo.isSnapshot() )
+        {
+            if ( !deploy.isAllowSnapshots() )
+            {
+                logger.error( "Cannot store snapshot in non-snapshot deploy point: %s", deploy.getName() );
+                throw new WebApplicationException( Response.status( Status.BAD_REQUEST )
+                                                           .build() );
+            }
+        }
+        else if ( !deploy.isAllowReleases() )
+        {
+            logger.error( "Cannot store release in snapshot-only deploy point: %s", deploy.getName() );
+            throw new WebApplicationException( Response.status( Status.BAD_REQUEST )
+                                                       .build() );
+        }
+
         final File target = formatStorageReference( deploy, path );
 
         // TODO: Need some protection for released files!
@@ -463,11 +481,33 @@ public class DefaultFileManager
      * java.io.InputStream)
      */
     @Override
-    public DeployPoint upload( final List<? extends DeployPoint> deployPoints, final String path,
-                               final InputStream stream )
+    public DeployPoint upload( final List<? extends ArtifactStore> stores, final String path, final InputStream stream )
     {
-        // TODO: Need to match the upload snapshot status to an appropriate deploy point...
-        if ( deployPoints.isEmpty() )
+        final ArtifactPathInfo pathInfo = parsePathInfo( path );
+
+        DeployPoint selected = null;
+        for ( final ArtifactStore store : stores )
+        {
+            if ( store instanceof DeployPoint )
+            {
+                final DeployPoint dp = (DeployPoint) store;
+                if ( pathInfo.isSnapshot() )
+                {
+                    if ( dp.isAllowSnapshots() )
+                    {
+                        selected = dp;
+                        break;
+                    }
+                }
+                else if ( dp.isAllowReleases() )
+                {
+                    selected = dp;
+                    break;
+                }
+            }
+        }
+
+        if ( selected == null )
         {
             logger.warn( "Cannot deploy. No valid deploy points in group." );
             throw new WebApplicationException( Response.status( Status.BAD_REQUEST )
@@ -475,10 +515,40 @@ public class DefaultFileManager
                                                        .build() );
         }
 
-        final DeployPoint deploy = deployPoints.get( 0 );
-        upload( deploy, path, stream );
+        upload( selected, path, stream );
 
-        return deploy;
+        return selected;
+    }
+
+    @Override
+    public ArtifactPathInfo parsePathInfo( final String path )
+    {
+        if ( isEmpty( path ) || path.endsWith( "/" ) )
+        {
+            return null;
+        }
+
+        final String[] parts = path.split( "/" );
+        if ( parts.length < 4 )
+        {
+            return null;
+        }
+
+        final String file = parts[parts.length - 1];
+        final String version = parts[parts.length - 2];
+        final String artifactId = parts[parts.length - 3];
+        final StringBuilder groupId = new StringBuilder();
+        for ( int i = 0; i < parts.length - 3; i++ )
+        {
+            if ( groupId.length() > 0 )
+            {
+                groupId.append( '.' );
+            }
+
+            groupId.append( parts[i] );
+        }
+
+        return new ArtifactPathInfo( groupId.toString(), artifactId, version, file, path );
     }
 
     /*

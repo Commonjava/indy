@@ -17,7 +17,6 @@ package org.commonjava.aprox.core.rest.access;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.activation.MimetypesFileTypeMap;
@@ -40,8 +39,7 @@ import org.commonjava.aprox.core.data.ProxyDataManager;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.rest.util.FileManager;
-import org.commonjava.aprox.core.rest.util.retrieve.GroupRetrieverChain;
+import org.commonjava.aprox.core.rest.util.retrieve.GroupHandlerChain;
 import org.commonjava.util.logging.Logger;
 
 @Path( "/group" )
@@ -55,10 +53,7 @@ public class DefaultGroupAccessResource
     private ProxyDataManager proxyManager;
 
     @Inject
-    private GroupRetrieverChain handlerChain;
-
-    @Inject
-    private FileManager fileManager;
+    private GroupHandlerChain handlerChain;
 
     @Context
     private UriInfo uriInfo;
@@ -147,23 +142,10 @@ public class DefaultGroupAccessResource
                                                        .build() );
         }
 
-        final List<DeployPoint> deployPoints = new ArrayList<DeployPoint>();
-        if ( stores != null )
-        {
-            for ( final ArtifactStore store : stores )
-            {
-                logger.info( "Looking for deploy-points...processing: %s", store.getKey() );
-                if ( store instanceof DeployPoint )
-                {
-                    deployPoints.add( (DeployPoint) store );
-                }
-            }
-        }
-
         ResponseBuilder builder;
         try
         {
-            final DeployPoint deploy = fileManager.upload( deployPoints, path, request.getInputStream() );
+            final DeployPoint deploy = handlerChain.store( group, stores, path, request.getInputStream() );
 
             builder = Response.created( uriInfo.getAbsolutePathBuilder()
                                                .path( deploy.getName() )

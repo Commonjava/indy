@@ -100,6 +100,7 @@ public class DepBaseProxyListener
     protected Model loadModel( final FileStorageEvent event, final List<ArtifactStore> stores )
     {
         final ModelBuildingRequest request = new DefaultModelBuildingRequest();
+        request.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL );
         request.setPomFile( new File( event.getStorageLocation() ) );
         request.setModelResolver( new ArtifactStoreModelResolver( fileManager, stores ) );
 

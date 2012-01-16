@@ -16,57 +16,53 @@
 package org.commonjava.aprox.core.rest.util.retrieve;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.io.InputStream;
 import java.util.List;
 
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.commonjava.aprox.core.model.ArtifactStore;
+import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.rest.util.FileManager;
 
 @Singleton
-public class GroupRetrieverChain
+public class GroupHandlerChain
 {
 
     @Inject
-    private Retrievers retrievers;
+    private Instance<GroupPathHandler> handlers;
 
     @Inject
     private FileManager downloader;
 
     public File retrieve( final Group group, final List<? extends ArtifactStore> stores, final String path )
     {
-        for ( final GroupPathRetriever handler : retrievers.getRetrievers() )
+        for ( final GroupPathHandler handler : handlers )
         {
             if ( handler.canHandle( path ) )
             {
-                return handler.handle( group, stores, path );
+                return handler.retrieve( group, stores, path );
             }
         }
 
         return downloader.downloadFirst( stores, path );
     }
 
-    @Singleton
-    static final class Retrievers
+    public DeployPoint store( final Group group, final List<? extends ArtifactStore> stores, final String path,
+                              final InputStream stream )
     {
-        @Inject
-        private MavenMetadataRetriever mavenMetadataRetriever;
-
-        private List<GroupPathRetriever> retrievers;
-
-        public synchronized List<GroupPathRetriever> getRetrievers()
+        for ( final GroupPathHandler handler : handlers )
         {
-            if ( retrievers == null )
+            if ( handler.canHandle( path ) )
             {
-                retrievers = new ArrayList<GroupPathRetriever>();
-                retrievers.add( mavenMetadataRetriever );
+                return handler.store( group, stores, path, stream );
             }
-
-            return retrievers;
         }
+
+        return downloader.upload( stores, path, stream );
     }
 
 }

@@ -16,16 +16,20 @@
 package org.commonjava.aprox.core.rest.util.retrieve;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.List;
 
 import org.commonjava.aprox.core.model.ArtifactStore;
+import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
 
-public interface GroupPathRetriever
+public interface GroupPathHandler
 {
 
     boolean canHandle( String path );
 
-    File handle( Group group, List<? extends ArtifactStore> stores, String path );
+    File retrieve( Group group, List<? extends ArtifactStore> stores, String path );
+
+    DeployPoint store( Group group, List<? extends ArtifactStore> stores, String path, InputStream stream );
 
 }
