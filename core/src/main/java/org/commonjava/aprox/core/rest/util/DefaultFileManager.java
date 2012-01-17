@@ -35,7 +35,6 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -52,6 +51,7 @@ import org.commonjava.aprox.core.conf.ProxyConfiguration;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Repository;
+import org.commonjava.aprox.core.rest.RESTWorkflowException;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
@@ -103,6 +103,7 @@ public class DefaultFileManager
      */
     @Override
     public File downloadFirst( final List<? extends ArtifactStore> stores, final String path )
+        throws RESTWorkflowException
     {
         File result = null;
         File target = null;
@@ -142,6 +143,7 @@ public class DefaultFileManager
      */
     @Override
     public Set<File> downloadAll( final List<? extends ArtifactStore> stores, final String path )
+        throws RESTWorkflowException
     {
         final Set<File> targets = new LinkedHashSet<File>();
 
@@ -175,6 +177,7 @@ public class DefaultFileManager
      */
     @Override
     public File download( final ArtifactStore store, final String path )
+        throws RESTWorkflowException
     {
         File target = formatStorageReference( store, path );
 
@@ -205,6 +208,7 @@ public class DefaultFileManager
     @Override
     public boolean download( final Repository repository, final String path, final File target,
                              final boolean suppressFailures )
+        throws RESTWorkflowException
     {
         final String url = buildDownloadUrl( repository, path, suppressFailures );
 
@@ -238,6 +242,7 @@ public class DefaultFileManager
 
     private void writeTarget( final File target, final InputStream in, final String url, final Repository repository,
                               final String path, final boolean suppressFailures )
+        throws RESTWorkflowException
     {
         FileOutputStream out = null;
         if ( in != null )
@@ -248,8 +253,8 @@ public class DefaultFileManager
                 if ( !targetDir.exists() && !targetDir.mkdirs() )
                 {
                     logger.error( "Cannot create repository local storage directory: %s", targetDir );
-                    throw new WebApplicationException( Response.status( Status.INTERNAL_SERVER_ERROR )
-                                                               .build() );
+                    throw new RESTWorkflowException( Response.serverError()
+                                                             .build() );
                 }
 
                 out = new FileOutputStream( target );
@@ -268,8 +273,8 @@ public class DefaultFileManager
 
                 if ( !suppressFailures )
                 {
-                    throw new WebApplicationException( Response.status( Status.INTERNAL_SERVER_ERROR )
-                                                               .build() );
+                    throw new RESTWorkflowException( Response.serverError()
+                                                             .build() );
                 }
             }
             finally
@@ -281,6 +286,7 @@ public class DefaultFileManager
     }
 
     private InputStream executeGet( final HttpGet request, final String url, final boolean suppressFailures )
+        throws RESTWorkflowException
     {
         InputStream result = null;
 
@@ -293,8 +299,8 @@ public class DefaultFileManager
                 logger.warn( "%s : %s", line, url );
                 if ( !suppressFailures )
                 {
-                    throw new WebApplicationException( Response.status( Status.INTERNAL_SERVER_ERROR )
-                                                               .build() );
+                    throw new RESTWorkflowException( Response.serverError()
+                                                             .build() );
                 }
             }
             else
@@ -309,8 +315,8 @@ public class DefaultFileManager
 
             if ( !suppressFailures )
             {
-                throw new WebApplicationException( Response.status( Status.INTERNAL_SERVER_ERROR )
-                                                           .build() );
+                throw new RESTWorkflowException( Response.serverError()
+                                                         .build() );
             }
             else
             {
@@ -323,8 +329,8 @@ public class DefaultFileManager
 
             if ( !suppressFailures )
             {
-                throw new WebApplicationException( Response.status( Status.INTERNAL_SERVER_ERROR )
-                                                           .build() );
+                throw new RESTWorkflowException( Response.serverError()
+                                                         .build() );
             }
             else
             {
@@ -336,6 +342,7 @@ public class DefaultFileManager
     }
 
     private String buildDownloadUrl( final Repository repository, final String path, final boolean suppressFailures )
+        throws RESTWorkflowException
     {
         final String remoteBase = repository.getUrl();
         String url = null;
@@ -349,7 +356,8 @@ public class DefaultFileManager
 
             if ( !suppressFailures )
             {
-                throw new WebApplicationException( Status.BAD_REQUEST );
+                throw new RESTWorkflowException( Response.status( Status.BAD_REQUEST )
+                                                         .build() );
             }
             else
             {
@@ -361,6 +369,7 @@ public class DefaultFileManager
     }
 
     private boolean continueDownload( final String url, final int timeoutSeconds, final boolean suppressFailures )
+        throws RESTWorkflowException
     {
         synchronized ( pendingUrls )
         {
@@ -373,7 +382,8 @@ public class DefaultFileManager
                     {
                         if ( !suppressFailures )
                         {
-                            throw new WebApplicationException( Status.NO_CONTENT );
+                            throw new RESTWorkflowException( Response.status( Status.NO_CONTENT )
+                                                                     .build() );
                         }
                         else
                         {
@@ -421,6 +431,7 @@ public class DefaultFileManager
      */
     @Override
     public void upload( final DeployPoint deploy, final String path, final InputStream stream )
+        throws RESTWorkflowException
     {
         final ArtifactPathInfo pathInfo = parsePathInfo( path );
         if ( pathInfo.isSnapshot() )
@@ -428,15 +439,15 @@ public class DefaultFileManager
             if ( !deploy.isAllowSnapshots() )
             {
                 logger.error( "Cannot store snapshot in non-snapshot deploy point: %s", deploy.getName() );
-                throw new WebApplicationException( Response.status( Status.BAD_REQUEST )
-                                                           .build() );
+                throw new RESTWorkflowException( Response.status( Status.BAD_REQUEST )
+                                                         .build() );
             }
         }
         else if ( !deploy.isAllowReleases() )
         {
             logger.error( "Cannot store release in snapshot-only deploy point: %s", deploy.getName() );
-            throw new WebApplicationException( Response.status( Status.BAD_REQUEST )
-                                                       .build() );
+            throw new RESTWorkflowException( Response.status( Status.BAD_REQUEST )
+                                                     .build() );
         }
 
         final File target = formatStorageReference( deploy, path );
@@ -466,8 +477,8 @@ public class DefaultFileManager
             logger.error( "Failed to store: %s in deploy store: %s. Reason: %s", e, path, deploy.getName(),
                           e.getMessage() );
 
-            throw new WebApplicationException( Response.status( Status.INTERNAL_SERVER_ERROR )
-                                                       .build() );
+            throw new RESTWorkflowException( Response.serverError()
+                                                     .build() );
         }
         finally
         {
@@ -482,6 +493,7 @@ public class DefaultFileManager
      */
     @Override
     public DeployPoint upload( final List<? extends ArtifactStore> stores, final String path, final InputStream stream )
+        throws RESTWorkflowException
     {
         final ArtifactPathInfo pathInfo = parsePathInfo( path );
 
@@ -510,9 +522,9 @@ public class DefaultFileManager
         if ( selected == null )
         {
             logger.warn( "Cannot deploy. No valid deploy points in group." );
-            throw new WebApplicationException( Response.status( Status.BAD_REQUEST )
-                                                       .entity( "No deployment locations available." )
-                                                       .build() );
+            throw new RESTWorkflowException( Response.status( Status.BAD_REQUEST )
+                                                     .entity( "No deployment locations available." )
+                                                     .build() );
         }
 
         upload( selected, path, stream );

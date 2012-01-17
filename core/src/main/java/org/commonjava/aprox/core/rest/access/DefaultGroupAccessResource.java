@@ -27,10 +27,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
@@ -39,6 +37,7 @@ import org.commonjava.aprox.core.data.ProxyDataManager;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
+import org.commonjava.aprox.core.rest.RESTWorkflowException;
 import org.commonjava.aprox.core.rest.util.retrieve.GroupHandlerChain;
 import org.commonjava.util.logging.Logger;
 
@@ -72,41 +71,58 @@ public class DefaultGroupAccessResource
         // 1. directory request (ends with "/")...browse somehow??
         // 2. empty path (directory request for proxy root)
 
-        List<? extends ArtifactStore> stores;
-        Group group;
+        List<? extends ArtifactStore> stores = null;
+        Group group = null;
 
+        Response response = null;
         try
         {
             group = proxyManager.getGroup( name );
             if ( group == null )
             {
-                throw new WebApplicationException( Response.status( Status.NOT_FOUND )
-                                                           .entity( "Repository group: " + name + " not found." )
-                                                           .build() );
+                response = Response.status( Status.NOT_FOUND )
+                                   .build();
             }
-
-            // logger.info( "Retrieving ordered stores for group: '%s'", name );
-            stores = proxyManager.getOrderedConcreteStoresInGroup( name );
+            else
+            {
+                // logger.info( "Retrieving ordered stores for group: '%s'", name );
+                stores = proxyManager.getOrderedConcreteStoresInGroup( name );
+            }
         }
         catch ( final ProxyDataException e )
         {
             logger.error( "Failed to retrieve repository-group information: %s. Reason: %s", e, name, e.getMessage() );
-            throw new WebApplicationException( Response.status( Status.INTERNAL_SERVER_ERROR )
-                                                       .build() );
+            response = Response.serverError()
+                               .build();
         }
 
-        // logger.info( "Download: %s\nFrom: %s", path, stores );
-        final File target = handlerChain.retrieve( group, stores, path );
-
-        if ( target == null )
+        if ( response == null )
         {
-            return Response.status( Status.NOT_FOUND )
-                           .build();
+            // logger.info( "Download: %s\nFrom: %s", path, stores );
+            try
+            {
+                final File target = handlerChain.retrieve( group, stores, path );
+                if ( target == null )
+                {
+                    response = Response.status( Status.NOT_FOUND )
+                                       .build();
+                }
+                else
+                {
+                    final String mimeType = new MimetypesFileTypeMap().getContentType( target );
+                    response = Response.ok( target, mimeType )
+                                       .build();
+                }
+            }
+            catch ( final RESTWorkflowException e )
+            {
+                logger.error( "Failed to retrieve: %s from group: %s. Reason: %s", e, path, name, e.getMessage() );
+                response = e.getResponse();
+            }
+
         }
 
-        final String mimeType = new MimetypesFileTypeMap().getContentType( target );
-        return Response.ok( target, mimeType )
-                       .build();
+        return response;
     }
 
     /*
@@ -120,44 +136,55 @@ public class DefaultGroupAccessResource
     public Response createContent( @PathParam( "name" ) final String name, @PathParam( "path" ) final String path,
                                    @Context final HttpServletRequest request )
     {
-        List<? extends ArtifactStore> stores;
-        Group group;
+        List<? extends ArtifactStore> stores = null;
+        Group group = null;
 
+        Response response = null;
         try
         {
             group = proxyManager.getGroup( name );
             if ( group == null )
             {
-                throw new WebApplicationException( Response.status( Status.NOT_FOUND )
-                                                           .entity( "Repository group: " + name + " not found." )
-                                                           .build() );
+                response = Response.status( Status.NOT_FOUND )
+                                   .build();
             }
-
-            stores = proxyManager.getOrderedConcreteStoresInGroup( name );
+            else
+            {
+                stores = proxyManager.getOrderedConcreteStoresInGroup( name );
+            }
         }
         catch ( final ProxyDataException e )
         {
             logger.error( "Failed to retrieve repository-group information: %s. Reason: %s", e, name, e.getMessage() );
-            throw new WebApplicationException( Response.status( Status.INTERNAL_SERVER_ERROR )
-                                                       .build() );
+            response = Response.serverError()
+                               .build();
         }
 
-        ResponseBuilder builder;
-        try
+        if ( response == null )
         {
-            final DeployPoint deploy = handlerChain.store( group, stores, path, request.getInputStream() );
+            try
+            {
+                final DeployPoint deploy = handlerChain.store( group, stores, path, request.getInputStream() );
 
-            builder = Response.created( uriInfo.getAbsolutePathBuilder()
-                                               .path( deploy.getName() )
-                                               .path( path )
-                                               .build() );
-        }
-        catch ( final IOException e )
-        {
-            logger.error( "Failed to open stream from request: %s", e, e.getMessage() );
-            builder = Response.status( Status.INTERNAL_SERVER_ERROR );
+                response = Response.created( uriInfo.getAbsolutePathBuilder()
+                                                    .path( deploy.getName() )
+                                                    .path( path )
+                                                    .build() )
+                                   .build();
+            }
+            catch ( final IOException e )
+            {
+                logger.error( "Failed to open stream from request: %s", e, e.getMessage() );
+                response = Response.serverError()
+                                   .build();
+            }
+            catch ( final RESTWorkflowException e )
+            {
+                logger.error( "Failed to upload: %s to group: %s. Reason: %s", e, path, name, e.getMessage() );
+                response = e.getResponse();
+            }
         }
 
-        return builder.build();
+        return response;
     }
 }

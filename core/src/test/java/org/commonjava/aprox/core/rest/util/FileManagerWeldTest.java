@@ -20,7 +20,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +47,7 @@ public class FileManagerWeldTest
 
     @Test
     public void downloadOnePOMFromSingleRepository()
-        throws IOException
+        throws Exception
     {
         final Repository repo = new MemoryRepository( "central", "http://repo1.maven.apache.org/maven2/" );
         final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
@@ -61,7 +60,7 @@ public class FileManagerWeldTest
 
     @Test
     public void downloadOnePOMFromSecondRepositoryAfterDummyRepoFails()
-        throws IOException
+        throws Exception
     {
         final Repository repo = new MemoryRepository( "dummy", "http://www.nowhere.com/" );
         final Repository repo2 = new MemoryRepository( "central", "http://repo1.maven.apache.org/maven2/" );

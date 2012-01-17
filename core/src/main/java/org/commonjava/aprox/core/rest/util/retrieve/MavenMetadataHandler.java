@@ -26,6 +26,7 @@ import javax.inject.Singleton;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
+import org.commonjava.aprox.core.rest.RESTWorkflowException;
 import org.commonjava.aprox.core.rest.util.FileManager;
 import org.commonjava.aprox.core.rest.util.MavenMetadataMerger;
 
@@ -48,6 +49,7 @@ public class MavenMetadataHandler
 
     @Override
     public File retrieve( final Group group, final List<? extends ArtifactStore> stores, final String path )
+        throws RESTWorkflowException
     {
         final File target = fileManager.formatStorageReference( group, path );
 
@@ -70,6 +72,7 @@ public class MavenMetadataHandler
     @Override
     public DeployPoint store( final Group group, final List<? extends ArtifactStore> stores, final String path,
                               final InputStream stream )
+        throws RESTWorkflowException
     {
         if ( path.endsWith( "maven-metadata.xml" ) )
         {

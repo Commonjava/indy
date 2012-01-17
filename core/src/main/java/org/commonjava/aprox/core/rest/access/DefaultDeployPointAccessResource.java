@@ -24,17 +24,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.core.data.ProxyDataException;
 import org.commonjava.aprox.core.data.ProxyDataManager;
 import org.commonjava.aprox.core.model.DeployPoint;
-import org.commonjava.aprox.core.rest.access.DeployPointAccessResource;
+import org.commonjava.aprox.core.rest.RESTWorkflowException;
 import org.commonjava.util.logging.Logger;
 
 @Path( "/deploy" )
@@ -60,42 +57,62 @@ public class DefaultDeployPointAccessResource
     @Override
     @PUT
     @Path( "/{name}/{path: (.+)}" )
-    public Response createContent( @PathParam( "name" ) final String name,
-                                   @PathParam( "path" ) final String path,
+    public Response createContent( @PathParam( "name" ) final String name, @PathParam( "path" ) final String path,
                                    @Context final HttpServletRequest request )
     {
-        DeployPoint deploy = getArtifactStore( name );
-
-        ResponseBuilder builder;
+        Response response = null;
+        DeployPoint deploy = null;
         try
         {
-            getFileManager().upload( deploy, path, request.getInputStream() );
-
-            builder =
-                Response.created( uriInfo.getAbsolutePathBuilder().path( deploy.getName() ).path( path ).build() );
+            deploy = getArtifactStore( name );
         }
-        catch ( IOException e )
+        catch ( final RESTWorkflowException e )
         {
-            logger.error( "Failed to open stream from request: %s", e, e.getMessage() );
-            builder = Response.status( Status.INTERNAL_SERVER_ERROR );
+            logger.error( "Failed to retrieve artifact store: %s. Reason: %s", e, name, e.getMessage() );
+            response = e.getResponse();
         }
 
-        return builder.build();
+        if ( response == null )
+        {
+            try
+            {
+                getFileManager().upload( deploy, path, request.getInputStream() );
+
+                response = Response.created( uriInfo.getAbsolutePathBuilder()
+                                                    .path( deploy.getName() )
+                                                    .path( path )
+                                                    .build() )
+                                   .build();
+            }
+            catch ( final IOException e )
+            {
+                logger.error( "Failed to open stream from request: %s", e, e.getMessage() );
+                response = Response.serverError()
+                                   .build();
+            }
+            catch ( final RESTWorkflowException e )
+            {
+                logger.error( "Failed to upload: %s to: %s. Reason: %s", e, path, name, e.getMessage() );
+                response = e.getResponse();
+            }
+        }
+
+        return response;
     }
 
     @Override
     protected DeployPoint getArtifactStore( final String name )
+        throws RESTWorkflowException
     {
         try
         {
             return proxyManager.getDeployPoint( name );
         }
-        catch ( ProxyDataException e )
+        catch ( final ProxyDataException e )
         {
-            logger.error( "Failed to retrieve deploy store: %s. Reason: %s", e, name,
-                          e.getMessage() );
-            throw new WebApplicationException(
-                                               Response.status( Status.INTERNAL_SERVER_ERROR ).build() );
+            throw new RESTWorkflowException( Response.serverError()
+                                                     .build(), "Failed to retrieve deploy store: %s. Reason: %s", e,
+                                             name, e.getMessage() );
         }
     }
 

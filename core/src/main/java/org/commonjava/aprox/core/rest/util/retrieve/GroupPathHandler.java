@@ -22,14 +22,17 @@ import java.util.List;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
+import org.commonjava.aprox.core.rest.RESTWorkflowException;
 
 public interface GroupPathHandler
 {
 
     boolean canHandle( String path );
 
-    File retrieve( Group group, List<? extends ArtifactStore> stores, String path );
+    File retrieve( Group group, List<? extends ArtifactStore> stores, String path )
+        throws RESTWorkflowException;
 
-    DeployPoint store( Group group, List<? extends ArtifactStore> stores, String path, InputStream stream );
+    DeployPoint store( Group group, List<? extends ArtifactStore> stores, String path, InputStream stream )
+        throws RESTWorkflowException;
 
 }

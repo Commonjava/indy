@@ -29,8 +29,16 @@
   
   <modules>
     <module>security</module>
-    <!-- <module>meadci</module> -->
     <module>depbase</module>
-    <module>autoprox</module>
   </modules>
+  
+  <profiles>
+    <profile>
+      <id>experimental</id>
+      
+      <modules>
+        <module>autoprox</module>
+      </modules>
+    </profile>
+  </profiles>
 </project>

@@ -23,21 +23,28 @@ import java.util.Set;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Repository;
+import org.commonjava.aprox.core.rest.RESTWorkflowException;
 
 public interface FileManager
 {
 
-    File downloadFirst( final List<? extends ArtifactStore> stores, final String path );
+    File downloadFirst( final List<? extends ArtifactStore> stores, final String path )
+        throws RESTWorkflowException;
 
-    Set<File> downloadAll( final List<? extends ArtifactStore> stores, final String path );
+    Set<File> downloadAll( final List<? extends ArtifactStore> stores, final String path )
+        throws RESTWorkflowException;
 
-    File download( final ArtifactStore store, final String path );
+    File download( final ArtifactStore store, final String path )
+        throws RESTWorkflowException;
 
-    boolean download( final Repository repository, final String path, final File target, final boolean suppressFailures );
+    boolean download( final Repository repository, final String path, final File target, final boolean suppressFailures )
+        throws RESTWorkflowException;
 
-    void upload( final DeployPoint deploy, final String path, final InputStream stream );
+    void upload( final DeployPoint deploy, final String path, final InputStream stream )
+        throws RESTWorkflowException;
 
-    DeployPoint upload( final List<? extends ArtifactStore> stores, final String path, final InputStream stream );
+    DeployPoint upload( final List<? extends ArtifactStore> stores, final String path, final InputStream stream )
+        throws RESTWorkflowException;
 
     File formatStorageReference( final ArtifactStore store, final String path );
 

@@ -22,51 +22,84 @@ import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.commonjava.aprox.core.model.ArtifactStore;
+import org.commonjava.aprox.core.rest.RESTWorkflowException;
 import org.commonjava.aprox.core.rest.util.FileManager;
+import org.commonjava.util.logging.Logger;
 
 public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
 {
+
+    private final Logger logger = new Logger( getClass() );
 
     @Inject
     private FileManager fileManager;
 
     protected AbstractSimpleAccessResource()
-    {}
+    {
+    }
 
     @GET
     @Path( "/{name}{path: (/.+)?}" )
-    public Response getContent( @PathParam( "name" ) final String name,
-                                @PathParam( "path" ) final String path )
+    public Response getContent( @PathParam( "name" ) final String name, @PathParam( "path" ) final String path )
     {
         // TODO:
         // 1. directory request (ends with "/")...browse somehow??
         // 2. empty path (directory request for proxy root)
 
-        ArtifactStore store = getArtifactStore( name );
+        Response response = null;
 
-        if ( store == null )
+        ArtifactStore store = null;
+        try
         {
-            throw new WebApplicationException(
-                                               Response.status( Status.NOT_FOUND ).entity( "Artifact store not found: "
-                                                                                               + name ).build() );
+            store = getArtifactStore( name );
+        }
+        catch ( final RESTWorkflowException e )
+        {
+            logger.error( "Failed to retrieve artifact store: %s. Reason: %s", e, name, e.getMessage() );
+            response = e.getResponse();
         }
 
-        File target = fileManager.download( store, path );
-        if ( target == null )
+        if ( response == null )
         {
-            return Response.status( Status.NOT_FOUND ).build();
+            if ( store == null )
+            {
+                response = Response.status( Status.NOT_FOUND )
+                                   .build();
+            }
+            else
+            {
+                try
+                {
+                    final File target = fileManager.download( store, path );
+                    if ( target == null )
+                    {
+                        response = Response.status( Status.NOT_FOUND )
+                                           .build();
+                    }
+                    else
+                    {
+                        final String mimeType = new MimetypesFileTypeMap().getContentType( target );
+                        response = Response.ok( target, mimeType )
+                                           .build();
+                    }
+                }
+                catch ( final RESTWorkflowException e )
+                {
+                    logger.error( "Failed to download artifact: %s from: %s. Reason: %s", e, path, name, e.getMessage() );
+                    response = e.getResponse();
+                }
+            }
         }
 
-        String mimeType = new MimetypesFileTypeMap().getContentType( target );
-        return Response.ok( target, mimeType ).build();
+        return response;
     }
 
-    protected abstract T getArtifactStore( String name );
+    protected abstract T getArtifactStore( String name )
+        throws RESTWorkflowException;
 
     protected FileManager getFileManager()
     {

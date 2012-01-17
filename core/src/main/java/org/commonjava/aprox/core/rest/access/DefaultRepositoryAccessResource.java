@@ -18,15 +18,12 @@ package org.commonjava.aprox.core.rest.access;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.ws.rs.Path;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 import org.commonjava.aprox.core.data.ProxyDataException;
 import org.commonjava.aprox.core.data.ProxyDataManager;
 import org.commonjava.aprox.core.model.Repository;
-import org.commonjava.aprox.core.rest.access.RepositoryAccessResource;
-import org.commonjava.util.logging.Logger;
+import org.commonjava.aprox.core.rest.RESTWorkflowException;
 
 @Path( "/repository" )
 @RequestScoped
@@ -34,8 +31,6 @@ public class DefaultRepositoryAccessResource
     extends AbstractSimpleAccessResource<Repository>
     implements RepositoryAccessResource
 {
-    private final Logger logger = new Logger( getClass() );
-
     @Inject
     private ProxyDataManager proxyManager;
 
@@ -44,16 +39,17 @@ public class DefaultRepositoryAccessResource
 
     @Override
     protected Repository getArtifactStore( final String name )
+        throws RESTWorkflowException
     {
         try
         {
             return proxyManager.getRepository( name );
         }
-        catch ( ProxyDataException e )
+        catch ( final ProxyDataException e )
         {
-            logger.error( "Failed to retrieve proxy: %s. Reason: %s", e, name, e.getMessage() );
-            throw new WebApplicationException(
-                                               Response.status( Status.INTERNAL_SERVER_ERROR ).build() );
+            throw new RESTWorkflowException( Response.serverError()
+                                                     .build(), "Failed to retrieve repository: %s. Reason: %s", e,
+                                             name, e.getMessage() );
         }
     }
 }
