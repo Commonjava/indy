@@ -30,6 +30,10 @@
   
   <name>AProx :: Parent POM</name>
   
+  <properties>
+    <jbossHome>${env.JBOSS_HOME}</jbossHome>
+  </properties>
+  
   <scm>
     <connection>scm:git:http://jdcasey@github.com/jdcasey/aprox.git</connection>
     <developerConnection>scm:git:git@github.com:jdcasey/aprox.git</developerConnection>
@@ -105,7 +109,7 @@
           <version>2.10</version>
           <configuration>
             <systemPropertyVariables>
-              <JBOSS_HOME>${env.JBOSS_HOME}</JBOSS_HOME>
+              <JBOSS_HOME>${jbossHome}</JBOSS_HOME>
             </systemPropertyVariables>
             <excludes>
               <exclude>**/fixture/*.java</exclude>
