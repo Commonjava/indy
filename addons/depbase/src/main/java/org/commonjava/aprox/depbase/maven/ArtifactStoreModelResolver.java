@@ -27,6 +27,7 @@ import org.apache.maven.model.resolution.ModelResolver;
 import org.apache.maven.model.resolution.UnresolvableModelException;
 import org.codehaus.plexus.component.annotations.Component;
 import org.commonjava.aprox.core.model.ArtifactStore;
+import org.commonjava.aprox.core.rest.RESTWorkflowException;
 import org.commonjava.aprox.core.rest.util.FileManager;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
@@ -57,7 +58,17 @@ public class ArtifactStoreModelResolver
         final Artifact a = new DefaultArtifact( groupId, artifactId, "pom", version );
         final URI path = layout.getPath( a );
 
-        final File file = fileManager.downloadFirst( stores, path.getPath() );
+        File file;
+        try
+        {
+            file = fileManager.downloadFirst( stores, path.getPath() );
+        }
+        catch ( final RESTWorkflowException e )
+        {
+            throw new UnresolvableModelException( "Cannot resolve POM from available repositories: " + e.getMessage(),
+                                                  groupId, artifactId, version, e );
+        }
+
         if ( file == null )
         {
             throw new UnresolvableModelException( "Cannot find POM in available repositories.", groupId, artifactId,

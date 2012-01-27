@@ -177,6 +177,29 @@
             </execution>
           </executions>
         </plugin>
+        <plugin>
+          <groupId>org.commonjava.maven.plugins</groupId>
+          <artifactId>qarqas-maven-plugin</artifactId>
+          <version>0.1-SNAPSHOT</version>
+          <executions>
+            <execution>
+              <id>infra</id>
+              <goals>
+                <goal>setup</goal>
+                <goal>teardown</goal>
+              </goals>
+              <configuration>
+                <clientKey>aprox</clientKey>
+                <configurators>reservation</configurators>
+                <useDefaultConfigurators>false</useDefaultConfigurators>
+                <output>${session.executionRootDirectory}/target/jbossas</output>
+                <configProperties>
+                  <reservationBaseUrl>http://localhost:9080/qarqas/api/1.0/reservation/</reservationBaseUrl>
+                </configProperties>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
