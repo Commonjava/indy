@@ -54,7 +54,7 @@ public class GroupAdminResourceLiveTest
     @Deployment
     public static WebArchive createWar()
     {
-        return createWar( GroupAdminResourceLiveTest.class );
+        return createWar( GroupAdminResourceLiveTest.class ).build();
     }
 
     @Before

@@ -43,7 +43,7 @@ public class FileManagerLiveTest
     @Deployment
     public static WebArchive createWar()
     {
-        return createWar( FileManagerLiveTest.class );
+        return createWar( FileManagerLiveTest.class ).build();
     }
 
     @Inject

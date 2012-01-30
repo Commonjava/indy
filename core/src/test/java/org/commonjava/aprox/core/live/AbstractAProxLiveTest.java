@@ -24,7 +24,6 @@ import org.commonjava.aprox.core.live.fixture.ProxyConfigProvider;
 import org.commonjava.aprox.core.model.ModelFactory;
 import org.commonjava.web.test.fixture.TestWarArchiveBuilder;
 import org.commonjava.web.test.fixture.WebFixture;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
 import org.junit.Rule;
 
@@ -49,13 +48,11 @@ public class AbstractAProxLiveTest
                   .registerSerializationAdapters( modelFactory );
     }
 
-    protected static WebArchive createWar( final Class<?> testClass )
+    protected static TestWarArchiveBuilder createWar( final Class<?> testClass )
     {
-        return new TestWarArchiveBuilder( testClass ).withExtraClasses( AbstractAProxLiveTest.class,
-                                                                        ProxyConfigProvider.class )
-                                                     .withLibrariesIn( new File( "target/dependency" ) )
-                                                     .withLog4jProperties()
-                                                     .build();
+        return new TestWarArchiveBuilder( new File( "target/test.war" ), testClass ).withExtraClasses( AbstractAProxLiveTest.class,
+                                                                                                       ProxyConfigProvider.class )
+                                                                                    .withLog4jProperties();
     }
 
 }

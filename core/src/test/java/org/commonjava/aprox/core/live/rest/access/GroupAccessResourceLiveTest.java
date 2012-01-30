@@ -29,7 +29,6 @@ import org.commonjava.aprox.core.live.AbstractAProxLiveTest;
 import org.commonjava.aprox.core.live.fixture.ProxyConfigProvider;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
-import org.commonjava.web.test.fixture.TestWarArchiveBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -51,12 +50,7 @@ public class GroupAccessResourceLiveTest
     @Deployment
     public static WebArchive createWar()
     {
-        return new TestWarArchiveBuilder( GroupAccessResourceLiveTest.class ).withExtraClasses( AbstractAProxLiveTest.class,
-                                                                                                ProxyConfigProvider.class )
-                                                                             .withLibrariesIn( new File(
-                                                                                                         "target/dependency" ) )
-                                                                             .withLog4jProperties()
-                                                                             .build();
+        return createWar( GroupAccessResourceLiveTest.class ).build();
     }
 
     @BeforeClass

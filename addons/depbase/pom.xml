@@ -108,6 +108,9 @@
         <artifactId>qarqas-maven-plugin</artifactId>
       </plugin>
       <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+      </plugin>
+      <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
       </plugin>
       <plugin>

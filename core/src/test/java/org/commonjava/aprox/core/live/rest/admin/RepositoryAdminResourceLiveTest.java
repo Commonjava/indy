@@ -50,7 +50,7 @@ public class RepositoryAdminResourceLiveTest
     @Deployment
     public static WebArchive createWar()
     {
-        return createWar( RepositoryAdminResourceLiveTest.class );
+        return createWar( RepositoryAdminResourceLiveTest.class ).build();
     }
 
     @Before

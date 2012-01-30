@@ -27,7 +27,6 @@ import org.apache.http.client.ClientProtocolException;
 import org.commonjava.aprox.core.data.ProxyDataException;
 import org.commonjava.aprox.core.live.AbstractAProxLiveTest;
 import org.commonjava.aprox.core.live.fixture.ProxyConfigProvider;
-import org.commonjava.web.test.fixture.TestWarArchiveBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -57,12 +56,7 @@ public class RepositoryAccessResourceLiveTest
     @Deployment
     public static WebArchive createWar()
     {
-        return new TestWarArchiveBuilder( RepositoryAccessResourceLiveTest.class ).withExtraClasses( AbstractAProxLiveTest.class,
-                                                                                                     ProxyConfigProvider.class )
-                                                                                  .withLibrariesIn( new File(
-                                                                                                              "target/dependency" ) )
-                                                                                  .withLog4jProperties()
-                                                                                  .build();
+        return createWar( RepositoryAccessResourceLiveTest.class ).build();
     }
 
     @AfterClass

@@ -39,7 +39,7 @@ public class GroupConsistencyListenerLiveTest
     @Deployment
     public static WebArchive createWar()
     {
-        return createWar( GroupConsistencyListenerLiveTest.class );
+        return createWar( GroupConsistencyListenerLiveTest.class ).build();
     }
 
     @Inject

@@ -16,12 +16,6 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.commonjava.couch.web</groupId>
-    <artifactId>couch-web</artifactId>
-    <version>1.1-SNAPSHOT</version>
-  </parent>
-  
   <groupId>org.commonjava.aprox</groupId>
   <artifactId>aprox-parent</artifactId>
   <version>0.2-SNAPSHOT</version>
@@ -48,6 +42,14 @@
   
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>org.commonjava.couch.web</groupId>
+        <artifactId>couch-web</artifactId>
+        <version>1.1-SNAPSHOT</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-api</artifactId>
@@ -96,6 +98,24 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+  
+  <dependencies>
+    <dependency>
+      <groupId>org.jboss.resteasy</groupId>
+      <artifactId>resteasy-jaxrs</artifactId>
+      <!-- <scope>provided</scope> -->
+    </dependency>
+    <dependency>
+      <groupId>javax.enterprise</groupId>
+      <artifactId>cdi-api</artifactId>
+      <!-- <scope>provided</scope> -->
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.spec.javax.servlet</groupId>
+      <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+      <!-- <scope>provided</scope> -->
+    </dependency>
+  </dependencies>
   
   <build>
     <pluginManagement>
@@ -173,7 +193,7 @@
         <plugin>
           <groupId>org.commonjava.maven.plugins</groupId>
           <artifactId>qarqas-maven-plugin</artifactId>
-          <version>0.1-SNAPSHOT</version>
+          <version>0.1</version>
           <executions>
             <execution>
               <id>infra</id>
@@ -189,6 +209,33 @@
                 <configProperties>
                   <reservationBaseUrl>http://localhost:9080/qarqas/api/1.0/reservation/</reservationBaseUrl>
                 </configProperties>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>2.2.2</version>
+          <dependencies>
+            <dependency>
+              <groupId>org.commonjava.aprox.tools</groupId>
+              <artifactId>aprox-assemblies</artifactId>
+              <version>${project.version}</version>
+            </dependency>
+          </dependencies>
+          <executions>
+            <execution>
+              <id>test-war</id>
+              <goals>
+                <goal>single</goal>
+              </goals>
+              <phase>pre-integration-test</phase>
+              <configuration>
+                <descriptorRefs>
+                  <descriptorRef>test-war</descriptorRef>
+                </descriptorRefs>
+                <finalName>test</finalName>
+                <appendAssemblyId>false</appendAssemblyId>
               </configuration>
             </execution>
           </executions>

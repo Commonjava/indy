@@ -69,12 +69,10 @@ public class AutoProxDataManagerDecoratorTest
     @Deployment
     public static WebArchive createWar()
     {
-        return new TestWarArchiveBuilder( AutoProxDataManagerDecoratorTest.class ).withExtraClasses( TargetUrlResponder.class )
-                                                                                  .withLibrariesIn( new File(
-                                                                                                              "target/dependency" ) )
-                                                                                  .withLog4jProperties()
-                                                                                  .withBeansXml( "beans.xml.autoprox" )
-                                                                                  .build();
+        return new TestWarArchiveBuilder( new File( "target/test.war" ), AutoProxDataManagerDecoratorTest.class ).withExtraClasses( TargetUrlResponder.class )
+                                                                                                                 .withLog4jProperties()
+                                                                                                                 .withBeansXml( "beans.xml.autoprox" )
+                                                                                                                 .build();
     }
 
     @Singleton
