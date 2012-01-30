@@ -46,12 +46,10 @@ public class SecurityConsistencyListenerLiveTest
     @Deployment
     public static WebArchive createWar()
     {
-        return new TestWarArchiveBuilder( SecurityConsistencyListenerLiveTest.class ).withExtraClasses( AbstractAProxSecLiveTest.class,
-                                                                                                        ProxyConfigProvider.class )
-                                                                                     .withLibrariesIn( new File(
-                                                                                                                 "target/dependency" ) )
-                                                                                     .withLog4jProperties()
-                                                                                     .build();
+        return new TestWarArchiveBuilder( new File( "target/test.war" ), SecurityConsistencyListenerLiveTest.class ).withExtraClasses( AbstractAProxSecLiveTest.class,
+                                                                                                                                       ProxyConfigProvider.class )
+                                                                                                                    .withLog4jProperties()
+                                                                                                                    .build();
     }
 
     @Inject

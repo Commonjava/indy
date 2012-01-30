@@ -81,11 +81,10 @@ public class AbstractAProxDepbaseLiveTest
 
     protected static WebArchive createWar( final Class<?> testClass )
     {
-        return new TestWarArchiveBuilder( testClass ).withExtraClasses( AbstractAProxDepbaseLiveTest.class,
-                                                                        TestConfigProvider.class )
-                                                     .withLibrariesIn( new File( "target/dependency" ) )
-                                                     .withLog4jProperties()
-                                                     .build();
+        return new TestWarArchiveBuilder( new File( "target/test.war" ), testClass ).withExtraClasses( AbstractAProxDepbaseLiveTest.class,
+                                                                                                       TestConfigProvider.class )
+                                                                                    .withLog4jProperties()
+                                                                                    .build();
     }
 
 }
