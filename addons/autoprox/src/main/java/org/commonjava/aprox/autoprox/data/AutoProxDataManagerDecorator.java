@@ -113,6 +113,7 @@ public abstract class AutoProxDataManagerDecorator
             http = new DefaultHttpClient( ccm );
         }
 
+        logger.info( "\n\n\n\n\n[AutoProx] Checking URL: %s", proxyUrl );
         final HttpHead head = new HttpHead( proxyUrl );
         boolean result = false;
         try
@@ -120,6 +121,7 @@ public abstract class AutoProxDataManagerDecorator
             final HttpResponse response = http.execute( head );
             final StatusLine statusLine = response.getStatusLine();
             final int status = statusLine.getStatusCode();
+            logger.info( "[AutoProx] HTTP Status: %s", statusLine );
             result = status == HttpStatus.SC_OK;
         }
         catch ( final ClientProtocolException e )
@@ -138,8 +140,8 @@ public abstract class AutoProxDataManagerDecorator
     public Repository getRepository( final String name )
         throws ProxyDataException
     {
+        logger.info( "DECORATED" );
         Repository proxy = dataManager.getRepository( name );
-
         if ( !config.isEnabled() )
         {
             logger.info( "AutoProx decorator disabled; returning: %s", proxy );
@@ -164,6 +166,7 @@ public abstract class AutoProxDataManagerDecorator
 
             if ( !checkUrlValidity( proxyUrl ) )
             {
+                logger.warn( "Invalid repository URL: %s", proxyUrl );
                 return null;
             }
 

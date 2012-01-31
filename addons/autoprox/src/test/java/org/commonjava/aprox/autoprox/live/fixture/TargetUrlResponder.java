@@ -17,10 +17,16 @@ public class TargetUrlResponder
 
     private final List<String> approvedTargets = new ArrayList<String>();
 
+    public TargetUrlResponder()
+    {
+        System.out.println( "\n\n\n\n\n\n\nstarting target responder\n\n\n\n\n\n" );
+    }
+
     public void approveTargets( final String... names )
     {
         for ( final String name : names )
         {
+            System.out.println( this + ": Approving: '" + name + "'" );
             approvedTargets.add( name );
         }
     }
@@ -29,13 +35,17 @@ public class TargetUrlResponder
     @GET
     public Response get( @PathParam( "name" ) final String name )
     {
+        System.out.println( this + ": GET: '" + name + "'" );
         if ( approvedTargets.contains( name ) )
         {
+            System.out.println( this + ": APPROVED" );
             return Response.ok()
                            .build();
         }
 
+        System.out.println( this + ": NOT APPROVED" );
         return Response.status( Status.NOT_FOUND )
+                       .entity( "NOT APPROVED" )
                        .build();
     }
 
