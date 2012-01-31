@@ -135,7 +135,6 @@ public class AutoProxDataManagerDecoratorTest
     {
         final String testUrl = http.resourceUrl( "target", "test" );
         http.get( testUrl, 404 );
-        System.out.println( targetResponder + ": calling approveTargets() for: 'test'" );
         targetResponder.approveTargets( "test" );
         http.get( testUrl, 200 );
 
@@ -143,7 +142,6 @@ public class AutoProxDataManagerDecoratorTest
         assertThat( proxyManager.getRepository( "test" ), nullValue() );
         config.setEnabled( true );
 
-        System.out.println( "\n\n\n\n\nProxy Manager: " + proxyManager + "\n\n\n\n\n" );
         final Repository repo = proxyManager.getRepository( "test" );
 
         assertThat( repo, notNullValue() );
@@ -158,7 +156,6 @@ public class AutoProxDataManagerDecoratorTest
     {
         final String testUrl = http.resourceUrl( "target", "test" );
         http.get( testUrl, 404 );
-        System.out.println( targetResponder + ": calling approveTargets() for: 'test'" );
         targetResponder.approveTargets( "test" );
         http.get( testUrl, 200 );
 
@@ -166,7 +163,6 @@ public class AutoProxDataManagerDecoratorTest
         assertThat( proxyManager.getGroup( "test" ), nullValue() );
         config.setEnabled( true );
 
-        System.out.println( "\n\n\n\n\nProxy Manager: " + proxyManager + "\n\n\n\n\n" );
         final Group group = proxyManager.getGroup( "test" );
 
         assertThat( group, notNullValue() );
@@ -200,8 +196,39 @@ public class AutoProxDataManagerDecoratorTest
 
         assertThat( key.getType(), equalTo( StoreType.repository ) );
         assertThat( key.getName(), equalTo( "second" ) );
-        // assertThat( repo.getUrl(), equalTo( testUrl ) );
+    }
 
+    @Test
+    public void repositoryNotAutoCreatedWhenTargetIsInvalid()
+        throws Exception
+    {
+        final String testUrl = http.resourceUrl( "target", "test" );
+        http.get( testUrl, 404 );
+
+        config.setEnabled( false );
+        assertThat( proxyManager.getRepository( "test" ), nullValue() );
+        config.setEnabled( true );
+
+        final Repository repo = proxyManager.getRepository( "test" );
+
+        assertThat( repo, nullValue() );
+
+    }
+
+    @Test
+    public void groupNotAutoCreatedWhenTargetIsInvalid()
+        throws Exception
+    {
+        final String testUrl = http.resourceUrl( "target", "test" );
+        http.get( testUrl, 404 );
+
+        config.setEnabled( false );
+        assertThat( proxyManager.getGroup( "test" ), nullValue() );
+        config.setEnabled( true );
+
+        final Group group = proxyManager.getGroup( "test" );
+
+        assertThat( group, nullValue() );
     }
 
 }

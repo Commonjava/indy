@@ -69,35 +69,37 @@ public abstract class AutoProxDataManagerDecorator
         {
             logger.info( "AutoProx: creating repository for: %s", name );
             final Repository proxy = getRepository( name );
-
-            final List<StoreKey> keys = new ArrayList<StoreKey>();
-
-            if ( config.isDeploymentAllowed() )
+            if ( proxy != null )
             {
-                DeployPoint dp = dataManager.getDeployPoint( name );
-                if ( dp == null )
+                final List<StoreKey> keys = new ArrayList<StoreKey>();
+
+                if ( config.isDeploymentAllowed() )
                 {
-                    dp = modelFactory.createDeployPoint( name );
+                    DeployPoint dp = dataManager.getDeployPoint( name );
+                    if ( dp == null )
+                    {
+                        dp = modelFactory.createDeployPoint( name );
 
-                    // TODO: Allow configuration of this.
-                    dp.setAllowReleases( true );
-                    dp.setAllowSnapshots( true );
+                        // TODO: Allow configuration of this.
+                        dp.setAllowReleases( true );
+                        dp.setAllowSnapshots( true );
 
-                    dataManager.storeDeployPoint( dp );
+                        dataManager.storeDeployPoint( dp );
+                    }
+
+                    keys.add( dp.getKey() );
                 }
 
-                keys.add( dp.getKey() );
+                keys.add( proxy.getKey() );
+
+                if ( config.getExtraGroupConstituents() != null )
+                {
+                    keys.addAll( config.getExtraGroupConstituents() );
+                }
+
+                g = modelFactory.createGroup( name, keys );
+                dataManager.storeGroup( g );
             }
-
-            keys.add( proxy.getKey() );
-
-            if ( config.getExtraGroupConstituents() != null )
-            {
-                keys.addAll( config.getExtraGroupConstituents() );
-            }
-
-            g = modelFactory.createGroup( name, keys );
-            dataManager.storeGroup( g );
         }
 
         return g;
