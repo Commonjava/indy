@@ -7,11 +7,11 @@ import org.commonjava.aprox.core.model.StoreKey;
 public interface AutoProxConfiguration
 {
 
-    String getBaseUrl();
+    String getProxyBase();
 
     List<StoreKey> getExtraGroupConstituents();
 
-    boolean isDeploymentAllowed();
+    boolean isDeploymentCreationEnabled();
 
     boolean isEnabled();
 

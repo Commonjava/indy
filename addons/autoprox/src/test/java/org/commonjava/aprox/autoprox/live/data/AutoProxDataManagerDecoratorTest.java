@@ -122,7 +122,7 @@ public class AutoProxDataManagerDecoratorTest
                     new DefaultAutoProxConfiguration( http.resourceUrl( "target" ), true,
                                                       new StoreKey( StoreType.repository, "first" ),
                                                       new StoreKey( StoreType.repository, "second" ) );
-                System.out.println( "\n\n\n\nSet Autoprox URL: " + autoProxConfig.getBaseUrl() + "\n\n\n\n" );
+                System.out.println( "\n\n\n\nSet Autoprox URL: " + autoProxConfig.getProxyBase() + "\n\n\n\n" );
             }
 
             return autoProxConfig;

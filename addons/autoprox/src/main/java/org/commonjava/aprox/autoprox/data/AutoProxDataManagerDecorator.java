@@ -73,7 +73,7 @@ public abstract class AutoProxDataManagerDecorator
             {
                 final List<StoreKey> keys = new ArrayList<StoreKey>();
 
-                if ( config.isDeploymentAllowed() )
+                if ( config.isDeploymentCreationEnabled() )
                 {
                     DeployPoint dp = dataManager.getDeployPoint( name );
                     if ( dp == null )
@@ -157,13 +157,13 @@ public abstract class AutoProxDataManagerDecorator
             String proxyUrl;
             try
             {
-                proxyUrl = buildUrl( config.getBaseUrl(), name );
+                proxyUrl = buildUrl( config.getProxyBase(), name );
             }
             catch ( final MalformedURLException e )
             {
                 throw new ProxyDataException(
                                               "Cannot build proxy URL for autoprox target: '%s' and base-URL: '%s'. Reason: %s",
-                                              e, name, config.getBaseUrl(), e.getMessage() );
+                                              e, name, config.getProxyBase(), e.getMessage() );
             }
 
             if ( !checkUrlValidity( proxyUrl ) )

@@ -2,6 +2,7 @@ package org.commonjava.aprox.autoprox.conf;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,6 +26,22 @@ public class AutoProxConfigFactory
 
     private DefaultAutoProxConfiguration config;
 
+    private File configFile = new File( CONFIG_PATH );
+
+    public AutoProxConfigFactory()
+        throws ConfigurationException
+    {
+        super( DefaultAutoProxConfiguration.class );
+    }
+
+    public AutoProxConfigFactory( final File configFile )
+        throws ConfigurationException
+    {
+        super( DefaultAutoProxConfiguration.class );
+        this.configFile = configFile;
+        load();
+    }
+
     @PostConstruct
     public void load()
         throws ConfigurationException
@@ -32,7 +49,7 @@ public class AutoProxConfigFactory
         InputStream stream = null;
         try
         {
-            stream = new FileInputStream( CONFIG_PATH );
+            stream = new FileInputStream( configFile );
             new SingleSectionConfigReader( this ).loadConfiguration( stream );
         }
         catch ( final IOException e )

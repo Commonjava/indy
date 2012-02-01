@@ -21,24 +21,24 @@ public class DefaultAutoProxConfiguration
 
     public final Logger logger = new Logger( getClass() );
 
-    private final String baseUrl;
+    private final String proxyBase;
 
     private List<StoreKey> extraGroupConstituents;
 
     private boolean createdWithDeployPoint;
 
-    private boolean enabled;
+    private boolean enabled = true;
 
-    @ConfigNames( "baseUrl" )
-    public DefaultAutoProxConfiguration( final String baseUrl )
+    @ConfigNames( "proxyBase" )
+    public DefaultAutoProxConfiguration( final String proxyBase )
     {
-        this.baseUrl = baseUrl;
+        this.proxyBase = proxyBase;
     }
 
     public DefaultAutoProxConfiguration( final String baseUrl, final boolean createdWithDeployPoint,
                                          final List<StoreKey> extraGroupConstituents )
     {
-        this.baseUrl = baseUrl;
+        this.proxyBase = baseUrl;
         this.createdWithDeployPoint = createdWithDeployPoint;
         this.extraGroupConstituents = extraGroupConstituents;
     }
@@ -46,15 +46,15 @@ public class DefaultAutoProxConfiguration
     public DefaultAutoProxConfiguration( final String baseUrl, final boolean createdWithDeployPoint,
                                          final StoreKey... extraGroupConstituents )
     {
-        this.baseUrl = baseUrl;
+        this.proxyBase = baseUrl;
         this.createdWithDeployPoint = createdWithDeployPoint;
         this.extraGroupConstituents = Arrays.asList( extraGroupConstituents );
     }
 
     @Override
-    public String getBaseUrl()
+    public String getProxyBase()
     {
-        return baseUrl;
+        return proxyBase;
     }
 
     @Override
@@ -64,12 +64,12 @@ public class DefaultAutoProxConfiguration
     }
 
     @Override
-    public boolean isDeploymentAllowed()
+    public boolean isDeploymentCreationEnabled()
     {
         return createdWithDeployPoint;
     }
 
-    @ConfigName( "extraGroupConstituents" )
+    @ConfigName( "groupAppend" )
     public void setExtraGroupConstituentsString( final String constituentList )
     {
         if ( constituentList == null || constituentList.trim()
@@ -163,7 +163,7 @@ public class DefaultAutoProxConfiguration
         this.extraGroupConstituents = extraGroupConstituents;
     }
 
-    @ConfigName( "allowDeployment" )
+    @ConfigName( "deployable" )
     public void setDeploymentAllowed( final boolean createdWithDeployPoint )
     {
         this.createdWithDeployPoint = createdWithDeployPoint;
@@ -179,7 +179,6 @@ public class DefaultAutoProxConfiguration
     @ConfigName( "enabled" )
     public void setEnabled( final boolean enabled )
     {
-        logger.info( "Set enabled: %s for autoprox.", enabled );
         this.enabled = enabled;
     }
 
