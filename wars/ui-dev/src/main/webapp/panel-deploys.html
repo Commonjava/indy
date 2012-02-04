@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>
+      AProx Configuration
+    </title>
+    <!-- <link type="text/css" href="css/ui-lightness/jquery-ui-1.8.17.custom.css" rel="stylesheet">
+    <script type="text/javascript" src="js/jquery-1.7.1.min.js">
+</script>
+    <script type="text/javascript" src="js/jquery-ui-1.8.17.custom.min.js">
+</script> -->
+    <script type="text/javascript">
+  $(function(){
+      });
+    </script>
+  </head>
+  <body>
+      <div class="content-pane">
+        <div class="content-pane-controls">
+          <input type="button" name="save-groups" value="Save Changes" enabled="false" />
+          <input type="button" name="reset-groups" value="Discard Changes" enabled="false" />
+        </div>
+        <div class="existing-listing">
+          <table class="listing-table" border="1">
+            <tr>
+              <th>Group Name</th>
+              <th>Local URL</th>
+              <th>Extra Attributes</th>
+              <th>Controls</th>
+            </tr>
+            <tr>
+              <td>group-1</td>
+              <td>http://localhost:9080/aprox/api/1.0/group/group-1/</td>
+              <td>[deployable]</td>
+              <td>[del]</td>
+            </tr>
+            <tr>
+              <td>group-2</td>
+              <td>http://localhost:9080/aprox/api/1.0/group/group-2/</td>
+              <td></td>
+              <td>[del]</td>
+            </tr>
+          </table>
+          <div class="listing-config">
+            <div class="listing-config-existing">
+              <select multiple="true" name="existing-group-contents">
+                <option name="deploy1">deploy-1</option>
+                <option name="repo1">repo-1</option>
+                <option name="repo2">repo-2</option>
+              </select>
+            </div>
+            <div class="listing-config-controls">
+              <input type="button" name="add-one" value="&lt;" />
+              <input type="button" name="add-all" value="&lt;&lt;" />
+              <input type="button" name="rm-all" value="&gt;&gt;" />
+              <input type="button" name="rm-one" value="&gt;" />
+            </div>
+            <div class="listing-config-available">
+              <select multiple="true" name="available-group-contents">
+                <option name="deploy2">deploy-2</option>
+                <option name="repo3">repo-3</option>
+                <option name="repo4">repo-4</option>
+                <option name="repo5">repo-5</option>
+                <option name="repo6">repo-6</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="new-item">
+          <form target="#add-group">
+            <div class="form-line">
+              Group Name: <input type="text" size="15" />
+            </div>
+            <div class="form-line form-controls">
+              <input type="button" value="Create" />
+            </div>
+          </form>
+        </div>
+      </div>
+  </body>
+</html>

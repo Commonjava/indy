@@ -33,7 +33,6 @@
     <module>rest-min</module>
     <module>rest-sec</module>
     <module>basic</module>
-    <module>rest-min-plus-depbase</module>
   </modules>
   
   <build>
@@ -60,4 +59,15 @@
       </plugins>
     </pluginManagement>
   </build>
+  
+  <profiles>
+    <profile>
+      <id>experimental</id>
+      
+      <modules>
+        <module>rest-min-plus-depbase</module>
+        <module>rest-savant</module>
+      </modules>
+    </profile>
+  </profiles>
 </project>

@@ -15,40 +15,21 @@
  ******************************************************************************/
 package org.commonjava.aprox.depbase.maven;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
 
-import org.apache.maven.model.building.ModelBuilder;
-import org.commonjava.util.logging.Logger;
+import org.apache.maven.model.io.DefaultModelReader;
+import org.apache.maven.model.io.ModelReader;
 
 @Singleton
 public class MavenComponentProvider
 {
-    private final Logger logger = new Logger( getClass() );
-
-    private MAELoader mae;
-
     @Produces
     @Default
-    public ModelBuilder getModelBuilder()
+    public ModelReader getModelReader()
     {
-        return mae.getModelBuilder();
-    }
-
-    public MavenComponentProvider()
-    {
-        logger.info( "Constructor for MavenComponentProvider..." );
-    }
-
-    @PostConstruct
-    public void loadMAE()
-    {
-        logger.info( "Loading MAE components..." );
-        mae = new MAELoader();
-
-        logger.info( "ModelBuilder is: %s", mae.getModelBuilder() );
+        return new DefaultModelReader();
     }
 
 }

@@ -20,7 +20,6 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
-import org.commonjava.aprox.depbase.maven.MavenComponentProvider;
 import org.commonjava.depbase.data.DepbaseDataException;
 import org.commonjava.depbase.data.DepbaseDataManager;
 import org.commonjava.util.logging.Logger;
@@ -35,9 +34,6 @@ public class DepbaseInstallerListener
     @Inject
     private DepbaseDataManager dataManager;
 
-    @Inject
-    private MavenComponentProvider componentProvider;
-
     @Override
     public void contextInitialized( final ServletContextEvent sce )
     {
@@ -51,8 +47,6 @@ public class DepbaseInstallerListener
         {
             throw new RuntimeException( "Failed to install depbase database: " + e.getMessage(), e );
         }
-
-        componentProvider.getModelBuilder();
 
         logger.info( "...done" );
     }

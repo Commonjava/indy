@@ -29,7 +29,6 @@
   
   <modules>
     <module>security</module>
-    <module>depbase</module>
   </modules>
   
   <profiles>
@@ -37,6 +36,7 @@
       <id>experimental</id>
       
       <modules>
+        <module>depbase</module>
         <module>autoprox</module>
       </modules>
     </profile>

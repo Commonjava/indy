@@ -16,8 +16,11 @@
 package org.commonjava.aprox.depbase;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.enterprise.event.Observes;
@@ -25,19 +28,14 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.maven.model.Model;
-import org.apache.maven.model.building.DefaultModelBuildingRequest;
-import org.apache.maven.model.building.ModelBuilder;
-import org.apache.maven.model.building.ModelBuildingException;
-import org.apache.maven.model.building.ModelBuildingRequest;
-import org.apache.maven.model.building.ModelBuildingResult;
+import org.apache.maven.model.io.ModelParseException;
+import org.apache.maven.model.io.ModelReader;
 import org.commonjava.aprox.core.change.event.FileStorageEvent;
 import org.commonjava.aprox.core.change.event.FileStorageEvent.Type;
 import org.commonjava.aprox.core.data.ProxyDataException;
 import org.commonjava.aprox.core.data.ProxyDataManager;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.rest.util.FileManager;
-import org.commonjava.aprox.depbase.maven.ArtifactStoreModelResolver;
 import org.commonjava.depbase.data.DepbaseDataException;
 import org.commonjava.depbase.util.MavenModelProcessor;
 import org.commonjava.util.logging.Logger;
@@ -52,10 +50,7 @@ public class DepBaseProxyListener
     private ProxyDataManager aprox;
 
     @Inject
-    private FileManager fileManager;
-
-    @Inject
-    private ModelBuilder modelBuilder;
+    private ModelReader modelReader;
 
     @Inject
     private MavenModelProcessor modelProcessor;
@@ -99,27 +94,24 @@ public class DepBaseProxyListener
 
     protected Model loadModel( final FileStorageEvent event, final List<ArtifactStore> stores )
     {
-        final ModelBuildingRequest request = new DefaultModelBuildingRequest();
-        request.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL );
-        request.setPomFile( new File( event.getStorageLocation() ) );
-        request.setModelResolver( new ArtifactStoreModelResolver( fileManager, stores ) );
 
-        ModelBuildingResult result = null;
+        final Map<String, Object> options = new HashMap<String, Object>();
+        options.put( ModelReader.IS_STRICT, Boolean.FALSE.toString() );
+
         try
         {
-            result = modelBuilder.build( request );
+            return modelReader.read( new File( event.getStorageLocation() ), options );
         }
-        catch ( final ModelBuildingException e )
+        catch ( final ModelParseException e )
         {
-            logger.error( "Cannot build model instance for POM: %s. Reason: %s", e, event.getPath(), e.getMessage() );
+            logger.error( "Cannot parse POM: %s. Reason: %s", e, event.getPath(), e.getMessage() );
+        }
+        catch ( final IOException e )
+        {
+            logger.error( "Cannot read POM: %s. Reason: %s", e, event.getPath(), e.getMessage() );
         }
 
-        if ( result == null )
-        {
-            return null;
-        }
-
-        return result.getEffectiveModel();
+        return null;
     }
 
     protected List<ArtifactStore> getRelevantStores( final ArtifactStore originatingStore )

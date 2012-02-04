@@ -82,6 +82,11 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-autoprox</artifactId>
+        <version>0.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-db-memory</artifactId>
         <version>0.2-SNAPSHOT</version>
       </dependency>

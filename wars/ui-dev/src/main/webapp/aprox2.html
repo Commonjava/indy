@@ -1,0 +1,60 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>
+      AProx Configuration
+    </title>
+    <link type="text/css" href="css/ui-lightness/jquery-ui-1.8.17.custom.css" rel="stylesheet">
+    <script type="text/javascript" src="js/jquery-1.7.1.min.js">
+</script>
+    <script type="text/javascript" src="js/jquery-ui-1.8.17.custom.min.js">
+</script>
+    <script type="text/javascript">
+    var tabsVisible=false;
+  $(function(){
+      // $('.init-hidden').hide();
+      
+      
+      // $('#tabs-showhide').click( function(){
+      //   if ( tabsVisible )
+      //   {
+      //     $('#tabs').tabs( 'destroy' );
+      //   }
+      //   else
+      //   {
+          $('#tabs').tabs();
+          // $('#tabs').tabs( 'add', 'panel-repos.html', 'Repositories (Proxies)');
+          // $('#tabs').tabs( 'add', 'panel-deploys.html', 'Deployment Points');
+          // $('#tabs').tabs( 'add', 'panel-groups.html', 'Groups');
+        // }
+        // tabsVisible=!tabsVisible;
+      // });
+
+      });
+    </script>
+        <script type="text/javascript" src="js/init-repos.js">
+    </script>
+        <script type="text/javascript" src="js/init-deploys.js">
+    </script>
+        <script type="text/javascript" src="js/init-groups.js">
+    </script>
+  </head>
+  <body>
+    <div id="tabs">
+      <!-- <input type="button" id="tabs-showhide"/> -->
+      <ul></ul>
+      <!-- <ul>
+        <li>
+          <a href="#tabs-1">Repositories (Proxies)</a>
+        </li>
+        <li>
+          <a href="#tabs-2">Deployment Points</a>
+        </li>
+        <li>
+          <a href="#tabs-3">Groups</a>
+        </li>
+      </ul> -->
+    </div>
+  </body>
+</html>
