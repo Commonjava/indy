@@ -15,6 +15,10 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.rest.admin;
 
+import static org.apache.commons.lang.StringUtils.join;
+
+import java.util.List;
+
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -39,6 +43,7 @@ import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.io.AProxModelSerializer;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.common.model.Listing;
+import org.commonjava.web.common.ser.JsonSerializer;
 
 @Path( "/admin/repository" )
 @RequestScoped
@@ -53,6 +58,9 @@ public class DefaultRepositoryAdminResource
 
     @Inject
     private AProxModelSerializer modelSerializer;
+
+    @Inject
+    private JsonSerializer serializer;
 
     @Context
     private UriInfo uriInfo;
@@ -149,10 +157,22 @@ public class DefaultRepositoryAdminResource
     {
         try
         {
-            final Listing<Repository> listing = new Listing<Repository>( proxyManager.getAllRepositories() );
+            final List<Repository> repos = proxyManager.getAllRepositories();
+            logger.info( "Returning listing containing repositories:\n\t%s", join( repos, "\n\t" ) );
+
+            final Listing<Repository> listing = new Listing<Repository>( repos );
+            logger.info( "Listing:\n\n%s", listing );
+
+            // final String json = serializer.toString( listing, new TypeToken<Listing<Repository>>()
+            // {
+            // }.getType() );
+
+            final String json = serializer.toString( listing );
+
+            logger.info( "JSON:\n\n%s", json );
 
             return Response.ok()
-                           .entity( modelSerializer.repoListingToString( listing ) )
+                           .entity( json )
                            .build();
         }
         catch ( final ProxyDataException e )

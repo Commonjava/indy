@@ -53,4 +53,19 @@ public class StoreKeySerializer
         gsonBuilder.registerTypeAdapter( StoreKey.class, this );
     }
 
+    @Override
+    public boolean equals( final Object other )
+    {
+        return getClass().getName()
+                         .equals( other.getClass()
+                                       .getName() );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return 31 + getClass().getName()
+                              .hashCode();
+    }
+
 }

@@ -6,9 +6,11 @@
       AProx Configuration
     </title>
     <link type="text/css" href="css/ui-lightness/jquery-ui-1.8.17.custom.css" rel="stylesheet">
-    <script type="text/javascript" src="js/jquery-1.7.1.min.js">
+    <script type="text/javascript" src="js/jquery-1.7.1.js">
 </script>
-    <script type="text/javascript" src="js/jquery-ui-1.8.17.custom.min.js">
+    <script type="text/javascript" src="js/jquery-ui-1.8.17.custom.js">
+</script>
+    <script type="text/javascript" src="js/jquery.dataTables.js">
 </script>
     <script type="text/javascript">
     var tabsVisible=false;
@@ -33,14 +35,21 @@
 
       });
     </script>
-        <script type="text/javascript" src="js/init-repos.js">
+        <script type="text/javascript" src="js/repos.js">
     </script>
-        <script type="text/javascript" src="js/init-deploys.js">
+        <script type="text/javascript" src="js/deploys.js">
     </script>
-        <script type="text/javascript" src="js/init-groups.js">
+        <script type="text/javascript" src="js/groups.js">
     </script>
   </head>
   <body>
+    <div id="menus">
+      <div id="main-menu">
+        <h3>Main Menu</h3>
+        <ul>
+        </ul>
+      </div>
+    </div>
     <div id="tabs">
       <!-- <input type="button" id="tabs-showhide"/> -->
       <ul></ul>

@@ -1,22 +1,69 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>
-      AProx Configuration
-    </title>
-    <link type="text/css" href="css/ui-lightness/jquery-ui-1.8.17.custom.css" rel="stylesheet">
-    <!-- <script type="text/javascript" src="js/jquery-1.7.1.min.js">
-</script>
-    <script type="text/javascript" src="js/jquery-ui-1.8.17.custom.min.js">
-</script> -->
     <script type="text/javascript">
-  $(function(){
+    var base='http://localhost:9080/aprox/api/1.0/repository/';
+    var repoTable;
+    
+    function renderAProxUrl( name ){
+      return '<a target="_new" href="' + base + name + '">' + base + name + '</a>';
+    }
+    
+    function renderRemoteUrl( url ){
+      return '<a target="_new" href="' + url + '">' + url + '</a>';
+    }
+    
+    $(document).ready(function()
+    {
+      repoTable = $("#repo-panel .listing-table").dataTable({
+        "bProcessing": true,
+        "sAjaxSource": "http://localhost:9080/aprox/api/1.0/admin/repository/list",
+        "sAjaxDataProp": "items",
+        "aoColumns": [
+          {
+            "sTitle": "Repository Name",
+            "bSortable": true,
+            "mDataProp": "name",
+          },
+          {
+            "sTitle": "AProx URL",
+            "bSortable": true,
+            "bUseRendered":false,
+            "fnRender": function(o,data){return renderAProxUrl(data);},
+            "sWidth": "500px",
+            "mDataProp": "name",
+          },
+          {
+            "sTitle": "Remote URL",
+            "bSortable": true,
+            "bUseRendered":false,
+            "fnRender": function(o,data){return renderRemoteUrl(data);},
+            "sWidth": "500px",
+            "mDataProp": "url",
+          },
+          {
+            "sTitle": "Timeout",
+            "mDataProp": "timeout_seconds"
+          },
+        ],
       });
+    });
+    
+    $('#create-repo').click(function()
+    {
+      var name = $('#new-repo-name').val();
+      var url = $('#new-repo-url').val();
+      var timeout = $('#new-repo-timeout').val();
+      repoTable.fnAddData({
+        "name": name,
+        "url": url,
+        "timeout_seconds": timeout,
+      });
+    });
     </script>
   </head>
   <body>
-    <div class="content-pane">
+    <div id="repo-panel" class="content-pane">
       <div class="content-pane-controls">
         <input type="button" name="save-repos" value="Save Changes" enabled="false" />
         <input type="button" name="reset-repos" value="Discard Changes" enabled="false" />
@@ -30,32 +77,21 @@
             <th>Extra Attributes</th>
             <th>Controls</th>
           </tr>
-          <tr>
-            <td>repo-1</td>
-            <td>http://localhost:9080/aprox/api/1.0/repository/repo-1/</td>
-            <td>http://repo.maven.apache.org/maven2/</td>
-            <td>[auth][timeout]</td>
-            <td>[del]</td>
-          </tr>
-          <tr>
-            <td>repo-2</td>
-            <td>http://localhost:9080/aprox/api/1.0/repository/repo-2/</td>
-            <td>http://repo.somewhere.org/maven/</td>
-            <td>[timeout]</td>
-            <td>[del]</td>
-          </tr>
         </table>
       </div>
       <div class="new-item">
         <form target="#add-repo">
           <div class="form-line">
-            Repository Name: <input type="text" size="15" />
+            Repository Name: <input type="text" id="new-repo-name" size="15" />
           </div>
           <div class="form-line">
-            Remote URL: <input type="text" size="45" />
+            Remote URL: <input type="text" id="new-repo-url" size="45" />
+          </div>
+          <div class="form-line">
+            Timeout (seconds): <input type="text" id="new-repo-timeout" size="3" />
           </div>
           <div class="form-line form-controls">
-            <input type="button" value="Create" />
+            <input type="button" id="create-repo" value="Create" />
           </div>
         </form>
       </div>
