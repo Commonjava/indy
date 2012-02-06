@@ -20,6 +20,8 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
+import org.apache.maven.mae.MAEException;
+import org.commonjava.aprox.depbase.maven.MavenComponentProvider;
 import org.commonjava.depbase.data.DepbaseDataException;
 import org.commonjava.depbase.data.DepbaseDataManager;
 import org.commonjava.util.logging.Logger;
@@ -33,6 +35,9 @@ public class DepbaseInstallerListener
 
     @Inject
     private DepbaseDataManager dataManager;
+
+    @Inject
+    private MavenComponentProvider mavenProvider;
 
     @Override
     public void contextInitialized( final ServletContextEvent sce )
@@ -49,6 +54,16 @@ public class DepbaseInstallerListener
         }
 
         logger.info( "...done" );
+
+        logger.info( "Initializing Maven components" );
+        try
+        {
+            mavenProvider.startMAE();
+        }
+        catch ( final MAEException e )
+        {
+            throw new RuntimeException( "Failed to initialize Maven components: " + e.getMessage(), e );
+        }
     }
 
     @Override

@@ -28,6 +28,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.maven.model.Model;
+import org.apache.maven.model.building.DefaultModelBuildingRequest;
+import org.apache.maven.model.building.ModelBuilder;
+import org.apache.maven.model.building.ModelBuildingException;
+import org.apache.maven.model.building.ModelBuildingRequest;
+import org.apache.maven.model.building.ModelBuildingResult;
 import org.apache.maven.model.io.ModelParseException;
 import org.apache.maven.model.io.ModelReader;
 import org.commonjava.aprox.core.change.event.FileStorageEvent;
@@ -36,6 +41,9 @@ import org.commonjava.aprox.core.data.ProxyDataException;
 import org.commonjava.aprox.core.data.ProxyDataManager;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.Group;
+import org.commonjava.aprox.core.rest.util.FileManager;
+import org.commonjava.aprox.depbase.maven.ArtifactStoreModelResolver;
+import org.commonjava.aprox.depbase.maven.ModelVersions;
 import org.commonjava.depbase.data.DepbaseDataException;
 import org.commonjava.depbase.util.MavenModelProcessor;
 import org.commonjava.util.logging.Logger;
@@ -51,6 +59,12 @@ public class DepBaseProxyListener
 
     @Inject
     private ModelReader modelReader;
+
+    @Inject
+    private ModelBuilder modelBuilder;
+
+    @Inject
+    private FileManager fileManager;
 
     @Inject
     private MavenModelProcessor modelProcessor;
@@ -76,23 +90,57 @@ public class DepBaseProxyListener
             return;
         }
 
-        final Model model = loadModel( event, stores );
-        if ( model == null )
+        final Model rawModel = loadRawModel( event, stores );
+        if ( rawModel == null )
         {
             return;
         }
 
+        final Model effectiveModel = loadEffectiveModel( event, stores );
+        if ( effectiveModel == null )
+        {
+            return;
+        }
+
+        final ModelVersions versions = new ModelVersions( effectiveModel );
+        versions.update( rawModel );
+
         try
         {
-            modelProcessor.storeModelRelationships( model );
+            modelProcessor.storeModelRelationships( rawModel );
         }
         catch ( final DepbaseDataException e )
         {
-            logger.error( "Failed to store relationships for POM: %s. Reason: %s", e, model.getId(), e.getMessage() );
+            logger.error( "Failed to store relationships for POM: %s. Reason: %s", e, rawModel.getId(), e.getMessage() );
         }
     }
 
-    protected Model loadModel( final FileStorageEvent event, final List<ArtifactStore> stores )
+    protected Model loadEffectiveModel( final FileStorageEvent event, final List<ArtifactStore> stores )
+    {
+        final ModelBuildingRequest request = new DefaultModelBuildingRequest();
+        request.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL );
+        request.setPomFile( new File( event.getStorageLocation() ) );
+        request.setModelResolver( new ArtifactStoreModelResolver( fileManager, stores ) );
+
+        ModelBuildingResult result = null;
+        try
+        {
+            result = modelBuilder.build( request );
+        }
+        catch ( final ModelBuildingException e )
+        {
+            logger.error( "Cannot build model instance for POM: %s. Reason: %s", e, event.getPath(), e.getMessage() );
+        }
+
+        if ( result == null )
+        {
+            return null;
+        }
+
+        return result.getEffectiveModel();
+    }
+
+    protected Model loadRawModel( final FileStorageEvent event, final List<ArtifactStore> stores )
     {
 
         final Map<String, Object> options = new HashMap<String, Object>();
