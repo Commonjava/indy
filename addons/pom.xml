@@ -29,6 +29,7 @@
   
   <modules>
     <module>security</module>
+    <module>autoprox</module>
   </modules>
   
   <profiles>
@@ -37,7 +38,6 @@
       
       <modules>
         <module>depbase</module>
-        <module>autoprox</module>
       </modules>
     </profile>
   </profiles>
