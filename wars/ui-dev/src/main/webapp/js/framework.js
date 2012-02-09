@@ -65,3 +65,23 @@ function renderAdminUrl(type, sub) {
   return renderApiUrl(['admin', type, sub]);
 }
 
+function loadOptions( select_expr, type, name_prefix, name_suffix ){
+  var listUrl = renderAdminUrl( type, 'list' );
+  notice( 'loading-options-' + type, "Loading options from " + listUrl );
+  
+  $.getJSON( listUrl, function(data)
+  {
+    $.each(data.items, function(index, value){
+      $(select_expr).append( '<option name="' + value.key + '">' + name_prefix + ' ' + value.name + ' ' + name_suffix + '</option>' );
+    });
+  })
+  
+  .error( function()
+  {
+    notice( 'loading-options-' + type + '-failed', "Failed to load options of type: " + type );
+    clear_notice( 'loading-options-' + type + '-failed' );
+  });
+  
+  clear_notice( 'loading-options-' + type );
+}
+
