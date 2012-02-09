@@ -57,6 +57,8 @@ public class ModelVersions
 
         // map plugins
         // map managed plugins
+        // TODO: map report plugins
+        // TODO: map site report plugins
         // map extensions
         // map managed plugin-level dependencies
         if ( build != null )
@@ -119,7 +121,8 @@ public class ModelVersions
         // iterate raw managed plugins
         // iterate raw managed plugin-level deps
         // iterate raw extensions
-        // map dependencies
+        // TODO: iterate report plugins
+        // TODO: iterate site report plugins
         for ( final Dependency d : rawModel.getDependencies() )
         {
             final Dependency ed = deps.get( d.getManagementKey() );

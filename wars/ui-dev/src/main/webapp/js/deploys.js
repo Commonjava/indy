@@ -1,3 +1,5 @@
+var deploys_loaded = false;
+
 $(function(){
-    $('#tabs').tabs( 'add', 'panel-deploys.html', 'Deployment Points' );
-})
+    addMenuItem( 'Deployment Points', 'load-deploy-panel', 'panel-deploys.html' );
+});

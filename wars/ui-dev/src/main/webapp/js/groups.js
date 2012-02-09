@@ -1,3 +1,5 @@
+var groups_loaded = false;
+
 $(function(){
-    $('#tabs').tabs( 'add', 'panel-groups.html', 'Groups' );
-})
+    addMenuItem( 'Groups', 'load-group-panel', 'panel-groups.html' );
+});

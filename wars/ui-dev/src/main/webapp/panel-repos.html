@@ -2,22 +2,16 @@
 <html>
   <head>
     <script type="text/javascript">
-    var base='http://localhost:9080/aprox/api/1.0/repository/';
     var repoTable;
-    
-    function renderAProxUrl( name ){
-      return '<a target="_new" href="' + base + name + '">' + base + name + '</a>';
-    }
-    
-    function renderRemoteUrl( url ){
-      return '<a target="_new" href="' + url + '">' + url + '</a>';
-    }
-    
     $(document).ready(function()
     {
+      $("#save-repo").hide();
+      
+      var listUrl = renderAdminUrl( 'repository', 'list' );
+      notice( 'loading-repos', "Loading " + listUrl );
       repoTable = $("#repo-panel .listing-table").dataTable({
         "bProcessing": true,
-        "sAjaxSource": "http://localhost:9080/aprox/api/1.0/admin/repository/list",
+        "sAjaxSource": listUrl,
         "sAjaxDataProp": "items",
         "aoColumns": [
           {
@@ -29,7 +23,7 @@
             "sTitle": "AProx URL",
             "bSortable": true,
             "bUseRendered":false,
-            "fnRender": function(o,data){return renderAProxUrl(data);},
+            "fnRender": function(o,data){return renderAccessLink('repository', data);},
             "sWidth": "500px",
             "mDataProp": "name",
           },
@@ -37,7 +31,7 @@
             "sTitle": "Remote URL",
             "bSortable": true,
             "bUseRendered":false,
-            "fnRender": function(o,data){return renderRemoteUrl(data);},
+            "fnRender": function(o,data){return renderRemoteLink(data);},
             "sWidth": "500px",
             "mDataProp": "url",
           },
@@ -47,13 +41,16 @@
           },
         ],
       });
+      
+      clear_notice( 'loading-repos' );
+      
     });
     
     $('#create-repo').click(function()
     {
-      var name = $('#new-repo-name').val();
-      var url = $('#new-repo-url').val();
-      var timeout = $('#new-repo-timeout').val();
+      var name = $('#repo-name').val();
+      var url = $('#repo-url').val();
+      var timeout = $('#repo-timeout').val();
       repoTable.fnAddData({
         "name": name,
         "url": url,
@@ -82,16 +79,17 @@
       <div class="new-item">
         <form target="#add-repo">
           <div class="form-line">
-            Repository Name: <input type="text" id="new-repo-name" size="15" />
+            Repository Name: <input type="text" id="repo-name" size="15" />
           </div>
           <div class="form-line">
-            Remote URL: <input type="text" id="new-repo-url" size="45" />
+            Remote URL: <input type="text" id="repo-url" size="45" />
           </div>
           <div class="form-line">
-            Timeout (seconds): <input type="text" id="new-repo-timeout" size="3" />
+            Timeout (seconds): <input type="text" id="repo-timeout" size="3" />
           </div>
           <div class="form-line form-controls">
             <input type="button" id="create-repo" value="Create" />
+            <input type="button" id="save-repo" value="Create" />
           </div>
         </form>
       </div>

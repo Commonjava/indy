@@ -5,65 +5,34 @@
     <title>
       AProx Configuration
     </title>
+    
+    <link rel="stylesheet" href="css/common.css" type="text/css" />
     <link type="text/css" href="css/ui-lightness/jquery-ui-1.8.17.custom.css" rel="stylesheet">
+    <link type="text/css" href="css/ui.multiselect.css" rel="stylesheet" />
+  	
     <script type="text/javascript" src="js/jquery-1.7.1.js">
-</script>
+    </script>
     <script type="text/javascript" src="js/jquery-ui-1.8.17.custom.js">
-</script>
+    </script>
     <script type="text/javascript" src="js/jquery.dataTables.js">
-</script>
-    <script type="text/javascript">
-    var tabsVisible=false;
-  $(function(){
-      // $('.init-hidden').hide();
-      
-      
-      // $('#tabs-showhide').click( function(){
-      //   if ( tabsVisible )
-      //   {
-      //     $('#tabs').tabs( 'destroy' );
-      //   }
-      //   else
-      //   {
-          $('#tabs').tabs();
-          // $('#tabs').tabs( 'add', 'panel-repos.html', 'Repositories (Proxies)');
-          // $('#tabs').tabs( 'add', 'panel-deploys.html', 'Deployment Points');
-          // $('#tabs').tabs( 'add', 'panel-groups.html', 'Groups');
-        // }
-        // tabsVisible=!tabsVisible;
-      // });
-
-      });
     </script>
-        <script type="text/javascript" src="js/repos.js">
+    <script type="text/javascript" src="js/plugins/localisation/jquery.localisation-min.js"></script>
+    <script type="text/javascript" src="js/plugins/scrollTo/jquery.scrollTo-min.js"></script>
+    <script type="text/javascript" src="js/ui.multiselect.js"></script>
+    <script type="text/javascript" src="js/framework.js">
     </script>
-        <script type="text/javascript" src="js/deploys.js">
+    <script type="text/javascript" src="js/repos.js">
     </script>
-        <script type="text/javascript" src="js/groups.js">
-    </script>
+    <script type="text/javascript" src="js/deploys.js"></script>
+    <script type="text/javascript" src="js/groups.js"></script>
   </head>
   <body>
-    <div id="menus">
-      <div id="main-menu">
-        <h3>Main Menu</h3>
-        <ul>
-        </ul>
-      </div>
+    <div id="notices" style="bgcolor: yellow; color: red">
+      <ul>
+      </ul>
     </div>
     <div id="tabs">
-      <!-- <input type="button" id="tabs-showhide"/> -->
       <ul></ul>
-      <!-- <ul>
-        <li>
-          <a href="#tabs-1">Repositories (Proxies)</a>
-        </li>
-        <li>
-          <a href="#tabs-2">Deployment Points</a>
-        </li>
-        <li>
-          <a href="#tabs-3">Groups</a>
-        </li>
-      </ul> -->
     </div>
   </body>
 </html>
