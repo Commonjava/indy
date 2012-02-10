@@ -15,6 +15,10 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.rest.admin;
 
+import static org.apache.commons.lang.StringUtils.join;
+
+import java.util.List;
+
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -148,10 +152,16 @@ public class DefaultDeployPointAdminResource
     {
         try
         {
-            final Listing<DeployPoint> listing = new Listing<DeployPoint>( proxyManager.getAllDeployPoints() );
+            final List<DeployPoint> deployPoints = proxyManager.getAllDeployPoints();
+            logger.info( "Returning listing containing deploy points:\n\t%s", join( deployPoints, "\n\t" ) );
+
+            final Listing<DeployPoint> listing = new Listing<DeployPoint>( deployPoints );
+
+            final String json = modelSerializer.deployPointListingToString( listing );
+            logger.info( "JSON:\n\n%s", json );
 
             return Response.ok()
-                           .entity( modelSerializer.deployPointListingToString( listing ) )
+                           .entity( json )
                            .build();
         }
         catch ( final ProxyDataException e )

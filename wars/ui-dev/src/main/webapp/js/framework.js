@@ -8,7 +8,7 @@ $(function(){
       collapsible: true,
     });
 });
-    
+
 var panels_loaded = [];
 function addMenuItem(name, id, page) {
   if (!panels_loaded[id]) {
@@ -25,8 +25,12 @@ function notice( id, message ){
   $('#notices ul').append( '<li id="notice-' + id + '">' + message + '</li>' );
 }
 
-function clear_notice( id, message ){
-  $('#notice-' + id).delay(1000).hide( 'slow', function(){
+function clearNotice( id ){
+  clear_notice( id );
+}
+
+function clear_notice( id ){
+  $('#notice-' + id).delay(5000).hide( 'slow', function(){
     $(this).detach();
   });
 }
@@ -51,7 +55,9 @@ function renderRemoteLink(url) {
 function renderApiUrl(parts) {
   var path = '';
   for (var i = 0; i < parts.length; i++) {
+    if ( parts[i] && parts[i] != ''){
       path += '/' + parts[i];
+    }
   }
 
   return api_base + path;
@@ -65,23 +71,46 @@ function renderAdminUrl(type, sub) {
   return renderApiUrl(['admin', type, sub]);
 }
 
-function loadOptions( select_expr, type, name_prefix, name_suffix ){
-  var listUrl = renderAdminUrl( type, 'list' );
-  notice( 'loading-options-' + type, "Loading options from " + listUrl );
-  
-  $.getJSON( listUrl, function(data)
-  {
-    $.each(data.items, function(index, value){
-      $(select_expr).append( '<option name="' + value.key + '">' + name_prefix + ' ' + value.name + ' ' + name_suffix + '</option>' );
-    });
-  })
-  
-  .error( function()
-  {
-    notice( 'loading-options-' + type + '-failed', "Failed to load options of type: " + type );
-    clear_notice( 'loading-options-' + type + '-failed' );
+function loadOptions( select_expr, option_sets ){ // option_sets = [ {type: foo, name_prefix: bar, name_suffix: baz}, ...]
+  var reqs = [];
+  $.each( option_sets, function( i, options ){
+    var listUrl = renderAdminUrl( options.type, 'list' );
+
+    reqs.push(
+      $.getJSON( listUrl, function(data)
+      {
+        notice( 'loading-options-' + options.type, "Loading options of type: " + options.type + " from: " + listUrl + " (suffix: " + options.name_suffix + ")" );
+        
+        var prefix = options.name_prefix ? options.name_prefix : '';
+        var suffix = options.name_suffix ? options.name_suffix : '';
+        
+        $.each(data.items, function(index, value){
+          $(select_expr).append( '<option name="' + value.key + '">' + prefix + ' ' + value.name + ' ' + suffix + '</option>' );
+        });
+        
+        clear_notice( 'loading-options-' + options.type );
+      })
+      .error( function()
+      {
+        notice( 'loading-options-' + options.type + '-failed', "Failed to load options of type: " + options.type );
+        clear_notice( 'loading-options-' + options.type + '-failed' );
+        clear_notice( 'loading-options-' + options.type );
+      })
+    );
   });
   
-  clear_notice( 'loading-options-' + type );
+  return reqs;
+}
+
+function postJSON( url, data, notice ){
+  $.ajax({
+    type: 'POST',
+    accepts: 'application/json',
+    contentType: 'application/json',
+    url: url,
+    data: JSON.stringify( data ),
+  }).done(function(message){
+    clear_notice( notice );
+  });
 }
 

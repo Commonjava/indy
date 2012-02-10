@@ -215,7 +215,7 @@ public class CouchProxyDataManager
         try
         {
             return new ArrayList<DeployPoint>( couch.getViewListing( new ProxyViewRequest( config,
-                                                                                           View.ALL_REPOSITORIES ),
+                                                                                           View.ALL_DEPLOY_POINTS ),
                                                                      DeployPointDoc.class ) );
         }
         catch ( final CouchDBException e )

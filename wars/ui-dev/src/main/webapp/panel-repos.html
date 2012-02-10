@@ -24,7 +24,7 @@
             "bSortable": true,
             "bUseRendered":false,
             "fnRender": function(o,data){return renderAccessLink('repository', data);},
-            "sWidth": "500px",
+            "sClass": "url-cell",
             "mDataProp": "name",
           },
           {
@@ -32,7 +32,7 @@
             "bSortable": true,
             "bUseRendered":false,
             "fnRender": function(o,data){return renderRemoteLink(data);},
-            "sWidth": "500px",
+            "sClass": "url-cell",
             "mDataProp": "url",
           },
           {
@@ -51,11 +51,18 @@
       var name = $('#repo-name').val();
       var url = $('#repo-url').val();
       var timeout = $('#repo-timeout').val();
-      repoTable.fnAddData({
+      
+      var repo = {
         "name": name,
         "url": url,
         "timeout_seconds": timeout,
-      });
+      };
+      
+      notice( 'repo-' + name + '-created', "Saving new repository: " + name );
+      var url = renderAdminUrl( 'repository' );
+      postJSON( url, repo, 'repo-' + name + '-created' );
+      
+      repoTable.fnAddData( repo );
     });
     </script>
   </head>
@@ -82,7 +89,7 @@
             Repository Name: <input type="text" id="repo-name" size="15" />
           </div>
           <div class="form-line">
-            Remote URL: <input type="text" id="repo-url" size="45" />
+            Remote URL: <input type="text" class="url-cell" id="repo-url" size="45" />
           </div>
           <div class="form-line">
             Timeout (seconds): <input type="text" id="repo-timeout" size="3" />

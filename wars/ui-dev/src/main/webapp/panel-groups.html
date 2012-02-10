@@ -12,11 +12,24 @@
         $(this).detach();
       });
       
-      loadOptions( '#group-constituents', 'group', '', '(G)' );
-      loadOptions( '#group-constituents', 'repository', '', '(R)' );
-      loadOptions( '#group-constituents', 'deploy', '', '(D)' );
+      var reqs = loadOptions( '#group-constituents', [
+        {
+          type: 'group', 
+          name_suffix: '(G)'
+        },
+        {
+          type: 'repository',
+          name_suffix: '(R)',
+        },
+        {
+          type: 'deploy',
+          name_suffix: '(D)',
+        },
+      ]);
       
-      $('#group-constituents').multiselect();
+      $.when.apply( $, reqs ).done(function(){
+        $('#group-constituents').multiselect();
+      });
     }
 
     $(document).ready(function()
@@ -40,7 +53,7 @@
             "bSortable": true,
             "bUseRendered":false,
             "fnRender": function(o,data){return renderAccessLink('group', data);},
-            "sWidth": "500px",
+            "sClass": "url-cell",
             "mDataProp": "name",
           },
         ],
@@ -61,10 +74,18 @@
       
       alert( "Got constituents: " + constituents );
       
-      groupTable.fnAddData({
+      var group = {
         "name": name,
         "constituents": constituents,
-      });
+      };
+      
+      notice( 'group-' + name + '-created', "Saving new group: " + name );
+      var url = renderAdminUrl( 'group' );
+      postJSON( url, group, 'group-' + name + '-created' );
+      
+      groupTable.fnAddData( group );
+      
+      reloadGroupConstituents();
     });
     </script>
   </head>

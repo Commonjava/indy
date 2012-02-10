@@ -25,7 +25,7 @@
           "bSortable": true,
           "bUseRendered":false,
           "fnRender": function(o,data){return renderAccessLink('deploy', data);},
-          "sWidth": "500px",
+          "sClass": "url-cell",
           "mDataProp": "name",
         },
       ],
@@ -39,11 +39,20 @@
     var name = $('#deploy-name').val();
     var snaps = $('#deploy-allow-snapshots').val();
     var rels = $('#deploy-allow-releases').val();
-    deployTable.fnAddData({
+    
+    var deploy = {
       "name": name,
       "allow_snapshots": snaps,
       "allow_releases": rels,
-    });
+    };
+    
+    notice( 'deploy-' + name + '-created', "Saving new deploy point: " + name );
+    var url = renderAdminUrl( 'deploy' );
+    postJSON( url, deploy, 'deploy-' + name + '-created' );
+    
+    deployTable.fnAddData(
+      deploy
+    );
   });
   </script>
 </head>

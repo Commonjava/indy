@@ -1,0 +1,40 @@
+/* @override http://localhost:9080/aprox-ui/css/framework.css */
+
+.content-pane-controls{
+	padding: 5px;
+	border: 1px solid lightgray;
+	margin-bottom: 5px;
+}
+
+.existing-listing{
+	width: 90%;
+	padding-right: 10px;
+}
+
+.listing-table{
+	width: 90%;
+	border: 1px solid gray;
+}
+
+.url-cell{
+	min-width: 250px;
+}
+
+.new-item{
+	margin-top: 20px;
+	margin-right: 100px;
+	width: 800px;
+	display: inline-block;
+	border: 1px solid lightgray;
+	padding: 10px;
+}
+
+td, th{
+	padding-left: 3px;
+	padding-right: 3px;
+	padding-top: 3px;
+}
+
+.form-line{
+	padding-bottom: 10px;
+}

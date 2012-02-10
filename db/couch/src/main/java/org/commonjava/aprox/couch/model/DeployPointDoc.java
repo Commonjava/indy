@@ -65,4 +65,11 @@ public class DeployPointDoc
         this.allowReleases = allowReleases;
     }
 
+    @Override
+    public String toString()
+    {
+        return String.format( "DeployPointDoc [id=%s, rev=%s, name=%s, allowSnapshots=%s, allowReleases=%s]",
+                              getCouchDocId(), getCouchDocRev(), getName(), allowSnapshots, allowReleases );
+    }
+
 }
