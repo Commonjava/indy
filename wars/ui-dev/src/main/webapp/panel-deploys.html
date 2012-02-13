@@ -29,6 +29,28 @@
           "mDataProp": "name",
         },
       ],
+      "fnInitComplete": function(oSettings, json) {
+        $('#deploy-panel .listing-table td.editable').editable(function(value,settings){
+          var aPos = deployTable.fnGetPosition( this );
+          
+          // correct for string value of timeout seconds...
+          deployTable.fnUpdate( value, aPos[0], aPos[1] );
+          
+          var data = deployTable.fnGetData( aPos[0] );
+          
+          // correct for string value of timeout seconds...
+          // data.timeout_seconds = parseInt( data.timeout_seconds );
+          var name = data.name;
+          var url = renderAdminUrl( 'deploy', name );
+          notice( 'deploy-' + name + '-saved', "Saving deploy point: " + JSON.stringify(data) + " to: " + url );
+          postJSON( url, data, 'deploy-' + name + '-saved' );
+        },{
+          submit: "Save",
+          cancel: "Cancel",
+          indicator: "Saving...",
+          tooltip: "Click to edit...",
+        });
+      },
     });
     
     clear_notice( 'loading-deploys' );
@@ -90,7 +112,7 @@
             </tr>
           </table>
         </div>
-        <div class="new-item">
+        <div class="edit-item">
           <form target="#add-deploy">
             <div class="form-line">
               Deploy-Point Name: <input type="text" id="deploy-name" size="15" />

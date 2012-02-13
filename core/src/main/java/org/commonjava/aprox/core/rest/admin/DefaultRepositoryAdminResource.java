@@ -116,6 +116,7 @@ public class DefaultRepositoryAdminResource
     public Response store( @PathParam( "name" ) final String name )
     {
         final Repository repository = modelSerializer.repositoryFromRequestBody( request );
+        logger.info( "Storing changes to repository: %s", repository );
 
         ResponseBuilder builder;
         try
@@ -130,9 +131,11 @@ public class DefaultRepositoryAdminResource
                 toUpdate.setUrl( repository.getUrl() );
                 toUpdate.setUser( repository.getUser() );
                 toUpdate.setPassword( repository.getPassword() );
+                toUpdate.setTimeoutSeconds( repository.getTimeoutSeconds() );
             }
 
-            proxyManager.storeRepository( toUpdate );
+            final boolean result = proxyManager.storeRepository( toUpdate, false );
+            logger.info( "Repository: %s updated? %s", repository.getName(), result );
             builder = Response.created( uriInfo.getAbsolutePathBuilder()
                                                .build() );
         }

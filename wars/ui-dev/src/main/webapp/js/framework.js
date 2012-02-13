@@ -114,3 +114,13 @@ function postJSON( url, data, notice ){
   });
 }
 
+function selectRow( row, tableBaseExpr ){
+  if ( !$(row).hasClass('row_selected') ) {
+      $(tableBaseExpr + ' tr.row_selected').removeClass('row_selected');
+      $(row).addClass('row_selected');
+  }
+}
+
+function clearSelectedRow( tableBaseExpr ){
+  $(tableBaseExpr + ' tr.row_selected').removeClass('row_selected');
+}

@@ -3,10 +3,9 @@
   <head>
     <script type="text/javascript">
     var repoTable;
+    
     $(document).ready(function()
     {
-      $("#save-repo").hide();
-      
       var listUrl = renderAdminUrl( 'repository', 'list' );
       notice( 'loading-repos', "Loading " + listUrl );
       repoTable = $("#repo-panel .listing-table").dataTable({
@@ -23,7 +22,7 @@
             "sTitle": "AProx URL",
             "bSortable": true,
             "bUseRendered":false,
-            "fnRender": function(o,data){return renderAccessLink('repository', data);},
+            "fnRender": function(o,data){return renderAccessUrl('repository', data);},
             "sClass": "url-cell",
             "mDataProp": "name",
           },
@@ -31,20 +30,46 @@
             "sTitle": "Remote URL",
             "bSortable": true,
             "bUseRendered":false,
-            "fnRender": function(o,data){return renderRemoteLink(data);},
-            "sClass": "url-cell",
+            // "fnRender": function(o,data){return renderRemoteLink(data);},
+            "sClass": "url-cell editable",
             "mDataProp": "url",
           },
           {
             "sTitle": "Timeout",
-            "mDataProp": "timeout_seconds"
+            "mDataProp": "timeout_seconds",
+            "sClass": "editable",
           },
         ],
+        "fnInitComplete": function(oSettings, json) {
+          $('#repo-panel .listing-table td.editable').editable(function(value,settings){
+            var aPos = repoTable.fnGetPosition( this );
+            repoTable.fnUpdate( value, aPos[0], aPos[1] );
+            
+            var data = repoTable.fnGetData( aPos[0] );
+            
+            // correct for string value of timeout seconds...
+            data.timeout_seconds = parseInt( data.timeout_seconds );
+            var name = data.name;
+            var url = renderAdminUrl( 'repository', name );
+            notice( 'repo-' + name + '-saved', "Saving repository: " + JSON.stringify(data) + " to: " + url );
+            postJSON( url, data, 'repo-' + name + '-saved' );
+          },{
+            submit: "Save",
+            cancel: "Cancel",
+            indicator: "Saving...",
+            tooltip: "Click to edit...",
+          });
+        },
       });
+      
       
       clear_notice( 'loading-repos' );
       
     });
+    
+    // $('#repo-panel .listing-table tbody tr').live('click', function(e){
+    //   selectRow( this, '#repo-panel .listing-table' );
+    // });
     
     $('#create-repo').click(function()
     {
@@ -83,7 +108,7 @@
           </tr>
         </table>
       </div>
-      <div class="new-item">
+      <div class="edit-item">
         <form target="#add-repo">
           <div class="form-line">
             Repository Name: <input type="text" id="repo-name" size="15" />
@@ -96,7 +121,7 @@
           </div>
           <div class="form-line form-controls">
             <input type="button" id="create-repo" value="Create" />
-            <input type="button" id="save-repo" value="Create" />
+            <input type="reset" value="Clear" />
           </div>
         </form>
       </div>

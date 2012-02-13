@@ -73,8 +73,8 @@ public class RepositoryDoc
     @Override
     public String toString()
     {
-        return String.format( "Repository [id='%s', rev='%s', name=%s, remoteUrl=%s]", getCouchDocId(),
-                              getCouchDocRev(), getName(), url );
+        return String.format( "Repository [id='%s', rev='%s', name=%s, remoteUrl=%s, timeoutSeconds=%s]",
+                              getCouchDocId(), getCouchDocRev(), getName(), url, timeoutSeconds );
     }
 
     @Override
