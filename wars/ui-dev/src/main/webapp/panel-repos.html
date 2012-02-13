@@ -2,101 +2,145 @@
 <html>
   <head>
     <script type="text/javascript">
-    var repoTable;
-    
-    $(document).ready(function()
-    {
-      var listUrl = renderAdminUrl( 'repository', 'list' );
-      notice( 'loading-repos', "Loading " + listUrl );
-      repoTable = $("#repo-panel .listing-table").dataTable({
-        "bProcessing": true,
-        "sAjaxSource": listUrl,
-        "sAjaxDataProp": "items",
-        "aoColumns": [
-          {
-            "sTitle": "Repository Name",
-            "bSortable": true,
-            "mDataProp": "name",
-          },
-          {
-            "sTitle": "AProx URL",
-            "bSortable": true,
-            "bUseRendered":false,
-            "fnRender": function(o,data){return renderAccessUrl('repository', data);},
-            "sClass": "url-cell",
-            "mDataProp": "name",
-          },
-          {
-            "sTitle": "Remote URL",
-            "bSortable": true,
-            "bUseRendered":false,
-            // "fnRender": function(o,data){return renderRemoteLink(data);},
-            "sClass": "url-cell editable",
-            "mDataProp": "url",
-          },
-          {
-            "sTitle": "Timeout",
-            "mDataProp": "timeout_seconds",
-            "sClass": "editable",
-          },
-        ],
-        "fnInitComplete": function(oSettings, json) {
-          $('#repo-panel .listing-table td.editable').editable(function(value,settings){
-            var aPos = repoTable.fnGetPosition( this );
-            repoTable.fnUpdate( value, aPos[0], aPos[1] );
-            
-            var data = repoTable.fnGetData( aPos[0] );
-            
-            // correct for string value of timeout seconds...
-            data.timeout_seconds = parseInt( data.timeout_seconds );
-            var name = data.name;
-            var url = renderAdminUrl( 'repository', name );
-            notice( 'repo-' + name + '-saved', "Saving repository: " + JSON.stringify(data) + " to: " + url );
-            postJSON( url, data, 'repo-' + name + '-saved' );
-          },{
-            submit: "Save",
-            cancel: "Cancel",
-            indicator: "Saving...",
-            tooltip: "Click to edit...",
-          });
-        },
-      });
-      
-      
-      clear_notice( 'loading-repos' );
-      
-    });
-    
-    // $('#repo-panel .listing-table tbody tr').live('click', function(e){
-    //   selectRow( this, '#repo-panel .listing-table' );
-    // });
-    
-    $('#create-repo').click(function()
-    {
-      var name = $('#repo-name').val();
-      var url = $('#repo-url').val();
-      var timeout = $('#repo-timeout').val();
-      
-      var repo = {
-        "name": name,
-        "url": url,
-        "timeout_seconds": timeout,
-      };
-      
-      notice( 'repo-' + name + '-created', "Saving new repository: " + name );
-      var url = renderAdminUrl( 'repository' );
-      postJSON( url, repo, 'repo-' + name + '-created' );
-      
-      repoTable.fnAddData( repo );
+    $(function()
+     {
+        var repoTable;
+
+        var listUrl = renderAdminUrl('repository', 'list');
+        notice('loading-repos', "Loading " + listUrl);
+        
+        $('#new-repo').dialog({
+            autoOpen: false,
+            height: 300,
+            width: 450,
+            modal: true,
+            buttons: {
+                "Save": function() {
+                    var name = $('#new-repo-name').val();
+                    var url = $('#new-repo-url').val();
+                    var timeout = $('#new-repo-timeout').val();
+
+                    var repo = {
+                        "name": name,
+                        "url": url,
+                        "timeout_seconds": timeout,
+                    };
+
+                    notice('repo-' + name + '-saved', "Saving repository: " + name);
+                    var url = renderAdminUrl('repository');
+                    postJSON(url, repo, 'repo-' + name + '-saved');
+
+                    repoTable.fnAddData(repo);
+
+                    $(this).dialog('close');
+                },
+                "Cancel": function() {
+                    $(this).dialog('close');
+                },
+            },
+        });
+        
+        $('#edit-repo').dialog({
+            autoOpen: false,
+            height: 300,
+            width: 450,
+            modal: true,
+            close: function(event, ui){
+              clearSelectedRow( repoTable );
+            },
+            buttons: {
+                "Save": function() {
+                    var row = parseInt( $('#editing-row').val() );
+                    var url = $('#edit-url').val();
+                    var timeout = $('#edit-timeout').val();
+
+                    var repo = {
+                        "name": name,
+                        "url": url,
+                        "timeout_seconds": timeout,
+                    };
+
+                    var repo = repoTable.fnGetData(row);
+                    repo.url = url;
+                    repo.timeout_seconds = parseInt( timeout );
+
+                    var name = repo.name;
+                    var url = renderAdminUrl('repository', name);
+                    notice('repo-' + name + '-saved', "Saving repository: " + JSON.stringify(repo) + " to: " + url);
+                    postJSON(url, repo, 'repo-' + name + '-saved');
+
+                    repoTable.fnUpdate(value, row);
+                    
+                    $(this).dialog('close');
+                },
+                "Cancel": function() {
+                    $(this).dialog('close');
+                },
+            },
+        });
+        
+        repoTable = $("#repo-panel .listing-table").dataTable({
+            "bProcessing": true,
+            "sAjaxSource": listUrl,
+            "sAjaxDataProp": "items",
+            "aoColumns": [
+            {
+                "sTitle": "Repository Name",
+                "bSortable": true,
+                "mDataProp": "name",
+            },
+            {
+                "sTitle": "AProx URL",
+                "bSortable": true,
+                "bUseRendered": false,
+                "fnRender": function(o, data) {
+                    return renderAccessUrl('repository', data);
+                },
+                "sClass": "url-cell",
+                "mDataProp": "name",
+            },
+            {
+                "sTitle": "Remote URL",
+                "bSortable": true,
+                "bUseRendered": false,
+                // "fnRender": function(o,data){return renderRemoteLink(data);},
+                "sClass": "url-cell editable",
+                "mDataProp": "url",
+            },
+            {
+                "sTitle": "Timeout",
+                "mDataProp": "timeout_seconds",
+                "sClass": "editable",
+            },
+            ],
+            "fnInitComplete": function(oSettings, json) {
+                $('#repo-panel .listing-table tbody tr').click(function(e){
+                  selectRow( this, repoTable );
+                  var repo = repoTable.fnGetData(this);
+                  var row = repoTable.fnGetPosition( this );
+                  
+                  $('#edit-repo-name').text( repo.name );
+                  $('#edit-repo-url').val( repo.url );
+                  $('#edit-repo-timeout').val( repo.timeout_seconds );
+                  $('#editing-row').val( row[0] );
+                  
+                  $('#edit-repo').dialog( 'open' );
+                });
+            },
+        });
+
+
+        $('#create-repo').click(function()
+        {
+          $('#new-repo').dialog('open');
+        });
+
+        clear_notice('loading-repos');
     });
     </script>
   </head>
   <body>
     <div id="repo-panel" class="content-pane">
-      <div class="content-pane-controls">
-        <input type="button" name="save-repos" value="Save Changes" enabled="false" />
-        <input type="button" name="reset-repos" value="Discard Changes" enabled="false" />
-      </div>
       <div class="existing-listing">
         <table class="listing-table" border="1">
           <tr>
@@ -108,20 +152,33 @@
           </tr>
         </table>
       </div>
-      <div class="edit-item">
-        <form target="#add-repo">
+      <div class="content-pane-controls">
+        <button id="create-repo">Create new repository</button>
+      </div>
+      <div id='new-repo' class="edit-item">
+        <form target="#new-repo">
           <div class="form-line">
-            Repository Name: <input type="text" id="repo-name" size="15" />
+            Repository Name: <input type="text" id="new-repo-name" size="15" />
           </div>
           <div class="form-line">
-            Remote URL: <input type="text" class="url-cell" id="repo-url" size="45" />
+            Remote URL: <input type="text" class="url-cell" id="new-repo-url" size="45" />
           </div>
           <div class="form-line">
-            Timeout (seconds): <input type="text" id="repo-timeout" size="3" />
+            Timeout (seconds): <input type="text" id="new-repo-timeout" size="3" />
           </div>
-          <div class="form-line form-controls">
-            <input type="button" id="create-repo" value="Create" />
-            <input type="reset" value="Clear" />
+        </form>
+      </div>
+      <div id='edit-repo' class="edit-item">
+        <form target="#edit-repo">
+          <input type='hidden' id='editing-repo-row' />
+          <div class="form-line">
+            Repository Name: <span id='edit-repo-name'>[Read Only]</span>
+          </div>
+          <div class="form-line">
+            Remote URL: <input type="text" class="url-cell" id="edit-repo-url" size="45" />
+          </div>
+          <div class="form-line">
+            Timeout (seconds): <input type="text" id="edit-repo-timeout" size="3" />
           </div>
         </form>
       </div>
