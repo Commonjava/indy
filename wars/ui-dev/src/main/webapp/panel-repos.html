@@ -45,39 +45,69 @@
             height: 300,
             width: 450,
             modal: true,
-            close: function(event, ui){
-              clearSelectedRow( repoTable );
-            },
             buttons: {
                 "Save": function() {
-                    var row = parseInt( $('#editing-row').val() );
-                    var url = $('#edit-url').val();
-                    var timeout = $('#edit-timeout').val();
+                  var row = parseInt( $('#editing-repo-row').val() );
+                  var url = $('#edit-repo-url').val();
+                  var timeout = $('#edit-repo-timeout').val();
 
-                    var repo = {
-                        "name": name,
-                        "url": url,
-                        "timeout_seconds": timeout,
-                    };
+                  var repo = repoTable.fnGetData(row);
+                  repo.url = url;
+                  repo.timeout_seconds = parseInt( timeout );
 
-                    var repo = repoTable.fnGetData(row);
-                    repo.url = url;
-                    repo.timeout_seconds = parseInt( timeout );
+                  var name = repo.name;
+                  var url = renderAdminUrl('repository', name);
+                  notice('repo-' + name + '-saved', "Saving repository: " + JSON.stringify(repo) + " to: " + url);
+                  postJSON(url, repo, 'repo-' + name + '-saved');
 
-                    var name = repo.name;
-                    var url = renderAdminUrl('repository', name);
-                    notice('repo-' + name + '-saved', "Saving repository: " + JSON.stringify(repo) + " to: " + url);
-                    postJSON(url, repo, 'repo-' + name + '-saved');
-
-                    repoTable.fnUpdate(value, row);
-                    
-                    $(this).dialog('close');
+                  repoTable.fnUpdate(repo, row);
+                  
+                  clearSelectedRow( repoTable );
+                  $(this).dialog('close');
                 },
                 "Cancel": function() {
-                    $(this).dialog('close');
+                  clearSelectedRow( repoTable );
+                  $(this).dialog('close');
+                },
+                Delete: function(){
+                  var row = $('#editing-repo-row').val();
+                  var repo = repoTable.fnGetData(row);
+
+                  var name = repo.name;
+                  
+                  $('#delete-repo-row').val( row );
+                  $('#delete-repo-name').text( name );
+                  
+                  $(this).dialog('close');
+                  $('#delete-repo').dialog('open');
                 },
             },
         });
+        
+        $('#delete-repo').dialog({
+          autoOpen: false,
+          modal: true,
+          close: function(event, ui){
+            clearSelectedRow( repoTable );
+          },
+          buttons: {
+            Yes: function(){
+              var row = parseInt( $('#delete-repo-row').val() );
+              var repo = repoTable.fnGetData(row);
+              
+              var url = renderAdminUrl('repository', repo.name);
+              notice('repo-' + repo.name + '-deleted', "Deleting repository: " + repo.name + " at: " + url);
+              ajaxDelete( url, 'repo-' + repo.name + "-deleted" );
+              
+              repoTable.fnDeleteRow( row );
+              
+              $(this).dialog('close');
+            },
+            No: function(){
+              $(this).dialog('close');
+            },
+          }
+        })
         
         repoTable = $("#repo-panel .listing-table").dataTable({
             "bProcessing": true,
@@ -114,7 +144,7 @@
             },
             ],
             "fnInitComplete": function(oSettings, json) {
-                $('#repo-panel .listing-table tbody tr').click(function(e){
+                $('#repo-panel .listing-table tr').live('click', function(e){
                   selectRow( this, repoTable );
                   var repo = repoTable.fnGetData(this);
                   var row = repoTable.fnGetPosition( this );
@@ -122,7 +152,7 @@
                   $('#edit-repo-name').text( repo.name );
                   $('#edit-repo-url').val( repo.url );
                   $('#edit-repo-timeout').val( repo.timeout_seconds );
-                  $('#editing-row').val( row[0] );
+                  $('#editing-repo-row').val( row );
                   
                   $('#edit-repo').dialog( 'open' );
                 });
@@ -181,6 +211,12 @@
             Timeout (seconds): <input type="text" id="edit-repo-timeout" size="3" />
           </div>
         </form>
+      </div>
+      <div id='delete-repo' class='delete-dialog'>
+        <input type="hidden" id="delete-repo-row" />
+        <p>
+          Are you sure you want to delete the repository: <span id="delete-repo-name" class="ui-state-highlight">[name]</span>?
+        </p>
       </div>
     </div>
   </body>

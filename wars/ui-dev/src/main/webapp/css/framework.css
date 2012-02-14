@@ -43,3 +43,10 @@ td, th{
 .form-line{
 	padding-bottom: 10px;
 }
+
+.group-constituents{
+  width: 400px;
+  height: 400px;
+  min-width: 350px;
+  min-height: 350px;
+}

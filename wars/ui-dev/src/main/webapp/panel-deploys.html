@@ -2,11 +2,109 @@
 <html>
 <head>
   <script type="text/javascript">
-  var deployTable;
-  
-  $(document).ready(function()
-  {
-    $("#save-deploy").hide();
+  $(function()
+   {
+     var deployTable;
+
+    $('#new-deploy').dialog({
+      autoOpen: false,
+      height: 300,
+      width: 450,
+      modal: true,
+      buttons:{
+        'Create': function(){
+          var name = $('#new-deploy-name').val();
+          var snaps = $('#new-deploy-allow-snapshots').is( ':checked' );
+          var rels = $('#new-deploy-allow-releases').is( ':checked' );
+
+          var deploy = {
+            "name": name,
+            "allow_snapshots": snaps,
+            "allow_releases": rels,
+          };
+
+          notice( 'deploy-' + name + '-created', "Saving new deploy point: " + name );
+          var url = renderAdminUrl( 'deploy' );
+          postJSON( url, deploy, 'deploy-' + name + '-created' );
+
+          deployTable.fnAddData(deploy);
+          
+          $(this).dialog('close');
+        },
+        Cancel: function(){
+          $(this).dialog('close');
+        }
+      },
+    });
+    
+    $('#edit-deploy').dialog({
+      autoOpen: false,
+      height: 300,
+      width: 450,
+      modal: true,
+      buttons: {
+          "Save": function() {
+            var row = parseInt( $('#editing-deploy-row').val() );
+            var snaps = $('#edit-deploy-allow-snapshots').is( ':checked' );
+            var rels = $('#edit-deploy-allow-releases').is( ':checked' );
+            
+            var deploy = deployTable.fnGetData(row);
+            deploy.allow_snapshots = snaps;
+            deploy.allow_releases = rels;
+
+            var name = deploy.name;
+            var url = renderAdminUrl('deploy', name);
+            notice('deploy-' + name + '-saved', "Saving deploy: " + JSON.stringify(deploy) + " to: " + url);
+            postJSON(url, deploy, 'deploy-' + name + '-saved');
+
+            deployTable.fnUpdate(deploy, row);
+            
+            clearSelectedRow( deployTable );
+            $(this).dialog('close');
+          },
+          "Cancel": function() {
+            clearSelectedRow( deployTable );
+            $(this).dialog('close');
+          },
+          Delete: function(){
+            var row = $('#editing-deploy-row').val();
+            var deploy = deployTable.fnGetData(row);
+
+            var name = deploy.name;
+            
+            $('#delete-deploy-row').val( row );
+            $('#delete-deploy-name').text( name );
+            
+            $(this).dialog('close');
+            $('#delete-deploy').dialog('open');
+          },
+      },
+    });
+    
+    $('#delete-deploy').dialog({
+      autoOpen: false,
+      modal: true,
+      close: function(event, ui){
+        clearSelectedRow( deployTable );
+      },
+      buttons: {
+        Yes: function(){
+          var row = parseInt( $('#delete-deploy-row').val() );
+          var deploy = deployTable.fnGetData(row);
+          
+          var url = renderAdminUrl('deploy', deploy.name);
+          notice('deploy-' + deploy.name + '-deleted', "Deleting deploy point: " + deploy.name + " at: " + url);
+          ajaxDelete( url, 'deploy-' + deploy.name + "-deleted" );
+          
+          deployTable.fnDeleteRow( row );
+          
+          $(this).dialog('close');
+        },
+        No: function(){
+          $(this).dialog('close');
+        },
+      }
+    });
     
     var listUrl = renderAdminUrl( 'deploy', 'list' );
     notice( 'loading-deploys', "Loading " + listUrl );
@@ -28,62 +126,44 @@
           "sClass": "url-cell",
           "mDataProp": "name",
         },
+        {
+          "sTitle": "Releases?",
+          "bSortable": true,
+          "mDataProp": "allow_releases",
+        },
+        {
+          "sTitle": "Snapshots?",
+          "bSortable": true,
+          "mDataProp": "allow_snapshots",
+        },
       ],
       "fnInitComplete": function(oSettings, json) {
-        $('#deploy-panel .listing-table td.editable').editable(function(value,settings){
-          var aPos = deployTable.fnGetPosition( this );
+        $('#deploy-panel .listing-table tbody tr').live('click', function(e){
+          selectRow( this, deployTable );
+          var deploy = deployTable.fnGetData(this);
+          var row = deployTable.fnGetPosition( this );
           
-          // correct for string value of timeout seconds...
-          deployTable.fnUpdate( value, aPos[0], aPos[1] );
+          $('#edit-deploy-name').text( deploy.name );
+          $('#edit-deploy-allow-releases').prop( 'checked', deploy.allow_releases );
+          $('#edit-deploy-allow-snapshots').prop( 'checked', deploy.allow_snapshots );
+          $('#editing-deploy-row').val( row );
           
-          var data = deployTable.fnGetData( aPos[0] );
-          
-          // correct for string value of timeout seconds...
-          // data.timeout_seconds = parseInt( data.timeout_seconds );
-          var name = data.name;
-          var url = renderAdminUrl( 'deploy', name );
-          notice( 'deploy-' + name + '-saved', "Saving deploy point: " + JSON.stringify(data) + " to: " + url );
-          postJSON( url, data, 'deploy-' + name + '-saved' );
-        },{
-          submit: "Save",
-          cancel: "Cancel",
-          indicator: "Saving...",
-          tooltip: "Click to edit...",
+          $('#edit-deploy').dialog( 'open' );
         });
       },
     });
     
+    $('#create-deploy').click(function()
+    {
+      $('#new-deploy').dialog('open');
+    });
+    
     clear_notice( 'loading-deploys' );
-  });
-  
-  $('#create-deploy').click(function()
-  {
-    var name = $('#deploy-name').val();
-    var snaps = $('#deploy-allow-snapshots').val();
-    var rels = $('#deploy-allow-releases').val();
-    
-    var deploy = {
-      "name": name,
-      "allow_snapshots": snaps,
-      "allow_releases": rels,
-    };
-    
-    notice( 'deploy-' + name + '-created', "Saving new deploy point: " + name );
-    var url = renderAdminUrl( 'deploy' );
-    postJSON( url, deploy, 'deploy-' + name + '-created' );
-    
-    deployTable.fnAddData(
-      deploy
-    );
   });
   </script>
 </head>
   <body>
       <div id="deploy-panel" class="content-pane">
-        <div class="content-pane-controls">
-          <input type="button" name="save-deploys" value="Save Changes" enabled="false" />
-          <input type="button" name="reset-deploys" value="Discard Changes" enabled="false" />
-        </div>
         <div class="existing-listing">
           <table class="listing-table" border="1">
             <tr>
@@ -112,22 +192,41 @@
             </tr>
           </table>
         </div>
-        <div class="edit-item">
+        <div class="content-pane-controls">
+          <button id="create-deploy">Create new deployment point</button>
+        </div>
+        <div id='new-deploy' class="edit-item">
           <form target="#add-deploy">
             <div class="form-line">
-              Deploy-Point Name: <input type="text" id="deploy-name" size="15" />
+              Deploy-Point Name: <input type="text" id="new-deploy-name" size="15" />
             </div>
             <div class="form-line">
-              <input type="checkbox" id="deploy-allow-releases" /> Allow Releases
+              <input type="checkbox" id="new-deploy-allow-releases" /> Allow Releases
             </div>
             <div class="form-line">
-              <input type="checkbox" id="deploy-allow-snapshots" /> Allow Snapshots
-            </div>
-            <div class="form-line form-controls">
-              <input type="button" id="create-deploy" value="Create" />
-              <input type="button" id="save-deploy" value="Save" />
+              <input type="checkbox" id="new-deploy-allow-snapshots" /> Allow Snapshots
             </div>
           </form>
+        </div>
+        <div id='edit-deploy' class="edit-item">
+          <form target="#add-deploy">
+            <input type='hidden' id='editing-deploy-row' />
+            <div class="form-line">
+              Deploy-Point Name: <span id="edit-deploy-name">[Read Only]</span>
+            </div>
+            <div class="form-line">
+              <input type="checkbox" id="edit-deploy-allow-releases" value="releases" /> Allow Releases
+            </div>
+            <div class="form-line">
+              <input type="checkbox" id="edit-deploy-allow-snapshots" value="snapshots" /> Allow Snapshots
+            </div>
+          </form>
+        </div>
+        <div id='delete-deploy' class='delete-dialog'>
+          <input type="hidden" id="delete-deploy-row" />
+          <p>
+            Are you sure you want to delete the deploy point: <span id="delete-deploy-name" class="ui-state-highlight">[name]</span>?
+          </p>
         </div>
       </div>
   </body>

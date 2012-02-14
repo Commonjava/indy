@@ -5,7 +5,7 @@ var $tabs;
 $(function(){
     $tabs = $('#tabs').tabs({
       // tabTemplate: '<li><a href="#{href}"><span>#{label}</span></a></li>',
-      collapsible: true,
+      // collapsible: true,
     });
 });
 
@@ -30,7 +30,7 @@ function clearNotice( id ){
 }
 
 function clear_notice( id ){
-  $('#notice-' + id).delay(5000).hide( 'slow', function(){
+  $('#notice-' + id).delay(1000).hide( 'slow', function(){
     $(this).detach();
   });
 }
@@ -71,7 +71,18 @@ function renderAdminUrl(type, sub) {
   return renderApiUrl(['admin', type, sub]);
 }
 
-function loadOptions( select_expr, option_sets ){ // option_sets = [ {type: foo, name_prefix: bar, name_suffix: baz}, ...]
+function addOption( select, options ){ // options = {name: something, key: 'repository:something', name_prefix: bar, name_suffix: baz}
+  var prefix = options.name_prefix ? options.name_prefix : '';
+  var suffix = options.name_suffix ? options.name_suffix : '';
+
+  $(select).append( '<option name="' + options.key + '">' + prefix + ' ' + options.name + ' ' + suffix + '</option>' );
+}
+
+function deleteOption( select, key ){
+  $(select).find('option[name="' + key + '"]').detach();
+}
+
+function loadOptions( select, option_sets ){ // option_sets = [ {type: foo, name_prefix: bar, name_suffix: baz}, ...]
   var reqs = [];
   $.each( option_sets, function( i, options ){
     var listUrl = renderAdminUrl( options.type, 'list' );
@@ -79,16 +90,12 @@ function loadOptions( select_expr, option_sets ){ // option_sets = [ {type: foo,
     reqs.push(
       $.getJSON( listUrl, function(data)
       {
-        notice( 'loading-options-' + options.type, "Loading options of type: " + options.type + " from: " + listUrl + " (suffix: " + options.name_suffix + ")" );
-        
         var prefix = options.name_prefix ? options.name_prefix : '';
         var suffix = options.name_suffix ? options.name_suffix : '';
         
         $.each(data.items, function(index, value){
-          $(select_expr).append( '<option name="' + value.key + '">' + prefix + ' ' + value.name + ' ' + suffix + '</option>' );
+          $(select).append( '<option name="' + value.key + '">' + prefix + ' ' + value.name + ' ' + suffix + '</option>' );
         });
-        
-        clear_notice( 'loading-options-' + options.type );
       })
       .error( function()
       {
@@ -103,12 +110,27 @@ function loadOptions( select_expr, option_sets ){ // option_sets = [ {type: foo,
 }
 
 function postJSON( url, data, notice ){
+  ajaxPost( url, data, notice );
+}
+
+function ajaxPost( url, data, notice ){
   $.ajax({
     type: 'POST',
     accepts: 'application/json',
     contentType: 'application/json',
     url: url,
     data: JSON.stringify( data ),
+  }).done(function(message){
+    clear_notice( notice );
+  });
+}
+
+function ajaxDelete( url, notice ){
+  $.ajax({
+    type: 'DELETE',
+    accepts: 'application/json',
+    contentType: 'application/json',
+    url: url,
   }).done(function(message){
     clear_notice( notice );
   });

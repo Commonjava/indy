@@ -216,7 +216,7 @@ public class DefaultDeployPointAdminResource
         ResponseBuilder builder;
         try
         {
-            proxyManager.deleteRepository( name );
+            proxyManager.deleteDeployPoint( name );
             builder = Response.ok();
         }
         catch ( final ProxyDataException e )
