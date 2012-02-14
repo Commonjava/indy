@@ -1,6 +1,5 @@
 var api_base = 'http://localhost:9080/aprox/api/1.0';
 
-var tabsVisible=false;
 var $tabs;
 $(function(){
     $tabs = $('#tabs').tabs({
