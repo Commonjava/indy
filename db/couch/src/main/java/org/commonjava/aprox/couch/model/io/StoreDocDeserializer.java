@@ -23,7 +23,7 @@ import org.commonjava.aprox.couch.model.ArtifactStoreDoc;
 import org.commonjava.aprox.couch.model.DeployPointDoc;
 import org.commonjava.aprox.couch.model.GroupDoc;
 import org.commonjava.aprox.couch.model.RepositoryDoc;
-import org.commonjava.web.common.ser.WebSerializationAdapter;
+import org.commonjava.web.json.ser.WebSerializationAdapter;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;

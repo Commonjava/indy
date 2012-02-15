@@ -2,7 +2,7 @@ package org.commonjava.aprox.core.model;
 
 import java.util.List;
 
-import org.commonjava.web.common.ser.WebSerializationAdapter;
+import org.commonjava.web.json.ser.WebSerializationAdapter;
 
 public interface ModelFactory
     extends WebSerializationAdapter

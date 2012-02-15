@@ -28,7 +28,7 @@ import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.util.logging.helper.JoinString;
-import org.commonjava.web.common.ser.JsonSerializer;
+import org.commonjava.web.json.ser.JsonSerializer;
 
 @Singleton
 public class MemoryProxyDataManager

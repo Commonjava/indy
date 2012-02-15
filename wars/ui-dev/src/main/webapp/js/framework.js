@@ -21,7 +21,7 @@ function addTab(name, page) {
 }
 
 function notice( id, message ){
-  $('#notices ul').append( '<li id="notice-' + id + '">' + message + '</li>' );
+  $('#notices ul').append( '<li class="ui-icon-info" id="notice-' + id + '">' + message + '</li>' );
 }
 
 function clearNotice( id ){
@@ -29,9 +29,9 @@ function clearNotice( id ){
 }
 
 function clear_notice( id ){
-  $('#notice-' + id).delay(1000).hide( 'slow', function(){
-    $(this).detach();
-  });
+  // $('#notice-' + id).delay(1000).hide( 'slow', function(){
+  //   $(this).detach();
+  // });
 }
 
 function renderApiLink(parts) {

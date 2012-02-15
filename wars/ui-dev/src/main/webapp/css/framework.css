@@ -1,5 +1,15 @@
 /* @override http://localhost:9080/aprox-ui/css/framework.css */
 
+.content-pane{
+  min-height: 500px;
+  overflow: scroll;
+}
+
+#notices{
+  min-height: 100px;
+  overflow: scroll;
+}
+
 .row_selected{
   font-weight: bold;
   background-color: lightgray;
@@ -17,8 +27,7 @@
 }
 
 .listing-table{
-	width: 90%;
-	border: 1px solid gray;
+  width: 90%;
 }
 
 .url-cell{

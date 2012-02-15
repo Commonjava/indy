@@ -22,7 +22,7 @@ import static org.junit.Assert.assertThat;
 import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.aprox.core.model.io.StoreKeySerializer;
 import org.commonjava.couch.model.DenormalizationException;
-import org.commonjava.web.common.ser.JsonSerializer;
+import org.commonjava.web.json.ser.JsonSerializer;
 import org.junit.Test;
 
 public class RepositoryDocTest

@@ -30,7 +30,7 @@ import org.commonjava.aprox.core.live.AbstractAProxLiveTest;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.io.StoreKeySerializer;
-import org.commonjava.web.common.model.Listing;
+import org.commonjava.web.json.model.Listing;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;

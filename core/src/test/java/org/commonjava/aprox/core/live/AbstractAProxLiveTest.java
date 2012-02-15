@@ -22,8 +22,8 @@ import javax.inject.Inject;
 import org.commonjava.aprox.core.data.ProxyDataManager;
 import org.commonjava.aprox.core.live.fixture.ProxyConfigProvider;
 import org.commonjava.aprox.core.model.ModelFactory;
+import org.commonjava.web.json.test.WebFixture;
 import org.commonjava.web.test.fixture.TestWarArchiveBuilder;
-import org.commonjava.web.test.fixture.WebFixture;
 import org.junit.Before;
 import org.junit.Rule;
 

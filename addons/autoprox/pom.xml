@@ -32,16 +32,16 @@
       <artifactId>couch-test-harness</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.couch.test</groupId>
-      <artifactId>couch-as7-test-harness</artifactId>
+      <groupId>org.commonjava.qarqas</groupId>
+      <artifactId>qarqas-test-harness</artifactId>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.couch.test</groupId>
-      <artifactId>web-test-harness</artifactId>
+      <groupId>org.commonjava.web</groupId>
+      <artifactId>json-test-harness</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

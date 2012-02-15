@@ -27,7 +27,7 @@ import org.commonjava.couch.conf.CouchDBConfiguration;
 import org.commonjava.couch.conf.DefaultCouchDBConfiguration;
 import org.commonjava.couch.db.CouchManager;
 import org.commonjava.couch.user.web.test.AbstractUserRESTCouchTest;
-import org.commonjava.web.test.fixture.WebFixture;
+import org.commonjava.web.json.test.WebFixture;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;

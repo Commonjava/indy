@@ -9,8 +9,8 @@ import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.model.ModelFactory;
 import org.commonjava.aprox.core.model.Repository;
-import org.commonjava.web.common.model.Listing;
-import org.commonjava.web.common.ser.JsonSerializer;
+import org.commonjava.web.json.model.Listing;
+import org.commonjava.web.json.ser.JsonSerializer;
 
 import com.google.gson.reflect.TypeToken;
 

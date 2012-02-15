@@ -38,7 +38,7 @@ import org.commonjava.aprox.core.data.ProxyDataManager;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.model.io.AProxModelSerializer;
 import org.commonjava.util.logging.Logger;
-import org.commonjava.web.common.model.Listing;
+import org.commonjava.web.json.model.Listing;
 
 @Path( "/admin/group" )
 @RequestScoped

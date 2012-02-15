@@ -102,8 +102,8 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.couch.test</groupId>
-      <artifactId>web-test-harness</artifactId>
+      <groupId>org.commonjava.web</groupId>
+      <artifactId>json-test-harness</artifactId>
     </dependency>
   </dependencies>
   

@@ -63,8 +63,8 @@
     </dependency>
     
     <dependency>
-      <groupId>org.commonjava.couch.web</groupId>
-      <artifactId>web-common</artifactId>
+      <groupId>org.commonjava.web</groupId>
+      <artifactId>json-serialization</artifactId>
     </dependency>
     
     <dependency>
@@ -80,8 +80,8 @@
       <artifactId>couch-test-harness</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.couch.test</groupId>
-      <artifactId>couch-as7-test-harness</artifactId>
+      <groupId>org.commonjava.qarqas</groupId>
+      <artifactId>qarqas-test-harness</artifactId>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
@@ -96,8 +96,8 @@
     	<artifactId>weld-se-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.couch.test</groupId>
-      <artifactId>web-test-harness</artifactId>
+      <groupId>org.commonjava.web</groupId>
+      <artifactId>json-test-harness</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>

@@ -18,7 +18,7 @@ package org.commonjava.aprox.core.model.io;
 import java.lang.reflect.Type;
 
 import org.commonjava.aprox.core.model.StoreKey;
-import org.commonjava.web.common.ser.WebSerializationAdapter;
+import org.commonjava.web.json.ser.WebSerializationAdapter;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;

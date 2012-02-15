@@ -32,7 +32,7 @@ import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.aprox.core.model.io.StoreKeySerializer;
-import org.commonjava.web.common.model.Listing;
+import org.commonjava.web.json.model.Listing;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.jboss.arquillian.container.test.api.Deployment;

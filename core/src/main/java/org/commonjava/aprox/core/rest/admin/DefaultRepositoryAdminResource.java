@@ -42,8 +42,7 @@ import org.commonjava.aprox.core.data.ProxyDataManager;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.io.AProxModelSerializer;
 import org.commonjava.util.logging.Logger;
-import org.commonjava.web.common.model.Listing;
-import org.commonjava.web.common.ser.JsonSerializer;
+import org.commonjava.web.json.model.Listing;
 
 @Path( "/admin/repository" )
 @RequestScoped
@@ -58,9 +57,6 @@ public class DefaultRepositoryAdminResource
 
     @Inject
     private AProxModelSerializer modelSerializer;
-
-    @Inject
-    private JsonSerializer serializer;
 
     @Context
     private UriInfo uriInfo;
@@ -170,7 +166,7 @@ public class DefaultRepositoryAdminResource
             // {
             // }.getType() );
 
-            final String json = serializer.toString( listing );
+            final String json = modelSerializer.repoListingToString( listing );
 
             logger.info( "JSON:\n\n%s", json );
 
