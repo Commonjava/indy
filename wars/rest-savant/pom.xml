@@ -25,7 +25,7 @@
   <artifactId>aprox-rest-savant</artifactId>
   <!-- <packaging>war</packaging> -->
   
-  <name>AProx :: REST Savant (DepBase + AutoProxy Support)</name>
+  <name>AProx :: REST Savant (AutoProxy Support)</name>
   
   <dependencies>
     <dependency>
@@ -39,10 +39,6 @@
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-db-couch</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-depbase</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
@@ -64,22 +60,16 @@
     </plugins>
   </build>
   
-  <!-- <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <artifactId>maven-war-plugin</artifactId>
-          <configuration>
-            <overlays>
-              <overlay>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>aprox-core</artifactId>
-              </overlay>
-            </overlays>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build> -->
+  <profiles>
+    <profile>
+      <id>experimental</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.commonjava.aprox</groupId>
+          <artifactId>aprox-depbase</artifactId>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
   
 </project>
