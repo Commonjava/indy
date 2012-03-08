@@ -23,9 +23,11 @@ import javax.inject.Singleton;
 import org.commonjava.aprox.core.inject.AproxData;
 import org.commonjava.couch.change.CouchChangeListener;
 import org.commonjava.couch.conf.CouchDBConfiguration;
+import org.commonjava.couch.conf.DefaultCouchDBConfiguration;
 import org.commonjava.couch.db.CouchFactory;
 import org.commonjava.couch.db.CouchManager;
 import org.commonjava.couch.io.CouchHttpClient;
+import org.commonjava.shelflife.inject.Shelflife;
 
 @Singleton
 public class CouchAproxDataProviders
@@ -39,6 +41,8 @@ public class CouchAproxDataProviders
     private CouchDBConfiguration config;
 
     private CouchManager couchManager;
+
+    private CouchManager shelflifeCouch;
 
     private CouchHttpClient httpClient;
 
@@ -82,6 +86,19 @@ public class CouchAproxDataProviders
         }
 
         return httpClient;
+    }
+
+    @Produces
+    @Default
+    @Shelflife
+    public synchronized CouchManager getCouch()
+    {
+        if ( shelflifeCouch == null )
+        {
+            shelflifeCouch = factory.getCouchManager( new DefaultCouchDBConfiguration( config, "aprox-shelflife" ) );
+        }
+
+        return shelflifeCouch;
     }
 
 }
