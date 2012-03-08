@@ -271,6 +271,7 @@
                   <descriptorRef>test-war</descriptorRef>
                 </descriptorRefs>
                 <finalName>test</finalName>
+                <attach>false</attach>
                 <appendAssemblyId>false</appendAssemblyId>
               </configuration>
             </execution>
