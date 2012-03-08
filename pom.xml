@@ -276,6 +276,20 @@
             </execution>
           </executions>
         </plugin>
+        <plugin>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>2.2.1</version>
+          <configuration>
+            <autoVersionSubmodules>true</autoVersionSubmodules>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>2.8</version>
+          <configuration>
+            <detectOfflineLinks>false</detectOfflineLinks>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
