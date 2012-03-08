@@ -38,4 +38,12 @@ public interface Repository
 
     void setTimeoutSeconds( final int timeoutSeconds );
 
+    int getCacheTimeoutSeconds();
+
+    void setCacheTimeoutSeconds( final int cacheTimeoutSeconds );
+
+    boolean isCached();
+
+    void setCached( boolean cached );
+
 }

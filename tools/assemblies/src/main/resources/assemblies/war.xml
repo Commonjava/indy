@@ -10,6 +10,10 @@
       <includes>
         <include>org.commonjava*</include>
       </includes>
+      <excludes>
+        <exclude>org.commonjava*:*:war:*</exclude>
+      </excludes>
+      
       <outputDirectory>WEB-INF/classes</outputDirectory>
       <unpack>true</unpack>
       <unpackOptions>
@@ -25,6 +29,22 @@
       </excludes>
       <outputDirectory>WEB-INF/lib</outputDirectory>
       <unpack>false</unpack>
+    </dependencySet>
+    
+    <dependencySet>
+      <includes>
+        <include>org.commonjava*:*:war:*</include>
+      </includes>
+      <outputDirectory>/</outputDirectory>
+      <unpack>true</unpack>
+      <unpackOptions>
+        <excludes>
+          <exclude>WEB-INF/web.xml</exclude>
+          <exclude>WEB-INF/beans.xml</exclude>
+          <exclude>WEB-INF/classes/beans.xml</exclude>
+          <exclude>WEB-INF/classes/log4j.properties</exclude>
+        </excludes>
+      </unpackOptions>
     </dependencySet>
   </dependencySets>
   

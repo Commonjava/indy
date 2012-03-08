@@ -76,7 +76,7 @@ public class DefaultDeployPointAccessResource
         {
             try
             {
-                getFileManager().upload( deploy, path, request.getInputStream() );
+                getFileManager().store( deploy, path, request.getInputStream() );
 
                 response = Response.created( uriInfo.getAbsolutePathBuilder()
                                                     .path( deploy.getName() )

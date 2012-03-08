@@ -15,12 +15,10 @@
  ******************************************************************************/
 package org.commonjava.aprox.depbase.maven;
 
-import java.io.File;
 import java.net.URI;
 import java.util.List;
 
 import org.apache.maven.model.Repository;
-import org.apache.maven.model.building.FileModelSource;
 import org.apache.maven.model.building.ModelSource;
 import org.apache.maven.model.resolution.InvalidRepositoryException;
 import org.apache.maven.model.resolution.ModelResolver;
@@ -28,7 +26,8 @@ import org.apache.maven.model.resolution.UnresolvableModelException;
 import org.codehaus.plexus.component.annotations.Component;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.rest.RESTWorkflowException;
-import org.commonjava.aprox.core.rest.util.FileManager;
+import org.commonjava.aprox.core.rest.StoreInputStream;
+import org.commonjava.aprox.core.rest.util.PathRetriever;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.layout.MavenDefaultLayout;
@@ -41,11 +40,11 @@ public class ArtifactStoreModelResolver
 
     private final RepositoryLayout layout = new MavenDefaultLayout();
 
-    private final FileManager fileManager;
+    private final PathRetriever fileManager;
 
     private final List<ArtifactStore> stores;
 
-    public ArtifactStoreModelResolver( final FileManager fileManager, final List<ArtifactStore> stores )
+    public ArtifactStoreModelResolver( final PathRetriever fileManager, final List<ArtifactStore> stores )
     {
         this.fileManager = fileManager;
         this.stores = stores;
@@ -58,10 +57,10 @@ public class ArtifactStoreModelResolver
         final Artifact a = new DefaultArtifact( groupId, artifactId, "pom", version );
         final URI path = layout.getPath( a );
 
-        File file;
+        StoreInputStream stream;
         try
         {
-            file = fileManager.downloadFirst( stores, path.getPath() );
+            stream = fileManager.retrieveFirst( stores, path.getPath() );
         }
         catch ( final RESTWorkflowException e )
         {
@@ -69,13 +68,13 @@ public class ArtifactStoreModelResolver
                                                   groupId, artifactId, version, e );
         }
 
-        if ( file == null )
+        if ( stream == null )
         {
             throw new UnresolvableModelException( "Cannot find POM in available repositories.", groupId, artifactId,
                                                   version );
         }
 
-        return new FileModelSource( file );
+        return new StoreModelSource( stream );
     }
 
     @Override

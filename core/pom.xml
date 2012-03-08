@@ -104,6 +104,10 @@
       <artifactId>aprox-db-memory</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.shelflife</groupId>
+      <artifactId>shelflife-filer</artifactId>
+    </dependency>
   </dependencies>
   
   <dependencyManagement>

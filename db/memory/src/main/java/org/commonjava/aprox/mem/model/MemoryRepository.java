@@ -46,6 +46,10 @@ public class MemoryRepository
 
     private String password;
 
+    private boolean cached = true;
+
+    private int cacheTimeoutSeconds;
+
     MemoryRepository()
     {
         super( StoreType.repository );
@@ -193,6 +197,30 @@ public class MemoryRepository
     {
         return String.format( "MemoryRepository [url=%s, timeoutSeconds=%s, host=%s, port=%s, user=%s, password=%s, getName()=%s, getKey()=%s]",
                               url, timeoutSeconds, host, port, user, password, getName(), getKey() );
+    }
+
+    @Override
+    public boolean isCached()
+    {
+        return cached;
+    }
+
+    @Override
+    public void setCached( final boolean cached )
+    {
+        this.cached = cached;
+    }
+
+    @Override
+    public int getCacheTimeoutSeconds()
+    {
+        return cacheTimeoutSeconds;
+    }
+
+    @Override
+    public void setCacheTimeoutSeconds( final int cacheTimeoutSeconds )
+    {
+        this.cacheTimeoutSeconds = cacheTimeoutSeconds;
     }
 
 }

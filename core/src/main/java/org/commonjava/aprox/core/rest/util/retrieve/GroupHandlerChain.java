@@ -15,7 +15,6 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.rest.util.retrieve;
 
-import java.io.File;
 import java.io.InputStream;
 import java.util.List;
 
@@ -27,7 +26,8 @@ import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.rest.RESTWorkflowException;
-import org.commonjava.aprox.core.rest.util.FileManager;
+import org.commonjava.aprox.core.rest.StoreInputStream;
+import org.commonjava.aprox.core.rest.util.PathRetriever;
 
 @Singleton
 public class GroupHandlerChain
@@ -37,9 +37,9 @@ public class GroupHandlerChain
     private Instance<GroupPathHandler> handlers;
 
     @Inject
-    private FileManager downloader;
+    private PathRetriever downloader;
 
-    public File retrieve( final Group group, final List<? extends ArtifactStore> stores, final String path )
+    public StoreInputStream retrieve( final Group group, final List<? extends ArtifactStore> stores, final String path )
         throws RESTWorkflowException
     {
         for ( final GroupPathHandler handler : handlers )
@@ -50,7 +50,7 @@ public class GroupHandlerChain
             }
         }
 
-        return downloader.downloadFirst( stores, path );
+        return downloader.retrieveFirst( stores, path );
     }
 
     public DeployPoint store( final Group group, final List<? extends ArtifactStore> stores, final String path,
@@ -65,7 +65,7 @@ public class GroupHandlerChain
             }
         }
 
-        return downloader.upload( stores, path, stream );
+        return downloader.store( stores, path, stream );
     }
 
 }

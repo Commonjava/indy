@@ -9,14 +9,26 @@
   </parent>
   
   <artifactId>aprox-basic</artifactId>
-  <!-- <packaging>war</packaging> -->
 
   <name>AProx :: Basic WAR</name>
   
   <dependencies>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-db-couch</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox.ui</groupId>
+      <artifactId>aprox-ui-jquery-basic</artifactId>
+      <type>war</type>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

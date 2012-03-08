@@ -128,6 +128,7 @@ public class DefaultRepositoryAdminResource
                 toUpdate.setUser( repository.getUser() );
                 toUpdate.setPassword( repository.getPassword() );
                 toUpdate.setTimeoutSeconds( repository.getTimeoutSeconds() );
+                toUpdate.setCacheTimeoutSeconds( repository.getCacheTimeoutSeconds() );
             }
 
             final boolean result = proxyManager.storeRepository( toUpdate, false );

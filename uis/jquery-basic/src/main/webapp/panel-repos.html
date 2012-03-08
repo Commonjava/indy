@@ -1,0 +1,286 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+  <head>
+    <script type="text/javascript">
+    $(document).ready(function()
+     {
+        var repoTable;
+
+        var listUrl = renderAdminUrl('repository', 'list');
+        notice('loading-repos', "Loading " + listUrl);
+        
+        $('#new-repo').dialog({
+          title: "Create Repository",
+            autoOpen: false,
+            height: 300,
+            width: 450,
+            modal: true,
+            buttons: {
+                "Save": function() {
+                    var name = $('#new-repo-name').val();
+                    var url = $('#new-repo-url').val();
+                    var timeout = $('#new-repo-timeout').val();
+                    var isCached = $('#new-repo-cache').is(':checked');
+                    
+                    var cacheTimeout = isCached ? $('#new-repo-cache-timeout').val() : "-1";
+                    cacheTimeout = parseInt(cacheTimeout);
+                    if ( cacheTimeout == 0 ){
+                      cacheTimeout = -1;
+                    }
+
+                    var repo = {
+                        "name": name,
+                        "url": url,
+                        "timeout_seconds": timeout,
+                        "is_cached": isCached,
+                        "cache_timeout_seconds": cacheTimeout,
+                    };
+
+                    notice('repo-' + name + '-saved', "Saving repository: " + name);
+                    var url = renderAdminUrl('repository');
+                    postJSON(url, repo, 'repo-' + name + '-saved');
+
+                    repoTable.fnAddData(repo);
+
+                    $(this).dialog('close');
+                },
+                "Cancel": function() {
+                    $(this).dialog('close');
+                },
+            },
+        });
+        
+        $('#edit-repo').dialog({
+          title: "Edit Repository",
+            autoOpen: false,
+            height: 300,
+            width: 450,
+            modal: true,
+            close: function( evt, ui ){
+              clearSelectedRow( repoTable );
+            },
+            buttons: {
+                "Save": function() {
+                  var row = parseInt( $('#editing-repo-row').val() );
+                  var url = $('#edit-repo-url').val();
+                  var timeout = $('#edit-repo-timeout').val();
+                  var isCached = $('#edit-repo-cache').is(':checked');
+                  
+                  var cacheTimeout = isCached ? $('#edit-repo-cache-timeout').val() : "-1";
+                  
+                  cacheTimeout = parseInt(cacheTimeout);
+                  if ( cacheTimeout == 0 ){
+                    cacheTimeout = -1;
+                  }
+
+                  alert("Cached? " + isCached + "; cache timeout: " + cacheTimeout );
+                  var repo = repoTable.fnGetData(row);
+                  repo.url = url;
+                  repo.timeout_seconds = parseInt( timeout );
+                  repo.is_cached = isCached;
+                  repo.cache_timeout_seconds = cacheTimeout;
+
+                  var name = repo.name;
+                  var url = renderAdminUrl('repository', name);
+                  notice('repo-' + name + '-saved', "Saving repository: " + JSON.stringify(repo) + " to: " + url);
+                  postJSON(url, repo, 'repo-' + name + '-saved');
+
+                  repoTable.fnUpdate(repo, row);
+                  
+                  clearSelectedRow( repoTable );
+                  $(this).dialog('close');
+                },
+                "Cancel": function() {
+                  $(this).dialog('close');
+                },
+                Delete: function(){
+                  var row = $('#editing-repo-row').val();
+                  var repo = repoTable.fnGetData(row);
+
+                  var name = repo.name;
+                  
+                  $('#delete-repo-row').val( row );
+                  $('#delete-repo-name').text( name );
+                  
+                  $(this).dialog('close');
+                  $('#delete-repo').dialog('open');
+                },
+            },
+        });
+        
+        $('#delete-repo').dialog({
+          title: "Delete Repository",
+          autoOpen: false,
+          modal: true,
+          buttons: {
+            Yes: function(){
+              var row = parseInt( $('#delete-repo-row').val() );
+              var repo = repoTable.fnGetData(row);
+              
+              var url = renderAdminUrl('repository', repo.name);
+              notice('repo-' + repo.name + '-deleted', "Deleting repository: " + repo.name + " at: " + url);
+              ajaxDelete( url, 'repo-' + repo.name + "-deleted" );
+              
+              repoTable.fnDeleteRow( row );
+              
+              $(this).dialog('close');
+            },
+            No: function(){
+              $(this).dialog('close');
+            },
+          }
+        })
+        
+        repoTable = $("#repo-panel .listing-table").dataTable({
+            "bProcessing": true,
+            "sAjaxSource": listUrl,
+            "sAjaxDataProp": "items",
+            "aoColumns": [
+            {
+                "sTitle": "Repository Name",
+                "bSortable": true,
+                "mDataProp": "name",
+            },
+            {
+                "sTitle": "AProx URL",
+                "bSortable": true,
+                "bUseRendered": false,
+                "fnRender": function(o, data) {
+                    return renderAccessUrl('repository', data);
+                },
+                "sClass": "url-cell",
+                "mDataProp": "name",
+            },
+            {
+                "sTitle": "Remote URL",
+                "bSortable": true,
+                "bUseRendered": false,
+                // "fnRender": function(o,data){return renderRemoteLink(data);},
+                "sClass": "url-cell editable",
+                "mDataProp": "url",
+            },
+            {
+                "sTitle": "Timeout",
+                "mDataProp": "timeout_seconds",
+                "sClass": "editable",
+            },
+            ],
+            "fnInitComplete": function(oSettings, json) {
+                $('#repo-panel .listing-table tr').live('click', function(e){
+                  selectRow( this, repoTable );
+                  var repo = repoTable.fnGetData(this);
+                  var row = repoTable.fnGetPosition( this );
+                  
+                  $('#edit-repo-name').text( repo.name );
+                  $('#edit-repo-url').val( repo.url );
+                  $('#edit-repo-timeout').val( repo.timeout_seconds );
+                  if( repo.is_cached ){
+                    $('#edit-repo-cache').attr('checked', true);
+                  }
+                  else{
+                    $('#edit-repo-cache').attr('checked', false);
+                    disable($('#edit-repo-cache-timeout'));
+                  }
+                  $('#edit-repo-cache-timeout').val(repo.cache_timeout_seconds);
+
+                  $('#editing-repo-row').val( row );
+                  
+                  $('#edit-repo').dialog( 'open' );
+                });
+            },
+        });
+
+
+        $('#create-repo').click(function()
+        {
+          $('#new-repo-cache').attr('checked', true);
+          $('#new-repo-cache-timeout').attr('disabled',false);
+          $('#new-repo').dialog('open');
+        });
+        
+        $('#new-repo-cache').change(function(){
+          if ( $(this).is(':checked') ){
+            enable( $('#new-repo-cache-timeout') );
+          }
+          else{
+            disable($('#new-repo-cache-timeout'));
+          }
+        });
+
+        $('#edit-repo-cache').change(function(){
+          if ( $(this).is(':checked') ){
+            enable($('#edit-repo-cache-timeout'));
+          }
+          else{
+            disable($('#edit-repo-cache-timeout'));
+          }
+        });
+
+        clear_notice('loading-repos');
+    });
+    </script>
+  </head>
+  <body>
+    <div id="repo-panel" class="content-pane">
+      <div class="existing-listing">
+        <table class="listing-table" border="1">
+          <tr>
+            <th>Repository Name</th>
+            <th>Local URL</th>
+            <th>Remote URL</th>
+            <th>Extra Attributes</th>
+            <th>Controls</th>
+          </tr>
+        </table>
+      </div>
+      <div class="content-pane-controls">
+        <button id="create-repo">Create new repository</button>
+      </div>
+      <div id='new-repo' class="edit-item">
+        <form target="#new-repo">
+          <div class="form-line">
+            Repository Name: <input type="text" id="new-repo-name" size="15" />
+          </div>
+          <div class="form-line">
+            Remote URL: <input type="text" class="url-cell" id="new-repo-url" size="45" />
+          </div>
+          <div class="form-line">
+            Timeout (seconds): <input type="text" id="new-repo-timeout" size="3" />
+          </div>
+          <div class="form-line">
+            <input type="checkbox" id="new-repo-cache" value="cache" checked="true" /> Cache Artifacts?
+          </div>
+          <div class="form-line">
+            Cache Timeout: <input type="text" size="4" id="new-repo-cache-timeout"/>
+          </div>
+        </form>
+      </div>
+      <div id='edit-repo' class="edit-item">
+        <form target="#edit-repo">
+          <input type='hidden' id='editing-repo-row' />
+          <div class="form-line">
+            Repository Name: <span id='edit-repo-name'>[Read Only]</span>
+          </div>
+          <div class="form-line">
+            Remote URL: <input type="text" class="url-cell" id="edit-repo-url" size="45" />
+          </div>
+          <div class="form-line">
+            Timeout (seconds): <input type="text" id="edit-repo-timeout" size="3" />
+          </div>
+        </form>
+        <div class="form-line">
+          <input type="checkbox" id="edit-repo-cache" value="cache" checked="true" /> Cache Artifacts?
+        </div>
+        <div class="form-line">
+          Cache Timeout: <input type="text" size="4" id="edit-repo-cache-timeout"/>
+        </div>
+      </div>
+      <div id='delete-repo' class='delete-dialog'>
+        <input type="hidden" id="delete-repo-row" />
+        <p>
+          Are you sure you want to delete the repository: <span id="delete-repo-name" class="ui-state-highlight">[name]</span>?
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

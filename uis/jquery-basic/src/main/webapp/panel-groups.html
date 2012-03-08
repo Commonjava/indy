@@ -1,0 +1,278 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+  <head>
+    <script type="text/javascript">
+ $(document).ready(function()
+ {
+    var groupTable;
+    var groupSelect = $('<select id="group-constituents-master" class="group-constituents" multiple="multiple"></select>');
+    groupSelect.appendTo( $('group-panel') ).hide();
+    
+    function reloadGroupSelections(){
+      notice( 'group-selections-reloaded', "Reloading group selections." );
+      var reqs = loadOptions( groupSelect, [
+        {
+          type: 'group', 
+          name_suffix: '(G)'
+        },
+        {
+          type: 'repository',
+          name_suffix: '(R)',
+        },
+        {
+          type: 'deploy',
+          name_suffix: '(D)',
+        },
+      ]);
+      
+      $.when.apply( $, reqs ).done(function(){
+        clear_notice( 'group-selections-reloaded' );
+      });
+      
+      return reqs;
+    }
+    
+    function resetGroupMultiselect( id, keys ){
+      var select = $(id);
+      $(select).multiselect('destroy');
+      
+      $(select).html('');
+      $(groupSelect).find('option').clone().appendTo( $(select) );
+      
+      if ( keys ){
+        $(select).find('option').each(function(index){
+          var name = $(this).attr('name');
+          if ( $.inArray( name, keys ) > -1 ){
+            $(this).attr('selected', true);
+          }
+        });
+      }
+      
+      $(select).multiselect();
+    }
+
+    reloadGroupSelections();
+    
+    $('#new-group').dialog({
+      title: "Create Group",
+      autoOpen: false,
+      height: 650,
+      width: 750,
+      modal: true,
+      buttons:{
+        'Create': function(){
+          var name = $('#new-group-name').val();
+          var constituents = [];
+          $("#new-group-constituents option:selected").each(function(){
+            constituents[constituents.length] = $(this).attr('name');
+          });
+
+          var group = {
+            key: 'group:' + name,
+            "name": name,
+            "constituents": constituents,
+          };
+
+          notice( 'group-' + name + '-created', "Saving new group: " + name );
+          var url = renderAdminUrl( 'group' );
+          postJSON( url, group, 'group-' + name + '-created' );
+
+          groupTable.fnAddData( group );
+          addOption( groupSelect, {
+            key: group.key,
+            name: name,
+            name_suffix: '(G)',
+          });
+          
+          $(this).dialog('close');
+        },
+        Cancel: function(){
+          $(this).dialog('close');
+        }
+      },
+    });
+    
+    $('#edit-group').dialog({
+      title: "Edit Group",
+      autoOpen: false,
+      height: 650,
+      width: 750,
+      modal: true,
+      close: function(event, ui){
+        clearSelectedRow( groupTable );
+      },
+      buttons: {
+          "Save": function() {
+            var row = parseInt( $('#editing-group-row').val() );
+            
+            var constituents = [];
+            $("#edit-group-constituents option:selected").each(function(){
+              constituents[constituents.length] = $(this).attr('name');
+            });
+
+            var group = groupTable.fnGetData(row);
+            group.constituents = constituents;
+            
+            var name = group.name;
+
+            var url = renderAdminUrl( 'group', name );
+            notice( 'group-' + name + '-saved', "Saving group: " + name + " to: " + url );
+            postJSON( url, group, 'group-' + name + '-saved' );
+
+            groupTable.fnUpdate( group, row );
+            clearSelectedRow( groupTable );
+
+            $(this).dialog('close');
+          },
+          "Cancel": function() {
+            clearSelectedRow( groupTable );
+            $(this).dialog('close');
+          },
+          Delete: function(){
+            var row = $('#editing-group-row').val();
+            var group = groupTable.fnGetData(row);
+
+            var name = group.name;
+            
+            $('#delete-group-row').val( row );
+            $('#delete-group-name').text( name );
+            
+            $(this).dialog('close');
+            $('#delete-group').dialog('open');
+          },
+      },
+    });
+    
+    $('#delete-group').dialog({
+      title: "Delete Group",
+      autoOpen: false,
+      modal: true,
+      buttons: {
+        Yes: function(){
+          var row = parseInt( $('#delete-group-row').val() );
+          var group = groupTable.fnGetData(row);
+          
+          var url = renderAdminUrl('group', group.name);
+          notice('group-' + group.name + '-deleted', "Deleting group: " + group.name + " at: " + url);
+          ajaxDelete( url, 'group-' + group.name + "-deleted" );
+          
+          groupTable.fnDeleteRow( row );
+          deleteOption( groupSelect, group.key );
+          
+          $(this).dialog('close');
+        },
+        No: function(){
+          $(this).dialog('close');
+        },
+      }
+    });
+    
+    $('#create-group').click(function()
+    {
+      resetGroupMultiselect( $( '#new-group-constituents' ) );
+      $('#new-group').dialog('open');
+    });
+    
+    var listUrl = renderAdminUrl( 'group', 'list' );
+    notice( 'loading-groups', "Loading " + listUrl );
+    groupTable = $("#group-panel .listing-table").dataTable({
+      "bProcessing": true,
+      "sAjaxSource": listUrl,
+      "sAjaxDataProp": "items",
+      "aoColumns": [
+        {
+          "sTitle": "Name",
+          "bSortable": true,
+          "mDataProp": "name",
+        },
+        {
+          "sTitle": "AProx URL",
+          "bSortable": true,
+          "bUseRendered":false,
+          "fnRender": function(o,data){return renderAccessLink('group', data);},
+          "sClass": "url-cell",
+          "mDataProp": "name",
+        },
+      ],
+      "fnInitComplete": function(oSettings, json) {
+        $('#group-panel .listing-table tbody tr').live('click', function(e){
+          selectRow( this, groupTable );
+          var group = groupTable.fnGetData(this);
+          var row = groupTable.fnGetPosition( this );
+          
+          $('#edit-group-name').text( group.name );
+          $('#editing-group-row').val( row );
+          
+          resetGroupMultiselect( $( '#edit-group-constituents' ), group.constituents );
+          
+          $('#edit-group').dialog( 'open' );
+        });
+      },
+    });
+    
+    clear_notice( 'loading-groups' );
+});
+    </script>
+  </head>
+  <body>
+      <div id="group-panel" class="content-pane">
+        <div class="existing-listing">
+          <table class="listing-table" border="1">
+            <tr>
+              <th>Group Name</th>
+              <th>Local URL</th>
+              <th>Extra Attributes</th>
+              <th>Controls</th>
+            </tr>
+            <tr>
+              <td>group-1</td>
+              <td>http://localhost:9080/aprox/api/1.0/group/group-1/</td>
+              <td>[deployable]</td>
+              <td>[del]</td>
+            </tr>
+            <tr>
+              <td>group-2</td>
+              <td>http://localhost:9080/aprox/api/1.0/group/group-2/</td>
+              <td></td>
+              <td>[del]</td>
+            </tr>
+          </table>
+        </div>
+        <div class="content-pane-controls">
+          <button id="create-group">Create new group</button>
+        </div>
+        <div id="new-group" class="edit-item">
+          <form target="#add-group">
+            <div class="form-line">
+              Group Name: <input type="text" id="new-group-name" size="15" />
+            </div>
+            <div class="form-line">
+              Group Constituents:
+              <select style="min-height: 400px; min-width: 400px;" id="new-group-constituents" class="group-constituents" multiple="multiple">
+              </select>
+            </div>
+          </form>
+        </div>
+        <div id="edit-group" class="edit-item">
+          <form target="#add-group">
+            <input type="hidden" id="editing-group-row" />
+            <div class="form-line">
+              Group Name: <span id="edit-group-name">[Read Only]</span>
+            </div>
+            <div class="form-line">
+              Group Constituents:
+              <select style="min-height: 400px; min-width: 400px;" id="edit-group-constituents" class="group-constituents" multiple="multiple">
+              </select>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div id='delete-group' class='delete-dialog'>
+        <input type="hidden" id="delete-group-row" />
+        <p>
+          Are you sure you want to delete the group: <span id="delete-group-name" class="ui-state-highlight">[name]</span>?
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

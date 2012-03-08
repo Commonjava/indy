@@ -20,6 +20,6 @@ import java.io.File;
 public interface ProxyConfiguration
 {
 
-    File getRepositoryRootDirectory();
+    File getStorageRootDirectory();
 
 }

@@ -31,6 +31,9 @@ public class DeployPointDoc
     @SerializedName( "allow_releases" )
     private boolean allowReleases = true;
 
+    @SerializedName( "snapshot_timeout_seconds" )
+    private int snapshotTimeoutSeconds = -1;
+
     DeployPointDoc()
     {
         super( StoreType.deploy_point );
@@ -70,6 +73,18 @@ public class DeployPointDoc
     {
         return String.format( "DeployPointDoc [id=%s, rev=%s, name=%s, allowSnapshots=%s, allowReleases=%s]",
                               getCouchDocId(), getCouchDocRev(), getName(), allowSnapshots, allowReleases );
+    }
+
+    @Override
+    public int getSnapshotTimeoutSeconds()
+    {
+        return snapshotTimeoutSeconds;
+    }
+
+    @Override
+    public void setSnapshotTimeoutSeconds( final int seconds )
+    {
+        this.snapshotTimeoutSeconds = seconds;
     }
 
 }

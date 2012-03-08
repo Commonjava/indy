@@ -15,7 +15,6 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.rest.access;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -38,6 +37,7 @@ import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.rest.RESTWorkflowException;
+import org.commonjava.aprox.core.rest.StoreInputStream;
 import org.commonjava.aprox.core.rest.util.retrieve.GroupHandlerChain;
 import org.commonjava.util.logging.Logger;
 
@@ -101,16 +101,16 @@ public class DefaultGroupAccessResource
             // logger.info( "Download: %s\nFrom: %s", path, stores );
             try
             {
-                final File target = handlerChain.retrieve( group, stores, path );
-                if ( target == null )
+                final StoreInputStream stream = handlerChain.retrieve( group, stores, path );
+                if ( stream == null )
                 {
                     response = Response.status( Status.NOT_FOUND )
                                        .build();
                 }
                 else
                 {
-                    final String mimeType = new MimetypesFileTypeMap().getContentType( target );
-                    response = Response.ok( target, mimeType )
+                    final String mimeType = new MimetypesFileTypeMap().getContentType( stream.getPath() );
+                    response = Response.ok( stream, mimeType )
                                        .build();
                 }
             }

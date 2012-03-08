@@ -17,22 +17,21 @@ package org.commonjava.aprox.core.rest.util;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 
-import java.io.File;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Set;
 
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.commonjava.aprox.core.change.event.FileStorageEvent;
 import org.commonjava.aprox.core.model.Group;
+import org.commonjava.aprox.core.rest.StoreInputStream;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
@@ -43,35 +42,32 @@ public class MavenMetadataMerger
 
     private final Logger logger = new Logger( getClass() );
 
-    @Inject
-    private Event<FileStorageEvent> fileEvent;
-
-    public boolean merge( final Set<File> files, final File target, final Group group,
-                          final String path )
+    public InputStream merge( final Set<StoreInputStream> sources, final Group group, final String path )
     {
-        Metadata master = new Metadata();
-        MetadataXpp3Reader reader = new MetadataXpp3Reader();
-        FileReader fr = null;
+        final Metadata master = new Metadata();
+        final MetadataXpp3Reader reader = new MetadataXpp3Reader();
+        final FileReader fr = null;
 
         boolean merged = false;
-        for ( File file : files )
+        for ( final StoreInputStream src : sources )
         {
             try
             {
-                fr = new FileReader( file );
-                Metadata md = reader.read( fr );
+                final Metadata md = reader.read( src, false );
 
                 master.merge( md );
 
                 merged = true;
             }
-            catch ( IOException e )
+            catch ( final IOException e )
             {
-                logger.error( "Cannot read metadata: %s. Reason: %s", e, file, e.getMessage() );
+                logger.error( "Cannot read metadata: %s from artifact-store: %s. Reason: %s", e, src.getPath(),
+                              src.getStoreKey(), e.getMessage() );
             }
-            catch ( XmlPullParserException e )
+            catch ( final XmlPullParserException e )
             {
-                logger.error( "Cannot parse metadata: %s. Reason: %s", e, file, e.getMessage() );
+                logger.error( "Cannot parse metadata: %s from artifact-store: %s. Reason: %s", e, src.getPath(),
+                              src.getStoreKey(), e.getMessage() );
             }
             finally
             {
@@ -81,34 +77,21 @@ public class MavenMetadataMerger
 
         if ( merged )
         {
-            FileWriter writer = null;
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             try
             {
-                target.getParentFile().mkdirs();
+                new MetadataXpp3Writer().write( baos, master );
 
-                writer = new FileWriter( target );
-                new MetadataXpp3Writer().write( writer, master );
-
-                if ( fileEvent != null )
-                {
-                    fileEvent.fire( new FileStorageEvent( FileStorageEvent.Type.GENERATE, group,
-                                                          path, target ) );
-                }
+                return new ByteArrayInputStream( baos.toByteArray() );
             }
-            catch ( IOException e )
+            catch ( final IOException e )
             {
-                logger.error( "Cannot write consolidated metadata: %s. Reason: %s", e, target,
+                logger.error( "Cannot write consolidated metadata: %s to: %s. Reason: %s", e, path, group.getKey(),
                               e.getMessage() );
             }
-            finally
-            {
-                closeQuietly( writer );
-            }
-
-            return true;
         }
 
-        return false;
+        return null;
     }
 
 }

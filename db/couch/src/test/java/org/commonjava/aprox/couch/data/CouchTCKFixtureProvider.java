@@ -54,7 +54,7 @@ public class CouchTCKFixtureProvider
         final ProxyConfiguration config = new ProxyConfiguration()
         {
             @Override
-            public File getRepositoryRootDirectory()
+            public File getStorageRootDirectory()
             {
                 return repoDir;
             }

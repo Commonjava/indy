@@ -16,8 +16,6 @@
 package org.commonjava.aprox.core.change;
 
 import java.io.File;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.enterprise.event.Observes;
@@ -27,10 +25,9 @@ import javax.inject.Singleton;
 import org.commonjava.aprox.core.change.event.FileStorageEvent;
 import org.commonjava.aprox.core.data.ProxyDataException;
 import org.commonjava.aprox.core.data.ProxyDataManager;
-import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.rest.util.FileManager;
 import org.commonjava.aprox.core.rest.util.MavenMetadataMerger;
+import org.commonjava.aprox.core.rest.util.PathRetriever;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
@@ -42,11 +39,11 @@ public class MavenMetadataUploadListener
     @Inject
     private ProxyDataManager dataManager;
 
-    @Inject
-    private MavenMetadataMerger merger;
+    // @Inject
+    // private MavenMetadataMerger merger;
 
     @Inject
-    private FileManager fileManager;
+    private PathRetriever fileManager;
 
     public void reMergeUploadedMetadata( @Observes final FileStorageEvent event )
     {
@@ -81,36 +78,37 @@ public class MavenMetadataUploadListener
     {
         final File target = fileManager.formatStorageReference( group, path );
 
-        if ( !target.exists() )
+        if ( target.exists() )
         {
-            return;
+            // allow it to regenerate on the next call.
+            target.delete();
         }
 
-        try
-        {
-            final List<? extends ArtifactStore> stores = dataManager.getOrderedConcreteStoresInGroup( group.getName() );
-
-            final Set<File> files = new LinkedHashSet<File>();
-            if ( stores != null )
-            {
-                for ( final ArtifactStore store : stores )
-                {
-                    final File file = fileManager.formatStorageReference( store, path );
-
-                    if ( file.exists() )
-                    {
-                        files.add( file );
-                    }
-                }
-            }
-
-            merger.merge( files, target, group, path );
-        }
-        catch ( final ProxyDataException e )
-        {
-            logger.warn( "Failed to regenerate maven-metadata.xml for groups after deployment to: %s"
-                + "\nCannot retrieve storage locations associated with: %s", e, group.getKey(), e.getMessage() );
-        }
+        // try
+        // {
+        // final List<? extends ArtifactStore> stores = dataManager.getOrderedConcreteStoresInGroup( group.getName() );
+        //
+        // final Set<File> files = new LinkedHashSet<File>();
+        // if ( stores != null )
+        // {
+        // for ( final ArtifactStore store : stores )
+        // {
+        // final File file = fileManager.formatStorageReference( store, path );
+        //
+        // if ( file.exists() )
+        // {
+        // files.add( file );
+        // }
+        // }
+        // }
+        //
+        // merger.merge( files, group, path );
+        // }
+        // catch ( final ProxyDataException e )
+        // {
+        // logger.warn( "Failed to regenerate maven-metadata.xml for groups after deployment to: %s"
+        // + "\nCannot retrieve storage locations associated with: %s", e, group.getKey(), e.getMessage() );
+        // }
     }
 
 }

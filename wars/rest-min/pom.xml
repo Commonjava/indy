@@ -23,7 +23,6 @@
   </parent>
   
   <artifactId>aprox-rest-min</artifactId>
-  <!-- <packaging>war</packaging> -->
   
   <name>AProx :: Minimal REST WAR</name>
   
@@ -55,23 +54,5 @@
       </plugin>
     </plugins>
   </build>
-  
-  <!-- <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <artifactId>maven-war-plugin</artifactId>
-          <configuration>
-            <overlays>
-              <overlay>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>aprox-core</artifactId>
-              </overlay>
-            </overlays>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build> -->
   
 </project>

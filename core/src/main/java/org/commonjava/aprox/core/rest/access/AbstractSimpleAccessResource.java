@@ -15,8 +15,6 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.rest.access;
 
-import java.io.File;
-
 import javax.activation.MimetypesFileTypeMap;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -27,7 +25,8 @@ import javax.ws.rs.core.Response.Status;
 
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.rest.RESTWorkflowException;
-import org.commonjava.aprox.core.rest.util.FileManager;
+import org.commonjava.aprox.core.rest.StoreInputStream;
+import org.commonjava.aprox.core.rest.util.PathRetriever;
 import org.commonjava.util.logging.Logger;
 
 public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
@@ -36,7 +35,7 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private FileManager fileManager;
+    private PathRetriever fileManager;
 
     protected AbstractSimpleAccessResource()
     {
@@ -74,16 +73,16 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
             {
                 try
                 {
-                    final File target = fileManager.download( store, path );
-                    if ( target == null )
+                    final StoreInputStream stream = fileManager.retrieve( store, path );
+                    if ( stream == null )
                     {
                         response = Response.status( Status.NOT_FOUND )
                                            .build();
                     }
                     else
                     {
-                        final String mimeType = new MimetypesFileTypeMap().getContentType( target );
-                        response = Response.ok( target, mimeType )
+                        final String mimeType = new MimetypesFileTypeMap().getContentType( stream.getPath() );
+                        response = Response.ok( stream, mimeType )
                                            .build();
                     }
                 }
@@ -101,7 +100,7 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
     protected abstract T getArtifactStore( String name )
         throws RESTWorkflowException;
 
-    protected FileManager getFileManager()
+    protected PathRetriever getFileManager()
     {
         return fileManager;
     }

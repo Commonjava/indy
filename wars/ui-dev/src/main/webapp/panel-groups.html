@@ -2,7 +2,7 @@
 <html>
   <head>
     <script type="text/javascript">
-$(function()
+ $(document).ready(function()
  {
     var groupTable;
     var groupSelect = $('<select id="group-constituents-master" class="group-constituents" multiple="multiple"></select>');
@@ -101,15 +101,18 @@ $(function()
             var row = parseInt( $('#editing-group-row').val() );
             
             var constituents = [];
-            $("#new-group-constituents option:selected").each(function(){
+            $("#edit-group-constituents option:selected").each(function(){
               constituents[constituents.length] = $(this).attr('name');
             });
 
+            alert( "row: " + row );
             var group = groupTable.fnGetData(row);
             group.constituents = constituents;
+            
+            var name = group.name;
 
-            notice( 'group-' + name + '-saved', "Saving new group: " + name );
             var url = renderAdminUrl( 'group', name );
+            notice( 'group-' + name + '-saved', "Saving group: " + name + " to: " + url );
             postJSON( url, group, 'group-' + name + '-saved' );
 
             groupTable.fnUpdate( group, row );

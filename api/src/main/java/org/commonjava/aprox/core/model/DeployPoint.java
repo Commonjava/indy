@@ -27,4 +27,8 @@ public interface DeployPoint
 
     void setAllowReleases( final boolean allowReleases );
 
+    int getSnapshotTimeoutSeconds();
+
+    void setSnapshotTimeoutSeconds( int seconds );
+
 }

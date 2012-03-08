@@ -41,7 +41,7 @@ import org.commonjava.aprox.core.data.ProxyDataException;
 import org.commonjava.aprox.core.data.ProxyDataManager;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.rest.util.FileManager;
+import org.commonjava.aprox.core.rest.util.PathRetriever;
 import org.commonjava.aprox.depbase.maven.ArtifactStoreModelResolver;
 import org.commonjava.aprox.depbase.maven.ModelVersions;
 import org.commonjava.depbase.data.DepbaseDataException;
@@ -64,7 +64,7 @@ public class DepBaseProxyListener
     private ModelBuilder modelBuilder;
 
     @Inject
-    private FileManager fileManager;
+    private PathRetriever fileManager;
 
     @Inject
     private MavenModelProcessor modelProcessor;

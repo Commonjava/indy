@@ -47,6 +47,12 @@ public class RepositoryDoc
 
     private String password;
 
+    @SerializedName( "is_cached" )
+    private boolean cached = true;
+
+    @SerializedName( "cache_timeout_seconds" )
+    private int cacheTimeoutSeconds;
+
     RepositoryDoc()
     {
         super( StoreType.repository );
@@ -191,6 +197,30 @@ public class RepositoryDoc
     public void setTimeoutSeconds( final int timeoutSeconds )
     {
         this.timeoutSeconds = timeoutSeconds;
+    }
+
+    @Override
+    public boolean isCached()
+    {
+        return cached;
+    }
+
+    @Override
+    public void setCached( final boolean cached )
+    {
+        this.cached = cached;
+    }
+
+    @Override
+    public int getCacheTimeoutSeconds()
+    {
+        return cacheTimeoutSeconds;
+    }
+
+    @Override
+    public void setCacheTimeoutSeconds( final int cacheTimeoutSeconds )
+    {
+        this.cacheTimeoutSeconds = cacheTimeoutSeconds;
     }
 
 }

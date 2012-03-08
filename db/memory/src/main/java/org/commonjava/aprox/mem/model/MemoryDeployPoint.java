@@ -31,6 +31,8 @@ public class MemoryDeployPoint
     @SerializedName( "allow_releases" )
     private boolean allowReleases = true;
 
+    private int snapshotTimeoutSeconds;
+
     public MemoryDeployPoint()
     {
         super( StoreType.deploy_point );
@@ -70,6 +72,18 @@ public class MemoryDeployPoint
     {
         return String.format( "MemoryDeployPoint [allowSnapshots=%s, allowReleases=%s, getName()=%s, getKey()=%s]",
                               allowSnapshots, allowReleases, getName(), getKey() );
+    }
+
+    @Override
+    public int getSnapshotTimeoutSeconds()
+    {
+        return snapshotTimeoutSeconds;
+    }
+
+    @Override
+    public void setSnapshotTimeoutSeconds( final int snapshotTimeoutSeconds )
+    {
+        this.snapshotTimeoutSeconds = snapshotTimeoutSeconds;
     }
 
 }

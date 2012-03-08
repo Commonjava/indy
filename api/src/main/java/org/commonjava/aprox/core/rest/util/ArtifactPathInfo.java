@@ -1,5 +1,8 @@
 package org.commonjava.aprox.core.rest.util;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class ArtifactPathInfo
 {
 
@@ -23,7 +26,7 @@ public class ArtifactPathInfo
         this.version = version;
         this.file = file;
         this.fullPath = fullPath;
-        isSnapshot = version.endsWith( "-SNAPSHOT" );
+        isSnapshot = isSnapshot( fullPath );
     }
 
     public boolean isSnapshot()
@@ -136,6 +139,51 @@ public class ArtifactPathInfo
             return false;
         }
         return true;
+    }
+
+    private static final String UNIQUE_SNAPSHOT_PATTERN =
+        ".+-(\\d\\d\\d\\d\\d\\d\\d\\d\\.\\d\\d\\d\\d\\d\\d)-(\\d+)(\\..+)?";
+
+    private static final String NON_UNIQUE_SNAPSHOT_PATTERN = ".+-SNAPSHOT(\\..+)?";
+
+    public static boolean isSnapshot( final String path )
+    {
+        return path.matches( UNIQUE_SNAPSHOT_PATTERN ) || path.matches( NON_UNIQUE_SNAPSHOT_PATTERN );
+    }
+
+    public static SnapshotInfo parseSnapshotInfo( final String version )
+    {
+        final Matcher matcher = Pattern.compile( UNIQUE_SNAPSHOT_PATTERN )
+                                       .matcher( version );
+        if ( matcher.matches() )
+        {
+            return new SnapshotInfo( matcher.group( 1 ), Integer.parseInt( matcher.group( 2 ) ) );
+        }
+
+        return null;
+    }
+
+    public static final class SnapshotInfo
+    {
+        private final String timestamp;
+
+        private final int buildNumber;
+
+        private SnapshotInfo( final String timestamp, final int buildNumber )
+        {
+            this.timestamp = timestamp;
+            this.buildNumber = buildNumber;
+        }
+
+        public String getTimestamp()
+        {
+            return timestamp;
+        }
+
+        public int getBuildNumber()
+        {
+            return buildNumber;
+        }
     }
 
 }

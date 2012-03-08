@@ -125,6 +125,7 @@ public class DefaultDeployPointAdminResource
             {
                 toUpdate.setAllowReleases( deploy.isAllowReleases() );
                 toUpdate.setAllowSnapshots( deploy.isAllowSnapshots() );
+                toUpdate.setSnapshotTimeoutSeconds( deploy.getSnapshotTimeoutSeconds() );
             }
 
             proxyManager.storeDeployPoint( toUpdate );

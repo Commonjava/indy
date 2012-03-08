@@ -91,9 +91,13 @@ public class MemoryModelFactory
             e = obj.get( "allow_releases" );
             final boolean allowRel = e == null ? true : e.getAsBoolean();
 
+            e = obj.get( "snapshot_timeout_seconds" );
+            final int snapshotTimeout = e == null ? -1 : e.getAsInt();
+
             final MemoryDeployPoint d = new MemoryDeployPoint( name );
             d.setAllowReleases( allowRel );
             d.setAllowSnapshots( allowSnaps );
+            d.setSnapshotTimeoutSeconds( snapshotTimeout );
 
             return d;
         }
@@ -104,8 +108,9 @@ public class MemoryModelFactory
         {
             final JsonObject obj = new JsonObject();
             obj.addProperty( "name", src.getName() );
-            obj.addProperty( "allow_snapshots", Boolean.valueOf( src.isAllowSnapshots() ) );
-            obj.addProperty( "allow_releases", Boolean.valueOf( src.isAllowReleases() ) );
+            obj.addProperty( "allow_snapshots", src.isAllowSnapshots() );
+            obj.addProperty( "allow_releases", src.isAllowReleases() );
+            obj.addProperty( "snapshot_timeout_seconds", src.getSnapshotTimeoutSeconds() );
 
             return obj;
         }
@@ -148,6 +153,12 @@ public class MemoryModelFactory
             e = obj.get( "timeout_seconds" );
             final int timeoutSeconds = e == null ? 0 : e.getAsInt();
 
+            e = obj.get( "is_cached" );
+            final boolean cached = e == null ? true : e.getAsBoolean();
+
+            e = obj.get( "cache_timeout_seconds" );
+            final int cacheTimeoutSeconds = e == null ? 0 : e.getAsInt();
+
             final MemoryRepository r = new MemoryRepository( name );
             r.setHost( host );
             r.setPassword( password );
@@ -155,6 +166,8 @@ public class MemoryModelFactory
             r.setTimeoutSeconds( timeoutSeconds );
             r.setUrl( url );
             r.setUser( user );
+            r.setCached( cached );
+            r.setCacheTimeoutSeconds( cacheTimeoutSeconds );
 
             return r;
         }
@@ -170,6 +183,8 @@ public class MemoryModelFactory
             obj.addProperty( "host", src.getHost() );
             obj.addProperty( "port", src.getPort() );
             obj.addProperty( "timeout_seconds", src.getTimeoutSeconds() );
+            obj.addProperty( "cache_timeout_seconds", src.getCacheTimeoutSeconds() );
+            obj.addProperty( "is_cached", src.isCached() );
 
             return obj;
         }
