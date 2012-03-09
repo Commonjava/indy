@@ -23,6 +23,7 @@ import javax.servlet.annotation.WebListener;
 import org.commonjava.aprox.core.inject.AproxData;
 import org.commonjava.couch.change.CouchChangeListener;
 import org.commonjava.couch.db.CouchDBException;
+import org.commonjava.shelflife.store.couch.CouchStoreListener;
 import org.commonjava.util.logging.Logger;
 
 @WebListener
@@ -36,6 +37,9 @@ public class CouchInstallerListener
     @AproxData
     private CouchChangeListener changeListener;
 
+    @Inject
+    private CouchStoreListener shelflifeListener;
+
     @Override
     public void contextInitialized( final ServletContextEvent sce )
     {
@@ -47,6 +51,8 @@ public class CouchInstallerListener
         {
             throw new RuntimeException( "Failed to start CouchDB changes listener: " + e.getMessage(), e );
         }
+
+        shelflifeListener.initCouch();
 
         logger.info( "...done." );
     }

@@ -95,6 +95,10 @@
       <groupId>org.commonjava.shelflife</groupId>
       <artifactId>shelflife-api</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.shelflife</groupId>
+      <artifactId>shelflife-store-couch</artifactId>
+    </dependency>
   </dependencies>
   
   <build>

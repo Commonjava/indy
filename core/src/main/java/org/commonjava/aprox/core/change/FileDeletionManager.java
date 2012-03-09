@@ -134,21 +134,24 @@ public class FileDeletionManager
         {
             final StoreKey key = new StoreKey( type, name );
             final File dir = pathRetriever.getStoreRootDirectory( key );
-            try
+            if ( dir.exists() && dir.isDirectory() )
             {
-                logger.info( "[STORE REMOVED; DELETE] %s", dir );
-                forceDelete( dir );
-                expirationManager.cancelAll( new PrefixMatcher( APROX_EVENT, APROX_FILE_EVENT, type.name(), name ) );
-            }
-            catch ( final IOException e )
-            {
-                logger.error( "Failed to delete storage for deleted artifact store: %s (dir: %s). Error: %s", e, key,
-                              dir, e.getMessage() );
-            }
-            catch ( final ExpirationManagerException e )
-            {
-                logger.error( "Failed to cancel file expirations for deleted artifact store: %s (dir: %s). Error: %s",
-                              e, key, dir, e.getMessage() );
+                try
+                {
+                    logger.info( "[STORE REMOVED; DELETE] %s", dir );
+                    forceDelete( dir );
+                    expirationManager.cancelAll( new PrefixMatcher( APROX_EVENT, APROX_FILE_EVENT, type.name(), name ) );
+                }
+                catch ( final IOException e )
+                {
+                    logger.error( "Failed to delete storage for deleted artifact store: %s (dir: %s). Error: %s", e,
+                                  key, dir, e.getMessage() );
+                }
+                catch ( final ExpirationManagerException e )
+                {
+                    logger.error( "Failed to cancel file expirations for deleted artifact store: %s (dir: %s). Error: %s",
+                                  e, key, dir, e.getMessage() );
+                }
             }
         }
     }
