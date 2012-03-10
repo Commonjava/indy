@@ -2,12 +2,18 @@ package org.commonjava.aprox.core.change;
 
 import static org.apache.commons.io.FileUtils.forceDelete;
 import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.commonjava.aprox.core.change.sl.ExpirationConstants.APROX_EVENT;
+import static org.commonjava.aprox.core.change.sl.ExpirationConstants.APROX_FILE_EVENT;
+import static org.commonjava.aprox.core.change.sl.ExpirationConstants.NON_CACHED_TIMEOUT;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -22,9 +28,15 @@ import org.apache.maven.artifact.repository.metadata.Snapshot;
 import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.commonjava.aprox.core.change.event.ArtifactStoreUpdateEvent;
 import org.commonjava.aprox.core.change.event.FileStorageEvent;
 import org.commonjava.aprox.core.change.event.FileStorageEvent.Type;
 import org.commonjava.aprox.core.change.event.ProxyManagerDeleteEvent;
+import org.commonjava.aprox.core.change.event.ProxyManagerUpdateType;
+import org.commonjava.aprox.core.change.sl.LoggingMatcher;
+import org.commonjava.aprox.core.change.sl.MaxTimeoutMatcher;
+import org.commonjava.aprox.core.change.sl.SnapshotFilter;
+import org.commonjava.aprox.core.change.sl.StoreMatcher;
 import org.commonjava.aprox.core.data.ProxyDataException;
 import org.commonjava.aprox.core.data.ProxyDataManager;
 import org.commonjava.aprox.core.model.ArtifactStore;
@@ -40,7 +52,7 @@ import org.commonjava.shelflife.expire.ExpirationEvent;
 import org.commonjava.shelflife.expire.ExpirationEventType;
 import org.commonjava.shelflife.expire.ExpirationManager;
 import org.commonjava.shelflife.expire.ExpirationManagerException;
-import org.commonjava.shelflife.expire.match.PrefixMatcher;
+import org.commonjava.shelflife.expire.match.AndMatcher;
 import org.commonjava.shelflife.model.Expiration;
 import org.commonjava.shelflife.model.ExpirationKey;
 import org.commonjava.util.logging.Logger;
@@ -50,13 +62,6 @@ public class FileDeletionManager
 {
 
     private final Logger logger = new Logger( getClass() );
-
-    public static final String APROX_EVENT = "aprox";
-
-    public static final String APROX_FILE_EVENT = "file";
-
-    private static final PrefixMatcher APROX_FILE_EXPIRATION_MATCHER =
-        new PrefixMatcher( APROX_EVENT, APROX_FILE_EVENT );
 
     @Inject
     private ExpirationManager expirationManager;
@@ -90,6 +95,8 @@ public class FileDeletionManager
                     logger.error( "Failed to delete expired file: %s. Reason: %s", e, toDelete.getAbsolutePath(),
                                   e.getMessage() );
                 }
+
+                cleanMetadata( key, path );
             }
 
             if ( ArtifactPathInfo.isSnapshot( path ) )
@@ -107,13 +114,17 @@ public class FileDeletionManager
         {
             case UPLOAD:
             {
-                cleanMetadata( event );
+                cleanMetadata( event.getStore()
+                                    .getKey(), event.getPath() );
+
                 setSnapshotTimeouts( event );
                 break;
             }
             case DOWNLOAD:
             {
-                cleanMetadata( event );
+                cleanMetadata( event.getStore()
+                                    .getKey(), event.getPath() );
+
                 setProxyTimeouts( event );
                 break;
             }
@@ -123,6 +134,164 @@ public class FileDeletionManager
             }
         }
 
+    }
+
+    public void onStoreUpdate( @Observes final ArtifactStoreUpdateEvent event )
+    {
+        final ProxyManagerUpdateType eventType = event.getType();
+        if ( eventType == ProxyManagerUpdateType.ADD_OR_UPDATE )
+        {
+            for ( final ArtifactStore store : event )
+            {
+                final StoreKey key = store.getKey();
+                final StoreType type = key.getType();
+                if ( type == StoreType.deploy_point )
+                {
+                    logger.info( "[ADJUST TIMEOUTS] Adjusting snapshot expirations in: %s", store.getKey() );
+                    rescheduleSnapshotTimeouts( (DeployPoint) store );
+                }
+                else if ( type == StoreType.repository )
+                {
+                    logger.info( "[ADJUST TIMEOUTS] Adjusting proxied-file expirations in: %s", store.getKey() );
+                    rescheduleProxyTimeouts( (Repository) store );
+                }
+            }
+        }
+    }
+
+    private void rescheduleSnapshotTimeouts( final DeployPoint deploy )
+    {
+        long timeout = -1;
+        if ( deploy.isAllowSnapshots() && deploy.getSnapshotTimeoutSeconds() > 0 )
+        {
+            timeout = deploy.getSnapshotTimeoutSeconds() * 1000;
+        }
+
+        if ( timeout > 0 )
+        {
+            final LoggingMatcher matcher = cancelAboveTimeoutForStore( deploy, timeout );
+
+            final Set<String> allFiles = listAllFiles( deploy, new SnapshotFilter() );
+            if ( matcher != null )
+            {
+                for ( final Expiration exp : matcher.getNonMatching() )
+                {
+                    allFiles.remove( exp.getData() );
+                }
+            }
+
+            for ( final String path : allFiles )
+            {
+                try
+                {
+                    expirationManager.schedule( createAproxFileExpiration( deploy, path, timeout ) );
+                }
+                catch ( final ExpirationManagerException e )
+                {
+                    logger.error( "Failed to schedule expiration of: %s in %s. Reason: %s", e, path, deploy.getKey(),
+                                  e.getMessage() );
+                    break;
+                }
+            }
+        }
+    }
+
+    private void rescheduleProxyTimeouts( final Repository repo )
+    {
+        long timeout = -1;
+        if ( repo.isCached() && repo.getCacheTimeoutSeconds() > 0 )
+        {
+            timeout = repo.getCacheTimeoutSeconds() * 1000;
+        }
+        else if ( !repo.isCached() )
+        {
+            timeout = NON_CACHED_TIMEOUT;
+        }
+
+        if ( timeout > 0 )
+        {
+            final LoggingMatcher matcher = cancelAboveTimeoutForStore( repo, timeout );
+
+            final Set<String> allFiles = listAllFiles( repo );
+            if ( matcher != null )
+            {
+                for ( final Expiration exp : matcher.getNonMatching() )
+                {
+                    allFiles.remove( exp.getData() );
+                }
+            }
+
+            for ( final String path : allFiles )
+            {
+                try
+                {
+                    expirationManager.schedule( createAproxFileExpiration( repo, path, timeout ) );
+                }
+                catch ( final ExpirationManagerException e )
+                {
+                    logger.error( "Failed to schedule expiration of: %s in %s. Reason: %s", e, path, repo.getKey(),
+                                  e.getMessage() );
+                    break;
+                }
+            }
+        }
+    }
+
+    private Set<String> listAllFiles( final ArtifactStore store )
+    {
+        return listAllFiles( store, null );
+    }
+
+    private Set<String> listAllFiles( final ArtifactStore store, final FilenameFilter filter )
+    {
+        final File storeRoot = pathRetriever.getStoreRootDirectory( store.getKey() );
+        final Set<String> paths = new HashSet<String>();
+        listAll( storeRoot, "", paths, filter );
+
+        return paths;
+    }
+
+    private void listAll( final File dir, final String parentPath, final Set<String> capturedFiles,
+                          final FilenameFilter filter )
+    {
+        final String[] files = dir.list();
+        for ( final String file : files )
+        {
+            if ( filter == null || filter.accept( dir, file ) )
+            {
+                final File f = new File( dir, file );
+
+                final String childPath = new File( parentPath, file ).getPath();
+                if ( f.isDirectory() )
+                {
+                    listAll( f, childPath, capturedFiles, filter );
+                }
+                else
+                {
+                    capturedFiles.add( childPath );
+                }
+            }
+        }
+    }
+
+    private LoggingMatcher cancelAboveTimeoutForStore( final ArtifactStore store, final long timeout )
+    {
+        final StoreKey key = store.getKey();
+        try
+        {
+            final LoggingMatcher matcher = new LoggingMatcher( new MaxTimeoutMatcher( timeout ) );
+
+            expirationManager.cancelAll( new AndMatcher( new StoreMatcher( key ), matcher ) );
+
+            return matcher;
+        }
+        catch ( final ExpirationManagerException e )
+        {
+            logger.error( "Failed to cancel (for purposes of rescheduling) expirations for store: %s. Reason: %s", e,
+                          key, e.getMessage() );
+        }
+
+        return null;
     }
 
     public void onStoreDeletion( @Observes final ProxyManagerDeleteEvent event )
@@ -140,7 +309,7 @@ public class FileDeletionManager
                 {
                     logger.info( "[STORE REMOVED; DELETE] %s", dir );
                     forceDelete( dir );
-                    expirationManager.cancelAll( new PrefixMatcher( APROX_EVENT, APROX_FILE_EVENT, type.name(), name ) );
+                    expirationManager.cancelAll( new StoreMatcher( key ) );
                 }
                 catch ( final IOException e )
                 {
@@ -161,13 +330,7 @@ public class FileDeletionManager
         final Repository repo = (Repository) event.getStore();
         final String path = event.getPath();
 
-        // FIXME: Configurable timeout for "non-cached" files.
-        //
-        // Even non-cached files need to be cached for a short period, to avoid thrashing connections to the remote
-        // proxy target.
-        //
-        // Therefore, non-cached really means cached with a very short timeout.
-        long timeout = 5000;
+        long timeout = NON_CACHED_TIMEOUT;
         if ( repo.isCached() )
         {
             timeout = repo.getCacheTimeoutSeconds() * 1000;
@@ -175,6 +338,7 @@ public class FileDeletionManager
 
         if ( timeout > 0 )
         {
+            logger.info( "[PROXY TIMEOUT SET] %s/%s; %s", repo.getKey(), path, new Date( timeout ) );
             try
             {
                 expirationManager.schedule( createAproxFileExpiration( repo, path, timeout ) );
@@ -195,6 +359,7 @@ public class FileDeletionManager
         if ( ArtifactPathInfo.isSnapshot( path ) && deploy.getSnapshotTimeoutSeconds() > 0 )
         {
             final long timeout = deploy.getSnapshotTimeoutSeconds() * 1000;
+            logger.info( "[SNAPSHOT TIMEOUT SET] %s/%s; %s", deploy.getKey(), path, new Date( timeout ) );
             try
             {
                 expirationManager.schedule( createAproxFileExpiration( deploy, path, timeout ) );
@@ -207,18 +372,16 @@ public class FileDeletionManager
         }
     }
 
-    private void cleanMetadata( final FileStorageEvent event )
+    private void cleanMetadata( final StoreKey key, final String path )
     {
-        final ArtifactStore store = event.getStore();
-        final String path = event.getStorageLocation();
-
         if ( path.endsWith( "maven-metadata.xml" ) )
         {
             try
             {
-                final Set<Group> groups = dataManager.getGroupsContaining( store.getKey() );
+                final Set<Group> groups = dataManager.getGroupsContaining( key );
                 for ( final Group group : groups )
                 {
+                    logger.info( "[CLEAN] Cleaning metadata path: %s in group: %s", path, group.getName() );
                     final File md = pathRetriever.formatStorageReference( group, path );
                     if ( md.exists() )
                     {
@@ -229,7 +392,7 @@ public class FileDeletionManager
             catch ( final ProxyDataException e )
             {
                 logger.error( "Attempting to update groups for metadata change; Failed to retrieve groups containing store: %s. Error: %s",
-                              e, store.getKey(), e.getMessage() );
+                              e, key, e.getMessage() );
             }
         }
     }
@@ -259,7 +422,7 @@ public class FileDeletionManager
 
     private boolean isAproxFileExpirationEvent( final ExpirationEvent event )
     {
-        return APROX_FILE_EXPIRATION_MATCHER.matches( event.getExpiration() );
+        return new StoreMatcher().matches( event.getExpiration() );
     }
 
     private void updateSnapshotVersions( final StoreKey key, final String path )
@@ -277,6 +440,7 @@ public class FileDeletionManager
                                          .getParentFile(), "maven-metadata.xml" );
         if ( metadata.exists() )
         {
+            logger.info( "[UPDATE VERSIONS] Updating snapshot versions for path: %s in store: %s", path, key.getName() );
             FileReader reader = null;
             FileWriter writer = null;
             try

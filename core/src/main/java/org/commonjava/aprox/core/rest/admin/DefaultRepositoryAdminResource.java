@@ -128,6 +128,7 @@ public class DefaultRepositoryAdminResource
                 toUpdate.setUser( repository.getUser() );
                 toUpdate.setPassword( repository.getPassword() );
                 toUpdate.setTimeoutSeconds( repository.getTimeoutSeconds() );
+                toUpdate.setCached( repository.isCached() );
                 toUpdate.setCacheTimeoutSeconds( repository.getCacheTimeoutSeconds() );
             }
 
