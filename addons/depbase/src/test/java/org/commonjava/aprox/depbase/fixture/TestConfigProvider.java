@@ -21,8 +21,8 @@ import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
 
-import org.commonjava.aprox.core.conf.DefaultProxyConfiguration;
-import org.commonjava.aprox.core.conf.ProxyConfiguration;
+import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
+import org.commonjava.aprox.core.conf.AproxConfiguration;
 import org.commonjava.aprox.core.inject.AproxData;
 import org.commonjava.couch.conf.CouchDBConfiguration;
 import org.commonjava.couch.conf.DefaultCouchDBConfiguration;
@@ -34,7 +34,7 @@ public class TestConfigProvider
 
     public static final String REPO_ROOT_DIR = "repo.root.dir";
 
-    private DefaultProxyConfiguration config;
+    private DefaultAproxConfiguration config;
 
     private DefaultCouchDBConfiguration depbaseConfig;
 
@@ -66,12 +66,12 @@ public class TestConfigProvider
 
     @Produces
     @Default
-    public synchronized ProxyConfiguration getProxyConfiguration()
+    public synchronized AproxConfiguration getProxyConfiguration()
     {
         if ( config == null )
         {
             config =
-                new DefaultProxyConfiguration( new File( System.getProperty( REPO_ROOT_DIR, "target/repo-downloads" ) ) );
+                new DefaultAproxConfiguration( new File( System.getProperty( REPO_ROOT_DIR, "target/repo-downloads" ) ) );
         }
 
         return config;

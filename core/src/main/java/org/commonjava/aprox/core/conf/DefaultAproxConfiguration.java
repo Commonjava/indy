@@ -20,6 +20,7 @@ import java.io.File;
 import javax.enterprise.inject.Alternative;
 import javax.inject.Named;
 
+import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.ConfigNames;
 import org.commonjava.web.config.annotation.SectionName;
 import org.commonjava.web.config.section.ConfigurationSectionListener;
@@ -27,20 +28,24 @@ import org.commonjava.web.config.section.ConfigurationSectionListener;
 @SectionName( ConfigurationSectionListener.DEFAULT_SECTION )
 @Alternative
 @Named( "unused" )
-public class DefaultProxyConfiguration
-    implements ProxyConfiguration
+public class DefaultAproxConfiguration
+    implements AproxConfiguration
 {
 
-    protected static final File DEFAULT_STORAGE_ROOT_DIR = new File( "/var/lib/artifact-proxy/repositories" );
+    public static final File DEFAULT_STORAGE_ROOT_DIR = new File( "/var/lib/artifact-proxy/repositories" );
+
+    public static final int DEFAULT_PASSTHROUGH_TIMEOUT_SECONDS = 300;
 
     private File storageRootDirectory = DEFAULT_STORAGE_ROOT_DIR;
 
-    public DefaultProxyConfiguration()
+    private int passthroughTimeoutSeconds = DEFAULT_PASSTHROUGH_TIMEOUT_SECONDS;
+
+    public DefaultAproxConfiguration()
     {
     }
 
     @ConfigNames( "storage.dir" )
-    public DefaultProxyConfiguration( final File repoRootDir )
+    public DefaultAproxConfiguration( final File repoRootDir )
     {
         this.storageRootDirectory = repoRootDir;
     }
@@ -54,6 +59,18 @@ public class DefaultProxyConfiguration
     public void setStorageRootDirectory( final File repositoryRootDirectory )
     {
         this.storageRootDirectory = repositoryRootDirectory;
+    }
+
+    @Override
+    public int getPassthroughTimeoutSeconds()
+    {
+        return passthroughTimeoutSeconds;
+    }
+
+    @ConfigName( "passthrough.timeout" )
+    public void setPassthroughTimeoutSeconds( final int seconds )
+    {
+        passthroughTimeoutSeconds = seconds;
     }
 
 }

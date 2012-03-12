@@ -166,7 +166,7 @@ public class MemoryModelFactory
             r.setTimeoutSeconds( timeoutSeconds );
             r.setUrl( url );
             r.setUser( user );
-            r.setCached( cached );
+            r.setPassthrough( cached );
             r.setCacheTimeoutSeconds( cacheTimeoutSeconds );
 
             return r;
@@ -184,7 +184,7 @@ public class MemoryModelFactory
             obj.addProperty( "port", src.getPort() );
             obj.addProperty( "timeout_seconds", src.getTimeoutSeconds() );
             obj.addProperty( "cache_timeout_seconds", src.getCacheTimeoutSeconds() );
-            obj.addProperty( "is_cached", src.isCached() );
+            obj.addProperty( "is_passthrough", src.isPassthrough() );
 
             return obj;
         }

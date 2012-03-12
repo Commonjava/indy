@@ -20,9 +20,9 @@
                     var name = $('#new-repo-name').val();
                     var url = $('#new-repo-url').val();
                     var timeout = $('#new-repo-timeout').val();
-                    var isCached = $('#new-repo-cache').is(':checked');
+                    var isPassthrough = !$('#new-repo-cache').is(':checked');
                     
-                    var cacheTimeout = isCached ? $('#new-repo-cache-timeout').val() : "-1";
+                    var cacheTimeout = !isPassthrough ? $('#new-repo-cache-timeout').val() : "-1";
                     cacheTimeout = parseInt(cacheTimeout);
                     if ( cacheTimeout == 0 ){
                       cacheTimeout = -1;
@@ -32,7 +32,7 @@
                         "name": name,
                         "url": url,
                         "timeout_seconds": timeout,
-                        "is_cached": isCached,
+                        "is_passthrough": isPassthrough,
                         "cache_timeout_seconds": cacheTimeout,
                     };
 
@@ -64,20 +64,19 @@
                   var row = parseInt( $('#editing-repo-row').val() );
                   var url = $('#edit-repo-url').val();
                   var timeout = $('#edit-repo-timeout').val();
-                  var isCached = $('#edit-repo-cache').is(':checked');
+                  var isPassthrough = !$('#edit-repo-cache').is(':checked');
                   
-                  var cacheTimeout = isCached ? $('#edit-repo-cache-timeout').val() : "-1";
+                  var cacheTimeout = !isPassthrough ? $('#edit-repo-cache-timeout').val() : "-1";
                   
                   cacheTimeout = parseInt(cacheTimeout);
                   if ( cacheTimeout == 0 ){
                     cacheTimeout = -1;
                   }
 
-                  alert("Cached? " + isCached + "; cache timeout: " + cacheTimeout );
                   var repo = repoTable.fnGetData(row);
                   repo.url = url;
                   repo.timeout_seconds = parseInt( timeout );
-                  repo.is_cached = isCached;
+                  repo.is_passthrough = isPassthrough;
                   repo.cache_timeout_seconds = cacheTimeout;
 
                   var name = repo.name;
@@ -174,12 +173,12 @@
                   $('#edit-repo-name').text( repo.name );
                   $('#edit-repo-url').val( repo.url );
                   $('#edit-repo-timeout').val( repo.timeout_seconds );
-                  if( repo.is_cached ){
-                    $('#edit-repo-cache').attr('checked', true);
-                  }
-                  else{
+                  if( repo.is_passthrough ){
                     $('#edit-repo-cache').attr('checked', false);
                     disable($('#edit-repo-cache-timeout'));
+                  }
+                  else{
+                    $('#edit-repo-cache').attr('checked', true);
                   }
                   $('#edit-repo-cache-timeout').val(repo.cache_timeout_seconds);
 

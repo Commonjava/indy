@@ -26,7 +26,7 @@ import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.rest.RESTWorkflowException;
 import org.commonjava.aprox.core.rest.StoreInputStream;
 
-public interface PathRetriever
+public interface FileManager
 {
 
     StoreInputStream retrieveFirst( final List<? extends ArtifactStore> stores, final String path )

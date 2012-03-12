@@ -50,7 +50,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.commonjava.aprox.core.change.event.FileStorageEvent;
-import org.commonjava.aprox.core.conf.ProxyConfiguration;
+import org.commonjava.aprox.core.conf.AproxConfiguration;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Repository;
@@ -60,14 +60,14 @@ import org.commonjava.aprox.core.rest.StoreInputStream;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
-public class DefaultPathRetriever
-    implements PathRetriever
+public class DefaultFileManager
+    implements FileManager
 {
 
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private ProxyConfiguration config;
+    private AproxConfiguration config;
 
     @Inject
     private Event<FileStorageEvent> fileEvent;
@@ -78,11 +78,11 @@ public class DefaultPathRetriever
 
     private TLRepositoryCredentialsProvider credProvider;
 
-    public DefaultPathRetriever()
+    public DefaultFileManager()
     {
     }
 
-    public DefaultPathRetriever( final ProxyConfiguration config )
+    public DefaultFileManager( final AproxConfiguration config )
     {
         this.config = config;
         setup();

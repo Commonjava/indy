@@ -29,7 +29,7 @@ import org.commonjava.aprox.core.live.AbstractAProxLiveTest;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.rest.StoreInputStream;
-import org.commonjava.aprox.core.rest.util.PathRetriever;
+import org.commonjava.aprox.core.rest.util.FileManager;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -48,7 +48,7 @@ public class PathRetrieverLiveTest
     }
 
     @Inject
-    private PathRetriever downloader;
+    private FileManager downloader;
 
     @Test
     public void downloadOnePOMFromSingleRepository()

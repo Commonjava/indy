@@ -13,26 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package org.commonjava.aprox.couch.data;
+package org.commonjava.aprox.core.conf;
 
-import org.commonjava.aprox.core.conf.ProxyConfiguration;
-import org.commonjava.aprox.couch.data.ProxyAppDescription.View;
-import org.commonjava.couch.db.model.ViewRequest;
+import java.io.File;
 
-public class ProxyViewRequest
-    extends ViewRequest
+public interface AproxConfiguration
 {
 
-    public ProxyViewRequest( final ProxyConfiguration config, final View view )
-    {
-        super( ProxyAppDescription.APP_NAME, view.viewName() );
-        setParameter( INCLUDE_DOCS, true );
-    }
+    File getStorageRootDirectory();
 
-    public ProxyViewRequest( final ProxyConfiguration config, final View view, final String key )
-    {
-        this( config, view );
-        setParameter( KEY, key );
-    }
+    int getPassthroughTimeoutSeconds();
 
 }

@@ -32,18 +32,18 @@ import org.commonjava.web.config.DefaultConfigurationListener;
 import org.commonjava.web.config.dotconf.DotConfConfigurationReader;
 
 @Singleton
-public class ProxyConfigurationFactory
+public class AproxConfigurationFactory
     extends DefaultConfigurationListener
 {
 
     private static final String CONFIG_PATH = "/etc/aprox/main.conf";
 
-    private DefaultProxyConfiguration proxyConfig;
+    private DefaultAproxConfiguration proxyConfig;
 
-    public ProxyConfigurationFactory()
+    public AproxConfigurationFactory()
         throws ConfigurationException
     {
-        super( DefaultProxyConfiguration.class );
+        super( DefaultAproxConfiguration.class );
     }
 
     @PostConstruct
@@ -70,7 +70,7 @@ public class ProxyConfigurationFactory
     @Produces
     @Production
     @Default
-    public ProxyConfiguration getProxyConfiguration()
+    public AproxConfiguration getProxyConfiguration()
     {
         return proxyConfig;
     }
@@ -79,7 +79,7 @@ public class ProxyConfigurationFactory
     public void configurationComplete()
         throws ConfigurationException
     {
-        proxyConfig = getConfiguration( DefaultProxyConfiguration.class );
+        proxyConfig = getConfiguration( DefaultAproxConfiguration.class );
     }
 
 }

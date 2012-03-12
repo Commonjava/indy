@@ -22,7 +22,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.commonjava.aprox.autoprox.conf.AutoProxConfiguration;
 import org.commonjava.aprox.core.data.ProxyDataException;
-import org.commonjava.aprox.core.data.ProxyDataManager;
+import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.model.ModelFactory;
@@ -32,7 +32,7 @@ import org.commonjava.util.logging.Logger;
 
 @Decorator
 public abstract class AutoProxDataManagerDecorator
-    implements ProxyDataManager
+    implements StoreDataManager
 {
 
     private static final int MAX_CONNECTIONS = 20;
@@ -42,7 +42,7 @@ public abstract class AutoProxDataManagerDecorator
     @Delegate
     @Any
     @Inject
-    private ProxyDataManager dataManager;
+    private StoreDataManager dataManager;
 
     @Inject
     private AutoProxConfiguration config;

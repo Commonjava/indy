@@ -32,9 +32,9 @@ import javax.inject.Singleton;
 import org.commonjava.aprox.core.change.event.ArtifactStoreUpdateEvent;
 import org.commonjava.aprox.core.change.event.ProxyManagerDeleteEvent;
 import org.commonjava.aprox.core.change.event.ProxyManagerUpdateType;
-import org.commonjava.aprox.core.conf.ProxyConfiguration;
+import org.commonjava.aprox.core.conf.AproxConfiguration;
 import org.commonjava.aprox.core.data.ProxyDataException;
-import org.commonjava.aprox.core.data.ProxyDataManager;
+import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.inject.AproxData;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
@@ -44,7 +44,7 @@ import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.aprox.core.model.io.StoreKeySerializer;
-import org.commonjava.aprox.couch.data.ProxyAppDescription.View;
+import org.commonjava.aprox.couch.data.AproxAppDescription.View;
 import org.commonjava.aprox.couch.model.ArtifactStoreDoc;
 import org.commonjava.aprox.couch.model.DeployPointDoc;
 import org.commonjava.aprox.couch.model.GroupDoc;
@@ -59,8 +59,8 @@ import org.commonjava.couch.model.CouchDocRef;
 import org.commonjava.couch.util.JoinString;
 
 @Singleton
-public class CouchProxyDataManager
-    implements ProxyDataManager
+public class CouchStoreDataManager
+    implements StoreDataManager
 {
     // private final Logger logger = new Logger( getClass() );
 
@@ -69,7 +69,7 @@ public class CouchProxyDataManager
     private CouchManager couch;
 
     @Inject
-    private ProxyConfiguration config;
+    private AproxConfiguration config;
 
     @Inject
     @AproxData
@@ -87,11 +87,11 @@ public class CouchProxyDataManager
     @Inject
     private ModelFactory modelFactory;
 
-    public CouchProxyDataManager()
+    public CouchStoreDataManager()
     {
     }
 
-    public CouchProxyDataManager( final ProxyConfiguration config, final CouchDBConfiguration couchConfig,
+    public CouchStoreDataManager( final AproxConfiguration config, final CouchDBConfiguration couchConfig,
                                   final CouchManager couch, final Serializer serializer, final ModelFactory modelFactory )
     {
         this.config = config;
@@ -175,7 +175,7 @@ public class CouchProxyDataManager
     {
         try
         {
-            return new ArrayList<Group>( couch.getViewListing( new ProxyViewRequest( config, View.ALL_GROUPS ),
+            return new ArrayList<Group>( couch.getViewListing( new AproxViewRequest( config, View.ALL_GROUPS ),
                                                                GroupDoc.class ) );
         }
         catch ( final CouchDBException e )
@@ -195,7 +195,7 @@ public class CouchProxyDataManager
         try
         {
             return new ArrayList<Repository>(
-                                              couch.getViewListing( new ProxyViewRequest( config, View.ALL_REPOSITORIES ),
+                                              couch.getViewListing( new AproxViewRequest( config, View.ALL_REPOSITORIES ),
                                                                     RepositoryDoc.class ) );
         }
         catch ( final CouchDBException e )
@@ -214,7 +214,7 @@ public class CouchProxyDataManager
     {
         try
         {
-            return new ArrayList<DeployPoint>( couch.getViewListing( new ProxyViewRequest( config,
+            return new ArrayList<DeployPoint>( couch.getViewListing( new AproxViewRequest( config,
                                                                                            View.ALL_DEPLOY_POINTS ),
                                                                      DeployPointDoc.class ) );
         }
@@ -254,7 +254,7 @@ public class CouchProxyDataManager
             {
                 // logger.info( "Grabbing constituents of: '%s'", group );
 
-                final ProxyViewRequest req = new ProxyViewRequest( config, View.GROUP_STORES );
+                final AproxViewRequest req = new AproxViewRequest( config, View.GROUP_STORES );
                 req.setFullRangeForBaseKey( group );
 
                 final List<ArtifactStoreDoc> stores = couch.getViewListing( req, ArtifactStoreDoc.class );
@@ -302,7 +302,7 @@ public class CouchProxyDataManager
     {
         try
         {
-            final ProxyViewRequest req = new ProxyViewRequest( config, View.STORE_GROUPS, repo.toString() );
+            final AproxViewRequest req = new AproxViewRequest( config, View.STORE_GROUPS, repo.toString() );
 
             final List<? extends Group> groups = couch.getViewListing( req, GroupDoc.class );
 
@@ -646,8 +646,8 @@ public class CouchProxyDataManager
     public void install()
         throws ProxyDataException
     {
-        final ProxyAppDescription description = new ProxyAppDescription();
-        final CouchApp app = new CouchApp( ProxyAppDescription.APP_NAME, description );
+        final AproxAppDescription description = new AproxAppDescription();
+        final CouchApp app = new CouchApp( AproxAppDescription.APP_NAME, description );
 
         try
         {

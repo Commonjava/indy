@@ -21,8 +21,8 @@ import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
 
-import org.commonjava.aprox.core.conf.DefaultProxyConfiguration;
-import org.commonjava.aprox.core.conf.ProxyConfiguration;
+import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
+import org.commonjava.aprox.core.conf.AproxConfiguration;
 import org.commonjava.auth.couch.conf.DefaultUserManagerConfig;
 import org.commonjava.auth.couch.conf.UserManagerConfiguration;
 import org.commonjava.auth.couch.inject.UserData;
@@ -38,7 +38,7 @@ public class ProxyConfigProvider
 
     public static final String USER_DATABASE_URL = "user.db.url";
 
-    private DefaultProxyConfiguration config;
+    private DefaultAproxConfiguration config;
 
     private UserManagerConfiguration umConfig;
 
@@ -69,12 +69,12 @@ public class ProxyConfigProvider
     @Produces
     // @TestData
     @Default
-    public synchronized ProxyConfiguration getProxyConfiguration()
+    public synchronized AproxConfiguration getProxyConfiguration()
     {
         if ( config == null )
         {
             config =
-                new DefaultProxyConfiguration( new File( System.getProperty( REPO_ROOT_DIR, "target/repo-downloads" ) ) );
+                new DefaultAproxConfiguration( new File( System.getProperty( REPO_ROOT_DIR, "target/repo-downloads" ) ) );
         }
 
         return config;

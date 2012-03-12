@@ -23,7 +23,7 @@ import javax.inject.Singleton;
 
 import org.commonjava.aprox.core.change.event.ProxyManagerDeleteEvent;
 import org.commonjava.aprox.core.data.ProxyDataException;
-import org.commonjava.aprox.core.data.ProxyDataManager;
+import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
@@ -37,7 +37,7 @@ public class GroupConsistencyListener
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private ProxyDataManager proxyDataManager;
+    private StoreDataManager proxyDataManager;
 
     private final ChangeSynchronizer changeSync = new ChangeSynchronizer();
 

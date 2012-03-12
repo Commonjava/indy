@@ -21,7 +21,7 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
 import org.commonjava.aprox.core.data.ProxyDataException;
-import org.commonjava.aprox.core.data.ProxyDataManager;
+import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.model.ModelFactory;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
@@ -35,7 +35,7 @@ public class InstallerListener
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private ProxyDataManager dataManager;
+    private StoreDataManager dataManager;
 
     @Inject
     private ModelFactory modelFactory;

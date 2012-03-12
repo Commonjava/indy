@@ -2,8 +2,8 @@ package org.commonjava.aprox.couch.data;
 
 import java.io.File;
 
-import org.commonjava.aprox.core.conf.ProxyConfiguration;
-import org.commonjava.aprox.core.data.ProxyDataManager;
+import org.commonjava.aprox.core.conf.AproxConfiguration;
+import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.data.TCKFixtureProvider;
 import org.commonjava.aprox.core.model.ModelFactory;
 import org.commonjava.aprox.couch.model.CouchModelFactory;
@@ -22,14 +22,14 @@ public class CouchTCKFixtureProvider
 {
     private static final String DB_URL = "http://localhost:5984/test-aprox-db";
 
-    private CouchProxyDataManager dataManager;
+    private CouchStoreDataManager dataManager;
 
     private CouchManager couch;
 
     private CouchModelFactory modelFactory;
 
     @Override
-    public ProxyDataManager getDataManager()
+    public StoreDataManager getDataManager()
     {
         return dataManager;
     }
@@ -51,12 +51,18 @@ public class CouchTCKFixtureProvider
         final Serializer serializer = new Serializer();
 
         final File repoDir = newFolder( "repo" );
-        final ProxyConfiguration config = new ProxyConfiguration()
+        final AproxConfiguration config = new AproxConfiguration()
         {
             @Override
             public File getStorageRootDirectory()
             {
                 return repoDir;
+            }
+
+            @Override
+            public int getPassthroughTimeoutSeconds()
+            {
+                return 500;
             }
         };
 
@@ -64,7 +70,7 @@ public class CouchTCKFixtureProvider
         final CouchHttpClient couchClient = new CouchHttpClient( couchConfig, serializer );
 
         couch = new CouchManager( couchConfig, couchClient, serializer, new CouchAppReader() );
-        dataManager = new CouchProxyDataManager( config, couchConfig, couch, serializer, modelFactory );
+        dataManager = new CouchStoreDataManager( config, couchConfig, couch, serializer, modelFactory );
 
         dataManager.install();
     }

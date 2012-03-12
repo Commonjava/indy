@@ -19,7 +19,7 @@ import java.io.File;
 
 import javax.inject.Inject;
 
-import org.commonjava.aprox.core.data.ProxyDataManager;
+import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.live.fixture.ProxyConfigProvider;
 import org.commonjava.aprox.core.model.ModelFactory;
 import org.commonjava.web.json.test.WebFixture;
@@ -31,7 +31,7 @@ public class AbstractAProxLiveTest
 {
 
     @Inject
-    protected ProxyDataManager proxyManager;
+    protected StoreDataManager proxyManager;
 
     @Inject
     protected ModelFactory modelFactory;

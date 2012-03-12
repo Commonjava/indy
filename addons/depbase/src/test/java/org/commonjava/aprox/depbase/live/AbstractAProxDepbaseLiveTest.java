@@ -22,7 +22,7 @@ import java.io.IOException;
 
 import javax.inject.Inject;
 
-import org.commonjava.aprox.core.data.ProxyDataManager;
+import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.model.ModelFactory;
 import org.commonjava.aprox.depbase.fixture.TestConfigProvider;
 import org.commonjava.depbase.data.DepbaseDataManager;
@@ -40,7 +40,7 @@ public class AbstractAProxDepbaseLiveTest
     private static File repoRoot;
 
     @Inject
-    protected ProxyDataManager proxyManager;
+    protected StoreDataManager proxyManager;
 
     @Inject
     protected ModelFactory modelFactory;

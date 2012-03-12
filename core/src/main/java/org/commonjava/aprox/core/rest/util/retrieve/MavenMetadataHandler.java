@@ -40,7 +40,7 @@ import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.rest.RESTWorkflowException;
 import org.commonjava.aprox.core.rest.StoreInputStream;
 import org.commonjava.aprox.core.rest.util.MavenMetadataMerger;
-import org.commonjava.aprox.core.rest.util.PathRetriever;
+import org.commonjava.aprox.core.rest.util.FileManager;
 
 @Singleton
 public class MavenMetadataHandler
@@ -48,7 +48,7 @@ public class MavenMetadataHandler
 {
 
     @Inject
-    private PathRetriever fileManager;
+    private FileManager fileManager;
 
     @Inject
     private MavenMetadataMerger merger;

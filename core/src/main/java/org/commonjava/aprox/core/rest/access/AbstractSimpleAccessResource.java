@@ -26,7 +26,7 @@ import javax.ws.rs.core.Response.Status;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.rest.RESTWorkflowException;
 import org.commonjava.aprox.core.rest.StoreInputStream;
-import org.commonjava.aprox.core.rest.util.PathRetriever;
+import org.commonjava.aprox.core.rest.util.FileManager;
 import org.commonjava.util.logging.Logger;
 
 public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
@@ -35,7 +35,7 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private PathRetriever fileManager;
+    private FileManager fileManager;
 
     protected AbstractSimpleAccessResource()
     {
@@ -100,7 +100,7 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
     protected abstract T getArtifactStore( String name )
         throws RESTWorkflowException;
 
-    protected PathRetriever getFileManager()
+    protected FileManager getFileManager()
     {
         return fileManager;
     }

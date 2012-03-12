@@ -18,7 +18,7 @@ import org.commonjava.aprox.core.change.event.ArtifactStoreUpdateEvent;
 import org.commonjava.aprox.core.change.event.ProxyManagerDeleteEvent;
 import org.commonjava.aprox.core.change.event.ProxyManagerUpdateType;
 import org.commonjava.aprox.core.data.ProxyDataException;
-import org.commonjava.aprox.core.data.ProxyDataManager;
+import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
@@ -31,8 +31,8 @@ import org.commonjava.util.logging.helper.JoinString;
 import org.commonjava.web.json.ser.JsonSerializer;
 
 @Singleton
-public class MemoryProxyDataManager
-    implements ProxyDataManager
+public class MemoryStoreDataManager
+    implements StoreDataManager
 {
 
     private final Map<StoreKey, ArtifactStore> stores = new HashMap<StoreKey, ArtifactStore>();
@@ -51,11 +51,11 @@ public class MemoryProxyDataManager
     @Inject
     private Event<ProxyManagerDeleteEvent> delEvent;
 
-    public MemoryProxyDataManager()
+    public MemoryStoreDataManager()
     {
     }
 
-    public MemoryProxyDataManager( final ModelFactory modelFactory, final JsonSerializer serializer )
+    public MemoryStoreDataManager( final ModelFactory modelFactory, final JsonSerializer serializer )
     {
         this.modelFactory = modelFactory;
         this.serializer = serializer;

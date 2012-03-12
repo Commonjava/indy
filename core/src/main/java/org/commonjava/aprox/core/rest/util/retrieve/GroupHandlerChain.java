@@ -27,7 +27,7 @@ import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.rest.RESTWorkflowException;
 import org.commonjava.aprox.core.rest.StoreInputStream;
-import org.commonjava.aprox.core.rest.util.PathRetriever;
+import org.commonjava.aprox.core.rest.util.FileManager;
 
 @Singleton
 public class GroupHandlerChain
@@ -37,7 +37,7 @@ public class GroupHandlerChain
     private Instance<GroupPathHandler> handlers;
 
     @Inject
-    private PathRetriever downloader;
+    private FileManager downloader;
 
     public StoreInputStream retrieve( final Group group, final List<? extends ArtifactStore> stores, final String path )
         throws RESTWorkflowException

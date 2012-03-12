@@ -27,7 +27,7 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.rest.RESTWorkflowException;
 import org.commonjava.aprox.core.rest.StoreInputStream;
-import org.commonjava.aprox.core.rest.util.PathRetriever;
+import org.commonjava.aprox.core.rest.util.FileManager;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.layout.MavenDefaultLayout;
@@ -40,11 +40,11 @@ public class ArtifactStoreModelResolver
 
     private final RepositoryLayout layout = new MavenDefaultLayout();
 
-    private final PathRetriever fileManager;
+    private final FileManager fileManager;
 
     private final List<ArtifactStore> stores;
 
-    public ArtifactStoreModelResolver( final PathRetriever fileManager, final List<ArtifactStore> stores )
+    public ArtifactStoreModelResolver( final FileManager fileManager, final List<ArtifactStore> stores )
     {
         this.fileManager = fileManager;
         this.stores = stores;

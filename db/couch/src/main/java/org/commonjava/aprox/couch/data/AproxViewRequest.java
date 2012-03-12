@@ -13,13 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package org.commonjava.aprox.core.conf;
+package org.commonjava.aprox.couch.data;
 
-import java.io.File;
+import org.commonjava.aprox.core.conf.AproxConfiguration;
+import org.commonjava.aprox.couch.data.AproxAppDescription.View;
+import org.commonjava.couch.db.model.ViewRequest;
 
-public interface ProxyConfiguration
+public class AproxViewRequest
+    extends ViewRequest
 {
 
-    File getStorageRootDirectory();
+    public AproxViewRequest( final AproxConfiguration config, final View view )
+    {
+        super( AproxAppDescription.APP_NAME, view.viewName() );
+        setParameter( INCLUDE_DOCS, true );
+    }
+
+    public AproxViewRequest( final AproxConfiguration config, final View view, final String key )
+    {
+        this( config, view );
+        setParameter( KEY, key );
+    }
 
 }

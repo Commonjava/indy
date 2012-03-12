@@ -52,7 +52,7 @@ public abstract class GroupDataManagerTCK
     public void seedRepositoriesForGroupTests()
         throws ProxyDataException
     {
-        final ProxyDataManager manager = getFixtureProvider().getDataManager();
+        final StoreDataManager manager = getFixtureProvider().getDataManager();
         final ModelFactory factory = getFixtureProvider().getModelFactory();
 
         manager.storeRepository( factory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" ) );
@@ -64,7 +64,7 @@ public abstract class GroupDataManagerTCK
     public void createAndRetrieveEmptyGroup()
         throws ProxyDataException
     {
-        final ProxyDataManager manager = getFixtureProvider().getDataManager();
+        final StoreDataManager manager = getFixtureProvider().getDataManager();
         final ModelFactory factory = getFixtureProvider().getModelFactory();
 
         final Group grp = factory.createGroup( "test" );
@@ -95,7 +95,7 @@ public abstract class GroupDataManagerTCK
     public void createAndDeleteGroup_ByName()
         throws ProxyDataException
     {
-        final ProxyDataManager manager = getFixtureProvider().getDataManager();
+        final StoreDataManager manager = getFixtureProvider().getDataManager();
         final ModelFactory factory = getFixtureProvider().getModelFactory();
 
         final Group grp = factory.createGroup( "test" );
@@ -113,7 +113,7 @@ public abstract class GroupDataManagerTCK
     public void createAndDeleteGroup_ByObject()
         throws ProxyDataException
     {
-        final ProxyDataManager manager = getFixtureProvider().getDataManager();
+        final StoreDataManager manager = getFixtureProvider().getDataManager();
         final ModelFactory factory = getFixtureProvider().getModelFactory();
 
         final Group grp = factory.createGroup( "test" );
@@ -131,7 +131,7 @@ public abstract class GroupDataManagerTCK
     public void createAndRetrieveGroupWithTwoConstituents()
         throws ProxyDataException
     {
-        final ProxyDataManager manager = getFixtureProvider().getDataManager();
+        final StoreDataManager manager = getFixtureProvider().getDataManager();
         final ModelFactory factory = getFixtureProvider().getModelFactory();
 
         final Group grp =
@@ -157,7 +157,7 @@ public abstract class GroupDataManagerTCK
     public void createGroupAndRetrieveReposForThatGroupInOrder()
         throws ProxyDataException
     {
-        final ProxyDataManager manager = getFixtureProvider().getDataManager();
+        final StoreDataManager manager = getFixtureProvider().getDataManager();
         final ModelFactory factory = getFixtureProvider().getModelFactory();
 
         final Group grp =
@@ -181,7 +181,7 @@ public abstract class GroupDataManagerTCK
     public void createGroupAndRetrieveRepositoryConstituents()
         throws ProxyDataException
     {
-        final ProxyDataManager manager = getFixtureProvider().getDataManager();
+        final StoreDataManager manager = getFixtureProvider().getDataManager();
         final ModelFactory factory = getFixtureProvider().getModelFactory();
 
         final Group grp =
@@ -208,7 +208,7 @@ public abstract class GroupDataManagerTCK
     public void createSameGroupTwiceAndRetrieveOne()
         throws ProxyDataException
     {
-        final ProxyDataManager manager = getFixtureProvider().getDataManager();
+        final StoreDataManager manager = getFixtureProvider().getDataManager();
         final ModelFactory factory = getFixtureProvider().getModelFactory();
 
         final Group grp = factory.createGroup( "test" );
@@ -226,7 +226,7 @@ public abstract class GroupDataManagerTCK
     public void createTwoGroupsAndRetrieveBoth()
         throws ProxyDataException
     {
-        final ProxyDataManager manager = getFixtureProvider().getDataManager();
+        final StoreDataManager manager = getFixtureProvider().getDataManager();
         final ModelFactory factory = getFixtureProvider().getModelFactory();
 
         final Group grp = factory.createGroup( "test" );

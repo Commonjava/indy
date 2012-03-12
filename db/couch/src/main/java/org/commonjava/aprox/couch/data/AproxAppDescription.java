@@ -20,7 +20,7 @@ import java.util.Set;
 
 import org.commonjava.couch.db.model.AppDescription;
 
-public class ProxyAppDescription
+public class AproxAppDescription
     implements AppDescription
 {
 

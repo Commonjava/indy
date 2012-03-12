@@ -34,14 +34,14 @@ import org.junit.Test;
 public class PathRetrieverWeldTest
 {
 
-    private PathRetriever downloader;
+    private FileManager downloader;
 
     @Before
     public void setup()
     {
         final WeldContainer weld = new Weld().initialize();
         downloader = weld.instance()
-                         .select( DefaultPathRetriever.class )
+                         .select( DefaultFileManager.class )
                          .get();
     }
 

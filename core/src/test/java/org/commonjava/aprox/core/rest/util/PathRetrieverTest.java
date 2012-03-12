@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
-import org.commonjava.aprox.core.conf.DefaultProxyConfiguration;
+import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.rest.StoreInputStream;
@@ -37,9 +37,9 @@ import org.junit.rules.TemporaryFolder;
 public class PathRetrieverTest
 {
 
-    private PathRetriever downloader;
+    private FileManager downloader;
 
-    private DefaultProxyConfiguration config;
+    private DefaultAproxConfiguration config;
 
     private File repoRoot;
 
@@ -52,10 +52,10 @@ public class PathRetrieverTest
     {
         repoRoot = tempFolder.newFolder( "repository" );
 
-        config = new DefaultProxyConfiguration();
+        config = new DefaultAproxConfiguration();
         config.setStorageRootDirectory( repoRoot );
 
-        downloader = new DefaultPathRetriever( config );
+        downloader = new DefaultFileManager( config );
     }
 
     @Test

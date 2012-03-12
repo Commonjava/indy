@@ -46,7 +46,7 @@ public class MemoryRepository
 
     private String password;
 
-    private boolean cached = true;
+    private boolean passthrough;
 
     private int cacheTimeoutSeconds;
 
@@ -200,15 +200,15 @@ public class MemoryRepository
     }
 
     @Override
-    public boolean isCached()
+    public boolean isPassthrough()
     {
-        return cached;
+        return passthrough;
     }
 
     @Override
-    public void setCached( final boolean cached )
+    public void setPassthrough( final boolean passthrough )
     {
-        this.cached = cached;
+        this.passthrough = passthrough;
     }
 
     @Override

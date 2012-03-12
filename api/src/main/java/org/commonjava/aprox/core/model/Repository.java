@@ -42,8 +42,8 @@ public interface Repository
 
     void setCacheTimeoutSeconds( final int cacheTimeoutSeconds );
 
-    boolean isCached();
+    boolean isPassthrough();
 
-    void setCached( boolean cached );
+    void setPassthrough( boolean passthrough );
 
 }

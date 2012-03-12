@@ -5,7 +5,7 @@ import org.commonjava.aprox.core.model.ModelFactory;
 public interface TCKFixtureProvider
 {
 
-    ProxyDataManager getDataManager();
+    StoreDataManager getDataManager();
 
     ModelFactory getModelFactory();
 

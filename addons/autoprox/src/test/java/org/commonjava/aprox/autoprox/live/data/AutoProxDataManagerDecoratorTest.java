@@ -18,9 +18,9 @@ import org.apache.log4j.Level;
 import org.commonjava.aprox.autoprox.conf.AutoProxConfiguration;
 import org.commonjava.aprox.autoprox.conf.DefaultAutoProxConfiguration;
 import org.commonjava.aprox.autoprox.live.fixture.TargetUrlResponder;
-import org.commonjava.aprox.core.conf.DefaultProxyConfiguration;
-import org.commonjava.aprox.core.conf.ProxyConfiguration;
-import org.commonjava.aprox.core.data.ProxyDataManager;
+import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
+import org.commonjava.aprox.core.conf.AproxConfiguration;
+import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.model.ModelFactory;
 import org.commonjava.aprox.core.model.Repository;
@@ -45,7 +45,7 @@ public class AutoProxDataManagerDecoratorTest
     public static final String REPO_ROOT_DIR = "repo.root.dir";
 
     @Inject
-    protected ProxyDataManager proxyManager;
+    protected StoreDataManager proxyManager;
 
     @Inject
     protected AutoProxConfiguration config;
@@ -93,18 +93,18 @@ public class AutoProxDataManagerDecoratorTest
     {
         private AutoProxConfiguration autoProxConfig;
 
-        private ProxyConfiguration proxyConfig;
+        private AproxConfiguration proxyConfig;
 
         private final WebFixture http = new WebFixture();
 
         @Produces
         @Default
-        public synchronized ProxyConfiguration getProxyConfig()
+        public synchronized AproxConfiguration getProxyConfig()
         {
             if ( proxyConfig == null )
             {
                 proxyConfig =
-                    new DefaultProxyConfiguration(
+                    new DefaultAproxConfiguration(
                                                    new File(
                                                              System.getProperty( REPO_ROOT_DIR, "target/repo-downloads" ) ) );
             }

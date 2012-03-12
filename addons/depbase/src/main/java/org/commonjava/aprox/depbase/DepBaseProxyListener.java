@@ -38,10 +38,10 @@ import org.apache.maven.model.io.ModelReader;
 import org.commonjava.aprox.core.change.event.FileStorageEvent;
 import org.commonjava.aprox.core.change.event.FileStorageEvent.Type;
 import org.commonjava.aprox.core.data.ProxyDataException;
-import org.commonjava.aprox.core.data.ProxyDataManager;
+import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.rest.util.PathRetriever;
+import org.commonjava.aprox.core.rest.util.FileManager;
 import org.commonjava.aprox.depbase.maven.ArtifactStoreModelResolver;
 import org.commonjava.aprox.depbase.maven.ModelVersions;
 import org.commonjava.depbase.data.DepbaseDataException;
@@ -55,7 +55,7 @@ public class DepBaseProxyListener
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private ProxyDataManager aprox;
+    private StoreDataManager aprox;
 
     @Inject
     private ModelReader modelReader;
@@ -64,7 +64,7 @@ public class DepBaseProxyListener
     private ModelBuilder modelBuilder;
 
     @Inject
-    private PathRetriever fileManager;
+    private FileManager fileManager;
 
     @Inject
     private MavenModelProcessor modelProcessor;

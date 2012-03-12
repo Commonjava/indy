@@ -21,8 +21,8 @@ import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
 
-import org.commonjava.aprox.core.conf.DefaultProxyConfiguration;
-import org.commonjava.aprox.core.conf.ProxyConfiguration;
+import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
+import org.commonjava.aprox.core.conf.AproxConfiguration;
 import org.commonjava.couch.test.fixture.TestData;
 
 @Singleton
@@ -31,17 +31,17 @@ public class ProxyConfigProvider
 
     public static final String REPO_ROOT_DIR = "repo.root.dir";
 
-    private DefaultProxyConfiguration config;
+    private DefaultAproxConfiguration config;
 
     @Produces
     @TestData
     @Default
-    public synchronized ProxyConfiguration getProxyConfiguration()
+    public synchronized AproxConfiguration getProxyConfiguration()
     {
         if ( config == null )
         {
             config =
-                new DefaultProxyConfiguration( new File( System.getProperty( REPO_ROOT_DIR, "target/repo-downloads" ) ) );
+                new DefaultAproxConfiguration( new File( System.getProperty( REPO_ROOT_DIR, "target/repo-downloads" ) ) );
         }
 
         return config;

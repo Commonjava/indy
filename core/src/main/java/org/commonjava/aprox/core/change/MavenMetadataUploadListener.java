@@ -24,10 +24,10 @@ import javax.inject.Singleton;
 
 import org.commonjava.aprox.core.change.event.FileStorageEvent;
 import org.commonjava.aprox.core.data.ProxyDataException;
-import org.commonjava.aprox.core.data.ProxyDataManager;
+import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.rest.util.MavenMetadataMerger;
-import org.commonjava.aprox.core.rest.util.PathRetriever;
+import org.commonjava.aprox.core.rest.util.FileManager;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
@@ -37,13 +37,13 @@ public class MavenMetadataUploadListener
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private ProxyDataManager dataManager;
+    private StoreDataManager dataManager;
 
     // @Inject
     // private MavenMetadataMerger merger;
 
     @Inject
-    private PathRetriever fileManager;
+    private FileManager fileManager;
 
     public void reMergeUploadedMetadata( @Observes final FileStorageEvent event )
     {

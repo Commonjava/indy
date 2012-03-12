@@ -38,7 +38,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.core.data.ProxyDataException;
-import org.commonjava.aprox.core.data.ProxyDataManager;
+import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.io.AProxModelSerializer;
 import org.commonjava.util.logging.Logger;
@@ -53,7 +53,7 @@ public class DefaultRepositoryAdminResource
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private ProxyDataManager proxyManager;
+    private StoreDataManager proxyManager;
 
     @Inject
     private AProxModelSerializer modelSerializer;
@@ -128,7 +128,7 @@ public class DefaultRepositoryAdminResource
                 toUpdate.setUser( repository.getUser() );
                 toUpdate.setPassword( repository.getPassword() );
                 toUpdate.setTimeoutSeconds( repository.getTimeoutSeconds() );
-                toUpdate.setCached( repository.isCached() );
+                toUpdate.setPassthrough( repository.isPassthrough() );
                 toUpdate.setCacheTimeoutSeconds( repository.getCacheTimeoutSeconds() );
             }
 

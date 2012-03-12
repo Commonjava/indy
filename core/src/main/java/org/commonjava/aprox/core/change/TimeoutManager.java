@@ -4,7 +4,6 @@ import static org.apache.commons.io.FileUtils.forceDelete;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.aprox.core.change.sl.ExpirationConstants.APROX_EVENT;
 import static org.commonjava.aprox.core.change.sl.ExpirationConstants.APROX_FILE_EVENT;
-import static org.commonjava.aprox.core.change.sl.ExpirationConstants.NON_CACHED_TIMEOUT;
 
 import java.io.File;
 import java.io.FileReader;
@@ -37,8 +36,9 @@ import org.commonjava.aprox.core.change.sl.LoggingMatcher;
 import org.commonjava.aprox.core.change.sl.MaxTimeoutMatcher;
 import org.commonjava.aprox.core.change.sl.SnapshotFilter;
 import org.commonjava.aprox.core.change.sl.StoreMatcher;
+import org.commonjava.aprox.core.conf.AproxConfiguration;
 import org.commonjava.aprox.core.data.ProxyDataException;
-import org.commonjava.aprox.core.data.ProxyDataManager;
+import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
@@ -47,7 +47,7 @@ import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.aprox.core.rest.util.ArtifactPathInfo;
 import org.commonjava.aprox.core.rest.util.ArtifactPathInfo.SnapshotInfo;
-import org.commonjava.aprox.core.rest.util.PathRetriever;
+import org.commonjava.aprox.core.rest.util.FileManager;
 import org.commonjava.shelflife.expire.ExpirationEvent;
 import org.commonjava.shelflife.expire.ExpirationEventType;
 import org.commonjava.shelflife.expire.ExpirationManager;
@@ -58,7 +58,7 @@ import org.commonjava.shelflife.model.ExpirationKey;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
-public class FileDeletionManager
+public class TimeoutManager
 {
 
     private final Logger logger = new Logger( getClass() );
@@ -67,10 +67,13 @@ public class FileDeletionManager
     private ExpirationManager expirationManager;
 
     @Inject
-    private PathRetriever pathRetriever;
+    private FileManager fileManager;
 
     @Inject
-    private ProxyDataManager dataManager;
+    private StoreDataManager dataManager;
+
+    @Inject
+    private AproxConfiguration config;
 
     public void onExpirationEvent( @Observes final ExpirationEvent event )
     {
@@ -82,7 +85,7 @@ public class FileDeletionManager
             final String path = (String) event.getExpiration()
                                               .getData();
 
-            final File toDelete = pathRetriever.formatStorageReference( key, path );
+            final File toDelete = fileManager.formatStorageReference( key, path );
             if ( toDelete.exists() )
             {
                 try
@@ -199,13 +202,13 @@ public class FileDeletionManager
     private void rescheduleProxyTimeouts( final Repository repo )
     {
         long timeout = -1;
-        if ( repo.isCached() && repo.getCacheTimeoutSeconds() > 0 )
+        if ( !repo.isPassthrough() && repo.getCacheTimeoutSeconds() > 0 )
         {
             timeout = repo.getCacheTimeoutSeconds() * 1000;
         }
-        else if ( !repo.isCached() )
+        else if ( repo.isPassthrough() )
         {
-            timeout = NON_CACHED_TIMEOUT;
+            timeout = config.getPassthroughTimeoutSeconds() * 1000;
         }
 
         if ( timeout > 0 )
@@ -244,7 +247,7 @@ public class FileDeletionManager
 
     private Set<String> listAllFiles( final ArtifactStore store, final FilenameFilter filter )
     {
-        final File storeRoot = pathRetriever.getStoreRootDirectory( store.getKey() );
+        final File storeRoot = fileManager.getStoreRootDirectory( store.getKey() );
         final Set<String> paths = new HashSet<String>();
         listAll( storeRoot, "", paths, filter );
 
@@ -302,7 +305,7 @@ public class FileDeletionManager
         for ( final String name : names )
         {
             final StoreKey key = new StoreKey( type, name );
-            final File dir = pathRetriever.getStoreRootDirectory( key );
+            final File dir = fileManager.getStoreRootDirectory( key );
             if ( dir.exists() && dir.isDirectory() )
             {
                 try
@@ -330,8 +333,8 @@ public class FileDeletionManager
         final Repository repo = (Repository) event.getStore();
         final String path = event.getPath();
 
-        long timeout = NON_CACHED_TIMEOUT;
-        if ( repo.isCached() )
+        long timeout = config.getPassthroughTimeoutSeconds() * 1000;
+        if ( !repo.isPassthrough() )
         {
             timeout = repo.getCacheTimeoutSeconds() * 1000;
         }
@@ -382,7 +385,7 @@ public class FileDeletionManager
                 for ( final Group group : groups )
                 {
                     logger.info( "[CLEAN] Cleaning metadata path: %s in group: %s", path, group.getName() );
-                    final File md = pathRetriever.formatStorageReference( group, path );
+                    final File md = fileManager.formatStorageReference( group, path );
                     if ( md.exists() )
                     {
                         md.delete();
@@ -427,9 +430,9 @@ public class FileDeletionManager
 
     private void updateSnapshotVersions( final StoreKey key, final String path )
     {
-        final ArtifactPathInfo pathInfo = pathRetriever.parsePathInfo( path );
+        final ArtifactPathInfo pathInfo = fileManager.parsePathInfo( path );
 
-        final File f = pathRetriever.formatStorageReference( key, path );
+        final File f = fileManager.formatStorageReference( key, path );
         if ( f.getParentFile() == null || f.getParentFile()
                                            .getParentFile() == null )
         {

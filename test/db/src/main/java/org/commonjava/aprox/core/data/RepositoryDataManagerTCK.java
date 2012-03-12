@@ -46,7 +46,7 @@ public abstract class RepositoryDataManagerTCK
     public void createAndRetrieveCentralRepoProxy()
         throws ProxyDataException
     {
-        final ProxyDataManager manager = getFixtureProvider().getDataManager();
+        final StoreDataManager manager = getFixtureProvider().getDataManager();
         final ModelFactory factory = getFixtureProvider().getModelFactory();
 
         final Repository repo = factory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" );
@@ -64,7 +64,7 @@ public abstract class RepositoryDataManagerTCK
     public void createCentralRepoProxyTwiceAndRetrieveOne()
         throws ProxyDataException
     {
-        final ProxyDataManager manager = getFixtureProvider().getDataManager();
+        final StoreDataManager manager = getFixtureProvider().getDataManager();
         final ModelFactory factory = getFixtureProvider().getModelFactory();
 
         final Repository repo = factory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" );
@@ -82,7 +82,7 @@ public abstract class RepositoryDataManagerTCK
     public void createAndDeleteCentralRepoProxy_ByName()
         throws ProxyDataException
     {
-        final ProxyDataManager manager = getFixtureProvider().getDataManager();
+        final StoreDataManager manager = getFixtureProvider().getDataManager();
         final ModelFactory factory = getFixtureProvider().getModelFactory();
 
         final Repository repo = factory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" );
@@ -99,7 +99,7 @@ public abstract class RepositoryDataManagerTCK
     public void createAndDeleteCentralRepoProxy_ByObject()
         throws ProxyDataException
     {
-        final ProxyDataManager manager = getFixtureProvider().getDataManager();
+        final StoreDataManager manager = getFixtureProvider().getDataManager();
         final ModelFactory factory = getFixtureProvider().getModelFactory();
 
         final Repository repo = factory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" );
@@ -116,7 +116,7 @@ public abstract class RepositoryDataManagerTCK
     public void createTwoReposAndRetrieveAll()
         throws ProxyDataException
     {
-        final ProxyDataManager manager = getFixtureProvider().getDataManager();
+        final StoreDataManager manager = getFixtureProvider().getDataManager();
         final ModelFactory factory = getFixtureProvider().getModelFactory();
 
         final Repository repo = factory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" );

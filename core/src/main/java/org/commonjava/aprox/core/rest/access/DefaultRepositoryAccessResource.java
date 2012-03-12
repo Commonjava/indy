@@ -21,7 +21,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
 import org.commonjava.aprox.core.data.ProxyDataException;
-import org.commonjava.aprox.core.data.ProxyDataManager;
+import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.rest.RESTWorkflowException;
 
@@ -32,7 +32,7 @@ public class DefaultRepositoryAccessResource
     implements RepositoryAccessResource
 {
     @Inject
-    private ProxyDataManager proxyManager;
+    private StoreDataManager proxyManager;
 
     // @Context
     // private UriInfo uriInfo;

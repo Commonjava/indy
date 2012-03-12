@@ -47,8 +47,8 @@ public class RepositoryDoc
 
     private String password;
 
-    @SerializedName( "is_cached" )
-    private boolean cached = true;
+    @SerializedName( "is_passthrough" )
+    private boolean passthrough;
 
     @SerializedName( "cache_timeout_seconds" )
     private int cacheTimeoutSeconds;
@@ -200,15 +200,15 @@ public class RepositoryDoc
     }
 
     @Override
-    public boolean isCached()
+    public boolean isPassthrough()
     {
-        return cached;
+        return passthrough;
     }
 
     @Override
-    public void setCached( final boolean cached )
+    public void setPassthrough( final boolean passthrough )
     {
-        this.cached = cached;
+        this.passthrough = passthrough;
     }
 
     @Override

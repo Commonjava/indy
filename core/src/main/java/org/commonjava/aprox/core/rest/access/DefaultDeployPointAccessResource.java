@@ -29,7 +29,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.core.data.ProxyDataException;
-import org.commonjava.aprox.core.data.ProxyDataManager;
+import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.rest.RESTWorkflowException;
 import org.commonjava.util.logging.Logger;
@@ -44,7 +44,7 @@ public class DefaultDeployPointAccessResource
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private ProxyDataManager proxyManager;
+    private StoreDataManager proxyManager;
 
     @Context
     private UriInfo uriInfo;

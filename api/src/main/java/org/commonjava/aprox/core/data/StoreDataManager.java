@@ -25,7 +25,7 @@ import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.StoreKey;
 
-public interface ProxyDataManager
+public interface StoreDataManager
 {
 
     DeployPoint getDeployPoint( final String name )

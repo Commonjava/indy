@@ -20,7 +20,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import org.apache.log4j.Level;
-import org.commonjava.aprox.core.data.ProxyDataManager;
+import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.model.ModelFactory;
 import org.commonjava.aprox.core.model.Repository;
@@ -42,7 +42,7 @@ public class SecurityConsistencyListenerWeldTest
 
     private SecurityConsistencyListener listener;
 
-    private ProxyDataManager proxyManager;
+    private StoreDataManager proxyManager;
 
     private UserDataManager userManager;
 
@@ -65,7 +65,7 @@ public class SecurityConsistencyListenerWeldTest
                        .select( SecurityConsistencyListener.class )
                        .get();
         proxyManager = weld.instance()
-                           .select( ProxyDataManager.class )
+                           .select( StoreDataManager.class )
                            .get();
         userManager = weld.instance()
                           .select( UserDataManager.class )
