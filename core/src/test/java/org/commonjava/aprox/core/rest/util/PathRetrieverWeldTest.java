@@ -22,9 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.commonjava.aprox.core.io.StorageItem;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.Repository;
-import org.commonjava.aprox.core.rest.StoreInputStream;
 import org.commonjava.aprox.mem.model.MemoryRepository;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
@@ -52,8 +52,8 @@ public class PathRetrieverWeldTest
         final Repository repo = new MemoryRepository( "central", "http://repo1.maven.apache.org/maven2/" );
         final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
 
-        final StoreInputStream stream = downloader.retrieve( repo, path );
-        final String pom = IOUtils.toString( stream );
+        final StorageItem stream = downloader.retrieve( repo, path );
+        final String pom = IOUtils.toString( stream.getStream() );
 
         assertThat( pom.contains( "<artifactId>maven-model</artifactId>" ), equalTo( true ) );
     }
@@ -71,8 +71,8 @@ public class PathRetrieverWeldTest
         repos.add( repo );
         repos.add( repo2 );
 
-        final StoreInputStream stream = downloader.retrieveFirst( repos, path );
-        final String pom = IOUtils.toString( stream );
+        final StorageItem stream = downloader.retrieveFirst( repos, path );
+        final String pom = IOUtils.toString( stream.getStream() );
 
         assertThat( pom.contains( "<artifactId>maven-model</artifactId>" ), equalTo( true ) );
     }

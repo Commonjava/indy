@@ -15,7 +15,7 @@ import javax.inject.Singleton;
 import org.commonjava.couch.inject.Production;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.DefaultConfigurationListener;
-import org.commonjava.web.config.io.SingleSectionConfigReader;
+import org.commonjava.web.config.dotconf.DotConfConfigurationReader;
 
 @Singleton
 public class AutoProxConfigFactory
@@ -31,13 +31,15 @@ public class AutoProxConfigFactory
     public AutoProxConfigFactory()
         throws ConfigurationException
     {
-        super( DefaultAutoProxConfiguration.class );
+        super( DefaultAutoProxConfiguration.class, DefaultAutoDeployConfiguration.class,
+               DefaultAutoGroupConfiguration.class, DefaultAutoRepoConfiguration.class );
     }
 
     public AutoProxConfigFactory( final File configFile )
         throws ConfigurationException
     {
-        super( DefaultAutoProxConfiguration.class );
+        super( DefaultAutoProxConfiguration.class, DefaultAutoDeployConfiguration.class,
+               DefaultAutoGroupConfiguration.class, DefaultAutoRepoConfiguration.class );
         this.configFile = configFile;
         load();
     }
@@ -50,7 +52,7 @@ public class AutoProxConfigFactory
         try
         {
             stream = new FileInputStream( configFile );
-            new SingleSectionConfigReader( this ).loadConfiguration( stream );
+            new DotConfConfigurationReader( this ).loadConfiguration( stream );
         }
         catch ( final IOException e )
         {
@@ -75,7 +77,12 @@ public class AutoProxConfigFactory
     public void configurationComplete()
         throws ConfigurationException
     {
-        config = getConfiguration( DefaultAutoProxConfiguration.class );
+        final DefaultAutoProxConfiguration c = getConfiguration( DefaultAutoProxConfiguration.class );
+        final DefaultAutoGroupConfiguration g = getConfiguration( DefaultAutoGroupConfiguration.class );
+        final DefaultAutoRepoConfiguration r = getConfiguration( DefaultAutoRepoConfiguration.class );
+        final DefaultAutoDeployConfiguration d = getConfiguration( DefaultAutoDeployConfiguration.class );
+
+        config = new DefaultAutoProxConfiguration( c, r, d, g );
     }
 
 }

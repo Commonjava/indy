@@ -34,13 +34,13 @@ import javax.inject.Singleton;
 import javax.ws.rs.core.Response;
 
 import org.commonjava.aprox.core.change.event.FileStorageEvent;
+import org.commonjava.aprox.core.io.StorageItem;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.rest.RESTWorkflowException;
-import org.commonjava.aprox.core.rest.StoreInputStream;
-import org.commonjava.aprox.core.rest.util.MavenMetadataMerger;
 import org.commonjava.aprox.core.rest.util.FileManager;
+import org.commonjava.aprox.core.rest.util.MavenMetadataMerger;
 
 @Singleton
 public class MavenMetadataHandler
@@ -63,14 +63,14 @@ public class MavenMetadataHandler
     }
 
     @Override
-    public StoreInputStream retrieve( final Group group, final List<? extends ArtifactStore> stores, final String path )
+    public StorageItem retrieve( final Group group, final List<? extends ArtifactStore> stores, final String path )
         throws RESTWorkflowException
     {
         final File target = fileManager.formatStorageReference( group, path );
 
         if ( !target.exists() )
         {
-            final Set<StoreInputStream> sources = fileManager.retrieveAll( stores, path );
+            final Set<StorageItem> sources = fileManager.retrieveAll( stores, path );
             final InputStream merged = merger.merge( sources, group, path );
             if ( merged != null )
             {
@@ -107,8 +107,7 @@ public class MavenMetadataHandler
         {
             try
             {
-                return new StoreInputStream( group.getKey(), path,
-                                             new BufferedInputStream( new FileInputStream( target ) ) );
+                return new StorageItem( group.getKey(), path, new BufferedInputStream( new FileInputStream( target ) ) );
             }
             catch ( final FileNotFoundException e )
             {

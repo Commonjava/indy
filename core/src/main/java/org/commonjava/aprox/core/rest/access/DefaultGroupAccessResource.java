@@ -33,11 +33,12 @@ import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.core.data.ProxyDataException;
 import org.commonjava.aprox.core.data.StoreDataManager;
+import org.commonjava.aprox.core.io.StorageItem;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.rest.RESTWorkflowException;
-import org.commonjava.aprox.core.rest.StoreInputStream;
+import org.commonjava.aprox.core.rest.util.FileManager;
 import org.commonjava.aprox.core.rest.util.retrieve.GroupHandlerChain;
 import org.commonjava.util.logging.Logger;
 
@@ -53,6 +54,9 @@ public class DefaultGroupAccessResource
 
     @Inject
     private GroupHandlerChain handlerChain;
+
+    @Inject
+    private FileManager fileManager;
 
     @Context
     private UriInfo uriInfo;
@@ -101,16 +105,16 @@ public class DefaultGroupAccessResource
             // logger.info( "Download: %s\nFrom: %s", path, stores );
             try
             {
-                final StoreInputStream stream = handlerChain.retrieve( group, stores, path );
-                if ( stream == null )
+                final StorageItem item = handlerChain.retrieve( group, stores, path );
+                if ( item == null || item.isDirectory() )
                 {
                     response = Response.status( Status.NOT_FOUND )
                                        .build();
                 }
                 else
                 {
-                    final String mimeType = new MimetypesFileTypeMap().getContentType( stream.getPath() );
-                    response = Response.ok( stream, mimeType )
+                    final String mimeType = new MimetypesFileTypeMap().getContentType( item.getPath() );
+                    response = Response.ok( item.getStream(), mimeType )
                                        .build();
                 }
             }

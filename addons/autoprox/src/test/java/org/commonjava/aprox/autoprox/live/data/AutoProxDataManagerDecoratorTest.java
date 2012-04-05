@@ -16,10 +16,13 @@ import javax.inject.Singleton;
 
 import org.apache.log4j.Level;
 import org.commonjava.aprox.autoprox.conf.AutoProxConfiguration;
+import org.commonjava.aprox.autoprox.conf.DefaultAutoDeployConfiguration;
+import org.commonjava.aprox.autoprox.conf.DefaultAutoGroupConfiguration;
 import org.commonjava.aprox.autoprox.conf.DefaultAutoProxConfiguration;
+import org.commonjava.aprox.autoprox.conf.DefaultAutoRepoConfiguration;
 import org.commonjava.aprox.autoprox.live.fixture.TargetUrlResponder;
-import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.core.conf.AproxConfiguration;
+import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.model.ModelFactory;
@@ -119,10 +122,19 @@ public class AutoProxDataManagerDecoratorTest
             if ( autoProxConfig == null )
             {
                 autoProxConfig =
-                    new DefaultAutoProxConfiguration( http.resourceUrl( "target" ), true,
-                                                      new StoreKey( StoreType.repository, "first" ),
-                                                      new StoreKey( StoreType.repository, "second" ) );
-                System.out.println( "\n\n\n\nSet Autoprox URL: " + autoProxConfig.getProxyBase() + "\n\n\n\n" );
+                    new DefaultAutoProxConfiguration(
+                                                      true,
+                                                      new DefaultAutoRepoConfiguration( http.resourceUrl( "target" ) ),
+                                                      new DefaultAutoDeployConfiguration( true ),
+                                                      new DefaultAutoGroupConfiguration(
+                                                                                         new StoreKey(
+                                                                                                       StoreType.repository,
+                                                                                                       "first" ),
+                                                                                         new StoreKey(
+                                                                                                       StoreType.repository,
+                                                                                                       "second" ) ) );
+                System.out.println( "\n\n\n\nSet Autoprox URL: " + autoProxConfig.getRepo()
+                                                                                 .getBaseUrl() + "\n\n\n\n" );
             }
 
             return autoProxConfig;

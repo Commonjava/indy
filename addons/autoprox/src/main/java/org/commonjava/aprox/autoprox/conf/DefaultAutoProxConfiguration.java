@@ -1,16 +1,7 @@
 package org.commonjava.aprox.autoprox.conf;
 
-import static org.apache.commons.lang.StringUtils.isEmpty;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.commonjava.aprox.core.model.StoreKey;
-import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.config.annotation.ConfigName;
-import org.commonjava.web.config.annotation.ConfigNames;
 import org.commonjava.web.config.annotation.SectionName;
 import org.commonjava.web.config.section.ConfigurationSectionListener;
 
@@ -21,152 +12,39 @@ public class DefaultAutoProxConfiguration
 
     public final Logger logger = new Logger( getClass() );
 
-    private final String proxyBase;
+    private AutoDeployConfiguration deploy;
 
-    private List<StoreKey> extraGroupConstituents;
-
-    private boolean createdWithDeployPoint;
+    private AutoRepoConfiguration repo;
 
     private boolean enabled = true;
 
-    @ConfigNames( "proxyBase" )
-    public DefaultAutoProxConfiguration( final String proxyBase )
+    private AutoGroupConfiguration group;
+
+    public DefaultAutoProxConfiguration( final AutoProxConfiguration original, final AutoRepoConfiguration repo,
+                                         final AutoDeployConfiguration deploy, final AutoGroupConfiguration group )
     {
-        this.proxyBase = proxyBase;
+        this.group = group;
+        this.deploy = deploy;
+        this.repo = repo;
+        this.enabled = original.isEnabled();
     }
 
-    public DefaultAutoProxConfiguration( final String baseUrl, final boolean createdWithDeployPoint,
-                                         final List<StoreKey> extraGroupConstituents )
+    public DefaultAutoProxConfiguration( final boolean enabled, final AutoRepoConfiguration repo,
+                                         final AutoDeployConfiguration deploy, final AutoGroupConfiguration group )
     {
-        this.proxyBase = baseUrl;
-        this.createdWithDeployPoint = createdWithDeployPoint;
-        this.extraGroupConstituents = extraGroupConstituents;
+        this.group = group;
+        this.deploy = deploy;
+        this.repo = repo;
+        this.enabled = enabled;
     }
 
-    public DefaultAutoProxConfiguration( final String baseUrl, final boolean createdWithDeployPoint,
-                                         final StoreKey... extraGroupConstituents )
+    public DefaultAutoProxConfiguration( final String baseUrl )
     {
-        this.proxyBase = baseUrl;
-        this.createdWithDeployPoint = createdWithDeployPoint;
-        this.extraGroupConstituents = Arrays.asList( extraGroupConstituents );
+        this.repo = new DefaultAutoRepoConfiguration( baseUrl );
     }
 
-    @Override
-    public String getProxyBase()
+    public DefaultAutoProxConfiguration()
     {
-        return proxyBase;
-    }
-
-    @Override
-    public List<StoreKey> getExtraGroupConstituents()
-    {
-        return extraGroupConstituents;
-    }
-
-    @Override
-    public boolean isDeploymentCreationEnabled()
-    {
-        return createdWithDeployPoint;
-    }
-
-    @ConfigName( "groupAppend" )
-    public void setExtraGroupConstituentsString( final String constituentList )
-    {
-        if ( constituentList == null || constituentList.trim()
-                                                       .length() < 1 )
-        {
-            return;
-        }
-
-        final String[] parts = constituentList.split( "\\s*,\\s*" );
-        final List<StoreKey> constituents = new ArrayList<StoreKey>();
-        for ( final String part : parts )
-        {
-            if ( part == null )
-            {
-                continue;
-            }
-
-            if ( part.trim()
-                     .length() < 2 )
-            {
-                logger.error( "Invalid group constituent: not big enough to denote type and name: '%s'", part );
-                continue;
-            }
-
-            final char c = part.charAt( 0 );
-            final String subpart = part.substring( 1 );
-            switch ( c )
-            {
-                case '>':
-                {
-                    constituents.add( new StoreKey( StoreType.deploy_point, subpart ) );
-                    break;
-                }
-                case '<':
-                {
-                    constituents.add( new StoreKey( StoreType.repository, subpart ) );
-                    break;
-                }
-                case '+':
-                {
-                    constituents.add( new StoreKey( StoreType.group, subpart ) );
-                    break;
-                }
-                default:
-                {
-                    final int idx = part.indexOf( ':' );
-                    if ( idx < 1 )
-                    {
-                        logger.error( "Invalid group constituent: '%s'. Valid formats include: >deploy-point, <repository, +group, repository:name, deploy_point:name, group:name",
-                                      part );
-                        continue;
-                    }
-
-                    final String st = part.substring( 0, idx );
-                    try
-                    {
-                        if ( isEmpty( st ) )
-                        {
-                            logger.error( "Invalid group constituent: '%s'. Empty store type is not allowed (form: <type>:<name>).",
-                                          part );
-                            continue;
-                        }
-
-                        final StoreType type = StoreType.valueOf( st );
-
-                        final String name = part.substring( idx + 1 );
-
-                        if ( isEmpty( name ) )
-                        {
-                            logger.error( "Invalid group constituent: '%s'. Empty store name is not allowed (form: <type>:<name>).",
-                                          part );
-                            continue;
-                        }
-
-                        constituents.add( new StoreKey( type, name ) );
-                    }
-                    catch ( final IllegalArgumentException e )
-                    {
-                        logger.error( "Invalid group constituent: '%s'. Store type: '%s' is not valid.", part, st );
-                        continue;
-                    }
-                }
-            }
-        }
-
-        this.extraGroupConstituents = constituents;
-    }
-
-    public void setExtraGroupConstituents( final List<StoreKey> extraGroupConstituents )
-    {
-        this.extraGroupConstituents = extraGroupConstituents;
-    }
-
-    @ConfigName( "deployable" )
-    public void setDeploymentAllowed( final boolean createdWithDeployPoint )
-    {
-        this.createdWithDeployPoint = createdWithDeployPoint;
     }
 
     @Override
@@ -180,6 +58,30 @@ public class DefaultAutoProxConfiguration
     public void setEnabled( final boolean enabled )
     {
         this.enabled = enabled;
+    }
+
+    @Override
+    public AutoRepoConfiguration getRepo()
+    {
+        if ( repo == null )
+        {
+            throw new NullPointerException(
+                                            "Missing [repository] section of configuration! You must supply AT LEAST this section, with a 'base.url' parameter!" );
+        }
+
+        return repo;
+    }
+
+    @Override
+    public AutoDeployConfiguration getDeploy()
+    {
+        return deploy == null ? new DefaultAutoDeployConfiguration() : deploy;
+    }
+
+    @Override
+    public AutoGroupConfiguration getGroup()
+    {
+        return group == null ? new DefaultAutoGroupConfiguration() : group;
     }
 
 }

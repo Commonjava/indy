@@ -16,14 +16,13 @@ public class DefaultAutoProxConfigurationTest
     @Test
     public void parseBriefConstituentNotation()
     {
-        final DefaultAutoProxConfiguration config = new DefaultAutoProxConfiguration( "http://foo.com" );
-
         final String list =
             "<repoName, >deployPoint, +group, repository:repoName2, deploy_point:deployPoint2, group:group2, foo, f:, :foobar";
 
-        config.setExtraGroupConstituentsString( list );
+        final DefaultAutoGroupConfiguration config = new DefaultAutoGroupConfiguration();
+        config.setExtraConstituentsString( list );
 
-        final List<StoreKey> constituents = config.getExtraGroupConstituents();
+        final List<StoreKey> constituents = config.getExtraConstituents();
         assertThat( constituents, notNullValue() );
         assertThat( constituents.size(), equalTo( 6 ) );
 

@@ -24,9 +24,9 @@ import org.apache.maven.model.resolution.InvalidRepositoryException;
 import org.apache.maven.model.resolution.ModelResolver;
 import org.apache.maven.model.resolution.UnresolvableModelException;
 import org.codehaus.plexus.component.annotations.Component;
+import org.commonjava.aprox.core.io.StorageItem;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.rest.RESTWorkflowException;
-import org.commonjava.aprox.core.rest.StoreInputStream;
 import org.commonjava.aprox.core.rest.util.FileManager;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
@@ -57,7 +57,7 @@ public class ArtifactStoreModelResolver
         final Artifact a = new DefaultArtifact( groupId, artifactId, "pom", version );
         final URI path = layout.getPath( a );
 
-        StoreInputStream stream;
+        StorageItem stream;
         try
         {
             stream = fileManager.retrieveFirst( stores, path.getPath() );

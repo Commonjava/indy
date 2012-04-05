@@ -26,7 +26,7 @@ public class AutoProxConfigFactoryTest
         throws Exception
     {
         final String proxyBase = "http://foo.bar/baz";
-        final String confContent = "proxyBase = " + proxyBase;
+        final String confContent = "[repository]\nbase.url = " + proxyBase;
 
         final File conf = temp.newFile( "autoprox.conf" );
         write( conf, confContent );
@@ -34,10 +34,19 @@ public class AutoProxConfigFactoryTest
         final AutoProxConfiguration config = new AutoProxConfigFactory( conf ).getConfiguration();
 
         assertThat( config, notNullValue() );
-        assertThat( config.getProxyBase(), equalTo( proxyBase ) );
-        assertThat( config.isDeploymentCreationEnabled(), equalTo( false ) );
         assertThat( config.isEnabled(), equalTo( true ) );
-        assertThat( config.getExtraGroupConstituents(), nullValue() );
+
+        assertThat( config.getRepo(), notNullValue() );
+        assertThat( config.getRepo()
+                          .getBaseUrl(), equalTo( proxyBase ) );
+
+        assertThat( config.getDeploy(), notNullValue() );
+        assertThat( config.getDeploy()
+                          .isDeployEnabled(), equalTo( false ) );
+
+        assertThat( config.getGroup(), notNullValue() );
+        assertThat( config.getGroup()
+                          .getExtraConstituents(), nullValue() );
     }
 
     @Test
@@ -45,7 +54,7 @@ public class AutoProxConfigFactoryTest
         throws Exception
     {
         final String proxyBase = "http://foo.bar/baz";
-        final String confContent = "proxyBase = " + proxyBase + "\nenabled = false";
+        final String confContent = "enabled = false\n\n[repository]\nbase.url = " + proxyBase;
 
         final File conf = temp.newFile( "autoprox.conf" );
         write( conf, confContent );
@@ -54,9 +63,18 @@ public class AutoProxConfigFactoryTest
 
         assertThat( config, notNullValue() );
         assertThat( config.isEnabled(), equalTo( false ) );
-        assertThat( config.getProxyBase(), equalTo( proxyBase ) );
-        assertThat( config.isDeploymentCreationEnabled(), equalTo( false ) );
-        assertThat( config.getExtraGroupConstituents(), nullValue() );
+
+        assertThat( config.getRepo(), notNullValue() );
+        assertThat( config.getRepo()
+                          .getBaseUrl(), equalTo( proxyBase ) );
+
+        assertThat( config.getDeploy(), notNullValue() );
+        assertThat( config.getDeploy()
+                          .isDeployEnabled(), equalTo( false ) );
+
+        assertThat( config.getGroup(), notNullValue() );
+        assertThat( config.getGroup()
+                          .getExtraConstituents(), nullValue() );
     }
 
     @Test
@@ -64,7 +82,7 @@ public class AutoProxConfigFactoryTest
         throws Exception
     {
         final String proxyBase = "http://foo.bar/baz";
-        final String confContent = "proxyBase = " + proxyBase + "\ndeployable = true";
+        final String confContent = "[repository]\nbase.url = " + proxyBase + "\n\n[deploy]\nenabled = true";
 
         final File conf = temp.newFile( "autoprox.conf" );
         write( conf, confContent );
@@ -72,10 +90,19 @@ public class AutoProxConfigFactoryTest
         final AutoProxConfiguration config = new AutoProxConfigFactory( conf ).getConfiguration();
 
         assertThat( config, notNullValue() );
-        assertThat( config.getProxyBase(), equalTo( proxyBase ) );
-        assertThat( config.isDeploymentCreationEnabled(), equalTo( true ) );
         assertThat( config.isEnabled(), equalTo( true ) );
-        assertThat( config.getExtraGroupConstituents(), nullValue() );
+
+        assertThat( config.getRepo(), notNullValue() );
+        assertThat( config.getRepo()
+                          .getBaseUrl(), equalTo( proxyBase ) );
+
+        assertThat( config.getDeploy(), notNullValue() );
+        assertThat( config.getDeploy()
+                          .isDeployEnabled(), equalTo( true ) );
+
+        assertThat( config.getGroup(), notNullValue() );
+        assertThat( config.getGroup()
+                          .getExtraConstituents(), nullValue() );
     }
 
     @Test
@@ -83,7 +110,8 @@ public class AutoProxConfigFactoryTest
         throws Exception
     {
         final String proxyBase = "http://foo.bar/baz";
-        final String confContent = "proxyBase = " + proxyBase + "\ngroupAppend = <first,repository:second";
+        final String confContent =
+            "[repository]\nbase.url = " + proxyBase + "\n\n[group]\nappend.constituents = <first,repository:second";
 
         final File conf = temp.newFile( "autoprox.conf" );
         write( conf, confContent );
@@ -91,11 +119,20 @@ public class AutoProxConfigFactoryTest
         final AutoProxConfiguration config = new AutoProxConfigFactory( conf ).getConfiguration();
 
         assertThat( config, notNullValue() );
-        assertThat( config.getProxyBase(), equalTo( proxyBase ) );
-        assertThat( config.isDeploymentCreationEnabled(), equalTo( false ) );
         assertThat( config.isEnabled(), equalTo( true ) );
 
-        final List<StoreKey> constituents = config.getExtraGroupConstituents();
+        assertThat( config.getRepo(), notNullValue() );
+        assertThat( config.getRepo()
+                          .getBaseUrl(), equalTo( proxyBase ) );
+
+        assertThat( config.getDeploy(), notNullValue() );
+        assertThat( config.getDeploy()
+                          .isDeployEnabled(), equalTo( false ) );
+
+        assertThat( config.getGroup(), notNullValue() );
+
+        final List<StoreKey> constituents = config.getGroup()
+                                                  .getExtraConstituents();
         assertThat( constituents, notNullValue() );
         assertThat( constituents.size(), equalTo( 2 ) );
 

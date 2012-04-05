@@ -40,6 +40,8 @@ public class CouchProxyConfigurationFactory
     extends DefaultConfigurationListener
 {
 
+    public static final String APROX_COUCH_DB_NAME = "aproxCouchDBConfiguration";
+
     private static final String CONFIG_PATH = "/etc/aprox/couch.conf";
 
     private DefaultCouchDBConfiguration proxyConfig;
@@ -74,7 +76,7 @@ public class CouchProxyConfigurationFactory
     @Produces
     @Production
     @AproxData
-    @Named( "aproxCouchDBConfiguration" )
+    @Named( CouchProxyConfigurationFactory.APROX_COUCH_DB_NAME )
     @Default
     public CouchDBConfiguration getCouchDBConfiguration()
     {

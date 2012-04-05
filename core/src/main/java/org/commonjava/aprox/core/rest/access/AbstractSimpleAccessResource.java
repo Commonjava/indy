@@ -23,9 +23,9 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.commonjava.aprox.core.io.StorageItem;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.rest.RESTWorkflowException;
-import org.commonjava.aprox.core.rest.StoreInputStream;
 import org.commonjava.aprox.core.rest.util.FileManager;
 import org.commonjava.util.logging.Logger;
 
@@ -73,16 +73,16 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
             {
                 try
                 {
-                    final StoreInputStream stream = fileManager.retrieve( store, path );
-                    if ( stream == null )
+                    final StorageItem item = fileManager.retrieve( store, path );
+                    if ( item == null || item.isDirectory() )
                     {
                         response = Response.status( Status.NOT_FOUND )
                                            .build();
                     }
                     else
                     {
-                        final String mimeType = new MimetypesFileTypeMap().getContentType( stream.getPath() );
-                        response = Response.ok( stream, mimeType )
+                        final String mimeType = new MimetypesFileTypeMap().getContentType( item.getPath() );
+                        response = Response.ok( item.getStream(), mimeType )
                                            .build();
                     }
                 }

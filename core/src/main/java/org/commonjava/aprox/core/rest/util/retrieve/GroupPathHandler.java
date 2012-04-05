@@ -18,18 +18,18 @@ package org.commonjava.aprox.core.rest.util.retrieve;
 import java.io.InputStream;
 import java.util.List;
 
+import org.commonjava.aprox.core.io.StorageItem;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.rest.RESTWorkflowException;
-import org.commonjava.aprox.core.rest.StoreInputStream;
 
 public interface GroupPathHandler
 {
 
     boolean canHandle( String path );
 
-    StoreInputStream retrieve( Group group, List<? extends ArtifactStore> stores, String path )
+    StorageItem retrieve( Group group, List<? extends ArtifactStore> stores, String path )
         throws RESTWorkflowException;
 
     DeployPoint store( Group group, List<? extends ArtifactStore> stores, String path, InputStream stream )

@@ -32,7 +32,7 @@ public class DefaultAproxConfiguration
     implements AproxConfiguration
 {
 
-    public static final File DEFAULT_STORAGE_ROOT_DIR = new File( "/var/lib/artifact-proxy/repositories" );
+    public static final File DEFAULT_STORAGE_ROOT_DIR = new File( "/var/lib/aprox/storage" );
 
     public static final int DEFAULT_PASSTHROUGH_TIMEOUT_SECONDS = 300;
 

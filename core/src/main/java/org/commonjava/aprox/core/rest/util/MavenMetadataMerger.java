@@ -30,8 +30,8 @@ import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.commonjava.aprox.core.io.StorageItem;
 import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.rest.StoreInputStream;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
@@ -42,18 +42,18 @@ public class MavenMetadataMerger
 
     private final Logger logger = new Logger( getClass() );
 
-    public InputStream merge( final Set<StoreInputStream> sources, final Group group, final String path )
+    public InputStream merge( final Set<StorageItem> sources, final Group group, final String path )
     {
         final Metadata master = new Metadata();
         final MetadataXpp3Reader reader = new MetadataXpp3Reader();
         final FileReader fr = null;
 
         boolean merged = false;
-        for ( final StoreInputStream src : sources )
+        for ( final StorageItem src : sources )
         {
             try
             {
-                final Metadata md = reader.read( src, false );
+                final Metadata md = reader.read( src.getStream(), false );
 
                 master.merge( md );
 

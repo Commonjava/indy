@@ -1,20 +1,25 @@
 package org.commonjava.aprox.autoprox.conf;
 
-import java.util.List;
-
-import org.commonjava.aprox.core.model.StoreKey;
-
 public interface AutoProxConfiguration
 {
-
-    String getProxyBase();
-
-    List<StoreKey> getExtraGroupConstituents();
-
-    boolean isDeploymentCreationEnabled();
 
     boolean isEnabled();
 
     void setEnabled( boolean enabled );
+
+    /**
+     * @return NEVER null
+     */
+    AutoRepoConfiguration getRepo();
+
+    /**
+     * @return NEVER null
+     */
+    AutoDeployConfiguration getDeploy();
+
+    /**
+     * @return NEVER null
+     */
+    AutoGroupConfiguration getGroup();
 
 }

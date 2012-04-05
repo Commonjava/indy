@@ -129,6 +129,16 @@
         <artifactId>shelflife-store-couch</artifactId>
         <version>0.1</version>
       </dependency>
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>configuration-api</artifactId>
+        <version>0.3-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>configuration-dotconf</artifactId>
+        <version>0.3-SNAPSHOT</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   

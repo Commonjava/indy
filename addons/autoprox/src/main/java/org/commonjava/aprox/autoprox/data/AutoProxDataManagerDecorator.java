@@ -20,7 +20,10 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.commonjava.aprox.autoprox.conf.AutoDeployConfiguration;
+import org.commonjava.aprox.autoprox.conf.AutoGroupConfiguration;
 import org.commonjava.aprox.autoprox.conf.AutoProxConfiguration;
+import org.commonjava.aprox.autoprox.conf.AutoRepoConfiguration;
 import org.commonjava.aprox.core.data.ProxyDataException;
 import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.model.DeployPoint;
@@ -73,16 +76,21 @@ public abstract class AutoProxDataManagerDecorator
             {
                 final List<StoreKey> keys = new ArrayList<StoreKey>();
 
-                if ( config.isDeploymentCreationEnabled() )
+                final AutoDeployConfiguration deploy = config.getDeploy();
+                if ( deploy.isDeployEnabled() )
                 {
                     DeployPoint dp = dataManager.getDeployPoint( name );
                     if ( dp == null )
                     {
                         dp = modelFactory.createDeployPoint( name );
 
-                        // TODO: Allow configuration of this.
-                        dp.setAllowReleases( true );
-                        dp.setAllowSnapshots( true );
+                        dp.setAllowReleases( deploy.isReleasesEnabled() );
+                        dp.setAllowSnapshots( deploy.isSnapshotsEnabled() );
+
+                        if ( deploy.getSnapshotTimeoutSeconds() != null )
+                        {
+                            dp.setSnapshotTimeoutSeconds( deploy.getSnapshotTimeoutSeconds() );
+                        }
 
                         dataManager.storeDeployPoint( dp );
                     }
@@ -92,9 +100,10 @@ public abstract class AutoProxDataManagerDecorator
 
                 keys.add( proxy.getKey() );
 
-                if ( config.getExtraGroupConstituents() != null )
+                final AutoGroupConfiguration group = config.getGroup();
+                if ( group.getExtraConstituents() != null )
                 {
-                    keys.addAll( config.getExtraGroupConstituents() );
+                    keys.addAll( group.getExtraConstituents() );
                 }
 
                 g = modelFactory.createGroup( name, keys );
@@ -157,13 +166,15 @@ public abstract class AutoProxDataManagerDecorator
             String proxyUrl;
             try
             {
-                proxyUrl = buildUrl( config.getProxyBase(), name );
+                proxyUrl = buildUrl( config.getRepo()
+                                           .getBaseUrl(), name );
             }
             catch ( final MalformedURLException e )
             {
                 throw new ProxyDataException(
                                               "Cannot build proxy URL for autoprox target: '%s' and base-URL: '%s'. Reason: %s",
-                                              e, name, config.getProxyBase(), e.getMessage() );
+                                              e, name, config.getRepo()
+                                                             .getBaseUrl(), e.getMessage() );
             }
 
             if ( !checkUrlValidity( proxyUrl ) )
@@ -174,7 +185,19 @@ public abstract class AutoProxDataManagerDecorator
 
             if ( proxy == null )
             {
+                final AutoRepoConfiguration repo = config.getRepo();
+
                 proxy = modelFactory.createRepository( name, proxyUrl );
+                proxy.setPassthrough( repo.isPassthroughEnabled() );
+                if ( repo.getTimeoutSeconds() != null )
+                {
+                    proxy.setTimeoutSeconds( repo.getTimeoutSeconds() );
+                }
+
+                if ( repo.getCacheTimeoutSeconds() != null )
+                {
+                    proxy.setCacheTimeoutSeconds( repo.getCacheTimeoutSeconds() );
+                }
                 dataManager.storeRepository( proxy );
             }
         }

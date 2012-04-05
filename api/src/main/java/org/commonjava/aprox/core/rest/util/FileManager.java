@@ -20,22 +20,22 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
 
+import org.commonjava.aprox.core.io.StorageItem;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.rest.RESTWorkflowException;
-import org.commonjava.aprox.core.rest.StoreInputStream;
 
 public interface FileManager
 {
 
-    StoreInputStream retrieveFirst( final List<? extends ArtifactStore> stores, final String path )
+    StorageItem retrieveFirst( final List<? extends ArtifactStore> stores, final String path )
         throws RESTWorkflowException;
 
-    Set<StoreInputStream> retrieveAll( final List<? extends ArtifactStore> stores, final String path )
+    Set<StorageItem> retrieveAll( final List<? extends ArtifactStore> stores, final String path )
         throws RESTWorkflowException;
 
-    StoreInputStream retrieve( final ArtifactStore store, final String path )
+    StorageItem retrieve( final ArtifactStore store, final String path )
         throws RESTWorkflowException;
 
     void store( final DeployPoint deploy, final String path, final InputStream stream )

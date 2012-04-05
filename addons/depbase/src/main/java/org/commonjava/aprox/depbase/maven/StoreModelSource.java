@@ -4,30 +4,30 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.maven.model.building.ModelSource;
-import org.commonjava.aprox.core.rest.StoreInputStream;
+import org.commonjava.aprox.core.io.StorageItem;
 
 public class StoreModelSource
     implements ModelSource
 {
 
-    private final StoreInputStream stream;
+    private final StorageItem item;
 
-    public StoreModelSource( final StoreInputStream stream )
+    public StoreModelSource( final StorageItem stream )
     {
-        this.stream = stream;
+        this.item = stream;
     }
 
     @Override
     public InputStream getInputStream()
         throws IOException
     {
-        return stream;
+        return item == null ? null : item.getStream();
     }
 
     @Override
     public String getLocation()
     {
-        return stream.toString();
+        return item.toString();
     }
 
 }

@@ -16,7 +16,6 @@
 package org.commonjava.aprox.core.live.rest.util;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.util.ArrayList;
@@ -25,10 +24,10 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
+import org.commonjava.aprox.core.io.StorageItem;
 import org.commonjava.aprox.core.live.AbstractAProxLiveTest;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.Repository;
-import org.commonjava.aprox.core.rest.StoreInputStream;
 import org.commonjava.aprox.core.rest.util.FileManager;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -57,8 +56,8 @@ public class PathRetrieverLiveTest
         final Repository repo = modelFactory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" );
         final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
 
-        final StoreInputStream stream = downloader.retrieve( repo, path );
-        final String pom = IOUtils.toString( stream );
+        final StorageItem stream = downloader.retrieve( repo, path );
+        final String pom = IOUtils.toString( stream.getStream() );
 
         assertThat( pom.contains( "<artifactId>maven-model</artifactId>" ), equalTo( true ) );
     }
@@ -76,10 +75,8 @@ public class PathRetrieverLiveTest
         repos.add( repo );
         repos.add( repo2 );
 
-        final StoreInputStream stream = downloader.retrieveFirst( repos, path );
-        assertThat( stream, notNullValue() );
-
-        final String pom = IOUtils.toString( stream );
+        final StorageItem stream = downloader.retrieveFirst( repos, path );
+        final String pom = IOUtils.toString( stream.getStream() );
 
         assertThat( pom.contains( "<artifactId>maven-model</artifactId>" ), equalTo( true ) );
     }

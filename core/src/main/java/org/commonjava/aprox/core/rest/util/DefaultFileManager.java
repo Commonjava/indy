@@ -51,12 +51,12 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.commonjava.aprox.core.change.event.FileStorageEvent;
 import org.commonjava.aprox.core.conf.AproxConfiguration;
+import org.commonjava.aprox.core.io.StorageItem;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.rest.RESTWorkflowException;
-import org.commonjava.aprox.core.rest.StoreInputStream;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
@@ -107,10 +107,10 @@ public class DefaultFileManager
      * @see org.commonjava.aprox.core.rest.util.FileManager#downloadFirst(java.util.List, java.lang.String)
      */
     @Override
-    public StoreInputStream retrieveFirst( final List<? extends ArtifactStore> stores, final String path )
+    public StorageItem retrieveFirst( final List<? extends ArtifactStore> stores, final String path )
         throws RESTWorkflowException
     {
-        StoreInputStream target = null;
+        StorageItem target = null;
 
         for ( final ArtifactStore store : stores )
         {
@@ -134,12 +134,12 @@ public class DefaultFileManager
      * @see org.commonjava.aprox.core.rest.util.FileManager#downloadAll(java.util.List, java.lang.String)
      */
     @Override
-    public Set<StoreInputStream> retrieveAll( final List<? extends ArtifactStore> stores, final String path )
+    public Set<StorageItem> retrieveAll( final List<? extends ArtifactStore> stores, final String path )
         throws RESTWorkflowException
     {
-        final Set<StoreInputStream> results = new LinkedHashSet<StoreInputStream>();
+        final Set<StorageItem> results = new LinkedHashSet<StorageItem>();
 
-        StoreInputStream stream = null;
+        StorageItem stream = null;
         for ( final ArtifactStore store : stores )
         {
             stream = retrieve( store, path, true );
@@ -158,13 +158,13 @@ public class DefaultFileManager
      * java.lang.String)
      */
     @Override
-    public StoreInputStream retrieve( final ArtifactStore store, final String path )
+    public StorageItem retrieve( final ArtifactStore store, final String path )
         throws RESTWorkflowException
     {
         return retrieve( store, path, false );
     }
 
-    private StoreInputStream retrieve( final ArtifactStore store, final String path, final boolean suppressFailures )
+    private StorageItem retrieve( final ArtifactStore store, final String path, final boolean suppressFailures )
         throws RESTWorkflowException
     {
         File target = null;
@@ -183,18 +183,25 @@ public class DefaultFileManager
         if ( target.exists() )
         {
             logger.info( "Using stored copy from artifact store: %s for: %s", store.getName(), path );
-            try
+            if ( target.isDirectory() )
             {
-                return new StoreInputStream( store.getKey(), path,
-                                             new BufferedInputStream( new FileInputStream( target ) ) );
+                return new StorageItem( store.getKey(), path );
             }
-            catch ( final FileNotFoundException e )
+            else
             {
-                throw new RESTWorkflowException(
-                                                 Response.serverError()
-                                                         .build(),
-                                                 "File: %s not found, EVEN THOUGH WE JUST TESTED FOR ITS EXISTENCE!\nError: %s",
-                                                 e, target, e.getMessage() );
+                try
+                {
+                    return new StorageItem( store.getKey(), path,
+                                            new BufferedInputStream( new FileInputStream( target ) ) );
+                }
+                catch ( final FileNotFoundException e )
+                {
+                    throw new RESTWorkflowException(
+                                                     Response.serverError()
+                                                             .build(),
+                                                     "File: %s not found, EVEN THOUGH WE JUST TESTED FOR ITS EXISTENCE!\nError: %s",
+                                                     e, target, e.getMessage() );
+                }
             }
         }
         else
