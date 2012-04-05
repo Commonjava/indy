@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.enterprise.inject.Alternative;
+import javax.inject.Named;
+
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.util.logging.Logger;
@@ -13,6 +16,8 @@ import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 
 @SectionName( "group" )
+@Alternative
+@Named( "dont-use-directly" )
 public class DefaultAutoGroupConfiguration
     implements AutoGroupConfiguration
 {

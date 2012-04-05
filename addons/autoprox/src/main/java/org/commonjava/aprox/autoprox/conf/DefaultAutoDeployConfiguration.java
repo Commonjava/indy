@@ -1,9 +1,14 @@
 package org.commonjava.aprox.autoprox.conf;
 
+import javax.enterprise.inject.Alternative;
+import javax.inject.Named;
+
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 
 @SectionName( "deploy" )
+@Alternative
+@Named( "dont-use-directly" )
 public class DefaultAutoDeployConfiguration
     implements AutoDeployConfiguration
 {

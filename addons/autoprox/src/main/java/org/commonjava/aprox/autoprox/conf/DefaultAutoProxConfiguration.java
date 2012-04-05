@@ -1,11 +1,16 @@
 package org.commonjava.aprox.autoprox.conf;
 
+import javax.enterprise.inject.Alternative;
+import javax.inject.Named;
+
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 import org.commonjava.web.config.section.ConfigurationSectionListener;
 
 @SectionName( ConfigurationSectionListener.DEFAULT_SECTION )
+@Alternative
+@Named( "dont-use-directly" )
 public class DefaultAutoProxConfiguration
     implements AutoProxConfiguration
 {

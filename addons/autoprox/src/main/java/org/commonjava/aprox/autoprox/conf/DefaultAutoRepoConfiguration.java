@@ -1,10 +1,15 @@
 package org.commonjava.aprox.autoprox.conf;
 
+import javax.enterprise.inject.Alternative;
+import javax.inject.Named;
+
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.ConfigNames;
 import org.commonjava.web.config.annotation.SectionName;
 
 @SectionName( "repository" )
+@Alternative
+@Named( "dont-use-directly" )
 public class DefaultAutoRepoConfiguration
     implements AutoRepoConfiguration
 {

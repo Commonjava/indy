@@ -38,6 +38,7 @@ public abstract class FlatFileDataManagerDecorator
     public void storeDeployPoints( final Collection<? extends DeployPoint> deploys )
         throws ProxyDataException
     {
+        final long ts = System.currentTimeMillis();
         dataManager.storeDeployPoints( deploys );
     }
 

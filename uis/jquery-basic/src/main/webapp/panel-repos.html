@@ -90,6 +90,7 @@
                   $(this).dialog('close');
                 },
                 "Cancel": function() {
+                  clearSelectedRow( repoTable );
                   $(this).dialog('close');
                 },
                 Delete: function(){
@@ -134,6 +135,7 @@
             "bProcessing": true,
             "sAjaxSource": listUrl,
             "sAjaxDataProp": "items",
+            "iDisplayLength": 25,
             "aoColumns": [
             {
                 "sTitle": "Repository Name",
