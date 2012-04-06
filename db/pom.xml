@@ -30,7 +30,16 @@
   
   <modules>
     <module>couch</module>
-    <module>flat</module>
     <module>memory</module>
   </modules>
+  
+  <profiles>
+    <profile>
+      <id>experimental</id>
+      
+      <modules>
+        <module>flat</module>
+      </modules>
+    </profile>
+  </profiles>
 </project>
