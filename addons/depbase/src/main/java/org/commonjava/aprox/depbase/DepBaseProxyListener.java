@@ -90,7 +90,7 @@ public class DepBaseProxyListener
             return;
         }
 
-        final Model rawModel = loadRawModel( event, stores );
+        final Model rawModel = loadRawModel( event );
         if ( rawModel == null )
         {
             return;
@@ -140,7 +140,7 @@ public class DepBaseProxyListener
         return result.getEffectiveModel();
     }
 
-    protected Model loadRawModel( final FileStorageEvent event, final List<ArtifactStore> stores )
+    protected Model loadRawModel( final FileStorageEvent event )
     {
 
         final Map<String, Object> options = new HashMap<String, Object>();
