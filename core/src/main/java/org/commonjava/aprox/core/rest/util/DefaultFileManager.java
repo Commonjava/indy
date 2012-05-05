@@ -241,6 +241,7 @@ public class DefaultFileManager
             cleanup( request );
             synchronized ( pendingUrls )
             {
+                logger.info( "Marking download complete: %s", url );
                 pendingUrls.remove( url );
                 pendingUrls.notifyAll();
             }
@@ -409,9 +410,12 @@ public class DefaultFileManager
                         break;
                     }
 
+                    logger.info( "Waiting for download to complete: %s", url );
+
                 }
                 while ( pendingUrls.contains( url ) );
 
+                logger.info( "Download blocked (pending download already in progress): %s", url );
                 return false;
             }
             else
