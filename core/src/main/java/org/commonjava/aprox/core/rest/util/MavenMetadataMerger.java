@@ -40,6 +40,8 @@ public class MavenMetadataMerger
 
     public static final String METADATA_NAME = "maven-metadata.xml";
 
+    public static final String METADATA_MERGEINFO_SUFFIX = ".info";
+
     private final Logger logger = new Logger( getClass() );
 
     public InputStream merge( final Set<StorageItem> sources, final Group group, final String path )

@@ -26,8 +26,8 @@ import org.commonjava.aprox.core.change.event.FileStorageEvent;
 import org.commonjava.aprox.core.data.ProxyDataException;
 import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.rest.util.MavenMetadataMerger;
 import org.commonjava.aprox.core.rest.util.FileManager;
+import org.commonjava.aprox.core.rest.util.MavenMetadataMerger;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
@@ -77,11 +77,18 @@ public class MavenMetadataUploadListener
     private void reMergeMavenMetadata( final Group group, final String path )
     {
         final File target = fileManager.formatStorageReference( group, path );
+        final File targetInfo =
+            fileManager.formatStorageReference( group, path + MavenMetadataMerger.METADATA_MERGEINFO_SUFFIX );
 
         if ( target.exists() )
         {
             // allow it to regenerate on the next call.
             target.delete();
+        }
+
+        if ( targetInfo.exists() )
+        {
+            targetInfo.delete();
         }
 
         // try

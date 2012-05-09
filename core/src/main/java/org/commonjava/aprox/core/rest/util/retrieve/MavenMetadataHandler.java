@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -41,11 +42,14 @@ import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.rest.RESTWorkflowException;
 import org.commonjava.aprox.core.rest.util.FileManager;
 import org.commonjava.aprox.core.rest.util.MavenMetadataMerger;
+import org.commonjava.util.logging.Logger;
 
 @Singleton
 public class MavenMetadataHandler
     implements GroupPathHandler
 {
+
+    private final Logger logger = new Logger( getClass() );
 
     @Inject
     private FileManager fileManager;
@@ -67,6 +71,8 @@ public class MavenMetadataHandler
         throws RESTWorkflowException
     {
         final File target = fileManager.formatStorageReference( group, path );
+        final File targetInfo =
+            fileManager.formatStorageReference( group, path + MavenMetadataMerger.METADATA_MERGEINFO_SUFFIX );
 
         if ( !target.exists() )
         {
@@ -99,6 +105,27 @@ public class MavenMetadataHandler
                 {
                     closeQuietly( merged );
                     closeQuietly( fos );
+                }
+
+                FileWriter fw = null;
+                try
+                {
+                    fw = new FileWriter( targetInfo );
+                    for ( final StorageItem source : sources )
+                    {
+                        fw.write( source.getStoreKey()
+                                        .toString() );
+                        fw.write( "\n" );
+                    }
+                }
+                catch ( final IOException e )
+                {
+                    logger.error( "Failed to write merged metadata information to: %s.\nError: %s", e, targetInfo,
+                                  e.getMessage() );
+                }
+                finally
+                {
+                    closeQuietly( fw );
                 }
             }
         }
