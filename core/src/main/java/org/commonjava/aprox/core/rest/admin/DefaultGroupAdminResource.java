@@ -40,7 +40,7 @@ import org.commonjava.aprox.core.model.io.AProxModelSerializer;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.model.Listing;
 
-@Path( "/admin/group" )
+@Path( "/admin/groups" )
 @RequestScoped
 public class DefaultGroupAdminResource
     implements GroupAdminResource

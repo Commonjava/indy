@@ -44,7 +44,7 @@ import org.commonjava.aprox.core.model.io.AProxModelSerializer;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.model.Listing;
 
-@Path( "/admin/repository" )
+@Path( "/admin/repositories" )
 @RequestScoped
 public class DefaultRepositoryAdminResource
     implements RepositoryAdminResource

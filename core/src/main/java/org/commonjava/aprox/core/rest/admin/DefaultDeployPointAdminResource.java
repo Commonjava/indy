@@ -44,7 +44,7 @@ import org.commonjava.aprox.core.model.io.AProxModelSerializer;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.model.Listing;
 
-@Path( "/admin/deploy" )
+@Path( "/admin/deploys" )
 @RequestScoped
 public class DefaultDeployPointAdminResource
     implements DeployPointAdminResource
