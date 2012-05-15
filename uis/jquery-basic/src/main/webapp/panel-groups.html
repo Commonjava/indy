@@ -94,7 +94,7 @@
           };
 
           notice( 'group-' + name + '-created', "Saving new group: " + name );
-          var url = renderAdminUrl( 'group' );
+          var url = renderAdminUrl( 'groups' );
           postJSON( url, group, 'group-' + name + '-created' );
 
           groupTable.fnAddData( group );
@@ -135,7 +135,7 @@
             
             var name = group.name;
 
-            var url = renderAdminUrl( 'group', name );
+            var url = renderAdminUrl( 'groups', name );
             notice( 'group-' + name + '-saved', "Saving group: " + name + " to: " + url );
             postJSON( url, group, 'group-' + name + '-saved' );
 
@@ -172,7 +172,7 @@
           var row = parseInt( $('#delete-group-row').val() );
           var group = groupTable.fnGetData(row);
           
-          var url = renderAdminUrl('group', group.name);
+          var url = renderAdminUrl('groups', group.name);
           notice('group-' + group.name + '-deleted', "Deleting group: " + group.name + " at: " + url);
           ajaxDelete( url, 'group-' + group.name + "-deleted" );
           
@@ -193,7 +193,7 @@
       $('#new-group').dialog('open');
     });
     
-    var listUrl = renderAdminUrl( 'group', 'list' );
+    var listUrl = renderAdminUrl( 'groups', 'list' );
     notice( 'loading-groups', "Loading " + listUrl );
     groupTable = $("#group-panel .listing-table").dataTable({
       "bProcessing": true,

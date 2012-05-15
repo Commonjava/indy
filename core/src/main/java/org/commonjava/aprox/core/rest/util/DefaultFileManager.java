@@ -304,13 +304,21 @@ public class DefaultFileManager
         {
             final HttpResponse response = client.execute( request );
             final StatusLine line = response.getStatusLine();
-            if ( line.getStatusCode() != HttpStatus.SC_OK )
+            final int sc = line.getStatusCode();
+            if ( sc != HttpStatus.SC_OK )
             {
                 logger.warn( "%s : %s", line, url );
                 if ( !suppressFailures )
                 {
-                    throw new RESTWorkflowException( Response.serverError()
-                                                             .build() );
+                    if ( sc == HttpStatus.SC_NOT_FOUND )
+                    {
+                        result = null;
+                    }
+                    else
+                    {
+                        throw new RESTWorkflowException( Response.serverError()
+                                                                 .build() );
+                    }
                 }
             }
             else

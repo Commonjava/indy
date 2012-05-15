@@ -27,11 +27,13 @@ import java.util.List;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.log4j.Level;
 import org.commonjava.aprox.core.live.AbstractAProxLiveTest;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.aprox.core.model.io.StoreKeySerializer;
+import org.commonjava.util.logging.Log4jUtil;
 import org.commonjava.web.json.model.Listing;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -39,22 +41,32 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.google.gson.reflect.TypeToken;
 
 @RunWith( Arquillian.class )
-public class GroupAdminResourceLiveTest
+// @Ignore( "TODO - Restore deprecated access to /admin/group" )
+public class DeprecatedGroupAdminResourceLiveTest
     extends AbstractAProxLiveTest
 {
 
-    private static final String BASE_URL = "/admin/groups";
+    private static final String BASE_URL = "/admin/group";
+
+    private static final String ADJ_BASE_URL = "/admin/groups";
 
     @Deployment
     public static WebArchive createWar()
     {
-        return createWar( GroupAdminResourceLiveTest.class ).build();
+        return createWar( DeprecatedGroupAdminResourceLiveTest.class ).build();
+    }
+
+    @BeforeClass
+    public static void setupLogging()
+    {
+        Log4jUtil.configure( Level.DEBUG );
     }
 
     @Before
@@ -80,7 +92,7 @@ public class GroupAdminResourceLiveTest
         final Group grp = modelFactory.createGroup( "test" );
 
         final HttpResponse response = webFixture.post( webFixture.resourceUrl( BASE_URL ), grp, HttpStatus.SC_CREATED );
-        webFixture.assertLocationHeader( response, webFixture.resourceUrl( BASE_URL, grp.getName() ) );
+        webFixture.assertLocationHeader( response, webFixture.resourceUrl( ADJ_BASE_URL, grp.getName() ) );
 
         final Group result = webFixture.get( webFixture.resourceUrl( BASE_URL, grp.getName() ), Group.class );
 

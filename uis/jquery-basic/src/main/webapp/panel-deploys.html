@@ -27,7 +27,7 @@
           };
 
           notice( 'deploy-' + name + '-created', "Saving new deploy point: " + name );
-          var url = renderAdminUrl( 'deploy' );
+          var url = renderAdminUrl( 'deploys' );
           postJSON( url, deploy, 'deploy-' + name + '-created' );
 
           deployTable.fnAddData(deploy);
@@ -62,7 +62,7 @@
             deploy.snapshot_timeout_seconds = parseInt( snaps ? snapTimeout : -1 );
 
             var name = deploy.name;
-            var url = renderAdminUrl('deploy', name);
+            var url = renderAdminUrl('deploys', name);
             notice('deploy-' + name + '-saved', "Saving deploy: " + JSON.stringify(deploy) + " to: " + url);
             postJSON(url, deploy, 'deploy-' + name + '-saved');
 
@@ -99,7 +99,7 @@
           var row = parseInt( $('#delete-deploy-row').val() );
           var deploy = deployTable.fnGetData(row);
           
-          var url = renderAdminUrl('deploy', deploy.name);
+          var url = renderAdminUrl('deploys', deploy.name);
           notice('deploy-' + deploy.name + '-deleted', "Deleting deploy point: " + deploy.name + " at: " + url);
           ajaxDelete( url, 'deploy-' + deploy.name + "-deleted" );
           
@@ -113,7 +113,7 @@
       }
     });
     
-    var listUrl = renderAdminUrl( 'deploy', 'list' );
+    var listUrl = renderAdminUrl( 'deploys', 'list' );
     notice( 'loading-deploys', "Loading " + listUrl );
     deployTable = $("#deploy-panel .listing-table").dataTable({
       "bProcessing": true,

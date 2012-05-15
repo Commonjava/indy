@@ -41,16 +41,19 @@ import org.junit.runner.RunWith;
 import com.google.gson.reflect.TypeToken;
 
 @RunWith( Arquillian.class )
-public class RepositoryAdminResourceLiveTest
+// @Ignore( "TODO - Restore deprecated access to /admin/repository" )
+public class DeprecatedRepositoryAdminResourceLiveTest
     extends AbstractAProxLiveTest
 {
 
-    private static final String BASE_URL = "/admin/repositories";
+    private static final String BASE_URL = "/admin/repository";
+
+    private static final String ADJ_BASE_URL = "/admin/repositories";
 
     @Deployment
     public static WebArchive createWar()
     {
-        return createWar( RepositoryAdminResourceLiveTest.class ).build();
+        return createWar( DeprecatedRepositoryAdminResourceLiveTest.class ).build();
     }
 
     @Before
@@ -68,7 +71,7 @@ public class RepositoryAdminResourceLiveTest
         final HttpResponse response = webFixture.post( webFixture.resourceUrl( BASE_URL ), repo, HttpStatus.SC_CREATED );
 
         final String repoUrl = webFixture.resourceUrl( BASE_URL, repo.getName() );
-        webFixture.assertLocationHeader( response, repoUrl );
+        webFixture.assertLocationHeader( response, webFixture.resourceUrl( ADJ_BASE_URL, repo.getName() ) );
 
         final Repository result = webFixture.get( repoUrl, Repository.class );
 

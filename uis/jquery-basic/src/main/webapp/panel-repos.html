@@ -6,7 +6,7 @@
      {
         var repoTable;
 
-        var listUrl = renderAdminUrl('repository', 'list');
+        var listUrl = renderAdminUrl('repositories', 'list');
         notice('loading-repos', "Loading " + listUrl);
         
         $('#new-repo').dialog({
@@ -37,7 +37,7 @@
                     };
 
                     notice('repo-' + name + '-saved', "Saving repository: " + name);
-                    var url = renderAdminUrl('repository');
+                    var url = renderAdminUrl('repositories');
                     postJSON(url, repo, 'repo-' + name + '-saved');
 
                     repoTable.fnAddData(repo);
@@ -80,7 +80,7 @@
                   repo.cache_timeout_seconds = cacheTimeout;
 
                   var name = repo.name;
-                  var url = renderAdminUrl('repository', name);
+                  var url = renderAdminUrl('repositories', name);
                   notice('repo-' + name + '-saved', "Saving repository: " + JSON.stringify(repo) + " to: " + url);
                   postJSON(url, repo, 'repo-' + name + '-saved');
 
@@ -117,7 +117,7 @@
               var row = parseInt( $('#delete-repo-row').val() );
               var repo = repoTable.fnGetData(row);
               
-              var url = renderAdminUrl('repository', repo.name);
+              var url = renderAdminUrl('repositories', repo.name);
               notice('repo-' + repo.name + '-deleted', "Deleting repository: " + repo.name + " at: " + url);
               ajaxDelete( url, 'repo-' + repo.name + "-deleted" );
               

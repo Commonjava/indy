@@ -2,10 +2,8 @@ package org.commonjava.aprox.core.rest.admin;
 
 import java.io.IOException;
 
-import javax.inject.Singleton;
+import javax.enterprise.context.RequestScoped;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -13,159 +11,142 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
-@Singleton
-public class AdminDeprecationResource
-{
-    @Context
-    private HttpServletRequest request;
+import org.commonjava.aprox.core.rest.AbstractURLAliasingResource;
 
-    @Context
-    private HttpServletResponse response;
+@Path( "/admin" )
+@RequestScoped
+public class AdminDeprecationResource
+    extends AbstractURLAliasingResource
+{
 
     @POST
     @Consumes( { MediaType.APPLICATION_JSON } )
-    @Path( "/admin/repository" )
+    @Path( "/repository" )
     public void createRepository()
         throws ServletException, IOException
     {
-        request.getRequestDispatcher( "/admin/repositories" )
-               .forward( request, response );
+        forward( "/../repositories" );
     }
 
     @POST
-    @Path( "/admin/repository/{name}" )
+    @Path( "/repository/{name}" )
     @Consumes( { MediaType.APPLICATION_JSON } )
     public void storeRepository( @PathParam( "name" ) final String name )
         throws ServletException, IOException
     {
-        request.getRequestDispatcher( "/admin/repositories/" + name )
-               .forward( request, response );
+        forward( "/../../repositories", name );
     }
 
     @GET
-    @Path( "/admin/repository/list" )
+    @Path( "/repository/list" )
     @Produces( { MediaType.APPLICATION_JSON } )
     public void getAllRepositories()
         throws ServletException, IOException
     {
-        request.getRequestDispatcher( "/admin/repositories/list" )
-               .forward( request, response );
+        forward( "/../../repositories/list" );
     }
 
     @GET
-    @Path( "/admin/repository/{name}" )
+    @Path( "/repository/{name}" )
     public void getRepository( @PathParam( "name" ) final String name )
         throws ServletException, IOException
     {
-        request.getRequestDispatcher( "/admin/repositories/" + name )
-               .forward( request, response );
+        forward( "/../../repositories", name );
     }
 
     @DELETE
-    @Path( "/admin/repository/{name}" )
+    @Path( "/repository/{name}" )
     public void deleteRepository( @PathParam( "name" ) final String name )
         throws ServletException, IOException
     {
-        request.getRequestDispatcher( "/admin/repositories/" + name )
-               .forward( request, response );
+        forward( "/../../repositories", name );
     }
 
     @POST
     @Consumes( { MediaType.APPLICATION_JSON } )
-    @Path( "/admin/deploy" )
+    @Path( "/deploy" )
     public void createDeployPoint()
         throws ServletException, IOException
     {
-        request.getRequestDispatcher( "/admin/deploys" )
-               .forward( request, response );
+        forward( "/../deploys" );
     }
 
     @POST
-    @Path( "/admin/deploy/{name}" )
+    @Path( "/deploy/{name}" )
     @Consumes( { MediaType.APPLICATION_JSON } )
     public void storeDeployPoint( @PathParam( "name" ) final String name )
         throws ServletException, IOException
     {
-        request.getRequestDispatcher( "/admin/deploys/" + name )
-               .forward( request, response );
+        forward( "/../../deploys", name );
     }
 
     @GET
-    @Path( "/admin/deploy/list" )
+    @Path( "/deploy/list" )
     @Produces( { MediaType.APPLICATION_JSON } )
     public void getAllDeployPoints()
         throws ServletException, IOException
     {
-        request.getRequestDispatcher( "/admin/deploys/list" )
-               .forward( request, response );
+        forward( "/../../deploys/list" );
     }
 
     @GET
-    @Path( "/admin/deploy/{name}" )
+    @Path( "/deploy/{name}" )
     public void getDeployPoint( @PathParam( "name" ) final String name )
         throws ServletException, IOException
     {
-        request.getRequestDispatcher( "/admin/deploys/" + name )
-               .forward( request, response );
+        forward( "/../../deploys", name );
     }
 
     @DELETE
-    @Path( "/admin/deploy/{name}" )
+    @Path( "/deploy/{name}" )
     public void deleteDeployPoint( @PathParam( "name" ) final String name )
         throws ServletException, IOException
     {
-        request.getRequestDispatcher( "/admin/deploys/" + name )
-               .forward( request, response );
+        forward( "/../../deploys", name );
     }
 
     @POST
     @Consumes( { MediaType.APPLICATION_JSON } )
-    @Path( "/admin/group" )
+    @Path( "/group" )
     public void createGroup()
         throws ServletException, IOException
     {
-        request.getRequestDispatcher( "/admin/groups" )
-               .forward( request, response );
+        forward( "/../groups" );
     }
 
     @POST
-    @Path( "/admin/group/{name}" )
+    @Path( "/group/{name}" )
     @Consumes( { MediaType.APPLICATION_JSON } )
     public void storeGroup( @PathParam( "name" ) final String name )
         throws ServletException, IOException
     {
-        request.getRequestDispatcher( "/admin/groups/" + name )
-               .forward( request, response );
+        forward( "/../../groups,", name );
     }
 
     @GET
-    @Path( "/admin/group/list" )
+    @Path( "/group/list" )
     @Produces( { MediaType.APPLICATION_JSON } )
     public void getAllGroups()
         throws ServletException, IOException
     {
-        request.getRequestDispatcher( "/admin/groups/list" )
-               .forward( request, response );
+        forward( "/../../groups/list" );
     }
 
     @GET
-    @Path( "/admin/group/{name}" )
+    @Path( "/group/{name}" )
     public void getGroup( @PathParam( "name" ) final String name )
         throws ServletException, IOException
     {
-        request.getRequestDispatcher( "/admin/groups/" + name )
-               .forward( request, response );
+        forward( "/../../groups", name );
     }
 
     @DELETE
-    @Path( "/admin/group/{name}" )
+    @Path( "/group/{name}" )
     public void deleteGroup( @PathParam( "name" ) final String name )
         throws ServletException, IOException
     {
-        request.getRequestDispatcher( "/admin/groups/" + name )
-               .forward( request, response );
+        forward( "/../../groups", name );
     }
 }
