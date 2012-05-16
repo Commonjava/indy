@@ -152,7 +152,6 @@ public class DefaultRepositoryAdminResource
      */
     @Override
     @GET
-    @Path( "/list" )
     @Produces( { MediaType.APPLICATION_JSON } )
     public Response getAll()
     {

@@ -113,7 +113,7 @@
       }
     });
     
-    var listUrl = renderAdminUrl( 'deploys', 'list' );
+    var listUrl = renderAdminUrl( 'deploys' );
     notice( 'loading-deploys', "Loading " + listUrl );
     deployTable = $("#deploy-panel .listing-table").dataTable({
       "bProcessing": true,

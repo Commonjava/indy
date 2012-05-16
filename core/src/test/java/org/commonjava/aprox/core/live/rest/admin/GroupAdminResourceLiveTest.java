@@ -148,7 +148,7 @@ public class GroupAdminResourceLiveTest
         webFixture.post( webFixture.resourceUrl( BASE_URL ), grp, HttpStatus.SC_CONFLICT );
 
         final Listing<Group> result =
-            webFixture.getListing( webFixture.resourceUrl( BASE_URL, "/list" ), new TypeToken<Listing<Group>>()
+            webFixture.getListing( webFixture.resourceUrl( BASE_URL ), new TypeToken<Listing<Group>>()
             {
             } );
 
@@ -169,7 +169,7 @@ public class GroupAdminResourceLiveTest
         webFixture.post( webFixture.resourceUrl( BASE_URL ), grp2, HttpStatus.SC_CREATED );
 
         final Listing<Group> result =
-            webFixture.getListing( webFixture.resourceUrl( BASE_URL, "/list" ), new TypeToken<Listing<Group>>()
+            webFixture.getListing( webFixture.resourceUrl( BASE_URL ), new TypeToken<Listing<Group>>()
             {
             } );
 

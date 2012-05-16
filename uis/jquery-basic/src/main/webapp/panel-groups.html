@@ -193,7 +193,7 @@
       $('#new-group').dialog('open');
     });
     
-    var listUrl = renderAdminUrl( 'groups', 'list' );
+    var listUrl = renderAdminUrl( 'groups' );
     notice( 'loading-groups', "Loading " + listUrl );
     groupTable = $("#group-panel .listing-table").dataTable({
       "bProcessing": true,

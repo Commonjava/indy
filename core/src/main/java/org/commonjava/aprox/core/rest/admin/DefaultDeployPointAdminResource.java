@@ -147,7 +147,6 @@ public class DefaultDeployPointAdminResource
      */
     @Override
     @GET
-    @Path( "/list" )
     @Produces( { MediaType.APPLICATION_JSON } )
     public Response getAll()
     {

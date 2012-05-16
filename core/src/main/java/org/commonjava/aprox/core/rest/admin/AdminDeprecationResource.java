@@ -45,7 +45,7 @@ public class AdminDeprecationResource
     public void getAllRepositories()
         throws ServletException, IOException
     {
-        forward( "/../../repositories/list" );
+        forward( "/../../repositories" );
     }
 
     @GET
@@ -88,7 +88,7 @@ public class AdminDeprecationResource
     public void getAllDeployPoints()
         throws ServletException, IOException
     {
-        forward( "/../../deploys/list" );
+        forward( "/../../deploys" );
     }
 
     @GET
@@ -131,7 +131,7 @@ public class AdminDeprecationResource
     public void getAllGroups()
         throws ServletException, IOException
     {
-        forward( "/../../groups/list" );
+        forward( "/../../groups" );
     }
 
     @GET

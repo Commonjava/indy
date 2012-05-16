@@ -1,4 +1,4 @@
-var api_base = 'http://localhost:9080/aprox/api/1.0';
+var api_base = '/aprox/api/1.0';
 
 var $tabs;
 $(function(){
@@ -92,7 +92,7 @@ function deleteOption( select, key ){
 function loadOptions( select, option_sets ){ // option_sets = [ {type: foo, name_prefix: bar, name_suffix: baz}, ...]
   var reqs = [];
   $.each( option_sets, function( i, options ){
-    var listUrl = renderAdminUrl( options.type, 'list' );
+    var listUrl = renderAdminUrl( options.type );
 
     reqs.push(
       $.getJSON( listUrl, function(data)

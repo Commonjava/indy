@@ -142,7 +142,6 @@ public class DefaultGroupAdminResource
      */
     @Override
     @GET
-    @Path( "/list" )
     @Produces( { MediaType.APPLICATION_JSON } )
     public Response getAll()
     {

@@ -88,7 +88,7 @@ public class RepositoryAdminResourceLiveTest
         webFixture.post( webFixture.resourceUrl( BASE_URL ), repo, HttpStatus.SC_CONFLICT );
 
         final Listing<Repository> result =
-            webFixture.getListing( webFixture.resourceUrl( BASE_URL, "/list" ), new TypeToken<Listing<Repository>>()
+            webFixture.getListing( webFixture.resourceUrl( BASE_URL ), new TypeToken<Listing<Repository>>()
             {
             } );
 
@@ -127,7 +127,7 @@ public class RepositoryAdminResourceLiveTest
         webFixture.post( webFixture.resourceUrl( BASE_URL ), repo2, HttpStatus.SC_CREATED );
 
         final Listing<Repository> result =
-            webFixture.getListing( webFixture.resourceUrl( BASE_URL, "/list" ), new TypeToken<Listing<Repository>>()
+            webFixture.getListing( webFixture.resourceUrl( BASE_URL ), new TypeToken<Listing<Repository>>()
             {
             } );
 
