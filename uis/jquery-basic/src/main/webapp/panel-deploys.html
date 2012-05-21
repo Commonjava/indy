@@ -64,7 +64,7 @@
             var name = deploy.name;
             var url = renderAdminUrl('deploys', name);
             notice('deploy-' + name + '-saved', "Saving deploy: " + JSON.stringify(deploy) + " to: " + url);
-            postJSON(url, deploy, 'deploy-' + name + '-saved');
+            putJSON(url, deploy, 'deploy-' + name + '-saved');
 
             deployTable.fnUpdate(deploy, row);
             

@@ -137,7 +137,7 @@
 
             var url = renderAdminUrl( 'groups', name );
             notice( 'group-' + name + '-saved', "Saving group: " + name + " to: " + url );
-            postJSON( url, group, 'group-' + name + '-saved' );
+            putJSON( url, group, 'group-' + name + '-saved' );
 
             groupTable.fnUpdate( group, row );
             clearSelectedRow( groupTable );

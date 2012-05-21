@@ -26,6 +26,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -84,7 +85,8 @@ public class DefaultDeployPointAdminResource
             {
                 builder = Response.created( uriInfo.getAbsolutePathBuilder()
                                                    .path( deploy.getName() )
-                                                   .build() );
+                                                   .build() )
+                                  .entity( deploy );
             }
             else
             {
@@ -106,7 +108,7 @@ public class DefaultDeployPointAdminResource
      * @see org.commonjava.aprox.core.rest.admin.DeployPointAdminResource#store(java.lang.String)
      */
     @Override
-    @POST
+    @PUT
     @Path( "/{name}" )
     @Consumes( { MediaType.APPLICATION_JSON } )
     public Response store( @PathParam( "name" ) final String name )

@@ -22,6 +22,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -81,7 +82,8 @@ public class DefaultGroupAdminResource
             {
                 builder = Response.created( uriInfo.getAbsolutePathBuilder()
                                                    .path( group.getName() )
-                                                   .build() );
+                                                   .build() )
+                                  .entity( group );
             }
             else
             {
@@ -103,7 +105,7 @@ public class DefaultGroupAdminResource
      * @see org.commonjava.aprox.core.rest.admin.GroupAdminResource#store(java.lang.String)
      */
     @Override
-    @POST
+    @PUT
     @Path( "/{name}" )
     @Consumes( { MediaType.APPLICATION_JSON } )
     public Response store( @PathParam( "name" ) final String name )

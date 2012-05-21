@@ -82,7 +82,7 @@
                   var name = repo.name;
                   var url = renderAdminUrl('repositories', name);
                   notice('repo-' + name + '-saved', "Saving repository: " + JSON.stringify(repo) + " to: " + url);
-                  postJSON(url, repo, 'repo-' + name + '-saved');
+                  putJSON(url, repo, 'repo-' + name + '-saved');
 
                   repoTable.fnUpdate(repo, row);
                   

@@ -116,6 +116,22 @@ function loadOptions( select, option_sets ){ // option_sets = [ {type: foo, name
   return reqs;
 }
 
+function putJSON( url, data, notice ){
+  ajaxPut( url, data, notice );
+}
+
+function ajaxPut( url, data, notice ){
+  $.ajax({
+    type: 'PUT',
+    accepts: 'application/json',
+    contentType: 'application/json',
+    url: url,
+    data: JSON.stringify( data ),
+  }).done(function(message){
+    clear_notice( notice );
+  });
+}
+
 function postJSON( url, data, notice ){
   ajaxPost( url, data, notice );
 }
