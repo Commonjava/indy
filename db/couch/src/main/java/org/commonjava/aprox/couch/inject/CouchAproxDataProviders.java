@@ -90,7 +90,7 @@ public class CouchAproxDataProviders
     @Shelflife
     public synchronized CouchManager getCouch()
     {
-        return couchManager;
+        return getCouchManager();
     }
 
 }
