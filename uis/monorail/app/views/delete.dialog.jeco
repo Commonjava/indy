@@ -1,0 +1,3 @@
+<div class="deleteDialog">
+  <p>Really delete<%= " #{@name}" if @name %>?</p>
+</div>

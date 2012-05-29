@@ -30,6 +30,7 @@
   <name>AProx :: UIs</name>
   
   <modules>
+    <module>monorail</module>
     <module>jquery-basic</module>
   </modules>
   

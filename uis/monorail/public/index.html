@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8 />
+  <title>Aprox Administration</title>
+  
+  <link rel="stylesheet" href="css/simple-mono/jquery-ui-1.8.17.custom.css" type="text/css" charset="utf-8" />
+  <link rel="stylesheet" href="/application.css" type="text/css" charset="utf-8" />
+  
+  <script src="/application.js" type="text/javascript" charset="utf-8"></script>
+  <script type="text/javascript" charset="utf-8">
+    var jQuery  = require("jqueryify");
+    var exports = this;
+    jQuery(function(){
+      var App = require("index");
+      exports.app = new App({el: $("#aprox-content")});      
+    });
+  </script>
+</head>
+<body>
+  <div id="aprox-content" class="ui-widget">
+  </div>
+</body>
+</html>

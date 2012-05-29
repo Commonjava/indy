@@ -1,0 +1,8 @@
+<div class="right product-name">AProx</div>
+<div class="navbar-content ui-corner-top ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header">
+  <a class="button nav-button repos">Repositories</a>
+  <div class="vdiv" />
+  <a class="button nav-button deploys">Deploy Points</a>
+  <div class="vdiv" />
+  <a class="button nav-button groups">Groups</a>
+</div>

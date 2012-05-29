@@ -1,0 +1,27 @@
+<div class="deploy-edit">
+  <form>
+    <div class="form-line">
+      <label>Name</label>
+      <% if @name: %>
+        <span class="name"><%= @name %></span>
+      <% else: %>
+        <input class="name-field" type="text" required="true" name="name"/>
+      <% end %>
+    </div>
+  
+    <div class="form-line">
+      <label>Releases Enabled?</label>
+      <input class="endisable" type="checkbox" name="allow_releases" <%= "checked=\"true\"" if @allow_releases %>">
+    </div>
+    
+    <div class="form-line">
+      <label>Snapshots Enabled?</label>
+      <input class="endisable" affects="snapshot_timeout_field" type="checkbox" name="allow_snapshots" <%= "checked=\"true\"" if @allow_snapshots %>">
+      
+      <span name="snapshot_timeout_field">
+        <label>&nbsp;...with Timeout</label>
+        <input title="Seconds before snapshots are deleted." class="timeout-field snapshot_timeout" type="number" name="snapshot_timeout_seconds" value="<%= @snapshot_timeout_seconds %>"> sec.
+      </span>
+    </div>
+  </form>
+</div>
