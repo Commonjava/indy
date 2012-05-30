@@ -27,7 +27,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox.ui</groupId>
-      <artifactId>aprox-ui-jquery-basic</artifactId>
+      <artifactId>aprox-ui-monorail</artifactId>
       <type>war</type>
     </dependency>
     <dependency>
