@@ -29,6 +29,8 @@ import org.commonjava.aprox.core.rest.RESTWorkflowException;
 public interface FileManager
 {
 
+    String HTTP_PARAM_REPO = "repository";
+
     StorageItem retrieveFirst( final List<? extends ArtifactStore> stores, final String path )
         throws RESTWorkflowException;
 

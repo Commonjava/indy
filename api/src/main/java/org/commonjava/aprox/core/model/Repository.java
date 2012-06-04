@@ -46,4 +46,16 @@ public interface Repository
 
     void setPassthrough( boolean passthrough );
 
+    void setKeyPassword( String keyPass );
+
+    String getKeyPassword();
+
+    void setKeyCertPem( String pemContent );
+
+    String getKeyCertPem();
+
+    void setServerCertPem( String pemContent );
+
+    String getServerCertPem();
+
 }

@@ -50,6 +50,12 @@ public class MemoryRepository
 
     private int cacheTimeoutSeconds;
 
+    private String keyPassword;
+
+    private String keyCertificatePem;
+
+    private String serverCertificatePem;
+
     MemoryRepository()
     {
         super( StoreType.repository );
@@ -221,6 +227,42 @@ public class MemoryRepository
     public void setCacheTimeoutSeconds( final int cacheTimeoutSeconds )
     {
         this.cacheTimeoutSeconds = cacheTimeoutSeconds;
+    }
+
+    @Override
+    public void setKeyPassword( final String keyPassword )
+    {
+        this.keyPassword = keyPassword;
+    }
+
+    @Override
+    public String getKeyPassword()
+    {
+        return keyPassword;
+    }
+
+    @Override
+    public void setKeyCertPem( final String keyCertificatePem )
+    {
+        this.keyCertificatePem = keyCertificatePem;
+    }
+
+    @Override
+    public String getKeyCertPem()
+    {
+        return keyCertificatePem;
+    }
+
+    @Override
+    public void setServerCertPem( final String serverCertificatePem )
+    {
+        this.serverCertificatePem = serverCertificatePem;
+    }
+
+    @Override
+    public String getServerCertPem()
+    {
+        return serverCertificatePem;
     }
 
 }

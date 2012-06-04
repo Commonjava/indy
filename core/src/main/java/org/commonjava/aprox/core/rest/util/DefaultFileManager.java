@@ -231,6 +231,10 @@ public class DefaultFileManager
         logger.info( "Trying: %s", url );
 
         final HttpGet request = new HttpGet( url );
+
+        request.getParams()
+               .setParameter( FileManager.HTTP_PARAM_REPO, repository );
+
         try
         {
             final InputStream in = executeGet( request, url, suppressFailures );
