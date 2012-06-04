@@ -2,7 +2,7 @@
   <form>
     <div class="form-line">
       <label>Name</label>
-      <% if @name: %>
+      <% if @item.name: %>
         <span class="name"><%= @item.name %></span>
       <% else: %>
         <input class="name-field" type="text" required="true" name="name"/>

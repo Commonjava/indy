@@ -39,7 +39,6 @@ class Group extends Spine.Model
       if data
         data.id = data.name
 
-    console.log("Serialized JSON: '#{JSON.stringify(data)}'")
     data
   
 module.exports = Group

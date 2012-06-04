@@ -52,7 +52,6 @@ class Deploy extends Spine.Model
           'allow_snapshots': if data.allow_snapshots is 'on' then true else false
           'snapshot_timeout_seconds': if data.allow_snapshots is true then parseInt data.snapshot_timeout_seconds else -1
 
-    console.log("Serialized JSON: '#{JSON.stringify(data)}'")
     data
   
 module.exports = Deploy

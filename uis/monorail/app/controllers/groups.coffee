@@ -22,7 +22,7 @@ class Groups extends ListingController
     @log("Rendering #{@items.length} groups")
     @html require('views/groups')(@)
     @postRender
-    Spine.trigger 'current-page', 'groups'
+    # Spine.trigger 'current-page', 'groups'
   
   opening: (item) =>
     @backupItem = item.dup();
@@ -30,7 +30,6 @@ class Groups extends ListingController
     
   cancelled: (item) =>
     if ( @backupItem )
-      item.load( @backupItem )
       item.constituents = @backupItem.constituents if @backupItem.constituents
   
   createEmptyItem: ->

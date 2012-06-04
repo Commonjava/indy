@@ -27,7 +27,6 @@ class Repository extends Spine.Model
   
   toJSON: (objects) ->
     data = @attributes()
-    console.log("Unmodified Serialized JSON: '#{JSON.stringify(data)}'")
     
     result = null
     if Spine.isArray(data)
@@ -56,7 +55,6 @@ class Repository extends Spine.Model
           'is_passthrough': if data.is_passthrough is 'on' then true else false
           'cache_timeout_seconds': if data.is_passthrough is true then -1 else parseInt data.cache_timeout_seconds
     
-    console.log("Serialized JSON: '#{JSON.stringify(data)}'")
     data
   
 module.exports = Repository
