@@ -1,0 +1,26 @@
+<div class="repo-edit proxy-edit">
+  <form>
+    <div class="form-line field-set">
+      <div class="left">
+        <label>Proxy Host</label>
+        <input class="host-field" type="text" name="proxy_host" required="true" value="<%= @proxy_host %>"/>
+      </div>
+      <div class="right">
+        <label>Port</label>
+        <input class="port-field" type="number" name="proxy_port" required="true" value="<%= @proxy_port %>"/>
+      </div>
+    </div>
+    
+    <div class="form-line field-set">
+      <div class="left">
+        <label>Username</label>
+        <input class="user-field" type="text" size="15" name="proxy_user" value="<%= @proxy_user %>"/>
+      </div>
+      <div class="right">
+        <label>Password</label>
+        <input title="Password for use with HTTP Proxy" size="15" class="password-field" type="password" name="proxy_password" value="<%= @proxy_password %>"/>
+      </div>
+    </div>
+    
+  </form>
+</div>

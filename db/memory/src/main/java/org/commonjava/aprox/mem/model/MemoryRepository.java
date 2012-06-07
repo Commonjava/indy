@@ -46,15 +46,32 @@ public class MemoryRepository
 
     private String password;
 
+    @SerializedName( "is_passthrough" )
     private boolean passthrough;
 
+    @SerializedName( "cache_timeout_seconds" )
     private int cacheTimeoutSeconds;
 
+    @SerializedName( "key_password" )
     private String keyPassword;
 
+    @SerializedName( "key_certificate_pem" )
     private String keyCertificatePem;
 
+    @SerializedName( "server_certificate_pem" )
     private String serverCertificatePem;
+
+    @SerializedName( "proxy_host" )
+    private String proxyHost;
+
+    @SerializedName( "proxy_port" )
+    private int proxyPort;
+
+    @SerializedName( "proxy_user" )
+    private String proxyUser;
+
+    @SerializedName( "proxy_password" )
+    private String proxyPassword;
 
     MemoryRepository()
     {
@@ -263,6 +280,46 @@ public class MemoryRepository
     public String getServerCertPem()
     {
         return serverCertificatePem;
+    }
+
+    public String getProxyHost()
+    {
+        return proxyHost;
+    }
+
+    public int getProxyPort()
+    {
+        return proxyPort;
+    }
+
+    public String getProxyUser()
+    {
+        return proxyUser;
+    }
+
+    public String getProxyPassword()
+    {
+        return proxyPassword;
+    }
+
+    public void setProxyHost( final String proxyHost )
+    {
+        this.proxyHost = proxyHost;
+    }
+
+    public void setProxyPort( final int proxyPort )
+    {
+        this.proxyPort = proxyPort;
+    }
+
+    public void setProxyUser( final String proxyUser )
+    {
+        this.proxyUser = proxyUser;
+    }
+
+    public void setProxyPassword( final String proxyPassword )
+    {
+        this.proxyPassword = proxyPassword;
     }
 
 }

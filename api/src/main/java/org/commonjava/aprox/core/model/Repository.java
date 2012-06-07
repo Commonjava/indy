@@ -58,4 +58,20 @@ public interface Repository
 
     String getServerCertPem();
 
+    String getProxyHost();
+
+    int getProxyPort();
+
+    String getProxyUser();
+
+    String getProxyPassword();
+
+    void setProxyHost( String proxyHost );
+
+    void setProxyPort( int proxyPort );
+
+    void setProxyUser( String proxyUser );
+
+    void setProxyPassword( String proxyPassword );
+
 }

@@ -8,6 +8,10 @@ class DialogController extends Spine.Controller
     'dialogclose .repository-form': 'close'
     'change .endisable': 'processEndisable'
     'submit form': 'submit'
+    'click .button': 'processFormButton'
+  
+  processFormButton: (e) =>
+    # NOP
 
   delete: (e) =>
     @log("Deleting: #{@item}")

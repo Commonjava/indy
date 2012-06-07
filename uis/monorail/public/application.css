@@ -98,6 +98,7 @@ label {
 }
 .form-line {
   margin-bottom: 10px;
+  display: block;
 }
 .available,
 .selected {
@@ -191,6 +192,10 @@ input {
 .drop-insertion-point {
   background: #ffc;
   color: #000;
+}
+.field-set {
+  margin-top: 10px;
+  margin-bottom: 20px;
 }
 .ui-helper-clearfix:before,
 .ui-helper-clearfix:after {

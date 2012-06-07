@@ -11,16 +11,16 @@
   
     <div class="form-line">
       <label>Releases Enabled?</label>
-      <input class="endisable" type="checkbox" name="allow_releases" <%= "checked=\"true\"" if @allow_releases %>">
+      <input class="endisable" type="checkbox" name="allow_releases" <%= "checked=\"true\"" if @allow_releases %>"/>
     </div>
     
     <div class="form-line">
       <label>Snapshots Enabled?</label>
-      <input class="endisable" affects="snapshot_timeout_field" type="checkbox" name="allow_snapshots" <%= "checked=\"true\"" if @allow_snapshots %>">
+      <input class="endisable" affects="snapshot_timeout_field" type="checkbox" name="allow_snapshots" <%= "checked=\"true\"" if @allow_snapshots %>"/>
       
       <span name="snapshot_timeout_field">
         <label>&nbsp;...with Timeout</label>
-        <input title="Seconds before snapshots are deleted." class="timeout-field snapshot_timeout" type="number" name="snapshot_timeout_seconds" value="<%= @snapshot_timeout_seconds %>"> sec.
+        <input title="Seconds before snapshots are deleted." class="timeout-field snapshot_timeout" type="number" name="snapshot_timeout_seconds" value="<%= @snapshot_timeout_seconds %>"/> sec.
       </span>
     </div>
   </form>

@@ -53,11 +53,26 @@ public class RepositoryDoc
     @SerializedName( "cache_timeout_seconds" )
     private int cacheTimeoutSeconds;
 
+    @SerializedName( "key_password" )
     private String keyPassword;
 
+    @SerializedName( "key_certificate_pem" )
     private String keyCertificatePem;
 
+    @SerializedName( "server_certificate_pem" )
     private String serverCertificatePem;
+
+    @SerializedName( "proxy_host" )
+    private String proxyHost;
+
+    @SerializedName( "proxy_port" )
+    private int proxyPort;
+
+    @SerializedName( "proxy_user" )
+    private String proxyUser;
+
+    @SerializedName( "proxy_password" )
+    private String proxyPassword;
 
     RepositoryDoc()
     {
@@ -263,6 +278,54 @@ public class RepositoryDoc
     public String getServerCertPem()
     {
         return serverCertificatePem;
+    }
+
+    @Override
+    public String getProxyHost()
+    {
+        return proxyHost;
+    }
+
+    @Override
+    public int getProxyPort()
+    {
+        return proxyPort;
+    }
+
+    @Override
+    public String getProxyUser()
+    {
+        return proxyUser;
+    }
+
+    @Override
+    public String getProxyPassword()
+    {
+        return proxyPassword;
+    }
+
+    @Override
+    public void setProxyHost( final String proxyHost )
+    {
+        this.proxyHost = proxyHost;
+    }
+
+    @Override
+    public void setProxyPort( final int proxyPort )
+    {
+        this.proxyPort = proxyPort;
+    }
+
+    @Override
+    public void setProxyUser( final String proxyUser )
+    {
+        this.proxyUser = proxyUser;
+    }
+
+    @Override
+    public void setProxyPassword( final String proxyPassword )
+    {
+        this.proxyPassword = proxyPassword;
     }
 
 }
