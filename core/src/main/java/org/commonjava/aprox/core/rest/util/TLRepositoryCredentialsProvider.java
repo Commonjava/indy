@@ -30,20 +30,30 @@ public class TLRepositoryCredentialsProvider
     implements CredentialsProvider
 {
 
-    private final ThreadLocal<Map<String, Repository>> repoBindings =
-        new ThreadLocal<Map<String, Repository>>();
+    private final ThreadLocal<Map<AuthScope, Credentials>> credentials = new ThreadLocal<Map<AuthScope, Credentials>>();
 
-    public void bind( final Collection<Repository> repositories )
+    public synchronized void bind( final Collection<Repository> repositories )
     {
         if ( repositories != null )
         {
-            Map<String, Repository> repos = new HashMap<String, Repository>();
-            for ( Repository repository : repositories )
+            final Map<AuthScope, Credentials> repos = new HashMap<AuthScope, Credentials>();
+            for ( final Repository repository : repositories )
             {
-                repos.put( repository.getHost() + ":" + repository.getPort(), repository );
+                if ( repository.getUser() != null )
+                {
+                    repos.put( new AuthScope( repository.getHost(), repository.getPort() ),
+                               new UsernamePasswordCredentials( repository.getUser(), repository.getPassword() ) );
+                }
+
+                if ( repository.getProxyHost() != null && repository.getProxyUser() != null )
+                {
+                    repos.put( new AuthScope( repository.getProxyHost(), repository.getProxyPort() ),
+                               new UsernamePasswordCredentials( repository.getProxyUser(),
+                                                                repository.getProxyPassword() ) );
+                }
             }
 
-            repoBindings.set( repos );
+            credentials.set( repos );
         }
     }
 
@@ -55,24 +65,26 @@ public class TLRepositoryCredentialsProvider
     @Override
     public void clear()
     {
-        repoBindings.set( null );
+        credentials.set( null );
     }
 
     @Override
-    public void setCredentials( final AuthScope authscope, final Credentials credentials )
-    {}
+    public synchronized void setCredentials( final AuthScope authscope, final Credentials creds )
+    {
+        Map<AuthScope, Credentials> map = credentials.get();
+        if ( map == null )
+        {
+            map = new HashMap<AuthScope, Credentials>();
+            credentials.set( map );
+        }
+        map.put( authscope, creds );
+    }
 
     @Override
     public Credentials getCredentials( final AuthScope authscope )
     {
-        String key = authscope.getHost() + ":" + authscope.getPort();
-        Repository repo = repoBindings.get().get( key );
-        if ( repo != null && repo.getUser() != null )
-        {
-            return new UsernamePasswordCredentials( repo.getUser(), repo.getPassword() );
-        }
-
-        return null;
+        final Map<AuthScope, Credentials> map = credentials.get();
+        return map.get( authscope );
     }
 
 }

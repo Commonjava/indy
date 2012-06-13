@@ -28,6 +28,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -41,12 +45,16 @@ import javax.inject.Singleton;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.params.ConnRoutePNames;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.commonjava.aprox.core.change.event.FileStorageEvent;
@@ -78,6 +86,8 @@ public class DefaultFileManager
 
     private TLRepositoryCredentialsProvider credProvider;
 
+    private RepoSSLSocketFactory socketFactory;
+
     public DefaultFileManager()
     {
     }
@@ -92,7 +102,37 @@ public class DefaultFileManager
     protected void setup()
     {
         final ThreadSafeClientConnManager ccm = new ThreadSafeClientConnManager();
+
+        // TODO: Make this configurable
         ccm.setMaxTotal( 20 );
+
+        try
+        {
+            socketFactory = new RepoSSLSocketFactory();
+
+            final SchemeRegistry registry = ccm.getSchemeRegistry();
+            registry.register( new Scheme( "https", 443, socketFactory ) );
+        }
+        catch ( final KeyManagementException e )
+        {
+            logger.error( "Failed to setup SSLSocketFactory. SSL mutual authentication will not be available!\nError: %s",
+                          e, e.getMessage() );
+        }
+        catch ( final UnrecoverableKeyException e )
+        {
+            logger.error( "Failed to setup SSLSocketFactory. SSL mutual authentication will not be available!\nError: %s",
+                          e, e.getMessage() );
+        }
+        catch ( final NoSuchAlgorithmException e )
+        {
+            logger.error( "Failed to setup SSLSocketFactory. SSL mutual authentication will not be available!\nError: %s",
+                          e, e.getMessage() );
+        }
+        catch ( final KeyStoreException e )
+        {
+            logger.error( "Failed to setup SSLSocketFactory. SSL mutual authentication will not be available!\nError: %s",
+                          e, e.getMessage() );
+        }
 
         credProvider = new TLRepositoryCredentialsProvider();
 
@@ -231,6 +271,23 @@ public class DefaultFileManager
         logger.info( "Trying: %s", url );
 
         final HttpGet request = new HttpGet( url );
+
+        if ( repository.getProxyHost() != null )
+        {
+            final int proxyPort = repository.getProxyPort();
+            HttpHost proxy;
+            if ( proxyPort < 1 )
+            {
+                proxy = new HttpHost( repository.getProxyHost() );
+            }
+            else
+            {
+                proxy = new HttpHost( repository.getProxyHost(), repository.getProxyPort() );
+            }
+
+            request.getParams()
+                   .setParameter( ConnRoutePNames.DEFAULT_PROXY, proxy );
+        }
 
         request.getParams()
                .setParameter( FileManager.HTTP_PARAM_REPO, repository );
