@@ -29,7 +29,7 @@ public class RepoSSLSocketFactory
     public RepoSSLSocketFactory()
         throws KeyManagementException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException
     {
-        super( (TrustStrategy) null );
+        super( (TrustStrategy) null, BROWSER_COMPATIBLE_HOSTNAME_VERIFIER );
     }
 
     @Override
@@ -58,7 +58,7 @@ public class RepoSSLSocketFactory
             KeyStore ts = null;
 
             final String kcPem = repo.getKeyCertPem();
-            final String kcPass = repo.getPassword();
+            final String kcPass = repo.getKeyPassword();
             if ( kcPem != null )
             {
                 if ( kcPass == null || kcPass.length() < 1 )
@@ -131,7 +131,7 @@ public class RepoSSLSocketFactory
                 {
                     factory =
                         new SSLSocketFactory( SSLSocketFactory.TLS, ks, kcPass, ts, null, null,
-                                              SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER );
+                                              SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER );
 
                     repoFactories.put( repo, factory );
                 }

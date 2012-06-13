@@ -257,21 +257,24 @@ public class TimeoutManager
     private void listAll( final File dir, final String parentPath, final Set<String> capturedFiles,
                           final FilenameFilter filter )
     {
-        final String[] files = dir.list();
-        for ( final String file : files )
+        final String[] files = dir.exists() ? dir.list() : null;
+        if ( files != null )
         {
-            if ( filter == null || filter.accept( dir, file ) )
+            for ( final String file : files )
             {
-                final File f = new File( dir, file );
+                if ( filter == null || filter.accept( dir, file ) )
+                {
+                    final File f = new File( dir, file );
 
-                final String childPath = new File( parentPath, file ).getPath();
-                if ( f.isDirectory() )
-                {
-                    listAll( f, childPath, capturedFiles, filter );
-                }
-                else
-                {
-                    capturedFiles.add( childPath );
+                    final String childPath = new File( parentPath, file ).getPath();
+                    if ( f.isDirectory() )
+                    {
+                        listAll( f, childPath, capturedFiles, filter );
+                    }
+                    else
+                    {
+                        capturedFiles.add( childPath );
+                    }
                 }
             }
         }

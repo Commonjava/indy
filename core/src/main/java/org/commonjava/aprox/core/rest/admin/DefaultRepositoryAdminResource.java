@@ -132,6 +132,13 @@ public class DefaultRepositoryAdminResource
                 toUpdate.setTimeoutSeconds( repository.getTimeoutSeconds() );
                 toUpdate.setPassthrough( repository.isPassthrough() );
                 toUpdate.setCacheTimeoutSeconds( repository.getCacheTimeoutSeconds() );
+                toUpdate.setKeyCertPem( repository.getKeyCertPem() );
+                toUpdate.setKeyPassword( repository.getKeyPassword() );
+                toUpdate.setProxyHost( repository.getProxyHost() );
+                toUpdate.setProxyPassword( repository.getProxyPassword() );
+                toUpdate.setProxyPort( repository.getProxyPort() );
+                toUpdate.setProxyUser( repository.getProxyUser() );
+                toUpdate.setServerCertPem( repository.getServerCertPem() );
             }
 
             final boolean result = proxyManager.storeRepository( toUpdate, false );
