@@ -22,6 +22,7 @@ class DialogController extends Spine.Controller
       modal: true,
       buttons:
         Yes: =>
+          @deleting() if @deleting
           @owner.deleting(@item) if @owner and @owner.deleting
           @item.destroy()
         
@@ -37,17 +38,19 @@ class DialogController extends Spine.Controller
   
   dialogClosed: (e) =>
     e.preventDefault()
+    @canceling( e ) if @canceling
     @owner.cancelled(@item) if @owner and @owner.cancelled
     @cleanup()
   
   cleanup: =>
-    @item = null
-    @owner = null
-    @editing = null
+    # @item = null
+    # @owner = null
+    # @editing = null
     
   open: (item, editing, owner) =>
     @owner = owner
     @editing = editing
+    @opening(item) if @opening
     @change(item)
   
   change: (item) =>
@@ -109,12 +112,16 @@ class DialogController extends Spine.Controller
       else
         $(affected).show()
   
-  submit: (e) ->
+  submit: (e) =>
+    @log("Item is: #{JSON.stringify(@item)}")
     e.preventDefault()
-    @item.fromForm(@form).save()
-    @log("From form: #{JSON.stringify(@item)}")
     $(@el).dialog('close')
+    @saving( e ) if @saving
     @owner.saved(@item) if @owner and @owner.saved
     @cleanup()
+  
+  saving: (e) =>
+    @item.fromForm(@form).save()
+    @log("From form: #{JSON.stringify(@item)}")
 
 module?.exports = DialogController

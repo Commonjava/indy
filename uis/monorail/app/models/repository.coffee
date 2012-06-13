@@ -1,7 +1,11 @@
 Spine = require('spine')
 
 class Repository extends Spine.Model
-  @configure 'Repository', 'name', 'remote_url', 'timeout_seconds', 'is_passthrough', 'cache_timeout_seconds'
+  @configure 'Repository', 'name', 'remote_url', 'timeout_seconds', 
+             'is_passthrough', 'cache_timeout_seconds', 'key_certificate_pem', 
+             'key_password', 'server_certificate_pem', 'proxy_host', 
+             'proxy_port', 'proxy_user', 'proxy_password'
+             
   @extend Spine.Model.Ajax
   
   @url: '/aprox/api/1.0/admin/repositories'
@@ -40,6 +44,13 @@ class Repository extends Spine.Model
             'timeout_seconds': parseInt obj.timeout_seconds
             'is_passthrough': if obj.is_passthrough is 'on' then true else false
             'cache_timeout_seconds': if obj.is_passthrough is true then -1 else parseInt obj.cache_timeout_seconds
+            'key_certificate_pem': obj.key_certificate_pem if obj.key_certificate_pem and obj.key_certificate_pem.length > 0
+            'key_password': obj.key_password if obj.key_password and obj.key_password.length > 0
+            'server_certificate_pem': obj.server_certificate_pem if obj.server_certificate_pem and obj.server_certificate_pem.length > 0
+            'proxy_host': obj.proxy_host if obj.proxy_host and obj.proxy_host.length > 0
+            'proxy_port': parseInt obj.proxy_port if obj.proxy_port
+            'proxy_user': obj.proxy_user if obj.proxy_user and obj.proxy_user.length > 0
+            'proxy_password': obj.proxy_password if obj.proxy_password and obj.proxy_password.length > 0
             
           objs.push(o)
       
@@ -54,6 +65,13 @@ class Repository extends Spine.Model
           'timeout_seconds': parseInt data.timeout_seconds
           'is_passthrough': if data.is_passthrough is 'on' then true else false
           'cache_timeout_seconds': if data.is_passthrough is true then -1 else parseInt data.cache_timeout_seconds
+          'key_certificate_pem': data.key_certificate_pem if data.key_certificate_pem and data.key_certificate_pem.length > 0
+          'key_password': data.key_password if data.key_password and data.key_password.length > 0
+          'server_certificate_pem': data.server_certificate_pem if data.server_certificate_pem and data.server_certificate_pem.length > 0
+          'proxy_host': data.proxy_host if data.proxy_host and data.proxy_host.length > 0
+          'proxy_port': parseInt data.proxy_port if data.proxy_port
+          'proxy_user': data.proxy_user if data.proxy_user and data.proxy_user.length > 0
+          'proxy_password': data.proxy_password if data.proxy_password and data.proxy_password.length > 0
     
     data
   

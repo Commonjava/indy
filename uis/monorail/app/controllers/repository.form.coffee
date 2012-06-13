@@ -8,6 +8,13 @@ $ = Spine.$
 class RepositoryForm extends DialogController
   className: 'repository-form'
     
+  constructor: ->
+    super
+    @x509Form = new RepositoryX509Form
+    @proxyForm = new RepositoryProxyForm
+    
+    @active @change
+  
   processFormButton: (e) =>
     dest = $(e.target).attr('dest')
     switch dest
@@ -17,14 +24,7 @@ class RepositoryForm extends DialogController
       when 'proxies'
         @log( 'open proxy dialog' )
         @proxyForm.open(@item, @)
-    
-  constructor: ->
-    super
-    @x509Form = new RepositoryX509Form
-    @proxyForm = new RepositoryProxyForm
-    
-    @active @change
-  
+
   render: =>
     @log("Showing form for repository: #{@item.name}" ) if @item and @item.name
     $(@el).html( require('views/repository.form')(@item) )

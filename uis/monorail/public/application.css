@@ -97,8 +97,12 @@ label {
   display: block;
 }
 .form-line {
-  margin-bottom: 10px;
+  padding-top: 10px;
   display: block;
+}
+.form-field {
+  display: inline-block;
+  margin-right: 20px;
 }
 .available,
 .selected {
@@ -193,9 +197,17 @@ input {
   background: #ffc;
   color: #000;
 }
-.field-set {
-  margin-top: 10px;
-  margin-bottom: 20px;
+fieldset {
+  margin-top: 20px;
+}
+fieldset:not(.invisible) {
+  border: 1px solid #d3d3d3;
+}
+fieldset.invisible {
+  border: 0px solid #fff;
+}
+fieldset.invisible legend {
+  display: none;
 }
 .ui-helper-clearfix:before,
 .ui-helper-clearfix:after {
