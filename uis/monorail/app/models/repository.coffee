@@ -15,6 +15,8 @@ class Repository extends Spine.Model
 
     if typeof objects is 'string'
       objects = JSON.parse(objects)
+      
+    @log( "fromJSON:\n\n#{JSON.stringify(objects)}" )
 
     if objects.items
       objects = objects.items
