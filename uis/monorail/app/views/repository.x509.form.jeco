@@ -3,7 +3,7 @@
     <fieldset class="invisible">
       <div class="form-line">
         <label class="block-label">Client PEM:</label>
-        <textarea cols="65" rows="10" title="PEM-encoded key-certificate pair used by the client to authenticate SSL connections" class="pem-field" name="key_certificate_pem" required="true" value="<%= @key_certificate_pem %>"></textarea>
+        <textarea cols="65" rows="10" title="PEM-encoded key-certificate pair used by the client to authenticate SSL connections" class="pem-field" name="key_certificate_pem" required="true"><%= @key_certificate_pem %></textarea>
       </div>
 
       <div class="form-line">
@@ -16,7 +16,7 @@
       <legend>Server SSL (optional)</legend>
       <div class="form-line">
         <label class="block-label">PEM:</label>
-        <textarea cols="65" rows="10" title="PEM-encoded certificate used by the server to authenticate SSL connections" class="pem-field" name="server_certificate_pem" required="true" value="<%= @server_certificate_pem %>"></textarea>
+        <textarea cols="65" rows="10" title="PEM-encoded certificate used by the server to authenticate SSL connections" class="pem-field" name="server_certificate_pem" required="true"><%= @server_certificate_pem %></textarea>
       </div>
     </fieldset>
     
