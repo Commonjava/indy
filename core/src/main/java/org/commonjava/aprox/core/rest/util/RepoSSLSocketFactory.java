@@ -40,7 +40,15 @@ public class RepoSSLSocketFactory
 
         if ( repo != null )
         {
-            return getRepoSSLFactory( repo ).createSocket( params );
+            final SSLSocketFactory fac = getRepoSSLFactory( repo );
+            if ( fac != null )
+            {
+                return fac.createSocket( params );
+            }
+            else
+            {
+                return super.createSocket( params );
+            }
         }
         else
         {
