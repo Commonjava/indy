@@ -140,7 +140,7 @@
       <dependency>
         <groupId>org.commonjava.util</groupId>
         <artifactId>configuration-api</artifactId>
-        <version>0.3-SNAPSHOT</version>
+        <version>0.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.util</groupId>

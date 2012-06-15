@@ -168,10 +168,6 @@ public class RepoSSLSocketFactory
                     throw new IOException( "Failed to initialize SSL connection for repository: " + repo.getName() );
                 }
             }
-            else
-            {
-                factory = this;
-            }
         }
 
         return factory;
