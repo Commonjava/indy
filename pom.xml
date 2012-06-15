@@ -24,7 +24,7 @@
   
   <groupId>org.commonjava.aprox</groupId>
   <artifactId>aprox-parent</artifactId>
-  <version>0.2</version>
+  <version>0.3-SNAPSHOT</version>
   
   <packaging>pom</packaging>
   
@@ -68,7 +68,7 @@
       <dependency>
         <groupId>org.commonjava.aprox.ui</groupId>
         <artifactId>aprox-ui-jquery-basic</artifactId>
-        <version>0.2</version>
+        <version>0.3-SNAPSHOT</version>
         <type>war</type>
         <scope>runtime</scope>
       </dependency>
@@ -76,7 +76,7 @@
       <dependency>
         <groupId>org.commonjava.aprox.ui</groupId>
         <artifactId>aprox-ui-monorail</artifactId>
-        <version>0.2</version>
+        <version>0.3-SNAPSHOT</version>
         <type>war</type>
         <scope>runtime</scope>
       </dependency>
@@ -84,22 +84,22 @@
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-api</artifactId>
-        <version>0.2</version>
+        <version>0.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-core</artifactId>
-        <version>0.2</version>
+        <version>0.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-security</artifactId>
-        <version>0.2</version>
+        <version>0.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-db-couch</artifactId>
-        <version>0.2</version>
+        <version>0.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
@@ -114,17 +114,17 @@
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-autoprox</artifactId>
-        <version>0.2</version>
+        <version>0.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-db-memory</artifactId>
-        <version>0.2</version>
+        <version>0.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-test-db</artifactId>
-        <version>0.2</version>
+        <version>0.3-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
       <dependency>
