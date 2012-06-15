@@ -40,12 +40,12 @@ import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.rest.RESTWorkflowException;
+import org.commonjava.aprox.core.rest.util.ArchetypeCatalogMerger;
 import org.commonjava.aprox.core.rest.util.FileManager;
-import org.commonjava.aprox.core.rest.util.MavenMetadataMerger;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
-public class MavenMetadataHandler
+public class ArchetypeCatalogHandler
     implements GroupPathHandler
 {
 
@@ -55,7 +55,7 @@ public class MavenMetadataHandler
     private FileManager fileManager;
 
     @Inject
-    private MavenMetadataMerger merger;
+    private ArchetypeCatalogMerger merger;
 
     @Inject
     private Event<FileStorageEvent> fileEvent;
@@ -63,7 +63,7 @@ public class MavenMetadataHandler
     @Override
     public boolean canHandle( final String path )
     {
-        return path.endsWith( MavenMetadataMerger.METADATA_NAME );
+        return path.endsWith( ArchetypeCatalogMerger.CATALOG_NAME );
     }
 
     @Override
@@ -72,7 +72,7 @@ public class MavenMetadataHandler
     {
         final File target = fileManager.formatStorageReference( group, path );
         final File targetInfo =
-            fileManager.formatStorageReference( group, path + MavenMetadataMerger.METADATA_MERGEINFO_SUFFIX );
+            fileManager.formatStorageReference( group, path + ArchetypeCatalogMerger.CATALOG_MERGEINFO_SUFFIX );
 
         if ( !target.exists() )
         {
@@ -98,8 +98,8 @@ public class MavenMetadataHandler
                 {
                     throw new RESTWorkflowException( Response.serverError()
                                                              .build(),
-                                                     "Failed to write merged metadata to: %s.\nError: %s", e, target,
-                                                     e.getMessage() );
+                                                     "Failed to write merged archetype catalog to: %s.\nError: %s", e,
+                                                     target, e.getMessage() );
                 }
                 finally
                 {
@@ -120,8 +120,8 @@ public class MavenMetadataHandler
                 }
                 catch ( final IOException e )
                 {
-                    logger.error( "Failed to write merged metadata information to: %s.\nError: %s", e, targetInfo,
-                                  e.getMessage() );
+                    logger.error( "Failed to write merged archetype catalog information to: %s.\nError: %s", e,
+                                  targetInfo, e.getMessage() );
                 }
                 finally
                 {
@@ -154,7 +154,7 @@ public class MavenMetadataHandler
                               final InputStream stream )
         throws RESTWorkflowException
     {
-        if ( path.endsWith( MavenMetadataMerger.METADATA_NAME ) )
+        if ( path.endsWith( ArchetypeCatalogMerger.CATALOG_NAME ) )
         {
             // delete so it'll be recomputed.
             final File target = fileManager.formatStorageReference( group, path );

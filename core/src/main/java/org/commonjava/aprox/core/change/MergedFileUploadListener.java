@@ -26,12 +26,13 @@ import org.commonjava.aprox.core.change.event.FileStorageEvent;
 import org.commonjava.aprox.core.data.ProxyDataException;
 import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.model.Group;
+import org.commonjava.aprox.core.rest.util.ArchetypeCatalogMerger;
 import org.commonjava.aprox.core.rest.util.FileManager;
 import org.commonjava.aprox.core.rest.util.MavenMetadataMerger;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
-public class MavenMetadataUploadListener
+public class MergedFileUploadListener
 {
 
     private final Logger logger = new Logger( getClass() );
@@ -39,16 +40,14 @@ public class MavenMetadataUploadListener
     @Inject
     private StoreDataManager dataManager;
 
-    // @Inject
-    // private MavenMetadataMerger merger;
-
     @Inject
     private FileManager fileManager;
 
-    public void reMergeUploadedMetadata( @Observes final FileStorageEvent event )
+    public void reMergeUploaded( @Observes final FileStorageEvent event )
     {
         final String path = event.getPath();
-        if ( !path.endsWith( MavenMetadataMerger.METADATA_NAME ) )
+        if ( !path.endsWith( MavenMetadataMerger.METADATA_NAME )
+            && !path.endsWith( ArchetypeCatalogMerger.CATALOG_NAME ) )
         {
             return;
         }
@@ -62,7 +61,7 @@ public class MavenMetadataUploadListener
             {
                 for ( final Group group : groups )
                 {
-                    reMergeMavenMetadata( group, event.getPath() );
+                    reMerge( group, event.getPath() );
                 }
             }
         }
@@ -74,11 +73,24 @@ public class MavenMetadataUploadListener
         }
     }
 
-    private void reMergeMavenMetadata( final Group group, final String path )
+    private void reMerge( final Group group, final String path )
     {
         final File target = fileManager.formatStorageReference( group, path );
-        final File targetInfo =
-            fileManager.formatStorageReference( group, path + MavenMetadataMerger.METADATA_MERGEINFO_SUFFIX );
+        final File targetInfo;
+        if ( path.endsWith( MavenMetadataMerger.METADATA_NAME ) )
+        {
+            targetInfo =
+                fileManager.formatStorageReference( group, path + MavenMetadataMerger.METADATA_MERGEINFO_SUFFIX );
+        }
+        else if ( path.endsWith( ArchetypeCatalogMerger.CATALOG_NAME ) )
+        {
+            targetInfo =
+                fileManager.formatStorageReference( group, path + ArchetypeCatalogMerger.CATALOG_MERGEINFO_SUFFIX );
+        }
+        else
+        {
+            return;
+        }
 
         if ( target.exists() )
         {
@@ -90,32 +102,6 @@ public class MavenMetadataUploadListener
         {
             targetInfo.delete();
         }
-
-        // try
-        // {
-        // final List<? extends ArtifactStore> stores = dataManager.getOrderedConcreteStoresInGroup( group.getName() );
-        //
-        // final Set<File> files = new LinkedHashSet<File>();
-        // if ( stores != null )
-        // {
-        // for ( final ArtifactStore store : stores )
-        // {
-        // final File file = fileManager.formatStorageReference( store, path );
-        //
-        // if ( file.exists() )
-        // {
-        // files.add( file );
-        // }
-        // }
-        // }
-        //
-        // merger.merge( files, group, path );
-        // }
-        // catch ( final ProxyDataException e )
-        // {
-        // logger.warn( "Failed to regenerate maven-metadata.xml for groups after deployment to: %s"
-        // + "\nCannot retrieve storage locations associated with: %s", e, group.getKey(), e.getMessage() );
-        // }
     }
 
 }
