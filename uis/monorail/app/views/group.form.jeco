@@ -2,10 +2,10 @@
   <form>
     <div class="form-line">
       <label>Name</label>
-      <% if @item.name: %>
+      <% if @editing: %>
         <span class="name"><%= @item.name %></span>
       <% else: %>
-        <input class="name-field" type="text" required="true" name="name"/>
+        <input class="name-field" type="text" required="true" name="name" value="<%= @item.name %>"/>
       <% end %>
     </div>
   
@@ -21,7 +21,7 @@
               <% end %>
             <% end %>
           <% else if @item.constituents: %>
-            <div class="empty-dropzone" name="__end">Drop</div>
+            <div class="empty-dropzone dropzone" name="__end">Drop</div>
           <% end %>
           </ul>
         </div>

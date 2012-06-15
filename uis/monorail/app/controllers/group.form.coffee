@@ -28,6 +28,9 @@ class GroupForm extends DialogController
   select: (evt, ui) =>
     # evt.preventDefault()
     store = $(ui.draggable).attr('name')
+    
+    @log("Adding #{store}")
+    
     target = $(evt.target).attr('name')
     if not @item.constituents or @item.constituents.indexOf(target) < 0
       @item.constituents.push store
@@ -60,6 +63,8 @@ class GroupForm extends DialogController
 
   reRender: (evt) =>
     # evt.preventDefault()
+    @log("Re-rendering constituents")
+    @item.fromForm(@form)
     @render()
   
   deselect: (evt, ui) =>
@@ -72,8 +77,8 @@ class GroupForm extends DialogController
     $(@el).html( require('views/group.form')(@) )
     @form = $(@el).find('form')
     
-    $(@el).find('.constituents-selector').multiselect();
-    
+    # $(@el).find('.constituents-selector').multiselect();
+    # 
     $(@el).find('.selected > *').draggable( {helper: 'clone', 'scroll': false, 'opacity': 0.35} )
     $(@el).find('.available > *').draggable( {helper: 'clone', 'scroll': false, 'opacity': 0.35} )
     
