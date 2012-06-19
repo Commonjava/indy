@@ -30,6 +30,7 @@
   <modules>
     <module>couch</module>
     <module>memory</module>
+    <module>flat</module>
   </modules>
   
   <profiles>

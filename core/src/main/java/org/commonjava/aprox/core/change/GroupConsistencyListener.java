@@ -45,7 +45,7 @@ public class GroupConsistencyListener
     {
         try
         {
-            final Set<? extends Group> groups = proxyDataManager.getGroupsContaining( key );
+            final Set<Group> groups = proxyDataManager.getGroupsContaining( key );
             for ( final Group group : groups )
             {
                 group.removeConstituent( key );

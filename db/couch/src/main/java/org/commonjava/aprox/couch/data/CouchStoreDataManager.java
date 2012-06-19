@@ -336,7 +336,7 @@ public class CouchStoreDataManager
      * @see org.commonjava.aprox.core.data.ProxyDataManager#storeDeployPoints(java.util.Collection)
      */
     @Override
-    public void storeDeployPoints( final Collection<? extends DeployPoint> deploys )
+    public void storeDeployPoints( final Collection<DeployPoint> deploys )
         throws ProxyDataException
     {
         try
@@ -429,7 +429,7 @@ public class CouchStoreDataManager
      * @see org.commonjava.aprox.core.data.ProxyDataManager#storeRepositories(java.util.Collection)
      */
     @Override
-    public void storeRepositories( final Collection<? extends Repository> repos )
+    public void storeRepositories( final Collection<Repository> repos )
         throws ProxyDataException
     {
         try
@@ -485,7 +485,7 @@ public class CouchStoreDataManager
      * @see org.commonjava.aprox.core.data.ProxyDataManager#storeGroups(java.util.Collection)
      */
     @Override
-    public void storeGroups( final Collection<? extends Group> groups )
+    public void storeGroups( final Collection<Group> groups )
         throws ProxyDataException
     {
         try

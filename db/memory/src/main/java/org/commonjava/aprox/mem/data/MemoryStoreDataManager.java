@@ -26,7 +26,6 @@ import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.util.logging.helper.JoinString;
-import org.commonjava.web.json.ser.JsonSerializer;
 
 @Singleton
 public class MemoryStoreDataManager
@@ -38,9 +37,6 @@ public class MemoryStoreDataManager
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private JsonSerializer serializer;
-
-    @Inject
     private Event<ArtifactStoreUpdateEvent> storeEvent;
 
     @Inject
@@ -48,11 +44,6 @@ public class MemoryStoreDataManager
 
     public MemoryStoreDataManager()
     {
-    }
-
-    public MemoryStoreDataManager( final JsonSerializer serializer )
-    {
-        this.serializer = serializer;
     }
 
     @Override
@@ -154,7 +145,7 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void storeDeployPoints( final Collection<? extends DeployPoint> deploys )
+    public void storeDeployPoints( final Collection<DeployPoint> deploys )
         throws ProxyDataException
     {
         for ( final DeployPoint deploy : deploys )
@@ -182,7 +173,7 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void storeRepositories( final Collection<? extends Repository> repos )
+    public void storeRepositories( final Collection<Repository> repos )
         throws ProxyDataException
     {
         for ( final Repository repository : repos )
@@ -209,7 +200,7 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void storeGroups( final Collection<? extends Group> groups )
+    public void storeGroups( final Collection<Group> groups )
         throws ProxyDataException
     {
         for ( final Group group : groups )

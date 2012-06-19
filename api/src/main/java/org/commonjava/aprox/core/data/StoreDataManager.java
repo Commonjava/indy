@@ -52,7 +52,7 @@ public interface StoreDataManager
     Set<Group> getGroupsContaining( final StoreKey repo )
         throws ProxyDataException;
 
-    void storeDeployPoints( final Collection<? extends DeployPoint> deploys )
+    void storeDeployPoints( final Collection<DeployPoint> deploys )
         throws ProxyDataException;
 
     boolean storeDeployPoint( final DeployPoint deploy )
@@ -61,7 +61,7 @@ public interface StoreDataManager
     boolean storeDeployPoint( final DeployPoint deploy, final boolean skipIfExists )
         throws ProxyDataException;
 
-    void storeRepositories( final Collection<? extends Repository> repos )
+    void storeRepositories( final Collection<Repository> repos )
         throws ProxyDataException;
 
     boolean storeRepository( final Repository proxy )
@@ -70,7 +70,7 @@ public interface StoreDataManager
     boolean storeRepository( final Repository repository, final boolean skipIfExists )
         throws ProxyDataException;
 
-    void storeGroups( final Collection<? extends Group> groups )
+    void storeGroups( final Collection<Group> groups )
         throws ProxyDataException;
 
     boolean storeGroup( final Group group )
