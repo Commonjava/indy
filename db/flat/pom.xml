@@ -48,5 +48,9 @@
       <groupId>org.commonjava.util</groupId>
       <artifactId>configuration-dotconf</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-test-db</artifactId>
+    </dependency>
   </dependencies>
 </project>

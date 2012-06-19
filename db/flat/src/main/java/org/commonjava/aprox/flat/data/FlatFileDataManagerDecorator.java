@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 
+import javax.annotation.PostConstruct;
 import javax.decorator.Decorator;
 import javax.decorator.Delegate;
 import javax.enterprise.inject.Any;
@@ -16,14 +17,18 @@ import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.model.Repository;
+import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.aprox.flat.conf.FlatFileConfiguration;
+import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.ser.JsonSerializer;
 
 @Decorator
 public abstract class FlatFileDataManagerDecorator
     implements StoreDataManager
 {
+
+    private final Logger logger = new Logger( getClass() );
 
     @Delegate
     @Any
@@ -35,6 +40,82 @@ public abstract class FlatFileDataManagerDecorator
 
     @Inject
     private JsonSerializer serializer;
+
+    protected FlatFileDataManagerDecorator()
+    {
+    }
+
+    protected FlatFileDataManagerDecorator( final StoreDataManager dataManager, final FlatFileConfiguration config,
+                                            final JsonSerializer serializer )
+    {
+        this.dataManager = dataManager;
+        this.config = config;
+        this.serializer = serializer;
+    }
+
+    protected final StoreDataManager getDataManager()
+    {
+        return dataManager;
+    }
+
+    @SuppressWarnings( "unchecked" )
+    @PostConstruct
+    public void readDefinitions()
+        throws ProxyDataException
+    {
+        final File basedir = config.getDefinitionsDir();
+        final File ddir = new File( basedir, StoreType.deploy_point.name() );
+
+        String[] files = ddir.list();
+        for ( final String file : files )
+        {
+            final File f = new File( ddir, file );
+            try
+            {
+                final String json = FileUtils.readFileToString( f );
+                final DeployPoint dp = serializer.fromString( json, DeployPoint.class );
+                dataManager.storeDeployPoint( dp );
+            }
+            catch ( final IOException e )
+            {
+                throw new ProxyDataException( "Cannot read definition file: %s. Error: %s", e, f, e.getMessage() );
+            }
+        }
+
+        final File rdir = new File( basedir, StoreType.repository.name() );
+        files = rdir.list();
+        for ( final String file : files )
+        {
+            final File f = new File( ddir, file );
+            try
+            {
+                final String json = FileUtils.readFileToString( f );
+                final Repository r = serializer.fromString( json, Repository.class );
+                dataManager.storeRepository( r );
+            }
+            catch ( final IOException e )
+            {
+                throw new ProxyDataException( "Cannot read definition file: %s. Error: %s", e, f, e.getMessage() );
+            }
+        }
+
+        final File gdir = new File( basedir, StoreType.group.name() );
+        files = gdir.list();
+        for ( final String file : files )
+        {
+            final File f = new File( ddir, file );
+            try
+            {
+                final String json = FileUtils.readFileToString( f );
+                final Group g = serializer.fromString( json, Group.class );
+                dataManager.storeGroup( g );
+            }
+            catch ( final IOException e )
+            {
+                throw new ProxyDataException( "Cannot read definition file: %s. Error: %s", e, f, e.getMessage() );
+            }
+        }
+    }
 
     @Override
     public void storeDeployPoints( final Collection<DeployPoint> deploys )
@@ -187,6 +268,7 @@ public abstract class FlatFileDataManagerDecorator
                 continue;
             }
 
+            logger.info( "Writing definition file: %s for store: %s", f, store );
             try
             {
                 FileUtils.write( f, serializer.toString( store ), "UTF-8" );
@@ -210,6 +292,7 @@ public abstract class FlatFileDataManagerDecorator
             final File f = new File( dir, store.getName() + ".json" );
             if ( f.exists() )
             {
+                logger.info( "Deleting definition file: %s for store: %s", f, store );
                 f.delete();
             }
 
@@ -224,6 +307,7 @@ public abstract class FlatFileDataManagerDecorator
         final File f = new File( dir, name + ".json" );
         if ( f.exists() )
         {
+            logger.info( "Deleting definition file: %s for store: %s", f, new StoreKey( type, name ) );
             f.delete();
         }
     }
