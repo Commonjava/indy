@@ -25,7 +25,6 @@ import org.commonjava.aprox.core.conf.AproxConfiguration;
 import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.model.ModelFactory;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
@@ -54,9 +53,6 @@ public class AutoProxDataManagerDecoratorTest
     protected AutoProxConfiguration config;
 
     @Inject
-    protected ModelFactory modelFactory;
-
-    @Inject
     protected TargetUrlResponder targetResponder;
 
     @Rule
@@ -69,10 +65,10 @@ public class AutoProxDataManagerDecoratorTest
         Log4jUtil.configure( Level.DEBUG );
         proxyManager.install();
 
-        Repository repo = modelFactory.createRepository( "first", "http://foo.bar/first" );
+        Repository repo = new Repository( "first", "http://foo.bar/first" );
         proxyManager.storeRepository( repo );
 
-        repo = modelFactory.createRepository( "second", "http://foo.bar/second" );
+        repo = new Repository( "second", "http://foo.bar/second" );
         proxyManager.storeRepository( repo );
     }
 

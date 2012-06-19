@@ -16,75 +16,14 @@
 package org.commonjava.aprox.couch.model;
 
 import org.commonjava.aprox.core.model.DeployPoint;
-import org.commonjava.aprox.core.model.StoreType;
-
-import com.google.gson.annotations.SerializedName;
 
 public class DeployPointDoc
-    extends AbstractArtifactStoreDoc
-    implements DeployPoint
+    extends AbstractArtifactStoreDoc<DeployPoint>
 {
 
-    @SerializedName( "allow_snapshots" )
-    private boolean allowSnapshots = false;
-
-    @SerializedName( "allow_releases" )
-    private boolean allowReleases = true;
-
-    @SerializedName( "snapshot_timeout_seconds" )
-    private int snapshotTimeoutSeconds = -1;
-
-    DeployPointDoc()
+    public DeployPointDoc( final DeployPoint deployPoint )
     {
-        super( StoreType.deploy_point );
-    }
-
-    public DeployPointDoc( final String name )
-    {
-        super( StoreType.deploy_point, name );
-    }
-
-    @Override
-    public boolean isAllowSnapshots()
-    {
-        return allowSnapshots;
-    }
-
-    @Override
-    public void setAllowSnapshots( final boolean allowSnapshots )
-    {
-        this.allowSnapshots = allowSnapshots;
-    }
-
-    @Override
-    public boolean isAllowReleases()
-    {
-        return allowReleases;
-    }
-
-    @Override
-    public void setAllowReleases( final boolean allowReleases )
-    {
-        this.allowReleases = allowReleases;
-    }
-
-    @Override
-    public String toString()
-    {
-        return String.format( "DeployPointDoc [id=%s, rev=%s, name=%s, allowSnapshots=%s, allowReleases=%s]",
-                              getCouchDocId(), getCouchDocRev(), getName(), allowSnapshots, allowReleases );
-    }
-
-    @Override
-    public int getSnapshotTimeoutSeconds()
-    {
-        return snapshotTimeoutSeconds;
-    }
-
-    @Override
-    public void setSnapshotTimeoutSeconds( final int seconds )
-    {
-        this.snapshotTimeoutSeconds = seconds;
+        super( deployPoint );
     }
 
 }

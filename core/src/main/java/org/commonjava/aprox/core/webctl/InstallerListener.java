@@ -22,7 +22,8 @@ import javax.servlet.annotation.WebListener;
 
 import org.commonjava.aprox.core.data.ProxyDataException;
 import org.commonjava.aprox.core.data.StoreDataManager;
-import org.commonjava.aprox.core.model.ModelFactory;
+import org.commonjava.aprox.core.model.Group;
+import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.util.logging.Logger;
@@ -37,9 +38,6 @@ public class InstallerListener
     @Inject
     private StoreDataManager dataManager;
 
-    @Inject
-    private ModelFactory modelFactory;
-
     @Override
     public void contextInitialized( final ServletContextEvent sce )
     {
@@ -47,11 +45,9 @@ public class InstallerListener
         try
         {
             dataManager.install();
-            dataManager.storeRepository( modelFactory.createRepository( "central",
-                                                                        "http://repo1.maven.apache.org/maven2/" ), true );
+            dataManager.storeRepository( new Repository( "central", "http://repo1.maven.apache.org/maven2/" ), true );
 
-            dataManager.storeGroup( modelFactory.createGroup( "public", new StoreKey( StoreType.repository, "central" ) ),
-                                    true );
+            dataManager.storeGroup( new Group( "public", new StoreKey( StoreType.repository, "central" ) ), true );
         }
         catch ( final ProxyDataException e )
         {

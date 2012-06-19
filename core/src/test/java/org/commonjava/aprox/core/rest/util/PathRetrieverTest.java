@@ -28,7 +28,6 @@ import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.core.io.StorageItem;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.Repository;
-import org.commonjava.aprox.mem.model.MemoryRepository;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -62,7 +61,7 @@ public class PathRetrieverTest
     public void downloadOnePOMFromSingleRepository()
         throws Exception
     {
-        final Repository repo = new MemoryRepository( "central", "http://repo1.maven.apache.org/maven2/" );
+        final Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
         final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
 
         final StorageItem stream = downloader.retrieve( repo, path );
@@ -75,8 +74,8 @@ public class PathRetrieverTest
     public void downloadOnePOMFromSecondRepositoryAfterDummyRepoFails()
         throws Exception
     {
-        final Repository repo = new MemoryRepository( "dummy", "http://www.nowhere.com/" );
-        final Repository repo2 = new MemoryRepository( "central", "http://repo1.maven.apache.org/maven2/" );
+        final Repository repo = new Repository( "dummy", "http://www.nowhere.com/" );
+        final Repository repo2 = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
 
         final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
 

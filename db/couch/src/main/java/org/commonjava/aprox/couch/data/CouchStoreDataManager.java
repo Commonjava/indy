@@ -19,6 +19,7 @@ import static org.commonjava.couch.util.IdUtils.namespaceId;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,12 +40,12 @@ import org.commonjava.aprox.core.inject.AproxData;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.model.ModelFactory;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.aprox.core.model.io.StoreKeySerializer;
 import org.commonjava.aprox.couch.data.AproxAppDescription.View;
+import org.commonjava.aprox.couch.model.AbstractArtifactStoreDoc;
 import org.commonjava.aprox.couch.model.ArtifactStoreDoc;
 import org.commonjava.aprox.couch.model.DeployPointDoc;
 import org.commonjava.aprox.couch.model.GroupDoc;
@@ -84,21 +85,17 @@ public class CouchStoreDataManager
     @Inject
     private Serializer serializer;
 
-    @Inject
-    private ModelFactory modelFactory;
-
     public CouchStoreDataManager()
     {
     }
 
     public CouchStoreDataManager( final AproxConfiguration config, final CouchDBConfiguration couchConfig,
-                                  final CouchManager couch, final Serializer serializer, final ModelFactory modelFactory )
+                                  final CouchManager couch, final Serializer serializer )
     {
         this.config = config;
         this.couchConfig = couchConfig;
         this.couch = couch;
         this.serializer = serializer;
-        this.modelFactory = modelFactory;
 
         registerSerializationAdapters();
     }
@@ -106,7 +103,7 @@ public class CouchStoreDataManager
     @PostConstruct
     protected void registerSerializationAdapters()
     {
-        serializer.registerSerializationAdapters( new StoreKeySerializer(), new StoreDocDeserializer(), modelFactory );
+        serializer.registerSerializationAdapters( new StoreKeySerializer(), new StoreDocDeserializer() );
     }
 
     /*
@@ -114,13 +111,16 @@ public class CouchStoreDataManager
      * @see org.commonjava.aprox.core.data.ProxyDataManager#getDeployPoint(java.lang.String)
      */
     @Override
-    public DeployPointDoc getDeployPoint( final String name )
+    public DeployPoint getDeployPoint( final String name )
         throws ProxyDataException
     {
         try
         {
-            return couch.getDocument( new CouchDocRef( namespaceId( StoreType.deploy_point.name(), name ) ),
-                                      DeployPointDoc.class );
+            final DeployPointDoc doc =
+                couch.getDocument( new CouchDocRef( namespaceId( StoreType.deploy_point.name(), name ) ),
+                                   DeployPointDoc.class );
+
+            return doc == null ? null : doc.exportStore();
         }
         catch ( final CouchDBException e )
         {
@@ -138,8 +138,11 @@ public class CouchStoreDataManager
     {
         try
         {
-            return couch.getDocument( new CouchDocRef( namespaceId( StoreType.repository.name(), name ) ),
-                                      RepositoryDoc.class );
+            final RepositoryDoc doc =
+                couch.getDocument( new CouchDocRef( namespaceId( StoreType.repository.name(), name ) ),
+                                   RepositoryDoc.class );
+
+            return doc == null ? null : doc.exportStore();
         }
         catch ( final CouchDBException e )
         {
@@ -152,12 +155,15 @@ public class CouchStoreDataManager
      * @see org.commonjava.aprox.core.data.ProxyDataManager#getGroup(java.lang.String)
      */
     @Override
-    public GroupDoc getGroup( final String name )
+    public Group getGroup( final String name )
         throws ProxyDataException
     {
         try
         {
-            return couch.getDocument( new CouchDocRef( namespaceId( StoreType.group.name(), name ) ), GroupDoc.class );
+            final GroupDoc doc =
+                couch.getDocument( new CouchDocRef( namespaceId( StoreType.group.name(), name ) ), GroupDoc.class );
+
+            return doc == null ? null : doc.exportStore();
         }
         catch ( final CouchDBException e )
         {
@@ -175,8 +181,11 @@ public class CouchStoreDataManager
     {
         try
         {
-            return new ArrayList<Group>( couch.getViewListing( new AproxViewRequest( config, View.ALL_GROUPS ),
+            final List<GroupDoc> docs =
+                new ArrayList<GroupDoc>( couch.getViewListing( new AproxViewRequest( config, View.ALL_GROUPS ),
                                                                GroupDoc.class ) );
+
+            return exportList( docs );
         }
         catch ( final CouchDBException e )
         {
@@ -194,9 +203,12 @@ public class CouchStoreDataManager
     {
         try
         {
-            return new ArrayList<Repository>(
+            final List<RepositoryDoc> docs =
+                new ArrayList<RepositoryDoc>(
                                               couch.getViewListing( new AproxViewRequest( config, View.ALL_REPOSITORIES ),
                                                                     RepositoryDoc.class ) );
+
+            return exportList( docs );
         }
         catch ( final CouchDBException e )
         {
@@ -214,9 +226,12 @@ public class CouchStoreDataManager
     {
         try
         {
-            return new ArrayList<DeployPoint>( couch.getViewListing( new AproxViewRequest( config,
+            final List<DeployPointDoc> docs =
+                new ArrayList<DeployPointDoc>( couch.getViewListing( new AproxViewRequest( config,
                                                                                            View.ALL_DEPLOY_POINTS ),
                                                                      DeployPointDoc.class ) );
+
+            return exportList( docs );
         }
         catch ( final CouchDBException e )
         {
@@ -238,6 +253,7 @@ public class CouchStoreDataManager
         return result;
     }
 
+    @SuppressWarnings( "rawtypes" )
     private void findOrderedConcreteStores( final String groupName, final List<ArtifactStore> accumStores )
         throws ProxyDataException
     {
@@ -261,15 +277,16 @@ public class CouchStoreDataManager
 
                 if ( stores != null )
                 {
-                    for ( final ArtifactStore store : stores )
+                    for ( final ArtifactStoreDoc storeDoc : stores )
                     {
-                        if ( store == null )
+                        if ( storeDoc == null )
                         {
                             continue;
                         }
 
+                        final ArtifactStore store = storeDoc.exportStore();
                         // logger.info( "Found constituent: '%s'", store.getKey() );
-                        if ( store instanceof Group )
+                        if ( storeDoc instanceof GroupDoc )
                         {
                             if ( !done.contains( store.getName() ) )
                             {
@@ -304,9 +321,8 @@ public class CouchStoreDataManager
         {
             final AproxViewRequest req = new AproxViewRequest( config, View.STORE_GROUPS, repo.toString() );
 
-            final List<? extends Group> groups = couch.getViewListing( req, GroupDoc.class );
-
-            return new HashSet<Group>( groups );
+            final List<GroupDoc> groupDocs = couch.getViewListing( req, GroupDoc.class );
+            return new HashSet<Group>( exportList( groupDocs ) );
         }
         catch ( final CouchDBException e )
         {
@@ -325,7 +341,7 @@ public class CouchStoreDataManager
     {
         try
         {
-            couch.store( convertDocuments( deploys ), false, false );
+            couch.store( wrapCollection( deploys ), false, false );
             fireStoreEvent( ProxyManagerUpdateType.ADD_OR_UPDATE, deploys );
         }
         catch ( final CouchDBException e )
@@ -335,22 +351,40 @@ public class CouchStoreDataManager
         }
     }
 
-    private Collection<? extends ArtifactStoreDoc> convertDocuments( final Collection<? extends ArtifactStore> stores )
+    @SuppressWarnings( "rawtypes" )
+    private <T extends ArtifactStore> Collection<ArtifactStoreDoc> wrapCollection( final Collection<T> stores )
     {
-        final List<ArtifactStoreDoc> docs = new ArrayList<ArtifactStoreDoc>( stores.size() );
-        for ( final ArtifactStore store : stores )
+        if ( stores == null )
         {
-            if ( store instanceof ArtifactStoreDoc )
-            {
-                docs.add( (ArtifactStoreDoc) store );
-            }
-            else
-            {
-                docs.add( (ArtifactStoreDoc) modelFactory.convertModel( store ) );
-            }
+            return Collections.emptyList();
+        }
+
+        final List<ArtifactStoreDoc> docs = new ArrayList<ArtifactStoreDoc>( stores.size() );
+        for ( final T store : stores )
+        {
+            docs.add( wrapOne( store ) );
         }
 
         return docs;
+    }
+
+    @SuppressWarnings( "rawtypes" )
+    private ArtifactStoreDoc wrapOne( final ArtifactStore store )
+    {
+        if ( StoreType.deploy_point == store.getDoctype() )
+        {
+            return new DeployPointDoc( (DeployPoint) store );
+        }
+        else if ( StoreType.group == store.getDoctype() )
+        {
+            return new GroupDoc( (Group) store );
+        }
+        else if ( StoreType.repository == store.getDoctype() )
+        {
+            return new RepositoryDoc( (Repository) store );
+        }
+
+        throw new IllegalStateException( "Detected ArtifactStore with missing/invalid doctype! Store: " + store );
     }
 
     /*
@@ -377,7 +411,7 @@ public class CouchStoreDataManager
     {
         try
         {
-            final boolean result = couch.store( (ArtifactStoreDoc) modelFactory.convertModel( deploy ), skipIfExists );
+            final boolean result = couch.store( wrapOne( deploy ), skipIfExists );
 
             fireStoreEvent( skipIfExists ? ProxyManagerUpdateType.ADD : ProxyManagerUpdateType.ADD_OR_UPDATE, deploy );
 
@@ -400,7 +434,7 @@ public class CouchStoreDataManager
     {
         try
         {
-            couch.store( convertDocuments( repos ), false, false );
+            couch.store( wrapCollection( repos ), false, false );
             fireStoreEvent( ProxyManagerUpdateType.ADD_OR_UPDATE, repos );
         }
         catch ( final CouchDBException e )
@@ -432,8 +466,7 @@ public class CouchStoreDataManager
     {
         try
         {
-            final boolean result =
-                couch.store( (ArtifactStoreDoc) modelFactory.convertModel( repository ), skipIfExists );
+            final boolean result = couch.store( wrapOne( repository ), skipIfExists );
 
             fireStoreEvent( skipIfExists ? ProxyManagerUpdateType.ADD : ProxyManagerUpdateType.ADD_OR_UPDATE,
                             repository );
@@ -457,7 +490,7 @@ public class CouchStoreDataManager
     {
         try
         {
-            couch.store( convertDocuments( groups ), false, false );
+            couch.store( wrapCollection( groups ), false, false );
             fireStoreEvent( ProxyManagerUpdateType.ADD_OR_UPDATE, groups );
         }
         catch ( final CouchDBException e )
@@ -504,7 +537,7 @@ public class CouchStoreDataManager
                                               group.getName(), new JoinString( ", ", missing ) );
             }
 
-            final boolean result = couch.store( (ArtifactStoreDoc) modelFactory.convertModel( group ), skipIfExists );
+            final boolean result = couch.store( wrapOne( group ), skipIfExists );
 
             fireStoreEvent( skipIfExists ? ProxyManagerUpdateType.ADD : ProxyManagerUpdateType.ADD_OR_UPDATE, group );
 
@@ -528,7 +561,7 @@ public class CouchStoreDataManager
     {
         try
         {
-            couch.delete( (ArtifactStoreDoc) modelFactory.convertModel( deploy ) );
+            couch.delete( wrapOne( deploy ) );
             fireDeleteEvent( StoreType.deploy_point, deploy.getName() );
         }
         catch ( final CouchDBException e )
@@ -568,7 +601,7 @@ public class CouchStoreDataManager
     {
         try
         {
-            couch.delete( (ArtifactStoreDoc) modelFactory.convertModel( repo ) );
+            couch.delete( wrapOne( repo ) );
             fireDeleteEvent( StoreType.repository, repo.getName() );
         }
         catch ( final CouchDBException e )
@@ -608,7 +641,7 @@ public class CouchStoreDataManager
     {
         try
         {
-            couch.delete( (ArtifactStoreDoc) modelFactory.convertModel( group ) );
+            couch.delete( wrapOne( group ) );
             fireDeleteEvent( StoreType.group, group.getName() );
         }
         catch ( final CouchDBException e )
@@ -707,6 +740,22 @@ public class CouchStoreDataManager
         {
             storeEvent.fire( new ArtifactStoreUpdateEvent( type, stores ) );
         }
+    }
+
+    private <T extends ArtifactStore> List<T> exportList( final List<? extends AbstractArtifactStoreDoc<T>> docs )
+    {
+        if ( docs == null )
+        {
+            return Collections.emptyList();
+        }
+
+        final List<T> results = new ArrayList<T>( docs.size() );
+        for ( final AbstractArtifactStoreDoc<T> doc : docs )
+        {
+            results.add( doc.exportStore() );
+        }
+
+        return results;
     }
 
 }

@@ -28,7 +28,6 @@ import org.commonjava.aprox.core.data.ProxyDataException;
 import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.model.ModelFactory;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.util.logging.Logger;
@@ -49,9 +48,6 @@ public abstract class AutoProxDataManagerDecorator
 
     @Inject
     private AutoProxConfiguration config;
-
-    @Inject
-    private ModelFactory modelFactory;
 
     private HttpClient http;
 
@@ -82,7 +78,7 @@ public abstract class AutoProxDataManagerDecorator
                     DeployPoint dp = dataManager.getDeployPoint( name );
                     if ( dp == null )
                     {
-                        dp = modelFactory.createDeployPoint( name );
+                        dp = new DeployPoint( name );
 
                         dp.setAllowReleases( deploy.isReleasesEnabled() );
                         dp.setAllowSnapshots( deploy.isSnapshotsEnabled() );
@@ -106,7 +102,7 @@ public abstract class AutoProxDataManagerDecorator
                     keys.addAll( group.getExtraConstituents() );
                 }
 
-                g = modelFactory.createGroup( name, keys );
+                g = new Group( name, keys );
                 dataManager.storeGroup( g );
             }
         }
@@ -187,7 +183,7 @@ public abstract class AutoProxDataManagerDecorator
             {
                 final AutoRepoConfiguration repo = config.getRepo();
 
-                proxy = modelFactory.createRepository( name, proxyUrl );
+                proxy = new Repository( name, proxyUrl );
                 proxy.setPassthrough( repo.isPassthroughEnabled() );
                 if ( repo.getTimeoutSeconds() != null )
                 {

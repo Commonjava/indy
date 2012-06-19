@@ -21,7 +21,6 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.live.fixture.ProxyConfigProvider;
-import org.commonjava.aprox.core.model.ModelFactory;
 import org.commonjava.web.json.test.WebFixture;
 import org.commonjava.web.test.fixture.TestWarArchiveBuilder;
 import org.junit.Before;
@@ -33,9 +32,6 @@ public class AbstractAProxLiveTest
     @Inject
     protected StoreDataManager proxyManager;
 
-    @Inject
-    protected ModelFactory modelFactory;
-
     @Rule
     public WebFixture webFixture = new WebFixture();
 
@@ -44,8 +40,6 @@ public class AbstractAProxLiveTest
         throws Exception
     {
         proxyManager.install();
-        webFixture.getSerializer()
-                  .registerSerializationAdapters( modelFactory );
     }
 
     protected static TestWarArchiveBuilder createWar( final Class<?> testClass )

@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -22,7 +21,6 @@ import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.model.ModelFactory;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
@@ -40,9 +38,6 @@ public class MemoryStoreDataManager
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private ModelFactory modelFactory;
-
-    @Inject
     private JsonSerializer serializer;
 
     @Inject
@@ -55,18 +50,9 @@ public class MemoryStoreDataManager
     {
     }
 
-    public MemoryStoreDataManager( final ModelFactory modelFactory, final JsonSerializer serializer )
+    public MemoryStoreDataManager( final JsonSerializer serializer )
     {
-        this.modelFactory = modelFactory;
         this.serializer = serializer;
-        registerAdapters();
-    }
-
-    @PostConstruct
-    public void registerAdapters()
-    {
-        logger.info( "Registering JSON adapters for memory proxy-data manager" );
-        serializer.registerSerializationAdapters( modelFactory );
     }
 
     @Override

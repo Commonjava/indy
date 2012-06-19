@@ -19,6 +19,7 @@ import static org.commonjava.couch.util.IdUtils.namespaceId;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.couch.model.DenormalizationException;
 import org.junit.Test;
@@ -30,7 +31,7 @@ public class GroupDocTest
     public void denormalizeCouchDocumentIdFromName()
         throws DenormalizationException
     {
-        final GroupDoc grp = new GroupDoc( "test" );
+        final GroupDoc grp = new GroupDoc( new Group( "test" ) );
         grp.calculateDenormalizedFields();
 
         assertThat( grp.getCouchDocId(), equalTo( namespaceId( StoreType.group.name(), "test" ) ) );

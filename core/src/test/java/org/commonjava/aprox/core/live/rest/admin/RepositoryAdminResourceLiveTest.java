@@ -64,7 +64,7 @@ public class RepositoryAdminResourceLiveTest
     public void createAndRetrieveCentralRepoProxy()
         throws Exception
     {
-        final Repository repo = modelFactory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" );
+        final Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
         final HttpResponse response = webFixture.post( webFixture.resourceUrl( BASE_URL ), repo, HttpStatus.SC_CREATED );
 
         final String repoUrl = webFixture.resourceUrl( BASE_URL, repo.getName() );
@@ -82,7 +82,7 @@ public class RepositoryAdminResourceLiveTest
     public void createCentralRepoProxyTwiceAndRetrieveOne()
         throws Exception
     {
-        final Repository repo = modelFactory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" );
+        final Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
         webFixture.post( webFixture.resourceUrl( BASE_URL ), repo, HttpStatus.SC_CREATED );
 
         webFixture.post( webFixture.resourceUrl( BASE_URL ), repo, HttpStatus.SC_CONFLICT );
@@ -108,7 +108,7 @@ public class RepositoryAdminResourceLiveTest
     public void createAndDeleteCentralRepoProxy_ByName()
         throws Exception
     {
-        final ArtifactStore repo = modelFactory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" );
+        final ArtifactStore repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
         webFixture.post( webFixture.resourceUrl( BASE_URL ), repo, HttpStatus.SC_CREATED );
 
         webFixture.delete( webFixture.resourceUrl( BASE_URL, repo.getName() ) );
@@ -120,10 +120,10 @@ public class RepositoryAdminResourceLiveTest
     public void createTwoReposAndRetrieveAll()
         throws Exception
     {
-        final ArtifactStore repo = modelFactory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" );
+        final ArtifactStore repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
         webFixture.post( webFixture.resourceUrl( BASE_URL ), repo, HttpStatus.SC_CREATED );
 
-        final ArtifactStore repo2 = modelFactory.createRepository( "test", "http://www.google.com" );
+        final ArtifactStore repo2 = new Repository( "test", "http://www.google.com" );
         webFixture.post( webFixture.resourceUrl( BASE_URL ), repo2, HttpStatus.SC_CREATED );
 
         final Listing<Repository> result =

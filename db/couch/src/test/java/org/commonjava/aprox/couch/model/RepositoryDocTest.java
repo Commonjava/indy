@@ -19,6 +19,7 @@ import static org.commonjava.couch.util.IdUtils.namespaceId;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.aprox.core.model.io.StoreKeySerializer;
 import org.commonjava.couch.model.DenormalizationException;
@@ -34,7 +35,7 @@ public class RepositoryDocTest
     public void denormalizeCouchDocumentIdFromName()
         throws DenormalizationException
     {
-        final RepositoryDoc repo = new RepositoryDoc( "test", "http://www.nowhere.com/" );
+        final RepositoryDoc repo = new RepositoryDoc( new Repository( "test", "http://www.nowhere.com/" ) );
         repo.calculateDenormalizedFields();
 
         assertThat( repo.getCouchDocId(), equalTo( namespaceId( StoreType.repository.name(), "test" ) ) );
@@ -44,38 +45,46 @@ public class RepositoryDocTest
     public void denormalizeAuthInfoFromUrl()
         throws DenormalizationException
     {
-        final RepositoryDoc repo = new RepositoryDoc( "test", "http://admin:admin123@www.nowhere.com/" );
+        final RepositoryDoc repo =
+            new RepositoryDoc( new Repository( "test", "http://admin:admin123@www.nowhere.com/" ) );
         repo.calculateDenormalizedFields();
 
-        assertThat( repo.getUrl(), equalTo( "http://www.nowhere.com/" ) );
-        assertThat( repo.getUser(), equalTo( "admin" ) );
-        assertThat( repo.getPassword(), equalTo( "admin123" ) );
+        assertThat( repo.exportStore()
+                        .getUrl(), equalTo( "http://www.nowhere.com/" ) );
+        assertThat( repo.exportStore()
+                        .getUser(), equalTo( "admin" ) );
+        assertThat( repo.exportStore()
+                        .getPassword(), equalTo( "admin123" ) );
     }
 
     @Test
     public void roundTrip()
     {
-        final RepositoryDoc doc = new RepositoryDoc( "test", "http://admin:admin@www.nowhere.com:8080/" );
+        final RepositoryDoc doc =
+            new RepositoryDoc( new Repository( "test", "http://admin:admin@www.nowhere.com:8080/" ) );
         doc.calculateDenormalizedFields();
         doc.setCouchDocRev( "2345" );
-        doc.setTimeoutSeconds( 10 );
+        final Repository repo = doc.exportStore();
+        repo.setTimeoutSeconds( 10 );
+
         final String json = ser.toString( doc );
 
         System.out.println( "JSON:\n\n" + json + "\n\n" );
 
         @SuppressWarnings( "unchecked" )
-        final RepositoryDoc result = ser.fromString( json, RepositoryDoc.class );
+        final RepositoryDoc resultDoc = ser.fromString( json, RepositoryDoc.class );
+        final Repository result = resultDoc.exportStore();
 
-        assertThat( result.getCouchDocId(), equalTo( doc.getCouchDocId() ) );
-        assertThat( result.getCouchDocRev(), equalTo( doc.getCouchDocRev() ) );
-        assertThat( result.getHost(), equalTo( doc.getHost() ) );
-        assertThat( result.getKey(), equalTo( doc.getKey() ) );
-        assertThat( result.getName(), equalTo( doc.getName() ) );
-        assertThat( result.getPassword(), equalTo( doc.getPassword() ) );
-        assertThat( result.getPort(), equalTo( doc.getPort() ) );
-        assertThat( result.getTimeoutSeconds(), equalTo( doc.getTimeoutSeconds() ) );
-        assertThat( result.getUrl(), equalTo( doc.getUrl() ) );
-        assertThat( result.getUser(), equalTo( doc.getUser() ) );
+        assertThat( resultDoc.getCouchDocId(), equalTo( doc.getCouchDocId() ) );
+        assertThat( resultDoc.getCouchDocRev(), equalTo( doc.getCouchDocRev() ) );
+        assertThat( result.getHost(), equalTo( repo.getHost() ) );
+        assertThat( result.getKey(), equalTo( repo.getKey() ) );
+        assertThat( result.getName(), equalTo( repo.getName() ) );
+        assertThat( result.getPassword(), equalTo( repo.getPassword() ) );
+        assertThat( result.getPort(), equalTo( repo.getPort() ) );
+        assertThat( result.getTimeoutSeconds(), equalTo( repo.getTimeoutSeconds() ) );
+        assertThat( result.getUrl(), equalTo( repo.getUrl() ) );
+        assertThat( result.getUser(), equalTo( repo.getUser() ) );
     }
 
 }

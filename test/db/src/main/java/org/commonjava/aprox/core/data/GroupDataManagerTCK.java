@@ -28,7 +28,7 @@ import java.util.List;
 import org.apache.log4j.Level;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.model.ModelFactory;
+import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.util.logging.Log4jUtil;
@@ -53,10 +53,9 @@ public abstract class GroupDataManagerTCK
         throws ProxyDataException
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
-        final ModelFactory factory = getFixtureProvider().getModelFactory();
 
-        manager.storeRepository( factory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" ) );
-        manager.storeRepository( factory.createRepository( "repo2", "http://repo1.maven.org/maven2/" ) );
+        manager.storeRepository( new Repository( "central", "http://repo1.maven.apache.org/maven2/" ) );
+        manager.storeRepository( new Repository( "repo2", "http://repo1.maven.org/maven2/" ) );
     }
 
     @Test
@@ -65,9 +64,8 @@ public abstract class GroupDataManagerTCK
         throws ProxyDataException
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
-        final ModelFactory factory = getFixtureProvider().getModelFactory();
 
-        final Group grp = factory.createGroup( "test" );
+        final Group grp = new Group( "test" );
 
         manager.storeGroup( grp );
 
@@ -96,9 +94,8 @@ public abstract class GroupDataManagerTCK
         throws ProxyDataException
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
-        final ModelFactory factory = getFixtureProvider().getModelFactory();
 
-        final Group grp = factory.createGroup( "test" );
+        final Group grp = new Group( "test" );
 
         manager.storeGroup( grp );
 
@@ -114,9 +111,8 @@ public abstract class GroupDataManagerTCK
         throws ProxyDataException
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
-        final ModelFactory factory = getFixtureProvider().getModelFactory();
 
-        final Group grp = factory.createGroup( "test" );
+        final Group grp = new Group( "test" );
 
         manager.storeGroup( grp );
 
@@ -132,11 +128,10 @@ public abstract class GroupDataManagerTCK
         throws ProxyDataException
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
-        final ModelFactory factory = getFixtureProvider().getModelFactory();
 
         final Group grp =
-            factory.createGroup( "test", new StoreKey( StoreType.repository, "central" ),
-                                 new StoreKey( StoreType.repository, "repo2" ) );
+            new Group( "test", new StoreKey( StoreType.repository, "central" ), new StoreKey( StoreType.repository,
+                                                                                              "repo2" ) );
 
         manager.storeGroup( grp );
 
@@ -158,11 +153,10 @@ public abstract class GroupDataManagerTCK
         throws ProxyDataException
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
-        final ModelFactory factory = getFixtureProvider().getModelFactory();
 
         final Group grp =
-            factory.createGroup( "test", new StoreKey( StoreType.repository, "repo2" ),
-                                 new StoreKey( StoreType.repository, "central" ) );
+            new Group( "test", new StoreKey( StoreType.repository, "repo2" ), new StoreKey( StoreType.repository,
+                                                                                            "central" ) );
 
         manager.storeGroup( grp );
 
@@ -182,11 +176,10 @@ public abstract class GroupDataManagerTCK
         throws ProxyDataException
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
-        final ModelFactory factory = getFixtureProvider().getModelFactory();
 
         final Group grp =
-            factory.createGroup( "test", new StoreKey( StoreType.repository, "central" ),
-                                 new StoreKey( StoreType.repository, "repo2" ) );
+            new Group( "test", new StoreKey( StoreType.repository, "central" ), new StoreKey( StoreType.repository,
+                                                                                              "repo2" ) );
 
         manager.storeGroup( grp );
 
@@ -209,9 +202,8 @@ public abstract class GroupDataManagerTCK
         throws ProxyDataException
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
-        final ModelFactory factory = getFixtureProvider().getModelFactory();
 
-        final Group grp = factory.createGroup( "test" );
+        final Group grp = new Group( "test" );
 
         manager.storeGroup( grp, true );
         manager.storeGroup( grp, true );
@@ -227,10 +219,9 @@ public abstract class GroupDataManagerTCK
         throws ProxyDataException
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
-        final ModelFactory factory = getFixtureProvider().getModelFactory();
 
-        final Group grp = factory.createGroup( "test" );
-        final Group grp2 = factory.createGroup( "test2" );
+        final Group grp = new Group( "test" );
+        final Group grp2 = new Group( "test2" );
 
         manager.storeGroup( grp );
         manager.storeGroup( grp2 );

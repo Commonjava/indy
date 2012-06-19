@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.apache.log4j.Level;
 import org.commonjava.aprox.core.model.ArtifactStore;
-import org.commonjava.aprox.core.model.ModelFactory;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.util.logging.Log4jUtil;
 import org.junit.BeforeClass;
@@ -47,9 +46,8 @@ public abstract class RepositoryDataManagerTCK
         throws ProxyDataException
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
-        final ModelFactory factory = getFixtureProvider().getModelFactory();
 
-        final Repository repo = factory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" );
+        final Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
         manager.storeRepository( repo, false );
 
         final Repository result = manager.getRepository( repo.getName() );
@@ -65,9 +63,8 @@ public abstract class RepositoryDataManagerTCK
         throws ProxyDataException
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
-        final ModelFactory factory = getFixtureProvider().getModelFactory();
 
-        final Repository repo = factory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" );
+        final Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
         manager.storeRepository( repo, true );
 
         manager.storeRepository( repo, true );
@@ -83,9 +80,8 @@ public abstract class RepositoryDataManagerTCK
         throws ProxyDataException
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
-        final ModelFactory factory = getFixtureProvider().getModelFactory();
 
-        final Repository repo = factory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" );
+        final Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
         manager.storeRepository( repo, false );
 
         manager.deleteRepository( repo.getName() );
@@ -100,9 +96,8 @@ public abstract class RepositoryDataManagerTCK
         throws ProxyDataException
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
-        final ModelFactory factory = getFixtureProvider().getModelFactory();
 
-        final Repository repo = factory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" );
+        final Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
         manager.storeRepository( repo, false );
 
         manager.deleteRepository( repo );
@@ -117,12 +112,11 @@ public abstract class RepositoryDataManagerTCK
         throws ProxyDataException
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
-        final ModelFactory factory = getFixtureProvider().getModelFactory();
 
-        final Repository repo = factory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" );
+        final Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
         manager.storeRepository( repo );
 
-        final Repository repo2 = factory.createRepository( "test", "http://www.google.com" );
+        final Repository repo2 = new Repository( "test", "http://www.google.com" );
         manager.storeRepository( repo2 );
 
         final List<? extends Repository> repositories = manager.getAllRepositories();

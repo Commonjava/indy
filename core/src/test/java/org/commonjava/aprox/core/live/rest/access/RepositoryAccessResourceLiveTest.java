@@ -27,6 +27,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.commonjava.aprox.core.data.ProxyDataException;
 import org.commonjava.aprox.core.live.AbstractAProxLiveTest;
 import org.commonjava.aprox.core.live.fixture.ProxyConfigProvider;
+import org.commonjava.aprox.core.model.Repository;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -73,7 +74,7 @@ public class RepositoryAccessResourceLiveTest
     public void setupTest()
         throws ProxyDataException
     {
-        proxyManager.storeRepository( modelFactory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" ) );
+        proxyManager.storeRepository( new Repository( "central", "http://repo1.maven.apache.org/maven2/" ) );
     }
 
     @Test

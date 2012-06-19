@@ -7,7 +7,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.model.ModelFactory;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.web.json.model.Listing;
 import org.commonjava.web.json.ser.JsonSerializer;
@@ -33,9 +32,6 @@ public class AProxModelSerializer
     @Inject
     private JsonSerializer restSerializer;
 
-    @Inject
-    private ModelFactory modelFactory;
-
     @PostConstruct
     protected void registerSerializationAdapters()
     {
@@ -45,19 +41,19 @@ public class AProxModelSerializer
     @SuppressWarnings( "unchecked" )
     public Repository repositoryFromRequestBody( final HttpServletRequest request )
     {
-        return restSerializer.fromRequestBody( request, modelFactory.getRepositoryType() );
+        return restSerializer.fromRequestBody( request, Repository.class );
     }
 
     @SuppressWarnings( "unchecked" )
     public Group groupFromRequestBody( final HttpServletRequest request )
     {
-        return restSerializer.fromRequestBody( request, modelFactory.getGroupType() );
+        return restSerializer.fromRequestBody( request, Group.class );
     }
 
     @SuppressWarnings( "unchecked" )
     public DeployPoint deployPointFromRequestBody( final HttpServletRequest request )
     {
-        return restSerializer.fromRequestBody( request, modelFactory.getDeployPointType() );
+        return restSerializer.fromRequestBody( request, DeployPoint.class );
     }
 
     public String repoListingToString( final Listing<Repository> listing )

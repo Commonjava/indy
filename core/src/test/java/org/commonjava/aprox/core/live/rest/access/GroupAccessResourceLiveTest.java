@@ -27,6 +27,8 @@ import org.apache.http.client.ClientProtocolException;
 import org.commonjava.aprox.core.data.ProxyDataException;
 import org.commonjava.aprox.core.live.AbstractAProxLiveTest;
 import org.commonjava.aprox.core.live.fixture.ProxyConfigProvider;
+import org.commonjava.aprox.core.model.Group;
+import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -75,11 +77,11 @@ public class GroupAccessResourceLiveTest
     public void setupTest()
         throws ProxyDataException
     {
-        proxyManager.storeRepository( modelFactory.createRepository( "dummy", "http://www.nowhere.com/" ) );
-        proxyManager.storeRepository( modelFactory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" ) );
+        proxyManager.storeRepository( new Repository( "dummy", "http://www.nowhere.com/" ) );
+        proxyManager.storeRepository( new Repository( "central", "http://repo1.maven.apache.org/maven2/" ) );
 
-        proxyManager.storeGroup( modelFactory.createGroup( "test", new StoreKey( StoreType.repository, "dummy" ),
-                                                           new StoreKey( StoreType.repository, "central" ) ) );
+        proxyManager.storeGroup( new Group( "test", new StoreKey( StoreType.repository, "dummy" ),
+                                            new StoreKey( StoreType.repository, "central" ) ) );
     }
 
     @Test

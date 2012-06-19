@@ -15,20 +15,65 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.model;
 
-public interface DeployPoint
+import com.google.gson.annotations.SerializedName;
+
+public class DeployPoint
     extends ArtifactStore
 {
 
-    boolean isAllowSnapshots();
+    @SerializedName( "allow_snapshots" )
+    private boolean allowSnapshots = false;
 
-    void setAllowSnapshots( final boolean allowSnapshots );
+    @SerializedName( "allow_releases" )
+    private boolean allowReleases = true;
 
-    boolean isAllowReleases();
+    private int snapshotTimeoutSeconds;
 
-    void setAllowReleases( final boolean allowReleases );
+    public DeployPoint()
+    {
+        super( StoreType.deploy_point );
+    }
 
-    int getSnapshotTimeoutSeconds();
+    public DeployPoint( final String name )
+    {
+        super( StoreType.deploy_point, name );
+    }
 
-    void setSnapshotTimeoutSeconds( int seconds );
+    public boolean isAllowSnapshots()
+    {
+        return allowSnapshots;
+    }
+
+    public void setAllowSnapshots( final boolean allowSnapshots )
+    {
+        this.allowSnapshots = allowSnapshots;
+    }
+
+    public boolean isAllowReleases()
+    {
+        return allowReleases;
+    }
+
+    public void setAllowReleases( final boolean allowReleases )
+    {
+        this.allowReleases = allowReleases;
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format( "MemoryDeployPoint [allowSnapshots=%s, allowReleases=%s, getName()=%s, getKey()=%s]",
+                              allowSnapshots, allowReleases, getName(), getKey() );
+    }
+
+    public int getSnapshotTimeoutSeconds()
+    {
+        return snapshotTimeoutSeconds;
+    }
+
+    public void setSnapshotTimeoutSeconds( final int snapshotTimeoutSeconds )
+    {
+        this.snapshotTimeoutSeconds = snapshotTimeoutSeconds;
+    }
 
 }

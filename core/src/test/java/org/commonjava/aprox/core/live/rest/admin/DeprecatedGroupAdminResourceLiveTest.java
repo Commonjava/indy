@@ -30,6 +30,7 @@ import org.apache.http.HttpStatus;
 import org.apache.log4j.Level;
 import org.commonjava.aprox.core.live.AbstractAProxLiveTest;
 import org.commonjava.aprox.core.model.Group;
+import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.aprox.core.model.io.StoreKeySerializer;
@@ -80,8 +81,8 @@ public class DeprecatedGroupAdminResourceLiveTest
     public void seedRepositoriesForGroupTests()
         throws Exception
     {
-        proxyManager.storeRepository( modelFactory.createRepository( "central", "http://repo1.maven.apache.org/maven2/" ) );
-        proxyManager.storeRepository( modelFactory.createRepository( "repo2", "http://repo1.maven.org/maven2/" ) );
+        proxyManager.storeRepository( new Repository( "central", "http://repo1.maven.apache.org/maven2/" ) );
+        proxyManager.storeRepository( new Repository( "repo2", "http://repo1.maven.org/maven2/" ) );
     }
 
     @Test
@@ -89,7 +90,7 @@ public class DeprecatedGroupAdminResourceLiveTest
     public void createAndRetrieveEmptyGroup()
         throws Exception
     {
-        final Group grp = modelFactory.createGroup( "test" );
+        final Group grp = new Group( "test" );
 
         final HttpResponse response = webFixture.post( webFixture.resourceUrl( BASE_URL ), grp, HttpStatus.SC_CREATED );
         webFixture.assertLocationHeader( response, webFixture.resourceUrl( ADJ_BASE_URL, grp.getName() ) );
@@ -118,7 +119,7 @@ public class DeprecatedGroupAdminResourceLiveTest
     public void createAndDeleteGroup()
         throws Exception
     {
-        final Group grp = modelFactory.createGroup( "test" );
+        final Group grp = new Group( "test" );
 
         webFixture.post( webFixture.resourceUrl( BASE_URL ), grp, HttpStatus.SC_CREATED );
 
@@ -132,8 +133,8 @@ public class DeprecatedGroupAdminResourceLiveTest
         throws Exception
     {
         final Group grp =
-            modelFactory.createGroup( "test", new StoreKey( StoreType.repository, "repo2" ),
-                                      new StoreKey( StoreType.repository, "central" ) );
+            new Group( "test", new StoreKey( StoreType.repository, "repo2" ), new StoreKey( StoreType.repository,
+                                                                                            "central" ) );
 
         webFixture.post( webFixture.resourceUrl( BASE_URL ), grp, HttpStatus.SC_CREATED );
 
@@ -154,7 +155,7 @@ public class DeprecatedGroupAdminResourceLiveTest
     public void createSameGroupTwiceAndRetrieveOne()
         throws Exception
     {
-        final Group grp = modelFactory.createGroup( "test" );
+        final Group grp = new Group( "test" );
 
         webFixture.post( webFixture.resourceUrl( BASE_URL ), grp, HttpStatus.SC_CREATED );
         webFixture.post( webFixture.resourceUrl( BASE_URL ), grp, HttpStatus.SC_CONFLICT );
@@ -174,8 +175,8 @@ public class DeprecatedGroupAdminResourceLiveTest
     public void createTwoGroupsAndRetrieveBoth()
         throws Exception
     {
-        final Group grp = modelFactory.createGroup( "test" );
-        final Group grp2 = modelFactory.createGroup( "test2" );
+        final Group grp = new Group( "test" );
+        final Group grp2 = new Group( "test2" );
 
         webFixture.post( webFixture.resourceUrl( BASE_URL ), grp, HttpStatus.SC_CREATED );
         webFixture.post( webFixture.resourceUrl( BASE_URL ), grp2, HttpStatus.SC_CREATED );

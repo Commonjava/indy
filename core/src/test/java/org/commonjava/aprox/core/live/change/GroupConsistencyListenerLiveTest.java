@@ -49,10 +49,10 @@ public class GroupConsistencyListenerLiveTest
     public void groupsContainingRepositoryModifiedWhenRepositoryDeleted()
         throws Exception
     {
-        final Repository repo = modelFactory.createRepository( "test", "http://repo1.maven.apache.org/maven2/" );
+        final Repository repo = new Repository( "test", "http://repo1.maven.apache.org/maven2/" );
         proxyManager.storeRepository( repo );
 
-        final Group group = modelFactory.createGroup( "testGroup", repo.getKey() );
+        final Group group = new Group( "testGroup", repo.getKey() );
         proxyManager.storeGroup( group );
 
         assertThat( group.getConstituents(), notNullValue() );

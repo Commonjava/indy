@@ -5,8 +5,6 @@ import java.io.File;
 import org.commonjava.aprox.core.conf.AproxConfiguration;
 import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.data.TCKFixtureProvider;
-import org.commonjava.aprox.core.model.ModelFactory;
-import org.commonjava.aprox.couch.model.CouchModelFactory;
 import org.commonjava.couch.conf.CouchDBConfiguration;
 import org.commonjava.couch.conf.DefaultCouchDBConfiguration;
 import org.commonjava.couch.db.CouchDBException;
@@ -26,8 +24,6 @@ public class CouchTCKFixtureProvider
 
     private CouchManager couch;
 
-    private CouchModelFactory modelFactory;
-
     @Override
     public StoreDataManager getDataManager()
     {
@@ -35,18 +31,10 @@ public class CouchTCKFixtureProvider
     }
 
     @Override
-    public ModelFactory getModelFactory()
-    {
-        return modelFactory;
-    }
-
-    @Override
     protected void before()
         throws Throwable
     {
         super.before();
-
-        this.modelFactory = new CouchModelFactory();
 
         final Serializer serializer = new Serializer();
 
@@ -70,7 +58,7 @@ public class CouchTCKFixtureProvider
         final CouchHttpClient couchClient = new CouchHttpClient( couchConfig, serializer );
 
         couch = new CouchManager( couchConfig, couchClient, serializer, new CouchAppReader() );
-        dataManager = new CouchStoreDataManager( config, couchConfig, couch, serializer, modelFactory );
+        dataManager = new CouchStoreDataManager( config, couchConfig, couch, serializer );
 
         dataManager.install();
     }
