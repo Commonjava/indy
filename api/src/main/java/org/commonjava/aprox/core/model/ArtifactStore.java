@@ -53,7 +53,6 @@ public abstract class ArtifactStore
     protected void setName( final String name )
     {
         this.name = name;
-        this.key = new StoreKey( doctype, name );
     }
 
     /*
@@ -65,8 +64,13 @@ public abstract class ArtifactStore
         return doctype;
     }
 
-    public StoreKey getKey()
+    public synchronized StoreKey getKey()
     {
+        if ( key == null )
+        {
+            this.key = new StoreKey( doctype, name );
+        }
+
         return key;
     }
 

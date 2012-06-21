@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -50,6 +49,7 @@ import org.commonjava.aprox.couch.model.ArtifactStoreDoc;
 import org.commonjava.aprox.couch.model.DeployPointDoc;
 import org.commonjava.aprox.couch.model.GroupDoc;
 import org.commonjava.aprox.couch.model.RepositoryDoc;
+import org.commonjava.aprox.couch.model.convert.ModelVersionConverter;
 import org.commonjava.aprox.couch.model.io.StoreDocDeserializer;
 import org.commonjava.couch.conf.CouchDBConfiguration;
 import org.commonjava.couch.db.CouchDBException;
@@ -58,12 +58,13 @@ import org.commonjava.couch.io.Serializer;
 import org.commonjava.couch.model.CouchApp;
 import org.commonjava.couch.model.CouchDocRef;
 import org.commonjava.couch.util.JoinString;
+import org.commonjava.util.logging.Logger;
 
 @Singleton
 public class CouchStoreDataManager
     implements StoreDataManager
 {
-    // private final Logger logger = new Logger( getClass() );
+    private final Logger logger = new Logger( getClass() );
 
     @Inject
     @AproxData
@@ -103,7 +104,8 @@ public class CouchStoreDataManager
     @PostConstruct
     protected void registerSerializationAdapters()
     {
-        serializer.registerSerializationAdapters( new StoreKeySerializer(), new StoreDocDeserializer() );
+        serializer.registerSerializationAdapters( new StoreKeySerializer(), new StoreDocDeserializer(),
+                                                  new ModelVersionConverter() );
     }
 
     /*
@@ -248,63 +250,63 @@ public class CouchStoreDataManager
         throws ProxyDataException
     {
         final List<ArtifactStore> result = new ArrayList<ArtifactStore>();
-        findOrderedConcreteStores( groupName, result );
+        final Set<String> done = new HashSet<String>();
+
+        findOrderedConcreteStores( groupName, result, done );
 
         return result;
     }
 
     @SuppressWarnings( "rawtypes" )
-    private void findOrderedConcreteStores( final String groupName, final List<ArtifactStore> accumStores )
+    private void findOrderedConcreteStores( final String group, final List<ArtifactStore> accumStores,
+                                            final Set<String> done )
         throws ProxyDataException
     {
-        final LinkedList<String> todo = new LinkedList<String>();
-        final Set<String> done = new HashSet<String>();
-
-        todo.addLast( groupName );
-        while ( !todo.isEmpty() )
+        done.add( group );
+        try
         {
-            final String group = todo.removeFirst();
+            logger.info( "Grabbing constituents of: '%s'", group );
 
-            done.add( group );
-            try
+            final AproxViewRequest req = new AproxViewRequest( config, View.GROUP_STORES );
+            req.setFullRangeForBaseKey( group );
+
+            final List<ArtifactStoreDoc> stores = couch.getViewListing( req, ArtifactStoreDoc.class );
+
+            if ( stores != null )
             {
-                // logger.info( "Grabbing constituents of: '%s'", group );
-
-                final AproxViewRequest req = new AproxViewRequest( config, View.GROUP_STORES );
-                req.setFullRangeForBaseKey( group );
-
-                final List<ArtifactStoreDoc> stores = couch.getViewListing( req, ArtifactStoreDoc.class );
-
-                if ( stores != null )
+                for ( final ArtifactStoreDoc storeDoc : stores )
                 {
-                    for ( final ArtifactStoreDoc storeDoc : stores )
+                    if ( storeDoc == null )
                     {
-                        if ( storeDoc == null )
-                        {
-                            continue;
-                        }
+                        continue;
+                    }
 
-                        final ArtifactStore store = storeDoc.exportStore();
-                        // logger.info( "Found constituent: '%s'", store.getKey() );
+                    final ArtifactStore store = storeDoc.exportStore();
+                    logger.info( "Found constituent: '%s'", store.getKey() );
+                    if ( !done.contains( store.getName() ) )
+                    {
                         if ( storeDoc instanceof GroupDoc )
                         {
-                            if ( !done.contains( store.getName() ) )
-                            {
-                                todo.addLast( store.getName() );
-                            }
+                            logger.info( "Traversing: '%s'", store.getKey() );
+                            findOrderedConcreteStores( store.getName(), accumStores, done );
                         }
                         else
                         {
+                            logger.info( "Adding: '%s'", store.getKey() );
                             accumStores.add( store );
                         }
                     }
+                    else
+                    {
+                        logger.info( "Already added: %s", store.getKey() );
+                    }
                 }
             }
-            catch ( final CouchDBException e )
-            {
-                throw new ProxyDataException( "Failed to retrieve stores in group: %s. Reason: %s", e, groupName,
-                                              e.getMessage() );
-            }
+        }
+        catch ( final CouchDBException e )
+        {
+            throw new ProxyDataException( "Failed to retrieve stores in group: %s. Reason: %s", e, group,
+                                          e.getMessage() );
         }
     }
 
@@ -686,10 +688,13 @@ public class CouchStoreDataManager
         {
             if ( couch.dbExists() )
             {
+                logger.info( "deleting for reinstall: %s", app.getCouchDocId() );
+
                 // static in Couch, so safe to forcibly reload.
                 couch.delete( app );
             }
 
+            logger.info( "initializing app: %s", app.getCouchDocId() );
             couch.initialize( description );
         }
         catch ( final CouchDBException e )

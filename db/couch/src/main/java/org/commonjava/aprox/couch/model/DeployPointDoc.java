@@ -26,4 +26,9 @@ public class DeployPointDoc
         super( deployPoint );
     }
 
+    public DeployPointDoc( final String id, final String rev, final String modelVersion, final DeployPoint deploy )
+    {
+        super( id, rev, modelVersion, deploy );
+    }
+
 }

@@ -23,6 +23,11 @@ public class RepositoryDoc
     implements DenormalizedCouchDoc
 {
 
+    public RepositoryDoc( final String id, final String rev, final String modelVersion, final Repository repo )
+    {
+        super( id, rev, modelVersion, repo );
+    }
+
     public RepositoryDoc( final Repository repo )
     {
         super( repo );

@@ -159,9 +159,11 @@ public class DefaultFileManager
                 continue;
             }
 
+            logger.info( "Attempting retrieval of: %s from store: %s", path, store );
             target = retrieve( store, path, true );
             if ( target != null )
             {
+                logger.info( "Returning content from file: %s", target );
                 return target;
             }
         }

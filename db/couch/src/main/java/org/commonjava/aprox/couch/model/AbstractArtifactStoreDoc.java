@@ -28,12 +28,22 @@ public abstract class AbstractArtifactStoreDoc<T extends ArtifactStore>
 
     public static final String COUCH_DOC_REV = "couch-doc-rev";
 
-    private final T store;
+    private String modelVersion = "2";
+
+    private T store;
 
     protected AbstractArtifactStoreDoc( final T store )
     {
         this.store = store;
         calculateDenormalizedFields();
+    }
+
+    public AbstractArtifactStoreDoc( final String id, final String rev, final String modelVersion, final T store )
+    {
+        setCouchDocId( id );
+        setCouchDocRev( rev );
+        this.modelVersion = modelVersion;
+        this.store = store;
     }
 
     @Override
@@ -64,6 +74,26 @@ public abstract class AbstractArtifactStoreDoc<T extends ArtifactStore>
         {
             setCouchDocRev( rev );
         }
+    }
+
+    protected T getStore()
+    {
+        return store;
+    }
+
+    protected void setStore( final T store )
+    {
+        this.store = store;
+    }
+
+    protected final String getModelVersion()
+    {
+        return modelVersion;
+    }
+
+    final void setModelVersion( final String modelVersion )
+    {
+        this.modelVersion = modelVersion;
     }
 
 }

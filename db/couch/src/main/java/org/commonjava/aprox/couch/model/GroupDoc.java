@@ -26,4 +26,9 @@ public class GroupDoc
         super( group );
     }
 
+    public GroupDoc( final String id, final String rev, final String modelVersion, final Group group )
+    {
+        super( id, rev, modelVersion, group );
+    }
+
 }
