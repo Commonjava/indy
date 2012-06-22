@@ -18,6 +18,11 @@ class Group extends Spine.Model
         for object in objects
           if object
             object.id = object.name if object.name
+            object.key = "#{object.key.type}:#{object.key.name}" if object.key and object.key.type and object.key.name
+    else
+      object = objects
+      object.id = object.name if object.name
+      object.key = "#{object.key.type}:#{object.key.name}" if object.key and object.key.type and object.key.name
 
     if Spine.isArray(objects)
       (new @(value) for value in objects)

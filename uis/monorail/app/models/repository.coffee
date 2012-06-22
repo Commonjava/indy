@@ -16,6 +16,7 @@ class Repository extends Spine.Model
     if typeof objects is 'string'
       objects = JSON.parse(objects)
       
+      
     if objects.items
       objects = objects.items
       if objects
@@ -23,6 +24,13 @@ class Repository extends Spine.Model
           if object
             object.remote_url = object.url if object.url
             object.id = object.name if object.name
+            object.key = "#{object.key.type}:#{object.key.name}" if object.key and object.key.type and object.key.name
+    else
+      object = objects
+      object.remote_url = object.url if object.url
+      object.id = object.name if object.name
+      object.key = "#{object.key.type}:#{object.key.name}" if object.key and object.key.type and object.key.name
+      
 
     if Spine.isArray(objects)
       (new @(value) for value in objects)

@@ -16,6 +16,7 @@ class GroupsHelper extends Spine.Controller
     repos = Repository.all()
     console.log( "Checking #{repos.length} repositories")
     for store in repos
+      store.key = "repository:#{store.name}" unless store.key
       console.log( "Checking repo: #{store.key}")
       if keys and store and keys.indexOf( store.key ) > -1
         console.log("Adding repo: #{store.name}")
@@ -24,6 +25,7 @@ class GroupsHelper extends Spine.Controller
     groups = Group.all()
     console.log( "Checking #{groups.length} groups")
     for store in groups
+      store.key = "group:#{store.name}" unless store.key
       console.log( "Checking group: #{store.key}")
       if keys and store and keys.indexOf( store.key ) > -1
         console.log("Adding group: #{store.name}")
@@ -32,6 +34,7 @@ class GroupsHelper extends Spine.Controller
     deploys = Deploy.all()
     console.log( "Checking #{deploys.length} deploys")
     for store in deploys
+      store.key = "deploy_point:#{store.name}" unless store.key
       console.log( "Checking deploy point: #{store.key}")
       if keys and store and keys.indexOf( store.key ) > -1
         console.log("Adding deploy point: #{store.name}")
@@ -43,28 +46,28 @@ class GroupsHelper extends Spine.Controller
     available = []
 
     repos = Repository.all()
-    available.push({'key': store.key, 'name': store.name, 'type': 'R'}) for store in Repository.all()
+    available.push({'key': "repository:#{store.name}", 'name': store.name, 'type': 'R'}) for store in Repository.all()
 
     groups = Group.all()
-    available.push({'key': store.key, 'name': store.name, 'type': 'G'}) for store in Group.all()
+    available.push({'key': "group:#{store.name}", 'name': store.name, 'type': 'G'}) for store in Group.all()
 
     deploys = Deploy.all()
-    available.push({'key': store.key, 'name': store.name, 'type': 'D'}) for store in Deploy.all()
-
+    available.push({'key': "deploy_point:#{store.name}", 'name': store.name, 'type': 'D'}) for store in Deploy.all()
+    
     available
     
   availableWithSortedConstituents: (constituents) ->
     available = []
   
     repos = Repository.all()
-    available.push({'key': store.key, 'name': store.name, 'type': 'R'}) for store in Repository.all()
-  
+    available.push({'key': "repository:#{store.name}", 'name': store.name, 'type': 'R'}) for store in Repository.all()
+
     groups = Group.all()
-    available.push({'key': store.key, 'name': store.name, 'type': 'G'}) for store in Group.all()
-  
+    available.push({'key': "group:#{store.name}", 'name': store.name, 'type': 'G'}) for store in Group.all()
+
     deploys = Deploy.all()
-    available.push({'key': store.key, 'name': store.name, 'type': 'D'}) for store in Deploy.all()
-  
+    available.push({'key': "deploy_point:#{store.name}", 'name': store.name, 'type': 'D'}) for store in Deploy.all()
+    
     available.sort( (a,b) ->
       ai = if constituents then constituents.indexOf(a.key) else -1
       bi = if constituents then constituents.indexOf(b.key) else -1

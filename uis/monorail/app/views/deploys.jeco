@@ -7,8 +7,8 @@
     <div class="items-header-row">
       <span class="items-label">Name</span>
       <span class="items-label">Local URL</span>
-      <span class="items-label">Allow Snapshots</span>
       <span class="items-label">Allow Releases</span>
+      <span class="items-label">Allow Snapshots</span>
     </div>
     <% for item in @items: %>
     <div class="item deploy-item">

@@ -121,7 +121,16 @@ class DialogController extends Spine.Controller
     @cleanup()
   
   saving: (e) =>
-    @item.fromForm(@form).save()
+    @item.fromForm(@form)
+    if @doctype
+      @item.doctype = @doctype
+      @item.key = "#{@doctype}:#{@item.name}" if @item.name
+      
+    @item.id = @item.name if @item.name
+    
+    @item.save()
+    
     @log("From form: #{JSON.stringify(@item)}")
+    @log( "Item key: #{@item.key}, name: #{@item.name}")
 
 module?.exports = DialogController

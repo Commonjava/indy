@@ -23,10 +23,13 @@ class GroupForm extends DialogController
   constructor: ->
     super
     @helper = new GroupsHelper
+    @doctype = 'group'
+    
     @active @change
   
   select: (evt, ui) =>
     # evt.preventDefault()
+    @log("ui object: #{ui}")
     store = $(ui.draggable).attr('name')
     
     @log("Adding #{store}")

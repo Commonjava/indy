@@ -12,6 +12,7 @@ class RepositoryForm extends DialogController
     super
     @x509Form = new RepositoryX509Form
     @proxyForm = new RepositoryProxyForm
+    @doctype = 'repository'
     
     @active @change
   
@@ -30,5 +31,5 @@ class RepositoryForm extends DialogController
     $(@el).html( require('views/repository.form')(@item) )
     @form = $(@el).find('form')
     @renderDialog( 'Repository', 350, 600 )
-
+  
 module.exports = RepositoryForm

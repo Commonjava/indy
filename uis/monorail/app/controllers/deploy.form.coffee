@@ -8,6 +8,7 @@ class DeployForm extends DialogController
     
   constructor: ->
     super
+    @doctype = 'deploy_point'
     @active @change
   
   render: =>

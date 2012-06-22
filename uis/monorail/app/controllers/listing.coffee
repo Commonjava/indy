@@ -36,6 +36,7 @@ class ListingController extends Spine.Controller
     @show( true )
   
   show: (editing) =>
+    @log( "Opening item with key: #{@shownItem.key}")
     if ( @shownItem )
       @opening(@shownItem) if editing and @opening
       @log("opening form in #{if editing then 'edit' else 'create'} mode.")
