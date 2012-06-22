@@ -38,6 +38,7 @@
       
       <modules>
         <module>depbase</module>
+        <module>indexer</module>
       </modules>
     </profile>
   </profiles>

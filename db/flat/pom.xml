@@ -52,5 +52,13 @@
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-test-db</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.shelflife</groupId>
+      <artifactId>shelflife-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.shelflife</groupId>
+      <artifactId>shelflife-store-flat</artifactId>
+    </dependency>
   </dependencies>
 </project>

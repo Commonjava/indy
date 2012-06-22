@@ -30,7 +30,6 @@
   
   <modules>
     <module>monorail</module>
-    <module>jquery-basic</module>
   </modules>
   
 </project>

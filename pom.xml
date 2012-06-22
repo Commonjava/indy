@@ -67,14 +67,6 @@
 
       <dependency>
         <groupId>org.commonjava.aprox.ui</groupId>
-        <artifactId>aprox-ui-jquery-basic</artifactId>
-        <version>0.3-SNAPSHOT</version>
-        <type>war</type>
-        <scope>runtime</scope>
-      </dependency>
-      
-      <dependency>
-        <groupId>org.commonjava.aprox.ui</groupId>
         <artifactId>aprox-ui-monorail</artifactId>
         <version>0.3-SNAPSHOT</version>
         <type>war</type>
@@ -138,6 +130,11 @@
         <version>0.1</version>
       </dependency>
       <dependency>
+        <groupId>org.commonjava.shelflife</groupId>
+        <artifactId>shelflife-store-flat</artifactId>
+        <version>0.1</version>
+      </dependency>
+      <dependency>
         <groupId>org.commonjava.util</groupId>
         <artifactId>configuration-api</artifactId>
         <version>0.3</version>
@@ -146,6 +143,17 @@
         <groupId>org.commonjava.util</groupId>
         <artifactId>configuration-dotconf</artifactId>
         <version>0.3</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.apache.maven.indexer</groupId>
+        <artifactId>indexer-core</artifactId>
+        <version>4.1.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.indexer</groupId>
+        <artifactId>indexer-artifact</artifactId>
+        <version>4.1.2</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

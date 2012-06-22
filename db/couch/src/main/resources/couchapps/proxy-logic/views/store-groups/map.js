@@ -1,7 +1,16 @@
 function(doc){
-	if ( ['group', 'repository', 'deploy_store'].indexOf( doc.store.doctype ) > -1 && doc.store.constituents ){
-		for( idx in doc.store.constituents ){
-			emit(doc.store.constituents[idx], {'_id': doc._id});
+	if ( doc.store ){
+		if ( ['group', 'repository', 'deploy_store'].indexOf( doc.store.doctype ) > -1 && doc.store.constituents ){
+			for( idx in doc.store.constituents ){
+				emit(doc.store.constituents[idx], {'_id': doc._id});
+			}
+		}
+	}
+	else{
+		if ( ['group', 'repository', 'deploy_store'].indexOf( doc.doctype ) > -1 && doc.constituents ){
+			for( idx in doc.constituents ){
+				emit(doc.constituents[idx], {'_id': doc._id});
+			}
 		}
 	}
 }

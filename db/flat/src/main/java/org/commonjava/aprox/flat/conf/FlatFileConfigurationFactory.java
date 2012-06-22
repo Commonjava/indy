@@ -2,6 +2,7 @@ package org.commonjava.aprox.flat.conf;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,6 +12,7 @@ import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
 
+import org.commonjava.shelflife.store.flat.FlatShelflifeStoreConfiguration;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.DefaultConfigurationListener;
 import org.commonjava.web.config.dotconf.DotConfConfigurationReader;
@@ -56,6 +58,14 @@ public class FlatFileConfigurationFactory
     public FlatFileConfiguration getProxyConfiguration()
     {
         return config;
+    }
+
+    @Produces
+    @Default
+    public FlatShelflifeStoreConfiguration getShelflifeConfiguration()
+    {
+        return new FlatShelflifeStoreConfiguration( new File( getProxyConfiguration().getDefinitionsDir(),
+                                                              "expirations" ) );
     }
 
     @Override
