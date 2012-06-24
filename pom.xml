@@ -52,7 +52,7 @@
       <dependency>
         <groupId>org.commonjava.couch.web</groupId>
         <artifactId>couch-web</artifactId>
-        <version>1.1</version>
+        <version>1.2-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
