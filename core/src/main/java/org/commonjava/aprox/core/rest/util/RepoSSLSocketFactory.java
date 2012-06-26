@@ -8,9 +8,9 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.Enumeration;
 
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
@@ -22,7 +22,7 @@ public class RepoSSLSocketFactory
     extends SSLSocketFactory
 {
 
-    private final Map<Repository, SSLSocketFactory> repoFactories = new WeakHashMap<Repository, SSLSocketFactory>();
+    // private final Map<Repository, SSLSocketFactory> repoFactories = new WeakHashMap<Repository, SSLSocketFactory>();
 
     private final Logger logger = new Logger( getClass() );
 
@@ -36,22 +36,27 @@ public class RepoSSLSocketFactory
     public Socket createSocket( final HttpParams params )
         throws IOException
     {
+        logger.info( "Creating socket...looking for repository definition in parameters..." );
         final Repository repo = (Repository) params.getParameter( FileManager.HTTP_PARAM_REPO );
 
         if ( repo != null )
         {
+            logger.info( "Creating socket...using repository: %s", repo );
             final SSLSocketFactory fac = getRepoSSLFactory( repo );
             if ( fac != null )
             {
+                logger.info( "Creating socket using repo-specific factory" );
                 return fac.createSocket( params );
             }
             else
             {
+                logger.info( "No repo-specific factory; Creating socket using default factory (this)" );
                 return super.createSocket( params );
             }
         }
         else
         {
+            logger.info( "No repo; Creating socket using default factory (this)" );
             return super.createSocket( params );
         }
     }
@@ -59,7 +64,9 @@ public class RepoSSLSocketFactory
     private synchronized SSLSocketFactory getRepoSSLFactory( final Repository repo )
         throws IOException
     {
-        SSLSocketFactory factory = repoFactories.get( repo );
+        logger.info( "Finding SSLSocketFactory for repo: %s", repo.getName() );
+
+        SSLSocketFactory factory = null; // repoFactories.get( repo );
         if ( factory == null )
         {
             KeyStore ks = null;
@@ -79,6 +86,23 @@ public class RepoSSLSocketFactory
                 try
                 {
                     ks = SSLUtils.readKeyAndCert( kcPem, kcPass );
+
+                    final StringBuilder sb = new StringBuilder();
+                    sb.append( "Keystore contains the following certificates:" );
+
+                    for ( final Enumeration<String> aliases = ks.aliases(); aliases.hasMoreElements(); )
+                    {
+                        final String alias = aliases.nextElement();
+                        final X509Certificate cert = (X509Certificate) ks.getCertificate( alias );
+
+                        if ( cert != null )
+                        {
+                            sb.append( "\n" )
+                              .append( cert.getSubjectDN() );
+                        }
+                    }
+                    sb.append( "\n" );
+                    logger.info( sb.toString() );
                 }
                 catch ( final CertificateException e )
                 {
@@ -107,11 +131,28 @@ public class RepoSSLSocketFactory
             }
 
             final String sPem = repo.getServerCertPem();
+            logger.info( "Server certificate PEM:\n%s", sPem );
             if ( sPem != null )
             {
                 try
                 {
                     ts = SSLUtils.readCerts( sPem, repo.getHost() );
+
+                    final StringBuilder sb = new StringBuilder();
+                    sb.append( "Trust store contains the following certificates:" );
+
+                    for ( final Enumeration<String> aliases = ts.aliases(); aliases.hasMoreElements(); )
+                    {
+                        final String alias = aliases.nextElement();
+                        final X509Certificate cert = (X509Certificate) ts.getCertificate( alias );
+                        if ( cert != null )
+                        {
+                            sb.append( "\n" )
+                              .append( cert.getSubjectDN() );
+                        }
+                    }
+                    sb.append( "\n" );
+                    logger.info( sb.toString() );
                 }
                 catch ( final CertificateException e )
                 {
@@ -141,7 +182,7 @@ public class RepoSSLSocketFactory
                         new SSLSocketFactory( SSLSocketFactory.TLS, ks, kcPass, ts, null, null,
                                               SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER );
 
-                    repoFactories.put( repo, factory );
+                    // repoFactories.put( repo, factory );
                 }
                 catch ( final KeyManagementException e )
                 {
