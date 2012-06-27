@@ -17,13 +17,30 @@ package org.commonjava.aprox.core.model;
 
 public enum StoreType
 {
-    group( false ), repository( false ), deploy_point( true );
+    group( false, "group", "groups" ), repository( false, "repository", "repositories" ), deploy_point( true, "deploy",
+        "deploys" );
 
     private boolean writable;
 
-    private StoreType( final boolean writable )
+    private String singular;
+
+    private String plural;
+
+    private StoreType( final boolean writable, final String singular, final String plural )
     {
         this.writable = writable;
+        this.singular = singular;
+        this.plural = plural;
+    }
+
+    public String pluralEndpointName()
+    {
+        return plural;
+    }
+
+    public String singularEndpointName()
+    {
+        return singular;
     }
 
     public boolean isWritable()
