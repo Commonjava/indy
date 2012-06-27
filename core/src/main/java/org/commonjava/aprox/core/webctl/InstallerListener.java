@@ -26,6 +26,7 @@ import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.StoreKey;
 import org.commonjava.aprox.core.model.StoreType;
+import org.commonjava.aprox.core.stats.AProxVersioning;
 import org.commonjava.util.logging.Logger;
 
 @WebListener
@@ -38,10 +39,17 @@ public class InstallerListener
     @Inject
     private StoreDataManager dataManager;
 
+    @Inject
+    private AProxVersioning versioning;
+
     @Override
     public void contextInitialized( final ServletContextEvent sce )
     {
-        logger.info( "Verfiying that AProx CouchDB + applications + basic data is installed..." );
+        logger.info( "\n\n\n\n\n STARTING AProx\n    Version: %s\n    Built-By: %s\n    Commit-ID: %s\n    Built-On: %s\n\n\n\n\n",
+                     versioning.getVersion(), versioning.getBuilder(), versioning.getCommitId(),
+                     versioning.getTimestamp() );
+
+        logger.info( "Verfiying that AProx DB + basic data is installed..." );
         try
         {
             dataManager.install();
@@ -60,6 +68,10 @@ public class InstallerListener
     @Override
     public void contextDestroyed( final ServletContextEvent sce )
     {
+        logger.info( "\n\n\n\n\n SHUTTING DOWN AProx\n    Version: %s\n    Built-By: %s\n    Commit-ID: %s\n    Built-On: %s\n\n\n\n\n",
+                     versioning.getVersion(), versioning.getBuilder(), versioning.getCommitId(),
+                     versioning.getTimestamp() );
+
     }
 
 }

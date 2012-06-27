@@ -1,9 +1,11 @@
 Spine = require('spine')
 Navbar = require('controllers/navbar')
 Stack = require('controllers/stack')
+Footer = require('controllers/footer')
 Repository = require('models/repository')
 Deploy = require('models/deploy')
 Group = require('models/group')
+Status = require('models/status')
 $ = Spine.$
 
 class Aprox extends Spine.Controller
@@ -14,6 +16,7 @@ class Aprox extends Spine.Controller
   
     @stack = new Stack
     @navbar = new Navbar
+    @footer = new Footer
   
     @routes
       '/repos': (params) ->
@@ -31,8 +34,9 @@ class Aprox extends Spine.Controller
   
     divider = $('<div />').addClass('divider')
     
-    @append @navbar.active(), divider, @stack.active()
+    @append @navbar.active(), divider, @stack.active(), @footer.active()
     
+    Status.fetch()
     Repository.fetch()
     Deploy.fetch()
     Group.fetch()

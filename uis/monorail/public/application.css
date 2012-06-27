@@ -220,3 +220,20 @@ fieldset.invisible legend {
 .ui-helper-clearfix {
   zoom: 1;
 }
+.footer {
+  margin-top: 20px;
+  padding-bottom: 10px;
+}
+.footer-section {
+  font-size: smaller;
+}
+.footer-section a {
+  font-weight: bold;
+}
+.footer-section .stat-label {
+  font-weight: bold;
+  font-variant: small-caps;
+}
+.footer-section .stat-value {
+  font-style: italic;
+}

@@ -1,0 +1,7 @@
+<div class="footer-section right">
+  <a target="_new" href="http://github.com/jdcasey/aprox">AProx</a>
+  (<span class="stat-label">Version:</span> <span class="stat-value"><%= @version %></span> |
+  <span class="stat-label">Commit ID:</span> <span class="stat-value"><a target="_new" href="http://github.com/jdcasey/aprox/commit/<%= @commit_id %>"><%= @commit_id %></a></span> |
+  <span class="stat-label">Built on:</span> <span class="stat-value"><%= @built_on %></span>
+  <span class="stat-label">by</span> <span class="stat-value"><%= @built_by %></span>)
+</div>
