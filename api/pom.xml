@@ -107,6 +107,7 @@
               <goal>create</goal>
             </goals>
             <configuration>
+              <shortRevisionLength>7</shortRevisionLength>
               <timestampFormat>{0,date,yyyy-MM-dd HH:mm Z}</timestampFormat>
             </configuration>
           </execution>
