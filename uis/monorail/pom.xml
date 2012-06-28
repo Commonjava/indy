@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.commonjava.aprox.ui</groupId>
     <artifactId>aprox-uis</artifactId>
-    <version>0.3-SNAPSHOT</version>
+    <version>0.3</version>
   </parent>
   
   <artifactId>aprox-ui-monorail</artifactId>
