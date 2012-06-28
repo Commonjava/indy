@@ -52,7 +52,7 @@
       <dependency>
         <groupId>org.commonjava.couch.web</groupId>
         <artifactId>couch-web</artifactId>
-        <version>1.2-SNAPSHOT</version>
+        <version>1.2</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -96,12 +96,12 @@
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-db-flat</artifactId>
-        <version>0.2-SNAPSHOT</version>
+        <version>0.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-depbase</artifactId>
-        <version>0.2-SNAPSHOT</version>
+        <version>0.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
