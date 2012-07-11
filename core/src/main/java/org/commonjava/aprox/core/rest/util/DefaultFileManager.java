@@ -32,11 +32,18 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.event.Event;
@@ -45,6 +52,7 @@ import javax.inject.Singleton;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -82,7 +90,9 @@ public class DefaultFileManager
 
     private HttpClient client;
 
-    private final Set<String> pendingUrls = new HashSet<String>();
+    private final Map<String, Future<File>> pending = new HashMap<String, Future<File>>();
+
+    private final ExecutorService executor = Executors.newCachedThreadPool();
 
     private TLRepositoryCredentialsProvider credProvider;
 
@@ -262,160 +272,74 @@ public class DefaultFileManager
         throws RESTWorkflowException
     {
         final String url = buildDownloadUrl( repository, path, suppressFailures );
-
-        if ( !continueDownload( url, repository.getTimeoutSeconds(), suppressFailures ) )
+        int timeoutSeconds = repository.getTimeoutSeconds();
+        if ( timeoutSeconds < 1 )
         {
-            return target.exists();
+            timeoutSeconds = Repository.DEFAULT_TIMEOUT_SECONDS;
         }
 
-        credProvider.bind( repository );
-
-        logger.info( "Trying: %s", url );
-
-        final HttpGet request = new HttpGet( url );
-
-        if ( repository.getProxyHost() != null )
+        if ( !joinDownload( url, target, timeoutSeconds, suppressFailures ) )
         {
-            final int proxyPort = repository.getProxyPort();
-            HttpHost proxy;
-            if ( proxyPort < 1 )
-            {
-                proxy = new HttpHost( repository.getProxyHost() );
-            }
-            else
-            {
-                proxy = new HttpHost( repository.getProxyHost(), repository.getProxyPort() );
-            }
-
-            request.getParams()
-                   .setParameter( ConnRoutePNames.DEFAULT_PROXY, proxy );
-        }
-
-        request.getParams()
-               .setParameter( FileManager.HTTP_PARAM_REPO, repository );
-
-        try
-        {
-            final InputStream in = executeGet( request, url, suppressFailures );
-            writeTarget( target, in, url, repository, path, suppressFailures );
-        }
-        finally
-        {
-            cleanup( request );
-            synchronized ( pendingUrls )
-            {
-                logger.info( "Marking download complete: %s", url );
-                pendingUrls.remove( url );
-                pendingUrls.notifyAll();
-            }
+            startDownload( url, repository, url, target, timeoutSeconds, suppressFailures );
         }
 
         return target.exists();
     }
 
-    private void writeTarget( final File target, final InputStream in, final String url, final Repository repository,
-                              final String path, final boolean suppressFailures )
+    private boolean startDownload( final String url, final Repository repository, final String path, final File target,
+                                   final int timeoutSeconds, final boolean suppressFailures )
         throws RESTWorkflowException
     {
-        FileOutputStream out = null;
-        if ( in != null )
-        {
-            try
-            {
-                final File targetDir = target.getParentFile();
-                if ( !targetDir.exists() && !targetDir.mkdirs() )
-                {
-                    logger.error( "Cannot create repository local storage directory: %s", targetDir );
-                    throw new RESTWorkflowException( Response.serverError()
-                                                             .build() );
-                }
+        final Downloader dl = new Downloader( url, repository, path, target, credProvider, client, fileEvent );
 
-                out = new FileOutputStream( target );
+        final Future<File> future = executor.submit( dl );
+        pending.put( url, future );
 
-                copy( in, out );
-
-                if ( fileEvent != null )
-                {
-                    fileEvent.fire( new FileStorageEvent( FileStorageEvent.Type.DOWNLOAD, repository, path, target ) );
-                }
-            }
-            catch ( final IOException e )
-            {
-                logger.error( "Failed to write to local proxy store: %s\nOriginal URL: %s. Reason: %s", e, target, url,
-                              e.getMessage() );
-
-                if ( !suppressFailures )
-                {
-                    throw new RESTWorkflowException( Response.serverError()
-                                                             .build() );
-                }
-            }
-            finally
-            {
-                closeQuietly( in );
-                closeQuietly( out );
-            }
-        }
-    }
-
-    private InputStream executeGet( final HttpGet request, final String url, final boolean suppressFailures )
-        throws RESTWorkflowException
-    {
-        InputStream result = null;
-
+        boolean result = true;
         try
         {
-            final HttpResponse response = client.execute( request );
-            final StatusLine line = response.getStatusLine();
-            final int sc = line.getStatusCode();
-            if ( sc != HttpStatus.SC_OK )
-            {
-                logger.warn( "%s : %s", line, url );
-                if ( !suppressFailures )
-                {
-                    if ( sc == HttpStatus.SC_NOT_FOUND )
-                    {
-                        result = null;
-                    }
-                    else
-                    {
-                        throw new RESTWorkflowException( Response.serverError()
-                                                                 .build() );
-                    }
-                }
-            }
-            else
-            {
-                result = response.getEntity()
-                                 .getContent();
-            }
-        }
-        catch ( final ClientProtocolException e )
-        {
-            logger.warn( "Repository remote request failed for: %s. Reason: %s", e, url, e.getMessage() );
+            final File downloaded = future.get( timeoutSeconds, TimeUnit.SECONDS );
 
+            if ( !suppressFailures && dl.getError() != null )
+            {
+                throw dl.getError();
+            }
+
+            result = downloaded != null && downloaded.exists();
+        }
+        catch ( final InterruptedException e )
+        {
+            if ( !suppressFailures )
+            {
+                throw new RESTWorkflowException( Response.status( Status.NO_CONTENT )
+                                                         .build() );
+            }
+            result = false;
+        }
+        catch ( final ExecutionException e )
+        {
             if ( !suppressFailures )
             {
                 throw new RESTWorkflowException( Response.serverError()
                                                          .build() );
             }
-            else
-            {
-                result = null;
-            }
+            result = false;
         }
-        catch ( final IOException e )
+        catch ( final TimeoutException e )
         {
-            logger.warn( "Repository remote request failed for: %s. Reason: %s", e, url, e.getMessage() );
-
             if ( !suppressFailures )
             {
-                throw new RESTWorkflowException( Response.serverError()
+                throw new RESTWorkflowException( Response.status( Status.NO_CONTENT )
                                                          .build() );
             }
-            else
+            result = false;
+        }
+        finally
+        {
+            synchronized ( pending )
             {
-                result = null;
+                logger.info( "Marking download complete: %s", url );
+                pending.remove( url );
             }
         }
 
@@ -449,63 +373,66 @@ public class DefaultFileManager
         return url;
     }
 
-    private boolean continueDownload( final String url, final int timeoutSeconds, final boolean suppressFailures )
+    private boolean joinDownload( final String url, final File target, final int timeoutSeconds,
+                                  final boolean suppressFailures )
         throws RESTWorkflowException
     {
-        synchronized ( pendingUrls )
+        boolean result = false;
+        synchronized ( pending )
         {
-            if ( pendingUrls.contains( url ) )
+            if ( pending.containsKey( url ) )
             {
-                final long timeout = System.currentTimeMillis() + ( timeoutSeconds * 1000 );
-                do
+                final Future<File> future = pending.get( url );
+                File f = null;
+                try
                 {
-                    if ( System.currentTimeMillis() > timeout )
+                    f = future.get( timeoutSeconds, TimeUnit.SECONDS );
+                    if ( f != null && f.exists() && !f.equals( target ) )
                     {
-                        if ( !suppressFailures )
-                        {
-                            throw new RESTWorkflowException( Response.status( Status.NO_CONTENT )
-                                                                     .build() );
-                        }
-                        else
-                        {
-                            break;
-                        }
+                        FileUtils.copyFile( f, target );
                     }
 
-                    try
-                    {
-                        pendingUrls.wait( 1000 );
-                    }
-                    catch ( final InterruptedException e )
-                    {
-                        break;
-                    }
-
-                    logger.info( "Waiting for download to complete: %s", url );
-
+                    result = target != null && target.exists();
                 }
-                while ( pendingUrls.contains( url ) );
+                catch ( final InterruptedException e )
+                {
+                    if ( !suppressFailures )
+                    {
+                        throw new RESTWorkflowException( Response.status( Status.NO_CONTENT )
+                                                                 .build() );
+                    }
+                }
+                catch ( final ExecutionException e )
+                {
+                    if ( !suppressFailures )
+                    {
+                        throw new RESTWorkflowException( Response.serverError()
+                                                                 .build() );
+                    }
+                }
+                catch ( final TimeoutException e )
+                {
+                    if ( !suppressFailures )
+                    {
+                        throw new RESTWorkflowException( Response.status( Status.NO_CONTENT )
+                                                                 .build() );
+                    }
+                }
+                catch ( final IOException e )
+                {
+                    logger.error( "Failed to copy downloaded file to repository target. Error:  %s\nDownloaded location: %s\nRepository target: %s",
+                                  e, e.getMessage(), f, target );
 
-                logger.info( "Download blocked (pending download already in progress): %s", url );
-                return false;
-            }
-            else
-            {
-                pendingUrls.add( url );
+                    if ( !suppressFailures )
+                    {
+                        throw new RESTWorkflowException( Response.serverError()
+                                                                 .build() );
+                    }
+                }
             }
         }
 
-        return true;
-    }
-
-    private void cleanup( final HttpGet request )
-    {
-        credProvider.clear();
-        request.abort();
-        client.getConnectionManager()
-              .closeExpiredConnections();
-        client.getConnectionManager()
-              .closeIdleConnections( 2, TimeUnit.SECONDS );
+        return result;
     }
 
     /*
@@ -671,6 +598,191 @@ public class DefaultFileManager
     {
         return new File( new File( config.getStorageRootDirectory(), key.getType()
                                                                         .name() + "-" + key.getName() ), path );
+    }
+
+    private static final class Downloader
+        implements Callable<File>
+    {
+
+        private final Logger logger = new Logger( getClass() );
+
+        private final String url;
+
+        private final Repository repository;
+
+        private final String path;
+
+        private final File target;
+
+        private final TLRepositoryCredentialsProvider credProvider;
+
+        private final Event<FileStorageEvent> fileEvent;
+
+        private final HttpClient client;
+
+        private RESTWorkflowException error;
+
+        public Downloader( final String url, final Repository repository, final String path, final File target,
+                           final TLRepositoryCredentialsProvider credProvider, final HttpClient client,
+                           final Event<FileStorageEvent> fileEvent )
+        {
+            this.url = url;
+            this.repository = repository;
+            this.path = path;
+            this.target = target;
+            this.credProvider = credProvider;
+            this.client = client;
+            this.fileEvent = fileEvent;
+        }
+
+        @Override
+        public File call()
+        {
+            credProvider.bind( repository );
+
+            logger.info( "Trying: %s", url );
+
+            final HttpGet request = new HttpGet( url );
+
+            if ( repository.getProxyHost() != null )
+            {
+                final int proxyPort = repository.getProxyPort();
+                HttpHost proxy;
+                if ( proxyPort < 1 )
+                {
+                    proxy = new HttpHost( repository.getProxyHost() );
+                }
+                else
+                {
+                    proxy = new HttpHost( repository.getProxyHost(), repository.getProxyPort() );
+                }
+
+                request.getParams()
+                       .setParameter( ConnRoutePNames.DEFAULT_PROXY, proxy );
+            }
+
+            request.getParams()
+                   .setParameter( FileManager.HTTP_PARAM_REPO, repository );
+
+            try
+            {
+                final InputStream in = executeGet( request, url );
+                writeTarget( target, in, url, repository, path );
+            }
+            catch ( final RESTWorkflowException e )
+            {
+                this.error = e;
+            }
+            finally
+            {
+                cleanup( request );
+            }
+
+            return target;
+        }
+
+        public RESTWorkflowException getError()
+        {
+            return error;
+        }
+
+        private void writeTarget( final File target, final InputStream in, final String url,
+                                  final Repository repository, final String path )
+            throws RESTWorkflowException
+        {
+            FileOutputStream out = null;
+            if ( in != null )
+            {
+                try
+                {
+                    final File targetDir = target.getParentFile();
+                    if ( !targetDir.exists() && !targetDir.mkdirs() )
+                    {
+                        logger.error( "Cannot create repository local storage directory: %s", targetDir );
+                        throw new RESTWorkflowException( Response.serverError()
+                                                                 .build() );
+                    }
+
+                    out = new FileOutputStream( target );
+
+                    copy( in, out );
+
+                    if ( fileEvent != null )
+                    {
+                        fileEvent.fire( new FileStorageEvent( FileStorageEvent.Type.DOWNLOAD, repository, path, target ) );
+                    }
+                }
+                catch ( final IOException e )
+                {
+                    logger.error( "Failed to write to local proxy store: %s\nOriginal URL: %s. Reason: %s", e, target,
+                                  url, e.getMessage() );
+
+                    throw new RESTWorkflowException( Response.serverError()
+                                                             .build() );
+                }
+                finally
+                {
+                    closeQuietly( in );
+                    closeQuietly( out );
+                }
+            }
+        }
+
+        private InputStream executeGet( final HttpGet request, final String url )
+            throws RESTWorkflowException
+        {
+            InputStream result = null;
+
+            try
+            {
+                final HttpResponse response = client.execute( request );
+                final StatusLine line = response.getStatusLine();
+                final int sc = line.getStatusCode();
+                if ( sc != HttpStatus.SC_OK )
+                {
+                    logger.warn( "%s : %s", line, url );
+                    if ( sc == HttpStatus.SC_NOT_FOUND )
+                    {
+                        result = null;
+                    }
+                    else
+                    {
+                        throw new RESTWorkflowException( Response.serverError()
+                                                                 .build() );
+                    }
+                }
+                else
+                {
+                    result = response.getEntity()
+                                     .getContent();
+                }
+            }
+            catch ( final ClientProtocolException e )
+            {
+                logger.warn( "Repository remote request failed for: %s. Reason: %s", e, url, e.getMessage() );
+                throw new RESTWorkflowException( Response.serverError()
+                                                         .build() );
+            }
+            catch ( final IOException e )
+            {
+                logger.warn( "Repository remote request failed for: %s. Reason: %s", e, url, e.getMessage() );
+                throw new RESTWorkflowException( Response.serverError()
+                                                         .build() );
+            }
+
+            return result;
+        }
+
+        private void cleanup( final HttpGet request )
+        {
+            credProvider.clear();
+            request.abort();
+            client.getConnectionManager()
+                  .closeExpiredConnections();
+            client.getConnectionManager()
+                  .closeIdleConnections( 2, TimeUnit.SECONDS );
+        }
+
     }
 
 }

@@ -27,7 +27,7 @@ public class Repository
 {
     private static final Logger LOGGER = new Logger( Repository.class );
 
-    private static final int DEFAULT_TIMEOUT_SECONDS = 120;
+    public static final int DEFAULT_TIMEOUT_SECONDS = 120;
 
     @SerializedName( "url" )
     private String url;
