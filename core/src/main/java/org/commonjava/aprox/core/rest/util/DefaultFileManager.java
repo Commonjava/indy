@@ -377,56 +377,70 @@ public class DefaultFileManager
                                   final boolean suppressFailures )
         throws RESTWorkflowException
     {
-        boolean result = false;
-        synchronized ( pending )
+        boolean result = target.exists();
+
+        // if the target file already exists, skip joining.
+        if ( !result )
         {
-            if ( pending.containsKey( url ) )
+            synchronized ( pending )
             {
-                final Future<File> future = pending.get( url );
-                File f = null;
-                try
+                // if we're already downloading, just wait for that to be done.
+                if ( pending.containsKey( url ) )
                 {
-                    f = future.get( timeoutSeconds, TimeUnit.SECONDS );
-                    if ( f != null && f.exists() && !f.equals( target ) )
+                    final Future<File> future = pending.get( url );
+                    File f = null;
+                    try
                     {
-                        FileUtils.copyFile( f, target );
-                    }
+                        f = future.get( timeoutSeconds, TimeUnit.SECONDS );
 
-                    result = target != null && target.exists();
-                }
-                catch ( final InterruptedException e )
-                {
-                    if ( !suppressFailures )
-                    {
-                        throw new RESTWorkflowException( Response.status( Status.NO_CONTENT )
-                                                                 .build() );
-                    }
-                }
-                catch ( final ExecutionException e )
-                {
-                    if ( !suppressFailures )
-                    {
-                        throw new RESTWorkflowException( Response.serverError()
-                                                                 .build() );
-                    }
-                }
-                catch ( final TimeoutException e )
-                {
-                    if ( !suppressFailures )
-                    {
-                        throw new RESTWorkflowException( Response.status( Status.NO_CONTENT )
-                                                                 .build() );
-                    }
-                }
-                catch ( final IOException e )
-                {
-                    logger.error( "Failed to copy downloaded file to repository target. Error:  %s\nDownloaded location: %s\nRepository target: %s",
-                                  e, e.getMessage(), f, target );
+                        // if the download landed in a different repository, copy it to the current one for
+                        // completeness...
 
-                    if ( !suppressFailures )
+                        // NOTE: It'd be nice to alias instead of copying, but
+                        // that would require a common centralized store
+                        // to prevent removal of a repository from hosing
+                        // the links.
+                        if ( f != null && f.exists() && !f.equals( target ) )
+                        {
+                            FileUtils.copyFile( f, target );
+                        }
+
+                        result = target != null && target.exists();
+                    }
+                    catch ( final InterruptedException e )
                     {
-                        throw new RESTWorkflowException( Response.serverError()
-                                                                 .build() );
+                        if ( !suppressFailures )
+                        {
+                            throw new RESTWorkflowException( Response.status( Status.NO_CONTENT )
+                                                                     .build() );
+                        }
+                    }
+                    catch ( final ExecutionException e )
+                    {
+                        if ( !suppressFailures )
+                        {
+                            throw new RESTWorkflowException( Response.serverError()
+                                                                     .build() );
+                        }
+                    }
+                    catch ( final TimeoutException e )
+                    {
+                        if ( !suppressFailures )
+                        {
+                            throw new RESTWorkflowException( Response.status( Status.NO_CONTENT )
+                                                                     .build() );
+                        }
+                    }
+                    catch ( final IOException e )
+                    {
+                        logger.error( "Failed to copy downloaded file to repository target. Error:  %s\nDownloaded location: %s\nRepository target: %s",
+                                      e, e.getMessage(), f, target );
+
+                        if ( !suppressFailures )
+                        {
+                            throw new RESTWorkflowException( Response.serverError()
+                                                                     .build() );
+                        }
                     }
                 }
             }
