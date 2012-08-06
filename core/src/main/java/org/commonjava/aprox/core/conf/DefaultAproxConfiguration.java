@@ -18,9 +18,14 @@ package org.commonjava.aprox.core.conf;
 import java.io.File;
 
 import javax.enterprise.inject.Alternative;
+import javax.enterprise.inject.Default;
+import javax.enterprise.inject.Produces;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import org.commonjava.couch.inject.Production;
+import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.ConfigNames;
 import org.commonjava.web.config.annotation.SectionName;
@@ -34,10 +39,38 @@ public class DefaultAproxConfiguration
 {
 
     @Singleton
-    public static final class ConfigSet
-        extends AproxConfigSet<AproxConfiguration, DefaultAproxConfiguration>
+    public static final class FeatureConfig
+        extends AproxFeatureConfig<AproxConfiguration, DefaultAproxConfiguration>
     {
-        public ConfigSet()
+        @Inject
+        private ConfigInfo info;
+
+        public FeatureConfig()
+        {
+            super( DefaultAproxConfiguration.class );
+        }
+
+        @Produces
+        @Production
+        @Default
+        public AproxConfiguration getAproxConfig()
+            throws ConfigurationException
+        {
+            return getConfig();
+        }
+
+        @Override
+        public AproxConfigInfo getInfo()
+        {
+            return info;
+        }
+    }
+
+    @Singleton
+    public static final class ConfigInfo
+        extends AproxConfigInfo
+    {
+        public ConfigInfo()
         {
             super( DefaultAproxConfiguration.class );
         }

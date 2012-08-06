@@ -19,6 +19,7 @@ import org.commonjava.aprox.infinispan.conf.CacheConfiguration;
 import org.commonjava.shelflife.model.Expiration;
 import org.commonjava.shelflife.model.ExpirationKey;
 import org.commonjava.shelflife.store.infinispan.ShelflifeCache;
+import org.commonjava.util.logging.Logger;
 import org.infinispan.Cache;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.DefaultCacheManager;
@@ -30,6 +31,8 @@ public class FileCacheProvider
     private static final String STORE_CACHE = "aprox";
 
     private static final String EXPIRATION_CACHE = "shelflife";
+
+    private final Logger logger = new Logger( getClass() );
 
     @Inject
     private CacheConfiguration config;
@@ -52,11 +55,13 @@ public class FileCacheProvider
                                           config.getPath() );
         }
 
+        logger.info( "\n\n\n\n[APROX-ISPN] Reading Infinispan configuration from: %s", f.getAbsolutePath() );
+
         FileInputStream fin = null;
         try
         {
             fin = new FileInputStream( f );
-            container = new DefaultCacheManager();
+            container = new DefaultCacheManager( fin );
         }
         catch ( final IOException e )
         {

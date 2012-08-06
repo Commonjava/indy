@@ -1,9 +1,14 @@
 package org.commonjava.aprox.infinispan.conf;
 
+import javax.enterprise.inject.Default;
+import javax.enterprise.inject.Produces;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.commonjava.aprox.core.conf.AproxConfigSet;
+import org.commonjava.aprox.core.conf.AproxConfigInfo;
+import org.commonjava.aprox.core.conf.AproxFeatureConfig;
+import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.ConfigNames;
 import org.commonjava.web.config.annotation.SectionName;
 
@@ -12,10 +17,37 @@ import org.commonjava.web.config.annotation.SectionName;
 public class CacheConfiguration
 {
     @Singleton
-    public static final class ConfigSet
-        extends AproxConfigSet<CacheConfiguration, CacheConfiguration>
+    public static final class CacheFeatureConfig
+        extends AproxFeatureConfig<CacheConfiguration, CacheConfiguration>
     {
-        public ConfigSet()
+        @Inject
+        private CacheConfigInfo info;
+
+        public CacheFeatureConfig()
+        {
+            super( CacheConfiguration.class );
+        }
+
+        @Produces
+        @Default
+        public CacheConfiguration getCacheConfig()
+            throws ConfigurationException
+        {
+            return getConfig();
+        }
+
+        @Override
+        public AproxConfigInfo getInfo()
+        {
+            return info;
+        }
+    }
+
+    @Singleton
+    public static final class CacheConfigInfo
+        extends AproxConfigInfo
+    {
+        public CacheConfigInfo()
         {
             super( CacheConfiguration.class );
         }
@@ -33,7 +65,7 @@ public class CacheConfiguration
 
     public final String getPath()
     {
-        return path;
+        return path == null ? DEFAULT_PATH : path;
     }
 
 }

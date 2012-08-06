@@ -49,8 +49,12 @@
   
   <fileSets>
     <fileSet>
-      <directory>src/main/webapp</directory>
+      <directory>src/test/webapp</directory>
       <outputDirectory>/</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>src/test/resources</directory>
+      <outputDirectory>/WEB-INF/classes</outputDirectory>
     </fileSet>
   </fileSets>
 </assembly>

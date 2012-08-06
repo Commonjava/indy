@@ -45,6 +45,11 @@
           <descriptorRefs>
             <descriptorRef>war</descriptorRef>
           </descriptorRefs>
+          <archive>
+            <manifestEntries>
+              <Dependencies>org.infinispan export</Dependencies>
+            </manifestEntries>
+          </archive>
         </configuration>
       </plugin>
     </plugins>

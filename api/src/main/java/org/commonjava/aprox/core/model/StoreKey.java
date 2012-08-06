@@ -15,9 +15,13 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.model;
 
+import java.io.Serializable;
 
 public final class StoreKey
+    implements Serializable
 {
+    private static final long serialVersionUID = 1L;
+
     // private static final Logger logger = new Logger( StoreKey.class );
 
     private final StoreType type;

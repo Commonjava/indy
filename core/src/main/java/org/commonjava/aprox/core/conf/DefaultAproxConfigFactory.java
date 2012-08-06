@@ -25,6 +25,7 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.commonjava.util.logging.Logger;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.DefaultConfigurationListener;
 import org.commonjava.web.config.dotconf.DotConfConfigurationReader;
@@ -38,8 +39,10 @@ public class DefaultAproxConfigFactory
 
     private static final String CONFIG_PATH = "/etc/aprox/main.conf";
 
+    private final Logger logger = new Logger( getClass() );
+
     @Inject
-    private Instance<AproxConfigSection<?>> configSections;
+    private Instance<AproxConfigInfo> configSections;
 
     public DefaultAproxConfigFactory()
         throws ConfigurationException
@@ -50,10 +53,14 @@ public class DefaultAproxConfigFactory
     protected void load()
         throws ConfigurationException
     {
-        for ( final AproxConfigSection<?> section : configSections )
+        logger.info( "\n\n\n\n[CONFIG] Reading AProx configuration.\n\nAdding configuration section listeners:" );
+        for ( final AproxConfigInfo section : configSections )
         {
+            logger.info( "  +section: %s", section );
             with( section.getSectionName(), section.getConfigurationClass() );
         }
+
+        logger.info( "\n\n[CONFIG] Reading configuration from %s", CONFIG_PATH );
 
         InputStream stream = null;
         try
@@ -70,6 +77,8 @@ public class DefaultAproxConfigFactory
         {
             closeQuietly( stream );
         }
+
+        logger.info( "[CONFIG] AProx configuration complete.\n\n\n\n" );
     }
 
 }

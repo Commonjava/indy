@@ -3,10 +3,15 @@ package org.commonjava.aprox.flat.conf;
 import java.io.File;
 
 import javax.enterprise.inject.Alternative;
+import javax.enterprise.inject.Default;
+import javax.enterprise.inject.Produces;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.commonjava.aprox.core.conf.AproxConfigSet;
+import org.commonjava.aprox.core.conf.AproxConfigInfo;
+import org.commonjava.aprox.core.conf.AproxFeatureConfig;
+import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.ConfigNames;
 import org.commonjava.web.config.annotation.SectionName;
 
@@ -17,10 +22,37 @@ public class FlatFileConfiguration
 {
 
     @Singleton
-    public static final class ConfigSet
-        extends AproxConfigSet<FlatFileConfiguration, FlatFileConfiguration>
+    public static final class FlatFileFeatureConfig
+        extends AproxFeatureConfig<FlatFileConfiguration, FlatFileConfiguration>
     {
-        public ConfigSet()
+        @Inject
+        private FlatFileConfigInfo info;
+
+        public FlatFileFeatureConfig()
+        {
+            super( FlatFileConfiguration.class );
+        }
+
+        @Produces
+        @Default
+        public FlatFileConfiguration getFlatFileConfig()
+            throws ConfigurationException
+        {
+            return getConfig();
+        }
+
+        @Override
+        public AproxConfigInfo getInfo()
+        {
+            return info;
+        }
+    }
+
+    @Singleton
+    public static final class FlatFileConfigInfo
+        extends AproxConfigInfo
+    {
+        public FlatFileConfigInfo()
         {
             super( FlatFileConfiguration.class );
         }

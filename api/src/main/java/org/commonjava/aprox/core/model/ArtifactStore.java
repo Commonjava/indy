@@ -15,11 +15,15 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.model;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 public abstract class ArtifactStore
+    implements Serializable
 {
+
+    private static final long serialVersionUID = 1L;
 
     private String name;
 
