@@ -111,8 +111,17 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.shelflife</groupId>
-      <artifactId>shelflife-filer</artifactId>
+      <artifactId>shelflife-api</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.shelflife</groupId>
+      <artifactId>shelflife-store-memory</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- <dependency>
+      <groupId>org.commonjava.shelflife</groupId>
+      <artifactId>shelflife-filer</artifactId>
+    </dependency> -->
   </dependencies>
   
   <dependencyManagement>

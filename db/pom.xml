@@ -31,6 +31,7 @@
     <module>couch</module>
     <module>memory</module>
     <module>flat</module>
+    <module>infinispan</module>
   </modules>
   
   <profiles>

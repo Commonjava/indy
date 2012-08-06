@@ -413,7 +413,19 @@ public class CouchStoreDataManager
     {
         try
         {
-            final boolean result = couch.store( wrapOne( deploy ), skipIfExists );
+            @SuppressWarnings( "rawtypes" )
+            ArtifactStoreDoc doc = wrapOne( deploy );
+            if ( !skipIfExists && couch.exists( doc ) )
+            {
+                final DeployPoint toUpdate = getDeployPoint( deploy.getName() );
+                toUpdate.setAllowReleases( deploy.isAllowReleases() );
+                toUpdate.setAllowSnapshots( deploy.isAllowSnapshots() );
+                toUpdate.setSnapshotTimeoutSeconds( deploy.getSnapshotTimeoutSeconds() );
+
+                doc = wrapOne( toUpdate );
+            }
+
+            final boolean result = couch.store( doc, skipIfExists );
 
             fireStoreEvent( skipIfExists ? ProxyManagerUpdateType.ADD : ProxyManagerUpdateType.ADD_OR_UPDATE, deploy );
 
@@ -468,7 +480,36 @@ public class CouchStoreDataManager
     {
         try
         {
-            final boolean result = couch.store( wrapOne( repository ), skipIfExists );
+            @SuppressWarnings( "rawtypes" )
+            ArtifactStoreDoc doc = wrapOne( repository );
+            if ( !skipIfExists && couch.exists( doc ) )
+            {
+                Repository toUpdate = getRepository( repository.getName() );
+                if ( toUpdate == null )
+                {
+                    toUpdate = repository;
+                }
+                else
+                {
+                    toUpdate.setUrl( repository.getUrl() );
+                    toUpdate.setUser( repository.getUser() );
+                    toUpdate.setPassword( repository.getPassword() );
+                    toUpdate.setTimeoutSeconds( repository.getTimeoutSeconds() );
+                    toUpdate.setPassthrough( repository.isPassthrough() );
+                    toUpdate.setCacheTimeoutSeconds( repository.getCacheTimeoutSeconds() );
+                    toUpdate.setKeyCertPem( repository.getKeyCertPem() );
+                    toUpdate.setKeyPassword( repository.getKeyPassword() );
+                    toUpdate.setProxyHost( repository.getProxyHost() );
+                    toUpdate.setProxyPassword( repository.getProxyPassword() );
+                    toUpdate.setProxyPort( repository.getProxyPort() );
+                    toUpdate.setProxyUser( repository.getProxyUser() );
+                    toUpdate.setServerCertPem( repository.getServerCertPem() );
+                }
+
+                doc = wrapOne( toUpdate );
+            }
+
+            final boolean result = couch.store( doc, skipIfExists );
 
             fireStoreEvent( skipIfExists ? ProxyManagerUpdateType.ADD : ProxyManagerUpdateType.ADD_OR_UPDATE,
                             repository );
@@ -523,6 +564,16 @@ public class CouchStoreDataManager
     {
         try
         {
+            @SuppressWarnings( "rawtypes" )
+            ArtifactStoreDoc doc = wrapOne( group );
+            if ( !skipIfExists && couch.exists( doc ) )
+            {
+                final Group toUpdate = getGroup( group.getName() );
+                toUpdate.setConstituents( group.getConstituents() );
+
+                doc = wrapOne( toUpdate );
+            }
+
             final Set<StoreKey> missing = new HashSet<StoreKey>();
             for ( final StoreKey repo : group.getConstituents() )
             {
@@ -539,7 +590,7 @@ public class CouchStoreDataManager
                                               group.getName(), new JoinString( ", ", missing ) );
             }
 
-            final boolean result = couch.store( wrapOne( group ), skipIfExists );
+            final boolean result = couch.store( doc, skipIfExists );
 
             fireStoreEvent( skipIfExists ? ProxyManagerUpdateType.ADD : ProxyManagerUpdateType.ADD_OR_UPDATE, group );
 

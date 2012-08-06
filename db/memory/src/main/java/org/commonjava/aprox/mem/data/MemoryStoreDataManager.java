@@ -1,5 +1,7 @@
 package org.commonjava.aprox.mem.data;
 
+import static org.commonjava.aprox.core.model.StoreType.group;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -134,14 +136,38 @@ public class MemoryStoreDataManager
         final Set<Group> groups = new HashSet<Group>();
         for ( final Group group : getAllGroups() )
         {
-            if ( group.getConstituents()
-                      .contains( repo ) )
+            if ( groupContains( group, repo ) )
             {
                 groups.add( group );
             }
         }
 
         return groups;
+    }
+
+    private boolean groupContains( final Group g, final StoreKey key )
+    {
+        if ( g.getConstituents()
+              .contains( key ) )
+        {
+            return true;
+        }
+        else
+        {
+            for ( final StoreKey constituent : g.getConstituents() )
+            {
+                if ( constituent.getType() == group )
+                {
+                    final Group embedded = (Group) stores.get( constituent );
+                    if ( groupContains( embedded, key ) )
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     @Override

@@ -60,7 +60,7 @@
       <dependency>
         <groupId>org.commonjava.shelflife</groupId>
         <artifactId>shelflife</artifactId>
-        <version>0.1</version>
+        <version>0.2-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -86,6 +86,11 @@
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-security</artifactId>
+        <version>0.4-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-db-infinispan</artifactId>
         <version>0.4-SNAPSHOT</version>
       </dependency>
       <dependency>
@@ -125,24 +130,14 @@
         <version>1.1</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.shelflife</groupId>
-        <artifactId>shelflife-store-couch</artifactId>
-        <version>0.1</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.shelflife</groupId>
-        <artifactId>shelflife-store-flat</artifactId>
-        <version>0.1</version>
-      </dependency>
-      <dependency>
         <groupId>org.commonjava.util</groupId>
         <artifactId>configuration-api</artifactId>
-        <version>0.3</version>
+        <version>0.4-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.util</groupId>
         <artifactId>configuration-dotconf</artifactId>
-        <version>0.3</version>
+        <version>0.4-SNAPSHOT</version>
       </dependency>
       
       <dependency>

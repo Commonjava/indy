@@ -115,17 +115,7 @@ public class DefaultGroupAdminResource
         ResponseBuilder builder;
         try
         {
-            Group toUpdate = proxyManager.getGroup( name );
-            if ( toUpdate == null )
-            {
-                toUpdate = group;
-            }
-            else
-            {
-                toUpdate.setConstituents( group.getConstituents() );
-            }
-
-            proxyManager.storeGroup( toUpdate );
+            proxyManager.storeGroup( group, false );
             builder = Response.created( uriInfo.getAbsolutePathBuilder()
                                                .build() );
         }

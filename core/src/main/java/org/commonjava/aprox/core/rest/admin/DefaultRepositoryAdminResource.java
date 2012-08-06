@@ -119,29 +119,7 @@ public class DefaultRepositoryAdminResource
         ResponseBuilder builder;
         try
         {
-            Repository toUpdate = proxyManager.getRepository( name );
-            if ( toUpdate == null )
-            {
-                toUpdate = repository;
-            }
-            else
-            {
-                toUpdate.setUrl( repository.getUrl() );
-                toUpdate.setUser( repository.getUser() );
-                toUpdate.setPassword( repository.getPassword() );
-                toUpdate.setTimeoutSeconds( repository.getTimeoutSeconds() );
-                toUpdate.setPassthrough( repository.isPassthrough() );
-                toUpdate.setCacheTimeoutSeconds( repository.getCacheTimeoutSeconds() );
-                toUpdate.setKeyCertPem( repository.getKeyCertPem() );
-                toUpdate.setKeyPassword( repository.getKeyPassword() );
-                toUpdate.setProxyHost( repository.getProxyHost() );
-                toUpdate.setProxyPassword( repository.getProxyPassword() );
-                toUpdate.setProxyPort( repository.getProxyPort() );
-                toUpdate.setProxyUser( repository.getProxyUser() );
-                toUpdate.setServerCertPem( repository.getServerCertPem() );
-            }
-
-            final boolean result = proxyManager.storeRepository( toUpdate, false );
+            final boolean result = proxyManager.storeRepository( repository, false );
             logger.info( "Repository: %s updated? %s", repository.getName(), result );
             builder = Response.created( uriInfo.getAbsolutePathBuilder()
                                                .build() );

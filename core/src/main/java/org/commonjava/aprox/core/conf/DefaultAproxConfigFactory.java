@@ -17,43 +17,48 @@ package org.commonjava.aprox.core.conf;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 import javax.annotation.PostConstruct;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Produces;
+import javax.enterprise.inject.Instance;
+import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.commonjava.couch.inject.Production;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.DefaultConfigurationListener;
 import org.commonjava.web.config.dotconf.DotConfConfigurationReader;
+import org.commonjava.web.config.io.ConfigFileUtils;
 
 @Singleton
-public class AproxConfigurationFactory
+public class DefaultAproxConfigFactory
     extends DefaultConfigurationListener
+    implements AproxConfigFactory
 {
 
     private static final String CONFIG_PATH = "/etc/aprox/main.conf";
 
-    private DefaultAproxConfiguration proxyConfig;
+    @Inject
+    private Instance<AproxConfigSection<?>> configSections;
 
-    public AproxConfigurationFactory()
+    public DefaultAproxConfigFactory()
         throws ConfigurationException
     {
-        super( DefaultAproxConfiguration.class );
     }
 
     @PostConstruct
     protected void load()
         throws ConfigurationException
     {
+        for ( final AproxConfigSection<?> section : configSections )
+        {
+            with( section.getSectionName(), section.getConfigurationClass() );
+        }
+
         InputStream stream = null;
         try
         {
-            stream = new FileInputStream( CONFIG_PATH );
+            stream = ConfigFileUtils.readFileWithIncludes( CONFIG_PATH );
             new DotConfConfigurationReader( this ).loadConfiguration( stream );
         }
         catch ( final IOException e )
@@ -65,21 +70,6 @@ public class AproxConfigurationFactory
         {
             closeQuietly( stream );
         }
-    }
-
-    @Produces
-    @Production
-    @Default
-    public AproxConfiguration getProxyConfiguration()
-    {
-        return proxyConfig;
-    }
-
-    @Override
-    public void configurationComplete()
-        throws ConfigurationException
-    {
-        proxyConfig = getConfiguration( DefaultAproxConfiguration.class );
     }
 
 }

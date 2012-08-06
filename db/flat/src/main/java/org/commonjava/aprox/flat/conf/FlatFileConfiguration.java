@@ -4,16 +4,27 @@ import java.io.File;
 
 import javax.enterprise.inject.Alternative;
 import javax.inject.Named;
+import javax.inject.Singleton;
 
+import org.commonjava.aprox.core.conf.AproxConfigSet;
 import org.commonjava.web.config.annotation.ConfigNames;
 import org.commonjava.web.config.annotation.SectionName;
-import org.commonjava.web.config.section.ConfigurationSectionListener;
 
-@SectionName( ConfigurationSectionListener.DEFAULT_SECTION )
+@SectionName( "db-flat" )
 @Alternative
 @Named( "unused" )
 public class FlatFileConfiguration
 {
+
+    @Singleton
+    public static final class ConfigSet
+        extends AproxConfigSet<FlatFileConfiguration, FlatFileConfiguration>
+    {
+        public ConfigSet()
+        {
+            super( FlatFileConfiguration.class );
+        }
+    }
 
     public static final File DEFAULT_BASEDIR = new File( "/var/lib/aprox/definitions" );
 

@@ -118,19 +118,7 @@ public class DefaultDeployPointAdminResource
         ResponseBuilder builder;
         try
         {
-            DeployPoint toUpdate = proxyManager.getDeployPoint( name );
-            if ( toUpdate == null )
-            {
-                toUpdate = deploy;
-            }
-            else
-            {
-                toUpdate.setAllowReleases( deploy.isAllowReleases() );
-                toUpdate.setAllowSnapshots( deploy.isAllowSnapshots() );
-                toUpdate.setSnapshotTimeoutSeconds( deploy.getSnapshotTimeoutSeconds() );
-            }
-
-            proxyManager.storeDeployPoint( toUpdate );
+            proxyManager.storeDeployPoint( deploy, false );
             builder = Response.created( uriInfo.getAbsolutePathBuilder()
                                                .build() );
         }

@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.commonjava.aprox</groupId>
     <artifactId>aprox-addons</artifactId>
-    <version>0.3-SNAPSHOT</version>
+    <version>0.4-SNAPSHOT</version>
   </parent>
   
   <artifactId>aprox-depbase</artifactId>
@@ -35,10 +35,6 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-    </dependency>
-    <dependency>
-    	<groupId>org.commonjava.aprox</groupId>
-    	<artifactId>aprox-core</artifactId>
     </dependency>
 	<dependency>
 		<groupId>org.apache.maven</groupId>
@@ -83,6 +79,15 @@
     <dependency>
       <groupId>org.commonjava.web</groupId>
       <artifactId>json-test-harness</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-core</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

@@ -22,7 +22,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-db-couch</artifactId>
+      <artifactId>aprox-db-infinispan</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox.ui</groupId>

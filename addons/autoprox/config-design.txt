@@ -1,0 +1,24 @@
+autorepo {
+  name: r-@name@
+  url: http://download.lab.bos.redhat.com/brewroot/repos/@name@/latest/maven/
+  timeout_seconds: 86400
+  is_passthrough: true
+  proxy_host: localhost
+  proxy_port: 3128
+}
+
+autodeploy {
+  name: d-@name@
+  allow_releases: true
+  allow_snapshots: false
+  snapshot_timeout_seconds: -1
+}
+
+autogroup {
+  name: g-@name@
+  constituents: [
+    repository:r-@name@
+    deploy-point:d-@name@
+    repository:central
+  ]
+}
