@@ -9,7 +9,7 @@ class DialogController extends Spine.Controller
     'change .endisable': 'processEndisable'
     'submit form': 'submit'
     'click .button': 'processFormButton'
-  
+    
   processFormButton: (e) =>
     # NOP
 
@@ -33,14 +33,17 @@ class DialogController extends Spine.Controller
     )
     
   close: (e) =>
+    @log( "close")
     @dialogClosed( e )
     $(@el).dialog('close')
   
   dialogClosed: (e) =>
+    @log( "dialogClosed")
     e.preventDefault()
-    @canceling( e ) if @canceling
-    @owner.cancelled(@item) if @owner and @owner.cancelled
-    @cleanup()
+    if !@isSaved
+      @canceling( e ) if @canceling
+      @owner.cancelled(@item) if @owner and @owner.cancelled
+      @cleanup()
   
   cleanup: =>
     # @item = null
@@ -113,6 +116,8 @@ class DialogController extends Spine.Controller
         $(affected).show()
   
   submit: (e) =>
+    @log( "submit" )
+    @isSaved = true
     @log("Item is: #{JSON.stringify(@item)}")
     e.preventDefault()
     $(@el).dialog('close')
@@ -121,16 +126,25 @@ class DialogController extends Spine.Controller
     @cleanup()
   
   saving: (e) =>
-    @item.fromForm(@form)
+    @log( "saving" )
+    if @customFromForm
+      @log( "[CUSTOM save]")
+      @customFromForm( @item, @form )
+    else
+      @log( "[FROM-FORM save]")
+      @item.fromForm(@form)
+    
     if @doctype
       @item.doctype = @doctype
       @item.key = "#{@doctype}:#{@item.name}" if @item.name
       
     @item.id = @item.name if @item.name
     
+    @log("Before saving: #{JSON.stringify(@item)}")
+    
     @item.save()
     
-    @log("From form: #{JSON.stringify(@item)}")
+    @log("After saving: #{JSON.stringify(@item)}")
     @log( "Item key: #{@item.key}, name: #{@item.name}")
 
 module?.exports = DialogController
