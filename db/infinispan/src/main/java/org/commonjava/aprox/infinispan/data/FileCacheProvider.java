@@ -62,6 +62,7 @@ public class FileCacheProvider
         {
             fin = new FileInputStream( f );
             container = new DefaultCacheManager( fin );
+            container.start();
         }
         catch ( final IOException e )
         {
@@ -87,6 +88,7 @@ public class FileCacheProvider
         if ( storeCache == null )
         {
             storeCache = container.getCache( STORE_CACHE );
+            storeCache.start();
         }
 
         return storeCache;
@@ -112,6 +114,7 @@ public class FileCacheProvider
         if ( expirationCache == null )
         {
             expirationCache = container.getCache( EXPIRATION_CACHE );
+            expirationCache.start();
         }
 
         return expirationCache;

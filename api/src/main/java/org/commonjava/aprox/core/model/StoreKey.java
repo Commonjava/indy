@@ -28,6 +28,12 @@ public final class StoreKey
 
     private final String name;
 
+    protected StoreKey()
+    {
+        this.type = null;
+        this.name = null;
+    }
+
     public StoreKey( final StoreType type, final String name )
     {
         this.type = type;
