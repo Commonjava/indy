@@ -28,7 +28,7 @@ import org.commonjava.aprox.core.io.StorageItem;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.rest.RESTWorkflowException;
+import org.commonjava.aprox.core.rest.AproxWorkflowException;
 import org.commonjava.aprox.core.rest.util.FileManager;
 import org.commonjava.util.logging.Logger;
 
@@ -45,7 +45,7 @@ public class GroupHandlerChain
     private FileManager downloader;
 
     public StorageItem retrieve( final Group group, final List<? extends ArtifactStore> stores, final String path )
-        throws RESTWorkflowException
+        throws AproxWorkflowException
     {
         for ( final GroupPathHandler handler : handlers )
         {
@@ -63,7 +63,7 @@ public class GroupHandlerChain
 
     public DeployPoint store( final Group group, final List<? extends ArtifactStore> stores, final String path,
                               final InputStream stream )
-        throws RESTWorkflowException
+        throws AproxWorkflowException
     {
         for ( final GroupPathHandler handler : handlers )
         {

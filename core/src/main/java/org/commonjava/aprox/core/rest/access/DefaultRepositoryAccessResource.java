@@ -23,7 +23,7 @@ import javax.ws.rs.core.Response;
 import org.commonjava.aprox.core.data.ProxyDataException;
 import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.model.Repository;
-import org.commonjava.aprox.core.rest.RESTWorkflowException;
+import org.commonjava.aprox.core.rest.AproxWorkflowException;
 
 @Path( "/repository" )
 @RequestScoped
@@ -39,7 +39,7 @@ public class DefaultRepositoryAccessResource
 
     @Override
     protected Repository getArtifactStore( final String name )
-        throws RESTWorkflowException
+        throws AproxWorkflowException
     {
         try
         {
@@ -47,7 +47,7 @@ public class DefaultRepositoryAccessResource
         }
         catch ( final ProxyDataException e )
         {
-            throw new RESTWorkflowException( Response.serverError()
+            throw new AproxWorkflowException( Response.serverError()
                                                      .build(), "Failed to retrieve repository: %s. Reason: %s", e,
                                              name, e.getMessage() );
         }

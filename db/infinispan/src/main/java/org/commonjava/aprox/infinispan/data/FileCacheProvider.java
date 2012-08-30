@@ -80,6 +80,13 @@ public class FileCacheProvider
 
     @Produces
     @AproxData
+    public CacheContainer getCacheContainer()
+    {
+        return container;
+    }
+
+    @Produces
+    @AproxData
     public synchronized Cache<StoreKey, ArtifactStore> getStoreCache()
         throws ProxyDataException
     {

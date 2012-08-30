@@ -31,7 +31,7 @@ import javax.ws.rs.core.UriInfo;
 import org.commonjava.aprox.core.data.ProxyDataException;
 import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.model.DeployPoint;
-import org.commonjava.aprox.core.rest.RESTWorkflowException;
+import org.commonjava.aprox.core.rest.AproxWorkflowException;
 import org.commonjava.util.logging.Logger;
 
 @Path( "/deploy" )
@@ -66,7 +66,7 @@ public class DefaultDeployPointAccessResource
         {
             deploy = getArtifactStore( name );
         }
-        catch ( final RESTWorkflowException e )
+        catch ( final AproxWorkflowException e )
         {
             logger.error( "Failed to retrieve artifact store: %s. Reason: %s", e, name, e.getMessage() );
             response = e.getResponse();
@@ -90,7 +90,7 @@ public class DefaultDeployPointAccessResource
                 response = Response.serverError()
                                    .build();
             }
-            catch ( final RESTWorkflowException e )
+            catch ( final AproxWorkflowException e )
             {
                 logger.error( "Failed to upload: %s to: %s. Reason: %s", e, path, name, e.getMessage() );
                 response = e.getResponse();
@@ -102,7 +102,7 @@ public class DefaultDeployPointAccessResource
 
     @Override
     protected DeployPoint getArtifactStore( final String name )
-        throws RESTWorkflowException
+        throws AproxWorkflowException
     {
         try
         {
@@ -110,7 +110,7 @@ public class DefaultDeployPointAccessResource
         }
         catch ( final ProxyDataException e )
         {
-            throw new RESTWorkflowException( Response.serverError()
+            throw new AproxWorkflowException( Response.serverError()
                                                      .build(), "Failed to retrieve deploy store: %s. Reason: %s", e,
                                              name, e.getMessage() );
         }

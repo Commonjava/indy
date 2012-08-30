@@ -39,7 +39,7 @@ import org.commonjava.aprox.core.io.StorageItem;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.rest.RESTWorkflowException;
+import org.commonjava.aprox.core.rest.AproxWorkflowException;
 import org.commonjava.aprox.core.rest.util.FileManager;
 import org.commonjava.aprox.core.rest.util.MavenMetadataMerger;
 import org.commonjava.util.logging.Logger;
@@ -68,7 +68,7 @@ public class MavenMetadataHandler
 
     @Override
     public StorageItem retrieve( final Group group, final List<? extends ArtifactStore> stores, final String path )
-        throws RESTWorkflowException
+        throws AproxWorkflowException
     {
         final File target = fileManager.formatStorageReference( group, path );
         final File targetInfo =
@@ -96,7 +96,7 @@ public class MavenMetadataHandler
                 }
                 catch ( final IOException e )
                 {
-                    throw new RESTWorkflowException( Response.serverError()
+                    throw new AproxWorkflowException( Response.serverError()
                                                              .build(),
                                                      "Failed to write merged metadata to: %s.\nError: %s", e, target,
                                                      e.getMessage() );
@@ -138,7 +138,7 @@ public class MavenMetadataHandler
             }
             catch ( final FileNotFoundException e )
             {
-                throw new RESTWorkflowException(
+                throw new AproxWorkflowException(
                                                  Response.serverError()
                                                          .build(),
                                                  "Cannot find file: %s, EVEN THOUGH WE JUST VERIFIED ITS EXISTENCE.\nError: %s",
@@ -152,7 +152,7 @@ public class MavenMetadataHandler
     @Override
     public DeployPoint store( final Group group, final List<? extends ArtifactStore> stores, final String path,
                               final InputStream stream )
-        throws RESTWorkflowException
+        throws AproxWorkflowException
     {
         if ( path.endsWith( MavenMetadataMerger.METADATA_NAME ) )
         {

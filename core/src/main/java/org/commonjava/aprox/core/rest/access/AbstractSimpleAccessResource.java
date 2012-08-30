@@ -25,7 +25,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.commonjava.aprox.core.io.StorageItem;
 import org.commonjava.aprox.core.model.ArtifactStore;
-import org.commonjava.aprox.core.rest.RESTWorkflowException;
+import org.commonjava.aprox.core.rest.AproxWorkflowException;
 import org.commonjava.aprox.core.rest.util.FileManager;
 import org.commonjava.util.logging.Logger;
 
@@ -56,7 +56,7 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
         {
             store = getArtifactStore( name );
         }
-        catch ( final RESTWorkflowException e )
+        catch ( final AproxWorkflowException e )
         {
             logger.error( "Failed to retrieve artifact store: %s. Reason: %s", e, name, e.getMessage() );
             response = e.getResponse();
@@ -86,7 +86,7 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
                                            .build();
                     }
                 }
-                catch ( final RESTWorkflowException e )
+                catch ( final AproxWorkflowException e )
                 {
                     logger.error( "Failed to download artifact: %s from: %s. Reason: %s", e, path, name, e.getMessage() );
                     response = e.getResponse();
@@ -98,7 +98,7 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
     }
 
     protected abstract T getArtifactStore( String name )
-        throws RESTWorkflowException;
+        throws AproxWorkflowException;
 
     protected FileManager getFileManager()
     {

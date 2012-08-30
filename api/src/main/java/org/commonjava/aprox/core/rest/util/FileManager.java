@@ -24,7 +24,7 @@ import org.commonjava.aprox.core.io.StorageItem;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.StoreKey;
-import org.commonjava.aprox.core.rest.RESTWorkflowException;
+import org.commonjava.aprox.core.rest.AproxWorkflowException;
 
 public interface FileManager
 {
@@ -32,19 +32,19 @@ public interface FileManager
     String HTTP_PARAM_REPO = "repository";
 
     StorageItem retrieveFirst( final List<? extends ArtifactStore> stores, final String path )
-        throws RESTWorkflowException;
+        throws AproxWorkflowException;
 
     Set<StorageItem> retrieveAll( final List<? extends ArtifactStore> stores, final String path )
-        throws RESTWorkflowException;
+        throws AproxWorkflowException;
 
     StorageItem retrieve( final ArtifactStore store, final String path )
-        throws RESTWorkflowException;
+        throws AproxWorkflowException;
 
     void store( final DeployPoint deploy, final String path, final InputStream stream )
-        throws RESTWorkflowException;
+        throws AproxWorkflowException;
 
     DeployPoint store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream )
-        throws RESTWorkflowException;
+        throws AproxWorkflowException;
 
     File getStoreRootDirectory( StoreKey key );
 

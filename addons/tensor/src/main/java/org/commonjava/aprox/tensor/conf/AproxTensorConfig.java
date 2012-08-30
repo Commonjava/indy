@@ -1,0 +1,85 @@
+package org.commonjava.aprox.tensor.conf;
+
+import javax.enterprise.inject.Default;
+import javax.enterprise.inject.Produces;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+
+import org.commonjava.aprox.core.conf.AproxConfigInfo;
+import org.commonjava.aprox.core.conf.AproxFeatureConfig;
+import org.commonjava.web.config.ConfigurationException;
+import org.commonjava.web.config.annotation.ConfigName;
+import org.commonjava.web.config.annotation.SectionName;
+
+@SectionName( "tensor" )
+@Named( "use-factory-instead" )
+public class AproxTensorConfig
+{
+
+    @Singleton
+    public static final class AproxTensorFeatureConfig
+        extends AproxFeatureConfig<AproxTensorConfig, AproxTensorConfig>
+    {
+        @Inject
+        private AproxTensorConfigInfo info;
+
+        public AproxTensorFeatureConfig()
+        {
+            super( AproxTensorConfig.class );
+        }
+
+        @Produces
+        @Default
+        public AproxTensorConfig getCacheConfig()
+            throws ConfigurationException
+        {
+            return getConfig();
+        }
+
+        @Override
+        public AproxConfigInfo getInfo()
+        {
+            return info;
+        }
+    }
+
+    @Singleton
+    public static final class AproxTensorConfigInfo
+        extends AproxConfigInfo
+    {
+        public AproxTensorConfigInfo()
+        {
+            super( AproxTensorConfig.class );
+        }
+    }
+
+    private static final String DEFAULT_TENSOR_DISCOVERY_GROUP = "_tensor";
+
+    private String discoveryGroup;
+
+    private int discoveryTimeoutSeconds;
+
+    public final String getDiscoveryGroup()
+    {
+        return discoveryGroup == null ? DEFAULT_TENSOR_DISCOVERY_GROUP : discoveryGroup;
+    }
+
+    public final int getDiscoveryTimeoutSeconds()
+    {
+        return discoveryTimeoutSeconds;
+    }
+
+    @ConfigName( "discoveryGroup" )
+    public final void setDiscoveryGroup( final String discoveryGroup )
+    {
+        this.discoveryGroup = discoveryGroup;
+    }
+
+    @ConfigName( "discoveryTimeoutSeconds" )
+    public final void setDiscoveryTimeoutSeconds( final int discoveryTimeoutSeconds )
+    {
+        this.discoveryTimeoutSeconds = discoveryTimeoutSeconds;
+    }
+
+}

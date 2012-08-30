@@ -16,7 +16,6 @@
 package org.commonjava.aprox.core.rest.access;
 
 import java.io.IOException;
-import java.util.List;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.enterprise.context.RequestScoped;
@@ -31,15 +30,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
-import org.commonjava.aprox.core.data.ProxyDataException;
-import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.io.StorageItem;
-import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
-import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.rest.RESTWorkflowException;
-import org.commonjava.aprox.core.rest.util.FileManager;
-import org.commonjava.aprox.core.rest.util.retrieve.GroupHandlerChain;
+import org.commonjava.aprox.core.rest.AproxWorkflowException;
+import org.commonjava.aprox.core.rest.util.GroupContentManager;
 import org.commonjava.util.logging.Logger;
 
 @Path( "/group" )
@@ -50,13 +44,7 @@ public class DefaultGroupAccessResource
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private StoreDataManager proxyManager;
-
-    @Inject
-    private GroupHandlerChain handlerChain;
-
-    @Inject
-    private FileManager fileManager;
+    private GroupContentManager groupContentManager;
 
     @Context
     private UriInfo uriInfo;
@@ -71,62 +59,27 @@ public class DefaultGroupAccessResource
     @Path( "/{name}{path: (/.+)?}" )
     public Response getProxyContent( @PathParam( "name" ) final String name, @PathParam( "path" ) final String path )
     {
-        // TODO:
-        // 1. directory request (ends with "/")...browse somehow??
-        // 2. empty path (directory request for proxy root)
-
-        List<? extends ArtifactStore> stores = null;
-        Group group = null;
-
-        Response response = null;
         try
         {
-            group = proxyManager.getGroup( name );
-            if ( group == null )
+            final StorageItem item = groupContentManager.retrieve( name, path );
+
+            if ( item == null )
             {
-                response = Response.status( Status.NOT_FOUND )
-                                   .build();
-            }
-            else
-            {
-                // logger.info( "Retrieving ordered stores for group: '%s'", name );
-                stores = proxyManager.getOrderedConcreteStoresInGroup( name );
-            }
-        }
-        catch ( final ProxyDataException e )
-        {
-            logger.error( "Failed to retrieve repository-group information: %s. Reason: %s", e, name, e.getMessage() );
-            response = Response.serverError()
+                return Response.status( Status.NOT_FOUND )
                                .build();
-        }
+            }
 
-        if ( response == null )
+            final String mimeType = new MimetypesFileTypeMap().getContentType( item.getPath() );
+
+            return Response.ok( item.getStream(), mimeType )
+                           .build();
+
+        }
+        catch ( final AproxWorkflowException e )
         {
-            // logger.info( "Download: %s\nFrom: %s", path, stores );
-            try
-            {
-                final StorageItem item = handlerChain.retrieve( group, stores, path );
-                if ( item == null || item.isDirectory() )
-                {
-                    response = Response.status( Status.NOT_FOUND )
-                                       .build();
-                }
-                else
-                {
-                    final String mimeType = new MimetypesFileTypeMap().getContentType( item.getPath() );
-                    response = Response.ok( item.getStream(), mimeType )
-                                       .build();
-                }
-            }
-            catch ( final RESTWorkflowException e )
-            {
-                logger.error( "Failed to retrieve: %s from group: %s. Reason: %s", e, path, name, e.getMessage() );
-                response = e.getResponse();
-            }
-
+            logger.error( e.getMessage(), e );
+            return e.getResponse();
         }
-
-        return response;
     }
 
     /*
@@ -140,55 +93,32 @@ public class DefaultGroupAccessResource
     public Response createContent( @PathParam( "name" ) final String name, @PathParam( "path" ) final String path,
                                    @Context final HttpServletRequest request )
     {
-        List<? extends ArtifactStore> stores = null;
-        Group group = null;
-
-        Response response = null;
         try
         {
-            group = proxyManager.getGroup( name );
-            if ( group == null )
+            final DeployPoint deploy = groupContentManager.store( name, path, request.getInputStream() );
+
+            if ( deploy == null )
             {
-                response = Response.status( Status.NOT_FOUND )
-                                   .build();
-            }
-            else
-            {
-                stores = proxyManager.getOrderedConcreteStoresInGroup( name );
-            }
-        }
-        catch ( final ProxyDataException e )
-        {
-            logger.error( "Failed to retrieve repository-group information: %s. Reason: %s", e, name, e.getMessage() );
-            response = Response.serverError()
+                return Response.status( Status.NOT_FOUND )
                                .build();
-        }
+            }
 
-        if ( response == null )
+            return Response.created( uriInfo.getAbsolutePathBuilder()
+                                            .path( deploy.getName() )
+                                            .path( path )
+                                            .build() )
+                           .build();
+        }
+        catch ( final AproxWorkflowException e )
         {
-            try
-            {
-                final DeployPoint deploy = handlerChain.store( group, stores, path, request.getInputStream() );
-
-                response = Response.created( uriInfo.getAbsolutePathBuilder()
-                                                    .path( deploy.getName() )
-                                                    .path( path )
-                                                    .build() )
-                                   .build();
-            }
-            catch ( final IOException e )
-            {
-                logger.error( "Failed to open stream from request: %s", e, e.getMessage() );
-                response = Response.serverError()
-                                   .build();
-            }
-            catch ( final RESTWorkflowException e )
-            {
-                logger.error( "Failed to upload: %s to group: %s. Reason: %s", e, path, name, e.getMessage() );
-                response = e.getResponse();
-            }
+            logger.error( e.getMessage(), e );
+            return e.getResponse();
         }
-
-        return response;
+        catch ( final IOException e )
+        {
+            logger.error( "Failed to open stream from request: %s", e, e.getMessage() );
+            return Response.serverError()
+                           .build();
+        }
     }
 }

@@ -72,7 +72,7 @@ import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
 import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.StoreKey;
-import org.commonjava.aprox.core.rest.RESTWorkflowException;
+import org.commonjava.aprox.core.rest.AproxWorkflowException;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
@@ -158,7 +158,7 @@ public class DefaultFileManager
      */
     @Override
     public StorageItem retrieveFirst( final List<? extends ArtifactStore> stores, final String path )
-        throws RESTWorkflowException
+        throws AproxWorkflowException
     {
         StorageItem target = null;
 
@@ -187,7 +187,7 @@ public class DefaultFileManager
      */
     @Override
     public Set<StorageItem> retrieveAll( final List<? extends ArtifactStore> stores, final String path )
-        throws RESTWorkflowException
+        throws AproxWorkflowException
     {
         final Set<StorageItem> results = new LinkedHashSet<StorageItem>();
 
@@ -211,13 +211,13 @@ public class DefaultFileManager
      */
     @Override
     public StorageItem retrieve( final ArtifactStore store, final String path )
-        throws RESTWorkflowException
+        throws AproxWorkflowException
     {
         return retrieve( store, path, false );
     }
 
     private StorageItem retrieve( final ArtifactStore store, final String path, final boolean suppressFailures )
-        throws RESTWorkflowException
+        throws AproxWorkflowException
     {
         File target = null;
         if ( store instanceof Repository )
@@ -248,7 +248,7 @@ public class DefaultFileManager
                 }
                 catch ( final FileNotFoundException e )
                 {
-                    throw new RESTWorkflowException(
+                    throw new AproxWorkflowException(
                                                      Response.serverError()
                                                              .build(),
                                                      "File: %s not found, EVEN THOUGH WE JUST TESTED FOR ITS EXISTENCE!\nError: %s",
@@ -269,7 +269,7 @@ public class DefaultFileManager
      */
     private boolean download( final Repository repository, final String path, final File target,
                               final boolean suppressFailures )
-        throws RESTWorkflowException
+        throws AproxWorkflowException
     {
         final String url = buildDownloadUrl( repository, path, suppressFailures );
         int timeoutSeconds = repository.getTimeoutSeconds();
@@ -288,7 +288,7 @@ public class DefaultFileManager
 
     private boolean startDownload( final String url, final Repository repository, final String path, final File target,
                                    final int timeoutSeconds, final boolean suppressFailures )
-        throws RESTWorkflowException
+        throws AproxWorkflowException
     {
         final Downloader dl = new Downloader( url, repository, path, target, credProvider, client, fileEvent );
 
@@ -311,7 +311,7 @@ public class DefaultFileManager
         {
             if ( !suppressFailures )
             {
-                throw new RESTWorkflowException( Response.status( Status.NO_CONTENT )
+                throw new AproxWorkflowException( Response.status( Status.NO_CONTENT )
                                                          .build() );
             }
             result = false;
@@ -320,7 +320,7 @@ public class DefaultFileManager
         {
             if ( !suppressFailures )
             {
-                throw new RESTWorkflowException( Response.serverError()
+                throw new AproxWorkflowException( Response.serverError()
                                                          .build() );
             }
             result = false;
@@ -329,7 +329,7 @@ public class DefaultFileManager
         {
             if ( !suppressFailures )
             {
-                throw new RESTWorkflowException( Response.status( Status.NO_CONTENT )
+                throw new AproxWorkflowException( Response.status( Status.NO_CONTENT )
                                                          .build() );
             }
             result = false;
@@ -347,7 +347,7 @@ public class DefaultFileManager
     }
 
     private String buildDownloadUrl( final Repository repository, final String path, final boolean suppressFailures )
-        throws RESTWorkflowException
+        throws AproxWorkflowException
     {
         final String remoteBase = repository.getUrl();
         String url = null;
@@ -361,7 +361,7 @@ public class DefaultFileManager
 
             if ( !suppressFailures )
             {
-                throw new RESTWorkflowException( Response.status( Status.BAD_REQUEST )
+                throw new AproxWorkflowException( Response.status( Status.BAD_REQUEST )
                                                          .build() );
             }
             else
@@ -375,7 +375,7 @@ public class DefaultFileManager
 
     private boolean joinDownload( final String url, final File target, final int timeoutSeconds,
                                   final boolean suppressFailures )
-        throws RESTWorkflowException
+        throws AproxWorkflowException
     {
         boolean result = target.exists();
 
@@ -411,7 +411,7 @@ public class DefaultFileManager
                     {
                         if ( !suppressFailures )
                         {
-                            throw new RESTWorkflowException( Response.status( Status.NO_CONTENT )
+                            throw new AproxWorkflowException( Response.status( Status.NO_CONTENT )
                                                                      .build() );
                         }
                     }
@@ -419,7 +419,7 @@ public class DefaultFileManager
                     {
                         if ( !suppressFailures )
                         {
-                            throw new RESTWorkflowException( Response.serverError()
+                            throw new AproxWorkflowException( Response.serverError()
                                                                      .build() );
                         }
                     }
@@ -427,7 +427,7 @@ public class DefaultFileManager
                     {
                         if ( !suppressFailures )
                         {
-                            throw new RESTWorkflowException( Response.status( Status.NO_CONTENT )
+                            throw new AproxWorkflowException( Response.status( Status.NO_CONTENT )
                                                                      .build() );
                         }
                     }
@@ -438,7 +438,7 @@ public class DefaultFileManager
 
                         if ( !suppressFailures )
                         {
-                            throw new RESTWorkflowException( Response.serverError()
+                            throw new AproxWorkflowException( Response.serverError()
                                                                      .build() );
                         }
                     }
@@ -456,7 +456,7 @@ public class DefaultFileManager
      */
     @Override
     public void store( final DeployPoint deploy, final String path, final InputStream stream )
-        throws RESTWorkflowException
+        throws AproxWorkflowException
     {
         final ArtifactPathInfo pathInfo = parsePathInfo( path );
         if ( pathInfo.isSnapshot() )
@@ -464,14 +464,14 @@ public class DefaultFileManager
             if ( !deploy.isAllowSnapshots() )
             {
                 logger.error( "Cannot store snapshot in non-snapshot deploy point: %s", deploy.getName() );
-                throw new RESTWorkflowException( Response.status( Status.BAD_REQUEST )
+                throw new AproxWorkflowException( Response.status( Status.BAD_REQUEST )
                                                          .build() );
             }
         }
         else if ( !deploy.isAllowReleases() )
         {
             logger.error( "Cannot store release in snapshot-only deploy point: %s", deploy.getName() );
-            throw new RESTWorkflowException( Response.status( Status.BAD_REQUEST )
+            throw new AproxWorkflowException( Response.status( Status.BAD_REQUEST )
                                                      .build() );
         }
 
@@ -502,7 +502,7 @@ public class DefaultFileManager
             logger.error( "Failed to store: %s in deploy store: %s. Reason: %s", e, path, deploy.getName(),
                           e.getMessage() );
 
-            throw new RESTWorkflowException( Response.serverError()
+            throw new AproxWorkflowException( Response.serverError()
                                                      .build() );
         }
         finally
@@ -518,7 +518,7 @@ public class DefaultFileManager
      */
     @Override
     public DeployPoint store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream )
-        throws RESTWorkflowException
+        throws AproxWorkflowException
     {
         final ArtifactPathInfo pathInfo = parsePathInfo( path );
 
@@ -547,7 +547,7 @@ public class DefaultFileManager
         if ( selected == null )
         {
             logger.warn( "Cannot deploy. No valid deploy points in group." );
-            throw new RESTWorkflowException( Response.status( Status.BAD_REQUEST )
+            throw new AproxWorkflowException( Response.status( Status.BAD_REQUEST )
                                                      .entity( "No deployment locations available." )
                                                      .build() );
         }
@@ -634,7 +634,7 @@ public class DefaultFileManager
 
         private final HttpClient client;
 
-        private RESTWorkflowException error;
+        private AproxWorkflowException error;
 
         public Downloader( final String url, final Repository repository, final String path, final File target,
                            final TLRepositoryCredentialsProvider credProvider, final HttpClient client,
@@ -683,7 +683,7 @@ public class DefaultFileManager
                 final InputStream in = executeGet( request, url );
                 writeTarget( target, in, url, repository, path );
             }
-            catch ( final RESTWorkflowException e )
+            catch ( final AproxWorkflowException e )
             {
                 this.error = e;
             }
@@ -695,14 +695,14 @@ public class DefaultFileManager
             return target;
         }
 
-        public RESTWorkflowException getError()
+        public AproxWorkflowException getError()
         {
             return error;
         }
 
         private void writeTarget( final File target, final InputStream in, final String url,
                                   final Repository repository, final String path )
-            throws RESTWorkflowException
+            throws AproxWorkflowException
         {
             FileOutputStream out = null;
             if ( in != null )
@@ -713,7 +713,7 @@ public class DefaultFileManager
                     if ( !targetDir.exists() && !targetDir.mkdirs() )
                     {
                         logger.error( "Cannot create repository local storage directory: %s", targetDir );
-                        throw new RESTWorkflowException( Response.serverError()
+                        throw new AproxWorkflowException( Response.serverError()
                                                                  .build() );
                     }
 
@@ -731,7 +731,7 @@ public class DefaultFileManager
                     logger.error( "Failed to write to local proxy store: %s\nOriginal URL: %s. Reason: %s", e, target,
                                   url, e.getMessage() );
 
-                    throw new RESTWorkflowException( Response.serverError()
+                    throw new AproxWorkflowException( Response.serverError()
                                                              .build() );
                 }
                 finally
@@ -743,7 +743,7 @@ public class DefaultFileManager
         }
 
         private InputStream executeGet( final HttpGet request, final String url )
-            throws RESTWorkflowException
+            throws AproxWorkflowException
         {
             InputStream result = null;
 
@@ -761,7 +761,7 @@ public class DefaultFileManager
                     }
                     else
                     {
-                        throw new RESTWorkflowException( Response.serverError()
+                        throw new AproxWorkflowException( Response.serverError()
                                                                  .build() );
                     }
                 }
@@ -774,13 +774,13 @@ public class DefaultFileManager
             catch ( final ClientProtocolException e )
             {
                 logger.warn( "Repository remote request failed for: %s. Reason: %s", e, url, e.getMessage() );
-                throw new RESTWorkflowException( Response.serverError()
+                throw new AproxWorkflowException( Response.serverError()
                                                          .build() );
             }
             catch ( final IOException e )
             {
                 logger.warn( "Repository remote request failed for: %s. Reason: %s", e, url, e.getMessage() );
-                throw new RESTWorkflowException( Response.serverError()
+                throw new AproxWorkflowException( Response.serverError()
                                                          .build() );
             }
 
