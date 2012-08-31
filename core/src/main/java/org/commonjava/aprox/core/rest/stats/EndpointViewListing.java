@@ -8,7 +8,7 @@ import java.util.List;
 
 import javax.ws.rs.core.UriInfo;
 
-import org.commonjava.aprox.core.model.ArtifactStore;
+import org.commonjava.aprox.model.ArtifactStore;
 
 
 public class EndpointViewListing

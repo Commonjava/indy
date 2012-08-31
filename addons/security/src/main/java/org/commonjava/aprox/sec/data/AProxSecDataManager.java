@@ -3,8 +3,8 @@ package org.commonjava.aprox.sec.data;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.commonjava.aprox.core.model.ArtifactStore;
-import org.commonjava.aprox.core.model.StoreType;
+import org.commonjava.aprox.model.ArtifactStore;
+import org.commonjava.aprox.model.StoreType;
 import org.commonjava.auth.couch.data.UserDataException;
 import org.commonjava.auth.couch.data.UserDataManager;
 import org.commonjava.auth.couch.inject.UserData;

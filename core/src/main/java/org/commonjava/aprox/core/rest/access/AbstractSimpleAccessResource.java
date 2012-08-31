@@ -15,6 +15,8 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.rest.access;
 
+import java.io.IOException;
+
 import javax.activation.MimetypesFileTypeMap;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -23,10 +25,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.commonjava.aprox.core.io.StorageItem;
-import org.commonjava.aprox.core.model.ArtifactStore;
-import org.commonjava.aprox.core.rest.AproxWorkflowException;
-import org.commonjava.aprox.core.rest.util.FileManager;
+import org.commonjava.aprox.filer.FileManager;
+import org.commonjava.aprox.io.StorageItem;
+import org.commonjava.aprox.model.ArtifactStore;
+import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.util.logging.Logger;
 
 public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
@@ -82,7 +84,7 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
                     else
                     {
                         final String mimeType = new MimetypesFileTypeMap().getContentType( item.getPath() );
-                        response = Response.ok( item.getStream(), mimeType )
+                        response = Response.ok( item.openInputStream(), mimeType )
                                            .build();
                     }
                 }
@@ -90,6 +92,12 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
                 {
                     logger.error( "Failed to download artifact: %s from: %s. Reason: %s", e, path, name, e.getMessage() );
                     response = e.getResponse();
+                }
+                catch ( final IOException e )
+                {
+                    logger.error( "Failed to download artifact: %s from: %s. Reason: %s", e, path, name, e.getMessage() );
+                    response = Response.serverError()
+                                       .build();
                 }
             }
         }

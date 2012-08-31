@@ -7,7 +7,7 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Set;
 
-import org.commonjava.aprox.core.model.io.StoreKeySerializer;
+import org.commonjava.aprox.model.io.StoreKeySerializer;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.ser.JsonSerializer;
 import org.infinispan.marshall.AbstractExternalizer;

@@ -15,8 +15,8 @@
  ******************************************************************************/
 package org.commonjava.aprox.sec.change;
 
-import static org.commonjava.aprox.core.change.event.ProxyManagerUpdateType.ADD;
-import static org.commonjava.aprox.core.change.event.ProxyManagerUpdateType.ADD_OR_UPDATE;
+import static org.commonjava.aprox.change.event.ProxyManagerUpdateType.ADD;
+import static org.commonjava.aprox.change.event.ProxyManagerUpdateType.ADD_OR_UPDATE;
 
 import java.util.Collection;
 
@@ -24,8 +24,8 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.commonjava.aprox.core.change.event.ArtifactStoreUpdateEvent;
-import org.commonjava.aprox.core.model.ArtifactStore;
+import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
+import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.sec.data.AProxSecDataManager;
 import org.commonjava.couch.change.j2ee.ApplicationEvent;
 

@@ -17,12 +17,12 @@ package org.commonjava.aprox.couch.model.io;
 
 import java.lang.reflect.Type;
 
-import org.commonjava.aprox.core.model.StoreKey;
-import org.commonjava.aprox.core.model.StoreType;
 import org.commonjava.aprox.couch.model.ArtifactStoreDoc;
 import org.commonjava.aprox.couch.model.DeployPointDoc;
 import org.commonjava.aprox.couch.model.GroupDoc;
 import org.commonjava.aprox.couch.model.RepositoryDoc;
+import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.StoreType;
 import org.commonjava.web.json.ser.WebSerializationAdapter;
 
 import com.google.gson.GsonBuilder;

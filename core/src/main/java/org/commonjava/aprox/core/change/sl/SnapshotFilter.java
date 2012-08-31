@@ -3,7 +3,7 @@ package org.commonjava.aprox.core.change.sl;
 import java.io.File;
 import java.io.FilenameFilter;
 
-import org.commonjava.aprox.core.rest.util.ArtifactPathInfo;
+import org.commonjava.aprox.rest.util.ArtifactPathInfo;
 
 public class SnapshotFilter
     implements FilenameFilter

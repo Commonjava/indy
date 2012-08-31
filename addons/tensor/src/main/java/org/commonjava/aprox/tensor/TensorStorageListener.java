@@ -15,8 +15,10 @@
  ******************************************************************************/
 package org.commonjava.aprox.tensor;
 
-import java.io.File;
+import static org.apache.commons.io.IOUtils.closeQuietly;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,15 +37,16 @@ import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingResult;
 import org.apache.maven.model.io.ModelParseException;
 import org.apache.maven.model.io.ModelReader;
-import org.commonjava.aprox.core.change.event.FileStorageEvent;
-import org.commonjava.aprox.core.change.event.FileStorageEvent.Type;
-import org.commonjava.aprox.core.data.ProxyDataException;
-import org.commonjava.aprox.core.data.StoreDataManager;
-import org.commonjava.aprox.core.model.ArtifactStore;
-import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.rest.util.FileManager;
+import org.commonjava.aprox.change.event.FileStorageEvent;
+import org.commonjava.aprox.change.event.FileStorageEvent.Type;
+import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.filer.FileManager;
+import org.commonjava.aprox.model.ArtifactStore;
+import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.tensor.maven.ArtifactStoreModelResolver;
 import org.commonjava.aprox.tensor.maven.ModelVersions;
+import org.commonjava.aprox.tensor.maven.StoreModelSource;
 import org.commonjava.tensor.data.TensorDataException;
 import org.commonjava.tensor.util.MavenModelProcessor;
 import org.commonjava.util.logging.Logger;
@@ -119,7 +122,7 @@ public class TensorStorageListener
     {
         final ModelBuildingRequest request = new DefaultModelBuildingRequest();
         request.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL );
-        request.setPomFile( new File( event.getStorageLocation() ) );
+        request.setModelSource( new StoreModelSource( event.getStorageLocation() ) );
         request.setModelResolver( new ArtifactStoreModelResolver( fileManager, stores ) );
 
         ModelBuildingResult result = null;
@@ -146,9 +149,12 @@ public class TensorStorageListener
         final Map<String, Object> options = new HashMap<String, Object>();
         options.put( ModelReader.IS_STRICT, Boolean.FALSE.toString() );
 
+        InputStream stream = null;
         try
         {
-            return modelReader.read( new File( event.getStorageLocation() ), options );
+            stream = event.getStorageLocation()
+                          .openInputStream();
+            return modelReader.read( stream, options );
         }
         catch ( final ModelParseException e )
         {
@@ -157,6 +163,10 @@ public class TensorStorageListener
         catch ( final IOException e )
         {
             logger.error( "Cannot read POM: %s. Reason: %s", e, event.getPath(), e.getMessage() );
+        }
+        finally
+        {
+            closeQuietly( stream );
         }
 
         return null;

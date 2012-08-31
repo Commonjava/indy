@@ -15,8 +15,6 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.conf;
 
-import java.io.File;
-
 import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
@@ -24,10 +22,12 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.commonjava.couch.inject.Production;
+import org.commonjava.aprox.conf.AproxConfigInfo;
+import org.commonjava.aprox.conf.AproxConfiguration;
+import org.commonjava.aprox.conf.AproxFeatureConfig;
+import org.commonjava.aprox.inject.Production;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.ConfigName;
-import org.commonjava.web.config.annotation.ConfigNames;
 import org.commonjava.web.config.annotation.SectionName;
 import org.commonjava.web.config.section.ConfigurationSectionListener;
 
@@ -76,33 +76,12 @@ public class DefaultAproxConfiguration
         }
     }
 
-    public static final File DEFAULT_STORAGE_ROOT_DIR = new File( "/var/lib/aprox/storage" );
-
     public static final int DEFAULT_PASSTHROUGH_TIMEOUT_SECONDS = 300;
-
-    private File storageRootDirectory = DEFAULT_STORAGE_ROOT_DIR;
 
     private int passthroughTimeoutSeconds = DEFAULT_PASSTHROUGH_TIMEOUT_SECONDS;
 
     public DefaultAproxConfiguration()
     {
-    }
-
-    @ConfigNames( "storage.dir" )
-    public DefaultAproxConfiguration( final File repoRootDir )
-    {
-        this.storageRootDirectory = repoRootDir;
-    }
-
-    @Override
-    public File getStorageRootDirectory()
-    {
-        return storageRootDirectory;
-    }
-
-    public void setStorageRootDirectory( final File repositoryRootDirectory )
-    {
-        this.storageRootDirectory = repositoryRootDirectory;
     }
 
     @Override

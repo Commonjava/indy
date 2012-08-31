@@ -15,7 +15,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.couch.model;
 
-import org.commonjava.aprox.core.model.DeployPoint;
+import org.commonjava.aprox.model.DeployPoint;
 
 public class DeployPointDoc
     extends AbstractArtifactStoreDoc<DeployPoint>

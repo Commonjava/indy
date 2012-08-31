@@ -15,13 +15,11 @@
  ******************************************************************************/
 package org.commonjava.aprox.depbase.fixture;
 
-import java.io.File;
-
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
 
-import org.commonjava.aprox.core.conf.AproxConfiguration;
+import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
 
 @Singleton
@@ -38,8 +36,7 @@ public class TestConfigProvider
     {
         if ( config == null )
         {
-            config =
-                new DefaultAproxConfiguration( new File( System.getProperty( REPO_ROOT_DIR, "target/repo-downloads" ) ) );
+            config = new DefaultAproxConfiguration();
         }
 
         return config;

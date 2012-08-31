@@ -81,20 +81,12 @@
        <artifactId>jboss-as-arquillian-container-managed</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.couch.test</groupId>
-      <artifactId>couch-test-harness</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.commonjava.qarqas</groupId>
       <artifactId>qarqas-test-harness</artifactId>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.couch</groupId>
-      <artifactId>couch-app-support</artifactId>
     </dependency>
     <dependency>
     	<groupId>org.jboss.weld.se</groupId>
@@ -122,6 +114,11 @@
       <groupId>org.commonjava.shelflife</groupId>
       <artifactId>shelflife-filer</artifactId>
     </dependency> -->
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-filer-default</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   
   <dependencyManagement>

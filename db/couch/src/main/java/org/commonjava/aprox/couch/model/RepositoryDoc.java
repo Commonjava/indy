@@ -15,7 +15,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.couch.model;
 
-import org.commonjava.aprox.core.model.Repository;
+import org.commonjava.aprox.model.Repository;
 import org.commonjava.couch.model.DenormalizedCouchDoc;
 
 public class RepositoryDoc

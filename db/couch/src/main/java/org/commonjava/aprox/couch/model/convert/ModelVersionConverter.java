@@ -2,12 +2,12 @@ package org.commonjava.aprox.couch.model.convert;
 
 import java.lang.reflect.Type;
 
-import org.commonjava.aprox.core.model.DeployPoint;
-import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.couch.model.DeployPointDoc;
 import org.commonjava.aprox.couch.model.GroupDoc;
 import org.commonjava.aprox.couch.model.RepositoryDoc;
+import org.commonjava.aprox.model.DeployPoint;
+import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.Repository;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.ser.WebSerializationAdapter;
 

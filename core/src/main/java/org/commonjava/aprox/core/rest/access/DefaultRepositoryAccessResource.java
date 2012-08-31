@@ -20,10 +20,11 @@ import javax.inject.Inject;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
-import org.commonjava.aprox.core.data.ProxyDataException;
-import org.commonjava.aprox.core.data.StoreDataManager;
-import org.commonjava.aprox.core.model.Repository;
-import org.commonjava.aprox.core.rest.AproxWorkflowException;
+import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.rest.AproxWorkflowException;
+import org.commonjava.aprox.rest.access.RepositoryAccessResource;
 
 @Path( "/repository" )
 @RequestScoped

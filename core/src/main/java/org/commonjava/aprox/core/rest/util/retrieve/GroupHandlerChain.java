@@ -24,12 +24,12 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.commonjava.aprox.core.io.StorageItem;
-import org.commonjava.aprox.core.model.ArtifactStore;
-import org.commonjava.aprox.core.model.DeployPoint;
-import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.rest.AproxWorkflowException;
-import org.commonjava.aprox.core.rest.util.FileManager;
+import org.commonjava.aprox.filer.FileManager;
+import org.commonjava.aprox.io.StorageItem;
+import org.commonjava.aprox.model.ArtifactStore;
+import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.rest.AproxWorkflowException;
+import org.commonjava.aprox.rest.util.retrieve.GroupPathHandler;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
@@ -61,7 +61,7 @@ public class GroupHandlerChain
         return downloader.retrieveFirst( stores, path );
     }
 
-    public DeployPoint store( final Group group, final List<? extends ArtifactStore> stores, final String path,
+    public StorageItem store( final Group group, final List<? extends ArtifactStore> stores, final String path,
                               final InputStream stream )
         throws AproxWorkflowException
     {

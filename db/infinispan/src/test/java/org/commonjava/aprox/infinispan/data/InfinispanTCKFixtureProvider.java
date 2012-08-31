@@ -1,9 +1,9 @@
 package org.commonjava.aprox.infinispan.data;
 
-import org.commonjava.aprox.core.data.StoreDataManager;
 import org.commonjava.aprox.core.data.TCKFixtureProvider;
-import org.commonjava.aprox.core.model.ArtifactStore;
-import org.commonjava.aprox.core.model.StoreKey;
+import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.model.ArtifactStore;
+import org.commonjava.aprox.model.StoreKey;
 import org.infinispan.Cache;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.DefaultCacheManager;

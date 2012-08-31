@@ -15,7 +15,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.couch.model;
 
-import org.commonjava.aprox.core.model.ArtifactStore;
+import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.couch.model.AbstractCouchDocument;
 import org.commonjava.couch.model.DenormalizedCouchDoc;
 

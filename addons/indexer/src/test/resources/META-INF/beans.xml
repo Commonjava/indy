@@ -21,6 +21,6 @@
       http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
       
   <alternatives>
-    <stereotype>org.commonjava.couch.test.fixture.TestData</stereotype>
+    <stereotype>org.commonjava.aprox.inject.TestData</stereotype>
   </alternatives>
 </beans>

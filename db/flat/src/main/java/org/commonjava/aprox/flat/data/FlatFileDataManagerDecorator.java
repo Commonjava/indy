@@ -11,15 +11,15 @@ import javax.enterprise.inject.Any;
 import javax.inject.Inject;
 
 import org.apache.commons.io.FileUtils;
-import org.commonjava.aprox.core.data.ProxyDataException;
-import org.commonjava.aprox.core.data.StoreDataManager;
-import org.commonjava.aprox.core.model.ArtifactStore;
-import org.commonjava.aprox.core.model.DeployPoint;
-import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.model.Repository;
-import org.commonjava.aprox.core.model.StoreKey;
-import org.commonjava.aprox.core.model.StoreType;
+import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.flat.conf.FlatFileConfiguration;
+import org.commonjava.aprox.model.ArtifactStore;
+import org.commonjava.aprox.model.DeployPoint;
+import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.StoreType;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.ser.JsonSerializer;
 

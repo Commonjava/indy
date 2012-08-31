@@ -1,10 +1,8 @@
 package org.commonjava.aprox.couch.data;
 
-import java.io.File;
-
-import org.commonjava.aprox.core.conf.AproxConfiguration;
-import org.commonjava.aprox.core.data.StoreDataManager;
+import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.core.data.TCKFixtureProvider;
+import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.couch.conf.CouchDBConfiguration;
 import org.commonjava.couch.conf.DefaultCouchDBConfiguration;
 import org.commonjava.couch.db.CouchDBException;
@@ -38,15 +36,8 @@ public class CouchTCKFixtureProvider
 
         final Serializer serializer = new Serializer();
 
-        final File repoDir = newFolder( "repo" );
         final AproxConfiguration config = new AproxConfiguration()
         {
-            @Override
-            public File getStorageRootDirectory()
-            {
-                return repoDir;
-            }
-
             @Override
             public int getPassthroughTimeoutSeconds()
             {

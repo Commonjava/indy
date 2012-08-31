@@ -1,6 +1,6 @@
 package org.commonjava.aprox.infinispan.model.io;
 
-import org.commonjava.aprox.core.model.StoreKey;
+import org.commonjava.aprox.model.StoreKey;
 
 public class JsonStoreKeyExternalizer
     extends JsonExternalizer<StoreKey>

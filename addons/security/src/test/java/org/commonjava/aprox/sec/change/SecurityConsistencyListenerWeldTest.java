@@ -20,10 +20,10 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import org.apache.log4j.Level;
-import org.commonjava.aprox.core.data.StoreDataManager;
-import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.model.Repository;
-import org.commonjava.aprox.core.model.StoreType;
+import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.sec.fixture.AproxDataLiteral;
 import org.commonjava.auth.couch.data.UserDataManager;
 import org.commonjava.auth.couch.inject.UserDataLiteral;

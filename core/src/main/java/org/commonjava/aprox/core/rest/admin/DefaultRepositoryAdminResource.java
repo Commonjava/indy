@@ -38,10 +38,11 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
-import org.commonjava.aprox.core.data.ProxyDataException;
-import org.commonjava.aprox.core.data.StoreDataManager;
-import org.commonjava.aprox.core.model.Repository;
 import org.commonjava.aprox.core.model.io.AProxModelSerializer;
+import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.rest.admin.RepositoryAdminResource;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.model.Listing;
 

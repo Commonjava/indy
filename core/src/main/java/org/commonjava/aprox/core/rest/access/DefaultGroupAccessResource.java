@@ -30,10 +30,13 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
-import org.commonjava.aprox.core.io.StorageItem;
-import org.commonjava.aprox.core.model.DeployPoint;
-import org.commonjava.aprox.core.rest.AproxWorkflowException;
-import org.commonjava.aprox.core.rest.util.GroupContentManager;
+import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.io.StorageItem;
+import org.commonjava.aprox.model.DeployPoint;
+import org.commonjava.aprox.rest.AproxWorkflowException;
+import org.commonjava.aprox.rest.access.GroupAccessResource;
+import org.commonjava.aprox.rest.util.GroupContentManager;
 import org.commonjava.util.logging.Logger;
 
 @Path( "/group" )
@@ -45,6 +48,9 @@ public class DefaultGroupAccessResource
 
     @Inject
     private GroupContentManager groupContentManager;
+
+    @Inject
+    private StoreDataManager dataManager;
 
     @Context
     private UriInfo uriInfo;
@@ -71,7 +77,7 @@ public class DefaultGroupAccessResource
 
             final String mimeType = new MimetypesFileTypeMap().getContentType( item.getPath() );
 
-            return Response.ok( item.getStream(), mimeType )
+            return Response.ok( item.openInputStream(), mimeType )
                            .build();
 
         }
@@ -79,6 +85,12 @@ public class DefaultGroupAccessResource
         {
             logger.error( e.getMessage(), e );
             return e.getResponse();
+        }
+        catch ( final IOException e )
+        {
+            logger.error( e.getMessage(), e );
+            return Response.serverError()
+                           .build();
         }
     }
 
@@ -95,7 +107,19 @@ public class DefaultGroupAccessResource
     {
         try
         {
-            final DeployPoint deploy = groupContentManager.store( name, path, request.getInputStream() );
+            final StorageItem item = groupContentManager.store( name, path, request.getInputStream() );
+            DeployPoint deploy;
+            try
+            {
+                deploy = dataManager.getDeployPoint( item.getStoreKey()
+                                                         .getName() );
+            }
+            catch ( final ProxyDataException e )
+            {
+                logger.error( e.getMessage(), e );
+                return Response.serverError()
+                               .build();
+            }
 
             if ( deploy == null )
             {

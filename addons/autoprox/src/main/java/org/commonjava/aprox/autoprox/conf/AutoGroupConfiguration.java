@@ -2,7 +2,7 @@ package org.commonjava.aprox.autoprox.conf;
 
 import java.util.List;
 
-import org.commonjava.aprox.core.model.StoreKey;
+import org.commonjava.aprox.model.StoreKey;
 
 public interface AutoGroupConfiguration
 {

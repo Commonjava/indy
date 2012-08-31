@@ -6,8 +6,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.commonjava.aprox.core.conf.AproxConfigInfo;
-import org.commonjava.aprox.core.conf.AproxFeatureConfig;
+import org.commonjava.aprox.conf.AproxConfigInfo;
+import org.commonjava.aprox.conf.AproxFeatureConfig;
+import org.commonjava.aprox.inject.Production;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
@@ -30,6 +31,7 @@ public class AproxTensorConfig
         }
 
         @Produces
+        @Production
         @Default
         public AproxTensorConfig getCacheConfig()
             throws ConfigurationException

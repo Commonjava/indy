@@ -28,13 +28,19 @@
   <name>AProx :: Databases Parent</name>
   
   <modules>
-    <module>couch</module>
     <module>memory</module>
     <module>flat</module>
     <module>infinispan</module>
   </modules>
   
   <profiles>
+    <profile>
+      <id>deprecated</id>
+      
+      <modules>
+        <module>couch</module>
+      </modules>
+    </profile>
     <profile>
       <id>experimental</id>
       

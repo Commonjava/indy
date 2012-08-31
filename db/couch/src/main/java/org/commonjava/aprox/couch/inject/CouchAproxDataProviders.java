@@ -20,7 +20,7 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.commonjava.aprox.core.inject.AproxData;
+import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.couch.change.CouchChangeListener;
 import org.commonjava.couch.conf.CouchDBConfiguration;
 import org.commonjava.couch.db.CouchFactory;

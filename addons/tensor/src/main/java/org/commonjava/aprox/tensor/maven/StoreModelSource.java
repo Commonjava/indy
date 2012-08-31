@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.maven.model.building.ModelSource;
-import org.commonjava.aprox.core.io.StorageItem;
+import org.commonjava.aprox.io.StorageItem;
 
 public class StoreModelSource
     implements ModelSource
@@ -21,7 +21,7 @@ public class StoreModelSource
     public InputStream getInputStream()
         throws IOException
     {
-        return item == null ? null : item.getStream();
+        return item == null ? null : item.openInputStream();
     }
 
     @Override

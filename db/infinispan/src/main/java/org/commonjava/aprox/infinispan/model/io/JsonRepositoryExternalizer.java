@@ -1,6 +1,6 @@
 package org.commonjava.aprox.infinispan.model.io;
 
-import org.commonjava.aprox.core.model.Repository;
+import org.commonjava.aprox.model.Repository;
 
 public class JsonRepositoryExternalizer
     extends JsonExternalizer<Repository>

@@ -1,6 +1,6 @@
 package org.commonjava.aprox.infinispan.model.io;
 
-import org.commonjava.aprox.core.model.Group;
+import org.commonjava.aprox.model.Group;
 
 public class JsonGroupExternalizer
     extends JsonExternalizer<Group>

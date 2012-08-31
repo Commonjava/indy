@@ -25,6 +25,8 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.commonjava.aprox.conf.AproxConfigFactory;
+import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.DefaultConfigurationListener;

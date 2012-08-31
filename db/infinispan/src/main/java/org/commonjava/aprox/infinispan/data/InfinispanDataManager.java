@@ -1,8 +1,8 @@
 package org.commonjava.aprox.infinispan.data;
 
-import static org.commonjava.aprox.core.model.StoreType.deploy_point;
-import static org.commonjava.aprox.core.model.StoreType.group;
-import static org.commonjava.aprox.core.model.StoreType.repository;
+import static org.commonjava.aprox.model.StoreType.deploy_point;
+import static org.commonjava.aprox.model.StoreType.group;
+import static org.commonjava.aprox.model.StoreType.repository;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,16 +13,17 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
-import org.commonjava.aprox.core.data.ProxyDataException;
-import org.commonjava.aprox.core.data.StoreDataManager;
-import org.commonjava.aprox.core.inject.AproxData;
-import org.commonjava.aprox.core.model.ArtifactStore;
-import org.commonjava.aprox.core.model.DeployPoint;
-import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.model.Repository;
-import org.commonjava.aprox.core.model.StoreKey;
-import org.commonjava.aprox.core.model.StoreType;
+import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.inject.AproxData;
+import org.commonjava.aprox.model.ArtifactStore;
+import org.commonjava.aprox.model.DeployPoint;
+import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.StoreType;
 import org.infinispan.Cache;
 
 public class InfinispanDataManager
@@ -31,6 +32,7 @@ public class InfinispanDataManager
 
     @Inject
     @AproxData
+    @Named( "aprox" )
     private Cache<StoreKey, ArtifactStore> storeCache;
 
     public InfinispanDataManager()

@@ -9,8 +9,8 @@ import java.util.List;
 import javax.enterprise.inject.Alternative;
 import javax.inject.Named;
 
-import org.commonjava.aprox.core.model.StoreKey;
-import org.commonjava.aprox.core.model.StoreType;
+import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.StoreType;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;

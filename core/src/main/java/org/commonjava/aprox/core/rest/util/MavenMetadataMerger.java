@@ -30,8 +30,8 @@ import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.commonjava.aprox.core.io.StorageItem;
-import org.commonjava.aprox.core.model.Group;
+import org.commonjava.aprox.io.StorageItem;
+import org.commonjava.aprox.model.Group;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
@@ -55,7 +55,7 @@ public class MavenMetadataMerger
         {
             try
             {
-                final Metadata md = reader.read( src.getStream(), false );
+                final Metadata md = reader.read( src.openInputStream(), false );
 
                 master.merge( md );
 

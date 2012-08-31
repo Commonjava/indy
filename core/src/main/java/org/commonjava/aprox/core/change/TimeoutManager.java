@@ -1,15 +1,16 @@
 package org.commonjava.aprox.core.change;
 
-import static org.apache.commons.io.FileUtils.forceDelete;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.aprox.core.change.sl.ExpirationConstants.APROX_EVENT;
 import static org.commonjava.aprox.core.change.sl.ExpirationConstants.APROX_FILE_EVENT;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -21,33 +22,34 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Snapshot;
 import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
+import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.commonjava.aprox.core.change.event.ArtifactStoreUpdateEvent;
-import org.commonjava.aprox.core.change.event.FileStorageEvent;
-import org.commonjava.aprox.core.change.event.FileStorageEvent.Type;
-import org.commonjava.aprox.core.change.event.ProxyManagerDeleteEvent;
-import org.commonjava.aprox.core.change.event.ProxyManagerUpdateType;
+import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
+import org.commonjava.aprox.change.event.FileStorageEvent;
+import org.commonjava.aprox.change.event.FileStorageEvent.Type;
+import org.commonjava.aprox.change.event.ProxyManagerDeleteEvent;
+import org.commonjava.aprox.change.event.ProxyManagerUpdateType;
+import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.core.change.sl.LoggingMatcher;
 import org.commonjava.aprox.core.change.sl.MaxTimeoutMatcher;
 import org.commonjava.aprox.core.change.sl.SnapshotFilter;
 import org.commonjava.aprox.core.change.sl.StoreMatcher;
-import org.commonjava.aprox.core.conf.AproxConfiguration;
-import org.commonjava.aprox.core.data.ProxyDataException;
-import org.commonjava.aprox.core.data.StoreDataManager;
-import org.commonjava.aprox.core.model.ArtifactStore;
-import org.commonjava.aprox.core.model.DeployPoint;
-import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.model.Repository;
-import org.commonjava.aprox.core.model.StoreKey;
-import org.commonjava.aprox.core.model.StoreType;
-import org.commonjava.aprox.core.rest.util.ArtifactPathInfo;
-import org.commonjava.aprox.core.rest.util.ArtifactPathInfo.SnapshotInfo;
-import org.commonjava.aprox.core.rest.util.FileManager;
+import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.filer.FileManager;
+import org.commonjava.aprox.io.StorageItem;
+import org.commonjava.aprox.model.ArtifactStore;
+import org.commonjava.aprox.model.DeployPoint;
+import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.StoreType;
+import org.commonjava.aprox.rest.util.ArtifactPathInfo;
+import org.commonjava.aprox.rest.util.ArtifactPathInfo.SnapshotInfo;
 import org.commonjava.shelflife.expire.ExpirationEvent;
 import org.commonjava.shelflife.expire.ExpirationEventType;
 import org.commonjava.shelflife.expire.ExpirationManager;
@@ -85,17 +87,17 @@ public class TimeoutManager
             final String path = (String) event.getExpiration()
                                               .getData();
 
-            final File toDelete = fileManager.formatStorageReference( key, path );
+            final StorageItem toDelete = fileManager.getStorageReference( key, path );
             if ( toDelete.exists() )
             {
                 try
                 {
                     logger.info( "[EXPIRED; DELETE] %s", toDelete );
-                    FileUtils.forceDelete( toDelete );
+                    toDelete.delete();
                 }
                 catch ( final IOException e )
                 {
-                    logger.error( "Failed to delete expired file: %s. Reason: %s", e, toDelete.getAbsolutePath(),
+                    logger.error( "Failed to delete expired file: %s. Reason: %s", e, toDelete.getFullPath(),
                                   e.getMessage() );
                 }
 
@@ -247,14 +249,14 @@ public class TimeoutManager
 
     private Set<String> listAllFiles( final ArtifactStore store, final FilenameFilter filter )
     {
-        final File storeRoot = fileManager.getStoreRootDirectory( store.getKey() );
+        final StorageItem storeRoot = fileManager.getStoreRootDirectory( store.getKey() );
         final Set<String> paths = new HashSet<String>();
         listAll( storeRoot, "", paths, filter );
 
         return paths;
     }
 
-    private void listAll( final File dir, final String parentPath, final Set<String> capturedFiles,
+    private void listAll( final StorageItem dir, final String parentPath, final Set<String> capturedFiles,
                           final FilenameFilter filter )
     {
         final String[] files = dir.exists() ? dir.list() : null;
@@ -262,14 +264,15 @@ public class TimeoutManager
         {
             for ( final String file : files )
             {
-                if ( filter == null || filter.accept( dir, file ) )
+                final File d = dir.getDetachedFile();
+                if ( filter == null || filter.accept( d, file ) )
                 {
-                    final File f = new File( dir, file );
+                    final StorageItem child = dir.getChild( file );
 
                     final String childPath = new File( parentPath, file ).getPath();
-                    if ( f.isDirectory() )
+                    if ( child.isDirectory() )
                     {
-                        listAll( f, childPath, capturedFiles, filter );
+                        listAll( child, childPath, capturedFiles, filter );
                     }
                     else
                     {
@@ -308,13 +311,13 @@ public class TimeoutManager
         for ( final String name : names )
         {
             final StoreKey key = new StoreKey( type, name );
-            final File dir = fileManager.getStoreRootDirectory( key );
+            final StorageItem dir = fileManager.getStoreRootDirectory( key );
             if ( dir.exists() && dir.isDirectory() )
             {
                 try
                 {
-                    logger.info( "[STORE REMOVED; DELETE] %s", dir );
-                    forceDelete( dir );
+                    logger.info( "[STORE REMOVED; DELETE] %s", dir.getFullPath() );
+                    dir.delete();
                     expirationManager.cancelAll( new StoreMatcher( key ) );
                 }
                 catch ( final IOException e )
@@ -388,10 +391,18 @@ public class TimeoutManager
                 for ( final Group group : groups )
                 {
                     logger.info( "[CLEAN] Cleaning metadata path: %s in group: %s", path, group.getName() );
-                    final File md = fileManager.formatStorageReference( group, path );
-                    if ( md.exists() )
+                    final StorageItem item = fileManager.getStorageReference( group, path );
+                    if ( item.exists() )
                     {
-                        md.delete();
+                        try
+                        {
+                            item.delete();
+                        }
+                        catch ( final IOException e )
+                        {
+                            logger.error( "Failed to delete: %s. Error: %s",
+                                          fileManager.getStorageReference( group, path ), e.getMessage() );
+                        }
                     }
                 }
             }
@@ -435,23 +446,26 @@ public class TimeoutManager
     {
         final ArtifactPathInfo pathInfo = fileManager.parsePathInfo( path );
 
-        final File f = fileManager.formatStorageReference( key, path );
-        if ( f.getParentFile() == null || f.getParentFile()
-                                           .getParentFile() == null )
+        final StorageItem item = fileManager.getStorageReference( key, path );
+        if ( item.getParent() == null || item.getParent()
+                                             .getParent() == null )
         {
             return;
         }
 
-        final File metadata = new File( f.getParentFile()
-                                         .getParentFile(), "maven-metadata.xml" );
+        final StorageItem metadata =
+            fileManager.getStorageReference( item.getStoreKey(), item.getParent()
+                                                                     .getParent()
+                                                                     .getPath(), "maven-metadata.xml" );
+
         if ( metadata.exists() )
         {
             logger.info( "[UPDATE VERSIONS] Updating snapshot versions for path: %s in store: %s", path, key.getName() );
-            FileReader reader = null;
-            FileWriter writer = null;
+            Reader reader = null;
+            Writer writer = null;
             try
             {
-                reader = new FileReader( metadata );
+                reader = new InputStreamReader( metadata.openInputStream() );
                 final Metadata md = new MetadataXpp3Reader().read( reader );
 
                 final Versioning versioning = md.getVersioning();
@@ -496,17 +510,18 @@ public class TimeoutManager
                     }
                 }
 
-                writer = new FileWriter( metadata );
+                writer = new OutputStreamWriter( metadata.openOutputStream() );
+                new MetadataXpp3Writer().write( writer, md );
             }
             catch ( final IOException e )
             {
                 logger.error( "Failed to update metadata after snapshot deletion.\n  Snapshot: %s\n  Metadata: %s\n  Reason: %s",
-                              e, f, metadata, e.getMessage() );
+                              e, item.getFullPath(), metadata, e.getMessage() );
             }
             catch ( final XmlPullParserException e )
             {
                 logger.error( "Failed to update metadata after snapshot deletion.\n  Snapshot: %s\n  Metadata: %s\n  Reason: %s",
-                              e, f, metadata, e.getMessage() );
+                              e, item.getFullPath(), metadata, e.getMessage() );
             }
             finally
             {

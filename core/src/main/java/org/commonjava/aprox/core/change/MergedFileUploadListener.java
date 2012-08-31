@@ -15,20 +15,21 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.change;
 
-import java.io.File;
+import java.io.IOException;
 import java.util.Set;
 
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.commonjava.aprox.core.change.event.FileStorageEvent;
-import org.commonjava.aprox.core.data.ProxyDataException;
-import org.commonjava.aprox.core.data.StoreDataManager;
-import org.commonjava.aprox.core.model.Group;
+import org.commonjava.aprox.change.event.FileStorageEvent;
 import org.commonjava.aprox.core.rest.util.ArchetypeCatalogMerger;
-import org.commonjava.aprox.core.rest.util.FileManager;
 import org.commonjava.aprox.core.rest.util.MavenMetadataMerger;
+import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.filer.FileManager;
+import org.commonjava.aprox.io.StorageItem;
+import org.commonjava.aprox.model.Group;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
@@ -61,7 +62,15 @@ public class MergedFileUploadListener
             {
                 for ( final Group group : groups )
                 {
-                    reMerge( group, event.getPath() );
+                    try
+                    {
+                        reMerge( group, event.getPath() );
+                    }
+                    catch ( final IOException e )
+                    {
+                        logger.error( "Failed to delete: %s from group: %s. Error: %s", e, event.getPath(), group,
+                                      e.getMessage() );
+                    }
                 }
             }
         }
@@ -74,18 +83,18 @@ public class MergedFileUploadListener
     }
 
     private void reMerge( final Group group, final String path )
+        throws IOException
     {
-        final File target = fileManager.formatStorageReference( group, path );
-        final File targetInfo;
+        final StorageItem target = fileManager.getStorageReference( group, path );
+        final StorageItem targetInfo;
         if ( path.endsWith( MavenMetadataMerger.METADATA_NAME ) )
         {
-            targetInfo =
-                fileManager.formatStorageReference( group, path + MavenMetadataMerger.METADATA_MERGEINFO_SUFFIX );
+            targetInfo = fileManager.getStorageReference( group, path + MavenMetadataMerger.METADATA_MERGEINFO_SUFFIX );
         }
         else if ( path.endsWith( ArchetypeCatalogMerger.CATALOG_NAME ) )
         {
             targetInfo =
-                fileManager.formatStorageReference( group, path + ArchetypeCatalogMerger.CATALOG_MERGEINFO_SUFFIX );
+                fileManager.getStorageReference( group, path + ArchetypeCatalogMerger.CATALOG_MERGEINFO_SUFFIX );
         }
         else
         {

@@ -23,9 +23,9 @@ import java.io.File;
 
 import javax.inject.Inject;
 
-import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.model.Repository;
-import org.commonjava.aprox.core.model.StoreType;
+import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.sec.change.SecurityConsistencyListener;
 import org.commonjava.aprox.sec.fixture.ProxyConfigProvider;
 import org.commonjava.aprox.sec.live.AbstractAProxSecLiveTest;
@@ -48,6 +48,7 @@ public class SecurityConsistencyListenerLiveTest
         return new TestWarArchiveBuilder( new File( "target/test.war" ), SecurityConsistencyListenerLiveTest.class ).withExtraClasses( AbstractAProxSecLiveTest.class,
                                                                                                                                        ProxyConfigProvider.class )
                                                                                                                     .withLog4jProperties()
+                                                                                                                    .withBeansXml( "META-INF/beans.xml" )
                                                                                                                     .build();
     }
 

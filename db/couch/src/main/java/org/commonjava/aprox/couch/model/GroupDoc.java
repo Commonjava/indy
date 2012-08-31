@@ -15,7 +15,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.couch.model;
 
-import org.commonjava.aprox.core.model.Group;
+import org.commonjava.aprox.model.Group;
 
 public class GroupDoc
     extends AbstractArtifactStoreDoc<Group>

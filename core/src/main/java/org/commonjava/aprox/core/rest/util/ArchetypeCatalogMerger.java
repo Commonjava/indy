@@ -32,8 +32,8 @@ import org.apache.maven.archetype.catalog.ArchetypeCatalog;
 import org.apache.maven.archetype.catalog.io.xpp3.ArchetypeCatalogXpp3Reader;
 import org.apache.maven.archetype.catalog.io.xpp3.ArchetypeCatalogXpp3Writer;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.commonjava.aprox.core.io.StorageItem;
-import org.commonjava.aprox.core.model.Group;
+import org.commonjava.aprox.io.StorageItem;
+import org.commonjava.aprox.model.Group;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
@@ -59,7 +59,7 @@ public class ArchetypeCatalogMerger
         {
             try
             {
-                final ArchetypeCatalog catalog = reader.read( src.getStream(), false );
+                final ArchetypeCatalog catalog = reader.read( src.openInputStream(), false );
 
                 for ( final Archetype arch : catalog.getArchetypes() )
                 {

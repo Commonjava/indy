@@ -21,13 +21,13 @@ import org.commonjava.aprox.autoprox.conf.DefaultAutoGroupConfiguration;
 import org.commonjava.aprox.autoprox.conf.DefaultAutoProxConfiguration;
 import org.commonjava.aprox.autoprox.conf.DefaultAutoRepoConfiguration;
 import org.commonjava.aprox.autoprox.live.fixture.TargetUrlResponder;
-import org.commonjava.aprox.core.conf.AproxConfiguration;
+import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
-import org.commonjava.aprox.core.data.StoreDataManager;
-import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.model.Repository;
-import org.commonjava.aprox.core.model.StoreKey;
-import org.commonjava.aprox.core.model.StoreType;
+import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.StoreType;
 import org.commonjava.util.logging.Log4jUtil;
 import org.commonjava.web.json.test.WebFixture;
 import org.commonjava.web.test.fixture.TestWarArchiveBuilder;
@@ -102,10 +102,7 @@ public class AutoProxDataManagerDecoratorTest
         {
             if ( proxyConfig == null )
             {
-                proxyConfig =
-                    new DefaultAproxConfiguration(
-                                                   new File(
-                                                             System.getProperty( REPO_ROOT_DIR, "target/repo-downloads" ) ) );
+                proxyConfig = new DefaultAproxConfiguration();
             }
             return proxyConfig;
         }

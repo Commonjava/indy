@@ -3,8 +3,8 @@ package org.commonjava.aprox.core.rest.stats;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.UriBuilder;
 
-import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.rest.RESTApplication;
+import org.commonjava.aprox.model.ArtifactStore;
 
 import com.google.gson.annotations.SerializedName;
 

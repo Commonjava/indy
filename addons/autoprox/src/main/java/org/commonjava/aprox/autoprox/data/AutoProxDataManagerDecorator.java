@@ -24,12 +24,12 @@ import org.commonjava.aprox.autoprox.conf.AutoDeployConfiguration;
 import org.commonjava.aprox.autoprox.conf.AutoGroupConfiguration;
 import org.commonjava.aprox.autoprox.conf.AutoProxConfiguration;
 import org.commonjava.aprox.autoprox.conf.AutoRepoConfiguration;
-import org.commonjava.aprox.core.data.ProxyDataException;
-import org.commonjava.aprox.core.data.StoreDataManager;
-import org.commonjava.aprox.core.model.DeployPoint;
-import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.model.Repository;
-import org.commonjava.aprox.core.model.StoreKey;
+import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.model.DeployPoint;
+import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.util.logging.Logger;
 
 @Decorator

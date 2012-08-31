@@ -18,14 +18,11 @@ package org.commonjava.aprox.core.rest.util.retrieve;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.apache.commons.io.IOUtils.copy;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.List;
 import java.util.Set;
 
@@ -34,14 +31,14 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.Response;
 
-import org.commonjava.aprox.core.change.event.FileStorageEvent;
-import org.commonjava.aprox.core.io.StorageItem;
-import org.commonjava.aprox.core.model.ArtifactStore;
-import org.commonjava.aprox.core.model.DeployPoint;
-import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.rest.AproxWorkflowException;
+import org.commonjava.aprox.change.event.FileStorageEvent;
 import org.commonjava.aprox.core.rest.util.ArchetypeCatalogMerger;
-import org.commonjava.aprox.core.rest.util.FileManager;
+import org.commonjava.aprox.filer.FileManager;
+import org.commonjava.aprox.io.StorageItem;
+import org.commonjava.aprox.model.ArtifactStore;
+import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.rest.AproxWorkflowException;
+import org.commonjava.aprox.rest.util.retrieve.GroupPathHandler;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
@@ -70,9 +67,9 @@ public class ArchetypeCatalogHandler
     public StorageItem retrieve( final Group group, final List<? extends ArtifactStore> stores, final String path )
         throws AproxWorkflowException
     {
-        final File target = fileManager.formatStorageReference( group, path );
-        final File targetInfo =
-            fileManager.formatStorageReference( group, path + ArchetypeCatalogMerger.CATALOG_MERGEINFO_SUFFIX );
+        final StorageItem target = fileManager.getStorageReference( group, path );
+        final StorageItem targetInfo =
+            fileManager.getStorageReference( group, path + ArchetypeCatalogMerger.CATALOG_MERGEINFO_SUFFIX );
 
         if ( !target.exists() )
         {
@@ -80,26 +77,23 @@ public class ArchetypeCatalogHandler
             final InputStream merged = merger.merge( sources, group, path );
             if ( merged != null )
             {
-                FileOutputStream fos = null;
+                OutputStream fos = null;
                 try
                 {
-                    final File dir = target.getParentFile();
-                    dir.mkdirs();
-
-                    fos = new FileOutputStream( target );
+                    fos = target.openOutputStream();
                     copy( merged, fos );
 
                     if ( fileEvent != null )
                     {
-                        fileEvent.fire( new FileStorageEvent( FileStorageEvent.Type.GENERATE, group, path, target ) );
+                        fileEvent.fire( new FileStorageEvent( FileStorageEvent.Type.GENERATE, group, target ) );
                     }
                 }
                 catch ( final IOException e )
                 {
                     throw new AproxWorkflowException( Response.serverError()
-                                                             .build(),
-                                                     "Failed to write merged archetype catalog to: %s.\nError: %s", e,
-                                                     target, e.getMessage() );
+                                                              .build(),
+                                                      "Failed to write merged archetype catalog to: %s.\nError: %s", e,
+                                                      target, e.getMessage() );
                 }
                 finally
                 {
@@ -107,10 +101,10 @@ public class ArchetypeCatalogHandler
                     closeQuietly( fos );
                 }
 
-                FileWriter fw = null;
+                Writer fw = null;
                 try
                 {
-                    fw = new FileWriter( targetInfo );
+                    fw = new OutputStreamWriter( targetInfo.openOutputStream() );
                     for ( final StorageItem source : sources )
                     {
                         fw.write( source.getStoreKey()
@@ -132,33 +126,33 @@ public class ArchetypeCatalogHandler
 
         if ( target.exists() )
         {
-            try
-            {
-                return new StorageItem( group.getKey(), path, new BufferedInputStream( new FileInputStream( target ) ) );
-            }
-            catch ( final FileNotFoundException e )
-            {
-                throw new AproxWorkflowException(
-                                                 Response.serverError()
-                                                         .build(),
-                                                 "Cannot find file: %s, EVEN THOUGH WE JUST VERIFIED ITS EXISTENCE.\nError: %s",
-                                                 e, target, e.getMessage() );
-            }
+            return target;
         }
 
         return null;
     }
 
     @Override
-    public DeployPoint store( final Group group, final List<? extends ArtifactStore> stores, final String path,
+    public StorageItem store( final Group group, final List<? extends ArtifactStore> stores, final String path,
                               final InputStream stream )
         throws AproxWorkflowException
     {
         if ( path.endsWith( ArchetypeCatalogMerger.CATALOG_NAME ) )
         {
             // delete so it'll be recomputed.
-            final File target = fileManager.formatStorageReference( group, path );
-            target.delete();
+            final StorageItem target = fileManager.getStorageReference( group, path );
+            try
+            {
+                target.delete();
+            }
+            catch ( final IOException e )
+            {
+                throw new AproxWorkflowException(
+                                                  Response.serverError()
+                                                          .build(),
+                                                  "Failed to delete generated file (to allow re-generation on demand: %s. Error: %s",
+                                                  e, target.getFullPath(), e.getMessage() );
+            }
         }
 
         return fileManager.store( stores, path, stream );

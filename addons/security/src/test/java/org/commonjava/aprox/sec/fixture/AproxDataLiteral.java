@@ -17,7 +17,7 @@ package org.commonjava.aprox.sec.fixture;
 
 import javax.enterprise.util.AnnotationLiteral;
 
-import org.commonjava.aprox.core.inject.AproxData;
+import org.commonjava.aprox.inject.AproxData;
 
 public class AproxDataLiteral
     extends AnnotationLiteral<AproxData>

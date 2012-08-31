@@ -20,9 +20,9 @@ import org.apache.maven.graph.common.version.RangeVersionSpec;
 import org.apache.maven.graph.common.version.SingleVersion;
 import org.apache.maven.graph.common.version.VersionUtils;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.commonjava.aprox.core.io.StorageItem;
-import org.commonjava.aprox.core.rest.AproxWorkflowException;
-import org.commonjava.aprox.core.rest.util.GroupContentManager;
+import org.commonjava.aprox.io.StorageItem;
+import org.commonjava.aprox.rest.AproxWorkflowException;
+import org.commonjava.aprox.rest.util.GroupContentManager;
 import org.commonjava.aprox.tensor.conf.AproxTensorConfig;
 import org.commonjava.tensor.data.TensorDataException;
 import org.commonjava.tensor.discovery.ProjectRelationshipDiscoverer;
@@ -165,7 +165,7 @@ public class AproxProjectGraphDiscoverer
         final List<SingleVersion> versions = new ArrayList<SingleVersion>();
         try
         {
-            final Metadata metadata = new MetadataXpp3Reader().read( item.getStream() );
+            final Metadata metadata = new MetadataXpp3Reader().read( item.openInputStream() );
             if ( metadata.getVersioning() != null && metadata.getVersioning()
                                                              .getVersions() != null )
             {

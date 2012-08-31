@@ -39,28 +39,39 @@
   <modules>
     <module>api</module>
     <module>core</module>
+    <module>subsys</module>
     <module>db</module>
+    <module>filers</module>
     <module>test</module>
-    <module>addons</module>
     <module>tools</module>
     <module>wars</module>
     <module>uis</module>
   </modules>
   
+  <profiles>
+    <profile>
+      <id>experimental</id>
+      
+      <modules>
+        <module>addons</module>
+      </modules>
+    </profile>
+  </profiles>
+  
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>org.commonjava.couch.web</groupId>
-        <artifactId>couch-web</artifactId>
-        <version>1.2</version>
+        <groupId>org.commonjava.shelflife</groupId>
+        <artifactId>shelflife</artifactId>
+        <version>0.2-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
       
       <dependency>
-        <groupId>org.commonjava.shelflife</groupId>
-        <artifactId>shelflife</artifactId>
-        <version>0.2-SNAPSHOT</version>
+        <groupId>org.commonjava.qarqas</groupId>
+        <artifactId>qarqas-parent</artifactId>
+        <version>0.3-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -125,6 +136,21 @@
         <scope>test</scope>
       </dependency>
       <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-filer-default</artifactId>
+        <version>0.4-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-filer-gridfs</artifactId>
+        <version>0.4-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-subsys-infinispan</artifactId>
+        <version>0.4-SNAPSHOT</version>
+      </dependency>
+      <dependency>
         <groupId>org.commonjava.util</groupId>
         <artifactId>logging</artifactId>
         <version>1.1</version>
@@ -140,6 +166,11 @@
         <version>0.4-SNAPSHOT</version>
       </dependency>
       
+      <dependency>
+        <groupId>org.infinispan</groupId>
+        <artifactId>infinispan-core</artifactId>
+        <version>5.1.2.Final</version>
+      </dependency>
       <dependency>
         <groupId>org.apache.maven.indexer</groupId>
         <artifactId>indexer-core</artifactId>

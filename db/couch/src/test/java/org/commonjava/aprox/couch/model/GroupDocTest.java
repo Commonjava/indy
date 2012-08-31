@@ -19,8 +19,8 @@ import static org.commonjava.couch.util.IdUtils.namespaceId;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.model.StoreType;
+import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.StoreType;
 import org.commonjava.couch.model.DenormalizationException;
 import org.junit.Test;
 

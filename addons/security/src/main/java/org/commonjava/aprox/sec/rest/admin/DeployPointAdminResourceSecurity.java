@@ -23,8 +23,8 @@ import javax.ws.rs.core.Response;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
-import org.commonjava.aprox.core.model.StoreType;
-import org.commonjava.aprox.core.rest.admin.DeployPointAdminResource;
+import org.commonjava.aprox.model.StoreType;
+import org.commonjava.aprox.rest.admin.DeployPointAdminResource;
 import org.commonjava.couch.rbac.Permission;
 
 @Decorator

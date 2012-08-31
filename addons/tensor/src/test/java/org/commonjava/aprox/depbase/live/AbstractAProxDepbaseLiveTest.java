@@ -22,7 +22,7 @@ import java.io.IOException;
 
 import javax.inject.Inject;
 
-import org.commonjava.aprox.core.data.StoreDataManager;
+import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depbase.fixture.TestConfigProvider;
 import org.commonjava.tensor.data.TensorDataManager;
 import org.commonjava.web.json.test.WebFixture;
@@ -77,6 +77,7 @@ public class AbstractAProxDepbaseLiveTest
         return new TestWarArchiveBuilder( new File( "target/test.war" ), testClass ).withExtraClasses( AbstractAProxDepbaseLiveTest.class,
                                                                                                        TestConfigProvider.class )
                                                                                     .withLog4jProperties()
+                                                                                    .withBeansXml( "META-INF/beans.xml" )
                                                                                     .build();
     }
 

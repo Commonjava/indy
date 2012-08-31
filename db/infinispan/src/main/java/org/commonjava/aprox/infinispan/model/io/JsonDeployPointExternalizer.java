@@ -1,6 +1,6 @@
 package org.commonjava.aprox.infinispan.model.io;
 
-import org.commonjava.aprox.core.model.DeployPoint;
+import org.commonjava.aprox.model.DeployPoint;
 
 public class JsonDeployPointExternalizer
     extends JsonExternalizer<DeployPoint>

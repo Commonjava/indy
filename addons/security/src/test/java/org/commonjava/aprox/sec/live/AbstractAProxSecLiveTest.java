@@ -19,8 +19,8 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.commonjava.aprox.core.data.StoreDataManager;
-import org.commonjava.aprox.core.inject.AproxData;
+import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.auth.couch.inject.UserData;
 import org.commonjava.couch.change.CouchChangeListener;
 import org.commonjava.couch.conf.CouchDBConfiguration;

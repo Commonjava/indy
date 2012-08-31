@@ -1,6 +1,6 @@
 package org.commonjava.aprox.mem.data;
 
-import static org.commonjava.aprox.core.model.StoreType.group;
+import static org.commonjava.aprox.model.StoreType.group;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,17 +15,17 @@ import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.commonjava.aprox.core.change.event.ArtifactStoreUpdateEvent;
-import org.commonjava.aprox.core.change.event.ProxyManagerDeleteEvent;
-import org.commonjava.aprox.core.change.event.ProxyManagerUpdateType;
-import org.commonjava.aprox.core.data.ProxyDataException;
-import org.commonjava.aprox.core.data.StoreDataManager;
-import org.commonjava.aprox.core.model.ArtifactStore;
-import org.commonjava.aprox.core.model.DeployPoint;
-import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.model.Repository;
-import org.commonjava.aprox.core.model.StoreKey;
-import org.commonjava.aprox.core.model.StoreType;
+import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
+import org.commonjava.aprox.change.event.ProxyManagerDeleteEvent;
+import org.commonjava.aprox.change.event.ProxyManagerUpdateType;
+import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.model.ArtifactStore;
+import org.commonjava.aprox.model.DeployPoint;
+import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.StoreType;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.util.logging.helper.JoinString;
 

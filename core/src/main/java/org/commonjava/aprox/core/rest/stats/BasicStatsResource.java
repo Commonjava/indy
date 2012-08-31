@@ -13,11 +13,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import org.commonjava.aprox.core.data.ProxyDataException;
-import org.commonjava.aprox.core.data.StoreDataManager;
-import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.rest.AbstractURLAliasingResource;
-import org.commonjava.aprox.core.stats.AProxVersioning;
+import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.model.ArtifactStore;
+import org.commonjava.aprox.stats.AProxVersioning;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.ser.JsonSerializer;
 

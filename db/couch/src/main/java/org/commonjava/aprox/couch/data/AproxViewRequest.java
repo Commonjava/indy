@@ -15,7 +15,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.couch.data;
 
-import org.commonjava.aprox.core.conf.AproxConfiguration;
+import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.couch.data.AproxAppDescription.View;
 import org.commonjava.couch.db.model.ViewRequest;
 

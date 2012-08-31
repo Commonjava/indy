@@ -21,13 +21,13 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.commonjava.aprox.core.change.event.ProxyManagerDeleteEvent;
-import org.commonjava.aprox.core.data.ProxyDataException;
-import org.commonjava.aprox.core.data.StoreDataManager;
-import org.commonjava.aprox.core.model.Group;
-import org.commonjava.aprox.core.model.StoreKey;
-import org.commonjava.aprox.core.model.StoreType;
-import org.commonjava.couch.util.ChangeSynchronizer;
+import org.commonjava.aprox.change.event.ProxyManagerDeleteEvent;
+import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.StoreType;
+import org.commonjava.aprox.util.ChangeSynchronizer;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
@@ -91,7 +91,7 @@ public class GroupConsistencyListener
 
     public void waitForChange( final long total, final long poll )
     {
-        changeSync.waitForChange( total, poll );
+        changeSync.waitForChange( 1, total, poll );
     }
 
 }

@@ -6,8 +6,8 @@ import static org.junit.Assert.assertThat;
 
 import java.util.List;
 
-import org.commonjava.aprox.core.model.StoreKey;
-import org.commonjava.aprox.core.model.StoreType;
+import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.StoreType;
 import org.junit.Test;
 
 public class DefaultAutoProxConfigurationTest

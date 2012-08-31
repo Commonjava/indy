@@ -20,7 +20,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
-import org.commonjava.aprox.core.inject.AproxData;
+import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.couch.change.CouchChangeListener;
 import org.commonjava.couch.db.CouchDBException;
 import org.commonjava.shelflife.store.couch.CouchStoreListener;
