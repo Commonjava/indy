@@ -8,19 +8,13 @@ import java.io.IOException;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Produces;
-import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.commonjava.aprox.data.ProxyDataException;
-import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.subsys.infinispan.conf.CacheConfiguration;
-import org.commonjava.shelflife.model.Expiration;
-import org.commonjava.shelflife.model.ExpirationKey;
-import org.commonjava.shelflife.store.infinispan.ShelflifeCache;
 import org.commonjava.util.logging.Logger;
-import org.infinispan.Cache;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.DefaultCacheManager;
 
@@ -70,36 +64,10 @@ public class CacheProducer
     }
 
     @Produces
+    @Named( "application" )
     public CacheContainer getCacheContainer()
     {
         return container;
     }
 
-    @Produces
-    @AproxData
-    public <K, V> Cache<K, V> getCache( final InjectionPoint point )
-    {
-        final Named named = point.getAnnotated()
-                                 .getAnnotation( Named.class );
-        if ( named == null )
-        {
-            throw new IllegalArgumentException( "@AproxData cache injection must have @Named annotation." );
-        }
-
-        final Cache<K, V> cache = container.getCache( named.value() );
-        cache.start();
-
-        return cache;
-    }
-
-    @Produces
-    @ShelflifeCache
-    public Cache<ExpirationKey, Expiration> getShelflifeCache()
-        throws ProxyDataException
-    {
-        final Cache<ExpirationKey, Expiration> cache = container.getCache( EXPIRATION_CACHE );
-        cache.start();
-
-        return cache;
-    }
 }

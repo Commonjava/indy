@@ -13,11 +13,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.inject.AproxData;
+import org.commonjava.aprox.infinispan.inject.AproxCache;
+import org.commonjava.aprox.infinispan.inject.AproxCaches;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.model.Group;
@@ -31,8 +31,7 @@ public class InfinispanDataManager
 {
 
     @Inject
-    @AproxData
-    @Named( "aprox" )
+    @AproxCache( AproxCaches.DATA )
     private Cache<StoreKey, ArtifactStore> storeCache;
 
     public InfinispanDataManager()
