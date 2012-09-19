@@ -4,19 +4,22 @@ import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.apache.commons.lang.StringUtils.join;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.io.StorageProvider;
 import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.rest.util.inject.AproxGridCache;
+import org.commonjava.aprox.rest.util.inject.AproxGridCaches;
+import org.commonjava.util.logging.Logger;
 import org.infinispan.Cache;
 import org.infinispan.io.GridFile;
 import org.infinispan.io.GridFilesystem;
@@ -26,17 +29,31 @@ public class GridStorageProvider
     implements StorageProvider
 {
 
+    private final Logger logger = new Logger( getClass() );
+
     @Inject
     @AproxData
-    @Named( "aprox-gridFs-data" )
+    @AproxGridCache( AproxGridCaches.DATA )
     private Cache<String, byte[]> fsData;
 
     @Inject
     @AproxData
-    @Named( "aprox-gridFs-metadata" )
+    @AproxGridCache( AproxGridCaches.METADATA )
     private Cache<String, GridFile.Metadata> fsMetadata;
 
     private GridFilesystem fs;
+
+    public GridStorageProvider()
+    {
+    }
+
+    public GridStorageProvider( final Cache<String, GridFile.Metadata> metadataCache,
+                                final Cache<String, byte[]> dataCache )
+    {
+        this.fsData = dataCache;
+        this.fsMetadata = metadataCache;
+        start();
+    }
 
     @PostConstruct
     public void start()
@@ -46,8 +63,8 @@ public class GridStorageProvider
 
     private String getPath( final StoreKey key, final String... parts )
     {
-        final String name = "/" + key.getType()
-                                     .name() + "-" + key.getName();
+        final String name = key.getType()
+                               .name() + "-" + key.getName();
 
         if ( parts.length < 1 )
         {
@@ -55,11 +72,22 @@ public class GridStorageProvider
         }
 
         final StringBuilder sb = new StringBuilder();
-        sb.append( name );
+        sb.append( '/' )
+          .append( name );
         for ( final String part : parts )
         {
-            sb.append( "/" )
-              .append( part.replace( '\\', '/' ) );
+            final String[] subParts = part.split( "/" );
+            for ( final String subPart : subParts )
+            {
+                if ( subPart.trim()
+                            .length() < 1 )
+                {
+                    continue;
+                }
+
+                sb.append( "/" )
+                  .append( subPart.replace( '\\', '/' ) );
+            }
         }
 
         return sb.toString();
@@ -111,6 +139,15 @@ public class GridStorageProvider
     public InputStream openInputStream( final StoreKey key, final String path )
         throws IOException
     {
+        final String parent = parentPath( key, path );
+        logger.info( "Checking dir: %s", parent );
+
+        final File dir = fs.getFile( parent );
+        if ( !dir.isDirectory() )
+        {
+            throw new FileNotFoundException( "Parent directory: " + dir.getPath() + " does not exist." );
+        }
+
         return fs.getInput( getPath( key, path ) );
     }
 
@@ -118,13 +155,28 @@ public class GridStorageProvider
     public OutputStream openOutputStream( final StoreKey key, final String path )
         throws IOException
     {
+        final String parent = parentPath( key, path );
+        logger.info( "Checking/creating dir: %s", parent );
+
+        final File dir = fs.getFile( parent );
+        if ( !dir.isDirectory() && !dir.mkdirs() )
+        {
+            throw new IOException( "Cannot create output directory: " + dir.getPath() );
+        }
+
         return fs.getOutput( getPath( key, path ) );
     }
 
+    // TODO: Could make this an alias system, with a count-down on alias removal to clean up orphaned files...
     @Override
     public void copy( final StoreKey fromKey, final String fromPath, final StoreKey toKey, final String toPath )
         throws IOException
     {
+        if ( !exists( fromKey, fromPath ) )
+        {
+            throw new IOException( "Input file does not exist [key: " + fromKey + ", path: " + fromPath + "]" );
+        }
+
         final File outfile = fs.getFile( parentPath( toKey, toPath ) );
         if ( !outfile.isDirectory() && !outfile.mkdirs() )
         {
@@ -157,15 +209,23 @@ public class GridStorageProvider
     public void delete( final StoreKey key, final String path )
         throws IOException
     {
-        fs.getFile( getPath( key, path ) )
-          .delete();
+        final File f = fs.getFile( getPath( key, path ) );
+        if ( f.exists() )
+        {
+            f.delete();
+        }
     }
 
     @Override
     public String[] list( final StoreKey key, final String path )
     {
-        return fs.getFile( getPath( key, path ) )
-                 .list();
+        final File f = fs.getFile( getPath( key, path ) );
+        if ( f.exists() )
+        {
+            return f.list();
+        }
+
+        return new String[] {};
     }
 
     @Override

@@ -15,33 +15,34 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
+  
   <parent>
     <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-file-managers</artifactId>
+    <artifactId>aprox-test</artifactId>
     <version>0.4-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-filer-gridfs</artifactId>
-
-  <name>AProx :: GridFileSystem (ISPN) File Manager</name>
+  <artifactId>aprox-test-filer</artifactId>
+  <name>AProx :: Filer TCK</name>
   
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>aprox-api</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>aprox-core</artifactId>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>aprox-subsys-infinispan</artifactId>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-test-filer</artifactId>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
     </dependency>
   </dependencies>
 </project>

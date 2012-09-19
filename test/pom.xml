@@ -29,5 +29,6 @@
   
   <modules>
     <module>db</module>
+    <module>filer</module>
   </modules>
 </project>
