@@ -43,6 +43,44 @@ public abstract class FilerTCK
     }
 
     @Test
+    public void writeAndVerifyDirectory()
+        throws Exception
+    {
+        final String content = "This is a test";
+
+        final StoreKey key = new StoreKey( StoreType.deploy_point, "foo" );
+        final String dir = "/path/to/my/";
+        final String fname = dir + "file.txt";
+
+        final StorageProvider provider = getStorageProvider();
+        final OutputStream out = provider.openOutputStream( key, fname );
+        out.write( content.getBytes( "UTF-8" ) );
+        out.close();
+
+        assertThat( provider.isDirectory( key, dir ), equalTo( true ) );
+    }
+
+    @Test
+    public void writeAndListDirectory()
+        throws Exception
+    {
+        final String content = "This is a test";
+
+        final StoreKey key = new StoreKey( StoreType.deploy_point, "foo" );
+        final String dir = "/path/to/my/";
+        final String fname = dir + "file.txt";
+
+        final StorageProvider provider = getStorageProvider();
+        final OutputStream out = provider.openOutputStream( key, fname );
+        out.write( content.getBytes( "UTF-8" ) );
+        out.close();
+
+        final String[] listing = provider.list( key, dir );
+        assertThat( listing.length, equalTo( 1 ) );
+        assertThat( listing[0], equalTo( "file.txt" ) );
+    }
+
+    @Test
     public void writeAndVerifyExistence()
         throws Exception
     {
