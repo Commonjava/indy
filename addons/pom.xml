@@ -28,7 +28,6 @@
   <name>AProx :: Add-Ons</name>
   
   <modules>
-    <module>tensor</module>
     <module>autoprox</module>
   </modules>
   
@@ -37,6 +36,7 @@
       <id>experimental</id>
       
       <modules>
+        <module>tensor</module>
         <module>security</module>
         <module>indexer</module>
       </modules>

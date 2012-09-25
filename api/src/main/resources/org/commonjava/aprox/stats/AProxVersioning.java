@@ -4,7 +4,6 @@ import javax.inject.Singleton;
 
 import org.commonjava.web.json.ser.JsonAdapters;
 
-import com.google.gson.JsonSerializer;
 import com.google.gson.annotations.Expose;
 
 @Singleton

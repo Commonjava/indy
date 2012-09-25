@@ -14,6 +14,7 @@ import org.apache.commons.io.FileUtils;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.flat.conf.FlatFileConfiguration;
+import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.model.Group;
@@ -39,6 +40,7 @@ public abstract class FlatFileDataManagerDecorator
     private FlatFileConfiguration config;
 
     @Inject
+    @AproxData
     private JsonSerializer serializer;
 
     protected FlatFileDataManagerDecorator()

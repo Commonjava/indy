@@ -44,6 +44,7 @@
     <module>filers</module>
     <module>test</module>
     <module>tools</module>
+    <module>addons</module>
     <module>wars</module>
     <module>uis</module>
   </modules>
@@ -53,7 +54,6 @@
       <id>experimental</id>
       
       <modules>
-        <module>addons</module>
       </modules>
     </profile>
   </profiles>

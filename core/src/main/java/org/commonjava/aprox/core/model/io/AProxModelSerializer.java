@@ -1,14 +1,13 @@
 package org.commonjava.aprox.core.model.io;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 
+import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.Repository;
-import org.commonjava.aprox.model.io.StoreKeySerializer;
 import org.commonjava.web.json.model.Listing;
 import org.commonjava.web.json.ser.JsonSerializer;
 
@@ -31,13 +30,8 @@ public class AProxModelSerializer
         };
 
     @Inject
+    @AproxData
     private JsonSerializer restSerializer;
-
-    @PostConstruct
-    protected void registerSerializationAdapters()
-    {
-        restSerializer.registerSerializationAdapters( new StoreKeySerializer() );
-    }
 
     @SuppressWarnings( "unchecked" )
     public Repository repositoryFromRequestBody( final HttpServletRequest request )

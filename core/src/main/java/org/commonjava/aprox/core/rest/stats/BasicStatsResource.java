@@ -16,6 +16,7 @@ import javax.ws.rs.core.UriInfo;
 import org.commonjava.aprox.core.rest.AbstractURLAliasingResource;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.stats.AProxVersioning;
 import org.commonjava.util.logging.Logger;
@@ -36,6 +37,7 @@ public class BasicStatsResource
     private StoreDataManager dataManager;
 
     @Inject
+    @AproxData
     private JsonSerializer serializer;
 
     @Context

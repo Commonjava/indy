@@ -6,23 +6,14 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.util.List;
 
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.apache.log4j.Level;
-import org.commonjava.aprox.autoprox.conf.AutoProxConfiguration;
-import org.commonjava.aprox.autoprox.conf.DefaultAutoDeployConfiguration;
-import org.commonjava.aprox.autoprox.conf.DefaultAutoGroupConfiguration;
-import org.commonjava.aprox.autoprox.conf.DefaultAutoProxConfiguration;
-import org.commonjava.aprox.autoprox.conf.DefaultAutoRepoConfiguration;
+import org.commonjava.aprox.autoprox.conf.AutoProxModel;
 import org.commonjava.aprox.autoprox.live.fixture.TargetUrlResponder;
-import org.commonjava.aprox.conf.AproxConfiguration;
-import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
+import org.commonjava.aprox.autoprox.live.fixture.TestConfigProvider;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.Repository;
@@ -50,7 +41,7 @@ public class AutoProxDataManagerDecoratorTest
     protected StoreDataManager proxyManager;
 
     @Inject
-    protected AutoProxConfiguration config;
+    protected AutoProxModel config;
 
     @Inject
     protected TargetUrlResponder targetResponder;
@@ -81,57 +72,11 @@ public class AutoProxDataManagerDecoratorTest
     @Deployment
     public static WebArchive createWar()
     {
-        return new TestWarArchiveBuilder( new File( "target/test.war" ), AutoProxDataManagerDecoratorTest.class ).withExtraClasses( TargetUrlResponder.class )
+        return new TestWarArchiveBuilder( new File( "target/test.war" ), AutoProxDataManagerDecoratorTest.class ).withExtraClasses( TestConfigProvider.class,
+                                                                                                                                    TargetUrlResponder.class )
                                                                                                                  .withLog4jProperties()
-                                                                                                                 .withBeansXml( "beans.xml.autoprox" )
+                                                                                                                 .withBeansXml( "beans.xml" )
                                                                                                                  .build();
-    }
-
-    @Singleton
-    public static final class ConfigProvider
-    {
-        private AutoProxConfiguration autoProxConfig;
-
-        private AproxConfiguration proxyConfig;
-
-        private final WebFixture http = new WebFixture();
-
-        @Produces
-        @Default
-        public synchronized AproxConfiguration getProxyConfig()
-        {
-            if ( proxyConfig == null )
-            {
-                proxyConfig = new DefaultAproxConfiguration();
-            }
-            return proxyConfig;
-        }
-
-        @Produces
-        @Default
-        public synchronized AutoProxConfiguration getAutoProxConfig()
-            throws MalformedURLException
-        {
-            if ( autoProxConfig == null )
-            {
-                autoProxConfig =
-                    new DefaultAutoProxConfiguration(
-                                                      true,
-                                                      new DefaultAutoRepoConfiguration( http.resourceUrl( "target" ) ),
-                                                      new DefaultAutoDeployConfiguration( true ),
-                                                      new DefaultAutoGroupConfiguration(
-                                                                                         new StoreKey(
-                                                                                                       StoreType.repository,
-                                                                                                       "first" ),
-                                                                                         new StoreKey(
-                                                                                                       StoreType.repository,
-                                                                                                       "second" ) ) );
-                System.out.println( "\n\n\n\nSet Autoprox URL: " + autoProxConfig.getRepo()
-                                                                                 .getBaseUrl() + "\n\n\n\n" );
-            }
-
-            return autoProxConfig;
-        }
     }
 
     @Test

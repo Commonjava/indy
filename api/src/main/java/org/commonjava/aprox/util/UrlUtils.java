@@ -68,13 +68,19 @@ public final class UrlUtils
 
         final StringBuilder urlBuilder = new StringBuilder();
 
-        if ( !parts[0].startsWith( baseUrl ) )
+        if ( parts[0] == null || !parts[0].startsWith( baseUrl ) )
         {
             urlBuilder.append( baseUrl );
         }
 
         for ( String part : parts )
         {
+            if ( part == null || part.trim()
+                                     .length() < 1 )
+            {
+                continue;
+            }
+
             if ( part.startsWith( "/" ) )
             {
                 part = part.substring( 1 );

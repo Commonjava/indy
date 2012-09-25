@@ -1,11 +1,11 @@
 package org.commonjava.aprox.autoprox.data;
 
-import static org.commonjava.couch.util.UrlUtils.buildUrl;
+import static org.commonjava.aprox.util.UrlUtils.buildUrl;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.decorator.Decorator;
 import javax.decorator.Delegate;
@@ -20,16 +20,14 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.commonjava.aprox.autoprox.conf.AutoDeployConfiguration;
-import org.commonjava.aprox.autoprox.conf.AutoGroupConfiguration;
-import org.commonjava.aprox.autoprox.conf.AutoProxConfiguration;
-import org.commonjava.aprox.autoprox.conf.AutoRepoConfiguration;
+import org.commonjava.aprox.autoprox.conf.AutoProxModel;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.StoreType;
 import org.commonjava.util.logging.Logger;
 
 @Decorator
@@ -39,6 +37,12 @@ public abstract class AutoProxDataManagerDecorator
 
     private static final int MAX_CONNECTIONS = 20;
 
+    private static final String REPO_NAME_URL_PATTERN = Pattern.quote( "${name}" );
+
+    private static final String REPO_CONSTITUENT_PLACEHOLDER = "${repository}";
+
+    private static final String DEPLOY_CONSTITUENT_PLACEHOLDER = "${deploy}";
+
     private final Logger logger = new Logger( getClass() );
 
     @Delegate
@@ -47,7 +51,7 @@ public abstract class AutoProxDataManagerDecorator
     private StoreDataManager dataManager;
 
     @Inject
-    private AutoProxConfiguration config;
+    private AutoProxModel config;
 
     private HttpClient http;
 
@@ -70,39 +74,68 @@ public abstract class AutoProxDataManagerDecorator
             final Repository proxy = getRepository( name );
             if ( proxy != null )
             {
-                final List<StoreKey> keys = new ArrayList<StoreKey>();
-
-                final AutoDeployConfiguration deploy = config.getDeploy();
-                if ( deploy.isDeployEnabled() )
+                DeployPoint dp = null;
+                if ( config.isDeployEnabled() )
                 {
-                    DeployPoint dp = dataManager.getDeployPoint( name );
+                    dp = dataManager.getDeployPoint( name );
+
                     if ( dp == null )
                     {
                         dp = new DeployPoint( name );
 
-                        dp.setAllowReleases( deploy.isReleasesEnabled() );
-                        dp.setAllowSnapshots( deploy.isSnapshotsEnabled() );
+                        final DeployPoint deploy = config.getDeploy();
 
-                        if ( deploy.getSnapshotTimeoutSeconds() != null )
+                        if ( deploy != null )
                         {
+                            dp.setAllowReleases( deploy.isAllowReleases() );
+                            dp.setAllowSnapshots( deploy.isAllowSnapshots() );
                             dp.setSnapshotTimeoutSeconds( deploy.getSnapshotTimeoutSeconds() );
                         }
 
                         dataManager.storeDeployPoint( dp );
                     }
-
-                    keys.add( dp.getKey() );
                 }
 
-                keys.add( proxy.getKey() );
+                g = new Group( name );
 
-                final AutoGroupConfiguration group = config.getGroup();
-                if ( group.getExtraConstituents() != null )
+                boolean rFound = false;
+                boolean dFound = false;
+                final Group group = config.getGroup();
+
+                if ( group != null && group.getConstituents() != null )
                 {
-                    keys.addAll( group.getExtraConstituents() );
+                    for ( final StoreKey storeKey : group.getConstituents() )
+                    {
+                        if ( storeKey.getType() == StoreType.repository
+                            && REPO_CONSTITUENT_PLACEHOLDER.equalsIgnoreCase( storeKey.getName() ) )
+                        {
+                            g.addConstituent( proxy );
+                            rFound = true;
+                        }
+                        else if ( dp != null && storeKey.getType() == StoreType.deploy_point
+                            && DEPLOY_CONSTITUENT_PLACEHOLDER.equalsIgnoreCase( storeKey.getName() ) )
+                        {
+                            g.addConstituent( dp );
+                            dFound = true;
+                        }
+                        else
+                        {
+                            g.addConstituent( storeKey );
+                        }
+                    }
                 }
 
-                g = new Group( name, keys );
+                final List<StoreKey> constituents = g.getConstituents();
+                if ( !rFound )
+                {
+                    constituents.add( 0, proxy.getKey() );
+                }
+
+                if ( dp != null && !dFound )
+                {
+                    constituents.add( 0, dp.getKey() );
+                }
+
                 dataManager.storeGroup( g );
             }
         }
@@ -110,7 +143,7 @@ public abstract class AutoProxDataManagerDecorator
         return g;
     }
 
-    private synchronized boolean checkUrlValidity( final String proxyUrl )
+    private synchronized boolean checkUrlValidity( final String proxyUrl, final String validationPath )
     {
         if ( http == null )
         {
@@ -120,8 +153,20 @@ public abstract class AutoProxDataManagerDecorator
             http = new DefaultHttpClient( ccm );
         }
 
-        logger.info( "\n\n\n\n\n[AutoProx] Checking URL: %s", proxyUrl );
-        final HttpHead head = new HttpHead( proxyUrl );
+        String url = null;
+        try
+        {
+            url = buildUrl( proxyUrl, validationPath );
+        }
+        catch ( final MalformedURLException e )
+        {
+            logger.error( "Failed to construct repository-validation URL from base: %s and path: %s. Reason: %s", e,
+                          proxyUrl, validationPath, e.getMessage() );
+            return false;
+        }
+
+        logger.info( "\n\n\n\n\n[AutoProx] Checking URL: %s", url );
+        final HttpHead head = new HttpHead( url );
         boolean result = false;
         try
         {
@@ -133,11 +178,11 @@ public abstract class AutoProxDataManagerDecorator
         }
         catch ( final ClientProtocolException e )
         {
-            logger.warn( "[AutoProx] Cannot connect to target repository: '%s'.", proxyUrl );
+            logger.warn( "[AutoProx] Cannot connect to target repository: '%s'.", url );
         }
         catch ( final IOException e )
         {
-            logger.warn( "[AutoProx] Cannot connect to target repository: '%s'.", proxyUrl );
+            logger.warn( "[AutoProx] Cannot connect to target repository: '%s'.", url );
         }
 
         return result;
@@ -158,46 +203,46 @@ public abstract class AutoProxDataManagerDecorator
         logger.info( "AutoProx decorator active" );
         if ( proxy == null )
         {
-            logger.info( "AutoProx: creating repository for: %s", name );
-            String proxyUrl;
-            try
-            {
-                proxyUrl = buildUrl( config.getRepo()
-                                           .getBaseUrl(), name );
-            }
-            catch ( final MalformedURLException e )
-            {
-                throw new ProxyDataException(
-                                              "Cannot build proxy URL for autoprox target: '%s' and base-URL: '%s'. Reason: %s",
-                                              e, name, config.getRepo()
-                                                             .getBaseUrl(), e.getMessage() );
-            }
+            final Repository repo = config.getRepo();
+            final String validationPath = config.getRepoValidationPath();
 
-            if ( !checkUrlValidity( proxyUrl ) )
+            final String url = resolveRepoUrl( repo.getUrl(), name );
+
+            logger.info( "AutoProx: creating repository for: %s", name );
+            if ( !checkUrlValidity( url, validationPath ) )
             {
-                logger.warn( "Invalid repository URL: %s", proxyUrl );
+                logger.warn( "Invalid repository URL: %s", url );
                 return null;
             }
 
             if ( proxy == null )
             {
-                final AutoRepoConfiguration repo = config.getRepo();
+                proxy = new Repository( name, url );
 
-                proxy = new Repository( name, proxyUrl );
-                proxy.setPassthrough( repo.isPassthroughEnabled() );
-                if ( repo.getTimeoutSeconds() != null )
-                {
-                    proxy.setTimeoutSeconds( repo.getTimeoutSeconds() );
-                }
+                proxy.setCacheTimeoutSeconds( repo.getCacheTimeoutSeconds() );
+                proxy.setHost( repo.getHost() );
+                proxy.setKeyCertPem( repo.getKeyCertPem() );
+                proxy.setKeyPassword( repo.getKeyPassword() );
+                proxy.setPassthrough( repo.isPassthrough() );
+                proxy.setPassword( repo.getPassword() );
+                proxy.setPort( repo.getPort() );
+                proxy.setProxyHost( repo.getProxyHost() );
+                proxy.setProxyPassword( repo.getProxyPassword() );
+                proxy.setProxyPort( repo.getProxyPort() );
+                proxy.setProxyUser( repo.getProxyUser() );
+                proxy.setServerCertPem( repo.getServerCertPem() );
+                proxy.setTimeoutSeconds( repo.getTimeoutSeconds() );
+                proxy.setUser( repo.getUser() );
 
-                if ( repo.getCacheTimeoutSeconds() != null )
-                {
-                    proxy.setCacheTimeoutSeconds( repo.getCacheTimeoutSeconds() );
-                }
                 dataManager.storeRepository( proxy );
             }
         }
 
         return proxy;
+    }
+
+    private String resolveRepoUrl( final String src, final String name )
+    {
+        return src.replaceAll( REPO_NAME_URL_PATTERN, name );
     }
 }
