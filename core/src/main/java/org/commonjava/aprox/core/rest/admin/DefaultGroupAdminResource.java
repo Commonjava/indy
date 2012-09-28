@@ -69,6 +69,7 @@ public class DefaultGroupAdminResource
     @Override
     @POST
     @Consumes( { MediaType.APPLICATION_JSON } )
+    @Produces( MediaType.APPLICATION_JSON )
     public Response create()
     {
         final Group group = modelSerializer.groupFromRequestBody( request );
@@ -81,15 +82,16 @@ public class DefaultGroupAdminResource
             final boolean added = proxyManager.storeGroup( group, true );
             if ( added )
             {
+                final String json = modelSerializer.toString( group );
                 builder = Response.created( uriInfo.getAbsolutePathBuilder()
                                                    .path( group.getName() )
                                                    .build() )
-                                  .entity( group );
+                                  .entity( json );
             }
             else
             {
                 builder = Response.status( Status.CONFLICT )
-                                  .entity( "Group already exists." );
+                                  .entity( "{\"error\": \"Group already exists.\"}" );
             }
         }
         catch ( final ProxyDataException e )
@@ -160,6 +162,7 @@ public class DefaultGroupAdminResource
     @Override
     @GET
     @Path( "/{name}" )
+    @Produces( MediaType.APPLICATION_JSON )
     public Response get( @PathParam( "name" ) final String name )
     {
         try

@@ -16,8 +16,6 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.infinispan.inject.AproxCache;
-import org.commonjava.aprox.infinispan.inject.AproxCaches;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.model.Group;
@@ -25,13 +23,14 @@ import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.infinispan.Cache;
+import org.infinispan.cdi.ConfigureCache;
 
 public class InfinispanDataManager
     implements StoreDataManager
 {
 
     @Inject
-    @AproxCache( AproxCaches.DATA )
+    @ConfigureCache( "aprox-data" )
     private Cache<StoreKey, ArtifactStore> storeCache;
 
     public InfinispanDataManager()

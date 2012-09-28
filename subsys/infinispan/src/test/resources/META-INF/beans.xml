@@ -24,7 +24,4 @@
     <stereotype>org.commonjava.aprox.inject.TestData</stereotype>
   </alternatives>
   
-  <decorators>
-    <class>org.commonjava.aprox.autoprox.data.AutoProxDataManagerDecorator</class>
-  </decorators>
 </beans>

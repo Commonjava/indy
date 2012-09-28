@@ -33,7 +33,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 
-public class AbstractAProxDepbaseLiveTest
+public class AbstractAProxTensorLiveTest
 {
 
     private static File repoRoot;
@@ -74,7 +74,7 @@ public class AbstractAProxDepbaseLiveTest
 
     protected static WebArchive createWar( final Class<?> testClass )
     {
-        return new TestWarArchiveBuilder( new File( "target/test.war" ), testClass ).withExtraClasses( AbstractAProxDepbaseLiveTest.class,
+        return new TestWarArchiveBuilder( new File( "target/test-assembly.war" ), testClass ).withExtraClasses( AbstractAProxTensorLiveTest.class,
                                                                                                        TestConfigProvider.class )
                                                                                     .withLog4jProperties()
                                                                                     .withBeansXml( "META-INF/beans.xml" )

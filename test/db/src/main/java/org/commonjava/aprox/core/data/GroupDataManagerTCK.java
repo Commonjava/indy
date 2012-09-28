@@ -51,7 +51,19 @@ public abstract class GroupDataManagerTCK
     }
 
     @Before
-    public void seedRepositoriesForGroupTests()
+    public void setup()
+        throws Exception
+    {
+        doSetup();
+        seedRepositoriesForGroupTests();
+    }
+
+    protected void doSetup()
+        throws Exception
+    {
+    }
+
+    protected void seedRepositoriesForGroupTests()
         throws ProxyDataException
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();

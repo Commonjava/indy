@@ -45,7 +45,7 @@ public class SecurityConsistencyListenerLiveTest
     @Deployment
     public static WebArchive createWar()
     {
-        return new TestWarArchiveBuilder( new File( "target/test.war" ), SecurityConsistencyListenerLiveTest.class ).withExtraClasses( AbstractAProxSecLiveTest.class,
+        return new TestWarArchiveBuilder( new File( "target/test-assembly.war" ), SecurityConsistencyListenerLiveTest.class ).withExtraClasses( AbstractAProxSecLiveTest.class,
                                                                                                                                        ProxyConfigProvider.class )
                                                                                                                     .withLog4jProperties()
                                                                                                                     .withBeansXml( "META-INF/beans.xml" )

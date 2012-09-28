@@ -7,29 +7,27 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 import javax.annotation.PostConstruct;
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.subsys.infinispan.conf.CacheConfiguration;
 import org.commonjava.util.logging.Logger;
-import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.DefaultCacheManager;
+import org.infinispan.manager.EmbeddedCacheManager;
 
 @Singleton
 public class CacheProducer
 {
-
-    public static final String EXPIRATION_CACHE = "shelflife";
 
     private final Logger logger = new Logger( getClass() );
 
     @Inject
     private CacheConfiguration config;
 
-    private CacheContainer container;
+    private EmbeddedCacheManager container;
 
     @PostConstruct
     public void load()
@@ -64,8 +62,8 @@ public class CacheProducer
     }
 
     @Produces
-    @Named( "application" )
-    public CacheContainer getCacheContainer()
+    @Default
+    public EmbeddedCacheManager getCacheContainer()
     {
         return container;
     }

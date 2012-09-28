@@ -15,12 +15,16 @@
  ******************************************************************************/
 package org.commonjava.aprox.depbase.fixture;
 
+import java.io.File;
+import java.io.IOException;
+
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
 
 import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
+import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
 
 @Singleton
 public class TestConfigProvider
@@ -28,18 +32,43 @@ public class TestConfigProvider
 
     public static final String REPO_ROOT_DIR = "repo.root.dir";
 
-    private DefaultAproxConfiguration config;
+    private AproxConfiguration proxyConfig;
+
+    private DefaultStorageProviderConfiguration storageConfig;
 
     @Produces
     @Default
-    public synchronized AproxConfiguration getProxyConfiguration()
+    public synchronized AproxConfiguration getProxyConfig()
     {
-        if ( config == null )
+        if ( proxyConfig == null )
         {
-            config = new DefaultAproxConfiguration();
+            proxyConfig = new DefaultAproxConfiguration();
         }
-
-        return config;
+        return proxyConfig;
     }
 
+    @Produces
+    @Default
+    public synchronized DefaultStorageProviderConfiguration getStorageProviderConfiguration()
+        throws IOException
+    {
+        if ( storageConfig == null )
+        {
+            final String path = System.getProperty( REPO_ROOT_DIR );
+            File dir;
+            if ( path == null )
+            {
+                dir = File.createTempFile( "repo.root", ".dir" );
+                dir.delete();
+                dir.mkdirs();
+            }
+            else
+            {
+                dir = new File( path );
+            }
+            storageConfig = new DefaultStorageProviderConfiguration( dir );
+        }
+
+        return storageConfig;
+    }
 }

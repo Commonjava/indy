@@ -39,7 +39,6 @@
 	<dependency>
 		<groupId>org.apache.maven</groupId>
 		<artifactId>maven-model-builder</artifactId>
-		<version>3.0.3</version>
 	</dependency>
 	<dependency>
 		<groupId>org.apache.maven.mae</groupId>
@@ -88,6 +87,15 @@
     <dependency>
       <groupId>org.commonjava.util</groupId>
       <artifactId>configuration-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-filer-default</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-subsys-infinispan</artifactId>
     </dependency>
   </dependencies>
   

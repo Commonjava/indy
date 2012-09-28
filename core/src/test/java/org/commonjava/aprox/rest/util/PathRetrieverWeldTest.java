@@ -32,6 +32,7 @@ import org.commonjava.aprox.model.Repository;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -40,6 +41,7 @@ public class PathRetrieverWeldTest
 
     private FileManager downloader;
 
+    @Rule
     public TemporaryFolder temp = new TemporaryFolder();
 
     @SuppressWarnings( "serial" )

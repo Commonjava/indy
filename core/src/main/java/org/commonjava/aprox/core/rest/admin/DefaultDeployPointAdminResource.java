@@ -73,6 +73,7 @@ public class DefaultDeployPointAdminResource
     @Override
     @POST
     @Consumes( { MediaType.APPLICATION_JSON } )
+    @Produces( MediaType.APPLICATION_JSON )
     public Response create()
     {
         final DeployPoint deploy = modelSerializer.deployPointFromRequestBody( request );
@@ -87,12 +88,12 @@ public class DefaultDeployPointAdminResource
                 builder = Response.created( uriInfo.getAbsolutePathBuilder()
                                                    .path( deploy.getName() )
                                                    .build() )
-                                  .entity( deploy );
+                                  .entity( modelSerializer.toString( deploy ) );
             }
             else
             {
                 builder = Response.status( Status.CONFLICT )
-                                  .entity( "Repository already exists." );
+                                  .entity( "{\"error\": \"Deploy point already exists.\"}" );
             }
         }
         catch ( final ProxyDataException e )
@@ -169,6 +170,7 @@ public class DefaultDeployPointAdminResource
     @Override
     @GET
     @Path( "/{name}" )
+    @Produces( MediaType.APPLICATION_JSON )
     public Response get( @PathParam( "name" ) final String name )
     {
         try

@@ -11,24 +11,16 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-api</artifactId>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
     </dependency>
     <dependency>
     	<groupId>org.commonjava.aprox</groupId>
     	<artifactId>aprox-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.arquillian.junit</groupId>
-      <artifactId>arquillian-junit-container</artifactId>
-    </dependency>
-    <dependency>
-       <groupId>org.jboss.as</groupId>
-       <artifactId>jboss-as-arquillian-container-managed</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.couch.test</groupId>
-      <artifactId>couch-test-harness</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.qarqas</groupId>

@@ -14,13 +14,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.io.IOUtils;
-import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.io.StorageProvider;
 import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.rest.util.inject.AproxGridCache;
-import org.commonjava.aprox.rest.util.inject.AproxGridCaches;
 import org.commonjava.util.logging.Logger;
 import org.infinispan.Cache;
+import org.infinispan.cdi.ConfigureCache;
 import org.infinispan.io.GridFile;
 import org.infinispan.io.GridFilesystem;
 
@@ -32,13 +30,11 @@ public class GridStorageProvider
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    @AproxData
-    @AproxGridCache( AproxGridCaches.DATA )
+    @ConfigureCache( "aprox-storage-data" )
     private Cache<String, byte[]> fsData;
 
     @Inject
-    @AproxData
-    @AproxGridCache( AproxGridCaches.METADATA )
+    @ConfigureCache( "aprox-storage-metadata" )
     private Cache<String, GridFile.Metadata> fsMetadata;
 
     private GridFilesystem fs;

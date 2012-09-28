@@ -28,20 +28,33 @@
   
   <dependencies>
     <dependency>
-      <groupId>org.infinispan</groupId>
-      <artifactId>infinispan-core</artifactId>
+      <groupId>org.jboss.marshalling</groupId>
+      <artifactId>jboss-marshalling-river</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.shelflife</groupId>
-      <artifactId>shelflife-api</artifactId>
+      <groupId>org.infinispan</groupId>
+      <artifactId>infinispan-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.shelflife</groupId>
-      <artifactId>shelflife-store-infinispan</artifactId>
+      <groupId>org.infinispan</groupId>
+      <artifactId>infinispan-cdi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.weld.se</groupId>
+      <artifactId>weld-se-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

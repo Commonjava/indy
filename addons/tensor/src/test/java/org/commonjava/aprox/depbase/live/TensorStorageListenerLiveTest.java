@@ -11,14 +11,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith( Arquillian.class )
-public class DepBaseProxyListenerLiveTest
-    extends AbstractAProxDepbaseLiveTest
+public class TensorStorageListenerLiveTest
+    extends AbstractAProxTensorLiveTest
 {
 
     @Deployment
     public static WebArchive createWar()
     {
-        return createWar( DepBaseProxyListenerLiveTest.class );
+        return createWar( TensorStorageListenerLiveTest.class );
     }
 
     @Test

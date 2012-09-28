@@ -72,7 +72,7 @@ public class AutoProxDataManagerDecoratorTest
     @Deployment
     public static WebArchive createWar()
     {
-        return new TestWarArchiveBuilder( new File( "target/test.war" ), AutoProxDataManagerDecoratorTest.class ).withExtraClasses( TestConfigProvider.class,
+        return new TestWarArchiveBuilder( new File( "target/test-assembly.war" ), AutoProxDataManagerDecoratorTest.class ).withExtraClasses( TestConfigProvider.class,
                                                                                                                                     TargetUrlResponder.class )
                                                                                                                  .withLog4jProperties()
                                                                                                                  .withBeansXml( "beans.xml" )

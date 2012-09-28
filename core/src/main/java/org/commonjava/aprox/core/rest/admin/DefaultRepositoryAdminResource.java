@@ -73,6 +73,7 @@ public class DefaultRepositoryAdminResource
     @Override
     @POST
     @Consumes( { MediaType.APPLICATION_JSON } )
+    @Produces( MediaType.APPLICATION_JSON )
     public Response create()
     {
         final Repository repository = modelSerializer.repositoryFromRequestBody( request );
@@ -87,12 +88,12 @@ public class DefaultRepositoryAdminResource
                 builder = Response.created( uriInfo.getAbsolutePathBuilder()
                                                    .path( repository.getName() )
                                                    .build() )
-                                  .entity( repository );
+                                  .entity( modelSerializer.toString( repository ) );
             }
             else
             {
                 builder = Response.status( Status.CONFLICT )
-                                  .entity( "Repository already exists." );
+                                  .entity( "{\"error\": \"Repository already exists.\"}" );
             }
         }
         catch ( final ProxyDataException e )
@@ -177,6 +178,7 @@ public class DefaultRepositoryAdminResource
     @Override
     @GET
     @Path( "/{name}" )
+    @Produces( MediaType.APPLICATION_JSON )
     public Response get( @PathParam( "name" ) final String name )
     {
         try
