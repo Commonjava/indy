@@ -5,6 +5,7 @@ import java.io.File;
 import org.commonjava.aprox.core.data.FilerTCK;
 import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
 import org.commonjava.aprox.io.StorageProvider;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
@@ -17,6 +18,7 @@ public class DefaultStorageProviderTest
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
 
+    @Before
     public void setup()
     {
         rootDir = folder.newFolder( "test-filer-storage" );
