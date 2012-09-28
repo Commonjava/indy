@@ -253,11 +253,6 @@
         <version>5.1.7.Final</version>
       </dependency>
       <dependency>
-        <groupId>org.infinispan</groupId>
-        <artifactId>infinispan-cdi</artifactId>
-        <version>5.1.7.Final</version>
-      </dependency>
-      <dependency>
         <groupId>org.apache.maven.indexer</groupId>
         <artifactId>indexer-core</artifactId>
         <version>4.1.2</version>

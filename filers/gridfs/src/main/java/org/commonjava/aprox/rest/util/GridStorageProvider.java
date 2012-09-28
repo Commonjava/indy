@@ -18,9 +18,9 @@ import org.commonjava.aprox.io.StorageProvider;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.util.logging.Logger;
 import org.infinispan.Cache;
-import org.infinispan.cdi.ConfigureCache;
 import org.infinispan.io.GridFile;
 import org.infinispan.io.GridFilesystem;
+import org.infinispan.manager.CacheContainer;
 
 @Singleton
 public class GridStorageProvider
@@ -30,11 +30,10 @@ public class GridStorageProvider
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    @ConfigureCache( "aprox-storage-data" )
+    private CacheContainer container;
+
     private Cache<String, byte[]> fsData;
 
-    @Inject
-    @ConfigureCache( "aprox-storage-metadata" )
     private Cache<String, GridFile.Metadata> fsMetadata;
 
     private GridFilesystem fs;
@@ -52,6 +51,17 @@ public class GridStorageProvider
     }
 
     @PostConstruct
+    public void init()
+    {
+        fsData = container.getCache( "aprox-storage-data" );
+        fsData.start();
+
+        fsMetadata = container.getCache( "aprox-storage-metadata" );
+        fsMetadata.start();
+
+        start();
+    }
+
     public void start()
     {
         fs = new GridFilesystem( fsData, fsMetadata );
