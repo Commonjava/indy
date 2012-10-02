@@ -19,13 +19,14 @@
   <parent>
     <groupId>org.commonjava.aprox.wars</groupId>
     <artifactId>aprox-wars</artifactId>
-    <version>0.2-SNAPSHOT</version>
+    <version>0.4-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-rest-min-plus-depbase</artifactId>
+  <artifactId>aprox-rest-savant</artifactId>
   <!-- <packaging>war</packaging> -->
   
-  <name>AProx :: Minimal REST WAR with DepBase Support</name>
+  <name>AProx :: Savant</name>
+  <description>REST + JS UI + Tensor + Autoprox</description>
   
   <dependencies>
     <dependency>
@@ -38,11 +39,20 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-db-couch</artifactId>
+      <artifactId>aprox-db-infinispan</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-depbase</artifactId>
+      <artifactId>aprox-autoprox</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-tensor</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox.ui</groupId>
+      <artifactId>aprox-ui-monorail</artifactId>
+      <type>war</type>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -56,8 +66,17 @@
     <plugins>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptorRefs>
+            <descriptorRef>war</descriptorRef>
+          </descriptorRefs>
+          <!-- <archive>
+            <manifestEntries>
+              <Dependencies>org.infinispan export</Dependencies>
+            </manifestEntries>
+          </archive> -->
+        </configuration>
       </plugin>
     </plugins>
   </build>
-  
 </project>

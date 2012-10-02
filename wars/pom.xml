@@ -30,9 +30,8 @@
   
   <modules>
     <module>rest-min</module>
-    <module>rest-sec</module>
     <module>basic</module>
-    <module>rest-savant</module>
+    <module>savant</module>
   </modules>
   
   <build>
@@ -65,7 +64,7 @@
       <id>experimental</id>
       
       <modules>
-        <module>rest-min-plus-depbase</module>
+        <module>rest-sec</module>
       </modules>
     </profile>
   </profiles>
