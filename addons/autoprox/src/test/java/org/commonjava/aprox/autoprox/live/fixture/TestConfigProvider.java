@@ -8,10 +8,12 @@ import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
 
+import org.commonjava.aprox.autoprox.conf.AutoProxConfiguration;
 import org.commonjava.aprox.autoprox.conf.AutoProxModel;
 import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
+import org.commonjava.aprox.inject.TestData;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.model.StoreKey;
@@ -24,6 +26,8 @@ public final class TestConfigProvider
     public static final String REPO_ROOT_DIR = "repo.root.dir";
 
     private AutoProxModel model;
+
+    private AutoProxConfiguration config;
 
     private AproxConfiguration proxyConfig;
 
@@ -44,14 +48,27 @@ public final class TestConfigProvider
 
     @Produces
     @Default
+    @TestData
+    public synchronized AutoProxConfiguration getAutoProxConfiguration()
+    {
+        if ( config == null )
+        {
+            config = new AutoProxConfiguration();
+            config.setEnabled( true );
+            config.setDeployEnabled( true );
+        }
+
+        return config;
+    }
+
+    @Produces
+    @Default
     public synchronized AutoProxModel getAutoProxModel()
         throws MalformedURLException
     {
         if ( model == null )
         {
             model = new AutoProxModel();
-            model.setEnabled( true );
-            model.setDeployEnabled( true );
             model.setRepo( new Repository( "repo", http.resourceUrl( "target/${name}" ) ) );
             model.setGroup( new Group( "group", new StoreKey( StoreType.repository, "first" ),
                                        new StoreKey( StoreType.repository, "second" ) ) );

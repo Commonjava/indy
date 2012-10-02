@@ -1,5 +1,6 @@
 package org.commonjava.aprox.subsys.infinispan.conf;
 
+import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
@@ -14,6 +15,7 @@ import org.commonjava.web.config.annotation.SectionName;
 
 @SectionName( "infinispan" )
 @Named( "use-factory-instead" )
+@Alternative
 public class CacheConfiguration
 {
     @Singleton

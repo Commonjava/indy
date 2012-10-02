@@ -20,6 +20,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.commonjava.aprox.autoprox.conf.AutoProxConfiguration;
 import org.commonjava.aprox.autoprox.conf.AutoProxModel;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
@@ -51,7 +52,10 @@ public abstract class AutoProxDataManagerDecorator
     private StoreDataManager dataManager;
 
     @Inject
-    private AutoProxModel config;
+    private AutoProxConfiguration config;
+
+    @Inject
+    private AutoProxModel autoproxModel;
 
     private HttpClient http;
 
@@ -83,7 +87,7 @@ public abstract class AutoProxDataManagerDecorator
                     {
                         dp = new DeployPoint( name );
 
-                        final DeployPoint deploy = config.getDeploy();
+                        final DeployPoint deploy = autoproxModel.getDeploy();
 
                         if ( deploy != null )
                         {
@@ -100,7 +104,7 @@ public abstract class AutoProxDataManagerDecorator
 
                 boolean rFound = false;
                 boolean dFound = false;
-                final Group group = config.getGroup();
+                final Group group = autoproxModel.getGroup();
 
                 if ( group != null && group.getConstituents() != null )
                 {
@@ -203,8 +207,8 @@ public abstract class AutoProxDataManagerDecorator
         logger.info( "AutoProx decorator active" );
         if ( proxy == null )
         {
-            final Repository repo = config.getRepo();
-            final String validationPath = config.getRepoValidationPath();
+            final Repository repo = autoproxModel.getRepo();
+            final String validationPath = autoproxModel.getRepoValidationPath();
 
             final String url = resolveRepoUrl( repo.getUrl(), name );
 

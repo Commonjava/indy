@@ -45,8 +45,6 @@ public class AutoProxProvider
             if ( !modelFile.exists() )
             {
                 model = new AutoProxModel();
-                model.setEnabled( true );
-                model.setDeployEnabled( true );
             }
             else
             {

@@ -1,5 +1,6 @@
 package org.commonjava.aprox.autoprox.conf;
 
+import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
@@ -9,12 +10,12 @@ import javax.inject.Singleton;
 import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.aprox.conf.AproxFeatureConfig;
 import org.commonjava.web.config.ConfigurationException;
-import org.commonjava.web.config.annotation.ConfigNames;
+import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 
 @SectionName( "autoprox" )
 @Named( "use-factory-instead" )
-@Singleton
+@Alternative
 public class AutoProxConfiguration
 {
     @Singleton
@@ -56,10 +57,14 @@ public class AutoProxConfiguration
 
     public static final String DEFAULT_PATH = "/etc/aprox/autoprox.json";
 
-    private final String path;
+    private String path;
 
-    @ConfigNames( { "path" } )
-    public AutoProxConfiguration( final String path )
+    private boolean enabled;
+
+    private boolean deployEnabled;
+
+    @ConfigName( "path" )
+    public final void setPath( final String path )
     {
         this.path = path;
     }
@@ -67,6 +72,28 @@ public class AutoProxConfiguration
     public final String getPath()
     {
         return path == null ? DEFAULT_PATH : path;
+    }
+
+    public final boolean isEnabled()
+    {
+        return enabled;
+    }
+
+    @ConfigName( "enabled" )
+    public final void setEnabled( final boolean enabled )
+    {
+        this.enabled = enabled;
+    }
+
+    public final boolean isDeployEnabled()
+    {
+        return deployEnabled;
+    }
+
+    @ConfigName( "deployEnabled" )
+    public final void setDeployEnabled( final boolean deployEnabled )
+    {
+        this.deployEnabled = deployEnabled;
     }
 
 }

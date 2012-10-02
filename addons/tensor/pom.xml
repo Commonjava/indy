@@ -57,6 +57,13 @@
     <dependency>
        <groupId>org.jboss.as</groupId>
        <artifactId>jboss-as-arquillian-container-managed</artifactId>
+       <exclusions>
+         <exclusion>
+           <!-- Gets in the way of MAE booter -->
+           <groupId>org.codehaus.plexus</groupId>
+           <artifactId>plexus-container-default</artifactId>
+         </exclusion>
+       </exclusions>
     </dependency>
     <dependency>
       <groupId>org.commonjava.qarqas</groupId>

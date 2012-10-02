@@ -11,6 +11,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.apache.log4j.Level;
+import org.commonjava.aprox.autoprox.conf.AutoProxConfiguration;
 import org.commonjava.aprox.autoprox.conf.AutoProxModel;
 import org.commonjava.aprox.autoprox.live.fixture.TargetUrlResponder;
 import org.commonjava.aprox.autoprox.live.fixture.TestConfigProvider;
@@ -41,7 +42,10 @@ public class AutoProxDataManagerDecoratorTest
     protected StoreDataManager proxyManager;
 
     @Inject
-    protected AutoProxModel config;
+    protected AutoProxConfiguration config;
+
+    @Inject
+    protected AutoProxModel autoproxModel;
 
     @Inject
     protected TargetUrlResponder targetResponder;
@@ -72,11 +76,12 @@ public class AutoProxDataManagerDecoratorTest
     @Deployment
     public static WebArchive createWar()
     {
-        return new TestWarArchiveBuilder( new File( "target/test-assembly.war" ), AutoProxDataManagerDecoratorTest.class ).withExtraClasses( TestConfigProvider.class,
-                                                                                                                                    TargetUrlResponder.class )
-                                                                                                                 .withLog4jProperties()
-                                                                                                                 .withBeansXml( "beans.xml" )
-                                                                                                                 .build();
+        return new TestWarArchiveBuilder( new File( "target/test-assembly.war" ),
+                                          AutoProxDataManagerDecoratorTest.class ).withExtraClasses( TestConfigProvider.class,
+                                                                                                     TargetUrlResponder.class )
+                                                                                  .withLog4jProperties()
+                                                                                  .withBeansXml( "beans.xml" )
+                                                                                  .build();
     }
 
     @Test

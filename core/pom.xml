@@ -73,16 +73,16 @@
     </dependency>
     
     <dependency>
-      <groupId>org.commonjava.qarqas</groupId>
-      <artifactId>qarqas-test-harness</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-core</artifactId>
     </dependency>
     <dependency>
     	<groupId>org.jboss.weld.se</groupId>
     	<artifactId>weld-se-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.qarqas</groupId>
+      <artifactId>qarqas-test-harness</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.web</groupId>

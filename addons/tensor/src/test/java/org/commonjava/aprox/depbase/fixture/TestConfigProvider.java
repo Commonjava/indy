@@ -25,6 +25,8 @@ import javax.inject.Singleton;
 import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
+import org.commonjava.aprox.inject.TestData;
+import org.commonjava.aprox.tensor.conf.AproxTensorConfig;
 
 @Singleton
 public class TestConfigProvider
@@ -35,6 +37,21 @@ public class TestConfigProvider
     private AproxConfiguration proxyConfig;
 
     private DefaultStorageProviderConfiguration storageConfig;
+
+    private AproxTensorConfig config;
+
+    @Produces
+    @Default
+    @TestData
+    public synchronized AproxTensorConfig getTensorConfig()
+    {
+        if ( config == null )
+        {
+            config = new AproxTensorConfig();
+        }
+
+        return config;
+    }
 
     @Produces
     @Default

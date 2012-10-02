@@ -7,6 +7,7 @@
   
   <dependencySets>
     <dependencySet>
+      <scope>runtime</scope>
       <includes>
         <include>org.commonjava*</include>
       </includes>
@@ -24,6 +25,7 @@
     </dependencySet>
     
     <dependencySet>
+      <scope>runtime</scope>
       <excludes>
         <exclude>org.commonjava*</exclude>
       </excludes>
@@ -32,6 +34,7 @@
     </dependencySet>
     
     <dependencySet>
+      <scope>runtime</scope>
       <includes>
         <include>org.commonjava*:*:war:*</include>
       </includes>

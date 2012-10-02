@@ -37,6 +37,7 @@
   </scm>
   
   <properties>
+    <slf4j-version>1.6.1</slf4j-version>
     <jbossas-version>7.1.1.Final</jbossas-version>
     <arquillian-version>1.0.1.Final</arquillian-version>
     <qarqas-version>0.3-SNAPSHOT</qarqas-version>
@@ -75,14 +76,6 @@
         <scope>import</scope>
       </dependency>
       
-      <dependency>
-        <groupId>org.commonjava.qarqas</groupId>
-        <artifactId>qarqas-parent</artifactId>
-        <version>${qarqas-version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-
       <dependency>
         <groupId>org.commonjava.aprox.ui</groupId>
         <artifactId>aprox-ui-monorail</artifactId>
@@ -180,9 +173,65 @@
       </dependency>
       
       <dependency>
+        <groupId>commons-lang</groupId>
+        <artifactId>commons-lang</artifactId>
+        <version>2.6</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>2.4</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j-version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-ext</artifactId>
+        <version>${slf4j-version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jcl-over-slf4j</artifactId>
+        <version>${slf4j-version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jul-to-slf4j</artifactId>
+        <version>${slf4j-version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-log4j12</artifactId>
+        <version>${slf4j-version}</version>
+      </dependency>
+      
+      <dependency>
         <groupId>org.commonjava.web</groupId>
         <artifactId>json-serialization</artifactId>
         <version>0.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.web</groupId>
+        <artifactId>json-test-harness</artifactId>
+        <version>0.2</version>
+        <scope>test</scope>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.commonjava.qarqas</groupId>
+        <artifactId>qarqas-test-harness</artifactId>
+        <version>${qarqas-version}</version>
+        <scope>test</scope>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-model-builder</artifactId>
+        <version>3.0.3</version>
       </dependency>
       
       <dependency>
@@ -279,6 +328,11 @@
         <artifactId>junit</artifactId>
         <version>4.10</version>
         <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.as</groupId>
+        <artifactId>jboss-as-arquillian-container-managed</artifactId>
+        <version>${jbossas-version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -408,7 +462,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-assembly-plugin</artifactId>
-          <version>2.2.2</version>
+          <version>2.3</version>
           <dependencies>
             <dependency>
               <groupId>org.commonjava.aprox.tools</groupId>

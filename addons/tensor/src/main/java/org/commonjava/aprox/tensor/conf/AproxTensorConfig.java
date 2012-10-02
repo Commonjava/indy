@@ -1,5 +1,6 @@
 package org.commonjava.aprox.tensor.conf;
 
+import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
@@ -15,6 +16,7 @@ import org.commonjava.web.config.annotation.SectionName;
 
 @SectionName( "tensor" )
 @Named( "use-factory-instead" )
+@Alternative
 public class AproxTensorConfig
 {
 
@@ -58,9 +60,11 @@ public class AproxTensorConfig
 
     private static final String DEFAULT_TENSOR_DISCOVERY_GROUP = "_tensor";
 
+    private static final int DEFAULT_TENSOR_DISCOVERY_TIMEOUT_SECONDS = 30;
+
     private String discoveryGroup;
 
-    private int discoveryTimeoutSeconds;
+    private Integer discoveryTimeoutSeconds;
 
     public final String getDiscoveryGroup()
     {
@@ -69,7 +73,7 @@ public class AproxTensorConfig
 
     public final int getDiscoveryTimeoutSeconds()
     {
-        return discoveryTimeoutSeconds;
+        return discoveryTimeoutSeconds == null ? DEFAULT_TENSOR_DISCOVERY_TIMEOUT_SECONDS : discoveryTimeoutSeconds;
     }
 
     @ConfigName( "discoveryGroup" )
