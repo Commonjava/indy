@@ -43,13 +43,11 @@ import javax.inject.Singleton;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.params.ConnRoutePNames;
 import org.commonjava.aprox.change.event.FileStorageEvent;
 import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.filer.FileManager;
@@ -84,18 +82,18 @@ public class DefaultFileManager
 
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
-    private AproxHttp httpClient;
+    @Inject
+    private AproxHttp http;
 
     public DefaultFileManager()
     {
     }
 
-    public DefaultFileManager( final AproxConfiguration config, final StorageProvider storage,
-                               final AproxHttp httpClient )
+    public DefaultFileManager( final AproxConfiguration config, final StorageProvider storage, final AproxHttp http )
     {
         this.config = config;
         this.storage = storage;
-        this.httpClient = httpClient;
+        this.http = http;
     }
 
     @Override
@@ -212,7 +210,7 @@ public class DefaultFileManager
                                    final int timeoutSeconds, final boolean suppressFailures )
         throws AproxWorkflowException
     {
-        final Downloader dl = new Downloader( url, repository, target, httpClient, fileEvent );
+        final Downloader dl = new Downloader( url, repository, target, http, fileEvent );
 
         final Future<StorageItem> future = executor.submit( dl );
         pending.put( url, future );
@@ -234,7 +232,8 @@ public class DefaultFileManager
             if ( !suppressFailures )
             {
                 throw new AproxWorkflowException( Response.status( Status.NO_CONTENT )
-                                                          .build() );
+                                                          .build(), "Interrupted download: %s from: %s. Reason: %s", e,
+                                                  url, repository, e.getMessage() );
             }
             result = false;
         }
@@ -243,7 +242,8 @@ public class DefaultFileManager
             if ( !suppressFailures )
             {
                 throw new AproxWorkflowException( Response.serverError()
-                                                          .build() );
+                                                          .build(), "Failed to download: %s from: %s. Reason: %s", e,
+                                                  url, repository, e.getMessage() );
             }
             result = false;
         }
@@ -252,7 +252,8 @@ public class DefaultFileManager
             if ( !suppressFailures )
             {
                 throw new AproxWorkflowException( Response.status( Status.NO_CONTENT )
-                                                          .build() );
+                                                          .build(), "Timed-out download: %s from: %s. Reason: %s", e,
+                                                  url, repository, e.getMessage() );
             }
             result = false;
         }
@@ -559,31 +560,10 @@ public class DefaultFileManager
         @Override
         public StorageItem call()
         {
-            http.bindRepositoryCredentials( repository );
-
             logger.info( "Trying: %s", url );
-
             final HttpGet request = new HttpGet( url );
 
-            if ( repository.getProxyHost() != null )
-            {
-                final int proxyPort = repository.getProxyPort();
-                HttpHost proxy;
-                if ( proxyPort < 1 )
-                {
-                    proxy = new HttpHost( repository.getProxyHost() );
-                }
-                else
-                {
-                    proxy = new HttpHost( repository.getProxyHost(), repository.getProxyPort() );
-                }
-
-                request.getParams()
-                       .setParameter( ConnRoutePNames.DEFAULT_PROXY, proxy );
-            }
-
-            request.getParams()
-                   .setParameter( FileManager.HTTP_PARAM_REPO, repository );
+            http.bindRepositoryCredentialsTo( repository, request );
 
             try
             {

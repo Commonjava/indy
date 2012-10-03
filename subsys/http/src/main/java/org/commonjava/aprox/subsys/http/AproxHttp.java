@@ -9,11 +9,15 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import javax.inject.Singleton;
 
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
 import org.apache.http.client.HttpClient;
+import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.subsys.http.util.RepoSSLSocketFactory;
 import org.commonjava.aprox.subsys.http.util.TLRepositoryCredentialsProvider;
@@ -87,9 +91,29 @@ public class AproxHttp
         return client;
     }
 
-    public void bindRepositoryCredentials( final Repository repository )
+    public void bindRepositoryCredentialsTo( final Repository repository, final HttpRequest request )
     {
         credProvider.bind( repository );
+
+        if ( repository.getProxyHost() != null )
+        {
+            final int proxyPort = repository.getProxyPort();
+            HttpHost proxy;
+            if ( proxyPort < 1 )
+            {
+                proxy = new HttpHost( repository.getProxyHost() );
+            }
+            else
+            {
+                proxy = new HttpHost( repository.getProxyHost(), repository.getProxyPort() );
+            }
+
+            request.getParams()
+                   .setParameter( ConnRoutePNames.DEFAULT_PROXY, proxy );
+        }
+
+        request.getParams()
+               .setParameter( FileManager.HTTP_PARAM_REPO, repository );
     }
 
     public void clearRepositoryCredentials()

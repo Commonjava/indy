@@ -147,8 +147,6 @@ public abstract class AutoProxDataManagerDecorator
     private synchronized boolean checkUrlValidity( final Repository repo, final String proxyUrl,
                                                    final String validationPath )
     {
-        http.bindRepositoryCredentials( repo );
-
         String url = null;
         try
         {
@@ -163,6 +161,9 @@ public abstract class AutoProxDataManagerDecorator
 
         logger.info( "\n\n\n\n\n[AutoProx] Checking URL: %s", url );
         final HttpHead head = new HttpHead( url );
+
+        http.bindRepositoryCredentialsTo( repo, head );
+
         boolean result = false;
         try
         {
