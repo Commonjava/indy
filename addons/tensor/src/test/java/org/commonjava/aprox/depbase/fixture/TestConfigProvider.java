@@ -27,6 +27,8 @@ import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
 import org.commonjava.aprox.inject.TestData;
 import org.commonjava.aprox.tensor.conf.AproxTensorConfig;
+import org.infinispan.manager.DefaultCacheManager;
+import org.infinispan.manager.EmbeddedCacheManager;
 
 @Singleton
 public class TestConfigProvider
@@ -39,6 +41,21 @@ public class TestConfigProvider
     private DefaultStorageProviderConfiguration storageConfig;
 
     private AproxTensorConfig config;
+
+    private EmbeddedCacheManager container;
+
+    @Produces
+    @Default
+    @TestData
+    public synchronized EmbeddedCacheManager getCacheContainer()
+    {
+        if ( container == null )
+        {
+            container = new DefaultCacheManager();
+        }
+
+        return container;
+    }
 
     @Produces
     @Default
