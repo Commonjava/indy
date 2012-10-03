@@ -24,10 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -41,7 +37,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -53,17 +48,10 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.params.ConnRoutePNames;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.commonjava.aprox.change.event.FileStorageEvent;
 import org.commonjava.aprox.conf.AproxConfiguration;
-import org.commonjava.aprox.core.filer.httputils.RepoSSLSocketFactory;
-import org.commonjava.aprox.core.filer.httputils.TLRepositoryCredentialsProvider;
 import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.io.StorageProvider;
@@ -73,6 +61,7 @@ import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ArtifactPathInfo;
+import org.commonjava.aprox.subsys.http.AproxHttp;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
@@ -91,69 +80,22 @@ public class DefaultFileManager
     @Inject
     private Event<FileStorageEvent> fileEvent;
 
-    private HttpClient client;
-
     private final Map<String, Future<StorageItem>> pending = new HashMap<String, Future<StorageItem>>();
 
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
-    private TLRepositoryCredentialsProvider credProvider;
-
-    private RepoSSLSocketFactory socketFactory;
+    private AproxHttp httpClient;
 
     public DefaultFileManager()
     {
     }
 
-    public DefaultFileManager( final AproxConfiguration config, final StorageProvider storage )
+    public DefaultFileManager( final AproxConfiguration config, final StorageProvider storage,
+                               final AproxHttp httpClient )
     {
         this.config = config;
         this.storage = storage;
-        setup();
-    }
-
-    @PostConstruct
-    protected void setup()
-    {
-        final ThreadSafeClientConnManager ccm = new ThreadSafeClientConnManager();
-
-        // TODO: Make this configurable
-        ccm.setMaxTotal( 20 );
-
-        try
-        {
-            socketFactory = new RepoSSLSocketFactory();
-
-            final SchemeRegistry registry = ccm.getSchemeRegistry();
-            registry.register( new Scheme( "https", 443, socketFactory ) );
-        }
-        catch ( final KeyManagementException e )
-        {
-            logger.error( "Failed to setup SSLSocketFactory. SSL mutual authentication will not be available!\nError: %s",
-                          e, e.getMessage() );
-        }
-        catch ( final UnrecoverableKeyException e )
-        {
-            logger.error( "Failed to setup SSLSocketFactory. SSL mutual authentication will not be available!\nError: %s",
-                          e, e.getMessage() );
-        }
-        catch ( final NoSuchAlgorithmException e )
-        {
-            logger.error( "Failed to setup SSLSocketFactory. SSL mutual authentication will not be available!\nError: %s",
-                          e, e.getMessage() );
-        }
-        catch ( final KeyStoreException e )
-        {
-            logger.error( "Failed to setup SSLSocketFactory. SSL mutual authentication will not be available!\nError: %s",
-                          e, e.getMessage() );
-        }
-
-        credProvider = new TLRepositoryCredentialsProvider();
-
-        final DefaultHttpClient hc = new DefaultHttpClient( ccm );
-        hc.setCredentialsProvider( credProvider );
-
-        client = hc;
+        this.httpClient = httpClient;
     }
 
     @Override
@@ -270,7 +212,7 @@ public class DefaultFileManager
                                    final int timeoutSeconds, final boolean suppressFailures )
         throws AproxWorkflowException
     {
-        final Downloader dl = new Downloader( url, repository, target, credProvider, client, fileEvent );
+        final Downloader dl = new Downloader( url, repository, target, httpClient, fileEvent );
 
         final Future<StorageItem> future = executor.submit( dl );
         pending.put( url, future );
@@ -598,30 +540,26 @@ public class DefaultFileManager
 
         private final StorageItem target;
 
-        private final TLRepositoryCredentialsProvider credProvider;
-
         private final Event<FileStorageEvent> fileEvent;
 
-        private final HttpClient client;
+        private final AproxHttp http;
 
         private AproxWorkflowException error;
 
         public Downloader( final String url, final Repository repository, final StorageItem target,
-                           final TLRepositoryCredentialsProvider credProvider, final HttpClient client,
-                           final Event<FileStorageEvent> fileEvent )
+                           final AproxHttp client, final Event<FileStorageEvent> fileEvent )
         {
             this.url = url;
             this.repository = repository;
             this.target = target;
-            this.credProvider = credProvider;
-            this.client = client;
+            this.http = client;
             this.fileEvent = fileEvent;
         }
 
         @Override
         public StorageItem call()
         {
-            credProvider.bind( repository );
+            http.bindRepositoryCredentials( repository );
 
             logger.info( "Trying: %s", url );
 
@@ -710,7 +648,8 @@ public class DefaultFileManager
 
             try
             {
-                final HttpResponse response = client.execute( request );
+                final HttpResponse response = http.getClient()
+                                                  .execute( request );
                 final StatusLine line = response.getStatusLine();
                 final int sc = line.getStatusCode();
                 if ( sc != HttpStatus.SC_OK )
@@ -750,12 +689,9 @@ public class DefaultFileManager
 
         private void cleanup( final HttpGet request )
         {
-            credProvider.clear();
+            http.clearRepositoryCredentials();
             request.abort();
-            client.getConnectionManager()
-                  .closeExpiredConnections();
-            client.getConnectionManager()
-                  .closeIdleConnections( 2, TimeUnit.SECONDS );
+            http.closeConnection();
         }
 
     }

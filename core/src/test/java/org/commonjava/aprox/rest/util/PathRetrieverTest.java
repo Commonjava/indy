@@ -32,6 +32,7 @@ import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
 import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.subsys.http.AproxHttp;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,7 +55,8 @@ public class PathRetrieverTest
         repoRoot = tempFolder.newFolder( "repository" );
         downloader =
             new DefaultFileManager( new DefaultAproxConfiguration(),
-                                    new DefaultStorageProvider( new DefaultStorageProviderConfiguration( repoRoot ) ) );
+                                    new DefaultStorageProvider( new DefaultStorageProviderConfiguration( repoRoot ) ),
+                                    AproxHttp.getInstance() );
     }
 
     @Test

@@ -16,10 +16,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpHead;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.commonjava.aprox.autoprox.conf.AutoProxConfiguration;
 import org.commonjava.aprox.autoprox.conf.AutoProxModel;
 import org.commonjava.aprox.data.ProxyDataException;
@@ -29,14 +26,13 @@ import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
+import org.commonjava.aprox.subsys.http.AproxHttp;
 import org.commonjava.util.logging.Logger;
 
 @Decorator
 public abstract class AutoProxDataManagerDecorator
     implements StoreDataManager
 {
-
-    private static final int MAX_CONNECTIONS = 20;
 
     private static final String REPO_NAME_URL_PATTERN = Pattern.quote( "${name}" );
 
@@ -57,7 +53,8 @@ public abstract class AutoProxDataManagerDecorator
     @Inject
     private AutoProxModel autoproxModel;
 
-    private HttpClient http;
+    @Inject
+    private AproxHttp http;
 
     @Override
     public Group getGroup( final String name )
@@ -147,15 +144,10 @@ public abstract class AutoProxDataManagerDecorator
         return g;
     }
 
-    private synchronized boolean checkUrlValidity( final String proxyUrl, final String validationPath )
+    private synchronized boolean checkUrlValidity( final Repository repo, final String proxyUrl,
+                                                   final String validationPath )
     {
-        if ( http == null )
-        {
-            final ThreadSafeClientConnManager ccm = new ThreadSafeClientConnManager();
-            ccm.setMaxTotal( MAX_CONNECTIONS );
-
-            http = new DefaultHttpClient( ccm );
-        }
+        http.bindRepositoryCredentials( repo );
 
         String url = null;
         try
@@ -174,7 +166,8 @@ public abstract class AutoProxDataManagerDecorator
         boolean result = false;
         try
         {
-            final HttpResponse response = http.execute( head );
+            final HttpResponse response = http.getClient()
+                                              .execute( head );
             final StatusLine statusLine = response.getStatusLine();
             final int status = statusLine.getStatusCode();
             logger.info( "[AutoProx] HTTP Status: %s", statusLine );
@@ -187,6 +180,11 @@ public abstract class AutoProxDataManagerDecorator
         catch ( final IOException e )
         {
             logger.warn( "[AutoProx] Cannot connect to target repository: '%s'.", url );
+        }
+        finally
+        {
+            http.clearRepositoryCredentials();
+            http.closeConnection();
         }
 
         return result;
@@ -213,7 +211,7 @@ public abstract class AutoProxDataManagerDecorator
             final String url = resolveRepoUrl( repo.getUrl(), name );
 
             logger.info( "AutoProx: creating repository for: %s", name );
-            if ( !checkUrlValidity( url, validationPath ) )
+            if ( !checkUrlValidity( repo, url, validationPath ) )
             {
                 logger.warn( "Invalid repository URL: %s", url );
                 return null;
