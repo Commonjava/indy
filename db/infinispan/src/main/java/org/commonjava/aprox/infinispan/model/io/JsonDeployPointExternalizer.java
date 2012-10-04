@@ -1,6 +1,9 @@
 package org.commonjava.aprox.infinispan.model.io;
 
 import org.commonjava.aprox.model.DeployPoint;
+import org.commonjava.aprox.model.io.StoreKeySerializer;
+import org.commonjava.aprox.subsys.infinispan.io.JsonExternalizer;
+import org.commonjava.web.json.ser.JsonSerializer;
 
 public class JsonDeployPointExternalizer
     extends JsonExternalizer<DeployPoint>
@@ -10,7 +13,7 @@ public class JsonDeployPointExternalizer
 
     public JsonDeployPointExternalizer()
     {
-        super( DeployPoint.class );
+        super( DeployPoint.class, new JsonSerializer( new StoreKeySerializer() ) );
     }
 
 }

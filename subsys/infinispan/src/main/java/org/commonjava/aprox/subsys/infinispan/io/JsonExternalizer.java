@@ -1,4 +1,4 @@
-package org.commonjava.aprox.infinispan.model.io;
+package org.commonjava.aprox.subsys.infinispan.io;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -7,7 +7,6 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Set;
 
-import org.commonjava.aprox.model.io.StoreKeySerializer;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.ser.JsonSerializer;
 import org.infinispan.marshall.AbstractExternalizer;
@@ -26,11 +25,11 @@ public abstract class JsonExternalizer<T>
 
     private final Charset encoding;
 
-    protected JsonExternalizer( final Class<T> type )
+    protected JsonExternalizer( final Class<T> type, final JsonSerializer serializer )
     {
         this.encoding = Charset.forName( "UTF-8" );
         this.type = type;
-        serializer = new JsonSerializer( new StoreKeySerializer() );
+        this.serializer = serializer;
     }
 
     @Override

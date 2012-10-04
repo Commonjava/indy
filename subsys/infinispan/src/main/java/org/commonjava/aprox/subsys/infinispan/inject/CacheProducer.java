@@ -5,9 +5,11 @@ import static org.apache.commons.io.IOUtils.closeQuietly;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Default;
+import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -15,6 +17,10 @@ import javax.inject.Singleton;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.subsys.infinispan.conf.CacheConfiguration;
 import org.commonjava.util.logging.Logger;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
+import org.infinispan.configuration.parsing.Parser;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 
@@ -26,6 +32,9 @@ public class CacheProducer
 
     @Inject
     private CacheConfiguration config;
+
+    @Inject
+    private Instance<AproxCacheConfigurator> configurators;
 
     private EmbeddedCacheManager container;
 
@@ -47,7 +56,28 @@ public class CacheProducer
         try
         {
             fin = new FileInputStream( f );
-            container = new DefaultCacheManager( fin );
+            final ConfigurationBuilderHolder cbh = new Parser( Thread.currentThread()
+                                                                     .getContextClassLoader() ).parse( fin );
+
+            final GlobalConfigurationBuilder globalConfig = cbh.getGlobalConfigurationBuilder();
+            final ConfigurationBuilder defaultConfig = cbh.getDefaultConfigurationBuilder();
+            final Map<String, ConfigurationBuilder> namedConfigs = cbh.getNamedConfigurationBuilders();
+
+            if ( configurators != null )
+            {
+                for ( final AproxCacheConfigurator conf : configurators )
+                {
+                    conf.configure( globalConfig, defaultConfig, namedConfigs );
+                }
+            }
+
+            container = new DefaultCacheManager( globalConfig.build(), defaultConfig.build() );
+            for ( final Map.Entry<String, ConfigurationBuilder> entry : namedConfigs.entrySet() )
+            {
+                container.defineConfiguration( entry.getKey(), entry.getValue()
+                                                                    .build() );
+            }
+
             container.start();
         }
         catch ( final IOException e )
