@@ -17,10 +17,10 @@ public class DBCacheConfigurator
     {
         final SerializationConfigurationBuilder ser = globalConfig.serialization();
 
-        ser.addAdvancedExternalizer( new JsonDeployPointExternalizer() );
-        ser.addAdvancedExternalizer( new JsonGroupExternalizer() );
-        ser.addAdvancedExternalizer( new JsonRepositoryExternalizer() );
-        ser.addAdvancedExternalizer( new JsonStoreKeyExternalizer() );
+        ser.addAdvancedExternalizer( 1000, new JsonStoreKeyExternalizer() );
+        ser.addAdvancedExternalizer( 1001, new JsonRepositoryExternalizer() );
+        ser.addAdvancedExternalizer( 1002, new JsonGroupExternalizer() );
+        ser.addAdvancedExternalizer( 1003, new JsonDeployPointExternalizer() );
     }
 
 }
