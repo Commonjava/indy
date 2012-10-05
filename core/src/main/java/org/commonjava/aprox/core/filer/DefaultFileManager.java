@@ -48,6 +48,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
+import org.commonjava.aprox.change.event.FileAccessEvent;
 import org.commonjava.aprox.change.event.FileStorageEvent;
 import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.filer.FileManager;
@@ -76,7 +77,10 @@ public class DefaultFileManager
     private StorageProvider storage;
 
     @Inject
-    private Event<FileStorageEvent> fileEvent;
+    private Event<FileStorageEvent> storageEvent;
+
+    @Inject
+    private Event<FileAccessEvent> accessEvent;
 
     private final Map<String, Future<StorageItem>> pending = new HashMap<String, Future<StorageItem>>();
 
@@ -175,7 +179,15 @@ public class DefaultFileManager
         if ( target.exists() )
         {
             logger.info( "Using stored copy from artifact store: %s for: %s", store.getName(), path );
-            return getStorageReference( store.getKey(), path );
+            final StorageItem item = getStorageReference( store.getKey(), path );
+
+            if ( accessEvent != null )
+            {
+                final FileAccessEvent evt = new FileAccessEvent( store, item );
+                accessEvent.fire( evt );
+            }
+
+            return item;
         }
         else
         {
@@ -210,7 +222,7 @@ public class DefaultFileManager
                                    final int timeoutSeconds, final boolean suppressFailures )
         throws AproxWorkflowException
     {
-        final Downloader dl = new Downloader( url, repository, target, http, fileEvent );
+        final Downloader dl = new Downloader( url, repository, target, http, storageEvent );
 
         final Future<StorageItem> future = executor.submit( dl );
         pending.put( url, future );
@@ -413,9 +425,9 @@ public class DefaultFileManager
             out = target.openOutputStream();
             copy( stream, out );
 
-            if ( fileEvent != null )
+            if ( storageEvent != null )
             {
-                fileEvent.fire( new FileStorageEvent( FileStorageEvent.Type.UPLOAD, deploy, target ) );
+                storageEvent.fire( new FileStorageEvent( FileStorageEvent.Type.UPLOAD, deploy, target ) );
             }
         }
         catch ( final IOException e )

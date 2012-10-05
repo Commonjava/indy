@@ -45,7 +45,7 @@ public abstract class JsonExternalizer<T>
         final String json = new String( serializer.toString( object )
                                                   .getBytes( encoding ) );
 
-        logger.info( "Serializing JSON for type: %s\n\n%s\n", type.getName(), json );
+        logger.debug( "Serializing JSON for type: %s\n\n%s\n", type.getName(), json );
         output.writeObject( json );
     }
 
@@ -56,7 +56,7 @@ public abstract class JsonExternalizer<T>
     {
         final String raw = (String) input.readObject();
         final String encoded = new String( raw.getBytes( encoding ) );
-        logger.info( "Deserializing JSON for type: %s\n\n%s\n", type.getName(), encoded );
+        logger.debug( "Deserializing JSON for type: %s\n\n%s\n", type.getName(), encoded );
 
         return serializer.fromString( encoded, type );
     }

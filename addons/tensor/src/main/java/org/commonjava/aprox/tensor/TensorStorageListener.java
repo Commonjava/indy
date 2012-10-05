@@ -29,7 +29,10 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.maven.graph.common.ref.ProjectVersionRef;
+import org.apache.maven.graph.common.version.InvalidVersionSpecificationException;
 import org.apache.maven.model.Model;
+import org.apache.maven.model.Parent;
 import org.apache.maven.model.building.DefaultModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuilder;
 import org.apache.maven.model.building.ModelBuildingException;
@@ -37,8 +40,7 @@ import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingResult;
 import org.apache.maven.model.io.ModelParseException;
 import org.apache.maven.model.io.ModelReader;
-import org.commonjava.aprox.change.event.FileStorageEvent;
-import org.commonjava.aprox.change.event.FileStorageEvent.Type;
+import org.commonjava.aprox.change.event.FileAccessEvent;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.filer.FileManager;
@@ -48,6 +50,7 @@ import org.commonjava.aprox.tensor.maven.ArtifactStoreModelResolver;
 import org.commonjava.aprox.tensor.maven.ModelVersions;
 import org.commonjava.aprox.tensor.maven.StoreModelSource;
 import org.commonjava.tensor.data.TensorDataException;
+import org.commonjava.tensor.data.TensorDataManager;
 import org.commonjava.tensor.util.MavenModelProcessor;
 import org.commonjava.util.logging.Logger;
 
@@ -72,20 +75,18 @@ public class TensorStorageListener
     @Inject
     private MavenModelProcessor modelProcessor;
 
-    public void handleFileEvent( @Observes final FileStorageEvent event )
-    {
-        if ( Type.GENERATE == event.getType() )
-        {
-            return;
-        }
+    @Inject
+    private TensorDataManager dataManager;
 
+    public void handleFileEvent( @Observes final FileAccessEvent event )
+    {
         if ( !event.getPath()
                    .endsWith( ".pom" ) )
         {
             return;
         }
 
-        logger.info( "Processing direct project relationships for: %s", event );
+        logger.info( "Logging: %s with Tensor relationship-graphing system.", event );
         final ArtifactStore originatingStore = event.getStore();
         final List<ArtifactStore> stores = getRelevantStores( originatingStore );
         if ( stores == null )
@@ -95,6 +96,11 @@ public class TensorStorageListener
 
         final Model rawModel = loadRawModel( event );
         if ( rawModel == null )
+        {
+            return;
+        }
+
+        if ( tensorContains( rawModel ) )
         {
             return;
         }
@@ -110,15 +116,49 @@ public class TensorStorageListener
 
         try
         {
-            modelProcessor.storeModelRelationships( rawModel );
+            modelProcessor.storeModelRelationships( effectiveModel );
         }
         catch ( final TensorDataException e )
         {
-            logger.error( "Failed to store relationships for POM: %s. Reason: %s", e, rawModel.getId(), e.getMessage() );
+            logger.error( "Failed to store relationships for POM: %s. Reason: %s", e, effectiveModel.getId(),
+                          e.getMessage() );
         }
     }
 
-    protected Model loadEffectiveModel( final FileStorageEvent event, final List<ArtifactStore> stores )
+    private boolean tensorContains( final Model rawModel )
+    {
+        final Parent parent = rawModel.getParent();
+
+        String g = rawModel.getGroupId();
+        final String a = rawModel.getArtifactId();
+        String v = rawModel.getVersion();
+
+        if ( parent != null )
+        {
+            if ( g == null )
+            {
+                g = parent.getGroupId();
+            }
+
+            if ( v == null )
+            {
+                v = parent.getVersion();
+            }
+        }
+
+        try
+        {
+            return dataManager.contains( new ProjectVersionRef( g, a, v ) );
+        }
+        catch ( final InvalidVersionSpecificationException e )
+        {
+            logger.error( "Failed to parse version for: %s. Error: %s", e, rawModel.getId(), e.getMessage() );
+        }
+
+        return false;
+    }
+
+    protected Model loadEffectiveModel( final FileAccessEvent event, final List<ArtifactStore> stores )
     {
         final ModelBuildingRequest request = new DefaultModelBuildingRequest();
         request.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL );
@@ -143,7 +183,7 @@ public class TensorStorageListener
         return result.getEffectiveModel();
     }
 
-    protected Model loadRawModel( final FileStorageEvent event )
+    protected Model loadRawModel( final FileAccessEvent event )
     {
 
         final Map<String, Object> options = new HashMap<String, Object>();
