@@ -22,7 +22,7 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.commonjava.aprox.change.event.FileStorageEvent;
+import org.commonjava.aprox.change.event.FileEvent;
 import org.commonjava.aprox.core.rest.util.ArchetypeCatalogMerger;
 import org.commonjava.aprox.core.rest.util.MavenMetadataMerger;
 import org.commonjava.aprox.data.ProxyDataException;
@@ -30,6 +30,7 @@ import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
@@ -44,9 +45,14 @@ public class MergedFileUploadListener
     @Inject
     private FileManager fileManager;
 
-    public void reMergeUploaded( @Observes final FileStorageEvent event )
+    public void reMergeUploaded( @Observes final FileEvent event )
     {
-        final String path = event.getPath();
+        final String path = event.getStorageItem()
+                                 .getPath();
+
+        final StoreKey key = event.getStorageItem()
+                                  .getStoreKey();
+
         if ( !path.endsWith( MavenMetadataMerger.METADATA_NAME )
             && !path.endsWith( ArchetypeCatalogMerger.CATALOG_NAME ) )
         {
@@ -55,8 +61,7 @@ public class MergedFileUploadListener
 
         try
         {
-            final Set<? extends Group> groups = dataManager.getGroupsContaining( event.getStore()
-                                                                                      .getKey() );
+            final Set<? extends Group> groups = dataManager.getGroupsContaining( key );
 
             if ( groups != null )
             {
@@ -64,12 +69,11 @@ public class MergedFileUploadListener
                 {
                     try
                     {
-                        reMerge( group, event.getPath() );
+                        reMerge( group, path );
                     }
                     catch ( final IOException e )
                     {
-                        logger.error( "Failed to delete: %s from group: %s. Error: %s", e, event.getPath(), group,
-                                      e.getMessage() );
+                        logger.error( "Failed to delete: %s from group: %s. Error: %s", e, path, group, e.getMessage() );
                     }
                 }
             }
@@ -77,8 +81,7 @@ public class MergedFileUploadListener
         catch ( final ProxyDataException e )
         {
             logger.warn( "Failed to regenerate maven-metadata.xml for groups after deployment to: %s"
-                + "\nCannot retrieve associated groups: %s", e, event.getStore()
-                                                                     .getKey(), e.getMessage() );
+                + "\nCannot retrieve associated groups: %s", e, key, e.getMessage() );
         }
     }
 

@@ -16,41 +16,14 @@
 package org.commonjava.aprox.change.event;
 
 import org.commonjava.aprox.io.StorageItem;
-import org.commonjava.aprox.model.ArtifactStore;
 
 public class FileAccessEvent
+    extends FileEvent
 {
 
-    private final ArtifactStore store;
-
-    private final StorageItem storageLocation;
-
-    public FileAccessEvent( final ArtifactStore store, final StorageItem storageLocation )
+    public FileAccessEvent( final StorageItem storageLocation )
     {
-        this.store = store;
-        this.storageLocation = storageLocation;
-    }
-
-    public String getPath()
-    {
-        return storageLocation.getPath();
-    }
-
-    public StorageItem getStorageLocation()
-    {
-        return storageLocation;
-    }
-
-    public ArtifactStore getStore()
-    {
-        return store;
-    }
-
-    @Override
-    public String toString()
-    {
-        return String.format( "FileAccessEvent [store=%s, path=%s, storageLocation=%s]", store,
-                              storageLocation.getPath(), storageLocation );
+        super( storageLocation );
     }
 
 }

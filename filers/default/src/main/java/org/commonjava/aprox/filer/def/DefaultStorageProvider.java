@@ -26,6 +26,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.io.FileUtils;
+import org.commonjava.aprox.filer.PathUtils;
 import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
 import org.commonjava.aprox.io.StorageProvider;
 import org.commonjava.aprox.model.StoreKey;
@@ -117,20 +118,9 @@ public class DefaultStorageProvider
 
     public String storePath( final StoreKey key, final String path )
     {
-        final StringBuilder builder = new StringBuilder();
+        final String name = key.getType()
+                               .name() + "-" + key.getName();
 
-        builder.append( key.getType()
-                           .name() )
-               .append( "-" )
-               .append( key.getName() );
-
-        if ( !path.startsWith( "/" ) )
-        {
-            builder.append( "/" );
-        }
-
-        builder.append( path );
-
-        return builder.toString();
+        return PathUtils.join( name, path );
     }
 }

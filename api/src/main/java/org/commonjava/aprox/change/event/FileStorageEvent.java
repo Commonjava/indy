@@ -16,9 +16,9 @@
 package org.commonjava.aprox.change.event;
 
 import org.commonjava.aprox.io.StorageItem;
-import org.commonjava.aprox.model.ArtifactStore;
 
 public class FileStorageEvent
+    extends FileEvent
 {
 
     public enum Type
@@ -26,17 +26,12 @@ public class FileStorageEvent
         DOWNLOAD, GENERATE, UPLOAD;
     }
 
-    private final Type type;
+    final Type type;
 
-    private final ArtifactStore store;
-
-    private final StorageItem storageLocation;
-
-    public FileStorageEvent( final Type type, final ArtifactStore store, final StorageItem storageLocation )
+    public FileStorageEvent( final Type type, final StorageItem storageLocation )
     {
+        super( storageLocation );
         this.type = type;
-        this.store = store;
-        this.storageLocation = storageLocation;
     }
 
     public Type getType()
@@ -44,26 +39,10 @@ public class FileStorageEvent
         return type;
     }
 
-    public String getPath()
-    {
-        return storageLocation.getPath();
-    }
-
-    public StorageItem getStorageLocation()
-    {
-        return storageLocation;
-    }
-
-    public ArtifactStore getStore()
-    {
-        return store;
-    }
-
     @Override
-    public String toString()
+    public String getExtraInfo()
     {
-        return String.format( "FileStorageEvent [type=%s, store=%s, path=%s, storageLocation=%s]", type, store,
-                              storageLocation.getPath(), storageLocation );
+        return "type=" + type.name();
     }
 
 }

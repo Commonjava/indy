@@ -37,6 +37,12 @@ public interface StoreDataManager
     Group getGroup( final String name )
         throws ProxyDataException;
 
+    ArtifactStore getArtifactStore( StoreKey key )
+        throws ProxyDataException;
+
+    List<ArtifactStore> getAllArtifactStores()
+        throws ProxyDataException;
+
     List<Group> getAllGroups()
         throws ProxyDataException;
 

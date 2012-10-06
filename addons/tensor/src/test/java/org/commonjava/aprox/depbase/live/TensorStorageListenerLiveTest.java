@@ -110,7 +110,7 @@ public class TensorStorageListenerLiveTest
             closeQuietly( os );
         }
 
-        listener.handleFileEvent( new FileAccessEvent( dp, new StorageItem( dp.getKey(), provider, path ) ) );
+        listener.handleFileAccessEvent( new FileAccessEvent( new StorageItem( dp.getKey(), provider, path ) ) );
     }
 
     @Test
@@ -137,7 +137,7 @@ public class TensorStorageListenerLiveTest
             closeQuietly( os );
         }
 
-        listener.handleFileEvent( new FileAccessEvent( dp, new StorageItem( dp.getKey(), provider, path ) ) );
+        listener.handleFileAccessEvent( new FileAccessEvent( new StorageItem( dp.getKey(), provider, path ) ) );
     }
 
     //    @Test

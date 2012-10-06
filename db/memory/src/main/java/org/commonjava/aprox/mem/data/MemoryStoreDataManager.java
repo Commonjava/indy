@@ -56,6 +56,13 @@ public class MemoryStoreDataManager
     }
 
     @Override
+    public ArtifactStore getArtifactStore( final StoreKey key )
+        throws ProxyDataException
+    {
+        return stores.get( key );
+    }
+
+    @Override
     public Repository getRepository( final String name )
         throws ProxyDataException
     {
@@ -372,6 +379,13 @@ public class MemoryStoreDataManager
         {
             storeEvent.fire( new ArtifactStoreUpdateEvent( type, stores ) );
         }
+    }
+
+    @Override
+    public List<ArtifactStore> getAllArtifactStores()
+        throws ProxyDataException
+    {
+        return new ArrayList<ArtifactStore>( stores.values() );
     }
 
 }

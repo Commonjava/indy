@@ -122,6 +122,20 @@ public class FlatTCKFixtureProvider
             getDataManager().install();
         }
 
+        @Override
+        public ArtifactStore getArtifactStore( final StoreKey key )
+            throws ProxyDataException
+        {
+            return getDataManager().getArtifactStore( key );
+        }
+
+        @Override
+        public List<ArtifactStore> getAllArtifactStores()
+            throws ProxyDataException
+        {
+            return getDataManager().getAllArtifactStores();
+        }
+
     }
 
 }

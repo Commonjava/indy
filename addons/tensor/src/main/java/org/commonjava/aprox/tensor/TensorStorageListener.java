@@ -41,11 +41,13 @@ import org.apache.maven.model.building.ModelBuildingResult;
 import org.apache.maven.model.io.ModelParseException;
 import org.apache.maven.model.io.ModelReader;
 import org.commonjava.aprox.change.event.FileAccessEvent;
+import org.commonjava.aprox.change.event.FileEvent;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.tensor.maven.ArtifactStoreModelResolver;
 import org.commonjava.aprox.tensor.maven.ModelVersions;
 import org.commonjava.aprox.tensor.maven.StoreModelSource;
@@ -78,16 +80,19 @@ public class TensorStorageListener
     @Inject
     private TensorDataManager dataManager;
 
-    public void handleFileEvent( @Observes final FileAccessEvent event )
+    public void handleFileAccessEvent( @Observes final FileAccessEvent event )
     {
-        if ( !event.getPath()
-                   .endsWith( ".pom" ) )
+        final String path = event.getStorageItem()
+                                 .getPath();
+        if ( !path.endsWith( ".pom" ) )
         {
             return;
         }
 
+        final ArtifactStore originatingStore = getStore( event.getStorageItem()
+                                                              .getStoreKey() );
+
         logger.info( "Logging: %s with Tensor relationship-graphing system.", event );
-        final ArtifactStore originatingStore = event.getStore();
         final List<ArtifactStore> stores = getRelevantStores( originatingStore );
         if ( stores == null )
         {
@@ -125,6 +130,34 @@ public class TensorStorageListener
         }
     }
 
+    private ArtifactStore getStore( final StoreKey key )
+    {
+        try
+        {
+            switch ( key.getType() )
+            {
+                case deploy_point:
+                {
+                    return aprox.getDeployPoint( key.getName() );
+                }
+                case group:
+                {
+                    return aprox.getGroup( key.getName() );
+                }
+                default:
+                {
+                    return aprox.getRepository( key.getName() );
+                }
+            }
+        }
+        catch ( final ProxyDataException e )
+        {
+            logger.error( "Failed to retrieve store for: %s. Reason: %s", e, key, e.getMessage() );
+        }
+
+        return null;
+    }
+
     private boolean tensorContains( final Model rawModel )
     {
         final Parent parent = rawModel.getParent();
@@ -158,12 +191,15 @@ public class TensorStorageListener
         return false;
     }
 
-    protected Model loadEffectiveModel( final FileAccessEvent event, final List<ArtifactStore> stores )
+    protected Model loadEffectiveModel( final FileEvent event, final List<ArtifactStore> stores )
     {
         final ModelBuildingRequest request = new DefaultModelBuildingRequest();
         request.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL );
-        request.setModelSource( new StoreModelSource( event.getStorageLocation() ) );
+        request.setModelSource( new StoreModelSource( event.getStorageItem() ) );
         request.setModelResolver( new ArtifactStoreModelResolver( fileManager, stores ) );
+
+        final String path = event.getStorageItem()
+                                 .getPath();
 
         ModelBuildingResult result = null;
         try
@@ -172,7 +208,7 @@ public class TensorStorageListener
         }
         catch ( final ModelBuildingException e )
         {
-            logger.error( "Cannot build model instance for POM: %s. Reason: %s", e, event.getPath(), e.getMessage() );
+            logger.error( "Cannot build model instance for POM: %s. Reason: %s", e, path, e.getMessage() );
         }
 
         if ( result == null )
@@ -183,26 +219,29 @@ public class TensorStorageListener
         return result.getEffectiveModel();
     }
 
-    protected Model loadRawModel( final FileAccessEvent event )
+    protected Model loadRawModel( final FileEvent event )
     {
 
         final Map<String, Object> options = new HashMap<String, Object>();
         options.put( ModelReader.IS_STRICT, Boolean.FALSE.toString() );
 
+        final String path = event.getStorageItem()
+                                 .getPath();
+
         InputStream stream = null;
         try
         {
-            stream = event.getStorageLocation()
+            stream = event.getStorageItem()
                           .openInputStream();
             return modelReader.read( stream, options );
         }
         catch ( final ModelParseException e )
         {
-            logger.error( "Cannot parse POM: %s. Reason: %s", e, event.getPath(), e.getMessage() );
+            logger.error( "Cannot parse POM: %s. Reason: %s", e, path, e.getMessage() );
         }
         catch ( final IOException e )
         {
-            logger.error( "Cannot read POM: %s. Reason: %s", e, event.getPath(), e.getMessage() );
+            logger.error( "Cannot read POM: %s. Reason: %s", e, path, e.getMessage() );
         }
         finally
         {

@@ -29,6 +29,9 @@ import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
+import org.commonjava.aprox.change.event.FileAccessEvent;
+import org.commonjava.aprox.change.event.FileDeletionEvent;
+import org.commonjava.aprox.change.event.FileEvent;
 import org.commonjava.aprox.change.event.FileStorageEvent;
 import org.commonjava.aprox.change.event.FileStorageEvent.Type;
 import org.commonjava.aprox.change.event.ProxyManagerDeleteEvent;
@@ -119,16 +122,14 @@ public class TimeoutManager
         {
             case UPLOAD:
             {
-                cleanMetadata( event.getStore()
-                                    .getKey(), event.getPath() );
+                cleanMetadata( event );
 
                 setSnapshotTimeouts( event );
                 break;
             }
             case DOWNLOAD:
             {
-                cleanMetadata( event.getStore()
-                                    .getKey(), event.getPath() );
+                cleanMetadata( event );
 
                 setProxyTimeouts( event );
                 break;
@@ -138,7 +139,18 @@ public class TimeoutManager
                 break;
             }
         }
+    }
 
+    public void onFileAccessEvent( @Observes final FileAccessEvent event )
+    {
+        setSnapshotTimeouts( event );
+    }
+
+    public void onFileDeletionEvent( @Observes final FileDeletionEvent event )
+    {
+        cancel( event.getStorageItem()
+                     .getStoreKey(), event.getStorageItem()
+                                          .getPath() );
     }
 
     public void onStoreUpdate( @Observes final ArtifactStoreUpdateEvent event )
@@ -334,10 +346,16 @@ public class TimeoutManager
         }
     }
 
-    private void setProxyTimeouts( final FileStorageEvent event )
+    private void setProxyTimeouts( final FileEvent event )
     {
-        final Repository repo = (Repository) event.getStore();
-        final String path = event.getPath();
+        final Repository repo = (Repository) getStore( event );
+        if ( repo == null )
+        {
+            return;
+        }
+
+        final String path = event.getStorageItem()
+                                 .getPath();
 
         long timeout = config.getPassthroughTimeoutSeconds() * 1000;
         if ( !repo.isPassthrough() )
@@ -360,10 +378,48 @@ public class TimeoutManager
         }
     }
 
-    private void setSnapshotTimeouts( final FileStorageEvent event )
+    private ArtifactStore getStore( final FileEvent event )
     {
-        final DeployPoint deploy = (DeployPoint) event.getStore();
-        final String path = event.getPath();
+        final StoreKey key = event.getStorageItem()
+                                  .getStoreKey();
+
+        try
+        {
+            switch ( key.getType() )
+            {
+                case deploy_point:
+                {
+                    return dataManager.getDeployPoint( key.getName() );
+                }
+                case group:
+                {
+                    return dataManager.getGroup( key.getName() );
+                }
+                default:
+                {
+                    return dataManager.getRepository( key.getName() );
+                }
+            }
+        }
+        catch ( final ProxyDataException e )
+        {
+            logger.error( "Failed to retrieve store for: %s. Reason: %s", e, event.getStorageItem()
+                                                                                  .getStoreKey(), e.getMessage() );
+        }
+
+        return null;
+    }
+
+    private void setSnapshotTimeouts( final FileEvent event )
+    {
+        final DeployPoint deploy = (DeployPoint) getStore( event );
+        if ( deploy == null )
+        {
+            return;
+        }
+
+        final String path = event.getStorageItem()
+                                 .getPath();
 
         if ( ArtifactPathInfo.isSnapshot( path ) && deploy.getSnapshotTimeoutSeconds() > 0 )
         {
@@ -381,6 +437,16 @@ public class TimeoutManager
         }
     }
 
+    private void cleanMetadata( final FileEvent event )
+    {
+        final StoreKey key = event.getStorageItem()
+                                  .getStoreKey();
+        final String path = event.getStorageItem()
+                                 .getPath();
+
+        cleanMetadata( key, path );
+    }
+
     private void cleanMetadata( final StoreKey key, final String path )
     {
         if ( path.endsWith( "maven-metadata.xml" ) )
@@ -391,6 +457,9 @@ public class TimeoutManager
                 for ( final Group group : groups )
                 {
                     logger.info( "[CLEAN] Cleaning metadata path: %s in group: %s", path, group.getName() );
+
+                    cancel( key, path );
+
                     final StorageItem item = fileManager.getStorageReference( group, path );
                     if ( item.exists() )
                     {
@@ -414,6 +483,20 @@ public class TimeoutManager
         }
     }
 
+    private void cancel( final StoreKey key, final String path )
+    {
+        final ExpirationKey expirationKey = createAproxFileExpirationKey( key, path );
+        try
+        {
+            expirationManager.cancel( expirationKey );
+        }
+        catch ( final ExpirationManagerException e )
+        {
+            logger.error( "Attempting to update groups for metadata change; Failed to expire: %s. Error: %s", e, key,
+                          e.getMessage() );
+        }
+    }
+
     private StoreKey getStoreKey( final ExpirationKey key )
     {
         final String[] parts = key.getParts();
@@ -425,6 +508,13 @@ public class TimeoutManager
         {
             return new StoreKey( StoreType.valueOf( parts[2] ), parts[3] );
         }
+    }
+
+    private ExpirationKey createAproxFileExpirationKey( final StoreKey key, final String path )
+    {
+        final String pathHash = DigestUtils.md5Hex( path );
+        return new ExpirationKey( APROX_EVENT, APROX_FILE_EVENT, key.getType()
+                                                                    .name(), key.getName(), pathHash );
     }
 
     private Expiration createAproxFileExpiration( final ArtifactStore store, final String path, final long timeout )

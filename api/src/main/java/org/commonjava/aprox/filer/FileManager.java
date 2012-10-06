@@ -31,6 +31,8 @@ public interface FileManager
 
     String HTTP_PARAM_REPO = "repository";
 
+    String ROOT_PATH = "/";
+
     StorageItem retrieveFirst( final List<? extends ArtifactStore> stores, final String path )
         throws AproxWorkflowException;
 
@@ -53,5 +55,17 @@ public interface FileManager
     StorageItem getStorageReference( final ArtifactStore store, final String... path );
 
     ArtifactPathInfo parsePathInfo( String path );
+
+    void delete( final ArtifactStore store, String path )
+        throws AproxWorkflowException;
+
+    void deleteAll( final List<? extends ArtifactStore> stores, String path )
+        throws AproxWorkflowException;
+
+    void rescan( final ArtifactStore store )
+        throws AproxWorkflowException;
+
+    void rescanAll( final List<? extends ArtifactStore> stores )
+        throws AproxWorkflowException;
 
 }

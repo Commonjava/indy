@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +49,9 @@ import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
+import org.commonjava.aprox.change.event.ArtifactStoreRescanEvent;
 import org.commonjava.aprox.change.event.FileAccessEvent;
+import org.commonjava.aprox.change.event.FileDeletionEvent;
 import org.commonjava.aprox.change.event.FileStorageEvent;
 import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.filer.FileManager;
@@ -82,7 +85,15 @@ public class DefaultFileManager
     @Inject
     private Event<FileAccessEvent> accessEvent;
 
+    @Inject
+    private Event<FileDeletionEvent> deleteEvent;
+
+    @Inject
+    private Event<ArtifactStoreRescanEvent> rescanEvent;
+
     private final Map<String, Future<StorageItem>> pending = new HashMap<String, Future<StorageItem>>();
+
+    private final Set<StoreKey> rescansInProgress = new HashSet<StoreKey>();
 
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
@@ -181,17 +192,21 @@ public class DefaultFileManager
             logger.info( "Using stored copy from artifact store: %s for: %s", store.getName(), path );
             final StorageItem item = getStorageReference( store.getKey(), path );
 
-            if ( accessEvent != null )
-            {
-                final FileAccessEvent evt = new FileAccessEvent( store, item );
-                accessEvent.fire( evt );
-            }
+            fire( accessEvent, new FileAccessEvent( item ) );
 
             return item;
         }
         else
         {
             return null;
+        }
+    }
+
+    private <T> void fire( final Event<T> eventQueue, final T event )
+    {
+        if ( eventQueue != null )
+        {
+            eventQueue.fire( event );
         }
     }
 
@@ -425,10 +440,7 @@ public class DefaultFileManager
             out = target.openOutputStream();
             copy( stream, out );
 
-            if ( storageEvent != null )
-            {
-                storageEvent.fire( new FileStorageEvent( FileStorageEvent.Type.UPLOAD, deploy, target ) );
-            }
+            fire( storageEvent, new FileStorageEvent( FileStorageEvent.Type.UPLOAD, target ) );
         }
         catch ( final IOException e )
         {
@@ -614,7 +626,7 @@ public class DefaultFileManager
 
                     if ( fileEvent != null )
                     {
-                        fileEvent.fire( new FileStorageEvent( FileStorageEvent.Type.DOWNLOAD, repository, target ) );
+                        fileEvent.fire( new FileStorageEvent( FileStorageEvent.Type.DOWNLOAD, target ) );
                     }
                 }
                 catch ( final IOException e )
@@ -684,6 +696,151 @@ public class DefaultFileManager
             http.clearRepositoryCredentials();
             request.abort();
             http.closeConnection();
+        }
+
+    }
+
+    @Override
+    public void deleteAll( final List<? extends ArtifactStore> stores, final String path )
+        throws AproxWorkflowException
+    {
+        for ( final ArtifactStore store : stores )
+        {
+            delete( store, path );
+        }
+    }
+
+    @Override
+    public void delete( final ArtifactStore store, final String path )
+        throws AproxWorkflowException
+    {
+        final StorageItem item = getStorageReference( store, path == null ? ROOT_PATH : path );
+        doDelete( item );
+    }
+
+    private void doDelete( final StorageItem item )
+        throws AproxWorkflowException
+    {
+        if ( !item.exists() )
+        {
+            return;
+        }
+
+        if ( item.isDirectory() )
+        {
+            final String[] listing = item.list();
+            for ( final String sub : listing )
+            {
+                doDelete( item.getChild( sub ) );
+            }
+        }
+        else
+        {
+            try
+            {
+                item.delete();
+            }
+            catch ( final IOException e )
+            {
+                throw new AproxWorkflowException( Response.serverError()
+                                                          .build(), "Failed to delete stored location: %s. Reason: %s",
+                                                  e, item, e.getMessage() );
+            }
+        }
+
+        fire( deleteEvent, new FileDeletionEvent( item ) );
+    }
+
+    @Override
+    public void rescanAll( final List<? extends ArtifactStore> stores )
+        throws AproxWorkflowException
+    {
+        for ( final ArtifactStore store : stores )
+        {
+            rescan( store );
+        }
+    }
+
+    @Override
+    public void rescan( final ArtifactStore store )
+        throws AproxWorkflowException
+    {
+        executor.execute( new Rescanner( getStorageReference( store, ROOT_PATH ), rescansInProgress, accessEvent,
+                                         rescanEvent ) );
+    }
+
+    private static final class Rescanner
+        implements Runnable
+    {
+        private final Set<StoreKey> rescansInProgress;
+
+        private final StorageItem start;
+
+        private final Event<FileAccessEvent> accessEvent;
+
+        private final Event<ArtifactStoreRescanEvent> rescanEvent;
+
+        public Rescanner( final StorageItem start, final Set<StoreKey> rescansInProgress,
+                          final Event<FileAccessEvent> accessEvent, final Event<ArtifactStoreRescanEvent> rescanEvent )
+        {
+            this.start = start;
+            this.rescansInProgress = rescansInProgress;
+            this.accessEvent = accessEvent;
+            this.rescanEvent = rescanEvent;
+        }
+
+        @Override
+        public void run()
+        {
+            final StoreKey storeKey = start.getStoreKey();
+            synchronized ( rescansInProgress )
+            {
+                if ( rescansInProgress.contains( storeKey ) )
+                {
+                    return;
+                }
+
+                rescansInProgress.add( storeKey );
+            }
+
+            try
+            {
+                if ( rescanEvent != null )
+                {
+                    rescanEvent.fire( new ArtifactStoreRescanEvent( start.getStoreKey() ) );
+                }
+
+                doRescan( start );
+            }
+            finally
+            {
+                synchronized ( rescansInProgress )
+                {
+                    rescansInProgress.remove( storeKey );
+                }
+            }
+        }
+
+        private void doRescan( final StorageItem item )
+        {
+            if ( !item.exists() )
+            {
+                return;
+            }
+
+            if ( item.isDirectory() )
+            {
+                final String[] listing = item.list();
+                for ( final String sub : listing )
+                {
+                    doRescan( item.getChild( sub ) );
+                }
+            }
+
+            if ( accessEvent != null )
+            {
+                accessEvent.fire( new FileAccessEvent( item ) );
+            }
         }
 
     }

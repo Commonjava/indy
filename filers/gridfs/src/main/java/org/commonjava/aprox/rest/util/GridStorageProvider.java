@@ -14,6 +14,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.io.IOUtils;
+import org.commonjava.aprox.filer.PathUtils;
 import org.commonjava.aprox.io.StorageProvider;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.util.logging.Logger;
@@ -69,34 +70,10 @@ public class GridStorageProvider
 
     private String getPath( final StoreKey key, final String... parts )
     {
-        final String name = key.getType()
-                               .name() + "-" + key.getName();
+        final String name = "/" + key.getType()
+                                     .name() + "-" + key.getName();
 
-        if ( parts.length < 1 )
-        {
-            return name;
-        }
-
-        final StringBuilder sb = new StringBuilder();
-        sb.append( '/' )
-          .append( name );
-        for ( final String part : parts )
-        {
-            final String[] subParts = part.split( "/" );
-            for ( final String subPart : subParts )
-            {
-                if ( subPart.trim()
-                            .length() < 1 )
-                {
-                    continue;
-                }
-
-                sb.append( "/" )
-                  .append( subPart.replace( '\\', '/' ) );
-            }
-        }
-
-        return sb.toString();
+        return PathUtils.join( name, parts );
     }
 
     private String parentPath( final StoreKey key, final String path )

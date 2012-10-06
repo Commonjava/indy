@@ -85,7 +85,7 @@ public class MavenMetadataHandler
 
                     if ( fileEvent != null )
                     {
-                        fileEvent.fire( new FileStorageEvent( FileStorageEvent.Type.GENERATE, group, target ) );
+                        fileEvent.fire( new FileStorageEvent( FileStorageEvent.Type.GENERATE, target ) );
                     }
                 }
                 catch ( final IOException e )

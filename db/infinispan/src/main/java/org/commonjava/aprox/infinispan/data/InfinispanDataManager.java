@@ -348,4 +348,18 @@ public class InfinispanDataManager
 
         return false;
     }
+
+    @Override
+    public ArtifactStore getArtifactStore( final StoreKey key )
+        throws ProxyDataException
+    {
+        return storeCache.get( key );
+    }
+
+    @Override
+    public List<ArtifactStore> getAllArtifactStores()
+        throws ProxyDataException
+    {
+        return new ArrayList<ArtifactStore>( storeCache.values() );
+    }
 }
