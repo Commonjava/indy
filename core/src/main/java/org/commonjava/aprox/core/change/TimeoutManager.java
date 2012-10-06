@@ -143,7 +143,18 @@ public class TimeoutManager
 
     public void onFileAccessEvent( @Observes final FileAccessEvent event )
     {
-        setSnapshotTimeouts( event );
+        final StoreType type = event.getStorageItem()
+                                    .getStoreKey()
+                                    .getType();
+
+        if ( type == StoreType.deploy_point )
+        {
+            setSnapshotTimeouts( event );
+        }
+        else if ( type == StoreType.repository )
+        {
+            setProxyTimeouts( event );
+        }
     }
 
     public void onFileDeletionEvent( @Observes final FileDeletionEvent event )
@@ -348,7 +359,18 @@ public class TimeoutManager
 
     private void setProxyTimeouts( final FileEvent event )
     {
-        final Repository repo = (Repository) getStore( event );
+        Repository repo = null;
+        try
+        {
+            repo = (Repository) dataManager.getArtifactStore( event.getStorageItem()
+                                                                   .getStoreKey() );
+        }
+        catch ( final ProxyDataException e )
+        {
+            logger.error( "Failed to retrieve store for: %s. Reason: %s", e, event.getStorageItem()
+                                                                                  .getStoreKey(), e.getMessage() );
+        }
+
         if ( repo == null )
         {
             return;
@@ -378,28 +400,13 @@ public class TimeoutManager
         }
     }
 
-    private ArtifactStore getStore( final FileEvent event )
+    private void setSnapshotTimeouts( final FileEvent event )
     {
-        final StoreKey key = event.getStorageItem()
-                                  .getStoreKey();
-
+        DeployPoint deploy = null;
         try
         {
-            switch ( key.getType() )
-            {
-                case deploy_point:
-                {
-                    return dataManager.getDeployPoint( key.getName() );
-                }
-                case group:
-                {
-                    return dataManager.getGroup( key.getName() );
-                }
-                default:
-                {
-                    return dataManager.getRepository( key.getName() );
-                }
-            }
+            deploy = (DeployPoint) dataManager.getArtifactStore( event.getStorageItem()
+                                                                      .getStoreKey() );
         }
         catch ( final ProxyDataException e )
         {
@@ -407,12 +414,6 @@ public class TimeoutManager
                                                                                   .getStoreKey(), e.getMessage() );
         }
 
-        return null;
-    }
-
-    private void setSnapshotTimeouts( final FileEvent event )
-    {
-        final DeployPoint deploy = (DeployPoint) getStore( event );
         if ( deploy == null )
         {
             return;
