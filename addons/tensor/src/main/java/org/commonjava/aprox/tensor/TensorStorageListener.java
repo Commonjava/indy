@@ -105,7 +105,7 @@ public class TensorStorageListener
             return;
         }
 
-        if ( tensorContains( rawModel ) )
+        if ( !shouldStore( rawModel ) )
         {
             return;
         }
@@ -158,7 +158,7 @@ public class TensorStorageListener
         return null;
     }
 
-    private boolean tensorContains( final Model rawModel )
+    private boolean shouldStore( final Model rawModel )
     {
         final Parent parent = rawModel.getParent();
 
@@ -181,11 +181,21 @@ public class TensorStorageListener
 
         try
         {
-            return dataManager.contains( new ProjectVersionRef( g, a, v ) );
+            final ProjectVersionRef ref = new ProjectVersionRef( g, a, v );
+
+            // If this is a snapshot version, store it again in order to update it.
+            // NOTE: We need a way to flush out the old relationships reliably when updating!
+            return !ref.getVersionSpec()
+                       .isConcrete() || !dataManager.contains( ref );
         }
         catch ( final InvalidVersionSpecificationException e )
         {
             logger.error( "Failed to parse version for: %s. Error: %s", e, rawModel.getId(), e.getMessage() );
+        }
+        catch ( final TensorDataException e )
+        {
+            logger.error( "Failed to check whether Tensor has captured: %s. Error: %s", e, rawModel.getId(),
+                          e.getMessage() );
         }
 
         return false;
