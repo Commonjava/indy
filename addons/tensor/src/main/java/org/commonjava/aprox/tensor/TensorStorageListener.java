@@ -121,6 +121,7 @@ public class TensorStorageListener
 
         try
         {
+            // TODO: Pass on the profiles that were activated when the effective model was built.
             modelProcessor.storeModelRelationships( effectiveModel );
         }
         catch ( final TensorDataException e )
@@ -227,6 +228,7 @@ public class TensorStorageListener
             return null;
         }
 
+        // TODO: Pass back the profiles that were activated when the effective model was built, for inclusion in the graph facts.
         return result.getEffectiveModel();
     }
 
