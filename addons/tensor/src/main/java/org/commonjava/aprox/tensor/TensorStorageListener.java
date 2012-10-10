@@ -207,6 +207,7 @@ public class TensorStorageListener
         request.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL );
         request.setModelSource( new StoreModelSource( event.getStorageItem() ) );
         request.setModelResolver( new ArtifactStoreModelResolver( fileManager, stores ) );
+        request.setSystemProperties( System.getProperties() );
 
         final String path = event.getStorageItem()
                                  .getPath();
