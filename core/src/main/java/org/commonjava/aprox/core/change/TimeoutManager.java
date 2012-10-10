@@ -387,7 +387,8 @@ public class TimeoutManager
 
         if ( timeout > 0 )
         {
-            logger.info( "[PROXY TIMEOUT SET] %s/%s; %s", repo.getKey(), path, new Date( timeout ) );
+            logger.info( "[PROXY TIMEOUT SET] %s/%s; %s", repo.getKey(), path, new Date( System.currentTimeMillis()
+                + timeout ) );
             try
             {
                 expirationManager.schedule( createAproxFileExpiration( repo, path, timeout ) );
