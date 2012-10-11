@@ -97,6 +97,9 @@ public class AproxHttp
 
         if ( repository.getProxyHost() != null )
         {
+            logger.info( "Using proxy: %s:%s for repository: %s", repository.getProxyHost(),
+                         repository.getProxyPort() < 1 ? 80 : repository.getProxyPort(), repository.getName() );
+
             final int proxyPort = repository.getProxyPort();
             HttpHost proxy;
             if ( proxyPort < 1 )

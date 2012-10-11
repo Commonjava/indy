@@ -186,8 +186,12 @@ public class TensorStorageListener
 
             // If this is a snapshot version, store it again in order to update it.
             // NOTE: We need a way to flush out the old relationships reliably when updating!
-            return !ref.getVersionSpec()
-                       .isConcrete() || !dataManager.contains( ref );
+            final boolean concrete = ref.getVersionSpec()
+                                        .isConcrete();
+
+            final boolean contains = dataManager.contains( ref );
+
+            return !concrete || !contains;
         }
         catch ( final InvalidVersionSpecificationException e )
         {

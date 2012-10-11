@@ -23,7 +23,7 @@ import java.util.Iterator;
 import org.commonjava.aprox.model.ArtifactStore;
 
 public class ArtifactStoreUpdateEvent
-    implements Iterable<ArtifactStore>
+    implements Iterable<ArtifactStore>, AproxEvent
 {
 
     private final ProxyManagerUpdateType type;

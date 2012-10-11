@@ -84,13 +84,13 @@ public abstract class AutoProxDataManagerDecorator
                     {
                         dp = new DeployPoint( name );
 
-                        final DeployPoint deploy = autoproxModel.getDeploy();
+                        final DeployPoint deployTemplate = autoproxModel.getDeploy();
 
-                        if ( deploy != null )
+                        if ( deployTemplate != null )
                         {
-                            dp.setAllowReleases( deploy.isAllowReleases() );
-                            dp.setAllowSnapshots( deploy.isAllowSnapshots() );
-                            dp.setSnapshotTimeoutSeconds( deploy.getSnapshotTimeoutSeconds() );
+                            dp.setAllowReleases( deployTemplate.isAllowReleases() );
+                            dp.setAllowSnapshots( deployTemplate.isAllowSnapshots() );
+                            dp.setSnapshotTimeoutSeconds( deployTemplate.getSnapshotTimeoutSeconds() );
                         }
 
                         dataManager.storeDeployPoint( dp );
@@ -101,11 +101,11 @@ public abstract class AutoProxDataManagerDecorator
 
                 boolean rFound = false;
                 boolean dFound = false;
-                final Group group = autoproxModel.getGroup();
+                final Group groupTemplate = autoproxModel.getGroup();
 
-                if ( group != null && group.getConstituents() != null )
+                if ( groupTemplate != null && groupTemplate.getConstituents() != null )
                 {
-                    for ( final StoreKey storeKey : group.getConstituents() )
+                    for ( final StoreKey storeKey : groupTemplate.getConstituents() )
                     {
                         if ( storeKey.getType() == StoreType.repository
                             && REPO_CONSTITUENT_PLACEHOLDER.equalsIgnoreCase( storeKey.getName() ) )
@@ -196,52 +196,54 @@ public abstract class AutoProxDataManagerDecorator
         throws ProxyDataException
     {
         logger.info( "DECORATED" );
-        Repository proxy = dataManager.getRepository( name );
+        Repository repo = dataManager.getRepository( name );
         if ( !config.isEnabled() )
         {
-            logger.info( "AutoProx decorator disabled; returning: %s", proxy );
-            return proxy;
+            logger.info( "AutoProx decorator disabled; returning: %s", repo );
+            return repo;
         }
 
         logger.info( "AutoProx decorator active" );
-        if ( proxy == null )
+        if ( repo == null )
         {
-            final Repository repo = autoproxModel.getRepo();
+            logger.info( "AutoProx: creating repository for: %s", name );
+
+            final Repository repoTemplate = autoproxModel.getRepo();
             final String validationPath = autoproxModel.getRepoValidationPath();
 
-            final String url = resolveRepoUrl( repo.getUrl(), name );
+            final String url = resolveRepoUrl( repoTemplate.getUrl(), name );
 
-            logger.info( "AutoProx: creating repository for: %s", name );
+            if ( repo == null )
+            {
+                repo = new Repository( name, url );
+
+                repo.setCacheTimeoutSeconds( repoTemplate.getCacheTimeoutSeconds() );
+                repo.setHost( repoTemplate.getHost() );
+                repo.setKeyCertPem( repoTemplate.getKeyCertPem() );
+                repo.setKeyPassword( repoTemplate.getKeyPassword() );
+                repo.setPassthrough( repoTemplate.isPassthrough() );
+                repo.setPassword( repoTemplate.getPassword() );
+                repo.setPort( repoTemplate.getPort() );
+                repo.setProxyHost( repoTemplate.getProxyHost() );
+                repo.setProxyPassword( repoTemplate.getProxyPassword() );
+                repo.setProxyPort( repoTemplate.getProxyPort() );
+                repo.setProxyUser( repoTemplate.getProxyUser() );
+                repo.setServerCertPem( repoTemplate.getServerCertPem() );
+                repo.setTimeoutSeconds( repoTemplate.getTimeoutSeconds() );
+                repo.setUser( repoTemplate.getUser() );
+
+                dataManager.storeRepository( repo );
+            }
+
             if ( !checkUrlValidity( repo, url, validationPath ) )
             {
                 logger.warn( "Invalid repository URL: %s", url );
                 return null;
             }
 
-            if ( proxy == null )
-            {
-                proxy = new Repository( name, url );
-
-                proxy.setCacheTimeoutSeconds( repo.getCacheTimeoutSeconds() );
-                proxy.setHost( repo.getHost() );
-                proxy.setKeyCertPem( repo.getKeyCertPem() );
-                proxy.setKeyPassword( repo.getKeyPassword() );
-                proxy.setPassthrough( repo.isPassthrough() );
-                proxy.setPassword( repo.getPassword() );
-                proxy.setPort( repo.getPort() );
-                proxy.setProxyHost( repo.getProxyHost() );
-                proxy.setProxyPassword( repo.getProxyPassword() );
-                proxy.setProxyPort( repo.getProxyPort() );
-                proxy.setProxyUser( repo.getProxyUser() );
-                proxy.setServerCertPem( repo.getServerCertPem() );
-                proxy.setTimeoutSeconds( repo.getTimeoutSeconds() );
-                proxy.setUser( repo.getUser() );
-
-                dataManager.storeRepository( proxy );
-            }
         }
 
-        return proxy;
+        return repo;
     }
 
     private String resolveRepoUrl( final String src, final String name )

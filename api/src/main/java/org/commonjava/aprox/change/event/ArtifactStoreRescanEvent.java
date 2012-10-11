@@ -3,6 +3,7 @@ package org.commonjava.aprox.change.event;
 import org.commonjava.aprox.model.StoreKey;
 
 public class ArtifactStoreRescanEvent
+    implements AproxEvent
 {
 
     private final StoreKey key;

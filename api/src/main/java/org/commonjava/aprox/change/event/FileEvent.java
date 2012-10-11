@@ -3,6 +3,7 @@ package org.commonjava.aprox.change.event;
 import org.commonjava.aprox.io.StorageItem;
 
 public class FileEvent
+    implements AproxEvent
 {
 
     private final StorageItem storageItem;

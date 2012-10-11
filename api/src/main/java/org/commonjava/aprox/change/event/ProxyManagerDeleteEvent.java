@@ -23,7 +23,7 @@ import java.util.Iterator;
 import org.commonjava.aprox.model.StoreType;
 
 public class ProxyManagerDeleteEvent
-    implements Iterable<String>
+    implements Iterable<String>, AproxEvent
 {
 
     private final StoreType type;
