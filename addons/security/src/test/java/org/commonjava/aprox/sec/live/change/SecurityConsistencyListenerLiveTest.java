@@ -29,7 +29,8 @@ import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.sec.change.SecurityConsistencyListener;
 import org.commonjava.aprox.sec.fixture.ProxyConfigProvider;
 import org.commonjava.aprox.sec.live.AbstractAProxSecLiveTest;
-import org.commonjava.couch.rbac.Permission;
+import org.commonjava.badgr.data.BadgrDataManager;
+import org.commonjava.badgr.model.Permission;
 import org.commonjava.web.test.fixture.TestWarArchiveBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -45,15 +46,18 @@ public class SecurityConsistencyListenerLiveTest
     @Deployment
     public static WebArchive createWar()
     {
-        return new TestWarArchiveBuilder( new File( "target/test-assembly.war" ), SecurityConsistencyListenerLiveTest.class ).withExtraClasses( AbstractAProxSecLiveTest.class,
-                                                                                                                                       ProxyConfigProvider.class )
-                                                                                                                    .withLog4jProperties()
-                                                                                                                    .withBeansXml( "META-INF/beans.xml" )
-                                                                                                                    .build();
+        return new TestWarArchiveBuilder( new File( "target/test-assembly.war" ),
+                                          SecurityConsistencyListenerLiveTest.class ).withExtraClasses( AbstractAProxSecLiveTest.class,
+                                                                                                        ProxyConfigProvider.class )
+                                                                                     .withLog4jProperties()
+                                                                                     .withBeansXml( "META-INF/beans.xml" )
+                                                                                     .build();
     }
 
     @Inject
     private SecurityConsistencyListener listener;
+
+    private BadgrDataManager userManager;
 
     @Test
     public void groupRolesRemovedWhenGroupDeleted()

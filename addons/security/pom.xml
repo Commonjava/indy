@@ -24,6 +24,11 @@
   
   <artifactId>aprox-security</artifactId>
   <name>AProx :: RBAC Overlay</name>
+  
+  <properties>
+    <badgr-version>0.1-SNAPSHOT</badgr-version>
+    <shiro-version>1.1.0</shiro-version>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -37,16 +42,24 @@
     </dependency>
     
     <dependency>
-      <groupId>org.commonjava.couch</groupId>
-      <artifactId>shiro-couch</artifactId>
+      <groupId>org.commonjava.badgr</groupId>
+      <artifactId>badgr-shiro</artifactId>
+      <version>${badgr-version}</version>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.couch</groupId>
-      <artifactId>couch-user-manager</artifactId>
+      <groupId>org.commonjava.badgr</groupId>
+      <artifactId>badgr-api</artifactId>
+      <version>${badgr-version}</version>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.couch.web</groupId>
-      <artifactId>restful-user-manager</artifactId>
+      <groupId>org.commonjava.badgr</groupId>
+      <artifactId>badgr-shiro-web</artifactId>
+      <version>${badgr-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.badgr</groupId>
+      <artifactId>badgr-rest</artifactId>
+      <version>${badgr-version}</version>
     </dependency>
     
     <dependency>
@@ -61,10 +74,12 @@
     <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-core</artifactId>
+      <version>${shiro-version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-web</artifactId>
+      <version>${shiro-version}</version>
     </dependency>
     
     <dependency>
@@ -80,29 +95,43 @@
        <artifactId>jboss-as-arquillian-container-managed</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.couch.test</groupId>
-      <artifactId>couch-test-harness</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.couch.test</groupId>
-      <artifactId>couch-user-test-harness</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-core</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.weld.se</groupId>
       <artifactId>weld-se-core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-db-couch</artifactId>
+      <artifactId>aprox-db-memory</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.web</groupId>
       <artifactId>json-test-harness</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.qarqas</groupId>
+      <artifactId>qarqas-test-harness</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.badgr</groupId>
+      <artifactId>badgr-db-memory</artifactId>
+      <version>${badgr-version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.shelflife</groupId>
+      <artifactId>shelflife-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.shelflife</groupId>
+      <artifactId>shelflife-store-memory</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-filer-default</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
   

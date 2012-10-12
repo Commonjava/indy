@@ -20,11 +20,8 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
-import org.commonjava.auth.couch.data.UserDataException;
-import org.commonjava.auth.couch.data.UserDataManager;
-import org.commonjava.auth.couch.inject.UserData;
-import org.commonjava.couch.change.CouchChangeListener;
-import org.commonjava.couch.db.CouchDBException;
+import org.commonjava.aprox.sec.data.AProxSecDataManager;
+import org.commonjava.badgr.data.BadgrDataException;
 import org.commonjava.util.logging.Logger;
 
 @WebListener
@@ -35,11 +32,7 @@ public class InstallerListener
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private UserDataManager dataManager;
-
-    @Inject
-    @UserData
-    private CouchChangeListener changeListener;
+    private AProxSecDataManager dataManager;
 
     @Override
     public void contextInitialized( final ServletContextEvent sce )
@@ -48,18 +41,10 @@ public class InstallerListener
         try
         {
             dataManager.install();
-            dataManager.setupAdminInformation();
-
-            changeListener.startup( false );
         }
-        catch ( UserDataException e )
+        catch ( final BadgrDataException e )
         {
             throw new RuntimeException( "Failed to install proxy database: " + e.getMessage(), e );
-        }
-        catch ( CouchDBException e )
-        {
-            throw new RuntimeException( "Failed to start CouchDB changes listener: "
-                + e.getMessage(), e );
         }
 
         logger.info( "...done." );
@@ -68,15 +53,6 @@ public class InstallerListener
     @Override
     public void contextDestroyed( final ServletContextEvent sce )
     {
-        try
-        {
-            changeListener.shutdown();
-        }
-        catch ( CouchDBException e )
-        {
-            throw new RuntimeException( "Failed to shutdown CouchDB changes listener: "
-                + e.getMessage(), e );
-        }
     }
 
 }

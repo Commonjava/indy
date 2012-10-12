@@ -25,7 +25,7 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.rest.admin.DeployPointAdminResource;
-import org.commonjava.couch.rbac.Permission;
+import org.commonjava.badgr.model.Permission;
 
 @Decorator
 @RequiresAuthentication
@@ -41,8 +41,8 @@ public abstract class DeployPointAdminResourceSecurity
     @Override
     public Response create()
     {
-        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.deploy_point.name(),
-                                                                 Permission.ADMIN ) );
+        SecurityUtils.getSubject()
+                     .isPermitted( Permission.name( StoreType.deploy_point.name(), Permission.ADMIN ) );
 
         return delegate.create();
     }
@@ -50,8 +50,8 @@ public abstract class DeployPointAdminResourceSecurity
     @Override
     public Response store( final String name )
     {
-        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.deploy_point.name(),
-                                                                 Permission.ADMIN ) );
+        SecurityUtils.getSubject()
+                     .isPermitted( Permission.name( StoreType.deploy_point.name(), Permission.ADMIN ) );
 
         return delegate.store( name );
     }
@@ -59,8 +59,8 @@ public abstract class DeployPointAdminResourceSecurity
     @Override
     public Response getAll()
     {
-        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.deploy_point.name(),
-                                                                 Permission.ADMIN ) );
+        SecurityUtils.getSubject()
+                     .isPermitted( Permission.name( StoreType.deploy_point.name(), Permission.ADMIN ) );
 
         return delegate.getAll();
     }
@@ -68,8 +68,8 @@ public abstract class DeployPointAdminResourceSecurity
     @Override
     public Response get( final String name )
     {
-        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.deploy_point.name(),
-                                                                 Permission.ADMIN ) );
+        SecurityUtils.getSubject()
+                     .isPermitted( Permission.name( StoreType.deploy_point.name(), Permission.ADMIN ) );
 
         return delegate.get( name );
     }
@@ -77,8 +77,8 @@ public abstract class DeployPointAdminResourceSecurity
     @Override
     public Response delete( final String name )
     {
-        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.deploy_point.name(),
-                                                                 Permission.ADMIN ) );
+        SecurityUtils.getSubject()
+                     .isPermitted( Permission.name( StoreType.deploy_point.name(), Permission.ADMIN ) );
 
         return delegate.delete( name );
     }

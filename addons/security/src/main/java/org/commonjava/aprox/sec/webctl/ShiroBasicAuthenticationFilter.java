@@ -23,7 +23,7 @@ import javax.servlet.annotation.WebFilter;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.web.filter.authc.BasicHttpAuthenticationFilter;
-import org.commonjava.auth.couch.data.PasswordManager;
+import org.commonjava.badgr.data.PasswordManager;
 import org.commonjava.util.logging.Logger;
 
 @WebFilter( urlPatterns = "/*", filterName = "shiro-basic-authc" )
@@ -46,11 +46,10 @@ public class ShiroBasicAuthenticationFilter
     }
 
     @Override
-    protected AuthenticationToken createToken( final String username, final String password,
-                                               final boolean rememberMe, final String host )
+    protected AuthenticationToken createToken( final String username, final String password, final boolean rememberMe,
+                                               final String host )
     {
-        return new UsernamePasswordToken( username, passwordManager.digestPassword( password ),
-                                          rememberMe, host );
+        return new UsernamePasswordToken( username, passwordManager.digestPassword( password ), rememberMe, host );
     }
 
     @Override
@@ -58,7 +57,8 @@ public class ShiroBasicAuthenticationFilter
         throws Exception
     {
         logger.info( "Initializing authentication filter..." );
-        Object appName = getFilterConfig().getServletContext().getAttribute( APPLICATION_NAME_KEY );
+        Object appName = getFilterConfig().getServletContext()
+                                          .getAttribute( APPLICATION_NAME_KEY );
         if ( appName == null )
         {
             appName = DEFAULT_APPLICATION_NAME;

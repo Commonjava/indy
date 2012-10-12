@@ -24,16 +24,13 @@ import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.aprox.sec.fixture.AproxDataLiteral;
-import org.commonjava.auth.couch.data.UserDataManager;
-import org.commonjava.auth.couch.inject.UserDataLiteral;
-import org.commonjava.couch.change.CouchChangeListener;
-import org.commonjava.couch.db.CouchManager;
-import org.commonjava.couch.rbac.Permission;
-import org.commonjava.couch.test.fixture.LoggingFixture;
+import org.commonjava.badgr.data.BadgrDataManager;
+import org.commonjava.badgr.model.Permission;
+import org.commonjava.util.logging.Log4jUtil;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class SecurityConsistencyListenerWeldTest
@@ -43,19 +40,18 @@ public class SecurityConsistencyListenerWeldTest
 
     private StoreDataManager proxyManager;
 
-    private UserDataManager userManager;
+    private BadgrDataManager userManager;
 
-    private CouchManager proxyCouch;
-
-    private CouchManager userCouch;
-
-    private CouchChangeListener proxyListener;
+    @BeforeClass
+    public static void logging()
+    {
+        Log4jUtil.configure( Level.DEBUG );
+    }
 
     @Before
     public void setup()
         throws Exception
     {
-        LoggingFixture.setupLogging( Level.DEBUG );
         final WeldContainer weld = new Weld().initialize();
 
         listener = weld.instance()
@@ -65,35 +61,10 @@ public class SecurityConsistencyListenerWeldTest
                            .select( StoreDataManager.class )
                            .get();
         userManager = weld.instance()
-                          .select( UserDataManager.class )
+                          .select( BadgrDataManager.class )
                           .get();
 
-        proxyCouch = weld.instance()
-                         .select( CouchManager.class, new AproxDataLiteral() )
-                         .get();
-        proxyListener = weld.instance()
-                            .select( CouchChangeListener.class, new AproxDataLiteral() )
-                            .get();
-
-        userCouch = weld.instance()
-                        .select( CouchManager.class, new UserDataLiteral() )
-                        .get();
-
-        proxyCouch.dropDatabase();
         proxyManager.install();
-        proxyListener.startup( true );
-
-        userCouch.dropDatabase();
-        userManager.install();
-    }
-
-    public void teardown()
-        throws Exception
-    {
-        proxyCouch.dropDatabase();
-        proxyListener.shutdown();
-
-        userCouch.dropDatabase();
     }
 
     @Test

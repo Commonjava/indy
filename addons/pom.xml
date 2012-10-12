@@ -34,10 +34,16 @@
   
   <profiles>
     <profile>
-      <id>experimental</id>
+      <id>almost-there</id>
       
       <modules>
         <module>security</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>experimental</id>
+      
+      <modules>
         <module>indexer</module>
       </modules>
     </profile>

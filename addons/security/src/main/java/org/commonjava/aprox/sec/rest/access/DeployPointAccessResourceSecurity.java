@@ -26,7 +26,7 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.rest.access.DeployPointAccessResource;
-import org.commonjava.couch.rbac.Permission;
+import org.commonjava.badgr.model.Permission;
 
 @Decorator
 @RequiresAuthentication
@@ -42,18 +42,17 @@ public abstract class DeployPointAccessResourceSecurity
     @Override
     public Response getContent( final String name, final String path )
     {
-        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.deploy_point.name(),
-                                                                 name, Permission.READ ) );
+        SecurityUtils.getSubject()
+                     .isPermitted( Permission.name( StoreType.deploy_point.name(), name, Permission.READ ) );
 
         return delegate.getContent( name, path );
     }
 
     @Override
-    public Response createContent( final String name, final String path,
-                                   final HttpServletRequest request )
+    public Response createContent( final String name, final String path, final HttpServletRequest request )
     {
-        SecurityUtils.getSubject().isPermitted( Permission.name( StoreType.deploy_point.name(),
-                                                                 name, Permission.READ ) );
+        SecurityUtils.getSubject()
+                     .isPermitted( Permission.name( StoreType.deploy_point.name(), name, Permission.READ ) );
 
         return delegate.createContent( name, path, request );
     }

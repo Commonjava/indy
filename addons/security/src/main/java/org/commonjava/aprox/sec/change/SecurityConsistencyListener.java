@@ -24,7 +24,7 @@ import javax.inject.Singleton;
 import org.commonjava.aprox.change.event.ProxyManagerDeleteEvent;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.sec.data.AProxSecDataManager;
-import org.commonjava.couch.util.ChangeSynchronizer;
+import org.commonjava.aprox.util.ChangeSynchronizer;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
@@ -52,7 +52,7 @@ public class SecurityConsistencyListener
 
     public void waitForChange( final long totalMillis, final long pollingMillis )
     {
-        changeSync.waitForChange( totalMillis, pollingMillis );
+        changeSync.waitForChange( 1, totalMillis, pollingMillis );
     }
 
 }

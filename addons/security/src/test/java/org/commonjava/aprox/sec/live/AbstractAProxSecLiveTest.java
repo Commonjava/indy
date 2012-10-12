@@ -15,37 +15,24 @@
  ******************************************************************************/
 package org.commonjava.aprox.sec.live;
 
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.inject.AproxData;
-import org.commonjava.auth.couch.inject.UserData;
-import org.commonjava.couch.change.CouchChangeListener;
-import org.commonjava.couch.conf.CouchDBConfiguration;
-import org.commonjava.couch.conf.DefaultCouchDBConfiguration;
-import org.commonjava.couch.db.CouchManager;
-import org.commonjava.couch.user.web.test.AbstractUserRESTCouchTest;
+import org.commonjava.aprox.inject.TestData;
+import org.commonjava.aprox.sec.conf.DefaultAdminConfiguration;
+import org.commonjava.badgr.conf.AdminConfiguration;
 import org.commonjava.web.json.test.WebFixture;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 
 public class AbstractAProxSecLiveTest
-    extends AbstractUserRESTCouchTest
 {
 
     @Inject
     protected StoreDataManager proxyManager;
-
-    @Inject
-    @AproxData
-    protected CouchChangeListener changeListener;
-
-    @Inject
-    @AproxData
-    private CouchManager couch;
 
     @Rule
     public WebFixture http = new WebFixture();
@@ -55,51 +42,24 @@ public class AbstractAProxSecLiveTest
         throws Exception
     {
         proxyManager.install();
-        changeListener.startup();
-    }
-
-    @After
-    public final void teardownAProxLiveTest()
-        throws Exception
-    {
-        changeListener.shutdown();
-        while ( changeListener.isRunning() )
-        {
-            synchronized ( changeListener )
-            {
-                System.out.println( "Waiting 2s for change listener to shutdown..." );
-                changeListener.wait( 2000 );
-            }
-        }
-
-        couch.dropDatabase();
-    }
-
-    @Override
-    protected CouchManager getCouchManager()
-    {
-        return couch;
     }
 
     @Singleton
     public static final class ConfigProvider
     {
-        @Inject
-        @UserData
-        private CouchDBConfiguration userConfig;
-
-        private DefaultCouchDBConfiguration conf;
+        private AdminConfiguration adminConfig;
 
         @Produces
-        @AproxData
-        public synchronized CouchDBConfiguration getAproxCouchConfig()
+        @Default
+        @TestData
+        public synchronized AdminConfiguration getAdminConfig()
         {
-            if ( conf == null )
+            if ( adminConfig == null )
             {
-                conf = new DefaultCouchDBConfiguration( userConfig, "test-aprox" );
+                adminConfig = new DefaultAdminConfiguration();
             }
 
-            return conf;
+            return adminConfig;
         }
     }
 

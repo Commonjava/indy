@@ -5,12 +5,11 @@ import javax.inject.Singleton;
 
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.auth.couch.data.UserDataException;
-import org.commonjava.auth.couch.data.UserDataManager;
-import org.commonjava.auth.couch.inject.UserData;
-import org.commonjava.couch.conf.CouchDBConfiguration;
-import org.commonjava.couch.rbac.Permission;
-import org.commonjava.couch.util.ChangeSynchronizer;
+import org.commonjava.aprox.util.ChangeSynchronizer;
+import org.commonjava.badgr.data.BadgrDataException;
+import org.commonjava.badgr.data.BadgrDataManager;
+import org.commonjava.badgr.data.BadgrFactory;
+import org.commonjava.badgr.model.Permission;
 import org.commonjava.util.logging.Logger;
 
 @Singleton
@@ -24,21 +23,20 @@ public class AProxSecDataManager
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private UserDataManager userManager;
+    private BadgrDataManager userManager;
 
     @Inject
-    @UserData
-    private CouchDBConfiguration userConfig;
+    private BadgrFactory userFactory;
 
     @Inject
     private ChangeSynchronizer changeSync;
 
     public void install()
+        throws BadgrDataException
     {
         try
         {
-            userManager.install();
-            userManager.setupAdminInformation();
+            //            userFactory.setupAdminInformation();
 
             userManager.storePermission( new Permission( StoreType.repository.name(), Permission.ADMIN ) );
 
@@ -48,10 +46,10 @@ public class AProxSecDataManager
 
             userManager.storePermission( new Permission( StoreType.group.name(), Permission.READ ) );
         }
-        catch ( final UserDataException e )
+        catch ( final BadgrDataException e )
         {
-            logger.error( "Failed to initialize admin user/privilege information in database: %s. Reason: %s", e,
-                          userConfig.getDatabaseUrl(), e.getMessage() );
+            logger.error( "Failed to initialize admin user/privilege data. Reason: %s", e, e.getMessage() );
+            throw e;
         }
     }
 
@@ -63,10 +61,10 @@ public class AProxSecDataManager
                                         .isWritable() ? ALL_PERMS : READONLY_PERMS;
 
             logger.info( "Creating permissions for new store: %s", store );
-            userManager.createPermissions( store.getDoctype()
+            userFactory.createPermissions( store.getDoctype()
                                                 .name(), store.getName(), verbs );
         }
-        catch ( final UserDataException e )
+        catch ( final BadgrDataException e )
         {
             logger.error( "Failed to create permissions for store: %s. Error: %s", e, store.getKey(), e.getMessage() );
         }
@@ -82,7 +80,7 @@ public class AProxSecDataManager
 
             changeSync.setChanged();
         }
-        catch ( final UserDataException e )
+        catch ( final BadgrDataException e )
         {
             logger.error( "Failed to remove permissions for deleted store: %s:%s. Error: %s", e, type.name(), name,
                           e.getMessage() );
@@ -99,7 +97,7 @@ public class AProxSecDataManager
 
             changeSync.setChanged();
         }
-        catch ( final UserDataException e )
+        catch ( final BadgrDataException e )
         {
             logger.error( "Failed to remove permissions for deleted store: %s. Error: %s", e, storeId, e.getMessage() );
         }

@@ -15,54 +15,41 @@
  ******************************************************************************/
 package org.commonjava.aprox.sec.fixture;
 
+import java.io.File;
+import java.io.IOException;
+
+import javax.annotation.PreDestroy;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
 
+import org.apache.commons.io.FileUtils;
 import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
-import org.commonjava.auth.couch.conf.DefaultUserManagerConfig;
-import org.commonjava.auth.couch.conf.UserManagerConfiguration;
-import org.commonjava.auth.couch.inject.UserData;
-import org.commonjava.couch.conf.CouchDBConfiguration;
+import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
+import org.commonjava.aprox.inject.TestData;
 
 @Singleton
 public class ProxyConfigProvider
 {
-
     public static final String REPO_ROOT_DIR = "repo.root.dir";
 
-    public static final String APROX_DATABASE_URL = "aprox.db.url";
+    private AproxConfiguration config;
 
-    public static final String USER_DATABASE_URL = "user.db.url";
+    //    private AdminConfiguration adminConfig;
 
-    private DefaultAproxConfiguration config;
-
-    private UserManagerConfiguration umConfig;
-
-    @Produces
-    // @TestData
-    @UserData
-    @Default
-    public synchronized CouchDBConfiguration getCouchDBConfiguration()
-    {
-        return getUserManagerConfiguration().getDatabaseConfig();
-    }
-
-    @Produces
-    // @TestData
-    @Default
-    public synchronized UserManagerConfiguration getUserManagerConfiguration()
-    {
-        if ( umConfig == null )
-        {
-            umConfig =
-                new DefaultUserManagerConfig( "admin@nowhere.com", "password", "Admin", "User",
-                                              "http://localhost:5984/test-user-manager" );
-        }
-
-        return umConfig;
-    }
+    //    @Produces
+    //    @Default
+    //    @TestData
+    //    public synchronized AdminConfiguration getAdminConfig()
+    //    {
+    //        if ( adminConfig == null )
+    //        {
+    //            adminConfig = new DefaultAdminConfiguration();
+    //        }
+    //
+    //        return adminConfig;
+    //    }
 
     @Produces
     // @TestData
@@ -77,21 +64,40 @@ public class ProxyConfigProvider
         return config;
     }
 
-    // @Produces
-    // @TestData
-    // @Default
-    // public synchronized ProxyConfiguration getWeldProxyConfiguration()
-    // {
-    // return getProxyConfiguration();
-    // }
-    //
-    // @Produces
-    // @AproxData
-    // @TestData
-    // @Default
-    // public CouchDBConfiguration getWeldCouchConfiguration()
-    // {
-    // return getProxyConfiguration().getDatabaseConfig();
-    // }
+    private File storageDir;
+
+    @PreDestroy
+    public synchronized void deleteRepoDir()
+        throws IOException
+    {
+        FileUtils.forceDelete( storageDir );
+    }
+
+    private DefaultStorageProviderConfiguration storageConfig;
+
+    @Produces
+    @TestData
+    @Default
+    public synchronized DefaultStorageProviderConfiguration getStorageConfig()
+        throws IOException
+    {
+        if ( storageConfig == null )
+        {
+            final String path = System.getProperty( REPO_ROOT_DIR );
+            if ( path == null )
+            {
+                storageDir = File.createTempFile( "repo.root", ".dir" );
+                storageDir.delete();
+                storageDir.mkdirs();
+            }
+            else
+            {
+                storageDir = new File( path );
+            }
+            storageConfig = new DefaultStorageProviderConfiguration( storageDir );
+        }
+
+        return storageConfig;
+    }
 
 }

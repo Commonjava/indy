@@ -27,7 +27,6 @@ import javax.inject.Singleton;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.sec.data.AProxSecDataManager;
-import org.commonjava.couch.change.j2ee.ApplicationEvent;
 
 @Singleton
 public class AproxCreationListener
@@ -45,16 +44,6 @@ public class AproxCreationListener
             {
                 dataManager.createStorePermissions( store );
             }
-        }
-    }
-
-    public void installEvent( @Observes final ApplicationEvent appEvent )
-    {
-        if ( appEvent.getDescription()
-                     .getAppName()
-                     .equals( "proxy-logic" ) )
-        {
-            dataManager.install();
         }
     }
 
