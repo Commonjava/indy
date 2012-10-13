@@ -44,6 +44,14 @@
     <shelflife-version>0.2-SNAPSHOT</shelflife-version>
   </properties>
   
+  <distributionManagement>
+    <snapshotRepository>
+      <id>local-snapshots</id>
+      <name>Local Snapshots</name>
+      <url>http://localhost/aprox/api/1.0/group/public/</url>
+    </snapshotRepository>
+  </distributionManagement>
+  
   <modules>
     <module>api</module>
     <module>core</module>
