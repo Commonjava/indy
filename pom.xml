@@ -69,6 +69,22 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <groupId>org.commonjava.boms</groupId>
+        <artifactId>web-commons-bom</artifactId>
+        <version>1-SNAPSHOT</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.commonjava.badgr</groupId>
+        <artifactId>badgr-bom</artifactId>
+        <version>0.1-SNAPSHOT</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      
+      <dependency>
         <groupId>org.jboss.arquillian</groupId>
         <artifactId>arquillian-bom</artifactId>
         <version>${arquillian-version}</version>
@@ -161,7 +177,7 @@
         <artifactId>aprox-subsys-infinispan</artifactId>
         <version>0.4-SNAPSHOT</version>
       </dependency>
-      <dependency>
+      <!-- <dependency>
         <groupId>org.commonjava.util</groupId>
         <artifactId>logging</artifactId>
         <version>1.1</version>
@@ -231,7 +247,7 @@
         <artifactId>qarqas-test-harness</artifactId>
         <version>${qarqas-version}</version>
         <scope>test</scope>
-      </dependency>
+      </dependency> -->
       
       <dependency>
         <groupId>org.apache.maven</groupId>
@@ -239,7 +255,7 @@
         <version>3.0.3</version>
       </dependency>
       
-      <dependency>
+      <!-- <dependency>
         <groupId>org.commonjava.shelflife</groupId>
         <artifactId>shelflife-api</artifactId>
         <version>${shelflife-version}</version>
@@ -282,7 +298,6 @@
         <groupId>com.google.code.gson</groupId>
         <artifactId>gson</artifactId>
         <version>1.7.2</version>
-        <!-- <version>2.2.2</version> -->
       </dependency>
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
@@ -305,7 +320,7 @@
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-core</artifactId>
         <version>5.1.7.Final</version>
-      </dependency>
+      </dependency> -->
       <dependency>
         <groupId>org.apache.maven.indexer</groupId>
         <artifactId>indexer-core</artifactId>
@@ -322,7 +337,7 @@
         <version>1.1</version>
         <scope>test</scope>
       </dependency>
-      <dependency>
+      <!-- <dependency>
         <groupId>org.jboss.weld.se</groupId>
         <artifactId>weld-se-core</artifactId>
         <version>1.1.8.Final</version>
@@ -338,7 +353,7 @@
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-arquillian-container-managed</artifactId>
         <version>${jbossas-version}</version>
-      </dependency>
+      </dependency> -->
     </dependencies>
   </dependencyManagement>
   
