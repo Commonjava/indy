@@ -475,7 +475,13 @@ public class DefaultFileManager
             if ( store instanceof DeployPoint )
             {
                 final DeployPoint dp = (DeployPoint) store;
-                if ( pathInfo.isSnapshot() )
+                if ( pathInfo == null )
+                {
+                    // probably not an artifact, most likely metadata instead...
+                    selected = dp;
+                    break;
+                }
+                else if ( pathInfo.isSnapshot() )
                 {
                     if ( dp.isAllowSnapshots() )
                     {
