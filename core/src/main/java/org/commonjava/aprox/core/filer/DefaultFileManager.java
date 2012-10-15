@@ -409,7 +409,7 @@ public class DefaultFileManager
         throws AproxWorkflowException
     {
         final ArtifactPathInfo pathInfo = parsePathInfo( path );
-        if ( pathInfo.isSnapshot() )
+        if ( pathInfo != null && pathInfo.isSnapshot() )
         {
             if ( !deploy.isAllowSnapshots() )
             {
