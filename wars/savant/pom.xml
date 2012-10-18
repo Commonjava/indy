@@ -54,6 +54,10 @@
       <artifactId>aprox-tensor</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-dot-maven</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.commonjava.aprox.ui</groupId>
       <artifactId>aprox-ui-monorail</artifactId>
       <type>war</type>

@@ -15,13 +15,19 @@
  ******************************************************************************/
 package org.commonjava.aprox.model;
 
+import static org.apache.commons.lang.StringUtils.join;
+
 import java.util.HashSet;
 import java.util.Set;
+
+import org.commonjava.util.logging.Logger;
 
 public enum StoreType
 {
     group( false, "group", "groups" ), repository( false, "repository", "repositories" ), deploy_point( true, "deploy",
         "deploys" );
+
+    private static final Logger logger = new Logger( StoreType.class );
 
     private boolean writable;
 
@@ -38,6 +44,8 @@ public enum StoreType
         this.plural = plural;
 
         final Set<String> a = new HashSet<String>();
+        a.add( singular );
+        a.add( plural );
         for ( final String alias : aliases )
         {
             a.add( alias.toLowerCase() );
@@ -77,6 +85,7 @@ public enum StoreType
 
         for ( final StoreType st : values() )
         {
+            logger.info( "Checking '%s' vs name: '%s' and aliases: %s", type, st.name(), join( st.aliases, ", " ) );
             if ( st.name()
                    .equalsIgnoreCase( type ) || st.aliases.contains( type ) )
             {

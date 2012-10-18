@@ -30,6 +30,7 @@
   <modules>
     <module>autoprox</module>
     <module>tensor</module>
+    <module>dot-maven</module>
   </modules>
   
   <profiles>

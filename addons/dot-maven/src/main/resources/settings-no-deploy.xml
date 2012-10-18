@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+  <mirrors>
+    <mirror>
+      <id>${name}</id>
+      <mirrorOf>*</mirrorOf>
+      <url>${url}</url>
+    </mirror>
+  </mirrors>
+  <profiles>
+    <profile>
+      <id>resolve-settings</id>
+      <repositories>
+        <repository>
+          <id>central</id>
+          <url>${url}</url>
+          <releases>
+            <enabled>${releases}</enabled>
+          </releases>
+          <snapshots>
+            <enabled>${snapshots}</enabled>
+          </snapshots>
+        </repository>
+      </repositories>
+      <pluginRepositories>
+        <pluginRepository>
+          <id>central</id>
+          <url>${url}</url>
+          <releases>
+            <enabled>${releases}</enabled>
+          </releases>
+          <snapshots>
+            <enabled>${snapshots}</enabled>
+          </snapshots>
+        </pluginRepository>
+      </pluginRepositories>
+    </profile>
+  </profiles>
+  <activeProfiles>
+    <activeProfile>resolve-settings</activeProfile>
+  </activeProfiles>
+</settings>
