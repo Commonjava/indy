@@ -21,6 +21,7 @@ import org.commonjava.aprox.autoprox.conf.AutoProxConfiguration;
 import org.commonjava.aprox.autoprox.conf.AutoProxModel;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.Repository;
@@ -60,6 +61,7 @@ public abstract class AutoProxDataManagerDecorator
     public Group getGroup( final String name )
         throws ProxyDataException
     {
+        logger.info( "DECORATED (getGroup: %s)", name );
         Group g = dataManager.getGroup( name );
 
         if ( !config.isEnabled() )
@@ -195,7 +197,7 @@ public abstract class AutoProxDataManagerDecorator
     public Repository getRepository( final String name )
         throws ProxyDataException
     {
-        logger.info( "DECORATED" );
+        logger.info( "DECORATED (getRepository: %s)", name );
         Repository repo = dataManager.getRepository( name );
         if ( !config.isEnabled() )
         {
@@ -249,5 +251,28 @@ public abstract class AutoProxDataManagerDecorator
     private String resolveRepoUrl( final String src, final String name )
     {
         return src.replaceAll( REPO_NAME_URL_PATTERN, name );
+    }
+
+    @Override
+    public ArtifactStore getArtifactStore( final StoreKey key )
+        throws ProxyDataException
+    {
+        logger.info( "DECORATED (getArtifactStore: %s)", key );
+        final StoreType type = key.getType();
+        switch ( type )
+        {
+            case group:
+            {
+                return getGroup( key.getName() );
+            }
+            case repository:
+            {
+                return getRepository( key.getName() );
+            }
+            default:
+            {
+                return dataManager.getArtifactStore( key );
+            }
+        }
     }
 }
