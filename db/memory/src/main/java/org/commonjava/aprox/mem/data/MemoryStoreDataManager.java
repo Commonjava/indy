@@ -13,7 +13,6 @@ import java.util.Set;
 
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
 import org.commonjava.aprox.change.event.ProxyManagerDeleteEvent;
@@ -29,7 +28,7 @@ import org.commonjava.aprox.model.StoreType;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.util.logging.helper.JoinString;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class MemoryStoreDataManager
     implements StoreDataManager
 {

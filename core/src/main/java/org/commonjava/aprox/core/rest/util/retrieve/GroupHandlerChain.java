@@ -22,7 +22,6 @@ import java.util.List;
 
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.io.StorageItem;
@@ -32,7 +31,7 @@ import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.retrieve.GroupPathHandler;
 import org.commonjava.util.logging.Logger;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class GroupHandlerChain
 {
 

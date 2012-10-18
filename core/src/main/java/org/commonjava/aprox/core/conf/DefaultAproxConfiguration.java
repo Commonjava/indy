@@ -20,7 +20,6 @@ import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.inject.Singleton;
 
 import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.aprox.conf.AproxConfiguration;
@@ -38,7 +37,7 @@ public class DefaultAproxConfiguration
     implements AproxConfiguration
 {
 
-    @Singleton
+    @javax.enterprise.context.ApplicationScoped
     public static final class FeatureConfig
         extends AproxFeatureConfig<AproxConfiguration, DefaultAproxConfiguration>
     {
@@ -66,7 +65,7 @@ public class DefaultAproxConfiguration
         }
     }
 
-    @Singleton
+    @javax.enterprise.context.ApplicationScoped
     public static final class ConfigInfo
         extends AproxConfigInfo
     {

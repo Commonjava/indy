@@ -18,12 +18,11 @@ package org.commonjava.aprox.sec.live;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.inject.TestData;
-import org.commonjava.aprox.sec.conf.DefaultAdminConfiguration;
 import org.commonjava.badgr.conf.AdminConfiguration;
+import org.commonjava.badgr.conf.DefaultAdminConfiguration;
 import org.commonjava.web.json.test.WebFixture;
 import org.junit.Before;
 import org.junit.Rule;
@@ -44,7 +43,7 @@ public class AbstractAProxSecLiveTest
         proxyManager.install();
     }
 
-    @Singleton
+    @javax.enterprise.context.ApplicationScoped
     public static final class ConfigProvider
     {
         private AdminConfiguration adminConfig;

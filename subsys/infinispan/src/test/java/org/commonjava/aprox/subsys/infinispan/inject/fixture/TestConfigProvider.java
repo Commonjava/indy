@@ -4,14 +4,13 @@ import java.net.URL;
 
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
-import javax.inject.Singleton;
 
 import org.commonjava.aprox.conf.AproxConfigFactory;
 import org.commonjava.aprox.inject.TestData;
 import org.commonjava.aprox.subsys.infinispan.conf.CacheConfiguration;
 import org.commonjava.web.config.ConfigurationException;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public final class TestConfigProvider
 {
     @Produces

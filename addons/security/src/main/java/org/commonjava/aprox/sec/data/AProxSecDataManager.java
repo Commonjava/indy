@@ -1,7 +1,6 @@
 package org.commonjava.aprox.sec.data;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreType;
@@ -12,7 +11,7 @@ import org.commonjava.badgr.data.BadgrFactory;
 import org.commonjava.badgr.model.Permission;
 import org.commonjava.util.logging.Logger;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class AProxSecDataManager
 {
 

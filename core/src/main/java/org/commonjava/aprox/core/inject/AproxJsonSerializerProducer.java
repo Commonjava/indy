@@ -1,13 +1,12 @@
 package org.commonjava.aprox.core.inject;
 
 import javax.enterprise.inject.Produces;
-import javax.inject.Singleton;
 
 import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.model.io.StoreKeySerializer;
 import org.commonjava.web.json.ser.JsonSerializer;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class AproxJsonSerializerProducer
 {
 

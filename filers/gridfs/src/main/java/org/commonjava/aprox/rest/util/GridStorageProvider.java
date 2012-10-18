@@ -11,7 +11,6 @@ import java.io.OutputStream;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.filer.PathUtils;
@@ -23,7 +22,7 @@ import org.infinispan.io.GridFile;
 import org.infinispan.io.GridFilesystem;
 import org.infinispan.manager.CacheContainer;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class GridStorageProvider
     implements StorageProvider
 {

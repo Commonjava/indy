@@ -21,14 +21,13 @@ import java.io.IOException;
 import javax.annotation.PreDestroy;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
-import javax.inject.Singleton;
 
 import org.apache.commons.io.FileUtils;
 import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class ProxyConfigProvider
 {
 

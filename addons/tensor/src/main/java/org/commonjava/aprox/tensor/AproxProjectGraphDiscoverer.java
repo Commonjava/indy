@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
@@ -29,7 +28,7 @@ import org.commonjava.tensor.discovery.ProjectRelationshipDiscoverer;
 import org.commonjava.tensor.event.NewRelationshipsEvent;
 import org.commonjava.util.logging.Logger;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class AproxProjectGraphDiscoverer
     implements ProjectRelationshipDiscoverer
 {

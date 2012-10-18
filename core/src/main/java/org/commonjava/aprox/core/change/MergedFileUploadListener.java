@@ -20,7 +20,6 @@ import java.util.Set;
 
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.commonjava.aprox.change.event.FileEvent;
 import org.commonjava.aprox.core.rest.util.ArchetypeCatalogMerger;
@@ -33,7 +32,7 @@ import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.util.logging.Logger;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class MergedFileUploadListener
 {
 

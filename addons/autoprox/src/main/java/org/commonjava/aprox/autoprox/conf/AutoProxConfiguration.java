@@ -5,7 +5,6 @@ import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.inject.Singleton;
 
 import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.aprox.conf.AproxFeatureConfig;
@@ -18,7 +17,7 @@ import org.commonjava.web.config.annotation.SectionName;
 @Alternative
 public class AutoProxConfiguration
 {
-    @Singleton
+    @javax.enterprise.context.ApplicationScoped
     public static final class AutoProxFeatureConfig
         extends AproxFeatureConfig<AutoProxConfiguration, AutoProxConfiguration>
     {
@@ -45,7 +44,7 @@ public class AutoProxConfiguration
         }
     }
 
-    @Singleton
+    @javax.enterprise.context.ApplicationScoped
     public static final class AutoProxConfigInfo
         extends AproxConfigInfo
     {

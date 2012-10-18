@@ -25,8 +25,6 @@ import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.inject.Singleton;
-
 import org.apache.maven.archetype.catalog.Archetype;
 import org.apache.maven.archetype.catalog.ArchetypeCatalog;
 import org.apache.maven.archetype.catalog.io.xpp3.ArchetypeCatalogXpp3Reader;
@@ -36,7 +34,7 @@ import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.util.logging.Logger;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class ArchetypeCatalogMerger
 {
 

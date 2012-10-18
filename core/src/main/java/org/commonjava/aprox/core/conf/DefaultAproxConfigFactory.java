@@ -23,7 +23,6 @@ import java.io.InputStream;
 import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.commonjava.aprox.conf.AproxConfigFactory;
 import org.commonjava.aprox.conf.AproxConfigInfo;
@@ -33,7 +32,7 @@ import org.commonjava.web.config.DefaultConfigurationListener;
 import org.commonjava.web.config.dotconf.DotConfConfigurationReader;
 import org.commonjava.web.config.io.ConfigFileUtils;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class DefaultAproxConfigFactory
     extends DefaultConfigurationListener
     implements AproxConfigFactory

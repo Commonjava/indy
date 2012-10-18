@@ -1,8 +1,7 @@
 package org.commonjava.aprox.change;
 
-import javax.inject.Singleton;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class AllEventsListener
 {
 

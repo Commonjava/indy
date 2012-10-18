@@ -10,7 +10,6 @@ import java.io.InputStream;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.commonjava.aprox.autoprox.conf.AutoProxConfiguration;
 import org.commonjava.aprox.autoprox.conf.AutoProxModel;
@@ -18,7 +17,7 @@ import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.inject.Production;
 import org.commonjava.web.json.ser.JsonSerializer;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class AutoProxProvider
 {
     @Inject

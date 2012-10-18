@@ -21,6 +21,8 @@ public class DeployPoint
     extends ArtifactStore
 {
 
+    private static final long serialVersionUID = 1L;
+
     @SerializedName( "allow_snapshots" )
     private boolean allowSnapshots = false;
 

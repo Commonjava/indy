@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -23,7 +22,7 @@ import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.ser.JsonSerializer;
 
 @Path( "/stats" )
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class BasicStatsResource
     extends AbstractURLAliasingResource
 {

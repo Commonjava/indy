@@ -4,7 +4,6 @@ import java.io.InputStream;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import javax.ws.rs.core.Response;
 
 import org.commonjava.aprox.core.rest.util.retrieve.GroupHandlerChain;
@@ -17,7 +16,7 @@ import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.GroupContentManager;
 import org.commonjava.util.logging.Logger;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class DefaultGroupContentManager implements GroupContentManager
 {
 

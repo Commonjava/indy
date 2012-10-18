@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.List;
 
-import javax.inject.Singleton;
-
 import org.commonjava.aprox.core.io.StorageItem;
 import org.commonjava.aprox.core.model.ArtifactStore;
 import org.commonjava.aprox.core.model.DeployPoint;
@@ -13,7 +11,7 @@ import org.commonjava.aprox.core.model.Group;
 import org.commonjava.aprox.core.rest.RESTWorkflowException;
 import org.commonjava.aprox.core.rest.util.retrieve.GroupPathHandler;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class IndexHandler
     implements GroupPathHandler
 {

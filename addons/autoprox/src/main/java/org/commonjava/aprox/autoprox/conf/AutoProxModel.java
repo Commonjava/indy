@@ -2,13 +2,12 @@ package org.commonjava.aprox.autoprox.conf;
 
 import javax.enterprise.inject.Alternative;
 import javax.inject.Named;
-import javax.inject.Singleton;
 
 import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.Repository;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 @Alternative
 @Named( "dont-use-directly" )
 public class AutoProxModel

@@ -20,7 +20,6 @@ import java.io.IOException;
 
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
-import javax.inject.Singleton;
 
 import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
@@ -30,7 +29,7 @@ import org.commonjava.aprox.tensor.conf.AproxTensorConfig;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class TestConfigProvider
 {
 

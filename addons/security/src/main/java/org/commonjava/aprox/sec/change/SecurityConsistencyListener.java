@@ -19,7 +19,6 @@ import java.util.Collection;
 
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.commonjava.aprox.change.event.ProxyManagerDeleteEvent;
 import org.commonjava.aprox.model.StoreType;
@@ -27,7 +26,7 @@ import org.commonjava.aprox.sec.data.AProxSecDataManager;
 import org.commonjava.aprox.util.ChangeSynchronizer;
 import org.commonjava.util.logging.Logger;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class SecurityConsistencyListener
 {
 

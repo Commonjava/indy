@@ -3,7 +3,6 @@ package org.commonjava.aprox.autoprox.live.fixture;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -11,7 +10,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 @Path( "/target" )
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class TargetUrlResponder
 {
 

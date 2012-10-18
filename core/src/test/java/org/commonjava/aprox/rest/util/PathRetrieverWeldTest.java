@@ -44,7 +44,6 @@ public class PathRetrieverWeldTest
     @Rule
     public TemporaryFolder temp = new TemporaryFolder();
 
-    @SuppressWarnings( "serial" )
     @Before
     public void setup()
     {

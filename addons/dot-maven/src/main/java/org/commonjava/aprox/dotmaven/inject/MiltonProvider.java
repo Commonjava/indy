@@ -6,10 +6,9 @@ import io.milton.http.ResourceFactory;
 
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import javax.servlet.ServletException;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class MiltonProvider
 {
 

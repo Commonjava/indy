@@ -8,11 +8,11 @@ import java.io.IOException;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.subsys.infinispan.conf.CacheConfiguration;
@@ -24,7 +24,7 @@ import org.infinispan.configuration.parsing.Parser;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class CacheProducer
 {
 
@@ -91,8 +91,19 @@ public class CacheProducer
         }
     }
 
+    @PreDestroy
+    public void unload()
+    {
+        logger.info( "\n\n\n\nSTOPPING INFINISPAN\n\n\n\n\n" );
+        if ( container != null )
+        {
+            container.stop();
+        }
+    }
+
     @Produces
     @Default
+    @javax.enterprise.context.ApplicationScoped
     public EmbeddedCacheManager getCacheContainer()
     {
         return container;

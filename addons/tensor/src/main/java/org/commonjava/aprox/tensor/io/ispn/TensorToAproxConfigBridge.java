@@ -10,9 +10,7 @@ import org.commonjava.tensor.io.ispn.TensorCacheConfigurator;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 
-import com.google.inject.Singleton;
-
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class TensorToAproxConfigBridge
     implements AproxCacheConfigurator
 {

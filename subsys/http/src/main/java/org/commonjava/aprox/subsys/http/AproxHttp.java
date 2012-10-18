@@ -7,7 +7,6 @@ import java.security.UnrecoverableKeyException;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Singleton;
 
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
@@ -23,7 +22,7 @@ import org.commonjava.aprox.subsys.http.util.RepoSSLSocketFactory;
 import org.commonjava.aprox.subsys.http.util.TLRepositoryCredentialsProvider;
 import org.commonjava.util.logging.Logger;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class AproxHttp
 {
     private final Logger logger = new Logger( getClass() );

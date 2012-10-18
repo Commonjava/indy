@@ -40,7 +40,6 @@ import java.util.concurrent.TimeoutException;
 
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -66,7 +65,7 @@ import org.commonjava.aprox.rest.util.ArtifactPathInfo;
 import org.commonjava.aprox.subsys.http.AproxHttp;
 import org.commonjava.util.logging.Logger;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class DefaultFileManager
     implements FileManager
 {

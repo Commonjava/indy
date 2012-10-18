@@ -3,7 +3,6 @@ package org.commonjava.aprox.sec.conf;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.aprox.conf.AproxFeatureConfig;
@@ -12,7 +11,7 @@ import org.commonjava.badgr.conf.AdminConfiguration;
 import org.commonjava.badgr.conf.DefaultAdminConfiguration;
 import org.commonjava.web.config.ConfigurationException;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public final class DefaultAdminConfigFeature
     extends AproxFeatureConfig<AdminConfiguration, DefaultAdminConfiguration>
 {
@@ -39,7 +38,7 @@ public final class DefaultAdminConfigFeature
         return info;
     }
 
-    @Singleton
+    @javax.enterprise.context.ApplicationScoped
     public static final class DefaultAdminConfigInfo
         extends AproxConfigInfo
     {

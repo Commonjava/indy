@@ -28,7 +28,6 @@ import java.util.Set;
 
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import javax.ws.rs.core.Response;
 
 import org.commonjava.aprox.change.event.FileStorageEvent;
@@ -41,7 +40,7 @@ import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.retrieve.GroupPathHandler;
 import org.commonjava.util.logging.Logger;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class MavenMetadataHandler
     implements GroupPathHandler
 {

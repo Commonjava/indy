@@ -7,7 +7,6 @@ import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.inject.Singleton;
 
 import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.aprox.conf.AproxFeatureConfig;
@@ -22,7 +21,7 @@ import org.commonjava.web.config.annotation.SectionName;
 public class DefaultStorageProviderConfiguration
 {
 
-    @Singleton
+    @javax.enterprise.context.ApplicationScoped
     public static final class FlatFileFeatureConfig
         extends AproxFeatureConfig<DefaultStorageProviderConfiguration, DefaultStorageProviderConfiguration>
     {
@@ -50,7 +49,7 @@ public class DefaultStorageProviderConfiguration
         }
     }
 
-    @Singleton
+    @javax.enterprise.context.ApplicationScoped
     public static final class FilerDefaultConfigInfo
         extends AproxConfigInfo
     {

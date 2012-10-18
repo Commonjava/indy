@@ -15,11 +15,9 @@
  ******************************************************************************/
 package org.commonjava.aprox.util;
 
-import javax.inject.Singleton;
-
 import org.commonjava.util.logging.Logger;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class ChangeSynchronizer
 {
 

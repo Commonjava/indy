@@ -6,7 +6,6 @@ import java.net.MalformedURLException;
 
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
-import javax.inject.Singleton;
 
 import org.commonjava.aprox.autoprox.conf.AutoProxConfiguration;
 import org.commonjava.aprox.autoprox.conf.AutoProxModel;
@@ -20,7 +19,7 @@ import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.web.json.test.WebFixture;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public final class TestConfigProvider
 {
     public static final String REPO_ROOT_DIR = "repo.root.dir";

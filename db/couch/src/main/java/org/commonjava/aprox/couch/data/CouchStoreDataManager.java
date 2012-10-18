@@ -60,7 +60,7 @@ import org.commonjava.couch.model.CouchDocRef;
 import org.commonjava.couch.util.JoinString;
 import org.commonjava.util.logging.Logger;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class CouchStoreDataManager
     implements StoreDataManager
 {

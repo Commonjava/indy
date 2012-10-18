@@ -22,13 +22,12 @@ import java.util.Collection;
 
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.sec.data.AProxSecDataManager;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class AproxCreationListener
 {
 

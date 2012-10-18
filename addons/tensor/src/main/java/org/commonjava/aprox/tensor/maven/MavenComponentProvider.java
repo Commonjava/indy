@@ -17,7 +17,6 @@ package org.commonjava.aprox.tensor.maven;
 
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
-import javax.inject.Singleton;
 
 import org.apache.maven.mae.MAEException;
 import org.apache.maven.mae.app.AbstractMAEApplication;
@@ -29,7 +28,7 @@ import org.apache.maven.model.resolution.ModelResolver;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 @Component( role = MavenComponentProvider.class )
 public class MavenComponentProvider
     extends AbstractMAEApplication

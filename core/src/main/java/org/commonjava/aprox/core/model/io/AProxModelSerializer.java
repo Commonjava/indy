@@ -1,7 +1,6 @@
 package org.commonjava.aprox.core.model.io;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 
 import org.commonjava.aprox.inject.AproxData;
@@ -13,7 +12,7 @@ import org.commonjava.web.json.ser.JsonSerializer;
 
 import com.google.gson.reflect.TypeToken;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class AProxModelSerializer
 {
     private static final TypeToken<Listing<Repository>> REPO_LISTING_TYPE_TOKEN = new TypeToken<Listing<Repository>>()

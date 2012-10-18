@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.apache.commons.io.FileUtils;
 import org.commonjava.aprox.filer.PathUtils;
@@ -31,7 +30,7 @@ import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
 import org.commonjava.aprox.io.StorageProvider;
 import org.commonjava.aprox.model.StoreKey;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class DefaultStorageProvider
     implements StorageProvider
 {

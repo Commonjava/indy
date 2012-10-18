@@ -28,7 +28,7 @@ import org.commonjava.couch.db.CouchManager;
 import org.commonjava.couch.io.CouchHttpClient;
 import org.commonjava.shelflife.inject.Shelflife;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public class CouchAproxDataProviders
 {
 

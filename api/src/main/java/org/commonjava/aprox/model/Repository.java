@@ -25,6 +25,8 @@ import com.google.gson.annotations.SerializedName;
 public class Repository
     extends ArtifactStore
 {
+    private static final long serialVersionUID = 1L;
+
     private static final Logger LOGGER = new Logger( Repository.class );
 
     public static final int DEFAULT_TIMEOUT_SECONDS = 120;

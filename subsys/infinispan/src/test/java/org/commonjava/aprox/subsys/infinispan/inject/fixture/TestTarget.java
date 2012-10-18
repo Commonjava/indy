@@ -2,12 +2,11 @@ package org.commonjava.aprox.subsys.infinispan.inject.fixture;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 import org.infinispan.Cache;
 import org.infinispan.manager.CacheContainer;
 
-@Singleton
+@javax.enterprise.context.ApplicationScoped
 public final class TestTarget
 {
     @Inject
