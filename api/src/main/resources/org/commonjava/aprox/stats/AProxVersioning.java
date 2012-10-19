@@ -1,10 +1,10 @@
 package org.commonjava.aprox.stats;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Singleton;
 
 import org.commonjava.web.json.ser.JsonAdapters;
 
-@ApplicationScoped
+@Singleton
 @JsonAdapters( AProxVersioningAdapter.class )
 public class AProxVersioning
 {
