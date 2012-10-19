@@ -16,8 +16,23 @@ public final class NameUtils
 
     public static final String SETTINGS_PATTERN = "\\/?settings-(deploy|group|repository)-(.+)\\.xml";
 
+    private static final String[] BANNED_STORE_PATTERNS = { "[._]+(.+)", "\\..+", };
+
     private NameUtils()
     {
+    }
+
+    public static boolean isValidStoreName( final String name )
+    {
+        for ( final String bannedPattern : BANNED_STORE_PATTERNS )
+        {
+            if ( name.matches( bannedPattern ) )
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public static String makePath( final String[] parts, final int startingPos )

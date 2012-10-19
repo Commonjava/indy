@@ -2,6 +2,7 @@ package org.commonjava.aprox.dotmaven.res.settings;
 
 import static org.commonjava.aprox.dotmaven.util.NameUtils.formatSettingsResourceName;
 import static org.commonjava.aprox.dotmaven.util.NameUtils.getStoreKey;
+import static org.commonjava.aprox.dotmaven.util.NameUtils.isValidStoreName;
 import io.milton.http.Auth;
 import io.milton.http.Request;
 import io.milton.http.Request.Method;
@@ -60,6 +61,11 @@ public class SettingsFolderResource
     public SettingsResource createSettingsResource( final String storeName )
         throws BadRequestException
     {
+        if ( !isValidStoreName( storeName ) )
+        {
+            return null;
+        }
+
         final StoreKey key = getStoreKey( storeName );
         if ( key == null )
         {

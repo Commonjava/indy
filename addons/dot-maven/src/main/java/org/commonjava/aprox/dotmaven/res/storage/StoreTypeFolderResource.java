@@ -1,5 +1,6 @@
 package org.commonjava.aprox.dotmaven.res.storage;
 
+import static org.commonjava.aprox.dotmaven.util.NameUtils.isValidStoreName;
 import static org.commonjava.aprox.dotmaven.util.NameUtils.trimLeadingSlash;
 import io.milton.http.Auth;
 import io.milton.http.Request;
@@ -65,6 +66,11 @@ public class StoreTypeFolderResource
     public StoreFolderResource getChild( final String childName )
         throws BadRequestException
     {
+        if ( !isValidStoreName( childName ) )
+        {
+            return null;
+        }
+
         final StoreKey key = new StoreKey( type, trimLeadingSlash( childName ) );
         try
         {
