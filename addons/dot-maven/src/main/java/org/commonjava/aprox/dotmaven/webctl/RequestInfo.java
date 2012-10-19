@@ -52,18 +52,22 @@ public class RequestInfo
 
     public String getRealm()
     {
-        String realm = "AProx@";
+        return "AProx@" + getHost();
+    }
 
+    public String getHost()
+    {
+        String host;
         try
         {
-            realm += new URL( request.getRequestURI() ).getHost();
+            host = new URL( request.getRequestURI() ).getHost();
         }
         catch ( final MalformedURLException e )
         {
-            realm += request.getServerName();
+            host = request.getServerName();
         }
 
-        return realm;
+        return host;
     }
 
 }

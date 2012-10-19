@@ -1,5 +1,6 @@
-package org.commonjava.aprox.dotmaven.res;
+package org.commonjava.aprox.dotmaven.res.settings;
 
+import static org.commonjava.aprox.dotmaven.util.NameUtils.formatSettingsResourceName;
 import io.milton.http.Auth;
 import io.milton.http.Range;
 import io.milton.http.Request;
@@ -20,6 +21,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
+import org.commonjava.aprox.dotmaven.data.StorageAdvice;
 import org.commonjava.aprox.dotmaven.webctl.RequestInfo;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.util.logging.Logger;
@@ -46,24 +48,18 @@ public class SettingsResource
 
     private final StoreType type;
 
-    private final boolean deployable;
-
-    private final boolean releases;
-
-    private final boolean snapshots;
-
     private byte[] content;
 
     private final RequestInfo requestInfo;
 
-    public SettingsResource( final StoreType type, final String name, final boolean deployable, final boolean releases,
-                             final boolean snapshots, final RequestInfo requestInfo )
+    private final StorageAdvice advice;
+
+    public SettingsResource( final StoreType type, final String name, final StorageAdvice advice,
+                             final RequestInfo requestInfo )
     {
         this.type = type;
         this.name = name;
-        this.deployable = deployable;
-        this.releases = releases;
-        this.snapshots = snapshots;
+        this.advice = advice;
         this.requestInfo = requestInfo;
     }
 
@@ -76,7 +72,7 @@ public class SettingsResource
     @Override
     public String getName()
     {
-        return "settings-" + type.singularEndpointName() + "-" + name + ".xml";
+        return formatSettingsResourceName( type, name );
     }
 
     @Override
@@ -142,7 +138,7 @@ public class SettingsResource
         }
 
         final String template;
-        if ( deployable )
+        if ( advice.isDeployable() )
         {
             logger.info( "Loading deployable template for: %s", name );
             template = load( DEPLOYABLE_TEMPLATE );
@@ -174,8 +170,8 @@ public class SettingsResource
         {
             content = template.replaceAll( NAME_PATTERN, name )
                               .replaceAll( URL_PATTERN, url.toString() )
-                              .replaceAll( RELEASES_PATTERN, Boolean.toString( releases ) )
-                              .replaceAll( SNAPSHOTS_PATTERN, Boolean.toString( snapshots ) )
+                              .replaceAll( RELEASES_PATTERN, Boolean.toString( advice.isReleasesAllowed() ) )
+                              .replaceAll( SNAPSHOTS_PATTERN, Boolean.toString( advice.isSnapshotsAllowed() ) )
                               .getBytes( "UTF-8" );
         }
         catch ( final UnsupportedEncodingException e )

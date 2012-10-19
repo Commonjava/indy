@@ -1,5 +1,7 @@
-package org.commonjava.aprox.dotmaven.res;
+package org.commonjava.aprox.dotmaven.res.settings;
 
+import static org.commonjava.aprox.dotmaven.util.NameUtils.formatSettingsResourceName;
+import static org.commonjava.aprox.dotmaven.util.NameUtils.getStoreKey;
 import io.milton.http.Auth;
 import io.milton.http.Request;
 import io.milton.http.Request.Method;
@@ -22,8 +24,12 @@ import javax.inject.Named;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.dotmaven.DotMavenException;
+import org.commonjava.aprox.dotmaven.data.StorageAdvice;
+import org.commonjava.aprox.dotmaven.data.StorageAdvisor;
+import org.commonjava.aprox.dotmaven.res.DotMavenResourceFactory;
 import org.commonjava.aprox.dotmaven.webctl.RequestInfo;
 import org.commonjava.aprox.model.ArtifactStore;
+import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.util.logging.Logger;
 
 @Named( "settings-folder" )
@@ -37,23 +43,51 @@ public class SettingsFolderResource
     private StoreDataManager aprox;
 
     @Inject
-    private SettingsResourceHandler settingsResourceHandler;
-
-    @Inject
     private RequestInfo requestInfo;
 
-    private String host;
+    @Inject
+    private StorageAdvisor advisor;
 
-    public void setHost( final String host )
+    public SettingsResource createSettingsResource( final String storeName, final ArtifactStore store )
+        throws ProxyDataException, DotMavenException
     {
-        this.host = host;
+        final StorageAdvice storageAdvice = advisor.getStorageAdvice( store );
+
+        return new SettingsResource( store.getKey()
+                                          .getType(), store.getName(), storageAdvice, requestInfo );
+    }
+
+    public SettingsResource createSettingsResource( final String storeName )
+        throws BadRequestException
+    {
+        final StoreKey key = getStoreKey( storeName );
+        if ( key == null )
+        {
+            return null;
+        }
+
+        try
+        {
+            final ArtifactStore store = aprox.getArtifactStore( key );
+            return createSettingsResource( storeName, store );
+        }
+        catch ( final ProxyDataException e )
+        {
+            logger.error( "Failed to retrieve artifact store for: %s. Reason: %s", e, storeName, e.getMessage() );
+            throw new BadRequestException( "Cannot retrieve settings for: " + storeName );
+        }
+        catch ( final DotMavenException e )
+        {
+            logger.error( "Failed to format settings for: %s. Reason: %s", e, storeName, e.getMessage() );
+            throw new BadRequestException( "Cannot retrieve settings for: " + storeName );
+        }
     }
 
     @Override
     public Resource child( final String storeName )
         throws NotAuthorizedException, BadRequestException
     {
-        return settingsResourceHandler.createResource( host, storeName );
+        return createSettingsResource( storeName );
     }
 
     @Override
@@ -76,16 +110,11 @@ public class SettingsFolderResource
         {
             try
             {
-                final StringBuilder storeName = new StringBuilder();
-                storeName.append( "settings-" )
-                         .append( store.getKey()
-                                       .getType()
-                                       .singularEndpointName() )
-                         .append( '-' )
-                         .append( store.getName() )
-                         .append( ".xml" );
+                final String storeName = formatSettingsResourceName( store.getKey()
+                                                                          .getType(), store.getName() );
 
-                resources.add( settingsResourceHandler.createResource( host, storeName.toString(), store ) );
+                logger.info( "\n\nCreating settings resource for: '%s'\n\n", storeName );
+                resources.add( createSettingsResource( storeName, store ) );
             }
             catch ( final ProxyDataException e )
             {
@@ -105,13 +134,13 @@ public class SettingsFolderResource
     @Override
     public String getUniqueId()
     {
-        return "/";
+        return DotMavenResourceFactory.SETTINGS_BASE;
     }
 
     @Override
     public String getName()
     {
-        return "/";
+        return DotMavenResourceFactory.SETTINGS_BASE;
     }
 
     @Override
