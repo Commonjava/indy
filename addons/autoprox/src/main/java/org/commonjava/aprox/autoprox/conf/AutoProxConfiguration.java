@@ -1,13 +1,15 @@
 package org.commonjava.aprox.autoprox.conf;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.commonjava.aprox.conf.AbstractAproxConfigInfo;
+import org.commonjava.aprox.conf.AbstractAproxFeatureConfig;
 import org.commonjava.aprox.conf.AproxConfigInfo;
-import org.commonjava.aprox.conf.AproxFeatureConfig;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
@@ -17,9 +19,9 @@ import org.commonjava.web.config.annotation.SectionName;
 @Alternative
 public class AutoProxConfiguration
 {
-    @javax.enterprise.context.ApplicationScoped
-    public static final class AutoProxFeatureConfig
-        extends AproxFeatureConfig<AutoProxConfiguration, AutoProxConfiguration>
+    @ApplicationScoped
+    public static class AutoProxFeatureConfig
+        extends AbstractAproxFeatureConfig<AutoProxConfiguration, AutoProxConfiguration>
     {
         @Inject
         private AutoProxConfigInfo info;
@@ -44,9 +46,9 @@ public class AutoProxConfiguration
         }
     }
 
-    @javax.enterprise.context.ApplicationScoped
-    public static final class AutoProxConfigInfo
-        extends AproxConfigInfo
+    @ApplicationScoped
+    public static class AutoProxConfigInfo
+        extends AbstractAproxConfigInfo
     {
         public AutoProxConfigInfo()
         {
@@ -63,34 +65,34 @@ public class AutoProxConfiguration
     private boolean deployEnabled;
 
     @ConfigName( "path" )
-    public final void setPath( final String path )
+    public void setPath( final String path )
     {
         this.path = path;
     }
 
-    public final String getPath()
+    public String getPath()
     {
         return path == null ? DEFAULT_PATH : path;
     }
 
-    public final boolean isEnabled()
+    public boolean isEnabled()
     {
         return enabled;
     }
 
     @ConfigName( "enabled" )
-    public final void setEnabled( final boolean enabled )
+    public void setEnabled( final boolean enabled )
     {
         this.enabled = enabled;
     }
 
-    public final boolean isDeployEnabled()
+    public boolean isDeployEnabled()
     {
         return deployEnabled;
     }
 
     @ConfigName( "deployEnabled" )
-    public final void setDeployEnabled( final boolean deployEnabled )
+    public void setDeployEnabled( final boolean deployEnabled )
     {
         this.deployEnabled = deployEnabled;
     }

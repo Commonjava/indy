@@ -15,6 +15,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.tensor.maven;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 
@@ -29,49 +30,73 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
 
 @javax.enterprise.context.ApplicationScoped
-@Component( role = MavenComponentProvider.class )
 public class MavenComponentProvider
-    extends AbstractMAEApplication
 {
-    @Requirement
-    private ModelBuilder modelBuilder;
 
+    private MAEApp app;
+
+    @PostConstruct
     public void startMAE()
         throws MAEException
     {
-        load();
+        app = new MAEApp();
+        app.startMAE();
     }
 
     @Produces
     @Default
     public ModelReader getModelReader()
     {
-        return new DefaultModelReader();
+        return app.getModelReader();
     }
 
     @Produces
     @Default
     public ModelBuilder getModelBuilder()
     {
-        return modelBuilder;
+        return app.getModelBuilder();
     }
 
-    @Override
-    public String getId()
+    @Component( role = MAEApp.class )
+    private static class MAEApp
+        extends AbstractMAEApplication
     {
-        return getName();
-    }
+        @Requirement
+        private ModelBuilder modelBuilder;
 
-    @Override
-    public String getName()
-    {
-        return "AProx-Tensor-Integration";
-    }
+        public void startMAE()
+            throws MAEException
+        {
+            load();
+        }
 
-    @Override
-    public ComponentSelector getComponentSelector()
-    {
-        return new ComponentSelector().setSelection( ModelResolver.class, "aprox" );
+        ModelReader getModelReader()
+        {
+            return new DefaultModelReader();
+        }
+
+        ModelBuilder getModelBuilder()
+        {
+            return modelBuilder;
+        }
+
+        @Override
+        public String getId()
+        {
+            return getName();
+        }
+
+        @Override
+        public String getName()
+        {
+            return "AProx-Tensor-Integration";
+        }
+
+        @Override
+        public ComponentSelector getComponentSelector()
+        {
+            return new ComponentSelector().setSelection( ModelResolver.class, "aprox" );
+        }
     }
 
 }

@@ -7,7 +7,7 @@ import org.infinispan.Cache;
 import org.infinispan.manager.CacheContainer;
 
 @javax.enterprise.context.ApplicationScoped
-public final class TestTarget
+public class TestTarget
 {
     @Inject
     private CacheContainer container;
@@ -22,7 +22,17 @@ public final class TestTarget
         dataCache.start();
     }
 
-    public Cache<TestKey, TestValue> cache;
+    private Cache<TestKey, TestValue> cache;
 
-    public Cache<String, byte[]> dataCache;
+    private Cache<String, byte[]> dataCache;
+
+    public Cache<TestKey, TestValue> getCache()
+    {
+        return cache;
+    }
+
+    public Cache<String, byte[]> getDataCache()
+    {
+        return dataCache;
+    }
 }

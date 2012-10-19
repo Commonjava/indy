@@ -6,8 +6,9 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.commonjava.aprox.conf.AbstractAproxConfigInfo;
+import org.commonjava.aprox.conf.AbstractAproxFeatureConfig;
 import org.commonjava.aprox.conf.AproxConfigInfo;
-import org.commonjava.aprox.conf.AproxFeatureConfig;
 import org.commonjava.aprox.inject.Production;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.ConfigName;
@@ -20,8 +21,8 @@ public class AproxTensorConfig
 {
 
     @javax.enterprise.context.ApplicationScoped
-    public static final class AproxTensorFeatureConfig
-        extends AproxFeatureConfig<AproxTensorConfig, AproxTensorConfig>
+    public static class AproxTensorFeatureConfig
+        extends AbstractAproxFeatureConfig<AproxTensorConfig, AproxTensorConfig>
     {
         @Inject
         private AproxTensorConfigInfo info;
@@ -48,8 +49,8 @@ public class AproxTensorConfig
     }
 
     @javax.enterprise.context.ApplicationScoped
-    public static final class AproxTensorConfigInfo
-        extends AproxConfigInfo
+    public static class AproxTensorConfigInfo
+        extends AbstractAproxConfigInfo
     {
         public AproxTensorConfigInfo()
         {
@@ -65,24 +66,24 @@ public class AproxTensorConfig
 
     private Integer discoveryTimeoutSeconds;
 
-    public final String getDiscoveryGroup()
+    public String getDiscoveryGroup()
     {
         return discoveryGroup == null ? DEFAULT_TENSOR_DISCOVERY_GROUP : discoveryGroup;
     }
 
-    public final int getDiscoveryTimeoutSeconds()
+    public int getDiscoveryTimeoutSeconds()
     {
         return discoveryTimeoutSeconds == null ? DEFAULT_TENSOR_DISCOVERY_TIMEOUT_SECONDS : discoveryTimeoutSeconds;
     }
 
     @ConfigName( "discoveryGroup" )
-    public final void setDiscoveryGroup( final String discoveryGroup )
+    public void setDiscoveryGroup( final String discoveryGroup )
     {
         this.discoveryGroup = discoveryGroup;
     }
 
     @ConfigName( "discoveryTimeoutSeconds" )
-    public final void setDiscoveryTimeoutSeconds( final int discoveryTimeoutSeconds )
+    public void setDiscoveryTimeoutSeconds( final int discoveryTimeoutSeconds )
     {
         this.discoveryTimeoutSeconds = discoveryTimeoutSeconds;
     }

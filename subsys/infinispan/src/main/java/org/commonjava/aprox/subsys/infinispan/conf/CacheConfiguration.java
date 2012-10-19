@@ -6,10 +6,11 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.commonjava.aprox.conf.AbstractAproxConfigInfo;
 import org.commonjava.aprox.conf.AproxConfigInfo;
-import org.commonjava.aprox.conf.AproxFeatureConfig;
+import org.commonjava.aprox.conf.AbstractAproxFeatureConfig;
 import org.commonjava.web.config.ConfigurationException;
-import org.commonjava.web.config.annotation.ConfigNames;
+import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 
 @SectionName( "infinispan" )
@@ -18,8 +19,8 @@ import org.commonjava.web.config.annotation.SectionName;
 public class CacheConfiguration
 {
     @javax.enterprise.context.ApplicationScoped
-    public static final class CacheFeatureConfig
-        extends AproxFeatureConfig<CacheConfiguration, CacheConfiguration>
+    public static class CacheFeatureConfig
+        extends AbstractAproxFeatureConfig<CacheConfiguration, CacheConfiguration>
     {
         @Inject
         private CacheConfigInfo info;
@@ -45,8 +46,8 @@ public class CacheConfiguration
     }
 
     @javax.enterprise.context.ApplicationScoped
-    public static final class CacheConfigInfo
-        extends AproxConfigInfo
+    public static class CacheConfigInfo
+        extends AbstractAproxConfigInfo
     {
         public CacheConfigInfo()
         {
@@ -56,15 +57,15 @@ public class CacheConfiguration
 
     public static final String DEFAULT_PATH = "/etc/aprox/infinispan.xml";
 
-    private final String path;
+    private String path;
 
-    @ConfigNames( { "path" } )
-    public CacheConfiguration( final String path )
+    @ConfigName( "path" )
+    public void setPath( final String path )
     {
         this.path = path;
     }
 
-    public final String getPath()
+    public String getPath()
     {
         return path == null ? DEFAULT_PATH : path;
     }

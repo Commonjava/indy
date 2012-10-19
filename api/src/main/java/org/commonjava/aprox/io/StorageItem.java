@@ -124,4 +124,9 @@ public final class StorageItem
         return provider.getDetachedFile( key, path );
     }
 
+    public void mkdirs()
+    {
+        provider.mkdirs( key, path );
+    }
+
 }

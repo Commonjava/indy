@@ -36,6 +36,8 @@ public class WeldProvider
         final URL resource = Thread.currentThread()
                                    .getContextClassLoader()
                                    .getResource( "infinispan.xml" );
-        return new CacheConfiguration( resource.getPath() );
+        final CacheConfiguration cc = new CacheConfiguration();
+        cc.setPath( resource.getPath() );
+        return cc;
     }
 }

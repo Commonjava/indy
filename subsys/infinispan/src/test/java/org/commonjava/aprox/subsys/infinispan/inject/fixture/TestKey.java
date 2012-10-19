@@ -1,6 +1,6 @@
 package org.commonjava.aprox.subsys.infinispan.inject.fixture;
 
-public final class TestKey
+public class TestKey
 {
     public TestKey( final String key )
     {

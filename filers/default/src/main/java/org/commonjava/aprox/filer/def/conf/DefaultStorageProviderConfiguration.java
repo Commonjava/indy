@@ -8,8 +8,9 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.commonjava.aprox.conf.AbstractAproxConfigInfo;
 import org.commonjava.aprox.conf.AproxConfigInfo;
-import org.commonjava.aprox.conf.AproxFeatureConfig;
+import org.commonjava.aprox.conf.AbstractAproxFeatureConfig;
 import org.commonjava.aprox.inject.Production;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.ConfigNames;
@@ -22,13 +23,13 @@ public class DefaultStorageProviderConfiguration
 {
 
     @javax.enterprise.context.ApplicationScoped
-    public static final class FlatFileFeatureConfig
-        extends AproxFeatureConfig<DefaultStorageProviderConfiguration, DefaultStorageProviderConfiguration>
+    public static class FilerDefaultFeatureConfig
+        extends AbstractAproxFeatureConfig<DefaultStorageProviderConfiguration, DefaultStorageProviderConfiguration>
     {
         @Inject
         private FilerDefaultConfigInfo info;
 
-        public FlatFileFeatureConfig()
+        public FilerDefaultFeatureConfig()
         {
             super( DefaultStorageProviderConfiguration.class );
         }
@@ -50,8 +51,8 @@ public class DefaultStorageProviderConfiguration
     }
 
     @javax.enterprise.context.ApplicationScoped
-    public static final class FilerDefaultConfigInfo
-        extends AproxConfigInfo
+    public static class FilerDefaultConfigInfo
+        extends AbstractAproxConfigInfo
     {
         public FilerDefaultConfigInfo()
         {

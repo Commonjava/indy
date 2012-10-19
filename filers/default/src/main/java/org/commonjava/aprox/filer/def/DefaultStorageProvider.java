@@ -122,4 +122,10 @@ public class DefaultStorageProvider
 
         return PathUtils.join( name, path );
     }
+
+    @Override
+    public void mkdirs( final StoreKey key, final String path )
+    {
+        getDetachedFile( key, path ).mkdirs();
+    }
 }

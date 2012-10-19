@@ -4,16 +4,17 @@ import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
+import org.commonjava.aprox.conf.AbstractAproxConfigInfo;
 import org.commonjava.aprox.conf.AproxConfigInfo;
-import org.commonjava.aprox.conf.AproxFeatureConfig;
+import org.commonjava.aprox.conf.AbstractAproxFeatureConfig;
 import org.commonjava.aprox.inject.Production;
 import org.commonjava.badgr.conf.AdminConfiguration;
 import org.commonjava.badgr.conf.DefaultAdminConfiguration;
 import org.commonjava.web.config.ConfigurationException;
 
 @javax.enterprise.context.ApplicationScoped
-public final class DefaultAdminConfigFeature
-    extends AproxFeatureConfig<AdminConfiguration, DefaultAdminConfiguration>
+public class DefaultAdminConfigFeature
+    extends AbstractAproxFeatureConfig<AdminConfiguration, DefaultAdminConfiguration>
 {
     @Inject
     private DefaultAdminConfigInfo info;
@@ -39,8 +40,8 @@ public final class DefaultAdminConfigFeature
     }
 
     @javax.enterprise.context.ApplicationScoped
-    public static final class DefaultAdminConfigInfo
-        extends AproxConfigInfo
+    public static class DefaultAdminConfigInfo
+        extends AbstractAproxConfigInfo
     {
         public DefaultAdminConfigInfo()
         {

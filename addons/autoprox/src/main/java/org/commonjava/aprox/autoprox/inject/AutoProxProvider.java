@@ -33,7 +33,7 @@ public class AutoProxProvider
     @Produces
     @Production
     @Default
-    public final AutoProxModel loadAutoProxModel()
+    public AutoProxModel loadAutoProxModel()
         throws IOException
     {
         if ( model == null )

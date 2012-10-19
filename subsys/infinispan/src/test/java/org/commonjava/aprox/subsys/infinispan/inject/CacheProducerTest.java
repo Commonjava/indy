@@ -100,8 +100,10 @@ public class CacheProducerTest
     @Test
     public void injectTypedCacheWithNamedAnnotation()
     {
-        target.cache.put( new TestKey( "key" ), new TestValue( "value" ) );
-        target.dataCache.put( "foo", "bar".getBytes() );
+        target.getCache()
+              .put( new TestKey( "key" ), new TestValue( "value" ) );
+        target.getDataCache()
+              .put( "foo", "bar".getBytes() );
     }
 
 }

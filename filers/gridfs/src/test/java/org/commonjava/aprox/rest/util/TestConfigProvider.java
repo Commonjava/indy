@@ -11,7 +11,7 @@ import org.commonjava.aprox.subsys.infinispan.conf.CacheConfiguration;
 import org.commonjava.web.config.ConfigurationException;
 
 @javax.enterprise.context.ApplicationScoped
-public final class TestConfigProvider
+public class TestConfigProvider
 {
     @Produces
     @Default
@@ -36,6 +36,8 @@ public final class TestConfigProvider
         final URL resource = Thread.currentThread()
                                    .getContextClassLoader()
                                    .getResource( "infinispan.xml" );
-        return new CacheConfiguration( resource.getPath() );
+        final CacheConfiguration cc = new CacheConfiguration();
+        cc.setPath( resource.getPath() );
+        return cc;
     }
 }

@@ -216,4 +216,11 @@ public class GridStorageProvider
         return fs.getFile( getPath( key, path ) );
     }
 
+    @Override
+    public void mkdirs( final StoreKey key, final String path )
+    {
+        final File f = fs.getFile( getPath( key, path ) );
+        f.mkdirs();
+    }
+
 }

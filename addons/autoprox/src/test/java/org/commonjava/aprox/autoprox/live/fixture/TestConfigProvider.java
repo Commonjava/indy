@@ -20,9 +20,9 @@ import org.commonjava.aprox.model.StoreType;
 import org.commonjava.web.json.test.WebFixture;
 
 @javax.enterprise.context.ApplicationScoped
-public final class TestConfigProvider
+public class TestConfigProvider
 {
-    public static final String REPO_ROOT_DIR = "repo.root.dir";
+    public static String REPO_ROOT_DIR = "repo.root.dir";
 
     private AutoProxModel model;
 

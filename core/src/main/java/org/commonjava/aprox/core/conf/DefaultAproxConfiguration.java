@@ -21,9 +21,10 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.commonjava.aprox.conf.AbstractAproxConfigInfo;
 import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.aprox.conf.AproxConfiguration;
-import org.commonjava.aprox.conf.AproxFeatureConfig;
+import org.commonjava.aprox.conf.AbstractAproxFeatureConfig;
 import org.commonjava.aprox.inject.Production;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.ConfigName;
@@ -38,8 +39,8 @@ public class DefaultAproxConfiguration
 {
 
     @javax.enterprise.context.ApplicationScoped
-    public static final class FeatureConfig
-        extends AproxFeatureConfig<AproxConfiguration, DefaultAproxConfiguration>
+    public static class FeatureConfig
+        extends AbstractAproxFeatureConfig<AproxConfiguration, DefaultAproxConfiguration>
     {
         @Inject
         private ConfigInfo info;
@@ -66,8 +67,8 @@ public class DefaultAproxConfiguration
     }
 
     @javax.enterprise.context.ApplicationScoped
-    public static final class ConfigInfo
-        extends AproxConfigInfo
+    public static class ConfigInfo
+        extends AbstractAproxConfigInfo
     {
         public ConfigInfo()
         {

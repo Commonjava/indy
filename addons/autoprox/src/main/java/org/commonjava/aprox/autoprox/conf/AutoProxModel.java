@@ -21,32 +21,32 @@ public class AutoProxModel
 
     private String repoValidationPath;
 
-    public final Repository getRepo()
+    public Repository getRepo()
     {
         return repo;
     }
 
-    public final DeployPoint getDeploy()
+    public DeployPoint getDeploy()
     {
         return deploy;
     }
 
-    public final Group getGroup()
+    public Group getGroup()
     {
         return group;
     }
 
-    public final void setRepo( final Repository repo )
+    public void setRepo( final Repository repo )
     {
         this.repo = repo;
     }
 
-    public final void setDeploy( final DeployPoint deploy )
+    public void setDeploy( final DeployPoint deploy )
     {
         this.deploy = deploy;
     }
 
-    public final void setGroup( final Group group )
+    public void setGroup( final Group group )
     {
         this.group = group;
     }

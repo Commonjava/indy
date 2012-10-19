@@ -32,4 +32,6 @@ public interface StorageProvider
 
     File getDetachedFile( StoreKey key, String path );
 
+    void mkdirs( StoreKey key, String path );
+
 }

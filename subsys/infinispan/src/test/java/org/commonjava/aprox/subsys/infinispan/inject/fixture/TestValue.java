@@ -1,6 +1,6 @@
 package org.commonjava.aprox.subsys.infinispan.inject.fixture;
 
-public final class TestValue
+public class TestValue
 {
     public TestValue( final String value )
     {
