@@ -55,6 +55,9 @@ public interface StoreDataManager
     List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
         throws ProxyDataException;
 
+    List<ArtifactStore> getOrderedStoresInGroup( final String groupName )
+        throws ProxyDataException;
+
     Set<Group> getGroupsContaining( final StoreKey repo )
         throws ProxyDataException;
 

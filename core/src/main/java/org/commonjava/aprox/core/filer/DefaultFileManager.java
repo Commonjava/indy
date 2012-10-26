@@ -50,8 +50,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.commonjava.aprox.change.event.ArtifactStoreRescanEvent;
 import org.commonjava.aprox.change.event.FileAccessEvent;
-import org.commonjava.aprox.change.event.FileDeletionEvent;
-import org.commonjava.aprox.change.event.FileStorageEvent;
+import org.commonjava.aprox.change.event.FileEventManager;
 import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.io.StorageItem;
@@ -79,16 +78,10 @@ public class DefaultFileManager
     private StorageProvider storage;
 
     @Inject
-    private Event<FileStorageEvent> storageEvent;
-
-    @Inject
-    private Event<FileAccessEvent> accessEvent;
-
-    @Inject
-    private Event<FileDeletionEvent> deleteEvent;
-
-    @Inject
     private Event<ArtifactStoreRescanEvent> rescanEvent;
+
+    @Inject
+    private FileEventManager fileEventManager;
 
     private final Map<String, Future<StorageItem>> pending = new HashMap<String, Future<StorageItem>>();
 
@@ -108,6 +101,7 @@ public class DefaultFileManager
         this.config = config;
         this.storage = storage;
         this.http = http;
+        this.fileEventManager = new FileEventManager();
     }
 
     @Override
@@ -191,21 +185,11 @@ public class DefaultFileManager
             logger.info( "Using stored copy from artifact store: %s for: %s", store.getName(), path );
             final StorageItem item = getStorageReference( store.getKey(), path );
 
-            fire( accessEvent, new FileAccessEvent( item ) );
-
             return item;
         }
         else
         {
             return null;
-        }
-    }
-
-    private <T> void fire( final Event<T> eventQueue, final T event )
-    {
-        if ( eventQueue != null )
-        {
-            eventQueue.fire( event );
         }
     }
 
@@ -236,7 +220,7 @@ public class DefaultFileManager
                                    final int timeoutSeconds, final boolean suppressFailures )
         throws AproxWorkflowException
     {
-        final Downloader dl = new Downloader( url, repository, target, http, storageEvent );
+        final Downloader dl = new Downloader( url, repository, target, http );
 
         final Future<StorageItem> future = executor.submit( dl );
         pending.put( url, future );
@@ -436,10 +420,8 @@ public class DefaultFileManager
         OutputStream out = null;
         try
         {
-            out = target.openOutputStream();
+            out = target.openOutputStream( false );
             copy( stream, out );
-
-            fire( storageEvent, new FileStorageEvent( FileStorageEvent.Type.UPLOAD, target ) );
         }
         catch ( final IOException e )
         {
@@ -473,10 +455,12 @@ public class DefaultFileManager
         {
             if ( store instanceof DeployPoint )
             {
+                logger.info( "Found deploy point: %s", store.getName() );
                 final DeployPoint dp = (DeployPoint) store;
                 if ( pathInfo == null )
                 {
                     // probably not an artifact, most likely metadata instead...
+                    logger.info( "Selecting it for non-artifact storage: %s", path );
                     selected = dp;
                     break;
                 }
@@ -484,12 +468,14 @@ public class DefaultFileManager
                 {
                     if ( dp.isAllowSnapshots() )
                     {
+                        logger.info( "Selecting it for snapshot storage: %s", pathInfo );
                         selected = dp;
                         break;
                     }
                 }
                 else if ( dp.isAllowReleases() )
                 {
+                    logger.info( "Selecting it for release storage: %s", pathInfo );
                     selected = dp;
                     break;
                 }
@@ -543,19 +529,19 @@ public class DefaultFileManager
     @Override
     public StorageItem getStoreRootDirectory( final StoreKey key )
     {
-        return new StorageItem( key, storage, StorageItem.ROOT );
+        return new StorageItem( key, storage, fileEventManager, StorageItem.ROOT );
     }
 
     @Override
     public StorageItem getStorageReference( final ArtifactStore store, final String... path )
     {
-        return new StorageItem( store.getKey(), storage, path );
+        return new StorageItem( store.getKey(), storage, fileEventManager, path );
     }
 
     @Override
     public StorageItem getStorageReference( final StoreKey key, final String... path )
     {
-        return new StorageItem( key, storage, path );
+        return new StorageItem( key, storage, fileEventManager, path );
     }
 
     private static final class Downloader
@@ -570,20 +556,17 @@ public class DefaultFileManager
 
         private final StorageItem target;
 
-        private final Event<FileStorageEvent> fileEvent;
-
         private final AproxHttp http;
 
         private AproxWorkflowException error;
 
         public Downloader( final String url, final Repository repository, final StorageItem target,
-                           final AproxHttp client, final Event<FileStorageEvent> fileEvent )
+                           final AproxHttp client )
         {
             this.url = url;
             this.repository = repository;
             this.target = target;
             this.http = client;
-            this.fileEvent = fileEvent;
         }
 
         @Override
@@ -628,11 +611,6 @@ public class DefaultFileManager
                     out = target.openOutputStream();
 
                     copy( in, out );
-
-                    if ( fileEvent != null )
-                    {
-                        fileEvent.fire( new FileStorageEvent( FileStorageEvent.Type.DOWNLOAD, target ) );
-                    }
                 }
                 catch ( final IOException e )
                 {
@@ -752,8 +730,6 @@ public class DefaultFileManager
                                                   e, item, e.getMessage() );
             }
         }
-
-        fire( deleteEvent, new FileDeletionEvent( item ) );
     }
 
     @Override
@@ -770,7 +746,7 @@ public class DefaultFileManager
     public void rescan( final ArtifactStore store )
         throws AproxWorkflowException
     {
-        executor.execute( new Rescanner( getStorageReference( store, ROOT_PATH ), rescansInProgress, accessEvent,
+        executor.execute( new Rescanner( getStorageReference( store, ROOT_PATH ), rescansInProgress, fileEventManager,
                                          rescanEvent ) );
     }
 
@@ -781,16 +757,16 @@ public class DefaultFileManager
 
         private final StorageItem start;
 
-        private final Event<FileAccessEvent> accessEvent;
-
         private final Event<ArtifactStoreRescanEvent> rescanEvent;
 
+        private final FileEventManager fileEventManager;
+
         public Rescanner( final StorageItem start, final Set<StoreKey> rescansInProgress,
-                          final Event<FileAccessEvent> accessEvent, final Event<ArtifactStoreRescanEvent> rescanEvent )
+                          final FileEventManager fileEventManager, final Event<ArtifactStoreRescanEvent> rescanEvent )
         {
             this.start = start;
             this.rescansInProgress = rescansInProgress;
-            this.accessEvent = accessEvent;
+            this.fileEventManager = fileEventManager;
             this.rescanEvent = rescanEvent;
         }
 
@@ -842,10 +818,7 @@ public class DefaultFileManager
                 }
             }
 
-            if ( accessEvent != null )
-            {
-                accessEvent.fire( new FileAccessEvent( item ) );
-            }
+            fileEventManager.fire( new FileAccessEvent( item ) );
         }
 
     }

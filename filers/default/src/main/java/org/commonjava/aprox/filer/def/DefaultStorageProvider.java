@@ -97,10 +97,10 @@ public class DefaultStorageProvider
     }
 
     @Override
-    public void delete( final StoreKey key, final String path )
+    public boolean delete( final StoreKey key, final String path )
         throws IOException
     {
-        getDetachedFile( key, path ).delete();
+        return getDetachedFile( key, path ).delete();
     }
 
     @Override

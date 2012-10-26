@@ -103,6 +103,19 @@ public class MemoryStoreDataManager
     public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
         throws ProxyDataException
     {
+        return getGroupOrdering( groupName, false );
+    }
+
+    @Override
+    public List<ArtifactStore> getOrderedStoresInGroup( final String groupName )
+        throws ProxyDataException
+    {
+        return getGroupOrdering( groupName, true );
+    }
+
+    private List<ArtifactStore> getGroupOrdering( final String groupName, final boolean includeGroups )
+        throws ProxyDataException
+    {
         final Group master = (Group) stores.get( new StoreKey( StoreType.group, groupName ) );
         if ( master == null )
         {
@@ -110,19 +123,24 @@ public class MemoryStoreDataManager
         }
 
         final List<ArtifactStore> result = new ArrayList<ArtifactStore>();
-        recurseGroup( master, result );
+        recurseGroup( master, result, includeGroups );
 
         return result;
     }
 
-    private void recurseGroup( final Group master, final List<ArtifactStore> result )
+    private void recurseGroup( final Group master, final List<ArtifactStore> result, final boolean includeGroups )
     {
+        if ( includeGroups )
+        {
+            result.add( master );
+        }
+
         for ( final StoreKey key : master.getConstituents() )
         {
             final StoreType type = key.getType();
             if ( type == StoreType.group )
             {
-                recurseGroup( (Group) stores.get( key ), result );
+                recurseGroup( (Group) stores.get( key ), result, includeGroups );
             }
             else
             {

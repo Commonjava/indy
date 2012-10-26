@@ -12,6 +12,7 @@ import java.io.OutputStream;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.change.event.FileAccessEvent;
+import org.commonjava.aprox.change.event.FileEventManager;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depbase.fixture.TestConfigProvider;
 import org.commonjava.aprox.io.StorageItem;
@@ -110,7 +111,8 @@ public class TensorStorageListenerLiveTest
             closeQuietly( os );
         }
 
-        listener.handleFileAccessEvent( new FileAccessEvent( new StorageItem( dp.getKey(), provider, path ) ) );
+        listener.handleFileAccessEvent( new FileAccessEvent( new StorageItem( dp.getKey(), provider,
+                                                                              new FileEventManager(), path ) ) );
     }
 
     @Test
@@ -137,7 +139,8 @@ public class TensorStorageListenerLiveTest
             closeQuietly( os );
         }
 
-        listener.handleFileAccessEvent( new FileAccessEvent( new StorageItem( dp.getKey(), provider, path ) ) );
+        listener.handleFileAccessEvent( new FileAccessEvent( new StorageItem( dp.getKey(), provider,
+                                                                              new FileEventManager(), path ) ) );
     }
 
     //    @Test

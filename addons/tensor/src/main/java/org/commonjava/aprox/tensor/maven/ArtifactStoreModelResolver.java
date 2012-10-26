@@ -44,10 +44,14 @@ public class ArtifactStoreModelResolver
 
     private final List<ArtifactStore> stores;
 
-    public ArtifactStoreModelResolver( final FileManager fileManager, final List<ArtifactStore> stores )
+    private final boolean fireEvents;
+
+    public ArtifactStoreModelResolver( final FileManager fileManager, final List<ArtifactStore> stores,
+                                       final boolean fireEvents )
     {
         this.fileManager = fileManager;
         this.stores = stores;
+        this.fireEvents = fireEvents;
     }
 
     @Override
@@ -74,7 +78,7 @@ public class ArtifactStoreModelResolver
                                                   version );
         }
 
-        return new StoreModelSource( stream );
+        return new StoreModelSource( stream, fireEvents );
     }
 
     @Override

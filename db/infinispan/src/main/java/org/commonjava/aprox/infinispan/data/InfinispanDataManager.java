@@ -202,6 +202,19 @@ public class InfinispanDataManager
     public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
         throws ProxyDataException
     {
+        return getGroupOrdering( groupName, false );
+    }
+
+    @Override
+    public List<ArtifactStore> getOrderedStoresInGroup( final String groupName )
+        throws ProxyDataException
+    {
+        return getGroupOrdering( groupName, true );
+    }
+
+    private List<ArtifactStore> getGroupOrdering( final String groupName, final boolean includeGroups )
+        throws ProxyDataException
+    {
         final Group master = get( group, groupName, Group.class );
         if ( master == null )
         {
@@ -209,7 +222,7 @@ public class InfinispanDataManager
         }
 
         final List<ArtifactStore> result = new ArrayList<ArtifactStore>();
-        recurseGroup( master, result );
+        recurseGroup( master, result, includeGroups );
 
         return result;
     }
@@ -304,14 +317,19 @@ public class InfinispanDataManager
         return result;
     }
 
-    private void recurseGroup( final Group master, final List<ArtifactStore> result )
+    private void recurseGroup( final Group master, final List<ArtifactStore> result, final boolean includeGroups )
     {
+        if ( includeGroups )
+        {
+            result.add( master );
+        }
+
         for ( final StoreKey key : master.getConstituents() )
         {
             final StoreType type = key.getType();
             if ( type == StoreType.group )
             {
-                recurseGroup( get( key, Group.class ), result );
+                recurseGroup( get( key, Group.class ), result, includeGroups );
             }
             else
             {
@@ -326,6 +344,11 @@ public class InfinispanDataManager
 
     private boolean groupContains( final Group g, final StoreKey key )
     {
+        if ( g == null )
+        {
+            return false;
+        }
+
         if ( g.getConstituents()
               .contains( key ) )
         {
@@ -338,7 +361,7 @@ public class InfinispanDataManager
                 if ( constituent.getType() == group )
                 {
                     final Group embedded = get( constituent, Group.class );
-                    if ( groupContains( embedded, key ) )
+                    if ( embedded != null && groupContains( embedded, key ) )
                     {
                         return true;
                     }

@@ -188,14 +188,16 @@ public class GridStorageProvider
     }
 
     @Override
-    public void delete( final StoreKey key, final String path )
+    public boolean delete( final StoreKey key, final String path )
         throws IOException
     {
         final File f = fs.getFile( getPath( key, path ) );
         if ( f.exists() )
         {
-            f.delete();
+            return f.delete();
         }
+
+        return false;
     }
 
     @Override

@@ -42,6 +42,11 @@
       <artifactId>aprox-db-infinispan</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.infinispan</groupId>
+      <artifactId>infinispan-core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-filer-default</artifactId>
     </dependency>
@@ -75,6 +80,11 @@
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
+          <archive>
+            <manifestEntries>
+              <Dependencies>org.infinispan export</Dependencies>
+            </manifestEntries>
+          </archive>
           <descriptorRefs>
             <descriptorRef>war</descriptorRef>
           </descriptorRefs>

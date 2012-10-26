@@ -7,7 +7,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.commonjava.aprox.change.event.FileAccessEvent;
+import org.commonjava.aprox.change.event.FileDeletionEvent;
+import org.commonjava.aprox.change.event.FileEventManager;
+import org.commonjava.aprox.change.event.FileStorageEvent;
+import org.commonjava.aprox.change.event.FileStorageEvent.Type;
 import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.StoreType;
 
 public final class StorageItem
 {
@@ -22,9 +28,13 @@ public final class StorageItem
 
     private final StorageProvider provider;
 
-    public StorageItem( final StoreKey key, final StorageProvider provider, final String... path )
+    private final FileEventManager fileEventManager;
+
+    public StorageItem( final StoreKey key, final StorageProvider provider, final FileEventManager fileEventManager,
+                        final String... path )
     {
         this.key = key;
+        this.fileEventManager = fileEventManager;
         this.path = join( path, "/" );
         this.provider = provider;
     }
@@ -57,12 +67,12 @@ public final class StorageItem
             return null;
         }
 
-        return new StorageItem( key, provider, parentPath( path ) );
+        return new StorageItem( key, provider, fileEventManager, parentPath( path ) );
     }
 
     public StorageItem getChild( final String file )
     {
-        return new StorageItem( key, provider, path, file );
+        return new StorageItem( key, provider, fileEventManager, path, file );
     }
 
     private String[] parentPath( final String path )
@@ -83,13 +93,57 @@ public final class StorageItem
     public InputStream openInputStream()
         throws IOException
     {
-        return provider.openInputStream( key, path );
+        return openInputStream( true );
+    }
+
+    public InputStream openInputStream( final boolean fireEvents )
+        throws IOException
+    {
+        final InputStream stream = provider.openInputStream( key, path );
+        if ( fireEvents )
+        {
+            fileEventManager.fire( new FileAccessEvent( this ) );
+        }
+        return stream;
     }
 
     public OutputStream openOutputStream()
         throws IOException
     {
-        return provider.openOutputStream( key, path );
+        return openOutputStream( false, true );
+    }
+
+    public OutputStream openOutputStream( final boolean generated )
+        throws IOException
+    {
+        return openOutputStream( false, true );
+    }
+
+    public OutputStream openOutputStream( final boolean generated, final boolean fireEvents )
+        throws IOException
+    {
+        final OutputStream stream = provider.openOutputStream( key, path );
+
+        if ( fireEvents )
+        {
+            Type type;
+            if ( generated )
+            {
+                type = Type.GENERATE;
+            }
+            else if ( key.getType() == StoreType.repository )
+            {
+                type = Type.DOWNLOAD;
+            }
+            else
+            {
+                type = Type.UPLOAD;
+            }
+
+            fileEventManager.fire( new FileStorageEvent( type, this ) );
+        }
+
+        return stream;
     }
 
     public boolean exists()
@@ -108,10 +162,22 @@ public final class StorageItem
         return provider.getFilePath( key, path );
     }
 
-    public void delete()
+    public boolean delete()
         throws IOException
     {
-        provider.delete( key, path );
+        return delete( true );
+    }
+
+    public boolean delete( final boolean fireEvents )
+        throws IOException
+    {
+        final boolean deleted = provider.delete( key, path );
+        if ( deleted && fireEvents )
+        {
+            fileEventManager.fire( new FileDeletionEvent( this ) );
+        }
+
+        return deleted;
     }
 
     public String[] list()

@@ -12,7 +12,9 @@ import io.milton.resource.MakeCollectionableResource;
 import io.milton.resource.PropFindableResource;
 import io.milton.resource.Resource;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -22,6 +24,8 @@ import org.commonjava.aprox.dotmaven.webctl.RequestInfo;
 import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.model.ArtifactStore;
+import org.commonjava.aprox.rest.AproxWorkflowException;
+import org.commonjava.util.logging.Logger;
 
 public class StoreFolderResource
     implements MakeCollectionableResource, PropFindableResource
@@ -29,7 +33,9 @@ public class StoreFolderResource
 
     public static final String ROOT = "/";
 
-    private final ArtifactStore store;
+    private final Logger logger = new Logger( getClass() );
+
+    private final List<ArtifactStore> stores;
 
     private final String path;
 
@@ -41,10 +47,17 @@ public class StoreFolderResource
 
     private final StorageAdvice advice;
 
-    public StoreFolderResource( final ArtifactStore store, final String path, final FileManager fileManager,
-                                final StoreDataManager dataManager, final RequestInfo info, final StorageAdvice advice )
+    public StoreFolderResource( final String path, final FileManager fileManager, final StoreDataManager dataManager,
+                                final RequestInfo info, final StorageAdvice advice, final ArtifactStore... stores )
     {
-        this.store = store;
+        this( path, fileManager, dataManager, info, advice, Arrays.asList( stores ) );
+    }
+
+    public StoreFolderResource( final String path, final FileManager fileManager, final StoreDataManager dataManager,
+                                final RequestInfo info, final StorageAdvice advice, final List<ArtifactStore> stores )
+    {
+        logger.info( "Constructing StoreFolderResource with path of: %s", path );
+        this.stores = stores;
         this.path = path;
         this.fileManager = fileManager;
         this.dataManager = dataManager;
@@ -57,10 +70,19 @@ public class StoreFolderResource
         throws NotAuthorizedException, BadRequestException
     {
         final String childPath = appendPath( path, childName );
-        final StorageItem item = fileManager.getStorageReference( store.getKey(), childPath );
+        StorageItem item;
+        try
+        {
+            item = fileManager.retrieveFirst( stores, childPath );
+        }
+        catch ( final AproxWorkflowException e )
+        {
+            throw new BadRequestException( "Cannot retrieve child: " + childName );
+        }
+
         if ( item.isDirectory() )
         {
-            return new StoreFolderResource( store, childPath, fileManager, dataManager, info, advice );
+            return new StoreFolderResource( childPath, fileManager, dataManager, info, advice, stores );
         }
         else
         {
@@ -81,22 +103,35 @@ public class StoreFolderResource
     public List<? extends Resource> getChildren()
         throws NotAuthorizedException, BadRequestException
     {
-        // FIXME: If this is a group, get all constituents and perform getChildren on all...
+        final List<String> allListing = new ArrayList<String>();
+        for ( final ArtifactStore store : stores )
+        {
+            logger.info( "Retrieving children of path: %s from: %s", path, store.getKey() );
+            final StorageItem item = fileManager.getStorageReference( store.getKey(), path );
 
-        final StorageItem item = fileManager.getStorageReference( store.getKey(), path );
+            final String[] listing = item.list();
+            if ( listing != null )
+            {
+                for ( final String fname : listing )
+                {
+                    if ( !allListing.contains( fname ) )
+                    {
+                        allListing.add( fname );
+                    }
+                }
+            }
+        }
 
         final List<Resource> children = new ArrayList<Resource>();
 
-        final String[] listing = item.list();
-        if ( listing != null )
+        // TODO: This is inefficient, we're giving up the store info only to look it up again! 
+        // It could also cause errors. Need to streamline this.
+        for ( final String fname : allListing )
         {
-            for ( final String fname : listing )
+            final Resource child = child( fname );
+            if ( child != null )
             {
-                final Resource child = child( fname );
-                if ( child != null )
-                {
-                    children.add( child );
-                }
+                children.add( child );
             }
         }
 
@@ -112,9 +147,7 @@ public class StoreFolderResource
     @Override
     public String getName()
     {
-        final StorageItem item = fileManager.getStorageReference( store.getKey(), path );
-        return item.getDetachedFile()
-                   .getName();
+        return new File( path ).getName();
     }
 
     @Override
@@ -138,9 +171,22 @@ public class StoreFolderResource
     @Override
     public Date getModifiedDate()
     {
-        final StorageItem item = fileManager.getStorageReference( store.getKey(), path );
-        return new Date( item.getDetachedFile()
-                             .lastModified() );
+        Date d = new Date();
+        if ( !ROOT.equals( path ) )
+        {
+            try
+            {
+                final StorageItem item = fileManager.retrieveFirst( stores, path );
+                d = new Date( item.getDetachedFile()
+                                  .lastModified() );
+            }
+            catch ( final AproxWorkflowException e )
+            {
+                logger.error( "Failed to retrieve: %s from stores: %s.\nReason: %s", e, path, stores );
+            }
+        }
+
+        return d;
     }
 
     @Override

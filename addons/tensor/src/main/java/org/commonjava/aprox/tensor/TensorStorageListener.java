@@ -209,8 +209,8 @@ public class TensorStorageListener
     {
         final ModelBuildingRequest request = new DefaultModelBuildingRequest();
         request.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL );
-        request.setModelSource( new StoreModelSource( event.getStorageItem() ) );
-        request.setModelResolver( new ArtifactStoreModelResolver( fileManager, stores ) );
+        request.setModelSource( new StoreModelSource( event.getStorageItem(), false ) );
+        request.setModelResolver( new ArtifactStoreModelResolver( fileManager, stores, false ) );
         request.setSystemProperties( System.getProperties() );
 
         final String path = event.getStorageItem()
@@ -248,7 +248,8 @@ public class TensorStorageListener
         try
         {
             stream = event.getStorageItem()
-                          .openInputStream();
+                          .openInputStream( false );
+
             return modelReader.read( stream, options );
         }
         catch ( final ModelParseException e )

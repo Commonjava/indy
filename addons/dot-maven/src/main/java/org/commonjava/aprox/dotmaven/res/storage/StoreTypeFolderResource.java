@@ -14,6 +14,7 @@ import io.milton.resource.PropFindableResource;
 import io.milton.resource.Resource;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -78,7 +79,16 @@ public class StoreTypeFolderResource
             if ( store != null )
             {
                 final StorageAdvice advice = advisor.getStorageAdvice( store );
-                return new StoreFolderResource( store, StoreFolderResource.ROOT, fileManager, dataManager, info, advice );
+
+                List<ArtifactStore> stores = Collections.singletonList( store );
+                if ( store.getKey()
+                          .getType() == StoreType.group )
+                {
+                    stores = dataManager.getOrderedStoresInGroup( store.getName() );
+                }
+
+                return new StoreFolderResource( StoreFolderResource.ROOT, fileManager, dataManager, info, advice,
+                                                stores );
             }
         }
         catch ( final ProxyDataException e )
@@ -144,7 +154,25 @@ public class StoreTypeFolderResource
                     throw new BadRequestException( "Failed to retrieve children" );
                 }
 
-                children.add( new StoreFolderResource( store, store.getName(), fileManager, dataManager, info, advice ) );
+                List<ArtifactStore> constituents = Collections.singletonList( store );
+                if ( store.getKey()
+                          .getType() == StoreType.group )
+                {
+                    try
+                    {
+                        constituents = dataManager.getOrderedStoresInGroup( store.getName() );
+                    }
+                    catch ( final ProxyDataException e )
+                    {
+                        logger.error( "Failed to retrieve constituents for group: %s. Reason: %s", e, store.getName(),
+                                      e.getMessage() );
+
+                        throw new BadRequestException( "Failed to retrieve children" );
+                    }
+                }
+
+                children.add( new StoreFolderResource( StoreFolderResource.ROOT, fileManager, dataManager, info,
+                                                       advice, constituents ) );
             }
         }
 

@@ -136,6 +136,13 @@ public class FlatTCKFixtureProvider
             return getDataManager().getAllArtifactStores();
         }
 
+        @Override
+        public List<ArtifactStore> getOrderedStoresInGroup( final String groupName )
+            throws ProxyDataException
+        {
+            return getDataManager().getOrderedStoresInGroup( groupName );
+        }
+
     }
 
 }

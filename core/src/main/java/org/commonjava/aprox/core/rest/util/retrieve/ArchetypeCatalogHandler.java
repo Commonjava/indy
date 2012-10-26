@@ -79,7 +79,7 @@ public class ArchetypeCatalogHandler
                 OutputStream fos = null;
                 try
                 {
-                    fos = target.openOutputStream();
+                    fos = target.openOutputStream( true );
                     copy( merged, fos );
 
                     if ( fileEvent != null )

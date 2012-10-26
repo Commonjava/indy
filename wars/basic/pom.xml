@@ -29,6 +29,11 @@
       <artifactId>aprox-db-infinispan</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.infinispan</groupId>
+      <artifactId>infinispan-core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.commonjava.aprox.ui</groupId>
       <artifactId>aprox-ui-monorail</artifactId>
       <type>war</type>
@@ -49,11 +54,11 @@
           <descriptorRefs>
             <descriptorRef>war</descriptorRef>
           </descriptorRefs>
-          <!-- <archive>
+          <archive>
             <manifestEntries>
               <Dependencies>org.infinispan export</Dependencies>
             </manifestEntries>
-          </archive> -->
+          </archive>
         </configuration>
       </plugin>
     </plugins>

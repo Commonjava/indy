@@ -601,7 +601,7 @@ public class TimeoutManager
                     }
                 }
 
-                writer = new OutputStreamWriter( metadata.openOutputStream() );
+                writer = new OutputStreamWriter( metadata.openOutputStream( true ) );
                 new MetadataXpp3Writer().write( writer, md );
             }
             catch ( final IOException e )

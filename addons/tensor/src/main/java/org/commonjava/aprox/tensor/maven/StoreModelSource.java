@@ -12,16 +12,19 @@ public class StoreModelSource
 
     private final StorageItem item;
 
-    public StoreModelSource( final StorageItem stream )
+    private final boolean fireEvents;
+
+    public StoreModelSource( final StorageItem stream, final boolean fireEvents )
     {
         this.item = stream;
+        this.fireEvents = fireEvents;
     }
 
     @Override
     public InputStream getInputStream()
         throws IOException
     {
-        return item == null ? null : item.openInputStream();
+        return item == null ? null : item.openInputStream( fireEvents );
     }
 
     @Override

@@ -25,7 +25,7 @@ public interface StorageProvider
 
     String getFilePath( StoreKey key, String path );
 
-    void delete( StoreKey key, String path )
+    boolean delete( StoreKey key, String path )
         throws IOException;
 
     String[] list( StoreKey key, String path );
