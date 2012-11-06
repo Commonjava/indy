@@ -130,6 +130,11 @@ public class MemoryStoreDataManager
 
     private void recurseGroup( final Group master, final List<ArtifactStore> result, final boolean includeGroups )
     {
+        if ( master == null )
+        {
+            return;
+        }
+
         if ( includeGroups )
         {
             result.add( master );
@@ -403,6 +408,13 @@ public class MemoryStoreDataManager
         throws ProxyDataException
     {
         return new ArrayList<ArtifactStore>( stores.values() );
+    }
+
+    @Override
+    public List<? extends ArtifactStore> getAllArtifactStores( final StoreType type )
+        throws ProxyDataException
+    {
+        return getAll( type, type.getStoreClass() );
     }
 
 }

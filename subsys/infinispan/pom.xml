@@ -27,10 +27,10 @@
   <name>AProx :: Infinispan Subsystem</name>
   
   <dependencies>
-    <dependency>
+    <!-- <dependency>
       <groupId>org.jboss.marshalling</groupId>
       <artifactId>jboss-marshalling-river</artifactId>
-    </dependency>
+    </dependency> -->
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-api</artifactId>

@@ -2,31 +2,27 @@ package org.commonjava.aprox.dotmaven.util;
 
 import static org.apache.commons.lang.StringUtils.join;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.io.File;
 
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.util.logging.Logger;
 
 public final class NameUtils
 {
 
-    private static final Logger logger = new Logger( NameUtils.class );
-
-    public static final String SETTINGS_PATTERN = "\\/?settings-(deploy|group|repository)-(.+)\\.xml";
-
-    private static final String[] BANNED_STORE_PATTERNS = { "[._]+(.+)", "\\..+", };
+    private static final String[] BANNED_RESOURCE_PATTERNS = { "\\/?\\..+", };
 
     private NameUtils()
     {
     }
 
-    public static boolean isValidStoreName( final String name )
+    public static boolean isValidResource( final String name )
     {
-        for ( final String bannedPattern : BANNED_STORE_PATTERNS )
+        final File f = new File( name );
+        final String fname = f.getName();
+        for ( final String bannedPattern : BANNED_RESOURCE_PATTERNS )
         {
-            if ( name.matches( bannedPattern ) )
+            if ( name.matches( bannedPattern ) || fname.matches( bannedPattern ) )
             {
                 return false;
             }
@@ -89,38 +85,7 @@ public final class NameUtils
 
     public static String formatSettingsResourceName( final StoreType type, final String name )
     {
-        return "settings-" + type.singularEndpointName() + "-" + name + ".xml";
-    }
-
-    public static boolean isSettingsResource( final String realPath )
-    {
-        return realPath.matches( SETTINGS_PATTERN );
-    }
-
-    public static StoreKey getStoreKey( final String settingsName )
-    {
-        final Matcher matcher = Pattern.compile( SETTINGS_PATTERN )
-                                       .matcher( settingsName );
-        if ( !matcher.matches() )
-        {
-            return null;
-        }
-
-        final String typePart = matcher.group( 1 );
-        final String name = matcher.group( 2 );
-
-        logger.info( "Type part of name is: '%s'", typePart );
-        logger.info( "Store part of name is: '%s'", name );
-
-        final StoreType type = StoreType.get( typePart );
-        logger.info( "StoreType is: %s", type );
-
-        if ( type == null )
-        {
-            return null;
-        }
-
-        return new StoreKey( type, name );
+        return "settings-" + name + ".xml";
     }
 
 }

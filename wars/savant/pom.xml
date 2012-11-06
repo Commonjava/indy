@@ -22,7 +22,7 @@
     <version>0.4-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-rest-savant</artifactId>
+  <artifactId>aprox-savant</artifactId>
   <!-- <packaging>war</packaging> -->
   
   <name>AProx :: Savant</name>
@@ -44,7 +44,7 @@
     <dependency>
       <groupId>org.infinispan</groupId>
       <artifactId>infinispan-core</artifactId>
-      <scope>provided</scope>
+      <!-- <scope>provided</scope> -->
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
@@ -80,11 +80,6 @@
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
-          <archive>
-            <manifestEntries>
-              <Dependencies>org.infinispan export</Dependencies>
-            </manifestEntries>
-          </archive>
           <descriptorRefs>
             <descriptorRef>war</descriptorRef>
           </descriptorRefs>

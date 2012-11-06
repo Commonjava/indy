@@ -24,6 +24,7 @@ import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.StoreType;
 
 public interface StoreDataManager
 {
@@ -41,6 +42,9 @@ public interface StoreDataManager
         throws ProxyDataException;
 
     List<ArtifactStore> getAllArtifactStores()
+        throws ProxyDataException;
+
+    List<? extends ArtifactStore> getAllArtifactStores( StoreType type )
         throws ProxyDataException;
 
     List<Group> getAllGroups()

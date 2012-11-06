@@ -14,6 +14,7 @@ import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.StoreType;
 import org.commonjava.web.json.ser.JsonSerializer;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -141,6 +142,13 @@ public class FlatTCKFixtureProvider
             throws ProxyDataException
         {
             return getDataManager().getOrderedStoresInGroup( groupName );
+        }
+
+        @Override
+        public List<? extends ArtifactStore> getAllArtifactStores( final StoreType type )
+            throws ProxyDataException
+        {
+            return getDataManager().getAllArtifactStores( type );
         }
 
     }

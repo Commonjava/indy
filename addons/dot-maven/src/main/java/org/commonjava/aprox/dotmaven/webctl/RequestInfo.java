@@ -12,6 +12,8 @@ import org.commonjava.util.logging.Logger;
 public class RequestInfo
 {
 
+    public static final String MOUNT_POINT = "mount";
+
     private final Logger logger = new Logger( getClass() );
 
     private HttpServletRequest request;

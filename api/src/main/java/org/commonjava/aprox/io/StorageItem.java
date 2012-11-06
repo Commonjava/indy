@@ -191,8 +191,15 @@ public final class StorageItem
     }
 
     public void mkdirs()
+        throws IOException
     {
         provider.mkdirs( key, path );
+    }
+
+    public void createFile()
+        throws IOException
+    {
+        provider.createFile( key, path );
     }
 
 }

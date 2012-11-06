@@ -1,36 +1,19 @@
-package org.commonjava.aprox.dotmaven.res.settings;
+package org.commonjava.aprox.dotmaven.util;
 
-import static org.commonjava.aprox.dotmaven.util.NameUtils.formatSettingsResourceName;
-import io.milton.http.Auth;
-import io.milton.http.Range;
-import io.milton.http.Request;
-import io.milton.http.Request.Method;
-import io.milton.http.exceptions.BadRequestException;
-import io.milton.http.exceptions.NotAuthorizedException;
-import io.milton.http.exceptions.NotFoundException;
-import io.milton.resource.GetableResource;
-import io.milton.resource.PropFindableResource;
-
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.Date;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.dotmaven.data.StorageAdvice;
 import org.commonjava.aprox.dotmaven.webctl.RequestInfo;
+import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.util.logging.Logger;
 
-public class SettingsResource
-    implements GetableResource, PropFindableResource
+public class SettingsTemplate
 {
-
-    private final Logger logger = new Logger( getClass() );
 
     private static final String NAME_PATTERN = Pattern.quote( "${name}" );
 
@@ -44,90 +27,27 @@ public class SettingsResource
 
     private static final String NON_DEPLOYABLE_TEMPLATE = "settings-no-deploy.xml";
 
-    private final String name;
-
-    private final StoreType type;
-
-    private byte[] content;
+    private final Logger logger = new Logger( getClass() );
 
     private final RequestInfo requestInfo;
 
+    private final StoreKey key;
+
     private final StorageAdvice advice;
 
-    public SettingsResource( final StoreType type, final String name, final StorageAdvice advice,
-                             final RequestInfo requestInfo )
+    private transient byte[] content;
+
+    public SettingsTemplate( final StoreKey key, final StorageAdvice advice, final RequestInfo requestInfo )
     {
-        this.type = type;
-        this.name = name;
+        this.key = key;
         this.advice = advice;
         this.requestInfo = requestInfo;
     }
 
-    @Override
-    public String getUniqueId()
-    {
-        return getName();
-    }
-
-    @Override
-    public String getName()
-    {
-        return formatSettingsResourceName( type, name );
-    }
-
-    @Override
-    public Object authenticate( final String user, final String password )
-    {
-        // FIXME: Integrate with BADGR
-        return "ok";
-    }
-
-    @Override
-    public boolean authorise( final Request request, final Method method, final Auth auth )
-    {
-        // FIXME: Integrate with BADGR
-        return true;
-    }
-
-    @Override
-    public String getRealm()
-    {
-        return requestInfo.getRealm();
-    }
-
-    @Override
-    public Date getModifiedDate()
-    {
-        return new Date();
-    }
-
-    @Override
-    public String checkRedirect( final Request request )
-        throws NotAuthorizedException, BadRequestException
-    {
-        return null;
-    }
-
-    @Override
-    public Date getCreateDate()
-    {
-        return new Date();
-    }
-
-    @Override
-    public void sendContent( final OutputStream out, final Range range, final Map<String, String> params,
-                             final String contentType )
-        throws IOException, NotAuthorizedException, BadRequestException, NotFoundException
+    public synchronized byte[] getContent()
     {
         formatSettings();
-        if ( content.length < 1 )
-        {
-            throw new NotFoundException( "Cannot find settings template" );
-        }
-
-        logger.info( "Sending settings content:\n\n%s", new String( content ) );
-
-        IOUtils.copy( new ByteArrayInputStream( content ), out );
+        return content;
     }
 
     private void formatSettings()
@@ -136,6 +56,9 @@ public class SettingsResource
         {
             return;
         }
+
+        final String name = key.getName();
+        final StoreType type = key.getType();
 
         final String template;
         if ( advice.isDeployable() )
@@ -200,23 +123,9 @@ public class SettingsResource
         }
     }
 
-    @Override
-    public Long getMaxAgeSeconds( final Auth auth )
-    {
-        return 1L;
-    }
-
-    @Override
-    public String getContentType( final String accepts )
-    {
-        return "text/xml";
-    }
-
-    @Override
-    public Long getContentLength()
+    public long getLength()
     {
         formatSettings();
-        return (long) content.length;
+        return content.length;
     }
-
 }

@@ -15,30 +15,31 @@
  ******************************************************************************/
 package org.commonjava.aprox.model;
 
-import static org.apache.commons.lang.StringUtils.join;
-
 import java.util.HashSet;
 import java.util.Set;
 
-import org.commonjava.util.logging.Logger;
-
 public enum StoreType
 {
-    group( false, "group", "groups" ), repository( false, "repository", "repositories" ), deploy_point( true, "deploy",
-        "deploys" );
+    group( Group.class, false, "group", "groups" ),
+    repository( Repository.class, false, "repository", "repositories" ),
+    deploy_point( DeployPoint.class, true, "deploy", "deploys" );
 
-    private static final Logger logger = new Logger( StoreType.class );
+    //    private static final Logger logger = new Logger( StoreType.class );
 
-    private boolean writable;
+    private final boolean writable;
 
-    private String singular;
+    private final String singular;
 
-    private String plural;
+    private final String plural;
 
-    private Set<String> aliases;
+    private final Set<String> aliases;
 
-    private StoreType( final boolean writable, final String singular, final String plural, final String... aliases )
+    private final Class<? extends ArtifactStore> storeClass;
+
+    private StoreType( final Class<? extends ArtifactStore> storeClass, final boolean writable, final String singular,
+                       final String plural, final String... aliases )
     {
+        this.storeClass = storeClass;
         this.writable = writable;
         this.singular = singular;
         this.plural = plural;
@@ -85,7 +86,7 @@ public enum StoreType
 
         for ( final StoreType st : values() )
         {
-            logger.info( "Checking '%s' vs name: '%s' and aliases: %s", type, st.name(), join( st.aliases, ", " ) );
+            //            logger.info( "Checking '%s' vs name: '%s' and aliases: %s", type, st.name(), join( st.aliases, ", " ) );
             if ( st.name()
                    .equalsIgnoreCase( type ) || st.aliases.contains( type ) )
             {
@@ -94,5 +95,10 @@ public enum StoreType
         }
 
         return null;
+    }
+
+    public Class<? extends ArtifactStore> getStoreClass()
+    {
+        return storeClass;
     }
 }

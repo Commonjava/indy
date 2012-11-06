@@ -67,6 +67,8 @@ public class CacheProducer
             {
                 for ( final AproxCacheConfigurator conf : configurators )
                 {
+                    logger.info( "Running cache configurator: %s", conf.getClass()
+                                                                       .getName() );
                     conf.configure( globalConfig, defaultConfig, namedConfigs );
                 }
             }

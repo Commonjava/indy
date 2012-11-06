@@ -50,13 +50,19 @@ public class DefaultStorageProvider
     @Override
     public boolean exists( final StoreKey key, final String path )
     {
-        return getDetachedFile( key, path ).exists();
+        final File f = getDetachedFile( key, path );
+        final boolean exists = f.exists();
+
+        return exists;
     }
 
     @Override
     public boolean isDirectory( final StoreKey key, final String path )
     {
-        return getDetachedFile( key, path ).isDirectory();
+        final File f = getDetachedFile( key, path );
+        final boolean isDir = f.isDirectory();
+
+        return isDir;
     }
 
     @Override
@@ -127,5 +133,12 @@ public class DefaultStorageProvider
     public void mkdirs( final StoreKey key, final String path )
     {
         getDetachedFile( key, path ).mkdirs();
+    }
+
+    @Override
+    public void createFile( final StoreKey key, final String path )
+        throws IOException
+    {
+        getDetachedFile( key, path ).createNewFile();
     }
 }

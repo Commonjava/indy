@@ -31,6 +31,7 @@ public class StorageAdvisor
         boolean deployable = false;
         boolean releases = true;
         boolean snapshots = false;
+        DeployPoint deployableStore = null;
 
         final StoreType type = store.getKey()
                                     .getType();
@@ -58,6 +59,7 @@ public class StorageAdvisor
                         deployable = true;
 
                         final DeployPoint dp = (DeployPoint) as;
+                        deployableStore = dp;
 
                         // TODO: If we have two deploy points with different settings, only the first will be used here!
                         snapshots = dp.isAllowSnapshots();
@@ -76,6 +78,7 @@ public class StorageAdvisor
                 deployable = true;
 
                 final DeployPoint dp = (DeployPoint) store;
+                deployableStore = dp;
                 snapshots = dp.isAllowSnapshots();
                 releases = dp.isAllowReleases();
 
@@ -84,7 +87,7 @@ public class StorageAdvisor
             }
         }
 
-        return new StorageAdvice( store, deployable, releases, snapshots );
+        return new StorageAdvice( store, deployableStore, deployable, releases, snapshots );
     }
 
 }

@@ -319,6 +319,11 @@ public class InfinispanDataManager
 
     private void recurseGroup( final Group master, final List<ArtifactStore> result, final boolean includeGroups )
     {
+        if ( master == null )
+        {
+            return;
+        }
+
         if ( includeGroups )
         {
             result.add( master );
@@ -384,5 +389,12 @@ public class InfinispanDataManager
         throws ProxyDataException
     {
         return new ArrayList<ArtifactStore>( storeCache.values() );
+    }
+
+    @Override
+    public List<? extends ArtifactStore> getAllArtifactStores( final StoreType type )
+        throws ProxyDataException
+    {
+        return getAllOfType( type, type.getStoreClass() );
     }
 }

@@ -12,9 +12,17 @@ class Loader
   GROUPS_PATH = "#{BASE_PATH}/groups"
   REPOS_PATH = "#{BASE_PATH}/repositories"
   
+  DEF_URL = 'http://localhost/aprox'
+  DEF_DEPLOYS_FILE = File.join( Dir.pwd, 'deploys.json' )
+  DEF_GROUPS_FILE = File.join( Dir.pwd, 'groups.json' )
+  DEF_REPOS_FILE = File.join( Dir.pwd, 'repos.json' )
+  
   def initialize( args = [] )
     @options={
-      :url => 'http://localhost:9080/aprox',
+      :url => DEF_URL,
+      :deploys => DEF_DEPLOYS_FILE,
+      :groups => DEF_GROUPS_FILE,
+      :repos => DEF_REPOS_FILE,
     }
     
     OptionParser.new {|opts|
@@ -23,7 +31,13 @@ class Loader
 Usage: #{$0} [-d <deploy-file>] [-g <group-file>] [-r <repo-file>] [url]
 
 Bulk-loads repository, deploy-point, group, and other data into an AProx instance.
-NOTE: Default url is #{@options[:url]}
+
+DEFAULTS:
+---------
+  url: ................ #{@options[:url]}
+  deploy-points file: . #{@options[:deploys]}
+  groups file: ........ #{@options[:groups]}
+  repositories file: .. #{@options[:repos]}
 
 
       EOB

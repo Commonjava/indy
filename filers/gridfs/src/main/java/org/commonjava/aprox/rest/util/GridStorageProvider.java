@@ -225,4 +225,12 @@ public class GridStorageProvider
         f.mkdirs();
     }
 
+    @Override
+    public void createFile( final StoreKey key, final String path )
+        throws IOException
+    {
+        final File f = fs.getFile( getPath( key, path ) );
+        f.createNewFile();
+    }
+
 }

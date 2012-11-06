@@ -9,9 +9,15 @@ public class NameUtilsTest
 {
 
     @Test
-    public void matchSettingsPath()
+    public void checkInvalidURI()
     {
-        assertThat( NameUtils.isSettingsResource( "/settings-group-public.xml" ), equalTo( true ) );
+        assertThat( NameUtils.isValidResource( "/.DS_Store" ), equalTo( false ) );
+    }
+
+    @Test
+    public void checkInvalidURILeaf()
+    {
+        assertThat( NameUtils.isValidResource( "/path/to/.DS_Store" ), equalTo( false ) );
     }
 
 }
