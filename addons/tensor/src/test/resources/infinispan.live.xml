@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<infinispan>
+  <default>
+    <eviction strategy="LIRS" maxEntries="100" />
+    <loaders preload="true" shared="false" passivation="false">
+      <loader class="org.infinispan.loaders.file.FileCacheStore" fetchPersistentState="true" ignoreModifications="false" purgeOnStartup="false">
+        <properties>
+          <property name="location" value="${dbDir}"/>
+          <property name="fsyncMode" value="perWrite" />
+        </properties>
+      </loader>
+    </loaders>
+  </default>
+</infinispan>
