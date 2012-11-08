@@ -535,7 +535,7 @@ public class TimeoutManager
 
     private void updateSnapshotVersions( final StoreKey key, final String path )
     {
-        final ArtifactPathInfo pathInfo = fileManager.parsePathInfo( path );
+        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
 
         final StorageItem item = fileManager.getStorageReference( key, path );
         if ( item.getParent() == null || item.getParent()

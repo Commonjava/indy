@@ -30,6 +30,7 @@ import javax.inject.Inject;
 
 import org.apache.maven.graph.common.ref.ProjectVersionRef;
 import org.apache.maven.graph.common.version.InvalidVersionSpecificationException;
+import org.apache.maven.graph.common.version.VersionSpec;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Parent;
 import org.apache.maven.model.building.DefaultModelBuildingRequest;
@@ -47,6 +48,8 @@ import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.rest.util.ArtifactPathInfo;
+import org.commonjava.aprox.tensor.data.AproxTensorDataManager;
 import org.commonjava.aprox.tensor.maven.ArtifactStoreModelResolver;
 import org.commonjava.aprox.tensor.maven.ModelVersions;
 import org.commonjava.aprox.tensor.maven.StoreModelSource;
@@ -78,6 +81,9 @@ public class TensorStorageListener
 
     @Inject
     private TensorDataManager dataManager;
+
+    @Inject
+    private AproxTensorDataManager errorDataManager;
 
     public void handleFileAccessEvent( @Observes final FileAccessEvent event )
     {
@@ -127,6 +133,7 @@ public class TensorStorageListener
         {
             logger.error( "Failed to store relationships for POM: %s. Reason: %s", e, effectiveModel.getId(),
                           e.getMessage() );
+            // TODO: Disable for some time period...
         }
     }
 
@@ -153,11 +160,13 @@ public class TensorStorageListener
         catch ( final ProxyDataException e )
         {
             logger.error( "Failed to retrieve store for: %s. Reason: %s", e, key, e.getMessage() );
+            // TODO: Disable for some time period...
         }
 
         return null;
     }
 
+    // TODO: Somehow, we're ending up in an infinite loop for maven poms...
     private boolean shouldStore( final Model rawModel )
     {
         final Parent parent = rawModel.getParent();
@@ -182,24 +191,28 @@ public class TensorStorageListener
         try
         {
             final ProjectVersionRef ref = new ProjectVersionRef( g, a, v );
+            final VersionSpec versionSpec = ref.getVersionSpec();
 
             // If this is a snapshot version, store it again in order to update it.
             // NOTE: We need a way to flush out the old relationships reliably when updating!
-            final boolean concrete = ref.getVersionSpec()
-                                        .isConcrete();
+            final boolean concrete = versionSpec.isConcrete();
 
             final boolean contains = dataManager.contains( ref );
 
-            return !concrete || !contains;
+            final boolean hasError = errorDataManager.hasErrors( ref.toString() );
+
+            return !hasError && ( !concrete || !contains );
         }
         catch ( final InvalidVersionSpecificationException e )
         {
             logger.error( "Failed to parse version for: %s. Error: %s", e, rawModel.getId(), e.getMessage() );
+            logProjectError( g, a, v, e );
         }
         catch ( final TensorDataException e )
         {
             logger.error( "Failed to check whether Tensor has captured: %s. Error: %s", e, rawModel.getId(),
                           e.getMessage() );
+            logProjectError( g, a, v, e );
         }
 
         return false;
@@ -220,10 +233,16 @@ public class TensorStorageListener
         try
         {
             result = modelBuilder.build( request );
+
+            if ( result.getProblems() != null )
+            {
+                // TODO
+            }
         }
         catch ( final ModelBuildingException e )
         {
             logger.error( "Cannot build model instance for POM: %s. Reason: %s", e, path, e.getMessage() );
+            logArtifactError( path, e );
         }
 
         if ( result == null )
@@ -233,6 +252,26 @@ public class TensorStorageListener
 
         // TODO: Pass back the profiles that were activated when the effective model was built, for inclusion in the graph facts.
         return result.getEffectiveModel();
+    }
+
+    private void logProjectError( final String g, final String a, final String v, final Throwable e )
+    {
+        final String projectId = String.format( "%s:%s:%s", g, a, v );
+        errorDataManager.addError( projectId, e );
+    }
+
+    private void logArtifactError( final String path, final Throwable e )
+    {
+        final ArtifactPathInfo info = ArtifactPathInfo.parse( path );
+        if ( info == null )
+        {
+            logger.error( "Path does not appear to be an artifact: %s", path );
+        }
+        else
+        {
+            final String projectId = info.getProjectId();
+            errorDataManager.addError( projectId, e );
+        }
     }
 
     protected Model loadRawModel( final FileEvent event )
@@ -255,10 +294,12 @@ public class TensorStorageListener
         catch ( final ModelParseException e )
         {
             logger.error( "Cannot parse POM: %s. Reason: %s", e, path, e.getMessage() );
+            logArtifactError( path, e );
         }
         catch ( final IOException e )
         {
             logger.error( "Cannot read POM: %s. Reason: %s", e, path, e.getMessage() );
+            logArtifactError( path, e );
         }
         finally
         {

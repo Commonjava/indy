@@ -391,7 +391,7 @@ public class DefaultFileManager
     public StorageItem store( final DeployPoint deploy, final String path, final InputStream stream )
         throws AproxWorkflowException
     {
-        final ArtifactPathInfo pathInfo = parsePathInfo( path );
+        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
         if ( pathInfo != null && pathInfo.isSnapshot() )
         {
             if ( !deploy.isAllowSnapshots() )
@@ -448,7 +448,7 @@ public class DefaultFileManager
     public StorageItem store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream )
         throws AproxWorkflowException
     {
-        final ArtifactPathInfo pathInfo = parsePathInfo( path );
+        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
 
         DeployPoint selected = null;
         for ( final ArtifactStore store : stores )
@@ -746,7 +746,7 @@ public class DefaultFileManager
     public void rescan( final ArtifactStore store )
         throws AproxWorkflowException
     {
-        executor.execute( new Rescanner( getStorageReference( store, ROOT_PATH ), rescansInProgress, fileEventManager,
+        executor.execute( new Rescanner( getStorageReference( store.getKey() ), rescansInProgress, fileEventManager,
                                          rescanEvent ) );
     }
 

@@ -59,12 +59,18 @@ public class ArtifactStoreModelResolver
         throws UnresolvableModelException
     {
         final Artifact a = new DefaultArtifact( groupId, artifactId, "pom", version );
-        final URI path = layout.getPath( a );
+        final URI uri = layout.getPath( a );
+
+        String path = uri.getPath();
+        while ( ( path.startsWith( "/" ) || path.startsWith( "\\" ) ) && path.length() > 1 )
+        {
+            path = path.substring( 1 );
+        }
 
         StorageItem stream;
         try
         {
-            stream = fileManager.retrieveFirst( stores, path.getPath() );
+            stream = fileManager.retrieveFirst( stores, path );
         }
         catch ( final AproxWorkflowException e )
         {

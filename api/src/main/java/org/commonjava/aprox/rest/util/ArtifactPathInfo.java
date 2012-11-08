@@ -6,11 +6,56 @@ import java.util.regex.Pattern;
 public class ArtifactPathInfo
 {
 
+    // regex developed at: http://fiddle.re/tvk5
+    private static final String ARTIFACT_PATH_REGEX =
+        "\\/?(([^\\/]+\\/)*[^\\/]+)\\/([^\\/]+)\\/([^\\/]+)\\/(\\3-((\\4)|(.+-[0-9]{8}\\.[0-9]{6}-[0-9]+))(-([^.]+))?(\\.(.+)))";
+
+    private static final int GROUP_ID_GROUP = 1;
+
+    private static final int ARTIFACT_ID_GROUP = 3;
+
+    private static final int FILE_GROUP = 5;
+
+    private static final int VERSION_GROUP = 6;
+
+    private static final int CLASSIFIER_GROUP = 10;
+
+    private static final int TYPE_GROUP = 12;
+
+    public static ArtifactPathInfo parse( final String path )
+    {
+        if ( path == null )
+        {
+            return null;
+        }
+
+        final Matcher matcher = Pattern.compile( ARTIFACT_PATH_REGEX )
+                                       .matcher( path.replace( '\\', '/' ) );
+        if ( !matcher.matches() )
+        {
+            return null;
+        }
+
+        final String g = matcher.group( GROUP_ID_GROUP )
+                                .replace( '/', '.' );
+        final String a = matcher.group( ARTIFACT_ID_GROUP );
+        final String v = matcher.group( VERSION_GROUP );
+        final String c = matcher.group( CLASSIFIER_GROUP );
+        final String t = matcher.group( TYPE_GROUP );
+        final String f = matcher.group( FILE_GROUP );
+
+        return new ArtifactPathInfo( g, a, v, c, t, f, path );
+    }
+
     private final String groupId;
 
     private final String artifactId;
 
     private final String version;
+
+    private final String classifier;
+
+    private final String type;
 
     private final String file;
 
@@ -21,9 +66,17 @@ public class ArtifactPathInfo
     public ArtifactPathInfo( final String groupId, final String artifactId, final String version, final String file,
                              final String fullPath )
     {
+        this( groupId, artifactId, version, null, "jar", file, fullPath );
+    }
+
+    public ArtifactPathInfo( final String groupId, final String artifactId, final String version,
+                             final String classifier, final String type, final String file, final String fullPath )
+    {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = version;
+        this.classifier = classifier;
+        this.type = type;
         this.file = file;
         this.fullPath = fullPath;
         isSnapshot = isSnapshot( fullPath );
@@ -32,6 +85,18 @@ public class ArtifactPathInfo
     public boolean isSnapshot()
     {
         return isSnapshot;
+    }
+
+    private SnapshotInfo snapshotInfo;
+
+    public synchronized SnapshotInfo getSnasphotInfo()
+    {
+        if ( snapshotInfo == null && isSnapshot )
+        {
+            snapshotInfo = parseSnapshotInfo( version );
+        }
+
+        return snapshotInfo;
     }
 
     public String getGroupId()
@@ -47,6 +112,16 @@ public class ArtifactPathInfo
     public String getVersion()
     {
         return version;
+    }
+
+    public String getClassifier()
+    {
+        return classifier;
+    }
+
+    public String getType()
+    {
+        return type;
     }
 
     public String getFile()
@@ -184,6 +259,11 @@ public class ArtifactPathInfo
         {
             return buildNumber;
         }
+    }
+
+    public String getProjectId()
+    {
+        return String.format( getGroupId(), getArtifactId(), getVersion() );
     }
 
 }

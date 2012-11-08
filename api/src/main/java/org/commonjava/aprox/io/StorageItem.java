@@ -35,8 +35,19 @@ public final class StorageItem
     {
         this.key = key;
         this.fileEventManager = fileEventManager;
-        this.path = join( path, "/" );
+        this.path = normalize( join( path, "/" ) );
         this.provider = provider;
+    }
+
+    private String normalize( final String path )
+    {
+        String result = path;
+        while ( result.startsWith( "/" ) && result.length() > 1 )
+        {
+            result = result.substring( 1 );
+        }
+
+        return result;
     }
 
     public boolean isDirectory()
