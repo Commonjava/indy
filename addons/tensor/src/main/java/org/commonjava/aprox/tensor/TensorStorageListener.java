@@ -208,12 +208,12 @@ public class TensorStorageListener
             logger.error( "Failed to parse version for: %s. Error: %s", e, rawModel.getId(), e.getMessage() );
             logProjectError( g, a, v, e );
         }
-        catch ( final TensorDataException e )
-        {
-            logger.error( "Failed to check whether Tensor has captured: %s. Error: %s", e, rawModel.getId(),
-                          e.getMessage() );
-            logProjectError( g, a, v, e );
-        }
+        //        catch ( final TensorDataException e )
+        //        {
+        //            logger.error( "Failed to check whether Tensor has captured: %s. Error: %s", e, rawModel.getId(),
+        //                          e.getMessage() );
+        //            logProjectError( g, a, v, e );
+        //        }
 
         return false;
     }

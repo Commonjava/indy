@@ -13,7 +13,6 @@ import javax.inject.Inject;
 import org.apache.commons.io.FileUtils;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.flat.conf.FlatFileConfiguration;
 import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.DeployPoint;
@@ -21,6 +20,7 @@ import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
+import org.commonjava.aprox.subsys.flatfile.conf.FlatFileConfiguration;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.ser.JsonSerializer;
 
@@ -28,6 +28,8 @@ import org.commonjava.web.json.ser.JsonSerializer;
 public abstract class FlatFileDataManagerDecorator
     implements StoreDataManager
 {
+
+    private static final String APROX_STORE = "aprox";
 
     private final Logger logger = new Logger( getClass() );
 
@@ -60,61 +62,78 @@ public abstract class FlatFileDataManagerDecorator
         return dataManager;
     }
 
-    @SuppressWarnings( "unchecked" )
     @PostConstruct
     public void readDefinitions()
         throws ProxyDataException
     {
-        final File basedir = config.getDefinitionsDir();
+        final File basedir = config.getStorageDir( APROX_STORE );
         final File ddir = new File( basedir, StoreType.deploy_point.name() );
 
-        String[] files = ddir.list();
-        for ( final String file : files )
+        final String[] dFiles = ddir.list();
+        if ( dFiles != null )
         {
-            final File f = new File( ddir, file );
-            try
+            for ( final String file : dFiles )
             {
-                final String json = FileUtils.readFileToString( f );
-                final DeployPoint dp = serializer.fromString( json, DeployPoint.class );
-                dataManager.storeDeployPoint( dp );
-            }
-            catch ( final IOException e )
-            {
-                throw new ProxyDataException( "Cannot read definition file: %s. Error: %s", e, f, e.getMessage() );
+                final File f = new File( ddir, file );
+                logger.info( "Loading deploy point: %s", f );
+                try
+                {
+                    final String json = FileUtils.readFileToString( f );
+                    final DeployPoint dp = serializer.fromString( json, DeployPoint.class );
+                    logger.info( "Got deploy point: %s", dp.getName() );
+                    logger.info( "Storing to: %s", dataManager );
+                    dataManager.storeDeployPoint( dp );
+                }
+                catch ( final IOException e )
+                {
+                    logger.error( "Failed to load deploy point: %s. Reason: %s", e, f, e.getMessage() );
+                }
             }
         }
 
         final File rdir = new File( basedir, StoreType.repository.name() );
-        files = rdir.list();
-        for ( final String file : files )
+        final String[] rFiles = rdir.list();
+        if ( rFiles != null )
         {
-            final File f = new File( ddir, file );
-            try
+            for ( final String file : rFiles )
             {
-                final String json = FileUtils.readFileToString( f );
-                final Repository r = serializer.fromString( json, Repository.class );
-                dataManager.storeRepository( r );
-            }
-            catch ( final IOException e )
-            {
-                throw new ProxyDataException( "Cannot read definition file: %s. Error: %s", e, f, e.getMessage() );
+                final File f = new File( rdir, file );
+                logger.info( "Loading repository: %s", f );
+                try
+                {
+                    final String json = FileUtils.readFileToString( f );
+                    final Repository r = serializer.fromString( json, Repository.class );
+                    logger.info( "Got repository: %s", r.getName() );
+                    logger.info( "Storing to: %s", dataManager );
+                    dataManager.storeRepository( r );
+                }
+                catch ( final IOException e )
+                {
+                    logger.error( "Failed to load repository: %s. Reason: %s", e, f, e.getMessage() );
+                }
             }
         }
 
         final File gdir = new File( basedir, StoreType.group.name() );
-        files = gdir.list();
-        for ( final String file : files )
+        final String[] gFiles = gdir.list();
+        if ( gFiles != null )
         {
-            final File f = new File( ddir, file );
-            try
+            for ( final String file : gFiles )
             {
-                final String json = FileUtils.readFileToString( f );
-                final Group g = serializer.fromString( json, Group.class );
-                dataManager.storeGroup( g );
-            }
-            catch ( final IOException e )
-            {
-                throw new ProxyDataException( "Cannot read definition file: %s. Error: %s", e, f, e.getMessage() );
+                final File f = new File( gdir, file );
+                logger.info( "Loading group: %s", f );
+                try
+                {
+                    final String json = FileUtils.readFileToString( f );
+                    final Group g = serializer.fromString( json, Group.class );
+                    logger.info( "Got group: %s", g.getName() );
+                    logger.info( "Storing to: %s", dataManager );
+                    dataManager.storeGroup( g );
+                }
+                catch ( final IOException e )
+                {
+                    logger.error( "Failed to load group: %s. Reason: %s", e, f, e.getMessage() );
+                }
             }
         }
     }
@@ -254,7 +273,7 @@ public abstract class FlatFileDataManagerDecorator
     private void store( final boolean skipIfExists, final ArtifactStore... stores )
         throws ProxyDataException
     {
-        final File basedir = config.getDefinitionsDir();
+        final File basedir = config.getStorageDir( APROX_STORE );
         for ( final ArtifactStore store : stores )
         {
             final File dir = new File( basedir, store.getDoctype()
@@ -285,7 +304,7 @@ public abstract class FlatFileDataManagerDecorator
 
     private void delete( final ArtifactStore... stores )
     {
-        final File basedir = config.getDefinitionsDir();
+        final File basedir = config.getStorageDir( APROX_STORE );
         for ( final ArtifactStore store : stores )
         {
             final File dir = new File( basedir, store.getDoctype()
@@ -303,7 +322,7 @@ public abstract class FlatFileDataManagerDecorator
 
     private void delete( final StoreType type, final String name )
     {
-        final File basedir = config.getDefinitionsDir();
+        final File basedir = config.getStorageDir( APROX_STORE );
         final File dir = new File( basedir, type.name() );
 
         final File f = new File( dir, name + ".json" );

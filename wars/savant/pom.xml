@@ -39,12 +39,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-db-infinispan</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.infinispan</groupId>
-      <artifactId>infinispan-core</artifactId>
-      <!-- <scope>provided</scope> -->
+      <artifactId>aprox-db-flat</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>

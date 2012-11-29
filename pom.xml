@@ -190,6 +190,11 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-subsys-flatfile</artifactId>
+        <version>0.4-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-subsys-http</artifactId>
         <version>0.4-SNAPSHOT</version>
       </dependency>

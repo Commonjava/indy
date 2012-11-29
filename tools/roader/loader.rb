@@ -85,7 +85,7 @@ DEFAULTS:
       
       puts "#{item['key']} --> #{response.code} #{response.message}"
       if ( response.code.to_i != 200 && response.code.to_i != 201 )
-        raise "Error: #{response.code}"
+        puts "Error: #{response.code}"
       end
     }
   end #load

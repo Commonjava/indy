@@ -18,18 +18,36 @@
 
   <parent>
     <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-parent</artifactId>
+    <artifactId>aprox-subsystems</artifactId>
     <version>0.4-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-subsystems</artifactId>
-  <packaging>pom</packaging>
+  <artifactId>aprox-subsys-flatfile</artifactId>
 
-  <name>AProx :: Subsystems Parent</name>
+  <name>AProx :: Flat-File Subsystem</name>
   
-  <modules>
-    <module>flatfile</module>
-    <module>infinispan</module>
-    <module>http</module>
-  </modules>
+  <dependencies>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.weld.se</groupId>
+      <artifactId>weld-se-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.shelflife</groupId>
+      <artifactId>shelflife-store-flat</artifactId>
+      <optional>true</optional>
+    </dependency>
+  </dependencies>
 </project>

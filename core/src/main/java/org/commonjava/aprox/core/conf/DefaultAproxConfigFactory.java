@@ -24,6 +24,7 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
+import org.commonjava.aprox.conf.AbstractAproxMapConfig;
 import org.commonjava.aprox.conf.AproxConfigFactory;
 import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.util.logging.Logger;
@@ -45,6 +46,9 @@ public class DefaultAproxConfigFactory
     @Inject
     private Instance<AproxConfigInfo> configSections;
 
+    @Inject
+    private Instance<AbstractAproxMapConfig> mapConfigs;
+
     public DefaultAproxConfigFactory()
         throws ConfigurationException
     {
@@ -57,8 +61,12 @@ public class DefaultAproxConfigFactory
         logger.info( "\n\n\n\n[CONFIG] Reading AProx configuration.\n\nAdding configuration section listeners:" );
         for ( final AproxConfigInfo section : configSections )
         {
-            logger.info( "  +section: %s", section );
             with( section.getSectionName(), section.getConfigurationClass() );
+        }
+
+        for ( final AbstractAproxMapConfig section : mapConfigs )
+        {
+            with( section.getSectionName(), section );
         }
 
         logger.info( "\n\n[CONFIG] Reading configuration from %s", CONFIG_PATH );

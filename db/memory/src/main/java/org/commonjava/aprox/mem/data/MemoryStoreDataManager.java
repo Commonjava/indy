@@ -188,7 +188,7 @@ public class MemoryStoreDataManager
                 if ( constituent.getType() == group )
                 {
                     final Group embedded = (Group) stores.get( constituent );
-                    if ( groupContains( embedded, key ) )
+                    if ( embedded != null && groupContains( embedded, key ) )
                     {
                         return true;
                     }

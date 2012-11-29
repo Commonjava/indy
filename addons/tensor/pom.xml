@@ -47,7 +47,7 @@
   	</dependency>
   	<dependency>
   		<groupId>org.commonjava.tensor</groupId>
-  		<artifactId>tensor-db</artifactId>
+  		<artifactId>tensor-core</artifactId>
   		<version>0.1-SNAPSHOT</version>
   	</dependency>
   	<dependency>
@@ -81,10 +81,6 @@
       <artifactId>hamcrest-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-db-infinispan</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.commonjava.web</groupId>
       <artifactId>json-test-harness</artifactId>
       <scope>test</scope>
@@ -108,12 +104,17 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-subsys-infinispan</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.weld.se</groupId>
       <artifactId>weld-se-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.tensor</groupId>
+      <artifactId>tensor-db-flat</artifactId>
+      <version>0.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-db-flat</artifactId>
     </dependency>
   </dependencies>
   

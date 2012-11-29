@@ -15,24 +15,19 @@
  ******************************************************************************/
 package org.commonjava.aprox.depbase.fixture;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 
-import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
 import org.commonjava.aprox.inject.TestData;
+import org.commonjava.aprox.subsys.flatfile.conf.FlatFileConfiguration;
 import org.commonjava.aprox.tensor.conf.AproxTensorConfig;
-import org.infinispan.manager.DefaultCacheManager;
-import org.infinispan.manager.EmbeddedCacheManager;
 
 @javax.enterprise.context.ApplicationScoped
 public class TestConfigProvider
@@ -46,15 +41,15 @@ public class TestConfigProvider
 
     private AproxTensorConfig config;
 
-    private File dbDir;
+    private FlatFileConfiguration dbConfig;
 
-    private EmbeddedCacheManager container;
+    private File dbDir;
 
     @PostConstruct
     public void start()
         throws IOException
     {
-        dbDir = File.createTempFile( "ispn.tensor.live.", ".dir" );
+        dbDir = File.createTempFile( "tensor.live.", ".dir" );
         dbDir.delete();
         dbDir.mkdirs();
     }
@@ -62,24 +57,15 @@ public class TestConfigProvider
     @Produces
     @Default
     @TestData
-    public synchronized EmbeddedCacheManager getCacheContainer()
+    public synchronized FlatFileConfiguration getFlatFileConfig()
         throws IOException
     {
-        if ( container == null || !container.isDefaultRunning() )
+        if ( dbConfig == null )
         {
-            final InputStream stream = Thread.currentThread()
-                                             .getContextClassLoader()
-                                             .getResourceAsStream( "infinispan.live.xml" );
-            String configXml = IOUtils.toString( stream );
-
-            configXml = configXml.replaceAll( Pattern.quote( "${dbDir}" ), dbDir.getAbsolutePath() );
-
-            System.out.println( "Got infinispan.xml:\n\n" + configXml + "\n\n" );
-
-            container = new DefaultCacheManager( new ByteArrayInputStream( configXml.getBytes() ) );
+            dbConfig = new FlatFileConfiguration( dbDir );
         }
 
-        return container;
+        return dbConfig;
     }
 
     @Produces

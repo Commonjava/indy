@@ -1,4 +1,4 @@
-package org.commonjava.aprox.flat.conf;
+package org.commonjava.aprox.subsys.flatfile.conf;
 
 import java.io.File;
 
@@ -9,14 +9,13 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.commonjava.aprox.conf.AbstractAproxConfigInfo;
-import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.aprox.conf.AbstractAproxFeatureConfig;
-import org.commonjava.shelflife.store.flat.FlatShelflifeStoreConfiguration;
+import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.ConfigNames;
 import org.commonjava.web.config.annotation.SectionName;
 
-@SectionName( "db-flat" )
+@SectionName( "flatfiles" )
 @Alternative
 @Named( "unused" )
 public class FlatFileConfiguration
@@ -59,35 +58,36 @@ public class FlatFileConfiguration
         }
     }
 
-    public static final File DEFAULT_BASEDIR = new File( "/var/lib/aprox/db/aprox" );
+    public static final File DEFAULT_BASEDIR = new File( "/var/lib/aprox/db" );
 
-    private File definitionsDir;
+    private File dataBasedir;
 
     public FlatFileConfiguration()
     {
     }
 
-    @ConfigNames( "definitions.dir" )
-    public FlatFileConfiguration( final File definitionsDir )
+    @ConfigNames( "data.dir" )
+    public FlatFileConfiguration( final File dataBasedir )
     {
-        this.definitionsDir = definitionsDir;
+        this.dataBasedir = dataBasedir;
     }
 
-    public File getDefinitionsDir()
+    public File getDataBasedir()
     {
-        return definitionsDir == null ? DEFAULT_BASEDIR : definitionsDir;
+        return dataBasedir == null ? DEFAULT_BASEDIR : dataBasedir;
     }
 
-    public void setDefinitionsDir( final File definitionsDir )
+    public void setDataBasedir( final File dataBasedir )
     {
-        this.definitionsDir = definitionsDir;
+        this.dataBasedir = dataBasedir;
     }
 
-    @Produces
-    @Default
-    public FlatShelflifeStoreConfiguration getShelflifeConfig()
+    public File getStorageDir( final String name )
     {
-        return new FlatShelflifeStoreConfiguration( new File( getDefinitionsDir().getParentFile(), "shelflife" ) );
+        final File d = new File( getDataBasedir(), name );
+        d.mkdirs();
+
+        return d;
     }
 
 }

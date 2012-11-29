@@ -1,16 +1,8 @@
 package org.commonjava.aprox.tensor.conf;
 
 import javax.enterprise.inject.Alternative;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.commonjava.aprox.conf.AbstractAproxConfigInfo;
-import org.commonjava.aprox.conf.AbstractAproxFeatureConfig;
-import org.commonjava.aprox.conf.AproxConfigInfo;
-import org.commonjava.aprox.inject.Production;
-import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 
@@ -19,44 +11,6 @@ import org.commonjava.web.config.annotation.SectionName;
 @Alternative
 public class AproxTensorConfig
 {
-
-    @javax.enterprise.context.ApplicationScoped
-    public static class AproxTensorFeatureConfig
-        extends AbstractAproxFeatureConfig<AproxTensorConfig, AproxTensorConfig>
-    {
-        @Inject
-        private AproxTensorConfigInfo info;
-
-        public AproxTensorFeatureConfig()
-        {
-            super( AproxTensorConfig.class );
-        }
-
-        @Produces
-        @Production
-        @Default
-        public AproxTensorConfig getCacheConfig()
-            throws ConfigurationException
-        {
-            return getConfig();
-        }
-
-        @Override
-        public AproxConfigInfo getInfo()
-        {
-            return info;
-        }
-    }
-
-    @javax.enterprise.context.ApplicationScoped
-    public static class AproxTensorConfigInfo
-        extends AbstractAproxConfigInfo
-    {
-        public AproxTensorConfigInfo()
-        {
-            super( AproxTensorConfig.class );
-        }
-    }
 
     private static final String DEFAULT_TENSOR_DISCOVERY_GROUP = "_tensor";
 

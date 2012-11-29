@@ -22,11 +22,9 @@ import org.commonjava.aprox.tensor.TensorStorageListener;
 import org.commonjava.tensor.data.TensorDataManager;
 import org.commonjava.web.json.test.WebFixture;
 import org.commonjava.web.test.fixture.TestWarArchiveBuilder;
-import org.infinispan.manager.CacheContainer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -52,9 +50,6 @@ public class TensorStorageListenerLiveTest
 
     @Inject
     protected TensorDataManager tensorData;
-
-    @Inject
-    protected CacheContainer container;
 
     @Rule
     public WebFixture webFixture = new WebFixture();
@@ -86,16 +81,6 @@ public class TensorStorageListenerLiveTest
     {
         System.out.println( "[" + testName.getMethodName() + "] Setting up..." );
         aproxData.install();
-    }
-
-    @After
-    public void passivateCaches()
-    {
-        if ( container != null )
-        {
-            System.out.println( "[" + testName.getMethodName() + "] PASSIVATING ALL...STOPPING CONTAINER" );
-            container.stop();
-        }
     }
 
     @Deployment

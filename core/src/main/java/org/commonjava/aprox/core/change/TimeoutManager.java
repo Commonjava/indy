@@ -405,13 +405,22 @@ public class TimeoutManager
         DeployPoint deploy = null;
         try
         {
-            deploy = (DeployPoint) dataManager.getArtifactStore( event.getStorageItem()
-                                                                      .getStoreKey() );
+            final ArtifactStore store = dataManager.getArtifactStore( event.getStorageItem()
+                                                                           .getStoreKey() );
+            if ( store instanceof DeployPoint )
+            {
+                deploy = (DeployPoint) store;
+            }
+            else if ( store instanceof Group )
+            {
+                final Group group = (Group) store;
+                deploy = findDeployPoint( group );
+            }
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( "Failed to retrieve store for: %s. Reason: %s", e, event.getStorageItem()
-                                                                                  .getStoreKey(), e.getMessage() );
+            logger.error( "Failed to retrieve deploy point for: %s. Reason: %s", e, event.getStorageItem()
+                                                                                         .getStoreKey(), e.getMessage() );
         }
 
         if ( deploy == null )
@@ -436,6 +445,29 @@ public class TimeoutManager
                               path, deploy, timeout, e.getMessage() );
             }
         }
+    }
+
+    private DeployPoint findDeployPoint( final Group group )
+        throws ProxyDataException
+    {
+        for ( final StoreKey key : group.getConstituents() )
+        {
+            if ( StoreType.deploy_point == key.getType() )
+            {
+                return dataManager.getDeployPoint( key.getName() );
+            }
+            else if ( StoreType.group == key.getType() )
+            {
+                final Group grp = dataManager.getGroup( key.getName() );
+                final DeployPoint dp = findDeployPoint( grp );
+                if ( dp != null )
+                {
+                    return dp;
+                }
+            }
+        }
+
+        return null;
     }
 
     private void cleanMetadata( final FileEvent event )
