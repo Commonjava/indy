@@ -81,6 +81,7 @@ public class TensorStorageListenerLiveTest
     {
         System.out.println( "[" + testName.getMethodName() + "] Setting up..." );
         aproxData.install();
+        aproxData.clear();
     }
 
     @Deployment

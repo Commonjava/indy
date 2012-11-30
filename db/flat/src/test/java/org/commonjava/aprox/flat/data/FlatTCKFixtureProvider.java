@@ -49,6 +49,7 @@ public class FlatTCKFixtureProvider
         dataManager = new TestFlatFileDataManager( new FlatFileConfiguration( configDir ), serializer );
 
         dataManager.install();
+        dataManager.clear();
     }
 
     private static final class TestFlatFileDataManager
@@ -124,6 +125,13 @@ public class FlatTCKFixtureProvider
         }
 
         @Override
+        public void clear()
+            throws ProxyDataException
+        {
+            getDataManager().clear();
+        }
+
+        @Override
         public ArtifactStore getArtifactStore( final StoreKey key )
             throws ProxyDataException
         {
@@ -149,6 +157,27 @@ public class FlatTCKFixtureProvider
             throws ProxyDataException
         {
             return getDataManager().getAllArtifactStores( type );
+        }
+
+        @Override
+        public boolean storeArtifactStore( final ArtifactStore key )
+            throws ProxyDataException
+        {
+            return getDataManager().storeArtifactStore( key );
+        }
+
+        @Override
+        public boolean storeArtifactStore( final ArtifactStore key, final boolean skipIfExists )
+            throws ProxyDataException
+        {
+            return getDataManager().storeArtifactStore( key, skipIfExists );
+        }
+
+        @Override
+        public void deleteArtifactStore( final StoreKey key )
+            throws ProxyDataException
+        {
+            getDataManager().deleteArtifactStore( key );
         }
 
     }

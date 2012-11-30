@@ -115,6 +115,22 @@ public class InfinispanDataManager
     }
 
     @Override
+    public boolean storeArtifactStore( final ArtifactStore store )
+        throws ProxyDataException
+    {
+        return store( false, store );
+    }
+
+    @Override
+    public boolean storeArtifactStore( final ArtifactStore store, final boolean skipIfExists )
+        throws ProxyDataException
+    {
+        final boolean result = store( skipIfExists, store );
+
+        return result;
+    }
+
+    @Override
     public void deleteDeployPoint( final DeployPoint deploy )
         throws ProxyDataException
     {
@@ -154,6 +170,13 @@ public class InfinispanDataManager
         throws ProxyDataException
     {
         delete( StoreType.group, name );
+    }
+
+    @Override
+    public void deleteArtifactStore( final StoreKey key )
+        throws ProxyDataException
+    {
+        delete( key.getType(), key.getName() );
     }
 
     @Override
@@ -241,6 +264,13 @@ public class InfinispanDataManager
         }
 
         return result;
+    }
+
+    @Override
+    public void clear()
+        throws ProxyDataException
+    {
+        storeCache.clear();
     }
 
     @Override

@@ -59,6 +59,7 @@ public class AutoProxDataManagerDecoratorTest
     {
         Log4jUtil.configure( Level.DEBUG );
         proxyManager.install();
+        proxyManager.clear();
 
         Repository repo = new Repository( "first", "http://foo.bar/first" );
         proxyManager.storeRepository( repo );

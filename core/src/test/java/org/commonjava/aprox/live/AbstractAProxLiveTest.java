@@ -40,14 +40,15 @@ public class AbstractAProxLiveTest
         throws Exception
     {
         proxyManager.install();
+        proxyManager.clear();
     }
 
     protected static TestWarArchiveBuilder createWar( final Class<?> testClass )
     {
         return new TestWarArchiveBuilder( new File( "target/test-assembly.war" ), testClass ).withExtraClasses( AbstractAProxLiveTest.class,
-                                                                                                       ProxyConfigProvider.class )
-                                                                                    .withLog4jProperties()
-                                                                                    .withBeansXml( "META-INF/beans.xml" );
+                                                                                                                ProxyConfigProvider.class )
+                                                                                             .withLog4jProperties()
+                                                                                             .withBeansXml( "META-INF/beans.xml" );
     }
 
 }

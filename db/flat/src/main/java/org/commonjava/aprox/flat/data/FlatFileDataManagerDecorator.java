@@ -75,13 +75,10 @@ public abstract class FlatFileDataManagerDecorator
             for ( final String file : dFiles )
             {
                 final File f = new File( ddir, file );
-                logger.info( "Loading deploy point: %s", f );
                 try
                 {
                     final String json = FileUtils.readFileToString( f );
                     final DeployPoint dp = serializer.fromString( json, DeployPoint.class );
-                    logger.info( "Got deploy point: %s", dp.getName() );
-                    logger.info( "Storing to: %s", dataManager );
                     dataManager.storeDeployPoint( dp );
                 }
                 catch ( final IOException e )
@@ -98,13 +95,10 @@ public abstract class FlatFileDataManagerDecorator
             for ( final String file : rFiles )
             {
                 final File f = new File( rdir, file );
-                logger.info( "Loading repository: %s", f );
                 try
                 {
                     final String json = FileUtils.readFileToString( f );
                     final Repository r = serializer.fromString( json, Repository.class );
-                    logger.info( "Got repository: %s", r.getName() );
-                    logger.info( "Storing to: %s", dataManager );
                     dataManager.storeRepository( r );
                 }
                 catch ( final IOException e )
@@ -121,13 +115,10 @@ public abstract class FlatFileDataManagerDecorator
             for ( final String file : gFiles )
             {
                 final File f = new File( gdir, file );
-                logger.info( "Loading group: %s", f );
                 try
                 {
                     final String json = FileUtils.readFileToString( f );
                     final Group g = serializer.fromString( json, Group.class );
-                    logger.info( "Got group: %s", g.getName() );
-                    logger.info( "Storing to: %s", dataManager );
                     dataManager.storeGroup( g );
                 }
                 catch ( final IOException e )
@@ -151,7 +142,10 @@ public abstract class FlatFileDataManagerDecorator
         throws ProxyDataException
     {
         final boolean result = dataManager.storeDeployPoint( deploy );
-        store( false, deploy );
+        if ( result )
+        {
+            store( false, deploy );
+        }
 
         return result;
     }
@@ -161,7 +155,10 @@ public abstract class FlatFileDataManagerDecorator
         throws ProxyDataException
     {
         final boolean result = dataManager.storeDeployPoint( deploy, skipIfExists );
-        store( skipIfExists, deploy );
+        if ( result )
+        {
+            store( skipIfExists, deploy );
+        }
 
         return result;
     }
@@ -179,7 +176,10 @@ public abstract class FlatFileDataManagerDecorator
         throws ProxyDataException
     {
         final boolean result = dataManager.storeRepository( proxy );
-        store( false, proxy );
+        if ( result )
+        {
+            store( false, proxy );
+        }
 
         return result;
     }
@@ -189,7 +189,10 @@ public abstract class FlatFileDataManagerDecorator
         throws ProxyDataException
     {
         final boolean result = dataManager.storeRepository( repository, skipIfExists );
-        store( skipIfExists, repository );
+        if ( result )
+        {
+            store( skipIfExists, repository );
+        }
 
         return result;
     }
@@ -207,7 +210,10 @@ public abstract class FlatFileDataManagerDecorator
         throws ProxyDataException
     {
         final boolean result = dataManager.storeGroup( group );
-        store( false, group );
+        if ( result )
+        {
+            store( false, group );
+        }
 
         return result;
     }
@@ -217,7 +223,10 @@ public abstract class FlatFileDataManagerDecorator
         throws ProxyDataException
     {
         final boolean result = dataManager.storeGroup( group, skipIfExists );
-        store( false, group );
+        if ( result )
+        {
+            store( false, group );
+        }
 
         return result;
     }
@@ -289,7 +298,6 @@ public abstract class FlatFileDataManagerDecorator
                 continue;
             }
 
-            logger.info( "Writing definition file: %s for store: %s", f, store );
             try
             {
                 FileUtils.write( f, serializer.toString( store ), "UTF-8" );
@@ -313,7 +321,6 @@ public abstract class FlatFileDataManagerDecorator
             final File f = new File( dir, store.getName() + ".json" );
             if ( f.exists() )
             {
-                logger.info( "Deleting definition file: %s for store: %s", f, store );
                 f.delete();
             }
 
@@ -328,8 +335,58 @@ public abstract class FlatFileDataManagerDecorator
         final File f = new File( dir, name + ".json" );
         if ( f.exists() )
         {
-            logger.info( "Deleting definition file: %s for store: %s", f, new StoreKey( type, name ) );
             f.delete();
+        }
+    }
+
+    @Override
+    public boolean storeArtifactStore( final ArtifactStore store )
+        throws ProxyDataException
+    {
+        final boolean result = dataManager.storeArtifactStore( store );
+        if ( result )
+        {
+            store( false, store );
+        }
+
+        return result;
+    }
+
+    @Override
+    public boolean storeArtifactStore( final ArtifactStore store, final boolean skipIfExists )
+        throws ProxyDataException
+    {
+        final boolean result = dataManager.storeArtifactStore( store );
+        if ( result )
+        {
+            store( false, store );
+        }
+
+        return result;
+    }
+
+    @Override
+    public void deleteArtifactStore( final StoreKey key )
+        throws ProxyDataException
+    {
+        dataManager.deleteArtifactStore( key );
+        delete( key.getType(), key.getName() );
+    }
+
+    @Override
+    public void clear()
+        throws ProxyDataException
+    {
+        dataManager.clear();
+
+        final File basedir = config.getStorageDir( APROX_STORE );
+        try
+        {
+            FileUtils.forceDelete( basedir );
+        }
+        catch ( final IOException e )
+        {
+            throw new ProxyDataException( "Failed to delete AProx storage files: %s", e, e.getMessage() );
         }
     }
 

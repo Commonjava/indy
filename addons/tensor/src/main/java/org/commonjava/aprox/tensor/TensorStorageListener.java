@@ -53,6 +53,7 @@ import org.commonjava.aprox.tensor.data.AproxTensorDataManager;
 import org.commonjava.aprox.tensor.maven.ArtifactStoreModelResolver;
 import org.commonjava.aprox.tensor.maven.ModelVersions;
 import org.commonjava.aprox.tensor.maven.StoreModelSource;
+import org.commonjava.aprox.tensor.maven.TensorModelCache;
 import org.commonjava.tensor.data.TensorDataException;
 import org.commonjava.tensor.data.TensorDataManager;
 import org.commonjava.tensor.util.MavenModelProcessor;
@@ -84,6 +85,9 @@ public class TensorStorageListener
 
     @Inject
     private AproxTensorDataManager errorDataManager;
+
+    @Inject
+    private TensorModelCache tensorModelCache;
 
     public void handleFileAccessEvent( @Observes final FileAccessEvent event )
     {
@@ -222,6 +226,7 @@ public class TensorStorageListener
     {
         final ModelBuildingRequest request = new DefaultModelBuildingRequest();
         request.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL );
+        request.setModelCache( tensorModelCache );
         request.setModelSource( new StoreModelSource( event.getStorageItem(), false ) );
         request.setModelResolver( new ArtifactStoreModelResolver( fileManager, stores, false ) );
         request.setSystemProperties( System.getProperties() );

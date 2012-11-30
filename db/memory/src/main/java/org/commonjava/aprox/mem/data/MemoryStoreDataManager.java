@@ -25,8 +25,6 @@ import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.util.logging.Logger;
-import org.commonjava.util.logging.helper.JoinString;
 
 @javax.enterprise.context.ApplicationScoped
 public class MemoryStoreDataManager
@@ -35,7 +33,7 @@ public class MemoryStoreDataManager
 
     private final Map<StoreKey, ArtifactStore> stores = new HashMap<StoreKey, ArtifactStore>();
 
-    private final Logger logger = new Logger( getClass() );
+    //    private final Logger logger = new Logger( getClass() );
 
     @Inject
     private Event<ArtifactStoreUpdateEvent> storeEvent;
@@ -66,7 +64,6 @@ public class MemoryStoreDataManager
         throws ProxyDataException
     {
         final StoreKey key = new StoreKey( StoreType.repository, name );
-        logger.info( "Getting repository for: %s\n\nAll stores:\n\t%s", key, new JoinString( "\n\t", stores.values() ) );
 
         return (Repository) stores.get( key );
     }
@@ -282,15 +279,32 @@ public class MemoryStoreDataManager
         return result;
     }
 
+    @Override
+    public boolean storeArtifactStore( final ArtifactStore store )
+        throws ProxyDataException
+    {
+        return store( store, false );
+    }
+
+    @Override
+    public boolean storeArtifactStore( final ArtifactStore store, final boolean skipIfExists )
+        throws ProxyDataException
+    {
+        final boolean result = store( store, skipIfExists );
+        fireStoreEvent( ProxyManagerUpdateType.ADD_OR_UPDATE, store );
+
+        return result;
+    }
+
     private boolean store( final ArtifactStore store, final boolean skipIfExists )
     {
-        if ( skipIfExists && stores.containsKey( store.getKey() ) )
+        if ( !skipIfExists || !stores.containsKey( store.getKey() ) )
         {
-            return false;
+            stores.put( store.getKey(), store );
+            return true;
         }
 
-        stores.put( store.getKey(), store );
-        return true;
+        return false;
     }
 
     @Override
@@ -342,7 +356,20 @@ public class MemoryStoreDataManager
     }
 
     @Override
+    public void deleteArtifactStore( final StoreKey key )
+    {
+        stores.remove( key );
+        fireDeleteEvent( key.getType(), key.getName() );
+    }
+
+    @Override
     public void install()
+        throws ProxyDataException
+    {
+    }
+
+    @Override
+    public void clear()
         throws ProxyDataException
     {
         stores.clear();
@@ -369,12 +396,7 @@ public class MemoryStoreDataManager
 
         if ( delEvent != null )
         {
-            logger.info( "Firing delete event: %s", event );
             delEvent.fire( event );
-        }
-        else
-        {
-            logger.info( "Cannot fire delete event: %s!", event );
         }
     }
 

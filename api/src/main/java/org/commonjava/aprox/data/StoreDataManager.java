@@ -92,6 +92,12 @@ public interface StoreDataManager
     boolean storeGroup( final Group group, final boolean skipIfExists )
         throws ProxyDataException;
 
+    boolean storeArtifactStore( ArtifactStore key )
+        throws ProxyDataException;
+
+    boolean storeArtifactStore( ArtifactStore key, boolean skipIfExists )
+        throws ProxyDataException;
+
     void deleteDeployPoint( final DeployPoint deploy )
         throws ProxyDataException;
 
@@ -108,6 +114,12 @@ public interface StoreDataManager
         throws ProxyDataException;
 
     void deleteGroup( final String name )
+        throws ProxyDataException;
+
+    void deleteArtifactStore( StoreKey key )
+        throws ProxyDataException;
+
+    void clear()
         throws ProxyDataException;
 
     void install()

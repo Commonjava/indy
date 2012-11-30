@@ -65,6 +65,7 @@ public class SecurityConsistencyListenerWeldTest
                           .get();
 
         proxyManager.install();
+        proxyManager.clear();
     }
 
     @Test

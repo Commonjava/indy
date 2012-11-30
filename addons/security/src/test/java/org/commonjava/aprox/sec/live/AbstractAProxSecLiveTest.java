@@ -41,6 +41,7 @@ public class AbstractAProxSecLiveTest
         throws Exception
     {
         proxyManager.install();
+        proxyManager.clear();
     }
 
     @javax.enterprise.context.ApplicationScoped
