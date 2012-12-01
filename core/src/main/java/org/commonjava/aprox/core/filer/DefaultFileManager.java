@@ -24,13 +24,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -62,6 +61,7 @@ import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ArtifactPathInfo;
 import org.commonjava.aprox.subsys.http.AproxHttp;
+import org.commonjava.aprox.subsys.threads.inject.ExecutorConfig;
 import org.commonjava.util.logging.Logger;
 
 @javax.enterprise.context.ApplicationScoped
@@ -83,11 +83,14 @@ public class DefaultFileManager
     @Inject
     private FileEventManager fileEventManager;
 
-    private final Map<String, Future<StorageItem>> pending = new HashMap<String, Future<StorageItem>>();
+    private final Map<String, Future<StorageItem>> pending = new ConcurrentHashMap<String, Future<StorageItem>>();
 
-    private final Set<StoreKey> rescansInProgress = new HashSet<StoreKey>();
+    // Byte, because it's small, and we really only care about the keys anyway.
+    private final Map<StoreKey, Byte> rescansInProgress = new ConcurrentHashMap<StoreKey, Byte>();
 
-    private final ExecutorService executor = Executors.newCachedThreadPool();
+    @Inject
+    @ExecutorConfig( threads = 8, named = "file-manager" )
+    private ExecutorService executor; // = Executors.newFixedThreadPool( 8 );
 
     @Inject
     private AproxHttp http;
@@ -102,6 +105,7 @@ public class DefaultFileManager
         this.storage = storage;
         this.http = http;
         this.fileEventManager = new FileEventManager();
+        executor = Executors.newFixedThreadPool( 10 );
     }
 
     @Override
@@ -269,11 +273,8 @@ public class DefaultFileManager
         }
         finally
         {
-            synchronized ( pending )
-            {
-                logger.info( "Marking download complete: %s", url );
-                pending.remove( url );
-            }
+            logger.info( "Marking download complete: %s", url );
+            pending.remove( url );
         }
 
         return result;
@@ -315,65 +316,61 @@ public class DefaultFileManager
         // if the target file already exists, skip joining.
         if ( !result )
         {
-            synchronized ( pending )
+            final Future<StorageItem> future = pending.get( url );
+            if ( future != null )
             {
-                // if we're already downloading, just wait for that to be done.
-                if ( pending.containsKey( url ) )
+                StorageItem f = null;
+                try
                 {
-                    final Future<StorageItem> future = pending.get( url );
-                    StorageItem f = null;
-                    try
-                    {
-                        f = future.get( timeoutSeconds, TimeUnit.SECONDS );
+                    f = future.get( timeoutSeconds, TimeUnit.SECONDS );
 
-                        // if the download landed in a different repository, copy it to the current one for
-                        // completeness...
+                    // if the download landed in a different repository, copy it to the current one for
+                    // completeness...
 
-                        // NOTE: It'd be nice to alias instead of copying, but
-                        // that would require a common centralized store
-                        // to prevent removal of a repository from hosing
-                        // the links.
-                        if ( f != null && f.exists() && !f.equals( target ) )
-                        {
-                            target.copyFrom( f );
-                        }
+                    // NOTE: It'd be nice to alias instead of copying, but
+                    // that would require a common centralized store
+                    // to prevent removal of a repository from hosing
+                    // the links.
+                    if ( f != null && f.exists() && !f.equals( target ) )
+                    {
+                        target.copyFrom( f );
+                    }
 
-                        result = target != null && target.exists();
-                    }
-                    catch ( final InterruptedException e )
+                    result = target != null && target.exists();
+                }
+                catch ( final InterruptedException e )
+                {
+                    if ( !suppressFailures )
                     {
-                        if ( !suppressFailures )
-                        {
-                            throw new AproxWorkflowException( Response.status( Status.NO_CONTENT )
-                                                                      .build() );
-                        }
+                        throw new AproxWorkflowException( Response.status( Status.NO_CONTENT )
+                                                                  .build() );
                     }
-                    catch ( final ExecutionException e )
+                }
+                catch ( final ExecutionException e )
+                {
+                    if ( !suppressFailures )
                     {
-                        if ( !suppressFailures )
-                        {
-                            throw new AproxWorkflowException( Response.serverError()
-                                                                      .build() );
-                        }
+                        throw new AproxWorkflowException( Response.serverError()
+                                                                  .build() );
                     }
-                    catch ( final TimeoutException e )
+                }
+                catch ( final TimeoutException e )
+                {
+                    if ( !suppressFailures )
                     {
-                        if ( !suppressFailures )
-                        {
-                            throw new AproxWorkflowException( Response.status( Status.NO_CONTENT )
-                                                                      .build() );
-                        }
+                        throw new AproxWorkflowException( Response.status( Status.NO_CONTENT )
+                                                                  .build() );
                     }
-                    catch ( final IOException e )
-                    {
-                        logger.error( "Failed to copy downloaded file to repository target. Error:  %s\nDownloaded location: %s\nRepository target: %s",
-                                      e, e.getMessage(), f, target );
+                }
+                catch ( final IOException e )
+                {
+                    logger.error( "Failed to copy downloaded file to repository target. Error:  %s\nDownloaded location: %s\nRepository target: %s",
+                                  e, e.getMessage(), f, target );
 
-                        if ( !suppressFailures )
-                        {
-                            throw new AproxWorkflowException( Response.serverError()
-                                                                      .build() );
-                        }
+                    if ( !suppressFailures )
+                    {
+                        throw new AproxWorkflowException( Response.serverError()
+                                                                  .build() );
                     }
                 }
             }
@@ -753,7 +750,9 @@ public class DefaultFileManager
     private static final class Rescanner
         implements Runnable
     {
-        private final Set<StoreKey> rescansInProgress;
+        private static final Byte IN_PROGRESS_FLAG = (byte) 0x1;
+
+        private final Map<StoreKey, Byte> rescansInProgress;
 
         private final StorageItem start;
 
@@ -761,7 +760,7 @@ public class DefaultFileManager
 
         private final FileEventManager fileEventManager;
 
-        public Rescanner( final StorageItem start, final Set<StoreKey> rescansInProgress,
+        public Rescanner( final StorageItem start, final Map<StoreKey, Byte> rescansInProgress,
                           final FileEventManager fileEventManager, final Event<ArtifactStoreRescanEvent> rescanEvent )
         {
             this.start = start;
@@ -776,12 +775,12 @@ public class DefaultFileManager
             final StoreKey storeKey = start.getStoreKey();
             synchronized ( rescansInProgress )
             {
-                if ( rescansInProgress.contains( storeKey ) )
+                if ( rescansInProgress.containsKey( storeKey ) )
                 {
                     return;
                 }
 
-                rescansInProgress.add( storeKey );
+                rescansInProgress.put( storeKey, IN_PROGRESS_FLAG );
             }
 
             try

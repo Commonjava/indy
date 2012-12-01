@@ -78,11 +78,12 @@
           <descriptorRefs>
             <descriptorRef>war</descriptorRef>
           </descriptorRefs>
-          <!-- <archive>
+          <archive>
             <manifestEntries>
-              <Dependencies>org.infinispan export</Dependencies>
+              <!-- <Dependencies>org.infinispan export</Dependencies> -->
+              <Dependencies>org.jboss.threads export</Dependencies>
             </manifestEntries>
-          </archive> -->
+          </archive>
         </configuration>
       </plugin>
     </plugins>

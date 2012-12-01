@@ -15,22 +15,34 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
+  
   <parent>
     <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-parent</artifactId>
+    <artifactId>aprox-test</artifactId>
     <version>0.4-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-subsystems</artifactId>
-  <packaging>pom</packaging>
-
-  <name>AProx :: Subsystems Parent</name>
+  <artifactId>aprox-test-utils</artifactId>
+  <name>AProx :: Filer TCK</name>
   
-  <modules>
-    <module>flatfile</module>
-    <module>infinispan</module>
-    <module>http</module>
-    <module>threads</module>
-  </modules>
+  <dependencies>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.weld.se</groupId>
+      <artifactId>weld-se-core</artifactId>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
 </project>

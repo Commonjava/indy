@@ -30,5 +30,6 @@
   <modules>
     <module>db</module>
     <module>filer</module>
+    <module>utils</module>
   </modules>
 </project>

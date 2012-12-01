@@ -115,6 +115,15 @@
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-subsys-http</artifactId>
     </dependency>
+    
+    <dependency>
+      <groupId>org.jboss.threads</groupId>
+      <artifactId>jboss-threads</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-subsys-threads</artifactId>
+    </dependency>
   </dependencies>
   
   <dependencyManagement>

@@ -13,8 +13,10 @@ public class TensorModelCache
 {
 
     private final Cache<String, Object> cache = CacheBuilder.newBuilder()
-                                                            .maximumSize( 100 )
+                                                            .concurrencyLevel( 10 )
+                                                            .maximumSize( 10000 )
                                                             .weakValues()
+                                                            .weakKeys()
                                                             .build();
 
     @Override
