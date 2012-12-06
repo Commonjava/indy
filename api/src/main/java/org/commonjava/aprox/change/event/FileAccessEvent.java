@@ -16,14 +16,16 @@
 package org.commonjava.aprox.change.event;
 
 import org.commonjava.aprox.io.StorageItem;
+import org.commonjava.util.logging.Logger;
 
 public class FileAccessEvent
     extends FileEvent
 {
 
-    public FileAccessEvent( final StorageItem storageLocation )
+    public FileAccessEvent( final StorageItem item )
     {
-        super( storageLocation );
+        super( item );
+        new Logger( getClass() ).info( "New file-access event: %s", item );
     }
 
 }
