@@ -14,6 +14,8 @@ import org.commonjava.tensor.data.store.IndexStore;
 import org.commonjava.tensor.data.store.IndexStoreFactory;
 import org.commonjava.util.logging.Logger;
 
+import com.google.gson.reflect.TypeToken;
+
 @ApplicationScoped
 public class AproxTensorDataManager
 {
@@ -39,7 +41,9 @@ public class AproxTensorDataManager
     @PostConstruct
     public void initialize()
     {
-        errors = indexFactory.getOneToManyStore( APROX_TENSOR_MODEL_ERRORS, String.class, String.class );
+        errors = indexFactory.getStore( APROX_TENSOR_MODEL_ERRORS, String.class, new TypeToken<Set<String>>()
+        {
+        } );
     }
 
     public boolean hasErrors( final String projectId )
