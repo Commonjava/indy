@@ -3,10 +3,7 @@ package org.commonjava.aprox.tensor;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
@@ -41,10 +38,8 @@ public class AproxProjectGraphDiscoverer
     @Inject
     private AproxTensorConfig config;
 
-    private final Map<ProjectVersionRef, Object> notifiers = new HashMap<ProjectVersionRef, Object>();
-
     @Override
-    public void discoverEffectiveProjectRelationships( final ProjectVersionRef projectId, final boolean wait )
+    public void discoverEffectiveProjectRelationships( final ProjectVersionRef projectId )
         throws TensorDataException
     {
         ProjectVersionRef specific = projectId;
@@ -55,6 +50,7 @@ public class AproxProjectGraphDiscoverer
 
         try
         {
+            //FIXME: Verify the discovery group exists, or else use getAll() to check all locations.
             groupContentManager.retrieve( config.getDiscoveryGroup(), pomPath( specific ) );
         }
         catch ( final AproxWorkflowException e )
@@ -62,46 +58,10 @@ public class AproxProjectGraphDiscoverer
             throw new TensorDataException( "Discovery of project-relationships for: '%s' failed. Error: %s", e,
                                            projectId, e.getMessage() );
         }
-
-        Object lock;
-        synchronized ( this )
-        {
-            lock = notifiers.get( specific );
-            if ( lock == null )
-            {
-                lock = new Object();
-                notifiers.put( specific, lock );
-            }
-        }
-
-        if ( wait )
-        {
-            final long timeout = TimeUnit.MILLISECONDS.convert( config.getDiscoveryTimeoutSeconds(), TimeUnit.SECONDS );
-            synchronized ( lock )
-            {
-                try
-                {
-                    lock.wait( timeout );
-                }
-                catch ( final InterruptedException e )
-                {
-                    logger.warn( "Lock interrupted waiting for relationships of: %s", specific );
-                }
-            }
-        }
     }
 
     public void newRelationshipsNotifier( @Observes final NewRelationshipsEvent event )
     {
-        final Object lock = notifiers.get( event.getRelationships()
-                                                .getProjectRef() );
-        if ( lock != null )
-        {
-            synchronized ( lock )
-            {
-                lock.notifyAll();
-            }
-        }
     }
 
     private ProjectVersionRef resolveSpecificVersion( final ProjectVersionRef projectId )
@@ -153,6 +113,7 @@ public class AproxProjectGraphDiscoverer
         StorageItem item;
         try
         {
+            //FIXME: Verify the discovery group exists, or else use getAll() to check all locations.
             item = groupContentManager.retrieve( config.getDiscoveryGroup(), metadataPath );
         }
         catch ( final AproxWorkflowException e )

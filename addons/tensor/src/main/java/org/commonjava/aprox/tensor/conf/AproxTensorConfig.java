@@ -3,6 +3,7 @@ package org.commonjava.aprox.tensor.conf;
 import javax.enterprise.inject.Alternative;
 import javax.inject.Named;
 
+import org.commonjava.tensor.config.TensorConfig;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 
@@ -10,24 +11,26 @@ import org.commonjava.web.config.annotation.SectionName;
 @Named( "use-factory-instead" )
 @Alternative
 public class AproxTensorConfig
+    implements TensorConfig
 {
 
     private static final String DEFAULT_TENSOR_DISCOVERY_GROUP = "_tensor";
 
-    private static final int DEFAULT_TENSOR_DISCOVERY_TIMEOUT_SECONDS = 30;
+    private static final int DEFAULT_TENSOR_DISCOVERY_TIMEOUT_MILLIS = 30000;
 
     private String discoveryGroup;
 
-    private Integer discoveryTimeoutSeconds;
+    private Long discoveryTimeoutMillis;
 
     public String getDiscoveryGroup()
     {
         return discoveryGroup == null ? DEFAULT_TENSOR_DISCOVERY_GROUP : discoveryGroup;
     }
 
-    public int getDiscoveryTimeoutSeconds()
+    @Override
+    public long getDiscoveryTimeoutMillis()
     {
-        return discoveryTimeoutSeconds == null ? DEFAULT_TENSOR_DISCOVERY_TIMEOUT_SECONDS : discoveryTimeoutSeconds;
+        return discoveryTimeoutMillis == null ? DEFAULT_TENSOR_DISCOVERY_TIMEOUT_MILLIS : discoveryTimeoutMillis;
     }
 
     @ConfigName( "discoveryGroup" )
@@ -36,10 +39,10 @@ public class AproxTensorConfig
         this.discoveryGroup = discoveryGroup;
     }
 
-    @ConfigName( "discoveryTimeoutSeconds" )
-    public void setDiscoveryTimeoutSeconds( final int discoveryTimeoutSeconds )
+    @ConfigName( "discoveryTimeoutMillis" )
+    public void setDiscoveryTimeoutMillis( final long discoveryTimeoutMillis )
     {
-        this.discoveryTimeoutSeconds = discoveryTimeoutSeconds;
+        this.discoveryTimeoutMillis = discoveryTimeoutMillis;
     }
 
 }
