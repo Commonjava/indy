@@ -7,6 +7,7 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
 import org.commonjava.tensor.data.TensorDataException;
@@ -27,13 +28,16 @@ public class AproxTensorDataManager
     @Inject
     private IndexStoreFactory indexFactory;
 
-    private IndexStore<String, Set<String>> errors;
+    @Inject
+    private Event<ProjectRelationshipsErrorEvent> event;
+
+    private IndexStore<ErrorKey, Set<String>> errors;
 
     public AproxTensorDataManager()
     {
     }
 
-    public AproxTensorDataManager( final IndexStore<String, Set<String>> errors )
+    public AproxTensorDataManager( final IndexStore<ErrorKey, Set<String>> errors )
     {
         this.errors = errors;
     }
@@ -41,45 +45,52 @@ public class AproxTensorDataManager
     @PostConstruct
     public void initialize()
     {
-        errors = indexFactory.getStore( APROX_TENSOR_MODEL_ERRORS, String.class, new TypeToken<Set<String>>()
+        errors = indexFactory.getStore( APROX_TENSOR_MODEL_ERRORS, ErrorKey.class, new TypeToken<Set<String>>()
         {
         } );
     }
 
-    public boolean hasErrors( final String projectId )
+    public boolean hasErrors( final String g, final String a, final String v )
     {
-        return errors.contains( projectId );
+        return errors.contains( new ErrorKey( g, a, v ) );
     }
 
-    public Set<String> getErrors( final String projectId )
+    public Set<String> getErrors( final String g, final String a, final String v )
     {
+        final ErrorKey key = new ErrorKey( g, a, v );
         try
         {
-            return errors.get( projectId );
+            return errors.get( key );
         }
         catch ( final TensorDataException e )
         {
-            logger.error( "Failed to retrieve errors for: %s. Reason: %s", e, projectId, e.getMessage() );
+            logger.error( "Failed to retrieve errors for: %s. Reason: %s", e, key, e.getMessage() );
             throw new IllegalStateException( "Tensor error store is not functioning: " + e.getMessage(), e );
         }
     }
 
-    public synchronized void addError( final String projectId, final Throwable error )
+    public synchronized void addError( final String g, final String a, final String v, final Throwable error )
     {
+        final ErrorKey key = new ErrorKey( g, a, v );
         try
         {
-            Set<String> errors = this.errors.get( projectId );
+            Set<String> errors = this.errors.get( key );
             if ( errors == null )
             {
                 errors = new HashSet<String>();
             }
 
             errors.add( toString( error ) );
-            this.errors.store( projectId, errors );
+            this.errors.store( key, errors );
+
+            if ( event != null )
+            {
+                event.fire( new ProjectRelationshipsErrorEvent( key, error ) );
+            }
         }
         catch ( final TensorDataException e )
         {
-            logger.error( "Failed to save errors for: %s. Reason: %s", e, projectId, e.getMessage() );
+            logger.error( "Failed to save errors for: %s. Reason: %s", e, key, e.getMessage() );
             throw new IllegalStateException( "Tensor error store is not functioning: " + e.getMessage(), e );
         }
     }

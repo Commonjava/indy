@@ -195,7 +195,9 @@ public class TensorStorageListenerRunnable
 
             final boolean contains = dataManager.contains( ref );
 
-            final boolean hasError = errorDataManager.hasErrors( ref.toString() );
+            final boolean hasError =
+                errorDataManager.hasErrors( ref.getGroupId(), ref.getArtifactId(), ref.getVersionSpec()
+                                                                                      .renderStandard() );
 
             return !hasError && ( !concrete || !contains );
         }
@@ -253,8 +255,7 @@ public class TensorStorageListenerRunnable
 
     private void logProjectError( final String g, final String a, final String v, final Throwable e )
     {
-        final String projectId = String.format( "%s:%s:%s", g, a, v );
-        errorDataManager.addError( projectId, e );
+        errorDataManager.addError( g, a, v, e );
     }
 
     private void logArtifactError( final String path, final Throwable e )
@@ -266,8 +267,7 @@ public class TensorStorageListenerRunnable
         }
         else
         {
-            final String projectId = info.getProjectId();
-            errorDataManager.addError( projectId, e );
+            errorDataManager.addError( info.getGroupId(), info.getArtifactId(), info.getVersion(), e );
         }
     }
 

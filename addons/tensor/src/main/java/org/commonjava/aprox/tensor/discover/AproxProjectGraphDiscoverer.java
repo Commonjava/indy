@@ -1,9 +1,11 @@
-package org.commonjava.aprox.tensor;
+package org.commonjava.aprox.tensor.discover;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
@@ -15,13 +17,17 @@ import org.apache.maven.graph.common.version.InvalidVersionSpecificationExceptio
 import org.apache.maven.graph.common.version.RangeVersionSpec;
 import org.apache.maven.graph.common.version.SingleVersion;
 import org.apache.maven.graph.common.version.VersionUtils;
+import org.apache.maven.graph.effective.EProjectRelationships;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.GroupContentManager;
 import org.commonjava.aprox.tensor.conf.AproxTensorConfig;
+import org.commonjava.aprox.tensor.data.ProjectRelationshipsErrorEvent;
 import org.commonjava.tensor.data.TensorDataException;
-import org.commonjava.tensor.discovery.ProjectRelationshipDiscoverer;
+import org.commonjava.tensor.data.TensorDataManager;
+import org.commonjava.tensor.discover.DiscoveryConfig;
+import org.commonjava.tensor.discover.ProjectRelationshipDiscoverer;
 import org.commonjava.tensor.event.NewRelationshipsEvent;
 import org.commonjava.util.logging.Logger;
 
@@ -36,10 +42,16 @@ public class AproxProjectGraphDiscoverer
     private GroupContentManager groupContentManager;
 
     @Inject
+    private TensorDataManager dataManager;
+
+    @Inject
     private AproxTensorConfig config;
 
+    private final Map<String, RelationshipDiscoveryToken> dataHolders = new HashMap<String, RelationshipDiscoveryToken>();
+
     @Override
-    public void discoverEffectiveProjectRelationships( final ProjectVersionRef projectId )
+    public EProjectRelationships discoverRelationships( final ProjectVersionRef projectId,
+                                                        final DiscoveryConfig discoveryConfig )
         throws TensorDataException
     {
         ProjectVersionRef specific = projectId;
@@ -48,44 +60,91 @@ public class AproxProjectGraphDiscoverer
             specific = resolveSpecificVersion( projectId );
         }
 
-        try
+        RelationshipDiscoveryToken holder = dataHolders.get( specific );
+        if ( holder == null )
         {
-            //FIXME: Verify the discovery group exists, or else use getAll() to check all locations.
-            groupContentManager.retrieve( config.getDiscoveryGroup(), pomPath( specific ) );
+            holder = new RelationshipDiscoveryToken( specific );
+            dataHolders.put( specific.toString(), holder );
+
+            try
+            {
+                //FIXME: Verify the discovery group exists, or else use getAll() to check all locations.
+                groupContentManager.retrieve( config.getDiscoveryGroup(), pomPath( specific ) );
+            }
+            catch ( final AproxWorkflowException e )
+            {
+                throw new TensorDataException( "Discovery of project-relationships for: '%s' failed. Error: %s", e,
+                                               projectId, e.getMessage() );
+            }
         }
-        catch ( final AproxWorkflowException e )
+
+        synchronized ( holder )
         {
-            throw new TensorDataException( "Discovery of project-relationships for: '%s' failed. Error: %s", e,
-                                           projectId, e.getMessage() );
+            try
+            {
+                holder.wait( config.getDiscoveryTimeoutMillis() );
+            }
+            catch ( final InterruptedException e )
+            {
+                logger.info( "Interrupted while waiting for discovery of: %s", specific );
+                return null;
+            }
         }
+
+        final Throwable e = holder.getError();
+        if ( e != null )
+        {
+            throw new TensorDataException( "Error discovering relationships for '%s': %s", e, specific, e.getMessage() );
+        }
+
+        return holder.getRelationships();
     }
 
     public void newRelationshipsNotifier( @Observes final NewRelationshipsEvent event )
     {
+        final EProjectRelationships relationships = event.getRelationships();
+        final ProjectVersionRef ref = relationships.getProjectRef();
+
+        final RelationshipDiscoveryToken holder = dataHolders.remove( ref.toString() );
+        if ( holder != null )
+        {
+            holder.setRelationships( relationships );
+        }
     }
 
-    private ProjectVersionRef resolveSpecificVersion( final ProjectVersionRef projectId )
+    public void relationshipsError( @Observes final ProjectRelationshipsErrorEvent event )
+    {
+        final RelationshipDiscoveryToken holder = dataHolders.remove( event.getKey()
+                                                           .toString() );
+        if ( holder != null )
+        {
+            holder.setError( event.getError() );
+        }
+    }
+
+    @Override
+    public ProjectVersionRef resolveSpecificVersion( final ProjectVersionRef ref )
         throws TensorDataException
     {
-        final List<SingleVersion> versions = getVersions( projectId );
+        final List<SingleVersion> versions = getVersions( ref );
 
         Collections.sort( versions );
         Collections.reverse( versions );
 
-        if ( projectId.isSnapshot() )
+        if ( ref.isSnapshot() )
         {
             while ( !versions.isEmpty() )
             {
                 final SingleVersion ver = versions.remove( 0 );
                 if ( !ver.isRelease() )
                 {
-                    return new ProjectVersionRef( projectId.getGroupId(), projectId.getArtifactId(), ver );
+                    return new ProjectVersionRef( ref.getGroupId(), ref.getArtifactId(), ver );
                 }
             }
         }
-        else if ( projectId.isCompound() )
+        else if ( ref.isCompound() )
         {
-            final RangeVersionSpec range = (RangeVersionSpec) projectId.getVersionSpec();
+            final RangeVersionSpec range = (RangeVersionSpec) ref.getVersionSpec();
 
             final boolean snapshots =
                 ( range.getLowerBound() != null && !range.getLowerBound()
@@ -98,7 +157,7 @@ public class AproxProjectGraphDiscoverer
                 final SingleVersion ver = versions.remove( 0 );
                 if ( ( snapshots || ver.isRelease() ) && range.contains( ver ) )
                 {
-                    return new ProjectVersionRef( projectId.getGroupId(), projectId.getArtifactId(), ver );
+                    return new ProjectVersionRef( ref.getGroupId(), ref.getArtifactId(), ver );
                 }
             }
         }
