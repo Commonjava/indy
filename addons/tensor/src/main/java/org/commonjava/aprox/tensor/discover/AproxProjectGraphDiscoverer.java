@@ -19,6 +19,7 @@ import org.apache.maven.graph.common.version.SingleVersion;
 import org.apache.maven.graph.common.version.VersionUtils;
 import org.apache.maven.graph.effective.EProjectRelationships;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.commonjava.aprox.inject.Production;
 import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.GroupContentManager;
@@ -32,6 +33,7 @@ import org.commonjava.tensor.event.NewRelationshipsEvent;
 import org.commonjava.util.logging.Logger;
 
 @javax.enterprise.context.ApplicationScoped
+@Production
 public class AproxProjectGraphDiscoverer
     implements ProjectRelationshipDiscoverer
 {
@@ -47,7 +49,8 @@ public class AproxProjectGraphDiscoverer
     @Inject
     private AproxTensorConfig config;
 
-    private final Map<String, RelationshipDiscoveryToken> dataHolders = new HashMap<String, RelationshipDiscoveryToken>();
+    private final Map<String, RelationshipDiscoveryToken> dataHolders =
+        new HashMap<String, RelationshipDiscoveryToken>();
 
     @Override
     public EProjectRelationships discoverRelationships( final ProjectVersionRef projectId,
@@ -115,7 +118,7 @@ public class AproxProjectGraphDiscoverer
     public void relationshipsError( @Observes final ProjectRelationshipsErrorEvent event )
     {
         final RelationshipDiscoveryToken holder = dataHolders.remove( event.getKey()
-                                                           .toString() );
+                                                                           .toString() );
         if ( holder != null )
         {
             holder.setError( event.getError() );
