@@ -2,6 +2,7 @@ package org.commonjava.aprox.subsys.http.util;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -27,10 +28,13 @@ public class RepoSSLSocketFactory
 
     private final Logger logger = new Logger( getClass() );
 
-    public RepoSSLSocketFactory()
+    private final TLRepositoryCredentialsProvider credProvider;
+
+    public RepoSSLSocketFactory( final TLRepositoryCredentialsProvider credProvider )
         throws KeyManagementException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException
     {
         super( (TrustStrategy) null, BROWSER_COMPATIBLE_HOSTNAME_VERIFIER );
+        this.credProvider = credProvider;
     }
 
     @Override
@@ -213,6 +217,38 @@ public class RepoSSLSocketFactory
         }
 
         return factory;
+    }
+
+    @Override
+    public Socket createLayeredSocket( final Socket socket, final String host, final int port, final boolean autoClose )
+        throws IOException, UnknownHostException
+    {
+        logger.info( "Creating LAYERED socket to: %s:%d...looking for repository definition in parameters...", host,
+                     port );
+
+        // FIXME: This is prone to confusion if multiple repos using the same host/port have different configs!!!
+        final Repository repo = credProvider.getRepository( host, port < 0 ? 443 : port );
+
+        if ( repo != null )
+        {
+            logger.info( "Creating socket...using repository: %s", repo );
+            final SSLSocketFactory fac = getRepoSSLFactory( repo );
+            if ( fac != null )
+            {
+                logger.info( "Creating socket using repo-specific factory" );
+                return fac.createLayeredSocket( socket, host, port, autoClose );
+            }
+            else
+            {
+                logger.info( "No repo-specific factory; Creating socket using default factory (this)" );
+                return super.createLayeredSocket( socket, host, port, autoClose );
+            }
+        }
+        else
+        {
+            logger.info( "No repo; Creating socket using default factory (this)" );
+            return super.createLayeredSocket( socket, host, port, autoClose );
+        }
     }
 
 }

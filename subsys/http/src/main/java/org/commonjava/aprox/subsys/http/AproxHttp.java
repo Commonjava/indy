@@ -49,9 +49,11 @@ public class AproxHttp
         // TODO: Make this configurable
         ccm.setMaxTotal( 20 );
 
+        credProvider = new TLRepositoryCredentialsProvider();
+
         try
         {
-            socketFactory = new RepoSSLSocketFactory();
+            socketFactory = new RepoSSLSocketFactory( credProvider );
 
             final SchemeRegistry registry = ccm.getSchemeRegistry();
             registry.register( new Scheme( "https", 443, socketFactory ) );
@@ -77,8 +79,6 @@ public class AproxHttp
                           e, e.getMessage() );
         }
 
-        credProvider = new TLRepositoryCredentialsProvider();
-
         final DefaultHttpClient hc = new DefaultHttpClient( ccm );
         hc.setCredentialsProvider( credProvider );
 
@@ -103,11 +103,11 @@ public class AproxHttp
             HttpHost proxy;
             if ( proxyPort < 1 )
             {
-                proxy = new HttpHost( repository.getProxyHost() );
+                proxy = new HttpHost( repository.getProxyHost(), -1, "http" );
             }
             else
             {
-                proxy = new HttpHost( repository.getProxyHost(), repository.getProxyPort() );
+                proxy = new HttpHost( repository.getProxyHost(), repository.getProxyPort(), "http" );
             }
 
             request.getParams()

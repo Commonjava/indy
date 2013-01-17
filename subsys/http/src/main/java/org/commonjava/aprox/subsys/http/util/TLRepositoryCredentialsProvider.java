@@ -25,36 +25,63 @@ import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.commonjava.aprox.model.Repository;
+import org.commonjava.util.logging.Logger;
 
 public class TLRepositoryCredentialsProvider
     implements CredentialsProvider
 {
 
+    private final Logger logger = new Logger( getClass() );
+
     private final ThreadLocal<Map<AuthScope, Credentials>> credentials = new ThreadLocal<Map<AuthScope, Credentials>>();
+
+    private final ThreadLocal<Map<AuthScope, Repository>> repositories = new ThreadLocal<Map<AuthScope, Repository>>();
 
     public synchronized void bind( final Collection<Repository> repositories )
     {
         if ( repositories != null )
         {
-            final Map<AuthScope, Credentials> repos = new HashMap<AuthScope, Credentials>();
+            final Map<AuthScope, Credentials> creds = new HashMap<AuthScope, Credentials>();
+            final Map<AuthScope, Repository> repos = new HashMap<AuthScope, Repository>();
             for ( final Repository repository : repositories )
             {
+                final AuthScope as = new AuthScope( repository.getHost(), repository.getPort() );
+                logger.info( "Storing repository def: %s under authscope: %s:%d", repository.getName(),
+                             repository.getHost(), repository.getPort() );
+
+                //FIXME: Seems like multiple repos with same host/port could easily cause confusion if they're not configured the same way later on...
+                repos.put( as, repository );
+
                 if ( repository.getUser() != null )
                 {
-                    repos.put( new AuthScope( repository.getHost(), repository.getPort() ),
-                               new UsernamePasswordCredentials( repository.getUser(), repository.getPassword() ) );
+                    creds.put( as, new UsernamePasswordCredentials( repository.getUser(), repository.getPassword() ) );
                 }
 
                 if ( repository.getProxyHost() != null && repository.getProxyUser() != null )
                 {
-                    repos.put( new AuthScope( repository.getProxyHost(), repository.getProxyPort() ),
+                    creds.put( new AuthScope( repository.getProxyHost(), repository.getProxyPort() ),
                                new UsernamePasswordCredentials( repository.getProxyUser(),
                                                                 repository.getProxyPassword() ) );
                 }
             }
 
-            credentials.set( repos );
+            this.credentials.set( creds );
+            this.repositories.set( repos );
         }
+    }
+
+    public Repository getRepository( final String host, final int port )
+    {
+        logger.info( "Looking up repository def under authscope: %s:%d", host, port );
+
+        final Map<AuthScope, Repository> repos = repositories.get();
+        if ( repos == null )
+        {
+            return null;
+        }
+
+        //FIXME: Seems like multiple repos with same host/port could easily cause confusion if they're not configured the same way later on...
+        return repos.get( new AuthScope( host, port ) );
     }
 
     public void bind( final Repository... repositories )

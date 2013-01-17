@@ -91,17 +91,28 @@ public class Repository
 
     public String getUrl()
     {
+        calculateIfNeeded();
         return url;
     }
 
     public void setUrl( final String url )
     {
         this.url = url;
+        calculateFields();
     }
 
     public String getUser()
     {
+        calculateIfNeeded();
         return user;
+    }
+
+    private void calculateIfNeeded()
+    {
+        if ( host == null )
+        {
+            calculateFields();
+        }
     }
 
     public void setUser( final String user )
@@ -111,6 +122,7 @@ public class Repository
 
     public String getPassword()
     {
+        calculateIfNeeded();
         return password;
     }
 
@@ -121,6 +133,7 @@ public class Repository
 
     public String getHost()
     {
+        calculateIfNeeded();
         return host;
     }
 
@@ -131,6 +144,7 @@ public class Repository
 
     public int getPort()
     {
+        calculateIfNeeded();
         return port;
     }
 
