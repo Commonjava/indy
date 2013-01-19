@@ -185,7 +185,7 @@ public class TensorStorageListenerRunnable
 
             if ( v == null )
             {
-                v = parent.getVersion();
+                v = expressionResolver.resolve( parent.getVersion() );
             }
         }
 

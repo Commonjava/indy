@@ -20,6 +20,11 @@ public class PropertyExpressionResolver
 
     public String resolve( final String raw )
     {
+        if ( raw == null )
+        {
+            return null;
+        }
+
         final StringBuffer buffer = new StringBuffer( raw );
         final Set<String> missing = new HashSet<String>();
         boolean changed = false;
