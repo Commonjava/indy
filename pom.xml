@@ -40,8 +40,8 @@
     <slf4j-version>1.6.1</slf4j-version>
     <jbossas-version>7.1.1.Final</jbossas-version>
     <arquillian-version>1.0.1.Final</arquillian-version>
-    <qarqas-version>0.3-SNAPSHOT</qarqas-version>
-    <shelflife-version>0.2-SNAPSHOT</shelflife-version>
+    <qarqas-version>0.3</qarqas-version>
+    <shelflife-version>0.2</shelflife-version>
   </properties>
   
   <distributionManagement>
@@ -79,23 +79,23 @@
       <dependency>
         <groupId>org.commonjava.boms</groupId>
         <artifactId>web-commons-bom</artifactId>
-        <version>1-SNAPSHOT</version>
+        <version>2</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
       
-      <dependency>
+      <!-- <dependency>
         <groupId>org.commonjava.badgr</groupId>
         <artifactId>badgr-bom</artifactId>
         <version>0.1-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
-      </dependency>
+      </dependency> -->
       
       <dependency>
         <groupId>org.commonjava.shelflife</groupId>
         <artifactId>shelflife-bom</artifactId>
-        <version>0.2-SNAPSHOT</version>
+        <version>0.2</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
