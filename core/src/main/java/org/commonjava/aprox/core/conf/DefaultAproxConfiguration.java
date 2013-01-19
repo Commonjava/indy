@@ -22,9 +22,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.commonjava.aprox.conf.AbstractAproxConfigInfo;
+import org.commonjava.aprox.conf.AbstractAproxFeatureConfig;
 import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.aprox.conf.AproxConfiguration;
-import org.commonjava.aprox.conf.AbstractAproxFeatureConfig;
 import org.commonjava.aprox.inject.Production;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.ConfigName;
@@ -78,7 +78,11 @@ public class DefaultAproxConfiguration
 
     public static final int DEFAULT_PASSTHROUGH_TIMEOUT_SECONDS = 300;
 
-    private int passthroughTimeoutSeconds = DEFAULT_PASSTHROUGH_TIMEOUT_SECONDS;
+    public static final int DEFAULT_NOT_FOUND_CACHE_TIMEOUT_SECONDS = 3600;
+
+    private Integer passthroughTimeoutSeconds;
+
+    private Integer notFoundCacheTimeoutSeconds;
 
     public DefaultAproxConfiguration()
     {
@@ -87,13 +91,26 @@ public class DefaultAproxConfiguration
     @Override
     public int getPassthroughTimeoutSeconds()
     {
-        return passthroughTimeoutSeconds;
+        return passthroughTimeoutSeconds == null ? DEFAULT_PASSTHROUGH_TIMEOUT_SECONDS : passthroughTimeoutSeconds;
     }
 
     @ConfigName( "passthrough.timeout" )
     public void setPassthroughTimeoutSeconds( final int seconds )
     {
         passthroughTimeoutSeconds = seconds;
+    }
+
+    @ConfigName( "nfc.timeout" )
+    public void setNotFoundCacheTimeoutSeconds( final int seconds )
+    {
+        notFoundCacheTimeoutSeconds = seconds;
+    }
+
+    @Override
+    public int getNotFoundCacheTimeoutSeconds()
+    {
+        return notFoundCacheTimeoutSeconds == null ? DEFAULT_NOT_FOUND_CACHE_TIMEOUT_SECONDS
+                        : notFoundCacheTimeoutSeconds;
     }
 
 }

@@ -9,6 +9,7 @@ import java.io.OutputStream;
 
 import org.commonjava.aprox.change.event.FileAccessEvent;
 import org.commonjava.aprox.change.event.FileDeletionEvent;
+import org.commonjava.aprox.change.event.FileErrorEvent;
 import org.commonjava.aprox.change.event.FileEventManager;
 import org.commonjava.aprox.change.event.FileStorageEvent;
 import org.commonjava.aprox.change.event.FileStorageEvent.Type;
@@ -110,12 +111,23 @@ public final class StorageItem
     public InputStream openInputStream( final boolean fireEvents )
         throws IOException
     {
-        final InputStream stream = provider.openInputStream( key, path );
-        if ( fireEvents )
+        try
         {
-            fileEventManager.fire( new FileAccessEvent( this ) );
+            final InputStream stream = provider.openInputStream( key, path );
+            if ( fireEvents )
+            {
+                fileEventManager.fire( new FileAccessEvent( this ) );
+            }
+            return stream;
         }
-        return stream;
+        catch ( final IOException e )
+        {
+            if ( fireEvents )
+            {
+                fileEventManager.fire( new FileErrorEvent( this, e ) );
+            }
+            throw e;
+        }
     }
 
     public OutputStream openOutputStream()
@@ -133,28 +145,39 @@ public final class StorageItem
     public OutputStream openOutputStream( final boolean generated, final boolean fireEvents )
         throws IOException
     {
-        final OutputStream stream = provider.openOutputStream( key, path );
-
-        if ( fireEvents )
+        try
         {
-            Type type;
-            if ( generated )
+            final OutputStream stream = provider.openOutputStream( key, path );
+
+            if ( fireEvents )
             {
-                type = Type.GENERATE;
-            }
-            else if ( key.getType() == StoreType.repository )
-            {
-                type = Type.DOWNLOAD;
-            }
-            else
-            {
-                type = Type.UPLOAD;
+                Type type;
+                if ( generated )
+                {
+                    type = Type.GENERATE;
+                }
+                else if ( key.getType() == StoreType.repository )
+                {
+                    type = Type.DOWNLOAD;
+                }
+                else
+                {
+                    type = Type.UPLOAD;
+                }
+
+                fileEventManager.fire( new FileStorageEvent( type, this ) );
             }
 
-            fileEventManager.fire( new FileStorageEvent( type, this ) );
+            return stream;
         }
-
-        return stream;
+        catch ( final IOException e )
+        {
+            if ( fireEvents )
+            {
+                fileEventManager.fire( new FileErrorEvent( this, e ) );
+            }
+            throw e;
+        }
     }
 
     public boolean exists()
@@ -182,13 +205,24 @@ public final class StorageItem
     public boolean delete( final boolean fireEvents )
         throws IOException
     {
-        final boolean deleted = provider.delete( key, path );
-        if ( deleted && fireEvents )
+        try
         {
-            fileEventManager.fire( new FileDeletionEvent( this ) );
-        }
+            final boolean deleted = provider.delete( key, path );
+            if ( deleted && fireEvents )
+            {
+                fileEventManager.fire( new FileDeletionEvent( this ) );
+            }
 
-        return deleted;
+            return deleted;
+        }
+        catch ( final IOException e )
+        {
+            if ( fireEvents )
+            {
+                fileEventManager.fire( new FileErrorEvent( this, e ) );
+            }
+            throw e;
+        }
     }
 
     public String[] list()

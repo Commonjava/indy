@@ -49,9 +49,14 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.commonjava.aprox.change.event.ArtifactStoreRescanEvent;
 import org.commonjava.aprox.change.event.FileAccessEvent;
+import org.commonjava.aprox.change.event.FileErrorEvent;
 import org.commonjava.aprox.change.event.FileEventManager;
+import org.commonjava.aprox.change.event.FileNotFoundEvent;
 import org.commonjava.aprox.conf.AproxConfiguration;
+import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.filer.FileManager;
+import org.commonjava.aprox.filer.NotFoundCache;
 import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.io.StorageProvider;
 import org.commonjava.aprox.model.ArtifactStore;
@@ -81,7 +86,13 @@ public class DefaultFileManager
     private Event<ArtifactStoreRescanEvent> rescanEvent;
 
     @Inject
+    private StoreDataManager storeDataManager;
+
+    @Inject
     private FileEventManager fileEventManager;
+
+    @Inject
+    private NotFoundCache nfc;
 
     private final Map<String, Future<StorageItem>> pending = new ConcurrentHashMap<String, Future<StorageItem>>();
 
@@ -99,11 +110,13 @@ public class DefaultFileManager
     {
     }
 
-    public DefaultFileManager( final AproxConfiguration config, final StorageProvider storage, final AproxHttp http )
+    public DefaultFileManager( final AproxConfiguration config, final StorageProvider storage, final AproxHttp http,
+                               final NotFoundCache nfc )
     {
         this.config = config;
         this.storage = storage;
         this.http = http;
+        this.nfc = nfc;
         this.fileEventManager = new FileEventManager();
         executor = Executors.newFixedThreadPool( 10 );
     }
@@ -130,6 +143,7 @@ public class DefaultFileManager
             }
         }
 
+        fileEventManager.fire( new FileNotFoundEvent( stores, path ) );
         return null;
     }
 
@@ -153,6 +167,11 @@ public class DefaultFileManager
             }
         }
 
+        if ( results.isEmpty() )
+        {
+            fileEventManager.fire( new FileNotFoundEvent( stores, path ) );
+        }
+
         return results;
     }
 
@@ -172,28 +191,36 @@ public class DefaultFileManager
         throws AproxWorkflowException
     {
         StorageItem target = null;
-        if ( store instanceof Repository )
+        try
         {
-            final Repository repo = (Repository) store;
-            target = getStorageReference( store, path );
+            if ( store instanceof Repository )
+            {
+                final Repository repo = (Repository) store;
+                target = getStorageReference( store, path );
 
-            download( repo, target, suppressFailures );
-        }
-        else
-        {
-            target = getStorageReference( store, path );
-        }
+                download( repo, target, suppressFailures );
+            }
+            else
+            {
+                target = getStorageReference( store, path );
+            }
 
-        if ( target.exists() )
-        {
-            logger.info( "Using stored copy from artifact store: %s for: %s", store.getName(), path );
-            final StorageItem item = getStorageReference( store.getKey(), path );
+            if ( target.exists() )
+            {
+                logger.info( "Using stored copy from artifact store: %s for: %s", store.getName(), path );
+                final StorageItem item = getStorageReference( store.getKey(), path );
 
-            return item;
+                return item;
+            }
+            else
+            {
+                return null;
+            }
         }
-        else
+        catch ( final AproxWorkflowException e )
         {
-            return null;
+            fileEventManager.fire( new FileErrorEvent( target, e ) );
+            throw e;
         }
     }
 
@@ -206,6 +233,13 @@ public class DefaultFileManager
         throws AproxWorkflowException
     {
         final String url = buildDownloadUrl( repository, target.getPath(), suppressFailures );
+
+        if ( nfc.hasEntry( url ) )
+        {
+            fileEventManager.fire( new FileNotFoundEvent( repository, target.getPath() ) );
+            return false;
+        }
+
         int timeoutSeconds = repository.getTimeoutSeconds();
         if ( timeoutSeconds < 1 )
         {
@@ -224,7 +258,7 @@ public class DefaultFileManager
                                    final int timeoutSeconds, final boolean suppressFailures )
         throws AproxWorkflowException
     {
-        final Downloader dl = new Downloader( url, repository, target, http );
+        final Downloader dl = new Downloader( nfc, url, repository, target, http );
 
         final Future<StorageItem> future = executor.submit( dl );
         pending.put( url, future );
@@ -557,9 +591,12 @@ public class DefaultFileManager
 
         private AproxWorkflowException error;
 
-        public Downloader( final String url, final Repository repository, final StorageItem target,
-                           final AproxHttp client )
+        private final NotFoundCache nfc;
+
+        public Downloader( final NotFoundCache nfc, final String url, final Repository repository,
+                           final StorageItem target, final AproxHttp client )
         {
+            this.nfc = nfc;
             this.url = url;
             this.repository = repository;
             this.target = target;
@@ -581,6 +618,15 @@ public class DefaultFileManager
             }
             catch ( final AproxWorkflowException e )
             {
+                try
+                {
+                    nfc.addMissing( url );
+                }
+                catch ( final ProxyDataException e1 )
+                {
+                    logger.error( "Failed to add NFC entry for: %s. Reason: %s", e1, url, e1.getMessage() );
+                }
+
                 this.error = e;
             }
             finally

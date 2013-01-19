@@ -1,13 +1,14 @@
 package org.commonjava.aprox.tensor.discover;
 
+import static org.apache.commons.io.IOUtils.closeQuietly;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import javax.enterprise.event.Observes;
+import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 
 import org.apache.maven.artifact.repository.metadata.Metadata;
@@ -17,23 +18,20 @@ import org.apache.maven.graph.common.version.InvalidVersionSpecificationExceptio
 import org.apache.maven.graph.common.version.RangeVersionSpec;
 import org.apache.maven.graph.common.version.SingleVersion;
 import org.apache.maven.graph.common.version.VersionUtils;
-import org.apache.maven.graph.effective.EProjectRelationships;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.commonjava.aprox.inject.Production;
 import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.GroupContentManager;
 import org.commonjava.aprox.tensor.conf.AproxTensorConfig;
-import org.commonjava.aprox.tensor.data.ProjectRelationshipsErrorEvent;
 import org.commonjava.tensor.data.TensorDataException;
 import org.commonjava.tensor.data.TensorDataManager;
 import org.commonjava.tensor.discover.DiscoveryConfig;
 import org.commonjava.tensor.discover.ProjectRelationshipDiscoverer;
-import org.commonjava.tensor.event.NewRelationshipsEvent;
 import org.commonjava.util.logging.Logger;
 
 @javax.enterprise.context.ApplicationScoped
-@Production
+//@Production
+@Default
 public class AproxProjectGraphDiscoverer
     implements ProjectRelationshipDiscoverer
 {
@@ -49,12 +47,9 @@ public class AproxProjectGraphDiscoverer
     @Inject
     private AproxTensorConfig config;
 
-    private final Map<String, RelationshipDiscoveryToken> dataHolders =
-        new HashMap<String, RelationshipDiscoveryToken>();
-
     @Override
-    public EProjectRelationships discoverRelationships( final ProjectVersionRef projectId,
-                                                        final DiscoveryConfig discoveryConfig )
+    public ProjectVersionRef discoverRelationships( final ProjectVersionRef projectId,
+                                                    final DiscoveryConfig discoveryConfig )
         throws TensorDataException
     {
         ProjectVersionRef specific = projectId;
@@ -63,66 +58,33 @@ public class AproxProjectGraphDiscoverer
             specific = resolveSpecificVersion( projectId );
         }
 
-        RelationshipDiscoveryToken holder = dataHolders.get( specific );
-        if ( holder == null )
+        InputStream stream = null;
+        try
         {
-            holder = new RelationshipDiscoveryToken( specific );
-            dataHolders.put( specific.toString(), holder );
-
-            try
+            //FIXME: Verify the discovery group exists, or else use getAll() to check all locations.
+            final String path = pomPath( specific );
+            final StorageItem retrieved = groupContentManager.retrieve( config.getDiscoveryGroup(), path );
+            if ( retrieved != null )
             {
-                //FIXME: Verify the discovery group exists, or else use getAll() to check all locations.
-                groupContentManager.retrieve( config.getDiscoveryGroup(), pomPath( specific ) );
-            }
-            catch ( final AproxWorkflowException e )
-            {
-                throw new TensorDataException( "Discovery of project-relationships for: '%s' failed. Error: %s", e,
-                                               projectId, e.getMessage() );
+                stream = retrieved.openInputStream();
             }
         }
-
-        synchronized ( holder )
+        catch ( final AproxWorkflowException e )
         {
-            try
-            {
-                holder.wait( config.getDiscoveryTimeoutMillis() );
-            }
-            catch ( final InterruptedException e )
-            {
-                logger.info( "Interrupted while waiting for discovery of: %s", specific );
-                return null;
-            }
+            throw new TensorDataException( "Discovery of project-relationships for: '%s' failed. Error: %s", e,
+                                           projectId, e.getMessage() );
+        }
+        catch ( final IOException e )
+        {
+            throw new TensorDataException( "Discovery of project-relationships for: '%s' failed. Error: %s", e,
+                                           projectId, e.getMessage() );
+        }
+        finally
+        {
+            closeQuietly( stream );
         }
 
-        final Throwable e = holder.getError();
-        if ( e != null )
-        {
-            throw new TensorDataException( "Error discovering relationships for '%s': %s", e, specific, e.getMessage() );
-        }
-
-        return holder.getRelationships();
-    }
-
-    public void newRelationshipsNotifier( @Observes final NewRelationshipsEvent event )
-    {
-        final EProjectRelationships relationships = event.getRelationships();
-        final ProjectVersionRef ref = relationships.getProjectRef();
-
-        final RelationshipDiscoveryToken holder = dataHolders.remove( ref.toString() );
-        if ( holder != null )
-        {
-            holder.setRelationships( relationships );
-        }
-    }
-
-    public void relationshipsError( @Observes final ProjectRelationshipsErrorEvent event )
-    {
-        final RelationshipDiscoveryToken holder = dataHolders.remove( event.getKey()
-                                                                           .toString() );
-        if ( holder != null )
-        {
-            holder.setError( event.getError() );
-        }
+        return specific;
     }
 
     @Override
@@ -227,9 +189,10 @@ public class AproxProjectGraphDiscoverer
 
     private String pomPath( final ProjectVersionRef projectId )
     {
-        return artifactIdPath( projectId ) + '/' + projectId.getVersionSpec() + "/" + projectId.getArtifactId() + "-"
-            + projectId.getVersionSpec()
-                       .renderStandard() + ".pom";
+        final String version = projectId.getVersionSpec()
+                                        .renderStandard();
+
+        return artifactIdPath( projectId ) + '/' + version + "/" + projectId.getArtifactId() + "-" + version + ".pom";
     }
 
     private String artifactIdPath( final ProjectVersionRef projectId )

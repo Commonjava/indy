@@ -17,6 +17,17 @@ public class FileEventManager
     @Inject
     private Event<FileDeletionEvent> deleteEvent;
 
+    @Inject
+    private Event<FileErrorEvent> errorEvent;
+
+    @Inject
+    private Event<FileNotFoundEvent> notFoundEvent;
+
+    public void fire( final FileNotFoundEvent evt )
+    {
+        doFire( notFoundEvent, evt );
+    }
+
     public void fire( final FileStorageEvent evt )
     {
         doFire( storageEvent, evt );
@@ -30,6 +41,11 @@ public class FileEventManager
     public void fire( final FileDeletionEvent evt )
     {
         doFire( deleteEvent, evt );
+    }
+
+    public void fire( final FileErrorEvent evt )
+    {
+        doFire( errorEvent, evt );
     }
 
     private <T> void doFire( final Event<T> eventQ, final T evt )

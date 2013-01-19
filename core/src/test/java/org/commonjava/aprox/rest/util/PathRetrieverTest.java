@@ -26,6 +26,7 @@ import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.core.filer.DefaultFileManager;
+import org.commonjava.aprox.core.filer.DefaultNotFoundCache;
 import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.filer.def.DefaultStorageProvider;
 import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
@@ -33,6 +34,7 @@ import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.subsys.http.AproxHttp;
+import org.commonjava.shelflife.store.memory.MemoryExpirationManager;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -56,7 +58,8 @@ public class PathRetrieverTest
         downloader =
             new DefaultFileManager( new DefaultAproxConfiguration(),
                                     new DefaultStorageProvider( new DefaultStorageProviderConfiguration( repoRoot ) ),
-                                    AproxHttp.getInstance() );
+                                    AproxHttp.getInstance(), new DefaultNotFoundCache( new MemoryExpirationManager(),
+                                                                                       new DefaultAproxConfiguration() ) );
     }
 
     @Test

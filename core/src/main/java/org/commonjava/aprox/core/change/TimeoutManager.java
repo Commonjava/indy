@@ -3,6 +3,7 @@ package org.commonjava.aprox.core.change;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.aprox.core.change.sl.ExpirationConstants.APROX_EVENT;
 import static org.commonjava.aprox.core.change.sl.ExpirationConstants.APROX_FILE_EVENT;
+import static org.commonjava.aprox.util.UrlUtils.buildUrl;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -11,6 +12,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -31,6 +33,7 @@ import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
 import org.commonjava.aprox.change.event.FileAccessEvent;
 import org.commonjava.aprox.change.event.FileDeletionEvent;
 import org.commonjava.aprox.change.event.FileEvent;
+import org.commonjava.aprox.change.event.FileNotFoundEvent;
 import org.commonjava.aprox.change.event.FileStorageEvent;
 import org.commonjava.aprox.change.event.FileStorageEvent.Type;
 import org.commonjava.aprox.change.event.ProxyManagerDeleteEvent;
@@ -38,11 +41,13 @@ import org.commonjava.aprox.change.event.ProxyManagerUpdateType;
 import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.core.change.sl.LoggingMatcher;
 import org.commonjava.aprox.core.change.sl.MaxTimeoutMatcher;
+import org.commonjava.aprox.core.change.sl.NFCMatcher;
 import org.commonjava.aprox.core.change.sl.SnapshotFilter;
 import org.commonjava.aprox.core.change.sl.StoreMatcher;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.filer.FileManager;
+import org.commonjava.aprox.filer.NotFoundCache;
 import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.DeployPoint;
@@ -79,36 +84,142 @@ public class TimeoutManager
     @Inject
     private AproxConfiguration config;
 
+    @Inject
+    private NotFoundCache nfc;
+
     public void onExpirationEvent( @Observes final ExpirationEvent event )
     {
         final ExpirationEventType type = event.getType();
-        if ( type == ExpirationEventType.EXPIRE && isAproxFileExpirationEvent( event ) )
+        if ( type == ExpirationEventType.EXPIRE )
         {
-            final StoreKey key = getStoreKey( event.getExpiration()
-                                                   .getKey() );
-            final String path = (String) event.getExpiration()
-                                              .getData();
+            if ( isAproxFileExpirationEvent( event ) )
+            {
+                final StoreKey key = getStoreKey( event.getExpiration()
+                                                       .getKey() );
+                final String path = (String) event.getExpiration()
+                                                  .getData();
 
-            final StorageItem toDelete = fileManager.getStorageReference( key, path );
-            if ( toDelete.exists() )
+                final StorageItem toDelete = fileManager.getStorageReference( key, path );
+                if ( toDelete.exists() )
+                {
+                    try
+                    {
+                        logger.info( "[EXPIRED; DELETE] %s", toDelete );
+                        toDelete.delete();
+                    }
+                    catch ( final IOException e )
+                    {
+                        logger.error( "Failed to delete expired file: %s. Reason: %s", e, toDelete.getFullPath(),
+                                      e.getMessage() );
+                    }
+
+                    cleanMetadata( key, path );
+                }
+
+                if ( ArtifactPathInfo.isSnapshot( path ) )
+                {
+                    updateSnapshotVersions( key, path );
+                }
+            }
+            else if ( isNFCEvent( event ) )
+            {
+                final String url = (String) event.getExpiration()
+                                                 .getData();
+                try
+                {
+                    nfc.clearExactMissing( url );
+                }
+                catch ( final ProxyDataException e )
+                {
+                    logger.error( "Failed to clear NFC entry for: %s. Reason: %s", e, url, e.getMessage() );
+                }
+            }
+        }
+    }
+
+    public void onFileNotFoundEvent( @Observes final FileNotFoundEvent event )
+    {
+        final String path = event.getPath();
+        final List<? extends ArtifactStore> stores = event.getStores();
+        for ( final ArtifactStore store : stores )
+        {
+            if ( store instanceof Repository )
+            {
+                final Repository repo = (Repository) store;
+                String url = null;
+                try
+                {
+                    url = buildUrl( repo.getUrl(), path );
+                    nfc.addMissing( url );
+                }
+                catch ( final MalformedURLException e )
+                {
+                    logger.error( "Failed to construct URL for path: '%s' in repository: %s. Reason: %s", e, path,
+                                  repo.getName(), e.getMessage() );
+                }
+                catch ( final ProxyDataException e )
+                {
+                    logger.error( "Failed to add NFC entry for: %s. Reason: %s", e, url, e.getMessage() );
+                }
+            }
+        }
+    }
+
+    public void resetMissingOnStoreUpdate( @Observes final ArtifactStoreUpdateEvent evt )
+    {
+        if ( evt.getType() == ProxyManagerUpdateType.ADD_OR_UPDATE )
+        {
+            final Set<String> urls = new HashSet<String>();
+            for ( final ArtifactStore store : evt.getChanges() )
+            {
+                if ( store instanceof Repository )
+                {
+                    urls.add( ( (Repository) store ).getUrl() );
+                }
+            }
+            updateMissing( urls );
+        }
+    }
+
+    public void resetMissingOnStoreUpdate( @Observes final ProxyManagerDeleteEvent evt )
+    {
+        final StoreType type = evt.getType();
+        if ( type == StoreType.repository )
+        {
+            final Collection<String> names = evt.getNames();
+            final Set<String> urls = new HashSet<String>();
+            for ( final String name : names )
             {
                 try
                 {
-                    logger.info( "[EXPIRED; DELETE] %s", toDelete );
-                    toDelete.delete();
+                    final Repository repo = dataManager.getRepository( name );
+                    if ( repo != null )
+                    {
+                        urls.add( repo.getUrl() );
+                    }
                 }
-                catch ( final IOException e )
+                catch ( final ProxyDataException e )
                 {
-                    logger.error( "Failed to delete expired file: %s. Reason: %s", e, toDelete.getFullPath(),
-                                  e.getMessage() );
+                    logger.error( "Failed to retrieve repository with name: %s. Reason: %s", e, name, e.getMessage() );
                 }
-
-                cleanMetadata( key, path );
             }
 
-            if ( ArtifactPathInfo.isSnapshot( path ) )
+            updateMissing( urls );
+        }
+    }
+
+    private void updateMissing( final Collection<String> urls )
+    {
+        for ( final String url : urls )
+        {
+            try
             {
-                updateSnapshotVersions( key, path );
+                nfc.clearMissingForBaseUrl( url );
+            }
+            catch ( final ProxyDataException e )
+            {
+                logger.error( "Failed to clear NFC entries for repository at baseUrl: %s. Reason: %s", e, url,
+                              e.getMessage() );
             }
         }
     }
@@ -563,6 +674,11 @@ public class TimeoutManager
     private boolean isAproxFileExpirationEvent( final ExpirationEvent event )
     {
         return new StoreMatcher().matches( event.getExpiration() );
+    }
+
+    private boolean isNFCEvent( final ExpirationEvent event )
+    {
+        return new NFCMatcher().matches( event.getExpiration() );
     }
 
     private void updateSnapshotVersions( final StoreKey key, final String path )

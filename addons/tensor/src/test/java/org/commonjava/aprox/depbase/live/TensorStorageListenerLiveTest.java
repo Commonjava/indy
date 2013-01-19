@@ -87,7 +87,8 @@ public class TensorStorageListenerLiveTest
     @Deployment
     public static WebArchive createWar()
     {
-        return new TestWarArchiveBuilder( new File( "target/test-assembly.war" ), TensorStorageListenerLiveTest.class ).withExtraClasses( TestConfigProvider.class )
+        return new TestWarArchiveBuilder( new File( "target/test-assembly.war" ), TensorStorageListenerLiveTest.class ).withExtraClasses( TestConfigProvider.class/*,
+                                                                                                                                                                  TestDiscoverer.class*/)
                                                                                                                        .withLog4jProperties()
                                                                                                                        .withBeansXml( "META-INF/beans.xml" )
                                                                                                                        .build();

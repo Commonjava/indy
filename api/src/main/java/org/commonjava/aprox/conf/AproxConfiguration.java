@@ -15,10 +15,11 @@
  ******************************************************************************/
 package org.commonjava.aprox.conf;
 
-
 public interface AproxConfiguration
 {
 
     int getPassthroughTimeoutSeconds();
+
+    int getNotFoundCacheTimeoutSeconds();
 
 }

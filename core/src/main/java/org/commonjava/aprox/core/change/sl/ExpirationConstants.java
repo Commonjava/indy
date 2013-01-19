@@ -11,4 +11,6 @@ public final class ExpirationConstants
 
     public static final String APROX_FILE_EVENT = "file";
 
+    public static final String APROX_NFC_EVENT = "nfc";
+
 }

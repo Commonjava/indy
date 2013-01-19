@@ -13,6 +13,8 @@ import javax.inject.Inject;
 import org.commonjava.tensor.data.TensorDataException;
 import org.commonjava.tensor.data.store.IndexStore;
 import org.commonjava.tensor.data.store.IndexStoreFactory;
+import org.commonjava.tensor.event.ErrorKey;
+import org.commonjava.tensor.event.ProjectRelationshipsErrorEvent;
 import org.commonjava.util.logging.Logger;
 
 import com.google.gson.reflect.TypeToken;

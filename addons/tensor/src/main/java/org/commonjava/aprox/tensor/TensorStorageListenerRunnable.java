@@ -49,6 +49,7 @@ import org.commonjava.aprox.rest.util.ArtifactPathInfo;
 import org.commonjava.aprox.tensor.data.AproxTensorDataManager;
 import org.commonjava.aprox.tensor.maven.ArtifactStoreModelResolver;
 import org.commonjava.aprox.tensor.maven.ModelVersions;
+import org.commonjava.aprox.tensor.maven.PropertyExpressionResolver;
 import org.commonjava.aprox.tensor.maven.StoreModelSource;
 import org.commonjava.aprox.tensor.maven.TensorModelCache;
 import org.commonjava.tensor.data.TensorDataException;
@@ -169,7 +170,11 @@ public class TensorStorageListenerRunnable
 
         String g = rawModel.getGroupId();
         final String a = rawModel.getArtifactId();
-        String v = rawModel.getVersion();
+
+        final PropertyExpressionResolver expressionResolver = new PropertyExpressionResolver( rawModel.getProperties() );
+
+        // NOTE: This is BAD, but the fact is some POMs have an expression for their version.
+        String v = expressionResolver.resolve( rawModel.getVersion() );
 
         if ( parent != null )
         {
