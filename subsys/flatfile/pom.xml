@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.commonjava.aprox</groupId>
     <artifactId>aprox-subsystems</artifactId>
-    <version>0.4-SNAPSHOT</version>
+    <version>0.4</version>
   </parent>
   
   <artifactId>aprox-subsys-flatfile</artifactId>
