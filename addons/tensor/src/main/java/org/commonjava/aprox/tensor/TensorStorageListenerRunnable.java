@@ -161,6 +161,9 @@ public class TensorStorageListenerRunnable
         {
             logger.error( "Failed to store relationships for POM: %s. Reason: %s", e, effectiveModel.getId(),
                           e.getMessage() );
+
+            logProjectError( effectiveModel.getGroupId(), effectiveModel.getArtifactId(), effectiveModel.getVersion(),
+                             e );
             // TODO: Disable for some time period...
         }
     }
