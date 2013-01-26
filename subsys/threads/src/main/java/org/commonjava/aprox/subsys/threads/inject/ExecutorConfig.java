@@ -31,6 +31,8 @@ public @interface ExecutorConfig
 
     int threads();
 
+    int priority() default 3;
+
     String named();
 
 }

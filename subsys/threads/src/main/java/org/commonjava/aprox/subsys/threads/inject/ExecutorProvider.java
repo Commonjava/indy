@@ -59,6 +59,8 @@ public class ExecutorProvider
         int threadCount = Runtime.getRuntime()
                                  .availableProcessors() * 2;
 
+        int priority = 3;
+
         // TODO: This may cause counter-intuitive sharing of thread pools for un-annotated injections...
         String name = "Unknown";
 
@@ -66,12 +68,13 @@ public class ExecutorProvider
         {
             threadCount = ec.threads();
             name = ec.named();
+            priority = ec.priority();
         }
 
-        return getService( name, threadCount );
+        return getService( name, priority, threadCount );
     }
 
-    private synchronized ExecutorService getService( final String name, final int threadCount )
+    private synchronized ExecutorService getService( final String name, final int priority, final int threadCount )
     {
         ExecutorService service = services.get( name );
         if ( service == null )
@@ -86,7 +89,7 @@ public class ExecutorProvider
                     final Thread t = new Thread( runnable );
                     t.setName( name + "-" + counter++ );
                     t.setDaemon( true );
-                    t.setPriority( 10 );
+                    t.setPriority( priority );
 
                     return t;
                 }

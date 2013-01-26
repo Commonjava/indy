@@ -102,6 +102,8 @@ public class TensorStorageListenerRunnable
     @Override
     public void run()
     {
+        logger.info( "[RUN] TensorStorageListenerRunnable for: %s", event );
+
         final String path = event.getStorageItem()
                                  .getPath();
         if ( !path.endsWith( ".pom" ) )

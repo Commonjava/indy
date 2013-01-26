@@ -100,7 +100,7 @@ public class DefaultFileManager
     private final Map<StoreKey, Byte> rescansInProgress = new ConcurrentHashMap<StoreKey, Byte>();
 
     @Inject
-    @ExecutorConfig( threads = 8, named = "file-manager" )
+    @ExecutorConfig( priority = 9, threads = 8, named = "file-manager" )
     private ExecutorService executor; // = Executors.newFixedThreadPool( 8 );
 
     @Inject

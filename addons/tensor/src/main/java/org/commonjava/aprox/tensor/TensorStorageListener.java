@@ -30,6 +30,7 @@ import org.commonjava.aprox.tensor.data.AproxTensorDataManager;
 import org.commonjava.aprox.tensor.maven.TensorModelCache;
 import org.commonjava.tensor.data.TensorDataManager;
 import org.commonjava.tensor.util.MavenModelProcessor;
+import org.commonjava.util.logging.Logger;
 
 @javax.enterprise.context.ApplicationScoped
 public class TensorStorageListener
@@ -60,11 +61,15 @@ public class TensorStorageListener
     private TensorModelCache tensorModelCache;
 
     @Inject
-    @ExecutorConfig( threads = 20, named = "tensor-listener" )
+    @ExecutorConfig( priority = 8, threads = 20, named = "tensor-listener" )
     private ExecutorService executor;
+
+    private final Logger logger = new Logger( getClass() );
 
     public void handleFileAccessEvent( @Observes final FileAccessEvent event )
     {
+        logger.info( "[SUBMIT] TensorStorageListenerRunnable for: %s", event );
+
         executor.execute( new TensorStorageListenerRunnable( aprox, modelReader, modelBuilder, fileManager,
                                                              modelProcessor, dataManager, errorDataManager,
                                                              tensorModelCache, event ) );
