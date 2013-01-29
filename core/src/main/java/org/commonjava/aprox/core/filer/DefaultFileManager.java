@@ -66,7 +66,7 @@ import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ArtifactPathInfo;
 import org.commonjava.aprox.subsys.http.AproxHttp;
-import org.commonjava.aprox.subsys.threads.inject.ExecutorConfig;
+import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.util.logging.Logger;
 
 @javax.enterprise.context.ApplicationScoped

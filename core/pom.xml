@@ -121,8 +121,8 @@
       <artifactId>jboss-threads</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-subsys-threads</artifactId>
+      <groupId>org.commonjava.cdi.util</groupId>
+      <artifactId>weft</artifactId>
     </dependency>
   </dependencies>
   

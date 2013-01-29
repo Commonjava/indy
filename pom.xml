@@ -79,7 +79,7 @@
       <dependency>
         <groupId>org.commonjava.boms</groupId>
         <artifactId>web-commons-bom</artifactId>
-        <version>2</version>
+        <version>3-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -207,11 +207,6 @@
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-subsys-infinispan</artifactId>
-        <version>0.5-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-subsys-threads</artifactId>
         <version>0.5-SNAPSHOT</version>
       </dependency>
       <!-- <dependency>
