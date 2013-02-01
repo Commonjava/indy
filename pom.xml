@@ -40,7 +40,7 @@
     <slf4j-version>1.6.1</slf4j-version>
     <jbossas-version>7.1.1.Final</jbossas-version>
     <arquillian-version>1.0.1.Final</arquillian-version>
-    <qarqas-version>0.3</qarqas-version>
+    <qarqas-version>0.4-SNAPSHOT</qarqas-version>
     <shelflife-version>0.2</shelflife-version>
   </properties>
   
@@ -272,14 +272,14 @@
         <artifactId>json-test-harness</artifactId>
         <version>0.2</version>
         <scope>test</scope>
-      </dependency>
+      </dependency> -->
       
       <dependency>
         <groupId>org.commonjava.qarqas</groupId>
         <artifactId>qarqas-test-harness</artifactId>
         <version>${qarqas-version}</version>
         <scope>test</scope>
-      </dependency> -->
+      </dependency>
       
       <dependency>
         <groupId>org.jboss.threads</groupId>

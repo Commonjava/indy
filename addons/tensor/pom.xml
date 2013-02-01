@@ -106,11 +106,11 @@
       <groupId>org.jboss.weld.se</groupId>
       <artifactId>weld-se-core</artifactId>
     </dependency>
-    <dependency>
+    <!-- <dependency>
       <groupId>org.commonjava.tensor</groupId>
       <artifactId>tensor-db-flat</artifactId>
       <version>0.2-SNAPSHOT</version>
-    </dependency>
+    </dependency> -->
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-db-flat</artifactId>

@@ -90,6 +90,7 @@ public class TensorStorageListenerLiveTest
         return new TestWarArchiveBuilder( new File( "target/test-assembly.war" ), TensorStorageListenerLiveTest.class ).withExtraClasses( TestConfigProvider.class/*,
                                                                                                                                                                   TestDiscoverer.class*/)
                                                                                                                        .withLog4jProperties()
+                                                                                                                       //                                                                                                                       .withClassloaderResources( "arquillian.xml" )
                                                                                                                        .withBeansXml( "META-INF/beans.xml" )
                                                                                                                        .build();
     }

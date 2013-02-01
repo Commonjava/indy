@@ -9,6 +9,7 @@ import org.commonjava.aprox.conf.AbstractAproxConfigInfo;
 import org.commonjava.aprox.conf.AbstractAproxFeatureConfig;
 import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.aprox.inject.Production;
+import org.commonjava.aprox.subsys.flatfile.conf.FlatFileConfiguration;
 import org.commonjava.web.config.ConfigurationException;
 
 @ApplicationScoped
@@ -28,6 +29,9 @@ public class AproxTensorConfigProvider
     @Inject
     private AproxTensorConfigInfo info;
 
+    @Inject
+    private FlatFileConfiguration ffConfig;
+
     public AproxTensorConfigProvider()
     {
         super( AproxTensorConfig.class );
@@ -39,7 +43,7 @@ public class AproxTensorConfigProvider
     public AproxTensorConfig getTensorConfig()
         throws ConfigurationException
     {
-        return getConfig();
+        return getConfig().setDataBasedir( ffConfig.getDataBasedir() );
     }
 
     @Override

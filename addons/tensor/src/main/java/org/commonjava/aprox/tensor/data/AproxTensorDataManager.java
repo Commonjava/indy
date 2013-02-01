@@ -1,23 +1,23 @@
 package org.commonjava.aprox.tensor.data;
 
+import static org.apache.commons.lang.StringUtils.isEmpty;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
-import org.commonjava.tensor.data.TensorDataException;
-import org.commonjava.tensor.data.store.IndexStore;
-import org.commonjava.tensor.data.store.IndexStoreFactory;
-import org.commonjava.tensor.event.ErrorKey;
+import org.apache.maven.graph.common.ref.ProjectVersionRef;
+import org.apache.maven.graph.effective.ref.EProjectKey;
+import org.commonjava.tensor.data.TensorDataManager;
 import org.commonjava.tensor.event.ProjectRelationshipsErrorEvent;
-import org.commonjava.util.logging.Logger;
-
-import com.google.gson.reflect.TypeToken;
 
 @ApplicationScoped
 public class AproxTensorDataManager
@@ -25,76 +25,81 @@ public class AproxTensorDataManager
 
     private static final String APROX_TENSOR_MODEL_ERRORS = "aproxTensor-modelErrors";
 
-    private final Logger logger = new Logger( getClass() );
+    private static final String ERROR_SEPARATOR = Pattern.quote( "_::--::_" );
 
     @Inject
-    private IndexStoreFactory indexFactory;
+    private TensorDataManager dataManager;
 
     @Inject
     private Event<ProjectRelationshipsErrorEvent> event;
-
-    private IndexStore<ErrorKey, Set<String>> errors;
 
     public AproxTensorDataManager()
     {
     }
 
-    public AproxTensorDataManager( final IndexStore<ErrorKey, Set<String>> errors )
+    public AproxTensorDataManager( final TensorDataManager dataManager )
     {
-        this.errors = errors;
-    }
-
-    @PostConstruct
-    public void initialize()
-    {
-        errors = indexFactory.getStore( APROX_TENSOR_MODEL_ERRORS, ErrorKey.class, new TypeToken<Set<String>>()
-        {
-        } );
+        this.dataManager = dataManager;
     }
 
     public boolean hasErrors( final String g, final String a, final String v )
     {
-        return errors.contains( new ErrorKey( g, a, v ) );
+        final ProjectVersionRef ref = new ProjectVersionRef( g, a, v );
+        final Map<String, String> md = dataManager.getMetadata( new EProjectKey( ref ) );
+        if ( md == null )
+        {
+            return false;
+        }
+
+        return md.containsKey( APROX_TENSOR_MODEL_ERRORS );
     }
 
     public Set<String> getErrors( final String g, final String a, final String v )
     {
-        final ErrorKey key = new ErrorKey( g, a, v );
-        try
+        final ProjectVersionRef ref = new ProjectVersionRef( g, a, v );
+        final EProjectKey key = new EProjectKey( ref );
+
+        final Map<String, String> md = dataManager.getMetadata( key );
+        if ( md == null )
         {
-            return errors.get( key );
+            return null;
         }
-        catch ( final TensorDataException e )
+
+        final String serialized = md.get( APROX_TENSOR_MODEL_ERRORS );
+
+        if ( isEmpty( serialized ) )
         {
-            logger.error( "Failed to retrieve errors for: %s. Reason: %s", e, key, e.getMessage() );
-            throw new IllegalStateException( "Tensor error store is not functioning: " + e.getMessage(), e );
+            return null;
         }
+
+        final String[] errors = serialized.split( ERROR_SEPARATOR );
+        return new HashSet<String>( Arrays.asList( errors ) );
     }
 
     public synchronized void addError( final String g, final String a, final String v, final Throwable error )
     {
-        final ErrorKey key = new ErrorKey( g, a, v );
-        try
-        {
-            Set<String> errors = this.errors.get( key );
-            if ( errors == null )
-            {
-                errors = new HashSet<String>();
-            }
+        final ProjectVersionRef ref = new ProjectVersionRef( g, a, v );
+        final EProjectKey key = new EProjectKey( ref );
 
-            errors.add( toString( error ) );
-            this.errors.store( key, errors );
-
-            if ( event != null )
-            {
-                event.fire( new ProjectRelationshipsErrorEvent( key, error ) );
-            }
-        }
-        catch ( final TensorDataException e )
+        final Map<String, String> md = dataManager.getMetadata( key );
+        if ( md == null )
         {
-            logger.error( "Failed to save errors for: %s. Reason: %s", e, key, e.getMessage() );
-            throw new IllegalStateException( "Tensor error store is not functioning: " + e.getMessage(), e );
+            return;
         }
+
+        String serialized = md.get( APROX_TENSOR_MODEL_ERRORS );
+
+        final String errorStr = toString( error );
+        if ( isEmpty( serialized ) )
+        {
+            serialized = errorStr;
+        }
+        else
+        {
+            serialized += ERROR_SEPARATOR + errorStr;
+        }
+
+        dataManager.addMetadata( key, APROX_TENSOR_MODEL_ERRORS, serialized );
     }
 
     private String toString( final Throwable e )
