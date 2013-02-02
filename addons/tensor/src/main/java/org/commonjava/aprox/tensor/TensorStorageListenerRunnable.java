@@ -166,7 +166,12 @@ public class TensorStorageListenerRunnable
                 final Repository repo = (Repository) originatingStore;
 
                 final Map<String, String> metadata = dataManager.getMetadata( rels.getKey() );
-                String foundIn = metadata.get( FOUND_IN_METADATA );
+                String foundIn = null;
+                if ( metadata != null )
+                {
+                    foundIn = metadata.get( FOUND_IN_METADATA );
+                }
+
                 if ( foundIn == null )
                 {
                     foundIn = "";
