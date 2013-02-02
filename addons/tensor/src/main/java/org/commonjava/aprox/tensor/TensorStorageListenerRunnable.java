@@ -28,6 +28,7 @@ import java.util.Set;
 import org.apache.maven.graph.common.ref.ProjectVersionRef;
 import org.apache.maven.graph.common.version.InvalidVersionSpecificationException;
 import org.apache.maven.graph.common.version.VersionSpec;
+import org.apache.maven.graph.effective.EProjectRelationships;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Parent;
 import org.apache.maven.model.building.DefaultModelBuildingRequest;
@@ -44,6 +45,7 @@ import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.rest.util.ArtifactPathInfo;
 import org.commonjava.aprox.tensor.data.AproxTensorDataManager;
@@ -60,6 +62,8 @@ import org.commonjava.util.logging.Logger;
 public class TensorStorageListenerRunnable
     implements Runnable
 {
+
+    private static final String FOUND_IN_METADATA = "found-in-repo";
 
     private final Logger logger = new Logger( getClass() );
 
@@ -155,7 +159,28 @@ public class TensorStorageListenerRunnable
         try
         {
             // TODO: Pass on the profiles that were activated when the effective model was built.
-            modelProcessor.storeModelRelationships( effectiveModel );
+            final EProjectRelationships rels = modelProcessor.storeModelRelationships( effectiveModel );
+
+            if ( originatingStore instanceof Repository )
+            {
+                final Repository repo = (Repository) originatingStore;
+
+                final Map<String, String> metadata = dataManager.getMetadata( rels.getKey() );
+                String foundIn = metadata.get( FOUND_IN_METADATA );
+                if ( foundIn == null )
+                {
+                    foundIn = "";
+                }
+
+                if ( foundIn.length() > 0 )
+                {
+                    foundIn += ",";
+                }
+
+                foundIn += repo.getName() + "@" + repo.getUrl();
+
+                dataManager.addMetadata( rels.getKey(), FOUND_IN_METADATA, foundIn );
+            }
         }
         catch ( final TensorDataException e )
         {
