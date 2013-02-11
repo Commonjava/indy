@@ -15,7 +15,7 @@ import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.graph.common.ref.ProjectVersionRef;
 import org.apache.maven.graph.common.version.InvalidVersionSpecificationException;
-import org.apache.maven.graph.common.version.RangeVersionSpec;
+import org.apache.maven.graph.common.version.MultiVersionSpec;
 import org.apache.maven.graph.common.version.SingleVersion;
 import org.apache.maven.graph.common.version.VersionUtils;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
@@ -23,6 +23,7 @@ import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.GroupContentManager;
 import org.commonjava.aprox.tensor.conf.AproxTensorConfig;
+import org.commonjava.aprox.tensor.data.AproxTensorDataManager;
 import org.commonjava.tensor.data.TensorDataException;
 import org.commonjava.tensor.data.TensorDataManager;
 import org.commonjava.tensor.discover.DiscoveryConfig;
@@ -45,17 +46,42 @@ public class AproxProjectGraphDiscoverer
     private TensorDataManager dataManager;
 
     @Inject
+    private AproxTensorDataManager errorDataManager;
+
+    @Inject
     private AproxTensorConfig config;
 
     @Override
-    public ProjectVersionRef discoverRelationships( final ProjectVersionRef projectId,
-                                                    final DiscoveryConfig discoveryConfig )
+    public ProjectVersionRef discoverRelationships( final ProjectVersionRef ref, final DiscoveryConfig discoveryConfig )
         throws TensorDataException
     {
-        ProjectVersionRef specific = projectId;
-        if ( !projectId.isSpecificVersion() )
+        if ( errorDataManager.hasErrors( ref.getGroupId(), ref.getArtifactId(), ref.getVersionString() ) )
         {
-            specific = resolveSpecificVersion( projectId );
+            return ref;
+        }
+
+        ProjectVersionRef specific = ref;
+        try
+        {
+            if ( !ref.isSpecificVersion() )
+            {
+                specific = resolveSpecificVersion( ref );
+                if ( specific == null )
+                {
+                    logger.warn( "Cannot resolve specific version of: '%s'.", ref );
+                    return null;
+                }
+            }
+        }
+        catch ( final InvalidVersionSpecificationException e )
+        {
+            errorDataManager.addError( ref.getGroupId(), ref.getArtifactId(), ref.getVersionString(), e );
+            specific = null;
+        }
+
+        if ( specific == null )
+        {
+            return ref;
         }
 
         InputStream stream = null;
@@ -71,13 +97,13 @@ public class AproxProjectGraphDiscoverer
         }
         catch ( final AproxWorkflowException e )
         {
-            throw new TensorDataException( "Discovery of project-relationships for: '%s' failed. Error: %s", e,
-                                           projectId, e.getMessage() );
+            throw new TensorDataException( "Discovery of project-relationships for: '%s' failed. Error: %s", e, ref,
+                                           e.getMessage() );
         }
         catch ( final IOException e )
         {
-            throw new TensorDataException( "Discovery of project-relationships for: '%s' failed. Error: %s", e,
-                                           projectId, e.getMessage() );
+            throw new TensorDataException( "Discovery of project-relationships for: '%s' failed. Error: %s", e, ref,
+                                           e.getMessage() );
         }
         finally
         {
@@ -96,7 +122,7 @@ public class AproxProjectGraphDiscoverer
         Collections.sort( versions );
         Collections.reverse( versions );
 
-        if ( ref.isSnapshot() )
+        if ( !ref.isCompound() && ref.isSnapshot() )
         {
             while ( !versions.isEmpty() )
             {
@@ -109,18 +135,19 @@ public class AproxProjectGraphDiscoverer
         }
         else if ( ref.isCompound() )
         {
-            final RangeVersionSpec range = (RangeVersionSpec) ref.getVersionSpec();
+            final MultiVersionSpec multi = (MultiVersionSpec) ref.getVersionSpec();
 
-            final boolean snapshots =
-                ( range.getLowerBound() != null && !range.getLowerBound()
-                                                         .isRelease() )
-                    || ( range.getUpperBound() != null && !range.getUpperBound()
-                                                                .isRelease() );
+            if ( multi.isPinned() )
+            {
+                return new ProjectVersionRef( ref.getGroupId(), ref.getArtifactId(), multi.getPinnedVersion() );
+            }
+
+            final boolean snapshots = multi.isSnapshot();
 
             while ( !versions.isEmpty() )
             {
                 final SingleVersion ver = versions.remove( 0 );
-                if ( ( snapshots || ver.isRelease() ) && range.contains( ver ) )
+                if ( ( snapshots || ver.isRelease() ) && multi.contains( ver ) )
                 {
                     return new ProjectVersionRef( ref.getGroupId(), ref.getArtifactId(), ver );
                 }
@@ -189,8 +216,7 @@ public class AproxProjectGraphDiscoverer
 
     private String pomPath( final ProjectVersionRef projectId )
     {
-        final String version = projectId.getVersionSpec()
-                                        .renderStandard();
+        final String version = projectId.getVersionString();
 
         return artifactIdPath( projectId ) + '/' + version + "/" + projectId.getArtifactId() + "-" + version + ".pom";
     }

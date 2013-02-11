@@ -1,4 +1,4 @@
-package org.commonjava.aprox.depbase.fixture;
+package org.commonjava.aprox.tensor.fixture;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;

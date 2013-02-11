@@ -1,4 +1,4 @@
-package org.commonjava.aprox.depbase.live;
+package org.commonjava.aprox.tensor.live;
 
 import static org.apache.commons.io.FileUtils.forceDelete;
 import static org.apache.commons.io.IOUtils.closeQuietly;
@@ -14,26 +14,27 @@ import javax.inject.Inject;
 import org.commonjava.aprox.change.event.FileAccessEvent;
 import org.commonjava.aprox.change.event.FileEventManager;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.depbase.fixture.TestConfigProvider;
 import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.io.StorageProvider;
 import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.tensor.TensorStorageListener;
+import org.commonjava.aprox.tensor.fixture.TestConfigProvider;
+import org.commonjava.aprox.tensor.fixture.TestTensorCoreProvider;
 import org.commonjava.tensor.data.TensorDataManager;
 import org.commonjava.web.json.test.WebFixture;
 import org.commonjava.web.test.fixture.TestWarArchiveBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
-import org.junit.runner.RunWith;
 
-@RunWith( Arquillian.class )
+//@RunWith( Arquillian.class )
+@Ignore
 public class TensorStorageListenerLiveTest
 {
 
@@ -87,7 +88,8 @@ public class TensorStorageListenerLiveTest
     @Deployment
     public static WebArchive createWar()
     {
-        return new TestWarArchiveBuilder( new File( "target/test-assembly.war" ), TensorStorageListenerLiveTest.class ).withExtraClasses( TestConfigProvider.class/*,
+        return new TestWarArchiveBuilder( new File( "target/test-assembly.war" ), TensorStorageListenerLiveTest.class ).withExtraClasses( TestTensorCoreProvider.class,
+                                                                                                                                          TestConfigProvider.class/*,
                                                                                                                                                                   TestDiscoverer.class*/)
                                                                                                                        .withLog4jProperties()
                                                                                                                        //                                                                                                                       .withClassloaderResources( "arquillian.xml" )

@@ -50,7 +50,6 @@ import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.rest.util.ArtifactPathInfo;
 import org.commonjava.aprox.tensor.data.AproxTensorDataManager;
 import org.commonjava.aprox.tensor.maven.ArtifactStoreModelResolver;
-import org.commonjava.aprox.tensor.maven.ModelVersions;
 import org.commonjava.aprox.tensor.maven.PropertyExpressionResolver;
 import org.commonjava.aprox.tensor.maven.StoreModelSource;
 import org.commonjava.aprox.tensor.maven.TensorModelCache;
@@ -142,7 +141,7 @@ public class TensorStorageListenerRunnable
             return;
         }
 
-        if ( !shouldStore( rawModel ) )
+        if ( !shouldStore( rawModel, path ) )
         {
             return;
         }
@@ -152,9 +151,6 @@ public class TensorStorageListenerRunnable
         {
             return;
         }
-
-        final ModelVersions versions = new ModelVersions( effectiveModel );
-        versions.update( rawModel );
 
         try
         {
@@ -199,7 +195,7 @@ public class TensorStorageListenerRunnable
     }
 
     // TODO: Somehow, we're ending up in an infinite loop for maven poms...
-    private boolean shouldStore( final Model rawModel )
+    private boolean shouldStore( final Model rawModel, final String path )
     {
         final Parent parent = rawModel.getParent();
 
@@ -236,15 +232,19 @@ public class TensorStorageListenerRunnable
             final boolean contains = dataManager.contains( ref );
 
             final boolean hasError =
-                errorDataManager.hasErrors( ref.getGroupId(), ref.getArtifactId(), ref.getVersionSpec()
-                                                                                      .renderStandard() );
+                errorDataManager.hasErrors( ref.getGroupId(), ref.getArtifactId(), ref.getVersionString() );
 
             return !hasError && ( !concrete || !contains );
         }
         catch ( final InvalidVersionSpecificationException e )
         {
             logger.error( "Failed to parse version for: %s. Error: %s", e, rawModel.getId(), e.getMessage() );
-            logProjectError( g, a, v, e );
+
+            final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
+            if ( pathInfo != null )
+            {
+                logProjectError( pathInfo.getGroupId(), pathInfo.getArtifactId(), pathInfo.getVersion(), e );
+            }
         }
         //        catch ( final TensorDataException e )
         //        {
