@@ -19,9 +19,9 @@ public class SettingsTemplate
 
     private static final String URL_PATTERN = Pattern.quote( "${url}" );
 
-    private static final String RELEASES_PATTERN = Pattern.quote( "${snapshots}" );
+    private static final String RELEASES_PATTERN = Pattern.quote( "${releases}" );
 
-    private static final String SNAPSHOTS_PATTERN = Pattern.quote( "${releases}" );
+    private static final String SNAPSHOTS_PATTERN = Pattern.quote( "${snapshots}" );
 
     private static final String DEPLOYABLE_TEMPLATE = "settings-deploy.xml";
 

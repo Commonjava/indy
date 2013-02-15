@@ -76,6 +76,7 @@ public class DefaultRepositoryAdminResource
     @Produces( MediaType.APPLICATION_JSON )
     public Response create()
     {
+        logger.info( "start POST" );
         final Repository repository = modelSerializer.repositoryFromRequestBody( request );
 
         logger.info( "\n\nGot proxy: %s\n\n", repository );
@@ -101,6 +102,10 @@ public class DefaultRepositoryAdminResource
             logger.error( "Failed to create proxy: %s. Reason: %s", e, e.getMessage() );
             builder = Response.status( Status.INTERNAL_SERVER_ERROR );
         }
+        finally
+        {
+            logger.info( "done POST" );
+        }
 
         return builder.build();
     }
@@ -115,6 +120,7 @@ public class DefaultRepositoryAdminResource
     @Consumes( { MediaType.APPLICATION_JSON } )
     public Response store( @PathParam( "name" ) final String name )
     {
+        logger.info( "start PUT: %s", name );
         final Repository repository = modelSerializer.repositoryFromRequestBody( request );
         logger.info( "Storing changes to repository: %s", repository );
 
@@ -131,6 +137,10 @@ public class DefaultRepositoryAdminResource
             logger.error( "Failed to save proxy: %s. Reason: %s", e, e.getMessage() );
             builder = Response.status( Status.INTERNAL_SERVER_ERROR );
         }
+        finally
+        {
+            logger.info( "done PUT: %s", name );
+        }
 
         return builder.build();
     }
@@ -144,6 +154,7 @@ public class DefaultRepositoryAdminResource
     @Produces( { MediaType.APPLICATION_JSON } )
     public Response getAll()
     {
+        logger.info( "start GET-ALL" );
         try
         {
             final List<Repository> repos = proxyManager.getAllRepositories();
@@ -169,6 +180,10 @@ public class DefaultRepositoryAdminResource
             logger.error( e.getMessage(), e );
             throw new WebApplicationException( Status.INTERNAL_SERVER_ERROR );
         }
+        finally
+        {
+            logger.info( "done GET-ALL" );
+        }
     }
 
     /*
@@ -181,6 +196,7 @@ public class DefaultRepositoryAdminResource
     @Produces( MediaType.APPLICATION_JSON )
     public Response get( @PathParam( "name" ) final String name )
     {
+        logger.info( "start GET: %s", name );
         try
         {
             final Repository repo = proxyManager.getRepository( name );
@@ -203,6 +219,10 @@ public class DefaultRepositoryAdminResource
             logger.error( e.getMessage(), e );
             throw new WebApplicationException( Status.INTERNAL_SERVER_ERROR );
         }
+        finally
+        {
+            logger.info( "done GET: %s", name );
+        }
     }
 
     /*
@@ -214,6 +234,7 @@ public class DefaultRepositoryAdminResource
     @Path( "/{name}" )
     public Response delete( @PathParam( "name" ) final String name )
     {
+        logger.info( "start DELETE: %s", name );
         ResponseBuilder builder;
         try
         {
@@ -224,6 +245,10 @@ public class DefaultRepositoryAdminResource
         {
             logger.error( e.getMessage(), e );
             builder = Response.status( Status.INTERNAL_SERVER_ERROR );
+        }
+        finally
+        {
+            logger.info( "done DELETE: %s", name );
         }
 
         return builder.build();

@@ -185,11 +185,15 @@ public class TensorStorageListenerRunnable
         }
         catch ( final TensorDataException e )
         {
-            logger.error( "Failed to store relationships for POM: %s. Reason: %s", e, effectiveModel.getId(),
-                          e.getMessage() );
+            final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
 
-            logProjectError( effectiveModel.getGroupId(), effectiveModel.getArtifactId(), effectiveModel.getVersion(),
-                             e );
+            logger.error( "Failed to store relationships for POM: %s (ID from pathInfo: %s). Reason: %s", e,
+                          effectiveModel.getId(), pathInfo == null ? "NONE" : pathInfo.getProjectId(), e.getMessage() );
+
+            if ( pathInfo != null )
+            {
+                logProjectError( pathInfo.getGroupId(), pathInfo.getArtifactId(), pathInfo.getVersion(), e );
+            }
             // TODO: Disable for some time period...
         }
     }
@@ -238,9 +242,10 @@ public class TensorStorageListenerRunnable
         }
         catch ( final InvalidVersionSpecificationException e )
         {
-            logger.error( "Failed to parse version for: %s. Error: %s", e, rawModel.getId(), e.getMessage() );
-
             final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
+            logger.error( "Failed to parse version for: %s (ID from pathInfo: %s). Error: %s", e, rawModel.getId(),
+                          pathInfo == null ? "NONE" : pathInfo.getProjectId(), e.getMessage() );
+
             if ( pathInfo != null )
             {
                 logProjectError( pathInfo.getGroupId(), pathInfo.getArtifactId(), pathInfo.getVersion(), e );

@@ -174,36 +174,39 @@ public class AproxProjectGraphDiscoverer
         }
 
         final List<SingleVersion> versions = new ArrayList<SingleVersion>();
-        try
+        if ( item != null )
         {
-            final Metadata metadata = new MetadataXpp3Reader().read( item.openInputStream() );
-            if ( metadata.getVersioning() != null && metadata.getVersioning()
-                                                             .getVersions() != null )
+            try
             {
-                for ( final String spec : metadata.getVersioning()
-                                                  .getVersions() )
+                final Metadata metadata = new MetadataXpp3Reader().read( item.openInputStream() );
+                if ( metadata.getVersioning() != null && metadata.getVersioning()
+                                                                 .getVersions() != null )
                 {
-                    try
+                    for ( final String spec : metadata.getVersioning()
+                                                      .getVersions() )
                     {
-                        versions.add( VersionUtils.createSingleVersion( spec ) );
-                    }
-                    catch ( final InvalidVersionSpecificationException e )
-                    {
-                        logger.error( "[SKIPPING] Invalid version: %s for project: %s. Reason: %s", spec, projectId,
-                                      e.getMessage() );
+                        try
+                        {
+                            versions.add( VersionUtils.createSingleVersion( spec ) );
+                        }
+                        catch ( final InvalidVersionSpecificationException e )
+                        {
+                            logger.error( "[SKIPPING] Invalid version: %s for project: %s. Reason: %s", spec,
+                                          projectId, e.getMessage() );
+                        }
                     }
                 }
             }
-        }
-        catch ( final IOException e )
-        {
-            throw new TensorDataException( "Failed to read version metadata: %s. Reason: %s", e, item.getPath(),
-                                           e.getMessage() );
-        }
-        catch ( final XmlPullParserException e )
-        {
-            throw new TensorDataException( "Failed to parse version metadata: %s. Reason: %s", e, item.getPath(),
-                                           e.getMessage() );
+            catch ( final IOException e )
+            {
+                throw new TensorDataException( "Failed to read version metadata: %s. Reason: %s", e, item.getPath(),
+                                               e.getMessage() );
+            }
+            catch ( final XmlPullParserException e )
+            {
+                throw new TensorDataException( "Failed to parse version metadata: %s. Reason: %s", e, item.getPath(),
+                                               e.getMessage() );
+            }
         }
 
         return versions;

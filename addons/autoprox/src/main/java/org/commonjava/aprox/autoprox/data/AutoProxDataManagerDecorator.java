@@ -161,7 +161,7 @@ public abstract class AutoProxDataManagerDecorator
             return false;
         }
 
-        logger.info( "\n\n\n\n\n[AutoProx] Checking URL: %s", url );
+        //        logger.info( "\n\n\n\n\n[AutoProx] Checking URL: %s from:", new Throwable(), url );
         final HttpHead head = new HttpHead( url );
 
         http.bindRepositoryCredentialsTo( repo, head );
@@ -173,7 +173,7 @@ public abstract class AutoProxDataManagerDecorator
                                               .execute( head );
             final StatusLine statusLine = response.getStatusLine();
             final int status = statusLine.getStatusCode();
-            logger.info( "[AutoProx] HTTP Status: %s", statusLine );
+            //            logger.info( "[AutoProx] HTTP Status: %s", statusLine );
             result = status == HttpStatus.SC_OK;
         }
         catch ( final ClientProtocolException e )
