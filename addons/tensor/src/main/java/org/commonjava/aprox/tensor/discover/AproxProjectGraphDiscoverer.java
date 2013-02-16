@@ -23,7 +23,6 @@ import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.GroupContentManager;
 import org.commonjava.aprox.tensor.conf.AproxTensorConfig;
-import org.commonjava.aprox.tensor.data.AproxTensorDataManager;
 import org.commonjava.tensor.data.TensorDataException;
 import org.commonjava.tensor.data.TensorDataManager;
 import org.commonjava.tensor.discover.DiscoveryConfig;
@@ -46,16 +45,13 @@ public class AproxProjectGraphDiscoverer
     private TensorDataManager dataManager;
 
     @Inject
-    private AproxTensorDataManager errorDataManager;
-
-    @Inject
     private AproxTensorConfig config;
 
     @Override
     public ProjectVersionRef discoverRelationships( final ProjectVersionRef ref, final DiscoveryConfig discoveryConfig )
         throws TensorDataException
     {
-        if ( errorDataManager.hasErrors( ref.getGroupId(), ref.getArtifactId(), ref.getVersionString() ) )
+        if ( dataManager.hasErrors( ref ) )
         {
             return ref;
         }
@@ -75,7 +71,7 @@ public class AproxProjectGraphDiscoverer
         }
         catch ( final InvalidVersionSpecificationException e )
         {
-            errorDataManager.addError( ref.getGroupId(), ref.getArtifactId(), ref.getVersionString(), e );
+            dataManager.addError( ref, e );
             specific = null;
         }
 

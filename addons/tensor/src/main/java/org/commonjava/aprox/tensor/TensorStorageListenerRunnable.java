@@ -48,7 +48,6 @@ import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.rest.util.ArtifactPathInfo;
-import org.commonjava.aprox.tensor.data.AproxTensorDataManager;
 import org.commonjava.aprox.tensor.maven.ArtifactStoreModelResolver;
 import org.commonjava.aprox.tensor.maven.PropertyExpressionResolver;
 import org.commonjava.aprox.tensor.maven.StoreModelSource;
@@ -78,8 +77,6 @@ public class TensorStorageListenerRunnable
 
     private final TensorDataManager dataManager;
 
-    private final AproxTensorDataManager errorDataManager;
-
     private final TensorModelCache tensorModelCache;
 
     private final FileAccessEvent event;
@@ -87,9 +84,8 @@ public class TensorStorageListenerRunnable
     public TensorStorageListenerRunnable( final StoreDataManager aprox, final ModelReader modelReader,
                                           final ModelBuilder modelBuilder, final FileManager fileManager,
                                           final MavenModelProcessor modelProcessor,
-                                          final TensorDataManager dataManager,
-                                          final AproxTensorDataManager errorDataManager,
-                                          final TensorModelCache tensorModelCache, final FileAccessEvent event )
+                                          final TensorDataManager dataManager, final TensorModelCache tensorModelCache,
+                                          final FileAccessEvent event )
     {
         this.aprox = aprox;
         this.modelReader = modelReader;
@@ -97,7 +93,6 @@ public class TensorStorageListenerRunnable
         this.fileManager = fileManager;
         this.modelProcessor = modelProcessor;
         this.dataManager = dataManager;
-        this.errorDataManager = errorDataManager;
         this.tensorModelCache = tensorModelCache;
         this.event = event;
     }
@@ -192,7 +187,7 @@ public class TensorStorageListenerRunnable
 
             if ( pathInfo != null )
             {
-                logProjectError( pathInfo.getGroupId(), pathInfo.getArtifactId(), pathInfo.getVersion(), e );
+                logProjectError( pathInfo.getGroupId(), pathInfo.getArtifactId(), pathInfo.getVersion(), e, path );
             }
             // TODO: Disable for some time period...
         }
@@ -235,8 +230,15 @@ public class TensorStorageListenerRunnable
 
             final boolean contains = dataManager.contains( ref );
 
-            final boolean hasError =
-                errorDataManager.hasErrors( ref.getGroupId(), ref.getArtifactId(), ref.getVersionString() );
+            boolean hasError = false;
+            try
+            {
+                hasError = dataManager.hasErrors( ref );
+            }
+            catch ( final TensorDataException e )
+            {
+                logArtifactError( path, e );
+            }
 
             return !hasError && ( !concrete || !contains );
         }
@@ -248,7 +250,7 @@ public class TensorStorageListenerRunnable
 
             if ( pathInfo != null )
             {
-                logProjectError( pathInfo.getGroupId(), pathInfo.getArtifactId(), pathInfo.getVersion(), e );
+                logProjectError( pathInfo.getGroupId(), pathInfo.getArtifactId(), pathInfo.getVersion(), e, path );
             }
         }
         //        catch ( final TensorDataException e )
@@ -298,9 +300,16 @@ public class TensorStorageListenerRunnable
         return result.getEffectiveModel();
     }
 
-    private void logProjectError( final String g, final String a, final String v, final Throwable e )
+    private void logProjectError( final String g, final String a, final String v, final Throwable e, final String path )
     {
-        errorDataManager.addError( g, a, v, e );
+        try
+        {
+            dataManager.addError( new ProjectVersionRef( g, a, v ), e );
+        }
+        catch ( final TensorDataException e1 )
+        {
+            logger.error( "Failed to log error for POM: %s. Reason: %s", e1, path, e1.getMessage() );
+        }
     }
 
     private void logArtifactError( final String path, final Throwable e )
@@ -312,7 +321,15 @@ public class TensorStorageListenerRunnable
         }
         else
         {
-            errorDataManager.addError( info.getGroupId(), info.getArtifactId(), info.getVersion(), e );
+            try
+            {
+                dataManager.addError( new ProjectVersionRef( info.getGroupId(), info.getArtifactId(), info.getVersion() ),
+                                      e );
+            }
+            catch ( final TensorDataException e1 )
+            {
+                logger.error( "Failed to log error for POM: %s. Reason: %s", e1, path, e1.getMessage() );
+            }
         }
     }
 

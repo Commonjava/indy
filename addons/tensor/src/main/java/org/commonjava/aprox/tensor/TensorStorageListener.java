@@ -25,7 +25,6 @@ import org.apache.maven.model.io.ModelReader;
 import org.commonjava.aprox.change.event.FileAccessEvent;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.filer.FileManager;
-import org.commonjava.aprox.tensor.data.AproxTensorDataManager;
 import org.commonjava.aprox.tensor.maven.TensorModelCache;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.tensor.data.TensorDataManager;
@@ -55,9 +54,6 @@ public class TensorStorageListener
     private TensorDataManager dataManager;
 
     @Inject
-    private AproxTensorDataManager errorDataManager;
-
-    @Inject
     private TensorModelCache tensorModelCache;
 
     @Inject
@@ -71,7 +67,6 @@ public class TensorStorageListener
         logger.info( "[SUBMIT] TensorStorageListenerRunnable for: %s", event );
 
         executor.execute( new TensorStorageListenerRunnable( aprox, modelReader, modelBuilder, fileManager,
-                                                             modelProcessor, dataManager, errorDataManager,
-                                                             tensorModelCache, event ) );
+                                                             modelProcessor, dataManager, tensorModelCache, event ) );
     }
 }
