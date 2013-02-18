@@ -12,7 +12,6 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -177,12 +176,12 @@ public class TimeoutManager
                 final StoreType type = key.getType();
                 if ( type == StoreType.deploy_point )
                 {
-                    logger.info( "[ADJUST TIMEOUTS] Adjusting snapshot expirations in: %s", store.getKey() );
+                    //                    logger.info( "[ADJUST TIMEOUTS] Adjusting snapshot expirations in: %s", store.getKey() );
                     rescheduleSnapshotTimeouts( (DeployPoint) store );
                 }
                 else if ( type == StoreType.repository )
                 {
-                    logger.info( "[ADJUST TIMEOUTS] Adjusting proxied-file expirations in: %s", store.getKey() );
+                    //                    logger.info( "[ADJUST TIMEOUTS] Adjusting proxied-file expirations in: %s", store.getKey() );
                     rescheduleProxyTimeouts( (Repository) store );
                 }
             }
@@ -389,8 +388,8 @@ public class TimeoutManager
 
         if ( timeout > 0 )
         {
-            logger.info( "[PROXY TIMEOUT SET] %s/%s; %s", repo.getKey(), path, new Date( System.currentTimeMillis()
-                + timeout ) );
+            //            logger.info( "[PROXY TIMEOUT SET] %s/%s; %s", repo.getKey(), path, new Date( System.currentTimeMillis()
+            //                + timeout ) );
             try
             {
                 expirationManager.schedule( createAproxFileExpiration( repo, path, timeout ) );
@@ -437,7 +436,7 @@ public class TimeoutManager
         if ( ArtifactPathInfo.isSnapshot( path ) && deploy.getSnapshotTimeoutSeconds() > 0 )
         {
             final long timeout = deploy.getSnapshotTimeoutSeconds() * 1000;
-            logger.info( "[SNAPSHOT TIMEOUT SET] %s/%s; %s", deploy.getKey(), path, new Date( timeout ) );
+            //            logger.info( "[SNAPSHOT TIMEOUT SET] %s/%s; %s", deploy.getKey(), path, new Date( timeout ) );
             try
             {
                 expirationManager.schedule( createAproxFileExpiration( deploy, path, timeout ) );
@@ -492,7 +491,7 @@ public class TimeoutManager
                 final Set<Group> groups = dataManager.getGroupsContaining( key );
                 for ( final Group group : groups )
                 {
-                    logger.info( "[CLEAN] Cleaning metadata path: %s in group: %s", path, group.getName() );
+                    //                    logger.info( "[CLEAN] Cleaning metadata path: %s in group: %s", path, group.getName() );
 
                     cancel( key, path );
 
@@ -586,7 +585,7 @@ public class TimeoutManager
 
         if ( metadata.exists() )
         {
-            logger.info( "[UPDATE VERSIONS] Updating snapshot versions for path: %s in store: %s", path, key.getName() );
+            //            logger.info( "[UPDATE VERSIONS] Updating snapshot versions for path: %s in store: %s", path, key.getName() );
             Reader reader = null;
             Writer writer = null;
             try

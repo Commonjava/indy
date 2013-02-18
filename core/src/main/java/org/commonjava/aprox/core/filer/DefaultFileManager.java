@@ -132,11 +132,11 @@ public class DefaultFileManager
                 continue;
             }
 
-            logger.info( "Attempting retrieval of: %s from store: %s", path, store );
+            //            logger.info( "Attempting retrieval of: %s from store: %s", path, store );
             target = retrieve( store, path, true );
             if ( target != null )
             {
-                logger.info( "Returning content from file: %s", target );
+                //                logger.info( "Returning content from file: %s", target );
                 return target;
             }
         }
@@ -205,7 +205,7 @@ public class DefaultFileManager
 
             if ( target.exists() )
             {
-                logger.info( "Using stored copy from artifact store: %s for: %s", store.getName(), path );
+                //                logger.info( "Using stored copy from artifact store: %s for: %s", store.getName(), path );
                 final StorageItem item = getStorageReference( store.getKey(), path );
 
                 return item;
@@ -306,7 +306,7 @@ public class DefaultFileManager
         }
         finally
         {
-            logger.info( "Marking download complete: %s", url );
+            //            logger.info( "Marking download complete: %s", url );
             pending.remove( url );
         }
 
@@ -485,12 +485,12 @@ public class DefaultFileManager
         {
             if ( store instanceof DeployPoint )
             {
-                logger.info( "Found deploy point: %s", store.getName() );
+                //                logger.info( "Found deploy point: %s", store.getName() );
                 final DeployPoint dp = (DeployPoint) store;
                 if ( pathInfo == null )
                 {
                     // probably not an artifact, most likely metadata instead...
-                    logger.info( "Selecting it for non-artifact storage: %s", path );
+                    //                    logger.info( "Selecting it for non-artifact storage: %s", path );
                     selected = dp;
                     break;
                 }
@@ -498,14 +498,14 @@ public class DefaultFileManager
                 {
                     if ( dp.isAllowSnapshots() )
                     {
-                        logger.info( "Selecting it for snapshot storage: %s", pathInfo );
+                        //                        logger.info( "Selecting it for snapshot storage: %s", pathInfo );
                         selected = dp;
                         break;
                     }
                 }
                 else if ( dp.isAllowReleases() )
                 {
-                    logger.info( "Selecting it for release storage: %s", pathInfo );
+                    //                    logger.info( "Selecting it for release storage: %s", pathInfo );
                     selected = dp;
                     break;
                 }

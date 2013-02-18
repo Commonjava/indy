@@ -15,8 +15,6 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.rest.util.retrieve;
 
-import static org.apache.commons.lang.StringUtils.join;
-
 import java.io.InputStream;
 import java.util.List;
 
@@ -29,13 +27,12 @@ import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.retrieve.GroupPathHandler;
-import org.commonjava.util.logging.Logger;
 
 @javax.enterprise.context.ApplicationScoped
 public class GroupHandlerChain
 {
 
-    private final Logger logger = new Logger( getClass() );
+    //    private final Logger logger = new Logger( getClass() );
 
     @Inject
     private Instance<GroupPathHandler> handlers;
@@ -50,13 +47,13 @@ public class GroupHandlerChain
         {
             if ( handler.canHandle( path ) )
             {
-                logger.info( "Retrieving path: %s using GroupPathHandler: %s", path, handler.getClass()
-                                                                                            .getName() );
+                //                logger.info( "Retrieving path: %s using GroupPathHandler: %s", path, handler.getClass()
+                //                                                                                            .getName() );
                 return handler.retrieve( group, stores, path );
             }
         }
 
-        logger.info( "Retrieving path: %s from first available in: %s", path, join( stores, ", " ) );
+        //        logger.info( "Retrieving path: %s from first available in: %s", path, join( stores, ", " ) );
         return downloader.retrieveFirst( stores, path );
     }
 

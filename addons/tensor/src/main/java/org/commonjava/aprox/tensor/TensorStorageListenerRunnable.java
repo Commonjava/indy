@@ -100,7 +100,7 @@ public class TensorStorageListenerRunnable
     @Override
     public void run()
     {
-        logger.info( "[RUN] TensorStorageListenerRunnable for: %s", event );
+        //        logger.info( "[RUN] TensorStorageListenerRunnable for: %s", event );
 
         final String path = event.getStorageItem()
                                  .getPath();
@@ -123,7 +123,7 @@ public class TensorStorageListenerRunnable
             return;
         }
 
-        logger.info( "Logging: %s with Tensor relationship-graphing system.", event );
+        //        logger.info( "Logging: %s with Tensor relationship-graphing system.", event );
         final List<ArtifactStore> stores = getRelevantStores( originatingStore );
         if ( stores == null )
         {

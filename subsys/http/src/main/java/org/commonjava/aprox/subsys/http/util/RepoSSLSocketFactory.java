@@ -9,9 +9,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Enumeration;
 
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
@@ -41,27 +39,27 @@ public class RepoSSLSocketFactory
     public Socket createSocket( final HttpParams params )
         throws IOException
     {
-        logger.info( "Creating socket...looking for repository definition in parameters..." );
+        //        logger.info( "Creating socket...looking for repository definition in parameters..." );
         final Repository repo = (Repository) params.getParameter( FileManager.HTTP_PARAM_REPO );
 
         if ( repo != null )
         {
-            logger.info( "Creating socket...using repository: %s", repo );
+            //            logger.info( "Creating socket...using repository: %s", repo );
             final SSLSocketFactory fac = getRepoSSLFactory( repo );
             if ( fac != null )
             {
-                logger.info( "Creating socket using repo-specific factory" );
+                //                logger.info( "Creating socket using repo-specific factory" );
                 return fac.createSocket( params );
             }
             else
             {
-                logger.info( "No repo-specific factory; Creating socket using default factory (this)" );
+                //                logger.info( "No repo-specific factory; Creating socket using default factory (this)" );
                 return super.createSocket( params );
             }
         }
         else
         {
-            logger.info( "No repo; Creating socket using default factory (this)" );
+            //            logger.info( "No repo; Creating socket using default factory (this)" );
             return super.createSocket( params );
         }
     }
@@ -69,7 +67,7 @@ public class RepoSSLSocketFactory
     private synchronized SSLSocketFactory getRepoSSLFactory( final Repository repo )
         throws IOException
     {
-        logger.info( "Finding SSLSocketFactory for repo: %s", repo.getName() );
+        //        logger.info( "Finding SSLSocketFactory for repo: %s", repo.getName() );
 
         SSLSocketFactory factory = null; // repoFactories.get( repo );
         if ( factory == null )
@@ -92,22 +90,22 @@ public class RepoSSLSocketFactory
                 {
                     ks = SSLUtils.readKeyAndCert( kcPem, kcPass );
 
-                    final StringBuilder sb = new StringBuilder();
-                    sb.append( "Keystore contains the following certificates:" );
-
-                    for ( final Enumeration<String> aliases = ks.aliases(); aliases.hasMoreElements(); )
-                    {
-                        final String alias = aliases.nextElement();
-                        final X509Certificate cert = (X509Certificate) ks.getCertificate( alias );
-
-                        if ( cert != null )
-                        {
-                            sb.append( "\n" )
-                              .append( cert.getSubjectDN() );
-                        }
-                    }
-                    sb.append( "\n" );
-                    logger.info( sb.toString() );
+                    //                    final StringBuilder sb = new StringBuilder();
+                    //                    sb.append( "Keystore contains the following certificates:" );
+                    //
+                    //                    for ( final Enumeration<String> aliases = ks.aliases(); aliases.hasMoreElements(); )
+                    //                    {
+                    //                        final String alias = aliases.nextElement();
+                    //                        final X509Certificate cert = (X509Certificate) ks.getCertificate( alias );
+                    //
+                    //                        if ( cert != null )
+                    //                        {
+                    //                            sb.append( "\n" )
+                    //                              .append( cert.getSubjectDN() );
+                    //                        }
+                    //                    }
+                    //                    sb.append( "\n" );
+                    //                    logger.info( sb.toString() );
                 }
                 catch ( final CertificateException e )
                 {
@@ -136,28 +134,28 @@ public class RepoSSLSocketFactory
             }
 
             final String sPem = repo.getServerCertPem();
-            logger.info( "Server certificate PEM:\n%s", sPem );
+            //            logger.info( "Server certificate PEM:\n%s", sPem );
             if ( sPem != null )
             {
                 try
                 {
                     ts = SSLUtils.readCerts( sPem, repo.getHost() );
 
-                    final StringBuilder sb = new StringBuilder();
-                    sb.append( "Trust store contains the following certificates:" );
-
-                    for ( final Enumeration<String> aliases = ts.aliases(); aliases.hasMoreElements(); )
-                    {
-                        final String alias = aliases.nextElement();
-                        final X509Certificate cert = (X509Certificate) ts.getCertificate( alias );
-                        if ( cert != null )
-                        {
-                            sb.append( "\n" )
-                              .append( cert.getSubjectDN() );
-                        }
-                    }
-                    sb.append( "\n" );
-                    logger.info( sb.toString() );
+                    //                    final StringBuilder sb = new StringBuilder();
+                    //                    sb.append( "Trust store contains the following certificates:" );
+                    //
+                    //                    for ( final Enumeration<String> aliases = ts.aliases(); aliases.hasMoreElements(); )
+                    //                    {
+                    //                        final String alias = aliases.nextElement();
+                    //                        final X509Certificate cert = (X509Certificate) ts.getCertificate( alias );
+                    //                        if ( cert != null )
+                    //                        {
+                    //                            sb.append( "\n" )
+                    //                              .append( cert.getSubjectDN() );
+                    //                        }
+                    //                    }
+                    //                    sb.append( "\n" );
+                    //                    logger.info( sb.toString() );
                 }
                 catch ( final CertificateException e )
                 {
@@ -223,30 +221,30 @@ public class RepoSSLSocketFactory
     public Socket createLayeredSocket( final Socket socket, final String host, final int port, final boolean autoClose )
         throws IOException, UnknownHostException
     {
-        logger.info( "Creating LAYERED socket to: %s:%d...looking for repository definition in parameters...", host,
-                     port );
+        //        logger.info( "Creating LAYERED socket to: %s:%d...looking for repository definition in parameters...", host,
+        //                     port );
 
         // FIXME: This is prone to confusion if multiple repos using the same host/port have different configs!!!
         final Repository repo = credProvider.getRepository( host, port < 0 ? 443 : port );
 
         if ( repo != null )
         {
-            logger.info( "Creating socket...using repository: %s", repo );
+            //            logger.info( "Creating socket...using repository: %s", repo );
             final SSLSocketFactory fac = getRepoSSLFactory( repo );
             if ( fac != null )
             {
-                logger.info( "Creating socket using repo-specific factory" );
+                //                logger.info( "Creating socket using repo-specific factory" );
                 return fac.createLayeredSocket( socket, host, port, autoClose );
             }
             else
             {
-                logger.info( "No repo-specific factory; Creating socket using default factory (this)" );
+                //                logger.info( "No repo-specific factory; Creating socket using default factory (this)" );
                 return super.createLayeredSocket( socket, host, port, autoClose );
             }
         }
         else
         {
-            logger.info( "No repo; Creating socket using default factory (this)" );
+            //            logger.info( "No repo; Creating socket using default factory (this)" );
             return super.createLayeredSocket( socket, host, port, autoClose );
         }
     }

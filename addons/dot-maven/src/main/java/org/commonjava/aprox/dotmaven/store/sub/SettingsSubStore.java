@@ -124,7 +124,7 @@ public class SettingsSubStore
                 final String storeName = formatSettingsResourceName( store.getKey()
                                                                           .getType(), store.getName() );
 
-                logger.info( "\n\nCreating settings resource for: '%s'\n\n", storeName );
+                //                logger.info( "\n\nCreating settings resource for: '%s'\n\n", storeName );
                 names.add( storeName );
             }
         }

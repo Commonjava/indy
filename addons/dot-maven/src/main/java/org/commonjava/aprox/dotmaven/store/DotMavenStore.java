@@ -15,7 +15,6 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
-import javax.servlet.http.HttpSession;
 
 import net.sf.webdav.ITransaction;
 import net.sf.webdav.IWebdavStore;
@@ -23,13 +22,12 @@ import net.sf.webdav.StoredObject;
 import net.sf.webdav.exceptions.WebdavException;
 
 import org.commonjava.aprox.dotmaven.webctl.RequestInfo;
-import org.commonjava.util.logging.Logger;
 
 @RequestScoped
 public class DotMavenStore
     implements IWebdavStore
 {
-    private final Logger logger = new Logger( getClass() );
+    //    private final Logger logger = new Logger( getClass() );
 
     @Inject
     private Instance<SubStore> injectedSubstores;
@@ -201,16 +199,16 @@ public class DotMavenStore
     @Override
     public StoredObject getStoredObject( final ITransaction transaction, final String uri )
     {
-        final HttpSession session = requestInfo.getRequest()
-                                               .getSession();
-        if ( session != null )
-        {
-            logger.info( "mount point: %s", session.getAttribute( RequestInfo.MOUNT_POINT ) );
-        }
-        else
-        {
-            logger.info( "No session available" );
-        }
+        //        final HttpSession session = requestInfo.getRequest()
+        //                                               .getSession();
+        //        if ( session != null )
+        //        {
+        //            logger.info( "mount point: %s", session.getAttribute( RequestInfo.MOUNT_POINT ) );
+        //        }
+        //        else
+        //        {
+        //            logger.info( "No session available" );
+        //        }
 
         //        logger.info( "get stored object: %s, %s", transaction, uri );
         final SubStore store = select( uri );

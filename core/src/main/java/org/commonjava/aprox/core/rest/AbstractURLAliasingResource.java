@@ -13,12 +13,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 
-import org.commonjava.util.logging.Logger;
-
 public abstract class AbstractURLAliasingResource
 {
 
-    private final Logger logger = new Logger( getClass() );
+    //    private final Logger logger = new Logger( getClass() );
 
     @Context
     private HttpServletRequest request;
@@ -44,7 +42,7 @@ public abstract class AbstractURLAliasingResource
             }
         }
 
-        logger.info( "\n\nBase URL for deprecated path forward:\n    %s\n\n", baseUri );
+        //        logger.info( "\n\nBase URL for deprecated path forward:\n    %s\n\n", baseUri );
 
         final List<String> allPathList = new ArrayList<String>();
         for ( final String path : paths )
@@ -67,7 +65,7 @@ public abstract class AbstractURLAliasingResource
                             .build()
                             .getPath();
 
-        logger.info( "\n\nFull forward URL:\n    %s\n\n", url );
+        //        logger.info( "\n\nFull forward URL:\n    %s\n\n", url );
 
         url = url.substring( baseUri.length() );
 
@@ -90,7 +88,7 @@ public abstract class AbstractURLAliasingResource
         }
 
         url = "/" + join( parts, "/" );
-        logger.info( "\n\nRelative forward URL:\n    %s\n\n", url );
+        //        logger.info( "\n\nRelative forward URL:\n    %s\n\n", url );
 
         request.getRequestDispatcher( url )
                .forward( request, response );

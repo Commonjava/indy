@@ -13,13 +13,12 @@ import org.commonjava.aprox.dotmaven.DotMavenException;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.util.logging.Logger;
 
 @RequestScoped
 public class StorageAdvisor
 {
 
-    private final Logger logger = new Logger( getClass() );
+    //    private final Logger logger = new Logger( getClass() );
 
     @Inject
     private StoreDataManager dataManager;
@@ -65,8 +64,8 @@ public class StorageAdvisor
                         snapshots = dp.isAllowSnapshots();
                         releases = dp.isAllowReleases();
 
-                        logger.info( "\n\n\n\nDeploy point: %s allows releases? %s Releases boolean set to: %s\n\n\n\n",
-                                     dp.getName(), dp.isAllowReleases(), releases );
+                        //                        logger.info( "\n\n\n\nDeploy point: %s allows releases? %s Releases boolean set to: %s\n\n\n\n",
+                        //                                     dp.getName(), dp.isAllowReleases(), releases );
 
                         break all;
                     }
@@ -82,7 +81,7 @@ public class StorageAdvisor
                 snapshots = dp.isAllowSnapshots();
                 releases = dp.isAllowReleases();
 
-                logger.info( "Deploy point: %s allows releases? %s", dp.getName(), dp.isAllowReleases() );
+                //                logger.info( "Deploy point: %s allows releases? %s", dp.getName(), dp.isAllowReleases() );
                 break;
             }
         }

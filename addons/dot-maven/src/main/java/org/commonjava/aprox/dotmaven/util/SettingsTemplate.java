@@ -10,7 +10,6 @@ import org.commonjava.aprox.dotmaven.data.StorageAdvice;
 import org.commonjava.aprox.dotmaven.webctl.RequestInfo;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.util.logging.Logger;
 
 public class SettingsTemplate
 {
@@ -27,7 +26,7 @@ public class SettingsTemplate
 
     private static final String NON_DEPLOYABLE_TEMPLATE = "settings-no-deploy.xml";
 
-    private final Logger logger = new Logger( getClass() );
+    //    private final Logger logger = new Logger( getClass() );
 
     private final RequestInfo requestInfo;
 
@@ -63,12 +62,12 @@ public class SettingsTemplate
         final String template;
         if ( advice.isDeployable() )
         {
-            logger.info( "Loading deployable template for: %s", name );
+            //            logger.info( "Loading deployable template for: %s", name );
             template = load( DEPLOYABLE_TEMPLATE );
         }
         else
         {
-            logger.info( "Loading non-deployable template for: %s", name );
+            //            logger.info( "Loading non-deployable template for: %s", name );
             template = load( NON_DEPLOYABLE_TEMPLATE );
         }
 

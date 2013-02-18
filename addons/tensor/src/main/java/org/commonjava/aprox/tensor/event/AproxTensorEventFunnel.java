@@ -22,7 +22,7 @@ public class AproxTensorEventFunnel
         try
         {
             final ArtifactPathInfo info = ArtifactPathInfo.parse( path );
-            logger.info( "Unlocking %s due to file download error.", info );
+            //            logger.info( "Unlocking %s due to file download error.", info );
             if ( info != null )
             {
                 final ProjectVersionRef ref =
@@ -43,7 +43,7 @@ public class AproxTensorEventFunnel
         try
         {
             final ArtifactPathInfo info = ArtifactPathInfo.parse( path );
-            logger.info( "Unlocking %s due to unresolvable POM.", info );
+            //            logger.info( "Unlocking %s due to unresolvable POM.", info );
             if ( info != null )
             {
                 final ProjectVersionRef ref =

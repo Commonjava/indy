@@ -6,15 +6,13 @@ import java.net.URL;
 import javax.enterprise.context.RequestScoped;
 import javax.servlet.http.HttpServletRequest;
 
-import org.commonjava.util.logging.Logger;
-
 @RequestScoped
 public class RequestInfo
 {
 
     public static final String MOUNT_POINT = "mount";
 
-    private final Logger logger = new Logger( getClass() );
+    //    private final Logger logger = new Logger( getClass() );
 
     private HttpServletRequest request;
 
@@ -37,7 +35,7 @@ public class RequestInfo
 
         String baseUrl = request.getRequestURL()
                                 .toString();
-        logger.info( "Request: %s", baseUrl );
+        //        logger.info( "Request: %s", baseUrl );
 
         final int idx = baseUrl.indexOf( DotMavenServlet.NAME );
         if ( idx > 0 )

@@ -79,7 +79,7 @@ public class GroupConsistencyListener
 
     public void storeDeleted( @Observes final ProxyManagerDeleteEvent event )
     {
-        logger.info( "Processing proxy-manager store deletion: %s", event );
+        //        logger.info( "Processing proxy-manager store deletion: %s", event );
         final StoreType type = event.getType();
         for ( final String name : event )
         {

@@ -7,7 +7,6 @@ import java.util.regex.Pattern;
 
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.util.logging.Logger;
 
 public final class StoreURIMatcher
     implements URIMatcher
@@ -22,7 +21,7 @@ public final class StoreURIMatcher
 
     private static final int STORE_PATH_GRP = 6;
 
-    private final Logger logger = new Logger( getClass() );
+    //    private final Logger logger = new Logger( getClass() );
 
     private final Matcher matcher;
 

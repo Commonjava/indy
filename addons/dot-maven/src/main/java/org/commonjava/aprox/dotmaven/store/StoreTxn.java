@@ -24,7 +24,7 @@ public class StoreTxn
     @Override
     public String toString()
     {
-        return String.format( "DynamoTxn [principal=%s]", principal );
+        return String.format( "DotMavenTxn [principal=%s]", principal );
     }
 
 }
