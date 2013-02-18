@@ -605,7 +605,7 @@ public class DefaultFileManager
         @Override
         public StorageItem call()
         {
-            logger.info( "Trying: %s", url );
+            //            logger.info( "Trying: %s", url );
             final HttpGet request = new HttpGet( url );
 
             http.bindRepositoryCredentialsTo( repository, request );

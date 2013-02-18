@@ -174,7 +174,7 @@ public class AproxProjectGraphDiscoverer
         {
             try
             {
-                final Metadata metadata = new MetadataXpp3Reader().read( item.openInputStream() );
+                final Metadata metadata = new MetadataXpp3Reader().read( item.openInputStream( false ) );
                 if ( metadata.getVersioning() != null && metadata.getVersioning()
                                                                  .getVersions() != null )
                 {

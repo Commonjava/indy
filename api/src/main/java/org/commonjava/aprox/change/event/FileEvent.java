@@ -1,7 +1,6 @@
 package org.commonjava.aprox.change.event;
 
 import org.commonjava.aprox.io.StorageItem;
-import org.commonjava.util.logging.Logger;
 
 public class FileEvent
     implements AproxEvent
@@ -16,8 +15,6 @@ public class FileEvent
 
     public StorageItem getStorageItem()
     {
-        new Logger( getClass() ).info( "Retrieving file-event storage item: %s\n  from: %s", storageItem,
-                                       new Throwable().getStackTrace()[1] );
         return storageItem;
     }
 
