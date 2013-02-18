@@ -40,7 +40,7 @@
     <slf4j-version>1.6.1</slf4j-version>
     <jbossas-version>7.1.1.Final</jbossas-version>
     <arquillian-version>1.0.1.Final</arquillian-version>
-    <qarqas-version>0.4-SNAPSHOT</qarqas-version>
+    <qarqas-version>0.3</qarqas-version>
     <shelflife-version>0.2</shelflife-version>
   </properties>
   
@@ -79,7 +79,7 @@
       <dependency>
         <groupId>org.commonjava.boms</groupId>
         <artifactId>web-commons-bom</artifactId>
-        <version>3-SNAPSHOT</version>
+        <version>3</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
