@@ -234,15 +234,14 @@ public abstract class AutoProxDataManagerDecorator
                 repo.setTimeoutSeconds( repoTemplate.getTimeoutSeconds() );
                 repo.setUser( repoTemplate.getUser() );
 
+                if ( !checkUrlValidity( repo, url, validationPath ) )
+                {
+                    logger.warn( "Invalid repository URL: %s", url );
+                    return null;
+                }
+
                 dataManager.storeRepository( repo );
             }
-
-            if ( !checkUrlValidity( repo, url, validationPath ) )
-            {
-                logger.warn( "Invalid repository URL: %s", url );
-                return null;
-            }
-
         }
 
         return repo;
