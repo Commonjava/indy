@@ -19,6 +19,7 @@ import java.io.IOException;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.inject.Inject;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -41,6 +42,56 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
 
     protected AbstractSimpleAccessResource()
     {
+    }
+
+    @DELETE
+    @Path( "/{name}{path: (/.+)?}" )
+    public Response deleteContent( @PathParam( "name" ) final String name, @PathParam( "path" ) final String path )
+    {
+        Response response = null;
+
+        ArtifactStore store = null;
+        try
+        {
+            store = getArtifactStore( name );
+        }
+        catch ( final AproxWorkflowException e )
+        {
+            logger.error( "Failed to retrieve artifact store: %s. Reason: %s", e, name, e.getMessage() );
+            response = e.getResponse();
+        }
+
+        if ( response == null )
+        {
+            if ( store == null )
+            {
+                response = Response.status( Status.NOT_FOUND )
+                                   .build();
+            }
+            else
+            {
+                try
+                {
+                    if ( fileManager.delete( store, path ) )
+                    {
+                        response = Response.ok()
+                                           .build();
+                    }
+                    else
+                    {
+                        response = Response.status( Status.NOT_FOUND )
+                                           .build();
+                    }
+                }
+                catch ( final AproxWorkflowException e )
+                {
+                    logger.error( "Failed to delete artifact: %s from: %s. Reason: %s", e, path, name, e.getMessage() );
+                    response = e.getResponse();
+                }
+            }
+        }
+
+        return response;
     }
 
     @GET

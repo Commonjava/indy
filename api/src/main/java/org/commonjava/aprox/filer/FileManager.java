@@ -56,10 +56,10 @@ public interface FileManager
 
     ArtifactPathInfo parsePathInfo( String path );
 
-    void delete( final ArtifactStore store, String path )
+    boolean delete( final ArtifactStore store, String path )
         throws AproxWorkflowException;
 
-    void deleteAll( final List<? extends ArtifactStore> stores, String path )
+    boolean deleteAll( final List<? extends ArtifactStore> stores, String path )
         throws AproxWorkflowException;
 
     void rescan( final ArtifactStore store )

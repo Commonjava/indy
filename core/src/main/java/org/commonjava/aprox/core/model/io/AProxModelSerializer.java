@@ -32,19 +32,16 @@ public class AProxModelSerializer
     @AproxData
     private JsonSerializer restSerializer;
 
-    @SuppressWarnings( "unchecked" )
     public Repository repositoryFromRequestBody( final HttpServletRequest request )
     {
         return restSerializer.fromRequestBody( request, Repository.class );
     }
 
-    @SuppressWarnings( "unchecked" )
     public Group groupFromRequestBody( final HttpServletRequest request )
     {
         return restSerializer.fromRequestBody( request, Group.class );
     }
 
-    @SuppressWarnings( "unchecked" )
     public DeployPoint deployPointFromRequestBody( final HttpServletRequest request )
     {
         return restSerializer.fromRequestBody( request, DeployPoint.class );

@@ -726,29 +726,32 @@ public class DefaultFileManager
     }
 
     @Override
-    public void deleteAll( final List<? extends ArtifactStore> stores, final String path )
+    public boolean deleteAll( final List<? extends ArtifactStore> stores, final String path )
         throws AproxWorkflowException
     {
+        boolean result = false;
         for ( final ArtifactStore store : stores )
         {
-            delete( store, path );
+            result = delete( store, path ) || result;
         }
+
+        return result;
     }
 
     @Override
-    public void delete( final ArtifactStore store, final String path )
+    public boolean delete( final ArtifactStore store, final String path )
         throws AproxWorkflowException
     {
         final StorageItem item = getStorageReference( store, path == null ? ROOT_PATH : path );
-        doDelete( item );
+        return doDelete( item );
     }
 
-    private void doDelete( final StorageItem item )
+    private Boolean doDelete( final StorageItem item )
         throws AproxWorkflowException
     {
         if ( !item.exists() )
         {
-            return;
+            return false;
         }
 
         if ( item.isDirectory() )
@@ -756,14 +759,21 @@ public class DefaultFileManager
             final String[] listing = item.list();
             for ( final String sub : listing )
             {
-                doDelete( item.getChild( sub ) );
+                if ( !doDelete( item.getChild( sub ) ) )
+                {
+                    return false;
+                }
             }
         }
         else
         {
             try
             {
-                item.delete();
+                if ( !item.delete() )
+                {
+                    throw new AproxWorkflowException( Response.serverError()
+                                                              .build(), "Failed to delete: %s.", item );
+                }
             }
             catch ( final IOException e )
             {
@@ -772,6 +782,8 @@ public class DefaultFileManager
                                                   e, item, e.getMessage() );
             }
         }
+
+        return true;
     }
 
     @Override

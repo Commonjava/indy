@@ -1,5 +1,6 @@
 package org.commonjava.aprox.core.rest.util;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -17,7 +18,8 @@ import org.commonjava.aprox.rest.util.GroupContentManager;
 import org.commonjava.util.logging.Logger;
 
 @javax.enterprise.context.ApplicationScoped
-public class DefaultGroupContentManager implements GroupContentManager
+public class DefaultGroupContentManager
+    implements GroupContentManager
 {
 
     private final Logger logger = new Logger( getClass() );
@@ -105,6 +107,37 @@ public class DefaultGroupContentManager implements GroupContentManager
         }
 
         return handlerChain.store( group, stores, path, stream );
+    }
+
+    @Override
+    public boolean delete( final String name, final String path )
+        throws AproxWorkflowException, IOException
+    {
+        List<? extends ArtifactStore> stores = null;
+        Group group = null;
+
+        try
+        {
+            group = storeManager.getGroup( name );
+            if ( group == null )
+            {
+                return false;
+            }
+            else
+            {
+                stores = storeManager.getOrderedConcreteStoresInGroup( name );
+            }
+        }
+        catch ( final ProxyDataException e )
+        {
+            logger.error( "Failed to retrieve repository-group information: %s. Reason: %s", e, name, e.getMessage() );
+            throw new AproxWorkflowException( Response.serverError()
+                                                      .build(),
+                                              "Failed to retrieve repository-group information: %s. Reason: %s", e,
+                                              name, e.getMessage() );
+        }
+
+        return handlerChain.delete( group, stores, path );
     }
 
 }

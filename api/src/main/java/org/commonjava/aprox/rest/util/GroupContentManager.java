@@ -1,5 +1,6 @@
 package org.commonjava.aprox.rest.util;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import org.commonjava.aprox.io.StorageItem;
@@ -13,5 +14,8 @@ public interface GroupContentManager
 
     StorageItem store( String name, String path, InputStream stream )
         throws AproxWorkflowException;
+
+    boolean delete( String name, String path )
+        throws AproxWorkflowException, IOException;
 
 }

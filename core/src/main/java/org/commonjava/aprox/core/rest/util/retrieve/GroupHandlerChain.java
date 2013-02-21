@@ -15,6 +15,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.rest.util.retrieve;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -70,6 +71,20 @@ public class GroupHandlerChain
         }
 
         return downloader.store( stores, path, stream );
+    }
+
+    public boolean delete( final Group group, final List<? extends ArtifactStore> stores, final String path )
+        throws AproxWorkflowException, IOException
+    {
+        for ( final GroupPathHandler handler : handlers )
+        {
+            if ( handler.canHandle( path ) )
+            {
+                return handler.delete( group, stores, path );
+            }
+        }
+
+        return downloader.deleteAll( stores, path );
     }
 
 }

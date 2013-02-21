@@ -157,4 +157,27 @@ public class MavenMetadataHandler
         return fileManager.store( stores, path, stream );
     }
 
+    @Override
+    public boolean delete( final Group group, final List<? extends ArtifactStore> stores, final String path )
+        throws AproxWorkflowException, IOException
+    {
+        final StorageItem target = fileManager.getStorageReference( group, path );
+        final StorageItem targetInfo =
+            fileManager.getStorageReference( group, path + MavenMetadataMerger.METADATA_MERGEINFO_SUFFIX );
+
+        if ( target == null )
+        {
+            return false;
+        }
+
+        target.delete();
+
+        if ( targetInfo != null )
+        {
+            targetInfo.delete();
+        }
+
+        return true;
+    }
+
 }

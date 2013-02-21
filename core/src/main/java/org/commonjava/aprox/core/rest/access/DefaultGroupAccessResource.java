@@ -21,6 +21,7 @@ import javax.activation.MimetypesFileTypeMap;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -54,6 +55,37 @@ public class DefaultGroupAccessResource
 
     @Context
     private UriInfo uriInfo;
+
+    @DELETE
+    @Path( "/{name}{path: (/.+)?}" )
+    public Response deleteContent( @PathParam( "name" ) final String name, @PathParam( "path" ) final String path )
+    {
+        try
+        {
+            if ( groupContentManager.delete( name, path ) )
+            {
+                return Response.ok()
+                               .build();
+            }
+            else
+            {
+                return Response.status( Status.NOT_FOUND )
+                               .build();
+            }
+
+        }
+        catch ( final AproxWorkflowException e )
+        {
+            logger.error( e.getMessage(), e );
+            return e.getResponse();
+        }
+        catch ( final IOException e )
+        {
+            logger.error( e.getMessage(), e );
+            return Response.serverError()
+                           .build();
+        }
+    }
 
     /*
      * (non-Javadoc)
