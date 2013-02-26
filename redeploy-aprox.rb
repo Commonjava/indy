@@ -18,6 +18,8 @@ File.open(path, 'w+'){|f|
 
 Dir.chdir(AS7_HOME) {
   system( "bin/jboss-cli.sh --controller=#{CONTROLLER_HOST_PORT} --connect --file=#{path}" )
-  exit $?
+  ret = $?
+  puts "Exit status: #{ret.exitstatus}"
+  exit ret.exitstatus
 }
 
