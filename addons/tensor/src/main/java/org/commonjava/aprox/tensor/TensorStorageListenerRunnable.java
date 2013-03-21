@@ -104,6 +104,7 @@ public class TensorStorageListenerRunnable
 
         final String path = event.getStorageItem()
                                  .getPath();
+
         if ( !path.endsWith( ".pom" ) )
         {
             return;

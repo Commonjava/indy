@@ -64,6 +64,14 @@ public class TensorStorageListener
 
     public void handleFileAccessEvent( @Observes final FileAccessEvent event )
     {
+        final String path = event.getStorageItem()
+                                 .getPath();
+
+        if ( !path.endsWith( ".pom" ) )
+        {
+            return;
+        }
+
         logger.info( "[SUBMIT] TensorStorageListenerRunnable for: %s", event );
 
         executor.execute( new TensorStorageListenerRunnable( aprox, modelReader, modelBuilder, fileManager,
