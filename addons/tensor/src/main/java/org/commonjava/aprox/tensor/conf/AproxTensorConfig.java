@@ -16,7 +16,7 @@ public class AproxTensorConfig
     implements TensorConfig
 {
 
-    private static final String DEFAULT_TENSOR_DISCOVERY_GROUP = "_tensor";
+    public static final String DEFAULT_TENSOR_DISCOVERY_GROUP = "_tensor";
 
     private static final int DEFAULT_TENSOR_DISCOVERY_TIMEOUT_MILLIS = 30000;
 
