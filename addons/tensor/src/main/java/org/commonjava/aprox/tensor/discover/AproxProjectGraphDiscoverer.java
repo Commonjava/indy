@@ -118,18 +118,7 @@ public class AproxProjectGraphDiscoverer
         Collections.sort( versions );
         Collections.reverse( versions );
 
-        if ( !ref.isCompound() && ref.isSnapshot() )
-        {
-            while ( !versions.isEmpty() )
-            {
-                final SingleVersion ver = versions.remove( 0 );
-                if ( !ver.isRelease() )
-                {
-                    return new ProjectVersionRef( ref.getGroupId(), ref.getArtifactId(), ver );
-                }
-            }
-        }
-        else if ( ref.isCompound() )
+        if ( ref.isCompound() )
         {
             final MultiVersionSpec multi = (MultiVersionSpec) ref.getVersionSpec();
 
@@ -144,6 +133,17 @@ public class AproxProjectGraphDiscoverer
             {
                 final SingleVersion ver = versions.remove( 0 );
                 if ( ( snapshots || ver.isRelease() ) && multi.contains( ver ) )
+                {
+                    return new ProjectVersionRef( ref.getGroupId(), ref.getArtifactId(), ver );
+                }
+            }
+        }
+        else if ( ref.isSnapshot() )
+        {
+            while ( !versions.isEmpty() )
+            {
+                final SingleVersion ver = versions.remove( 0 );
+                if ( !ver.isRelease() )
                 {
                     return new ProjectVersionRef( ref.getGroupId(), ref.getArtifactId(), ver );
                 }
