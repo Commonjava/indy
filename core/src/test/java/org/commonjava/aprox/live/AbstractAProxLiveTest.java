@@ -48,7 +48,7 @@ public class AbstractAProxLiveTest
         return new TestWarArchiveBuilder( new File( "target/test-assembly.war" ), testClass ).withExtraClasses( AbstractAProxLiveTest.class,
                                                                                                                 ProxyConfigProvider.class )
                                                                                              .withLog4jProperties()
-                                                                                             .withBeansXml( "META-INF/beans.xml" );
+                                                                                             .withBeansXml( "META-INF/beans.live.xml" );
     }
 
 }

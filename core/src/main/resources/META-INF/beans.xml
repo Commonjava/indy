@@ -20,5 +20,9 @@
       http://java.sun.com/xml/ns/javaee 
       http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
       
+  <alternatives>
+    <class>org.commonjava.shelflife.clock.ThreadedClockSource</class>
+    <class>org.commonjava.shelflife.event.ThreadedEventManager</class>
+  </alternatives>
   
 </beans>

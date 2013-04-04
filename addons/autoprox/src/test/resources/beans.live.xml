@@ -27,4 +27,7 @@
     <class>org.commonjava.shelflife.event.JEEEventManager</class>
   </alternatives>
   
+  <decorators>
+    <class>org.commonjava.aprox.autoprox.data.AutoProxDataManagerDecorator</class>
+  </decorators>
 </beans>

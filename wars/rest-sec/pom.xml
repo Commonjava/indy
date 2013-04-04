@@ -42,7 +42,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-db-infinispan</artifactId>
+      <artifactId>aprox-db-flat</artifactId>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

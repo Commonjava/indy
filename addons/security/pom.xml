@@ -120,7 +120,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.shelflife</groupId>
-      <artifactId>shelflife-api</artifactId>
+      <artifactId>shelflife-core</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

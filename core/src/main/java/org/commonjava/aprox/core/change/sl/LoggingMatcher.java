@@ -3,7 +3,7 @@ package org.commonjava.aprox.core.change.sl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.commonjava.shelflife.expire.match.ExpirationMatcher;
+import org.commonjava.shelflife.match.ExpirationMatcher;
 import org.commonjava.shelflife.model.Expiration;
 
 public class LoggingMatcher

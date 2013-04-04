@@ -104,7 +104,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.shelflife</groupId>
-      <artifactId>shelflife-api</artifactId>
+      <artifactId>shelflife-core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.shelflife</groupId>

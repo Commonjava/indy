@@ -12,6 +12,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -51,11 +52,11 @@ import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.rest.util.ArtifactPathInfo;
 import org.commonjava.aprox.rest.util.ArtifactPathInfo.SnapshotInfo;
-import org.commonjava.shelflife.expire.ExpirationEvent;
-import org.commonjava.shelflife.expire.ExpirationEventType;
-import org.commonjava.shelflife.expire.ExpirationManager;
-import org.commonjava.shelflife.expire.ExpirationManagerException;
-import org.commonjava.shelflife.expire.match.AndMatcher;
+import org.commonjava.shelflife.ExpirationManager;
+import org.commonjava.shelflife.ExpirationManagerException;
+import org.commonjava.shelflife.event.ExpirationEvent;
+import org.commonjava.shelflife.event.ExpirationEventType;
+import org.commonjava.shelflife.match.AndMatcher;
 import org.commonjava.shelflife.model.Expiration;
 import org.commonjava.shelflife.model.ExpirationKey;
 import org.commonjava.util.logging.Logger;
@@ -388,8 +389,8 @@ public class TimeoutManager
 
         if ( timeout > 0 )
         {
-            //            logger.info( "[PROXY TIMEOUT SET] %s/%s; %s", repo.getKey(), path, new Date( System.currentTimeMillis()
-            //                + timeout ) );
+            logger.info( "[PROXY TIMEOUT SET] %s/%s; %s", repo.getKey(), path, new Date( System.currentTimeMillis()
+                + timeout ) );
             try
             {
                 expirationManager.schedule( createAproxFileExpiration( repo, path, timeout ) );

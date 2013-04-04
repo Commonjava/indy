@@ -29,8 +29,17 @@
   
   <modules>
     <module>flatfile</module>
-    <module>infinispan</module>
     <module>http</module>
     
   </modules>
+  
+  <profiles>
+    <profile>
+      <id>experimental</id>
+      
+      <modules>
+        <module>infinispan</module>
+      </modules>
+    </profile>
+  </profiles>
 </project>

@@ -29,7 +29,6 @@
   
   <modules>
     <module>default</module>
-    <module>gridfs</module>
   </modules>
   
   <profiles>
@@ -37,6 +36,7 @@
       <id>experimental</id>
       
       <modules>
+        <module>gridfs</module>
       </modules>
     </profile>
   </profiles>

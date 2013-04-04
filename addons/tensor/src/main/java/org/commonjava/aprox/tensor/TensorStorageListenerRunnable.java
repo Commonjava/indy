@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import org.apache.maven.graph.common.ref.ProjectVersionRef;
@@ -56,12 +57,17 @@ import org.commonjava.tensor.data.TensorDataException;
 import org.commonjava.tensor.data.TensorDataManager;
 import org.commonjava.tensor.util.MavenModelProcessor;
 import org.commonjava.util.logging.Logger;
+import org.neo4j.kernel.DeadlockDetectedException;
 
 public class TensorStorageListenerRunnable
     implements Runnable
 {
 
     private static final String FOUND_IN_METADATA = "found-in-repo";
+
+    private static final int MAX_RETRIES = 5;
+
+    private static final Random RAND = new Random();
 
     private final Logger logger = new Logger( getClass() );
 
@@ -148,6 +154,46 @@ public class TensorStorageListenerRunnable
             return;
         }
 
+        boolean retry = false;
+        int count = 0;
+        do
+        {
+            retry = false;
+
+            try
+            {
+                storeRelationships( effectiveModel, originatingStore, path );
+            }
+            catch ( final DeadlockDetectedException e )
+            {
+                final long standoff = ( Math.abs( RAND.nextInt() ) % 8 ) * 4000;
+                logger.warn( "Detected deadlock scenario; retrying relationship storage for: %s in %d ms.",
+                             effectiveModel.getId(), standoff );
+
+                try
+                {
+                    Thread.sleep( standoff );
+                }
+                catch ( final InterruptedException ie )
+                {
+                    break;
+                }
+
+                retry = true;
+            }
+            count++;
+
+            if ( count >= MAX_RETRIES )
+            {
+                logger.error( "Failed to store relationships for %s after %s attempts. Giving up.",
+                              effectiveModel.getId(), count );
+            }
+        }
+        while ( retry && count < MAX_RETRIES );
+    }
+
+    private void storeRelationships( final Model effectiveModel, final ArtifactStore originatingStore, final String path )
+    {
         try
         {
             // TODO: Pass on the profiles that were activated when the effective model was built.

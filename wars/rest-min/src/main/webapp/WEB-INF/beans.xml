@@ -22,5 +22,8 @@
       
   <alternatives>
     <stereotype>org.commonjava.aprox.inject.Production</stereotype>
+    
+    <class>org.commonjava.shelflife.clock.ThreadedClockSource</class>
+    <class>org.commonjava.shelflife.event.JEEEventManager</class>
   </alternatives>
 </beans>

@@ -57,7 +57,7 @@ public class TensorStorageListener
     private TensorModelCache tensorModelCache;
 
     @Inject
-    @ExecutorConfig( priority = 8, threads = 4, named = "tensor-listener" )
+    @ExecutorConfig( priority = 8, threads = 2, named = "tensor-listener" )
     private ExecutorService executor;
 
     private final Logger logger = new Logger( getClass() );

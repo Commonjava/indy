@@ -41,7 +41,7 @@
     <jbossas-version>7.1.1.Final</jbossas-version>
     <arquillian-version>1.0.1.Final</arquillian-version>
     <qarqas-version>0.3</qarqas-version>
-    <shelflife-version>0.2</shelflife-version>
+    <shelflife-version>0.3-SNAPSHOT</shelflife-version>
   </properties>
   
   <distributionManagement>
@@ -79,7 +79,7 @@
       <dependency>
         <groupId>org.commonjava.boms</groupId>
         <artifactId>web-commons-bom</artifactId>
-        <version>3</version>
+        <version>4-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -95,7 +95,7 @@
       <dependency>
         <groupId>org.commonjava.shelflife</groupId>
         <artifactId>shelflife-bom</artifactId>
-        <version>0.2</version>
+        <version>${shelflife-version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -297,7 +297,7 @@
       <!-- <dependency>
         <groupId>org.commonjava.shelflife</groupId>
         <artifactId>shelflife-api</artifactId>
-        <version>${shelflife-version}</version>
+        <version>${shelflifeƒ-version}</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.shelflife</groupId>

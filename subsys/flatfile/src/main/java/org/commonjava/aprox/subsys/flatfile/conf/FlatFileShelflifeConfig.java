@@ -5,7 +5,7 @@ import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
-import org.commonjava.shelflife.store.flat.FlatShelflifeStoreConfiguration;
+import org.commonjava.shelflife.store.flat.FlatBlockStoreConfiguration;
 
 @ApplicationScoped
 public class FlatFileShelflifeConfig
@@ -16,9 +16,9 @@ public class FlatFileShelflifeConfig
 
     @Produces
     @Default
-    public FlatShelflifeStoreConfiguration getShelflifeConfig()
+    public FlatBlockStoreConfiguration getShelflifeConfig()
     {
-        return new FlatShelflifeStoreConfiguration( config.getStorageDir( "shelflife" ) );
+        return new FlatBlockStoreConfiguration( config.getStorageDir( "shelflife" ) );
     }
 
 }

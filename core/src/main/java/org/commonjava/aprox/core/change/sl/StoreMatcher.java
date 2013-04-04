@@ -4,7 +4,7 @@ import static org.commonjava.aprox.core.change.sl.ExpirationConstants.APROX_EVEN
 import static org.commonjava.aprox.core.change.sl.ExpirationConstants.APROX_FILE_EVENT;
 
 import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.shelflife.expire.match.PrefixMatcher;
+import org.commonjava.shelflife.match.PrefixMatcher;
 
 public class StoreMatcher
     extends PrefixMatcher

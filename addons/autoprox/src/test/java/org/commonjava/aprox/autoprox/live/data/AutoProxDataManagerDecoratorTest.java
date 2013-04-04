@@ -81,7 +81,7 @@ public class AutoProxDataManagerDecoratorTest
                                           AutoProxDataManagerDecoratorTest.class ).withExtraClasses( TestConfigProvider.class,
                                                                                                      TargetUrlResponder.class )
                                                                                   .withLog4jProperties()
-                                                                                  .withBeansXml( "beans.xml" )
+                                                                                  .withBeansXml( "beans.live.xml" )
                                                                                   .build();
     }
 

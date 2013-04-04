@@ -2,7 +2,7 @@ package org.commonjava.aprox.core.change.sl;
 
 import java.util.Date;
 
-import org.commonjava.shelflife.expire.match.ExpirationMatcher;
+import org.commonjava.shelflife.match.ExpirationMatcher;
 import org.commonjava.shelflife.model.Expiration;
 
 public class MaxTimeoutMatcher
