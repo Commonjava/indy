@@ -243,6 +243,8 @@ public class TensorStorageListenerRunnable
     // TODO: Somehow, we're ending up in an infinite loop for maven poms...
     private boolean shouldStore( final Model rawModel, final String path )
     {
+        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
+
         final Parent parent = rawModel.getParent();
 
         String g = rawModel.getGroupId();
@@ -269,6 +271,22 @@ public class TensorStorageListenerRunnable
         try
         {
             final ProjectVersionRef ref = new ProjectVersionRef( g, a, v );
+
+            final ProjectVersionRef parsed =
+                new ProjectVersionRef( pathInfo.getGroupId(), pathInfo.getArtifactId(), pathInfo.getVersion() );
+
+            if ( !parsed.equals( ref ) )
+            {
+                logProjectError( pathInfo.getGroupId(),
+                                 pathInfo.getArtifactId(),
+                                 pathInfo.getVersion(),
+                                 new TensorDataException(
+                                                          "Coordinate from POM: '%s' doesn't match coordinate parsed from path: '%s'",
+                                                          ref, parsed ), path );
+
+                return false;
+            }
+
             final VersionSpec versionSpec = ref.getVersionSpec();
 
             // If this is a snapshot version, store it again in order to update it.
@@ -284,14 +302,14 @@ public class TensorStorageListenerRunnable
             }
             catch ( final TensorDataException e )
             {
-                logArtifactError( path, e );
+                logger.error( "Failed to retrieve errors for project: %s. Reason: %s", e, ref, e.getMessage() );
+                hasError = true;
             }
 
             return !hasError && ( !concrete || !contains );
         }
         catch ( final InvalidVersionSpecificationException e )
         {
-            final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
             logger.error( "Failed to parse version for: %s (ID from pathInfo: %s). Error: %s", e, rawModel.getId(),
                           pathInfo == null ? "NONE" : pathInfo.getProjectId(), e.getMessage() );
 
