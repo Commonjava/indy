@@ -16,45 +16,30 @@
 package org.commonjava.aprox.core.rest.util.retrieve;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
-import static org.apache.commons.io.IOUtils.copy;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.util.List;
 import java.util.Set;
 
-import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import javax.ws.rs.core.Response;
 
 import org.commonjava.aprox.change.event.FileStorageEvent;
 import org.commonjava.aprox.core.rest.util.MavenMetadataMerger;
-import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.rest.AproxWorkflowException;
-import org.commonjava.aprox.rest.util.retrieve.GroupPathHandler;
-import org.commonjava.util.logging.Logger;
 
 @javax.enterprise.context.ApplicationScoped
 public class MavenMetadataHandler
-    implements GroupPathHandler
+    extends AbstractGroupPathHandler
 {
-
-    private final Logger logger = new Logger( getClass() );
-
-    @Inject
-    private FileManager fileManager;
 
     @Inject
     private MavenMetadataMerger merger;
-
-    @Inject
-    private Event<FileStorageEvent> fileEvent;
 
     @Override
     public boolean canHandle( final String path )
@@ -67,25 +52,19 @@ public class MavenMetadataHandler
         throws AproxWorkflowException
     {
         final StorageItem target = fileManager.getStorageReference( group, path );
-        final StorageItem targetInfo =
-            fileManager.getStorageReference( group, path + MavenMetadataMerger.METADATA_MERGEINFO_SUFFIX );
 
         if ( !target.exists() )
         {
             final Set<StorageItem> sources = fileManager.retrieveAll( stores, path );
-            final InputStream merged = merger.merge( sources, group, path );
+            final byte[] merged = merger.merge( sources, group, path );
             if ( merged != null )
             {
                 OutputStream fos = null;
                 try
                 {
                     fos = target.openOutputStream( true );
-                    copy( merged, fos );
+                    fos.write( merged );
 
-                    if ( fileEvent != null )
-                    {
-                        fileEvent.fire( new FileStorageEvent( FileStorageEvent.Type.GENERATE, target ) );
-                    }
                 }
                 catch ( final IOException e )
                 {
@@ -96,29 +75,14 @@ public class MavenMetadataHandler
                 }
                 finally
                 {
-                    closeQuietly( merged );
                     closeQuietly( fos );
                 }
 
-                Writer fw = null;
-                try
+                writeChecksumsAndMergeInfo( merged, sources, group, path );
+
+                if ( fileEvent != null )
                 {
-                    fw = new OutputStreamWriter( targetInfo.openOutputStream() );
-                    for ( final StorageItem source : sources )
-                    {
-                        fw.write( source.getStoreKey()
-                                        .toString() );
-                        fw.write( "\n" );
-                    }
-                }
-                catch ( final IOException e )
-                {
-                    logger.error( "Failed to write merged metadata information to: %s.\nError: %s", e, targetInfo,
-                                  e.getMessage() );
-                }
-                finally
-                {
-                    closeQuietly( fw );
+                    fileEvent.fire( new FileStorageEvent( FileStorageEvent.Type.GENERATE, target ) );
                 }
             }
         }
@@ -162,8 +126,6 @@ public class MavenMetadataHandler
         throws AproxWorkflowException, IOException
     {
         final StorageItem target = fileManager.getStorageReference( group, path );
-        final StorageItem targetInfo =
-            fileManager.getStorageReference( group, path + MavenMetadataMerger.METADATA_MERGEINFO_SUFFIX );
 
         if ( target == null )
         {
@@ -172,10 +134,7 @@ public class MavenMetadataHandler
 
         target.delete();
 
-        if ( targetInfo != null )
-        {
-            targetInfo.delete();
-        }
+        deleteChecksumsAndMergeInfo( group, path );
 
         return true;
     }

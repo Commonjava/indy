@@ -21,7 +21,9 @@ import java.util.Set;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
+import org.commonjava.aprox.change.event.FileDeletionEvent;
 import org.commonjava.aprox.change.event.FileEvent;
+import org.commonjava.aprox.change.event.FileEventManager;
 import org.commonjava.aprox.core.rest.util.ArchetypeCatalogMerger;
 import org.commonjava.aprox.core.rest.util.MavenMetadataMerger;
 import org.commonjava.aprox.data.ProxyDataException;
@@ -30,6 +32,7 @@ import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.rest.util.retrieve.GroupPathHandler;
 import org.commonjava.util.logging.Logger;
 
 @javax.enterprise.context.ApplicationScoped
@@ -43,6 +46,9 @@ public class MergedFileUploadListener
 
     @Inject
     private FileManager fileManager;
+
+    @Inject
+    private FileEventManager fileEvent;
 
     public void reMergeUploaded( @Observes final FileEvent event )
     {
@@ -87,31 +93,23 @@ public class MergedFileUploadListener
     private void reMerge( final Group group, final String path )
         throws IOException
     {
-        final StorageItem target = fileManager.getStorageReference( group, path );
-        final StorageItem targetInfo;
-        if ( path.endsWith( MavenMetadataMerger.METADATA_NAME ) )
-        {
-            targetInfo = fileManager.getStorageReference( group, path + MavenMetadataMerger.METADATA_MERGEINFO_SUFFIX );
-        }
-        else if ( path.endsWith( ArchetypeCatalogMerger.CATALOG_NAME ) )
-        {
-            targetInfo =
-                fileManager.getStorageReference( group, path + ArchetypeCatalogMerger.CATALOG_MERGEINFO_SUFFIX );
-        }
-        else
-        {
-            return;
-        }
+        final StorageItem[] toDelete =
+            { fileManager.getStorageReference( group, path ),
+                fileManager.getStorageReference( group, path + GroupPathHandler.MERGEINFO_SUFFIX ),
+                fileManager.getStorageReference( group, path + GroupPathHandler.SHA_SUFFIX ),
+                fileManager.getStorageReference( group, path + GroupPathHandler.MD5_SUFFIX ) };
 
-        if ( target.exists() )
+        for ( final StorageItem item : toDelete )
         {
-            // allow it to regenerate on the next call.
-            target.delete();
-        }
+            if ( item.exists() )
+            {
+                item.delete();
 
-        if ( targetInfo.exists() )
-        {
-            targetInfo.delete();
+                if ( fileEvent != null )
+                {
+                    fileEvent.fire( new FileDeletionEvent( item ) );
+                }
+            }
         }
     }
 

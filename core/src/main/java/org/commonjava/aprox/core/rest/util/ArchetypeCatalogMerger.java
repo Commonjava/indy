@@ -17,11 +17,9 @@ package org.commonjava.aprox.core.rest.util;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,6 +34,7 @@ import org.commonjava.util.logging.Logger;
 
 @javax.enterprise.context.ApplicationScoped
 public class ArchetypeCatalogMerger
+    implements MetadataMerger
 {
 
     public static final String CATALOG_NAME = "archetype-catalog.xml";
@@ -44,7 +43,8 @@ public class ArchetypeCatalogMerger
 
     private final Logger logger = new Logger( getClass() );
 
-    public InputStream merge( final Set<StorageItem> sources, final Group group, final String path )
+    @Override
+    public byte[] merge( final Set<StorageItem> sources, final Group group, final String path )
     {
         final ArchetypeCatalog master = new ArchetypeCatalog();
         final ArchetypeCatalogXpp3Reader reader = new ArchetypeCatalogXpp3Reader();
@@ -93,7 +93,7 @@ public class ArchetypeCatalogMerger
             {
                 new ArchetypeCatalogXpp3Writer().write( baos, master );
 
-                return new ByteArrayInputStream( baos.toByteArray() );
+                return baos.toByteArray();
             }
             catch ( final IOException e )
             {
