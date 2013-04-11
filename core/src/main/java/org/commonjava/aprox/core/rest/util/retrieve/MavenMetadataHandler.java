@@ -23,20 +23,34 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Set;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.core.Response;
 
+import org.commonjava.aprox.change.event.FileEventManager;
 import org.commonjava.aprox.change.event.FileStorageEvent;
+import org.commonjava.aprox.core.rest.util.GroupMergeHelper;
 import org.commonjava.aprox.core.rest.util.MavenMetadataMerger;
+import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.rest.AproxWorkflowException;
+import org.commonjava.aprox.rest.util.retrieve.GroupPathHandler;
 
-@javax.enterprise.context.ApplicationScoped
+@ApplicationScoped
 public class MavenMetadataHandler
-    extends AbstractGroupPathHandler
+    implements GroupPathHandler
 {
+
+    @Inject
+    private GroupMergeHelper helper;
+
+    @Inject
+    private FileManager fileManager;
+
+    @Inject
+    private FileEventManager fileEvent;
 
     @Inject
     private MavenMetadataMerger merger;
@@ -78,7 +92,7 @@ public class MavenMetadataHandler
                     closeQuietly( fos );
                 }
 
-                writeChecksumsAndMergeInfo( merged, sources, group, path );
+                helper.writeChecksumsAndMergeInfo( merged, sources, group, path );
 
                 if ( fileEvent != null )
                 {
@@ -134,7 +148,7 @@ public class MavenMetadataHandler
 
         target.delete();
 
-        deleteChecksumsAndMergeInfo( group, path );
+        helper.deleteChecksumsAndMergeInfo( group, path );
 
         return true;
     }

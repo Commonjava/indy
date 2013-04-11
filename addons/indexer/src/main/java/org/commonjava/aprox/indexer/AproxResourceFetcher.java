@@ -14,10 +14,13 @@ import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.rest.AproxWorkflowException;
+import org.commonjava.util.logging.Logger;
 
 public class AproxResourceFetcher
     implements ResourceFetcher
 {
+
+    private final Logger logger = new Logger( getClass() );
 
     private final StoreDataManager storeDataManager;
 
@@ -38,6 +41,7 @@ public class AproxResourceFetcher
         try
         {
             final StoreKey key = StoreKey.fromString( id );
+            logger.info( "Looking up store: %s (from original id: %s, url was: %s)", key, id, url );
             store = storeDataManager.getArtifactStore( key );
 
             if ( store == null )
@@ -47,8 +51,8 @@ public class AproxResourceFetcher
         }
         catch ( final ProxyDataException e )
         {
-            throw new IOException( String.format( "Failed to lookup repository: %s. Reason: %s", id, e.getMessage() ),
-                                   e );
+            logger.error( "Failed to lookup store: %s. Reason: %s", e, id, e.getMessage() );
+            throw new IOException( String.format( "Failed to lookup store: %s. Reason: %s", id, e.getMessage() ), e );
         }
     }
 
@@ -62,14 +66,22 @@ public class AproxResourceFetcher
     public InputStream retrieve( final String name )
         throws IOException, FileNotFoundException
     {
+        final String path = "/.index/" + name;
         try
         {
-            final StorageItem item = fileManager.retrieve( store, name );
+            logger.info( "Retrieving: '%s' from store: %s", path, store.getKey() );
+            final StorageItem item = fileManager.retrieve( store, path );
 
-            return item == null ? null : item.openInputStream();
+            if ( item == null || !item.exists() )
+            {
+                throw new FileNotFoundException( path );
+            }
+
+            return item.openInputStream();
         }
         catch ( final AproxWorkflowException e )
         {
+            logger.error( "Failed to retrieve: %s from: %s. Reason: %s", e, path, store.getKey(), e );
             if ( e.getResponse()
                   .getStatus() == Status.NOT_FOUND.getStatusCode() )
             {
@@ -77,8 +89,8 @@ public class AproxResourceFetcher
             }
             else
             {
-                throw new IOException( String.format( "Failed to retrieve: %s from: %s. Reason: %s", name,
-                                                      store.getKey(), e.getMessage() ), e );
+                throw new IOException( String.format( "Failed to retrieve: %s from: %s. Reason: %s", path,
+                                                      store.getKey(), e ), e );
             }
         }
     }

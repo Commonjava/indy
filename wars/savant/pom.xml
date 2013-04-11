@@ -58,6 +58,10 @@
       <artifactId>aprox-dot-maven</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-indexer</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.commonjava.aprox.ui</groupId>
       <artifactId>aprox-ui-monorail</artifactId>
       <type>war</type>

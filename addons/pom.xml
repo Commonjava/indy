@@ -31,6 +31,7 @@
     <module>autoprox</module>
     <module>tensor</module>
     <module>dot-maven</module>
+    <module>indexer</module>
   </modules>
   
   <profiles>
@@ -45,7 +46,6 @@
       <id>experimental</id>
       
       <modules>
-        <module>indexer</module>
       </modules>
     </profile>
   </profiles>

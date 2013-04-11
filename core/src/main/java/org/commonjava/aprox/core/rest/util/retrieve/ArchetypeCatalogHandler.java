@@ -23,20 +23,34 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Set;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.core.Response;
 
+import org.commonjava.aprox.change.event.FileEventManager;
 import org.commonjava.aprox.change.event.FileStorageEvent;
 import org.commonjava.aprox.core.rest.util.ArchetypeCatalogMerger;
+import org.commonjava.aprox.core.rest.util.GroupMergeHelper;
+import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.rest.AproxWorkflowException;
+import org.commonjava.aprox.rest.util.retrieve.GroupPathHandler;
 
-@javax.enterprise.context.ApplicationScoped
+@ApplicationScoped
 public class ArchetypeCatalogHandler
-    extends AbstractGroupPathHandler
+    implements GroupPathHandler
 {
+
+    @Inject
+    private GroupMergeHelper helper;
+
+    @Inject
+    private FileManager fileManager;
+
+    @Inject
+    private FileEventManager fileEvent;
 
     @Inject
     private ArchetypeCatalogMerger merger;
@@ -82,7 +96,7 @@ public class ArchetypeCatalogHandler
                     closeQuietly( fos );
                 }
 
-                writeChecksumsAndMergeInfo( merged, sources, group, path );
+                helper.writeChecksumsAndMergeInfo( merged, sources, group, path );
             }
         }
 
@@ -125,8 +139,6 @@ public class ArchetypeCatalogHandler
         throws AproxWorkflowException, IOException
     {
         final StorageItem target = fileManager.getStorageReference( group, path );
-        final StorageItem targetInfo =
-            fileManager.getStorageReference( group, path + ArchetypeCatalogMerger.CATALOG_MERGEINFO_SUFFIX );
 
         if ( target == null )
         {
@@ -135,10 +147,7 @@ public class ArchetypeCatalogHandler
 
         target.delete();
 
-        if ( targetInfo != null )
-        {
-            targetInfo.delete();
-        }
+        helper.deleteChecksumsAndMergeInfo( group, path );
 
         return true;
     }

@@ -163,6 +163,11 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-indexer</artifactId>
+        <version>0.6-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-db-memory</artifactId>
         <version>0.6-SNAPSHOT</version>
       </dependency>
@@ -207,6 +212,11 @@
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-subsys-infinispan</artifactId>
+        <version>0.6-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-subsys-maven</artifactId>
         <version>0.6-SNAPSHOT</version>
       </dependency>
       <!-- <dependency>

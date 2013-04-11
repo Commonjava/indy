@@ -1,4 +1,4 @@
-package org.commonjava.aprox.core.rest.util.retrieve;
+package org.commonjava.aprox.core.rest.util;
 
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.commons.codec.digest.DigestUtils.shaHex;
@@ -20,24 +20,24 @@ import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.rest.util.retrieve.GroupPathHandler;
 import org.commonjava.util.logging.Logger;
 
-public abstract class AbstractGroupPathHandler
-    implements GroupPathHandler
+public class GroupMergeHelper
 {
 
-    protected final Logger logger = new Logger( getClass() );
+    private final Logger logger = new Logger( getClass() );
 
     @Inject
-    protected FileManager fileManager;
+    private FileManager fileManager;
 
     @Inject
-    protected FileEventManager fileEvent;
+    private FileEventManager fileEvent;
 
-    protected final void deleteChecksumsAndMergeInfo( final Group group, final String path )
+    public final void deleteChecksumsAndMergeInfo( final Group group, final String path )
         throws IOException
     {
-        final StorageItem targetSha = fileManager.getStorageReference( group, path + SHA_SUFFIX );
-        final StorageItem targetMd5 = fileManager.getStorageReference( group, path + MD5_SUFFIX );
-        final StorageItem targetInfo = fileManager.getStorageReference( group, path + MERGEINFO_SUFFIX );
+        final StorageItem targetSha = fileManager.getStorageReference( group, path + GroupPathHandler.SHA_SUFFIX );
+        final StorageItem targetMd5 = fileManager.getStorageReference( group, path + GroupPathHandler.MD5_SUFFIX );
+        final StorageItem targetInfo =
+            fileManager.getStorageReference( group, path + GroupPathHandler.MERGEINFO_SUFFIX );
 
         if ( targetSha != null )
         {
@@ -70,12 +70,13 @@ public abstract class AbstractGroupPathHandler
         }
     }
 
-    protected final void writeChecksumsAndMergeInfo( final byte[] data, final Set<StorageItem> sources,
-                                                     final Group group, final String path )
+    public final void writeChecksumsAndMergeInfo( final byte[] data, final Set<StorageItem> sources, final Group group,
+                                                  final String path )
     {
-        final StorageItem targetSha = fileManager.getStorageReference( group, path + ".sha" );
-        final StorageItem targetMd5 = fileManager.getStorageReference( group, path + ".md5" );
-        final StorageItem targetInfo = fileManager.getStorageReference( group, path + MERGEINFO_SUFFIX );
+        final StorageItem targetSha = fileManager.getStorageReference( group, path + GroupPathHandler.SHA_SUFFIX );
+        final StorageItem targetMd5 = fileManager.getStorageReference( group, path + GroupPathHandler.MD5_SUFFIX );
+        final StorageItem targetInfo =
+            fileManager.getStorageReference( group, path + GroupPathHandler.MERGEINFO_SUFFIX );
 
         final String sha = shaHex( data );
         final String md5 = md5Hex( data );

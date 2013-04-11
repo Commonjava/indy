@@ -15,88 +15,65 @@
  ******************************************************************************/
 package org.commonjava.aprox.tensor.maven;
 
-import javax.annotation.PostConstruct;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Set;
+
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
+import javax.inject.Inject;
 
-import org.apache.maven.mae.MAEException;
-import org.apache.maven.mae.app.AbstractMAEApplication;
-import org.apache.maven.mae.internal.container.ComponentSelector;
 import org.apache.maven.model.building.ModelBuilder;
 import org.apache.maven.model.io.DefaultModelReader;
 import org.apache.maven.model.io.ModelReader;
 import org.apache.maven.model.resolution.ModelResolver;
-import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.component.annotations.Requirement;
+import org.commonjava.aprox.subsys.maven.MavenComponentDefinition;
+import org.commonjava.aprox.subsys.maven.MavenComponentDefinitions;
+import org.commonjava.aprox.subsys.maven.MavenComponentException;
+import org.commonjava.aprox.subsys.maven.MavenComponentManager;
 
 @javax.enterprise.context.ApplicationScoped
 public class MavenComponentProvider
+    implements MavenComponentDefinitions
 {
 
-    private MAEApp app;
+    /*@formatter:off*/
+    private static final Set<MavenComponentDefinition<?, ?>> DEFINITIONS =
+        Collections.unmodifiableSet( 
+            Collections.<MavenComponentDefinition<?, ?>> singleton( 
+                new MavenComponentDefinition<ModelResolver, ArtifactStoreModelResolver>( ModelResolver.class, ArtifactStoreModelResolver.class, "aprox" )
+            )
+        );
+    /*@formatter:on*/
 
-    @PostConstruct
-    public void startMAE()
-        throws MAEException
-    {
-        app = new MAEApp();
-        app.startMAE();
-    }
+    @Inject
+    private MavenComponentManager componentManager;
 
     @Produces
     @Default
     public ModelReader getModelReader()
     {
-        return app.getModelReader();
+        return new DefaultModelReader();
     }
 
     @Produces
     @Default
     public ModelBuilder getModelBuilder()
+        throws MavenComponentException
     {
-        return app.getModelBuilder();
+        return componentManager.getComponent( ModelBuilder.class );
     }
 
-    @Component( role = MAEApp.class )
-    private static class MAEApp
-        extends AbstractMAEApplication
+    @Override
+    public Iterator<MavenComponentDefinition<?, ?>> iterator()
     {
-        @Requirement
-        private ModelBuilder modelBuilder;
+        return DEFINITIONS.iterator();
+    }
 
-        public void startMAE()
-            throws MAEException
-        {
-            load();
-        }
-
-        ModelReader getModelReader()
-        {
-            return new DefaultModelReader();
-        }
-
-        ModelBuilder getModelBuilder()
-        {
-            return modelBuilder;
-        }
-
-        @Override
-        public String getId()
-        {
-            return getName();
-        }
-
-        @Override
-        public String getName()
-        {
-            return "AProx-Tensor-Integration";
-        }
-
-        @Override
-        public ComponentSelector getComponentSelector()
-        {
-            return new ComponentSelector().setSelection( ModelResolver.class, "aprox" );
-        }
+    @Override
+    public Set<MavenComponentDefinition<?, ?>> getComponents()
+    {
+        return DEFINITIONS;
     }
 
 }

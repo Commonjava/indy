@@ -18,28 +18,36 @@
 
   <parent>
     <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-parent</artifactId>
+    <artifactId>aprox-subsystems</artifactId>
     <version>0.6-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-subsystems</artifactId>
-  <packaging>pom</packaging>
+  <artifactId>aprox-subsys-maven</artifactId>
 
-  <name>AProx :: Subsystems Parent</name>
+  <name>AProx :: Maven Component Subsystem</name>
   
-  <modules>
-    <module>flatfile</module>
-    <module>http</module>
-    <module>maven</module>
-  </modules>
-  
-  <profiles>
-    <profile>
-      <id>experimental</id>
-      
-      <modules>
-        <module>infinispan</module>
-      </modules>
-    </profile>
-  </profiles>
+  <dependencies>
+  	<dependency>
+  		<groupId>org.apache.maven.mae</groupId>
+  		<artifactId>mae-booter</artifactId>
+  		<version>1.0-alpha-1</version>
+  	</dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.weld.se</groupId>
+      <artifactId>weld-se-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 </project>
