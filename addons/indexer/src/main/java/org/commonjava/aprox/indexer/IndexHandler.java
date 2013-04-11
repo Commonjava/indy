@@ -407,7 +407,6 @@ public class IndexHandler
     {
         final File indexDir = fileManager.getStorageReference( store, INDEX_DIR )
                                          .getDetachedFile();
-        indexDir.mkdirs();
 
         final File rootDir = fileManager.getStorageReference( store, FileManager.ROOT_PATH )
                                         .getDetachedFile();
@@ -417,7 +416,17 @@ public class IndexHandler
 
         try
         {
-            return indexer.createIndexingContext( id, id, rootDir, indexDir, id, null, true, true, indexers );
+            final IndexingContext context =
+                indexer.createIndexingContext( id, id, rootDir, indexDir, id, null, true, true, indexers );
+
+            if ( !indexDir.exists() )
+            {
+                indexDir.mkdirs();
+                context.purge();
+                context.commit();
+            }
+
+            return context;
         }
         catch ( final ExistingLuceneIndexMismatchException e )
         {
