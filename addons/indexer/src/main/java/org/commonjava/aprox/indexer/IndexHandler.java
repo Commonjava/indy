@@ -265,7 +265,11 @@ public class IndexHandler
                 final StoreKey key = store.getKey();
                 final IndexingContext context = entry.getValue();
 
-                doIndexUpdate( context, key );
+                if ( key.getType() != StoreType.deploy_point )
+                {
+                    doIndexUpdate( context, key );
+                }
+
                 updated.add( store );
 
                 try
@@ -407,6 +411,7 @@ public class IndexHandler
     {
         final File indexDir = fileManager.getStorageReference( store, INDEX_DIR )
                                          .getDetachedFile();
+        indexDir.mkdirs();
 
         final File rootDir = fileManager.getStorageReference( store, FileManager.ROOT_PATH )
                                         .getDetachedFile();
@@ -418,13 +423,6 @@ public class IndexHandler
         {
             final IndexingContext context =
                 indexer.createIndexingContext( id, id, rootDir, indexDir, id, null, true, true, indexers );
-
-            if ( !indexDir.exists() )
-            {
-                indexDir.mkdirs();
-                context.purge();
-                context.commit();
-            }
 
             return context;
         }
