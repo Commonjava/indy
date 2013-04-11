@@ -125,4 +125,12 @@ public interface StoreDataManager
     void install()
         throws ProxyDataException;
 
+    boolean hasRepository( String name );
+
+    boolean hasGroup( String name );
+
+    boolean hasDeployPoint( String name );
+
+    boolean hasArtifactStore( StoreKey key );
+
 }

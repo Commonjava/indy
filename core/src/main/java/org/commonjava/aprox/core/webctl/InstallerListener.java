@@ -53,9 +53,15 @@ public class InstallerListener
         try
         {
             dataManager.install();
-            dataManager.storeRepository( new Repository( "central", "http://repo1.maven.apache.org/maven2/" ), true );
+            if ( !dataManager.hasRepository( "central" ) )
+            {
+                dataManager.storeRepository( new Repository( "central", "http://repo1.maven.apache.org/maven2/" ), true );
+            }
 
-            dataManager.storeGroup( new Group( "public", new StoreKey( StoreType.repository, "central" ) ), true );
+            if ( !dataManager.hasGroup( "public" ) )
+            {
+                dataManager.storeGroup( new Group( "public", new StoreKey( StoreType.repository, "central" ) ), true );
+            }
         }
         catch ( final ProxyDataException e )
         {

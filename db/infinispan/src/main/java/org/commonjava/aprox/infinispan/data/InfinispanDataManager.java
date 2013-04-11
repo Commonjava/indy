@@ -427,4 +427,29 @@ public class InfinispanDataManager
     {
         return getAllOfType( type, type.getStoreClass() );
     }
+
+    @Override
+    public boolean hasRepository( final String name )
+    {
+        return hasArtifactStore( new StoreKey( StoreType.repository, name ) );
+    }
+
+    @Override
+    public boolean hasGroup( final String name )
+    {
+        return hasArtifactStore( new StoreKey( StoreType.group, name ) );
+    }
+
+    @Override
+    public boolean hasDeployPoint( final String name )
+    {
+        return hasArtifactStore( new StoreKey( StoreType.deploy_point, name ) );
+    }
+
+    @Override
+    public boolean hasArtifactStore( final StoreKey key )
+    {
+        return storeCache.containsKey( key );
+    }
+
 }

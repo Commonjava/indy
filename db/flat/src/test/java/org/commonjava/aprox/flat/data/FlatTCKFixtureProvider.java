@@ -180,6 +180,30 @@ public class FlatTCKFixtureProvider
             getDataManager().deleteArtifactStore( key );
         }
 
+        @Override
+        public boolean hasRepository( final String name )
+        {
+            return getDataManager().hasRepository( name );
+        }
+
+        @Override
+        public boolean hasGroup( final String name )
+        {
+            return getDataManager().hasGroup( name );
+        }
+
+        @Override
+        public boolean hasDeployPoint( final String name )
+        {
+            return getDataManager().hasDeployPoint( name );
+        }
+
+        @Override
+        public boolean hasArtifactStore( final StoreKey key )
+        {
+            return getDataManager().hasArtifactStore( key );
+        }
+
     }
 
 }
