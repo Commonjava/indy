@@ -19,6 +19,8 @@
       <unpack>true</unpack>
       <unpackOptions>
         <excludes>
+          <exclude>WEB-INF/classes/log4j.properties</exclude>
+          <exclude>log4j.properties</exclude>
           <exclude>META-INF/beans.xml</exclude>
         </excludes>
       </unpackOptions>
