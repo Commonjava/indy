@@ -2,7 +2,7 @@
 
 APROX_BASEDIR = '/Users/jdcasey/workspace/server-apps/aprox'
 WAR_DIR = 'savant'
-AS7_HOME = '/Users/jdcasey/apps/as7/current'
+AS7_HOME = '/Users/jdcasey/apps/eap/current'
 CONTROLLER_HOST_PORT = 'localhost:10999'
 
 cmds =<<-EOC
