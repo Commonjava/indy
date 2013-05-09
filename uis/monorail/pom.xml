@@ -67,7 +67,7 @@
             </goals>
             <phase>compile</phase>
             <configuration>
-              <executable>hem</executable>
+              <executable>${project.build.directory}/spine-app/node_modules/hem/bin/hem</executable>
               <workingDirectory>${project.build.directory}/spine-app</workingDirectory>
               <arguments>
                 <argument>build</argument>
