@@ -19,10 +19,6 @@ import java.io.IOException;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.inject.Inject;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -44,9 +40,7 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
     {
     }
 
-    @DELETE
-    @Path( "/{name}{path: (/.+)?}" )
-    public Response deleteContent( @PathParam( "name" ) final String name, @PathParam( "path" ) final String path )
+    protected Response doDelete( final String name, final String path )
     {
         Response response = null;
 
@@ -94,9 +88,7 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
         return response;
     }
 
-    @GET
-    @Path( "/{name}{path: (/.+)?}" )
-    public Response getContent( @PathParam( "name" ) final String name, @PathParam( "path" ) final String path )
+    protected Response doGet( final String name, final String path )
     {
         // TODO:
         // 1. directory request (ends with "/")...browse somehow??

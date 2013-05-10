@@ -19,6 +19,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.wordnik.swagger.annotations.ApiClass;
+
+@ApiClass( description = "Representation of a grouping of artifact stores, which may be any mix of repositories, deploy-points, and other groups.", value = "Group of artifact stores" )
 public class Group
     extends ArtifactStore
 {

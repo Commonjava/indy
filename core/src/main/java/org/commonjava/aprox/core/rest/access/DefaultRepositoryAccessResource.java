@@ -17,7 +17,10 @@ package org.commonjava.aprox.core.rest.access;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
 import org.commonjava.aprox.data.ProxyDataException;
@@ -26,7 +29,13 @@ import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.access.RepositoryAccessResource;
 
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiError;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
+
 @Path( "/repository" )
+@Api( description = "Handles GET/DELETE requests for content in a remote repository (proxy) store", value = "Handle repository content" )
 @RequestScoped
 public class DefaultRepositoryAccessResource
     extends AbstractSimpleAccessResource<Repository>
@@ -49,8 +58,30 @@ public class DefaultRepositoryAccessResource
         catch ( final ProxyDataException e )
         {
             throw new AproxWorkflowException( Response.serverError()
-                                                     .build(), "Failed to retrieve repository: %s. Reason: %s", e,
-                                             name, e.getMessage() );
+                                                      .build(), "Failed to retrieve repository: %s. Reason: %s", e,
+                                              name, e.getMessage() );
         }
     }
+
+    @DELETE
+    @ApiOperation( value = "Delete content at the given path in repository's cache with the given name." )
+    @ApiError( code = 404, reason = "If either the repository or the path within the repository doesn't exist" )
+    @Path( "/{name}{path: (/.+)?}" )
+    public Response deleteContent( @ApiParam( "Name of the repository" ) @PathParam( "name" ) final String name,
+                                   @ApiParam( "Content path within the repository" ) @PathParam( "path" ) final String path )
+    {
+        return doDelete( name, path );
+    }
+
+    @Override
+    @GET
+    @ApiOperation( value = "Retrieve content given by path in repository with the given name." )
+    @ApiError( code = 404, reason = "If either the repository or the path within the repository doesn't exist" )
+    @Path( "/{name}{path: (/.+)?}" )
+    public Response getContent( @ApiParam( "Name of the repository" ) @PathParam( "name" ) final String name,
+                                @ApiParam( "Content path within the repository" ) @PathParam( "path" ) final String path )
+    {
+        return doGet( name, path );
+    }
+
 }

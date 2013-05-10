@@ -16,7 +16,9 @@
 package org.commonjava.aprox.model;
 
 import com.google.gson.annotations.SerializedName;
+import com.wordnik.swagger.annotations.ApiClass;
 
+@ApiClass( description = "Representation of an artifact store to which artifacts may be deployed. These are locally hosted.", value = "Local deployment storage (deploy-point)" )
 public class DeployPoint
     extends ArtifactStore
 {

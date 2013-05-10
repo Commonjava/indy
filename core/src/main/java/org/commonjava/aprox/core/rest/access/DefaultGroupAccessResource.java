@@ -40,7 +40,13 @@ import org.commonjava.aprox.rest.access.GroupAccessResource;
 import org.commonjava.aprox.rest.util.GroupContentManager;
 import org.commonjava.util.logging.Logger;
 
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiError;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
+
 @Path( "/group" )
+@Api( description = "Handles GET/PUT/DELETE requests for content in the constituency of group store", value = "Handle group content" )
 @RequestScoped
 public class DefaultGroupAccessResource
     implements GroupAccessResource
@@ -57,8 +63,11 @@ public class DefaultGroupAccessResource
     private UriInfo uriInfo;
 
     @DELETE
+    @ApiOperation( value = "Delete content at the given path from all constituent stores within the group with the given name." )
+    @ApiError( code = 404, reason = "If the deletion fails" )
     @Path( "/{name}{path: (/.+)?}" )
-    public Response deleteContent( @PathParam( "name" ) final String name, @PathParam( "path" ) final String path )
+    public Response deleteContent( @ApiParam( "Name of the store" ) @PathParam( "name" ) final String name,
+                                   @ApiParam( "Content path within the store" ) @PathParam( "path" ) final String path )
     {
         try
         {
@@ -94,8 +103,11 @@ public class DefaultGroupAccessResource
      */
     @Override
     @GET
+    @ApiOperation( value = "Retrieve content from the FIRST constituent store that contains the given path, within the group with the given name." )
+    @ApiError( code = 404, reason = "If none of the constituent stores contains the path" )
     @Path( "/{name}{path: (/.+)?}" )
-    public Response getProxyContent( @PathParam( "name" ) final String name, @PathParam( "path" ) final String path )
+    public Response getProxyContent( @ApiParam( "Name of the store" ) @PathParam( "name" ) final String name,
+                                     @ApiParam( "Content path within the store" ) @PathParam( "path" ) final String path )
     {
         try
         {
@@ -133,8 +145,11 @@ public class DefaultGroupAccessResource
      */
     @Override
     @PUT
+    @ApiOperation( value = "Store new content at the given path in the first deploy-point store constituent listed in the group with the given name." )
+    @ApiError( code = 404, reason = "If the group doesn't contain any deploy-point stores" )
     @Path( "/{name}/{path: (.+)}" )
-    public Response createContent( @PathParam( "name" ) final String name, @PathParam( "path" ) final String path,
+    public Response createContent( @ApiParam( "Name of the store" ) @PathParam( "name" ) final String name,
+                                   @ApiParam( "Content path within the store" ) @PathParam( "path" ) final String path,
                                    @Context final HttpServletRequest request )
     {
         try

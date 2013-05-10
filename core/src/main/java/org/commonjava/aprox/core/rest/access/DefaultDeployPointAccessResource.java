@@ -21,6 +21,8 @@ import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -35,7 +37,13 @@ import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.access.DeployPointAccessResource;
 import org.commonjava.util.logging.Logger;
 
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiError;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
+
 @Path( "/deploy" )
+@Api( description = "Handles GET/PUT/DELETE requests for content in a hosted deploy-point store", value = "Handle deploy-point content" )
 @RequestScoped
 @Default
 public class DefaultDeployPointAccessResource
@@ -57,8 +65,10 @@ public class DefaultDeployPointAccessResource
      */
     @Override
     @PUT
+    @ApiOperation( value = "Store new content at the given path in store with the given name." )
     @Path( "/{name}/{path: (.+)}" )
-    public Response createContent( @PathParam( "name" ) final String name, @PathParam( "path" ) final String path,
+    public Response createContent( @ApiParam( "Name of the store" ) @PathParam( "name" ) final String name,
+                                   @ApiParam( "Content path within the store" ) @PathParam( "path" ) final String path,
                                    @Context final HttpServletRequest request )
     {
         Response response = null;
@@ -112,9 +122,30 @@ public class DefaultDeployPointAccessResource
         catch ( final ProxyDataException e )
         {
             throw new AproxWorkflowException( Response.serverError()
-                                                     .build(), "Failed to retrieve deploy store: %s. Reason: %s", e,
-                                             name, e.getMessage() );
+                                                      .build(), "Failed to retrieve deploy store: %s. Reason: %s", e,
+                                              name, e.getMessage() );
         }
+    }
+
+    @DELETE
+    @ApiOperation( value = "Delete content at the given path in deploy-point with the given name." )
+    @ApiError( code = 404, reason = "If either the deploy-point or the path within the deploy-point doesn't exist" )
+    @Path( "/{name}{path: (/.+)?}" )
+    public Response deleteContent( @ApiParam( "Name of the deploy-point" ) @PathParam( "name" ) final String name,
+                                   @ApiParam( "Content path within the deploy-point" ) @PathParam( "path" ) final String path )
+    {
+        return doDelete( name, path );
+    }
+
+    @Override
+    @GET
+    @ApiOperation( value = "Retrieve content given by path in deploy-point with the given name." )
+    @ApiError( code = 404, reason = "If either the deploy-point or the path within the deploy-point doesn't exist" )
+    @Path( "/{name}{path: (/.+)?}" )
+    public Response getContent( @ApiParam( "Name of the deploy-point" ) @PathParam( "name" ) final String name,
+                                @ApiParam( "Content path within the deploy-point" ) @PathParam( "path" ) final String path )
+    {
+        return doGet( name, path );
     }
 
 }

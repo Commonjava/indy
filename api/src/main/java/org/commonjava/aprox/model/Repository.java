@@ -21,7 +21,9 @@ import java.net.URL;
 import org.commonjava.util.logging.Logger;
 
 import com.google.gson.annotations.SerializedName;
+import com.wordnik.swagger.annotations.ApiClass;
 
+@ApiClass( description = "Representation of a remote repository (proxy) definition.", value = "Remote repository proxy" )
 public class Repository
     extends ArtifactStore
 {

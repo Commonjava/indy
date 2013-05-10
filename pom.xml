@@ -42,6 +42,7 @@
     <arquillian-version>1.0.1.Final</arquillian-version>
     <qarqas-version>0.3</qarqas-version>
     <shelflife-version>0.3</shelflife-version>
+    <enunciate.version>1.26.2</enunciate.version>
   </properties>
   
   <distributionManagement>
@@ -218,6 +219,12 @@
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-subsys-maven</artifactId>
         <version>0.7-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox.tools</groupId>
+        <artifactId>aprox-doc-stylesheets</artifactId>
+        <version>0.7-SNAPSHOT</version>
+        <scope>provided</scope>
       </dependency>
       
       <dependency>
@@ -420,6 +427,25 @@
         <artifactId>webdav-servlet</artifactId>
         <version>2.0</version>
       </dependency>
+      
+      <dependency>
+        <groupId>com.wordnik</groupId>
+        <artifactId>swagger-jaxrs_2.9.1</artifactId>
+        <version>1.2.1</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>com.wordnik</groupId>
+        <artifactId>swagger-annotations_2.9.1</artifactId>
+        <version>1.2.3</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.rhq.helpers</groupId>
+        <artifactId>rest-docs-generator</artifactId>
+        <version>4.6.0</version>
+        <scope>provided</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   
@@ -439,6 +465,15 @@
       <artifactId>jboss-servlet-api_3.0_spec</artifactId>
       <!-- <scope>provided</scope> -->
     </dependency>
+    
+    <dependency>
+      <groupId>com.wordnik</groupId>
+      <artifactId>swagger-annotations_2.9.1</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.rhq.helpers</groupId>
+      <artifactId>rest-docs-generator</artifactId>
+    </dependency>
   </dependencies>
   
   <build>
@@ -446,11 +481,35 @@
       <plugins>
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>2.3.2</version>
+          <version>3.1</version>
           <configuration>
             <source>1.6</source>
             <target>1.6</target>
           </configuration>
+          <executions>
+            <execution>
+              <id>generate-restdoc</id>
+              <phase>generate-resources</phase>
+              <goals>
+                <goal>compile</goal>
+              </goals>
+              <configuration>
+                <annotationProcessors>
+                  <processor>org.rhq.helpers.rest_docs_generator.ClassLevelProcessor</processor>
+                </annotationProcessors>
+                <proc>only</proc>
+                <compilerArguments>
+                  <AtargetDirectory>${project.build.directory}/classes/META-INF/rest-docs</AtargetDirectory>
+                  <AmodelPkg>org.commonjava.aprox.model</AmodelPkg>
+                  <!-- <AskipPkg>org.rhq.enterprise.server.rest.reporting</AskipPkg> -->
+                  <!-- enable the next line to have the output of the processor shown on console -->
+                  <Averbose>true</Averbose>
+                </compilerArguments>
+                <!-- set the next to true to enable verbose output of the compiler plugin; default from the evn is true, but this is too noisy -->
+                <verbose>false</verbose>
+              </configuration>
+            </execution>
+          </executions>
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
@@ -588,6 +647,21 @@
             <detectOfflineLinks>false</detectOfflineLinks>
           </configuration>
         </plugin>
+        
+        <plugin>
+          <groupId>org.commonjava.maven</groupId>
+          <artifactId>restdoc-maven-plugin</artifactId>
+          <version>0.1-SNAPSHOT</version>
+          <executions>
+            <execution>
+              <id>generate-html</id>
+              <goals>
+                <goal>generate</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        
       </plugins>
     </pluginManagement>
   </build>
