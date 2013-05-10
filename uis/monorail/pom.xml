@@ -29,6 +29,9 @@
   
   <properties>
     <maven.test.skip>true</maven.test.skip>
+    
+    <!-- see profiles below for some common file-triggered alternative locations -->
+    <npm.executable>npm</npm.executable>
   </properties>
   
   <build>
@@ -52,7 +55,7 @@
             </goals>
             <phase>process-resources</phase>
             <configuration>
-              <executable>npm</executable>
+              <executable>${npm.executable}</executable>
               <workingDirectory>${project.build.directory}/spine-app</workingDirectory>
               <arguments>
                 <argument>install</argument>
@@ -84,5 +87,32 @@
       </plugin>
     </plugins>
   </build>
+  
+  <profiles>
+    <profile>
+      <id>platform-linux-npm</id>
+      <activation>
+        <file>
+          <exists>/usr/bin/npm</exists>
+        </file>
+      </activation>
+      
+      <properties>
+        <npm.executable>/usr/bin/npm</npm.executable>
+      </properties>
+    </profile>
+    <profile>
+      <id>custom-linux-npm</id>
+      <activation>
+        <file>
+          <exists>/usr/local/bin/npm</exists>
+        </file>
+      </activation>
+      
+      <properties>
+        <npm.executable>/usr/local/bin/npm</npm.executable>
+      </properties>
+    </profile>
+  </profiles>
   
 </project>
