@@ -42,7 +42,6 @@
     <arquillian-version>1.0.1.Final</arquillian-version>
     <qarqas-version>0.3</qarqas-version>
     <shelflife-version>0.3</shelflife-version>
-    <enunciate.version>1.26.2</enunciate.version>
   </properties>
   
   <distributionManagement>
@@ -651,7 +650,7 @@
         <plugin>
           <groupId>org.commonjava.maven</groupId>
           <artifactId>restdoc-maven-plugin</artifactId>
-          <version>0.1-SNAPSHOT</version>
+          <version>0.1</version>
           <executions>
             <execution>
               <id>generate-html</id>
