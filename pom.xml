@@ -388,6 +388,20 @@
         <artifactId>infinispan-core</artifactId>
         <version>5.1.7.Final</version>
       </dependency> -->
+      
+      <!-- override web-commons-bom to see if this fixes the https self-signed PEM problem -->
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>4.1.1</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      
       <dependency>
         <groupId>org.apache.maven.indexer</groupId>
         <artifactId>indexer-core</artifactId>

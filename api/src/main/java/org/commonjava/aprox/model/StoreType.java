@@ -18,9 +18,7 @@ package org.commonjava.aprox.model;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.wordnik.swagger.annotations.ApiClass;
-
-@ApiClass( description = "Enumeration of types of artifact storage on the system. This forms half of the 'primary key' for each store (the other half is the store's name).", value = "Type of artifact storage." )
+//@ApiClass( description = "Enumeration of types of artifact storage on the system. This forms half of the 'primary key' for each store (the other half is the store's name).", value = "Type of artifact storage." )
 public enum StoreType
 {
     group( Group.class, false, "group", "groups" ),
