@@ -219,12 +219,6 @@
         <artifactId>aprox-subsys-maven</artifactId>
         <version>0.7-SNAPSHOT</version>
       </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox.tools</groupId>
-        <artifactId>aprox-doc-stylesheets</artifactId>
-        <version>0.7-SNAPSHOT</version>
-        <scope>provided</scope>
-      </dependency>
       
       <dependency>
     		<groupId>org.commonjava.tensor</groupId>
