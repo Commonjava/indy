@@ -65,15 +65,6 @@
     <module>uis</module>
   </modules>
   
-  <profiles>
-    <profile>
-      <id>experimental</id>
-      
-      <modules>
-      </modules>
-    </profile>
-  </profiles>
-  
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -242,6 +233,16 @@
         <artifactId>maven-model-builder</artifactId>
         <version>3.0.3</version>
       </dependency>
+      <dependency>
+        <groupId>org.apache.maven.archetype</groupId>
+        <artifactId>archetype-catalog</artifactId>
+        <version>2.2</version>
+      </dependency>
+    	<dependency>
+    		<groupId>org.apache.maven.mae</groupId>
+    		<artifactId>mae-booter</artifactId>
+    		<version>1.0-alpha-1</version>
+    	</dependency>
       
       
       <!-- override web-commons-bom to see if this fixes the https self-signed PEM problem -->
@@ -255,6 +256,12 @@
             <artifactId>commons-logging</artifactId>
           </exclusion>
         </exclusions>
+      </dependency>
+      
+      <dependency>
+        <groupId>log4j</groupId>
+        <artifactId>log4j</artifactId>
+        <version>1.2.12</version>
       </dependency>
       
       <dependency>
@@ -331,6 +338,35 @@
   <build>
     <pluginManagement>
       <plugins>
+        <plugin>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>1.0</version>
+          <dependencies>
+            <dependency>
+              <groupId>org.commonjava.maven.enforcer</groupId>
+              <artifactId>enforce-managed-deps-rule</artifactId>
+              <version>1.0</version>
+            </dependency>
+          </dependencies>
+          <executions>
+            <execution>
+              <id>enforce-best-practices</id>
+              <goals>
+                <goal>enforce</goal>
+              </goals>
+              <phase>initialize</phase>
+              <configuration>
+                <rules>
+                  <requireManagedDeps implementation="org.commonjava.maven.enforcer.rule.EnforceManagedDepsRule">
+                    <!-- <message>Capture dependencies in top-level dependencyManagement section for easy reference.</message> -->
+                    <checkProfiles>false</checkProfiles>
+                    <failOnViolation>true</failOnViolation>
+                  </requireManagedDeps>
+                </rules>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.1</version>
@@ -492,6 +528,12 @@
         
       </plugins>
     </pluginManagement>
+    
+    <plugins>
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+      </plugin>
+    </plugins>
   </build>
   
   <profiles>
@@ -528,5 +570,12 @@
         </pluginManagement>
       </build>
     </profile>
+    <profile>
+      <id>experimental</id>
+      
+      <modules>
+      </modules>
+    </profile>
   </profiles>
+  
 </project>
