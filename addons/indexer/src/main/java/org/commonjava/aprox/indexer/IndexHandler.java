@@ -64,6 +64,8 @@ public class IndexHandler
 
     private static final String INDEX_DIR = "/.index";
 
+    private static final String INDEX_PROPERTIES = ".index/nexus-maven-repository-index-updater.properties";
+
     private final Logger logger = new Logger( getClass() );
 
     @Inject
@@ -183,7 +185,7 @@ public class IndexHandler
         return true;
     }
 
-    private synchronized void updateDeployPointIndex( final DeployPoint store )
+    private synchronized void scanIndex( final ArtifactStore store )
     {
         final IndexingContext context = getIndexingContext( store, indexCreators.getCreators() );
 
@@ -192,6 +194,11 @@ public class IndexHandler
             return;
         }
 
+        scanIndex( store, context );
+    }
+
+    private synchronized void scanIndex( final ArtifactStore store, final IndexingContext context )
+    {
         try
         {
             final ArtifactScanningListener listener = new DefaultScannerListener( context, indexerEngine, false, null );
@@ -219,7 +226,8 @@ public class IndexHandler
         }
     }
 
-    private synchronized void updateGroupsFor( final StoreKey storeKey, final Set<ArtifactStore> updated )
+    private synchronized void updateGroupsFor( final StoreKey storeKey, final Set<ArtifactStore> updated,
+                                               final boolean updateRepositoryIndexes )
     {
         try
         {
@@ -233,7 +241,7 @@ public class IndexHandler
                         continue;
                     }
 
-                    updateMergedIndex( group, updated );
+                    updateMergedIndex( group, updated, updateRepositoryIndexes );
                 }
             }
         }
@@ -243,7 +251,8 @@ public class IndexHandler
         }
     }
 
-    private synchronized void updateMergedIndex( final Group group, final Set<ArtifactStore> updated )
+    private synchronized void updateMergedIndex( final Group group, final Set<ArtifactStore> updated,
+                                                 final boolean updateRepositoryIndexes )
     {
         final IndexingContext groupContext = getIndexingContext( group, indexCreators.getCreators() );
         if ( groupContext == null )
@@ -265,7 +274,15 @@ public class IndexHandler
                 final StoreKey key = store.getKey();
                 final IndexingContext context = entry.getValue();
 
-                if ( key.getType() != StoreType.deploy_point )
+                final StorageItem item = fileManager.getStorageReference( store, INDEX_PROPERTIES );
+                if ( !item.exists() )
+                {
+                    if ( updateRepositoryIndexes || key.getType() == StoreType.deploy_point )
+                    {
+                        scanIndex( store, context );
+                    }
+                }
+                else if ( updateRepositoryIndexes && key.getType() == StoreType.repository )
                 {
                     doIndexUpdate( context, key );
                 }
@@ -365,8 +382,8 @@ public class IndexHandler
         {
             logger.info( "FULL index update completed for: %s", key );
         }
-        else if ( updateResult.getTimestamp()
-                              .equals( centralContextCurrentTimestamp ) )
+        else if ( updateResult.getTimestamp() != null && updateResult.getTimestamp()
+                                                                     .equals( centralContextCurrentTimestamp ) )
         {
             logger.info( "NO index update for: %s. Index is up-to-date.", key );
         }
@@ -483,11 +500,11 @@ public class IndexHandler
 
             if ( type == StoreType.deploy_point )
             {
-                updateDeployPointIndex( (DeployPoint) store );
+                scanIndex( store );
             }
             else if ( type == StoreType.group )
             {
-                updateMergedIndex( (Group) store, new HashSet<ArtifactStore>() );
+                updateMergedIndex( (Group) store, new HashSet<ArtifactStore>(), false );
             }
         }
     }
@@ -511,7 +528,7 @@ public class IndexHandler
                 final Set<ArtifactStore> updated = new HashSet<ArtifactStore>();
                 for ( final String name : event )
                 {
-                    updateGroupsFor( new StoreKey( type, name ), updated );
+                    updateGroupsFor( new StoreKey( type, name ), updated, true );
                 }
             }
             else
@@ -557,17 +574,17 @@ public class IndexHandler
                         continue;
                     }
 
-                    updateMergedIndex( group, updated );
+                    updateMergedIndex( group, updated, true );
                 }
                 else
                 {
                     if ( store.getKey()
                               .getType() == StoreType.deploy_point )
                     {
-                        updateDeployPointIndex( (DeployPoint) store );
+                        scanIndex( store );
                     }
 
-                    updateGroupsFor( store.getKey(), updated );
+                    updateGroupsFor( store.getKey(), updated, true );
                 }
             }
         }

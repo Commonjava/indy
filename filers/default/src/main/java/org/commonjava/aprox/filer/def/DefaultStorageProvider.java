@@ -93,7 +93,11 @@ public class DefaultStorageProvider
     {
         final File from = getDetachedFile( fromKey, fromPath );
         final File to = getDetachedFile( toKey, toPath );
-        FileUtils.copyFile( from, to );
+        if ( !from.getCanonicalFile()
+                  .equals( to.getCanonicalFile() ) )
+        {
+            FileUtils.copyFile( from, to );
+        }
     }
 
     @Override
