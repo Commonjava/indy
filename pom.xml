@@ -42,6 +42,7 @@
     <arquillian-version>1.0.1.Final</arquillian-version>
     <qarqas-version>0.3</qarqas-version>
     <shelflife-version>0.3</shelflife-version>
+    <tensor-version>0.4-SNAPSHOT</tensor-version>
   </properties>
   
   <distributionManagement>
@@ -206,12 +207,12 @@
       <dependency>
         <groupId>org.commonjava.tensor</groupId>
         <artifactId>tensor-core</artifactId>
-        <version>0.3</version>
+        <version>${tensor-version}</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.tensor</groupId>
         <artifactId>tensor-web-basics</artifactId>
-        <version>0.3</version>
+        <version>${tensor-version}</version>
       </dependency>
       
       <dependency>
