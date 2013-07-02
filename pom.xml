@@ -71,7 +71,7 @@
       <dependency>
         <groupId>org.commonjava.boms</groupId>
         <artifactId>web-commons-bom</artifactId>
-        <version>4</version>
+        <version>5-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -112,18 +112,8 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-security</artifactId>
-        <version>0.4-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-db-infinispan</artifactId>
-        <version>0.6-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-db-couch</artifactId>
-        <version>0.4-SNAPSHOT</version>
+        <version>0.7-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
@@ -181,7 +171,7 @@
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-filer-gridfs</artifactId>
-        <version>0.6-SNAPSHOT</version>
+        <version>0.7-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
@@ -196,7 +186,7 @@
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-subsys-infinispan</artifactId>
-        <version>0.6-SNAPSHOT</version>
+        <version>0.7-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>

@@ -19,6 +19,7 @@ import static org.apache.commons.io.IOUtils.closeQuietly;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +30,8 @@ import java.util.Set;
 import org.apache.maven.graph.common.ref.ProjectVersionRef;
 import org.apache.maven.graph.common.version.InvalidVersionSpecificationException;
 import org.apache.maven.graph.common.version.VersionSpec;
-import org.apache.maven.graph.effective.EProjectRelationships;
+import org.apache.maven.graph.effective.EProjectDirectRelationships;
+import org.apache.maven.graph.effective.ref.EProjectKey;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Parent;
 import org.apache.maven.model.building.DefaultModelBuildingRequest;
@@ -53,6 +55,7 @@ import org.commonjava.aprox.tensor.maven.ArtifactStoreModelResolver;
 import org.commonjava.aprox.tensor.maven.PropertyExpressionResolver;
 import org.commonjava.aprox.tensor.maven.StoreModelSource;
 import org.commonjava.aprox.tensor.maven.TensorModelCache;
+import org.commonjava.aprox.tensor.util.AproxTensorUtils;
 import org.commonjava.tensor.data.TensorDataException;
 import org.commonjava.tensor.data.TensorDataManager;
 import org.commonjava.tensor.util.MavenModelProcessor;
@@ -137,18 +140,20 @@ public class TensorStorageListenerRunnable
             return;
         }
 
-        final Model rawModel = loadRawModel( event );
+        final URI source = AproxTensorUtils.toDiscoveryURI( originatingStore.getKey() );
+
+        final Model rawModel = loadRawModel( event, source );
         if ( rawModel == null )
         {
             return;
         }
 
-        if ( !shouldStore( rawModel, path ) )
+        if ( !shouldStore( rawModel, source, path ) )
         {
             return;
         }
 
-        final Model effectiveModel = loadEffectiveModel( event, stores );
+        final Model effectiveModel = loadEffectiveModel( event, source, stores );
         if ( effectiveModel == null )
         {
             return;
@@ -162,7 +167,7 @@ public class TensorStorageListenerRunnable
 
             try
             {
-                storeRelationships( effectiveModel, originatingStore, path );
+                storeRelationships( effectiveModel, source, originatingStore, path );
             }
             catch ( final DeadlockDetectedException e )
             {
@@ -192,18 +197,21 @@ public class TensorStorageListenerRunnable
         while ( retry && count < MAX_RETRIES );
     }
 
-    private void storeRelationships( final Model effectiveModel, final ArtifactStore originatingStore, final String path )
+    private void storeRelationships( final Model effectiveModel, final URI source,
+                                     final ArtifactStore originatingStore, final String path )
     {
         try
         {
             // TODO: Pass on the profiles that were activated when the effective model was built.
-            final EProjectRelationships rels = modelProcessor.storeModelRelationships( effectiveModel );
+            final EProjectDirectRelationships rels =
+                modelProcessor.storeModelRelationships( effectiveModel,
+                                                        AproxTensorUtils.toDiscoveryURI( originatingStore.getKey() ) );
 
             if ( originatingStore instanceof Repository )
             {
                 final Repository repo = (Repository) originatingStore;
 
-                final Map<String, String> metadata = dataManager.getMetadata( rels.getKey() );
+                final Map<String, String> metadata = dataManager.getMetadata( rels.getProjectRef() );
                 String foundIn = null;
                 if ( metadata != null )
                 {
@@ -234,14 +242,15 @@ public class TensorStorageListenerRunnable
 
             if ( pathInfo != null )
             {
-                logProjectError( pathInfo.getGroupId(), pathInfo.getArtifactId(), pathInfo.getVersion(), e, path );
+                logProjectError( source, pathInfo.getGroupId(), pathInfo.getArtifactId(), pathInfo.getVersion(), e,
+                                 path );
             }
             // TODO: Disable for some time period...
         }
     }
 
     // TODO: Somehow, we're ending up in an infinite loop for maven poms...
-    private boolean shouldStore( final Model rawModel, final String path )
+    private boolean shouldStore( final Model rawModel, final URI source, final String path )
     {
         final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
 
@@ -277,7 +286,8 @@ public class TensorStorageListenerRunnable
 
             if ( !parsed.equals( ref ) )
             {
-                logProjectError( pathInfo.getGroupId(),
+                logProjectError( source,
+                                 pathInfo.getGroupId(),
                                  pathInfo.getArtifactId(),
                                  pathInfo.getVersion(),
                                  new TensorDataException(
@@ -315,7 +325,8 @@ public class TensorStorageListenerRunnable
 
             if ( pathInfo != null )
             {
-                logProjectError( pathInfo.getGroupId(), pathInfo.getArtifactId(), pathInfo.getVersion(), e, path );
+                logProjectError( source, pathInfo.getGroupId(), pathInfo.getArtifactId(), pathInfo.getVersion(), e,
+                                 path );
             }
         }
         //        catch ( final TensorDataException e )
@@ -328,7 +339,7 @@ public class TensorStorageListenerRunnable
         return false;
     }
 
-    protected Model loadEffectiveModel( final FileEvent event, final List<ArtifactStore> stores )
+    protected Model loadEffectiveModel( final FileEvent event, final URI source, final List<ArtifactStore> stores )
     {
         final ModelBuildingRequest request = new DefaultModelBuildingRequest();
         request.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL );
@@ -353,7 +364,7 @@ public class TensorStorageListenerRunnable
         catch ( final ModelBuildingException e )
         {
             logger.error( "Cannot build model instance for POM: %s. Reason: %s", e, path, e.getMessage() );
-            logArtifactError( path, e );
+            logArtifactError( source, path, e );
         }
 
         if ( result == null )
@@ -365,11 +376,12 @@ public class TensorStorageListenerRunnable
         return result.getEffectiveModel();
     }
 
-    private void logProjectError( final String g, final String a, final String v, final Throwable e, final String path )
+    private void logProjectError( final URI source, final String g, final String a, final String v, final Throwable e,
+                                  final String path )
     {
         try
         {
-            dataManager.addError( new ProjectVersionRef( g, a, v ), e );
+            dataManager.addError( new EProjectKey( source, new ProjectVersionRef( g, a, v ) ), e );
         }
         catch ( final TensorDataException e1 )
         {
@@ -377,7 +389,7 @@ public class TensorStorageListenerRunnable
         }
     }
 
-    private void logArtifactError( final String path, final Throwable e )
+    private void logArtifactError( final URI source, final String path, final Throwable e )
     {
         final ArtifactPathInfo info = ArtifactPathInfo.parse( path );
         if ( info == null )
@@ -388,8 +400,9 @@ public class TensorStorageListenerRunnable
         {
             try
             {
-                dataManager.addError( new ProjectVersionRef( info.getGroupId(), info.getArtifactId(), info.getVersion() ),
-                                      e );
+                dataManager.addError( new EProjectKey( source, new ProjectVersionRef( info.getGroupId(),
+                                                                                      info.getArtifactId(),
+                                                                                      info.getVersion() ) ), e );
             }
             catch ( final TensorDataException e1 )
             {
@@ -398,7 +411,7 @@ public class TensorStorageListenerRunnable
         }
     }
 
-    protected Model loadRawModel( final FileEvent event )
+    protected Model loadRawModel( final FileEvent event, final URI source )
     {
 
         final Map<String, Object> options = new HashMap<String, Object>();
@@ -418,12 +431,12 @@ public class TensorStorageListenerRunnable
         catch ( final ModelParseException e )
         {
             logger.error( "Cannot parse POM: %s. Reason: %s", e, path, e.getMessage() );
-            logArtifactError( path, e );
+            logArtifactError( source, path, e );
         }
         catch ( final IOException e )
         {
             logger.error( "Cannot read POM: %s. Reason: %s", e, path, e.getMessage() );
-            logArtifactError( path, e );
+            logArtifactError( source, path, e );
         }
         finally
         {

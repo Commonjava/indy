@@ -33,7 +33,7 @@ public class TestTensorCoreProvider
     {
         if ( globalWeb == null )
         {
-            globalWeb = new EProjectWeb( getDriver() );
+            globalWeb = new EProjectWeb( null, getDriver() );
         }
 
         return globalWeb;

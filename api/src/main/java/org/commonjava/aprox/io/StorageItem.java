@@ -102,6 +102,11 @@ public final class StorageItem
         }
     }
 
+    public void touch()
+    {
+        fileEventManager.fire( new FileAccessEvent( this ) );
+    }
+
     public InputStream openInputStream()
         throws IOException
     {

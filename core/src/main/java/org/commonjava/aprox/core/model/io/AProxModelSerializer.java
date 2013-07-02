@@ -1,5 +1,7 @@
 package org.commonjava.aprox.core.model.io;
 
+import static org.commonjava.web.json.ser.ServletSerializerUtils.fromRequestBody;
+
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 
@@ -34,17 +36,17 @@ public class AProxModelSerializer
 
     public Repository repositoryFromRequestBody( final HttpServletRequest request )
     {
-        return restSerializer.fromRequestBody( request, Repository.class );
+        return fromRequestBody( request, restSerializer, Repository.class );
     }
 
     public Group groupFromRequestBody( final HttpServletRequest request )
     {
-        return restSerializer.fromRequestBody( request, Group.class );
+        return fromRequestBody( request, restSerializer, Group.class );
     }
 
     public DeployPoint deployPointFromRequestBody( final HttpServletRequest request )
     {
-        return restSerializer.fromRequestBody( request, DeployPoint.class );
+        return fromRequestBody( request, restSerializer, DeployPoint.class );
     }
 
     public String repoListingToString( final Listing<Repository> listing )

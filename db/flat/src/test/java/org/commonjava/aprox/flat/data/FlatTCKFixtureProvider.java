@@ -204,6 +204,12 @@ public class FlatTCKFixtureProvider
             return getDataManager().hasArtifactStore( key );
         }
 
+        @Override
+        public List<ArtifactStore> getAllConcreteArtifactStores()
+        {
+            return getDataManager().getAllConcreteArtifactStores();
+        }
+
     }
 
 }

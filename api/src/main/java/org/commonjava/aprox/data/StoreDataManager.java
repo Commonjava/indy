@@ -133,4 +133,6 @@ public interface StoreDataManager
 
     boolean hasArtifactStore( StoreKey key );
 
+    List<ArtifactStore> getAllConcreteArtifactStores();
+
 }

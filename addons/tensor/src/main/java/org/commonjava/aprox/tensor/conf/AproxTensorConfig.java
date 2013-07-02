@@ -16,13 +16,9 @@ public class AproxTensorConfig
     implements TensorConfig
 {
 
-    public static final String DEFAULT_TENSOR_DISCOVERY_GROUP = "_tensor";
-
     private static final int DEFAULT_TENSOR_DISCOVERY_TIMEOUT_MILLIS = 30000;
 
     private static final String DEFAULT_DB_DIRNAME = "tensor";
-
-    private String discoveryGroup;
 
     private Long discoveryTimeoutMillis;
 
@@ -30,21 +26,10 @@ public class AproxTensorConfig
 
     private File databaseDir;
 
-    public String getDiscoveryGroup()
-    {
-        return discoveryGroup == null ? DEFAULT_TENSOR_DISCOVERY_GROUP : discoveryGroup;
-    }
-
     @Override
     public long getDiscoveryTimeoutMillis()
     {
         return discoveryTimeoutMillis == null ? DEFAULT_TENSOR_DISCOVERY_TIMEOUT_MILLIS : discoveryTimeoutMillis;
-    }
-
-    @ConfigName( "discoveryGroup" )
-    public void setDiscoveryGroup( final String discoveryGroup )
-    {
-        this.discoveryGroup = discoveryGroup;
     }
 
     @ConfigName( "discoveryTimeoutMillis" )

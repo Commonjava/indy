@@ -1,9 +1,7 @@
 package org.commonjava.aprox.tensor.discover;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
-
 import java.io.IOException;
-import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,11 +16,18 @@ import org.apache.maven.graph.common.version.InvalidVersionSpecificationExceptio
 import org.apache.maven.graph.common.version.MultiVersionSpec;
 import org.apache.maven.graph.common.version.SingleVersion;
 import org.apache.maven.graph.common.version.VersionUtils;
+import org.apache.maven.graph.effective.ref.EProjectKey;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.io.StorageItem;
+import org.commonjava.aprox.model.ArtifactStore;
+import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.GroupContentManager;
-import org.commonjava.aprox.tensor.conf.AproxTensorConfig;
+import org.commonjava.aprox.tensor.util.AproxTensorUtils;
 import org.commonjava.tensor.data.TensorDataException;
 import org.commonjava.tensor.data.TensorDataManager;
 import org.commonjava.tensor.discover.DiscoveryConfig;
@@ -42,10 +47,13 @@ public class AproxProjectGraphDiscoverer
     private GroupContentManager groupContentManager;
 
     @Inject
+    private FileManager fileManager;
+
+    @Inject
     private TensorDataManager dataManager;
 
     @Inject
-    private AproxTensorConfig config;
+    private StoreDataManager storeManager;
 
     @Override
     public ProjectVersionRef discoverRelationships( final ProjectVersionRef ref, final DiscoveryConfig discoveryConfig )
@@ -56,12 +64,14 @@ public class AproxProjectGraphDiscoverer
             return ref;
         }
 
+        final URI source = discoveryConfig.getDiscoverySource();
+
         ProjectVersionRef specific = ref;
         try
         {
             if ( !ref.isSpecificVersion() )
             {
-                specific = resolveSpecificVersion( ref );
+                specific = resolveSpecificVersion( ref, discoveryConfig );
                 if ( specific.equals( ref ) )
                 {
                     logger.warn( "Cannot resolve specific version of: '%s'.", ref );
@@ -71,7 +81,7 @@ public class AproxProjectGraphDiscoverer
         }
         catch ( final InvalidVersionSpecificationException e )
         {
-            dataManager.addError( ref, e );
+            dataManager.addError( new EProjectKey( source, ref ), e );
             specific = null;
         }
 
@@ -80,15 +90,36 @@ public class AproxProjectGraphDiscoverer
             return ref;
         }
 
-        InputStream stream = null;
+        final StoreKey key = AproxTensorUtils.getDiscoveryStore( discoveryConfig.getDiscoverySource() );
+
         try
         {
-            //FIXME: Verify the discovery group exists, or else use getAll() to check all locations.
+            final ArtifactStore store = storeManager.getArtifactStore( key );
+
             final String path = pomPath( specific );
-            final StorageItem retrieved = groupContentManager.retrieve( config.getDiscoveryGroup(), path );
+
+            final StorageItem retrieved;
+            if ( store == null )
+            {
+                throw new TensorDataException( "Cannot discover %s from: %s. No such store.", key );
+            }
+            else if ( key == null )
+            {
+                retrieved = fileManager.retrieveFirst( storeManager.getAllConcreteArtifactStores(), path );
+            }
+            else if ( key.getType() == StoreType.group )
+            {
+                final List<ArtifactStore> concrete = storeManager.getOrderedConcreteStoresInGroup( key.getName() );
+                retrieved = fileManager.retrieveFirst( concrete, path );
+            }
+            else
+            {
+                retrieved = fileManager.retrieve( store, path );
+            }
+
             if ( retrieved != null )
             {
-                stream = retrieved.openInputStream();
+                retrieved.touch();
             }
         }
         catch ( final AproxWorkflowException e )
@@ -96,24 +127,20 @@ public class AproxProjectGraphDiscoverer
             throw new TensorDataException( "Discovery of project-relationships for: '%s' failed. Error: %s", e, ref,
                                            e.getMessage() );
         }
-        catch ( final IOException e )
+        catch ( final ProxyDataException e )
         {
             throw new TensorDataException( "Discovery of project-relationships for: '%s' failed. Error: %s", e, ref,
                                            e.getMessage() );
-        }
-        finally
-        {
-            closeQuietly( stream );
         }
 
         return specific;
     }
 
     @Override
-    public ProjectVersionRef resolveSpecificVersion( final ProjectVersionRef ref )
+    public ProjectVersionRef resolveSpecificVersion( final ProjectVersionRef ref, final DiscoveryConfig discoveryConfig )
         throws TensorDataException
     {
-        final List<SingleVersion> versions = getVersions( ref );
+        final List<SingleVersion> versions = getVersions( ref, discoveryConfig );
 
         Collections.sort( versions );
         Collections.reverse( versions );
@@ -153,20 +180,42 @@ public class AproxProjectGraphDiscoverer
         return ref;
     }
 
-    private List<SingleVersion> getVersions( final ProjectVersionRef projectId )
+    private List<SingleVersion> getVersions( final ProjectVersionRef projectId, final DiscoveryConfig discoveryConfig )
         throws TensorDataException
     {
+        final StoreKey key = AproxTensorUtils.getDiscoveryStore( discoveryConfig.getDiscoverySource() );
+
         final String metadataPath = versionMetadataPath( projectId );
         StorageItem item;
         try
         {
-            //FIXME: Verify the discovery group exists, or else use getAll() to check all locations.
-            item = groupContentManager.retrieve( config.getDiscoveryGroup(), metadataPath );
+            if ( key == null )
+            {
+                item = fileManager.retrieveFirst( storeManager.getAllConcreteArtifactStores(), metadataPath );
+            }
+            else if ( !storeManager.hasArtifactStore( key ) )
+            {
+                throw new TensorDataException( "Cannot discover versions from: '%s'. No such store.", key );
+            }
+            else if ( key.getType() == StoreType.group )
+            {
+                item = groupContentManager.retrieve( key.getName(), metadataPath );
+            }
+            else
+            {
+                final ArtifactStore store = storeManager.getArtifactStore( key );
+                item = fileManager.retrieve( store, metadataPath );
+            }
         }
         catch ( final AproxWorkflowException e )
         {
             throw new TensorDataException( "Failed to retrieve version metadata: %s from tensor group: %s. Reason: %s",
-                                           e, metadataPath, config.getDiscoveryGroup(), e.getMessage() );
+                                           e, metadataPath, key.getName(), e.getMessage() );
+        }
+        catch ( final ProxyDataException e )
+        {
+            throw new TensorDataException( "Failed to retrieve version metadata: %s from tensor group: %s. Reason: %s",
+                                           e, metadataPath, key.getName(), e.getMessage() );
         }
 
         final List<SingleVersion> versions = new ArrayList<SingleVersion>();

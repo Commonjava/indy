@@ -390,6 +390,24 @@ public class MemoryStoreDataManager
         return result;
     }
 
+    private List<ArtifactStore> getAll( final StoreType... storeTypes )
+    {
+        final List<ArtifactStore> result = new ArrayList<ArtifactStore>();
+        for ( final Map.Entry<StoreKey, ArtifactStore> store : stores.entrySet() )
+        {
+            for ( final StoreType type : storeTypes )
+            {
+                if ( store.getKey()
+                          .getType() == type )
+                {
+                    result.add( store.getValue() );
+                }
+            }
+        }
+
+        return result;
+    }
+
     private void fireDeleteEvent( final StoreType type, final String... names )
     {
         final ProxyManagerDeleteEvent event = new ProxyManagerDeleteEvent( type, names );
@@ -430,6 +448,12 @@ public class MemoryStoreDataManager
         throws ProxyDataException
     {
         return new ArrayList<ArtifactStore>( stores.values() );
+    }
+
+    @Override
+    public List<ArtifactStore> getAllConcreteArtifactStores()
+    {
+        return getAll( StoreType.deploy_point, StoreType.repository );
     }
 
     @Override

@@ -1,13 +1,13 @@
 package org.commonjava.aprox.tensor.discover;
 
 import org.apache.maven.graph.common.ref.ProjectVersionRef;
-import org.apache.maven.graph.effective.EProjectRelationships;
+import org.apache.maven.graph.effective.EProjectDirectRelationships;
 
 final class RelationshipDiscoveryToken
 {
     private final ProjectVersionRef ref;
 
-    private EProjectRelationships relationships;
+    private EProjectDirectRelationships relationships;
 
     private Throwable error;
 
@@ -16,7 +16,7 @@ final class RelationshipDiscoveryToken
         this.ref = ref;
     }
 
-    public synchronized void setRelationships( final EProjectRelationships relationships )
+    public synchronized void setRelationships( final EProjectDirectRelationships relationships )
     {
         this.relationships = relationships;
         notifyAll();
@@ -33,7 +33,7 @@ final class RelationshipDiscoveryToken
         return ref;
     }
 
-    public EProjectRelationships getRelationships()
+    public EProjectDirectRelationships getRelationships()
     {
         return relationships;
     }
