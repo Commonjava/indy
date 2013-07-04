@@ -8,12 +8,11 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 
 import org.commonjava.util.logging.Logger;
 
-@WebFilter( "/*" )
+//@WebFilter( "/api/1.0/rel/*" )
 public class DebugFilter
     implements Filter
 {
@@ -31,8 +30,8 @@ public class DebugFilter
         throws IOException, ServletException
     {
         final HttpServletRequest request = (HttpServletRequest) req;
-        logger.info( "PathTranslated: %s", request.getPathTranslated() );
-        logger.info( "PathInfo: %s", request.getPathInfo() );
+        logger.info( "\n\n\n\n\nDEBUG\n\nPath Translated: %s\nPath Info: %s\nContext Path: %s\n\n\n\n",
+                     request.getPathTranslated(), request.getPathInfo(), request.getContextPath() );
 
         chain.doFilter( request, resp );
     }

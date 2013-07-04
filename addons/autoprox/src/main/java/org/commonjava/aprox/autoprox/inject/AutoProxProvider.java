@@ -29,7 +29,6 @@ public class AutoProxProvider
 
     private AutoProxModel model;
 
-    @SuppressWarnings( "unchecked" )
     @Produces
     @Production
     @Default
