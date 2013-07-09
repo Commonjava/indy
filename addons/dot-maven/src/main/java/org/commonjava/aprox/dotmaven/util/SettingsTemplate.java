@@ -14,6 +14,8 @@ import org.commonjava.aprox.model.StoreType;
 public class SettingsTemplate
 {
 
+    private static final String TYPE_PATTERN = Pattern.quote( "${type}" );
+
     private static final String NAME_PATTERN = Pattern.quote( "${name}" );
 
     private static final String URL_PATTERN = Pattern.quote( "${url}" );
@@ -90,7 +92,8 @@ public class SettingsTemplate
 
         try
         {
-            content = template.replaceAll( NAME_PATTERN, name )
+            content = template.replaceAll( TYPE_PATTERN, type.singularEndpointName() )
+                              .replaceAll( NAME_PATTERN, name )
                               .replaceAll( URL_PATTERN, url.toString() )
                               .replaceAll( RELEASES_PATTERN, Boolean.toString( advice.isReleasesAllowed() ) )
                               .replaceAll( SNAPSHOTS_PATTERN, Boolean.toString( advice.isSnapshotsAllowed() ) )
