@@ -1,5 +1,7 @@
 package org.commonjava.aprox.tensor.discover;
 
+import static org.commonjava.tensor.discover.DiscoveryUtils.selectSingle;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -151,6 +153,12 @@ public class AproxProjectGraphDiscoverer
 
             if ( multi.isPinned() )
             {
+                if ( multi.getPinnedVersion()
+                          .isConcrete() )
+                {
+                    selectSingle( multi.getPinnedVersion(), ref, dataManager );
+                }
+
                 return new ProjectVersionRef( ref.getGroupId(), ref.getArtifactId(), multi.getPinnedVersion() );
             }
 
@@ -161,6 +169,15 @@ public class AproxProjectGraphDiscoverer
                 final SingleVersion ver = versions.remove( 0 );
                 if ( ( snapshots || ver.isRelease() ) && multi.contains( ver ) )
                 {
+                    if ( ver.isConcrete() )
+                    {
+                        selectSingle( ver, ref, dataManager );
+                    }
+                    else
+                    {
+                        // FIXME: This is NASTY...
+                    }
+
                     return new ProjectVersionRef( ref.getGroupId(), ref.getArtifactId(), ver );
                 }
             }
@@ -170,8 +187,9 @@ public class AproxProjectGraphDiscoverer
             while ( !versions.isEmpty() )
             {
                 final SingleVersion ver = versions.remove( 0 );
-                if ( !ver.isRelease() )
+                if ( !ver.isRelease() && !ver.isLocalSnapshot() )
                 {
+                    // FIXME: This is NASTY...
                     return new ProjectVersionRef( ref.getGroupId(), ref.getArtifactId(), ver );
                 }
             }

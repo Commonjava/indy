@@ -2,7 +2,7 @@
 
 APROX_BASEDIR = '/Users/jdcasey/workspace/server-apps/aprox'
 WAR_DIR = 'savant'
-AS7_HOME = '/Users/jdcasey/apps/eap/current'
+AS7_HOME = '/Users/jdcasey/apps/as7/current'
 CONTROLLER_HOST_PORT = 'localhost:10999'
 
 cmds =<<-EOC
@@ -17,7 +17,7 @@ File.open(path, 'w+'){|f|
 }
 
 Dir.chdir(AS7_HOME) {
-  system( "bin/jboss-cli.sh --controller=#{CONTROLLER_HOST_PORT} --connect --file=#{path}" )
+  system( "env JBOSS_HOME='#{AS7_HOME}' bin/jboss-cli.sh --controller=#{CONTROLLER_HOST_PORT} --connect --file=#{path}" )
   ret = $?
   puts "Exit status: #{ret.exitstatus}"
   exit ret.exitstatus
