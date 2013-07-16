@@ -17,9 +17,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.sonatype.oss</groupId>
-    <artifactId>oss-parent</artifactId>
-    <version>7</version>
+    <groupId>org.commonjava</groupId>
+    <artifactId>commonjava</artifactId>
+    <version>2-SNAPSHOT</version>
   </parent>
   
   <groupId>org.commonjava.aprox</groupId>
@@ -37,6 +37,7 @@
   </scm>
   
   <properties>
+    <qarqas.clientKey>aprox</qarqas.clientKey>
     <slf4j-version>1.6.1</slf4j-version>
     <jbossas-version>7.1.1.Final</jbossas-version>
     <arquillian-version>1.0.1.Final</arquillian-version>
@@ -208,7 +209,7 @@
       <dependency>
         <groupId>org.commonjava.qarqas</groupId>
         <artifactId>qarqas-test-harness</artifactId>
-        <version>${qarqas-version}</version>
+        <version>${version.plugin.qarqas}</version>
         <scope>test</scope>
       </dependency>
       
@@ -329,42 +330,8 @@
   <build>
     <pluginManagement>
       <plugins>
-        <plugin>
-          <artifactId>maven-enforcer-plugin</artifactId>
-          <version>1.0</version>
-          <dependencies>
-            <dependency>
-              <groupId>org.commonjava.maven.enforcer</groupId>
-              <artifactId>enforce-managed-deps-rule</artifactId>
-              <version>1.0</version>
-            </dependency>
-          </dependencies>
-          <executions>
-            <execution>
-              <id>enforce-best-practices</id>
-              <goals>
-                <goal>enforce</goal>
-              </goals>
-              <phase>initialize</phase>
-              <configuration>
-                <rules>
-                  <requireManagedDeps implementation="org.commonjava.maven.enforcer.rule.EnforceManagedDepsRule">
-                    <!-- <message>Capture dependencies in top-level dependencyManagement section for easy reference.</message> -->
-                    <checkProfiles>false</checkProfiles>
-                    <failOnViolation>true</failOnViolation>
-                  </requireManagedDeps>
-                </rules>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
-        <plugin>
+        <!-- <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.1</version>
-          <configuration>
-            <source>1.6</source>
-            <target>1.6</target>
-          </configuration>
           <executions>
             <execution>
               <id>generate-restdoc</id>
@@ -380,89 +347,15 @@
                 <compilerArguments>
                   <AtargetDirectory>${project.build.directory}/classes/META-INF/rest-docs</AtargetDirectory>
                   <AmodelPkg>org.commonjava.aprox.model</AmodelPkg>
-                  <!-- <AskipPkg>org.rhq.enterprise.server.rest.reporting</AskipPkg> -->
-                  <!-- enable the next line to have the output of the processor shown on console -->
                   <Averbose>true</Averbose>
                 </compilerArguments>
-                <!-- set the next to true to enable verbose output of the compiler plugin; default from the evn is true, but this is too noisy -->
                 <verbose>false</verbose>
               </configuration>
             </execution>
           </executions>
-        </plugin>
-        <plugin>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.10</version>
-          <configuration>
-            <excludes>
-              <exclude>**/fixture/*.java</exclude>
-              <exclude>**/live/*.java</exclude>
-              <exclude>**/live/**/*.java</exclude>
-            </excludes>
-          </configuration>
-        </plugin>
-        <plugin>
-          <artifactId>maven-failsafe-plugin</artifactId>
-          <version>2.10</version>
-          <configuration>
-            <excludes>
-              <exclude>**/fixture/*.java</exclude>
-            </excludes>
-            <includes>
-              <include>**/live/*.java</include>
-              <include>**/live/**/*.java</include>
-            </includes>
-          </configuration>
-          <executions>
-            <execution>
-              <id>integration-tests</id>
-              <goals>
-                <goal>integration-test</goal>
-                <goal>verify</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
-        <!-- <plugin>
-          <artifactId>maven-dependency-plugin</artifactId>
-          <version>2.3</version>
-          <executions>
-            <execution>
-              <id>resolve-for-testing</id>
-              <goals>
-                <goal>copy-dependencies</goal>
-              </goals>
-              <phase>process-test-classes</phase>
-            </execution>
-          </executions>
         </plugin> -->
         <plugin>
-          <groupId>org.commonjava.maven.plugins</groupId>
-          <artifactId>qarqas-maven-plugin</artifactId>
-          <version>${qarqas-version}</version>
-          <executions>
-            <execution>
-              <id>infra</id>
-              <goals>
-                <goal>setup</goal>
-                <goal>teardown</goal>
-              </goals>
-              <configuration>
-                <clientKey>aprox</clientKey>
-                <asCoordinate>org.jboss.as:jboss-as-dist:${jbossas-version}</asCoordinate>
-                <configurators>reservation</configurators>
-                <useDefaultConfigurators>false</useDefaultConfigurators>
-                <output>${session.executionRootDirectory}/target/jbossas</output>
-                <configProperties>
-                  <reservationBaseUrl>http://localhost:9080/qarqas/api/1.0/reservation/</reservationBaseUrl>
-                </configProperties>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
-        <plugin>
           <artifactId>maven-assembly-plugin</artifactId>
-          <version>2.3</version>
           <dependencies>
             <dependency>
               <groupId>org.commonjava.aprox.tools</groupId>
@@ -488,22 +381,8 @@
             </execution>
           </executions>
         </plugin>
-        <plugin>
-          <artifactId>maven-release-plugin</artifactId>
-          <version>2.2.1</version>
-          <configuration>
-            <autoVersionSubmodules>true</autoVersionSubmodules>
-          </configuration>
-        </plugin>
-        <plugin>
-          <artifactId>maven-javadoc-plugin</artifactId>
-          <version>2.8</version>
-          <configuration>
-            <detectOfflineLinks>false</detectOfflineLinks>
-          </configuration>
-        </plugin>
         
-        <plugin>
+        <!-- <plugin>
           <groupId>org.commonjava.maven</groupId>
           <artifactId>restdoc-maven-plugin</artifactId>
           <version>0.1</version>
@@ -515,52 +394,13 @@
               </goals>
             </execution>
           </executions>
-        </plugin>
+        </plugin> -->
         
       </plugins>
     </pluginManagement>
-    
-    <plugins>
-      <plugin>
-        <artifactId>maven-enforcer-plugin</artifactId>
-      </plugin>
-    </plugins>
   </build>
   
   <profiles>
-    <profile>
-      <id>m2e</id>
-      <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <groupId>org.eclipse.m2e</groupId>
-              <artifactId>lifecycle-mapping</artifactId>
-              <version>1.0.0</version>
-              <configuration>
-                <lifecycleMappingMetadata>
-                  <pluginExecutions>
-                    <pluginExecution>
-                      <pluginExecutionFilter>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-dependency-plugin</artifactId>
-                        <versionRange>[1.0.0,)</versionRange>
-                        <goals>
-                          <goal>copy-dependencies</goal>
-                        </goals>
-                      </pluginExecutionFilter>
-                      <action>
-                        <ignore />
-                      </action>
-                    </pluginExecution>
-                  </pluginExecutions>
-                </lifecycleMappingMetadata>
-              </configuration>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-      </build>
-    </profile>
     <profile>
       <id>experimental</id>
       
