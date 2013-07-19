@@ -1,7 +1,7 @@
 package org.commonjava.aprox.tensor.discover;
 
-import org.apache.maven.graph.common.ref.ProjectVersionRef;
-import org.apache.maven.graph.effective.EProjectDirectRelationships;
+import org.commonjava.maven.atlas.common.ref.ProjectVersionRef;
+import org.commonjava.maven.atlas.effective.EProjectDirectRelationships;
 
 final class RelationshipDiscoveryToken
 {

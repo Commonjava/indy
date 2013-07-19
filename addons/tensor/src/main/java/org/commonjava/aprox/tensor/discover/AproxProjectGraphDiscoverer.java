@@ -13,12 +13,8 @@ import javax.inject.Inject;
 
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
-import org.apache.maven.graph.common.ref.ProjectVersionRef;
-import org.apache.maven.graph.common.version.InvalidVersionSpecificationException;
-import org.apache.maven.graph.common.version.MultiVersionSpec;
-import org.apache.maven.graph.common.version.SingleVersion;
-import org.apache.maven.graph.common.version.VersionUtils;
-import org.apache.maven.graph.effective.ref.EProjectKey;
+import org.apache.maven.model.building.ModelBuilder;
+import org.apache.maven.model.io.ModelReader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
@@ -29,11 +25,20 @@ import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.GroupContentManager;
+import org.commonjava.aprox.tensor.maven.TensorModelCache;
 import org.commonjava.aprox.tensor.util.AproxTensorUtils;
+import org.commonjava.maven.atlas.common.ref.ProjectVersionRef;
+import org.commonjava.maven.atlas.common.version.InvalidVersionSpecificationException;
+import org.commonjava.maven.atlas.common.version.MultiVersionSpec;
+import org.commonjava.maven.atlas.common.version.SingleVersion;
+import org.commonjava.maven.atlas.common.version.VersionUtils;
+import org.commonjava.maven.atlas.effective.ref.EProjectKey;
 import org.commonjava.tensor.data.TensorDataException;
 import org.commonjava.tensor.data.TensorDataManager;
 import org.commonjava.tensor.discover.DiscoveryConfig;
+import org.commonjava.tensor.discover.DiscoveryResult;
 import org.commonjava.tensor.discover.ProjectRelationshipDiscoverer;
+import org.commonjava.tensor.util.MavenModelProcessor;
 import org.commonjava.util.logging.Logger;
 
 @javax.enterprise.context.ApplicationScoped
@@ -49,6 +54,9 @@ public class AproxProjectGraphDiscoverer
     private GroupContentManager groupContentManager;
 
     @Inject
+    private AproxModelDiscoverer discoverer;
+
+    @Inject
     private FileManager fileManager;
 
     @Inject
@@ -57,13 +65,31 @@ public class AproxProjectGraphDiscoverer
     @Inject
     private StoreDataManager storeManager;
 
+    @Inject
+    private ModelReader modelReader;
+
+    @Inject
+    private ModelBuilder modelBuilder;
+
+    @Inject
+    private MavenModelProcessor modelProcessor;
+
+    @Inject
+    private TensorModelCache tensorModelCache;
+
+    //  public TensorStorageListenerRunnable( final StoreDataManager aprox, final ModelReader modelReader,
+    //  final ModelBuilder modelBuilder, final FileManager fileManager,
+    //  final MavenModelProcessor modelProcessor,
+    //  final TensorDataManager dataManager, final TensorModelCache tensorModelCache,
+    //  final StorageItem item )
+
     @Override
-    public ProjectVersionRef discoverRelationships( final ProjectVersionRef ref, final DiscoveryConfig discoveryConfig )
+    public DiscoveryResult discoverRelationships( final ProjectVersionRef ref, final DiscoveryConfig discoveryConfig )
         throws TensorDataException
     {
         if ( dataManager.hasErrors( ref ) )
         {
-            return ref;
+            return null;
         }
 
         final URI source = discoveryConfig.getDiscoverySource();
@@ -89,7 +115,7 @@ public class AproxProjectGraphDiscoverer
 
         if ( specific == null )
         {
-            return ref;
+            return null;
         }
 
         final StoreKey key = AproxTensorUtils.getDiscoveryStore( discoveryConfig.getDiscoverySource() );
@@ -121,7 +147,7 @@ public class AproxProjectGraphDiscoverer
 
             if ( retrieved != null )
             {
-                retrieved.touch();
+                return discoverer.discoverRelationships( retrieved );
             }
         }
         catch ( final AproxWorkflowException e )
@@ -135,7 +161,7 @@ public class AproxProjectGraphDiscoverer
                                            e.getMessage() );
         }
 
-        return specific;
+        return null;
     }
 
     @Override

@@ -20,11 +20,16 @@ public class AproxTensorConfig
 
     private static final String DEFAULT_DB_DIRNAME = "tensor";
 
+    // shipping-oriented builds
+    private static final String DEFAULT_DEF_WEBFILTER_PRESET = "sob";
+
     private Long discoveryTimeoutMillis;
 
     private String dbDir;
 
     private File databaseDir;
+
+    private String defaultWebFilterPreset = DEFAULT_DEF_WEBFILTER_PRESET;
 
     @Override
     public long getDiscoveryTimeoutMillis()
@@ -59,6 +64,18 @@ public class AproxTensorConfig
     public void setDbDir( final String dbDir )
     {
         this.dbDir = dbDir;
+    }
+
+    @Override
+    public String getDefaultWebFilterPreset()
+    {
+        return defaultWebFilterPreset;
+    }
+
+    @ConfigName( "default.webfilter.preset" )
+    public void setDefaultWebFilterPreset( final String preset )
+    {
+        this.defaultWebFilterPreset = preset;
     }
 
 }

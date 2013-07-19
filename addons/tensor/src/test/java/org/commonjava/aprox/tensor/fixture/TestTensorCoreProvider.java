@@ -9,9 +9,9 @@ import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.maven.graph.effective.EProjectWeb;
-import org.apache.maven.graph.spi.effective.EGraphDriver;
 import org.commonjava.aprox.inject.TestData;
+import org.commonjava.maven.atlas.effective.EProjectWeb;
+import org.commonjava.maven.atlas.spi.effective.EGraphDriver;
 import org.commonjava.maven.atlas.spi.neo4j.effective.FileNeo4JEGraphDriver;
 import org.commonjava.util.logging.Logger;
 

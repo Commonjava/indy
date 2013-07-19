@@ -3,11 +3,11 @@ package org.commonjava.aprox.tensor.event;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 
-import org.apache.maven.graph.common.ref.ProjectVersionRef;
-import org.apache.maven.graph.common.version.InvalidVersionSpecificationException;
 import org.commonjava.aprox.change.event.FileErrorEvent;
 import org.commonjava.aprox.change.event.FileNotFoundEvent;
 import org.commonjava.aprox.rest.util.ArtifactPathInfo;
+import org.commonjava.maven.atlas.common.ref.ProjectVersionRef;
+import org.commonjava.maven.atlas.common.version.InvalidVersionSpecificationException;
 import org.commonjava.tensor.event.AbstractTensorEventFunnel;
 
 @ApplicationScoped
