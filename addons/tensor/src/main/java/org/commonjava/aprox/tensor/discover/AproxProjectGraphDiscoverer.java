@@ -149,6 +149,10 @@ public class AproxProjectGraphDiscoverer
             {
                 return discoverer.discoverRelationships( retrieved );
             }
+            else
+            {
+                return null;
+            }
         }
         catch ( final AproxWorkflowException e )
         {
@@ -160,8 +164,6 @@ public class AproxProjectGraphDiscoverer
             throw new TensorDataException( "Discovery of project-relationships for: '%s' failed. Error: %s", e, ref,
                                            e.getMessage() );
         }
-
-        return null;
     }
 
     @Override
