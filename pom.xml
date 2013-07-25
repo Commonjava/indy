@@ -354,34 +354,6 @@
             </execution>
           </executions>
         </plugin> -->
-        <plugin>
-          <artifactId>maven-assembly-plugin</artifactId>
-          <dependencies>
-            <dependency>
-              <groupId>org.commonjava.aprox.tools</groupId>
-              <artifactId>aprox-assemblies</artifactId>
-              <version>${project.version}</version>
-            </dependency>
-          </dependencies>
-          <executions>
-            <execution>
-              <id>test-war</id>
-              <goals>
-                <goal>single</goal>
-              </goals>
-              <phase>pre-integration-test</phase>
-              <configuration>
-                <descriptorRefs>
-                  <descriptorRef>test-war</descriptorRef>
-                </descriptorRefs>
-                <finalName>test-assembly</finalName>
-                <attach>false</attach>
-                <appendAssemblyId>false</appendAssemblyId>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
-        
         <!-- <plugin>
           <groupId>org.commonjava.maven</groupId>
           <artifactId>restdoc-maven-plugin</artifactId>
@@ -406,6 +378,42 @@
       
       <modules>
       </modules>
+    </profile>
+    <profile>
+      <id>its</id>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <artifactId>maven-assembly-plugin</artifactId>
+              <dependencies>
+                <dependency>
+                  <groupId>org.commonjava.aprox.tools</groupId>
+                  <artifactId>aprox-assemblies</artifactId>
+                  <version>${project.version}</version>
+                </dependency>
+              </dependencies>
+              <executions>
+                <execution>
+                  <id>test-war</id>
+                  <goals>
+                    <goal>single</goal>
+                  </goals>
+                  <phase>pre-integration-test</phase>
+                  <configuration>
+                    <descriptorRefs>
+                      <descriptorRef>test-war</descriptorRef>
+                    </descriptorRefs>
+                    <finalName>test-assembly</finalName>
+                    <attach>false</attach>
+                    <appendAssemblyId>false</appendAssemblyId>
+                  </configuration>
+                </execution>
+              </executions>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
     </profile>
   </profiles>
   

@@ -137,13 +137,7 @@
   
   <profiles>
     <profile>
-      <id>test-setup</id>
-      <activation>
-        <property>
-          <name>maven.test.skip</name>
-          <value>!true</value>
-        </property>
-      </activation>
+      <id>its</id>
       <build>
         <plugins>
           <plugin>
@@ -152,14 +146,6 @@
           </plugin>
           <plugin>
             <artifactId>maven-assembly-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>test-war</id>
-                <configuration>
-                  <skipAssembly>false</skipAssembly>
-                </configuration>
-              </execution>
-            </executions>
           </plugin>
           <plugin>
             <artifactId>maven-failsafe-plugin</artifactId>
