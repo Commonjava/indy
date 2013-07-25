@@ -33,6 +33,7 @@
   
   <build>
     <finalName>aprox-ui</finalName>
+    <plugins>
       <plugin>
         <artifactId>maven-war-plugin</artifactId>
         <version>2.3</version>
