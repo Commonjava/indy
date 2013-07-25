@@ -1,0 +1,1 @@
+function custom(){ alert("Custom!"); }

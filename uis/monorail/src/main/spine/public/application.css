@@ -1,0 +1,239 @@
+body {
+  font-family: sans-serif;
+}
+.product-name,
+.navbar-content,
+.items-label,
+.button {
+  font-variant: small-caps;
+}
+.product-name {
+  font-size: 300%;
+  font-family: serif;
+  display: inline;
+}
+.ui-dialog {
+  background: #fff;
+  border: 4px solid #555;
+  padding: 10px;
+}
+.ui-dialog-title {
+  font-size: 1.2em;
+  color: #555;
+}
+.ui-widget-header {
+  border-bottom: 3px solid #000;
+  padding-top: 7px;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+}
+.navbar-content {
+  padding-top: 40px;
+  padding-left: 10px;
+}
+.navbar-content a.button {
+  padding: 8px;
+  margin-bottom: 0px;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  font-size: 1.1em;
+}
+.vdiv {
+  border-left: 1px solid #000;
+  min-width: 2px;
+  content: " ";
+  display: inline;
+  margin-left: 5px;
+  margin-right: 5px;
+}
+a.button,
+.ui-button {
+  padding: 4px;
+  margin-left: 0px;
+  margin-right: 0px;
+}
+a.button.ui-state-active,
+.ui-button.ui-state-active {
+  background: #777;
+  color: #eee;
+}
+.ui-widget-content a.button,
+.ui-dialog .ui-button {
+  -moz-border-radius: 2px;
+  -webkit-border-radius: 2px;
+  border-radius: 2px;
+  -moz-box-shadow: 2px 2px 1px #555;
+  -webkit-box-shadow: 2px 2px 1px #555;
+  box-shadow: 2px 2px 1px #555;
+  border-left: 1px solid #aaa;
+  border-top: 1px solid #aaa;
+  color: #555;
+  font-size: 0.9em;
+}
+a.button:not(.ui-state-active) {
+  background: #fff;
+}
+a:not(.button) {
+  color: #333;
+}
+header {
+  margin-top: 5px;
+  padding: 5px;
+  padding-left: 10px;
+  margin-bottom: 10px;
+}
+footer {
+  padding: 5px;
+  margin-top: 10px;
+}
+.group-edit {
+  width: 100%;
+  height: 100%;
+}
+label {
+  display: inline;
+}
+.block-label {
+  display: block;
+}
+.form-line {
+  padding-top: 10px;
+  display: block;
+}
+.form-field {
+  display: inline-block;
+  margin-right: 20px;
+}
+.available,
+.selected {
+  min-width: 200px;
+  min-height: 200px;
+  list-style: none inside;
+}
+.scrollable {
+  max-height: 300px;
+  vertical-align: top;
+  overflow: scroll;
+}
+.sidebyside {
+  display: inline-block;
+}
+.left {
+  float: left;
+}
+.right {
+  float: right;
+}
+.form-section {
+  display: block;
+  width: 100%;
+  min-width: 500px;
+  clear: both;
+  z-index: 9;
+}
+.button-bar {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #000;
+  display: block;
+  clear: both;
+}
+.item.active {
+  background-color: #d3d3d3;
+}
+.stack > *:not(.active) {
+  display: none;
+}
+.items-container {
+  margin-top: 40px;
+  width: 100%;
+  display: table;
+}
+.items-header-row {
+  display: table-row;
+}
+.items-label:first-child {
+  border-left: 1px solid #555;
+}
+.items-label {
+  display: table-cell;
+  font-weight: bold;
+  border-right: 1px solid #555;
+  border-bottom: 2px solid #555;
+  padding-left: 20px;
+}
+.item-field {
+  display: table-cell;
+  padding-left: 7px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  border: 1px solid #fff;
+  background: #eee;
+}
+.item {
+  display: table-row;
+}
+input {
+  border: 1px solid #006;
+  background: #eee;
+  line-height: 1.5em;
+  font-size: 1.1em;
+  resize: horizontal;
+}
+.item-highlight {
+  background: #ddd;
+}
+.empty-dropzone {
+  min-height: 20px;
+  border: 1px solid #d3d3d3;
+  padding: 2px;
+  margin: 2px;
+  color: #d3d3d3;
+}
+.drop-insertion-parent {
+  padding-top: 10px;
+}
+.drop-insertion-point {
+  background: #ffc;
+  color: #000;
+}
+fieldset {
+  margin-top: 20px;
+}
+fieldset:not(.invisible) {
+  border: 1px solid #d3d3d3;
+}
+fieldset.invisible {
+  border: 0px solid #fff;
+}
+fieldset.invisible legend {
+  display: none;
+}
+.ui-helper-clearfix:before,
+.ui-helper-clearfix:after {
+  content: "";
+  display: table;
+}
+.ui-helper-clearfix:after {
+  clear: both;
+}
+.ui-helper-clearfix {
+  zoom: 1;
+}
+.footer {
+  margin-top: 20px;
+  padding-bottom: 10px;
+}
+.footer-section {
+  font-size: smaller;
+}
+.footer-section a {
+  font-weight: bold;
+}
+.footer-section .stat-label {
+  font-weight: bold;
+  font-variant: small-caps;
+}
+.footer-section .stat-value {
+  font-style: italic;
+}

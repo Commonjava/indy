@@ -29,91 +29,18 @@
   
   <properties>
     <maven.test.skip>true</maven.test.skip>
-    
-    <!-- see profiles below for some common file-triggered alternative locations -->
-    <npm.executable>npm</npm.executable>
   </properties>
   
   <build>
     <finalName>aprox-ui</finalName>
-    <resources>
-      <resource>
-        <directory>src/main/spine</directory>
-        <targetPath>../spine-app</targetPath>
-      </resource>
-    </resources>
-    <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>1.2.1</version>
-        <executions>
-          <execution>
-            <id>npm-install</id>
-            <goals>
-              <goal>exec</goal>
-            </goals>
-            <phase>process-resources</phase>
-            <configuration>
-              <executable>${npm.executable}</executable>
-              <workingDirectory>${project.build.directory}/spine-app</workingDirectory>
-              <arguments>
-                <argument>install</argument>
-                <argument>.</argument>
-              </arguments>
-            </configuration>
-          </execution>
-          <execution>
-            <id>hem-build</id>
-            <goals>
-              <goal>exec</goal>
-            </goals>
-            <phase>compile</phase>
-            <configuration>
-              <executable>${project.build.directory}/spine-app/node_modules/hem/bin/hem</executable>
-              <workingDirectory>${project.build.directory}/spine-app</workingDirectory>
-              <arguments>
-                <argument>build</argument>
-              </arguments>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <artifactId>maven-war-plugin</artifactId>
         <version>2.3</version>
         <configuration>
-          <warSourceDirectory>${project.build.directory}/spine-app/public</warSourceDirectory>
+          <warSourceDirectory>src/main/spine/public</warSourceDirectory>
         </configuration>
       </plugin>
     </plugins>
   </build>
-  
-  <profiles>
-    <profile>
-      <id>platform-linux-npm</id>
-      <activation>
-        <file>
-          <exists>/usr/bin/npm</exists>
-        </file>
-      </activation>
-      
-      <properties>
-        <npm.executable>/usr/bin/npm</npm.executable>
-      </properties>
-    </profile>
-    <profile>
-      <id>custom-linux-npm</id>
-      <activation>
-        <file>
-          <exists>/usr/local/bin/npm</exists>
-        </file>
-      </activation>
-      
-      <properties>
-        <npm.executable>/usr/local/bin/npm</npm.executable>
-      </properties>
-    </profile>
-  </profiles>
   
 </project>
