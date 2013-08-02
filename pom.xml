@@ -24,7 +24,7 @@
   
   <groupId>org.commonjava.aprox</groupId>
   <artifactId>aprox-parent</artifactId>
-  <version>0.7-SNAPSHOT</version>
+  <version>0.7</version>
   
   <packaging>pom</packaging>
   
@@ -96,7 +96,7 @@
       <dependency>
         <groupId>org.commonjava.aprox.ui</groupId>
         <artifactId>aprox-ui-monorail</artifactId>
-        <version>0.7-SNAPSHOT</version>
+        <version>0.7</version>
         <type>war</type>
         <scope>runtime</scope>
       </dependency>
@@ -104,12 +104,12 @@
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-api</artifactId>
-        <version>0.7-SNAPSHOT</version>
+        <version>0.7</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-core</artifactId>
-        <version>0.7-SNAPSHOT</version>
+        <version>0.7</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
@@ -119,55 +119,55 @@
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-db-flat</artifactId>
-        <version>0.7-SNAPSHOT</version>
+        <version>0.7</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-tensor</artifactId>
-        <version>0.7-SNAPSHOT</version>
+        <version>0.7</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-autoprox</artifactId>
-        <version>0.7-SNAPSHOT</version>
+        <version>0.7</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-dot-maven</artifactId>
-        <version>0.7-SNAPSHOT</version>
+        <version>0.7</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-indexer</artifactId>
-        <version>0.7-SNAPSHOT</version>
+        <version>0.7</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-db-memory</artifactId>
-        <version>0.7-SNAPSHOT</version>
+        <version>0.7</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-test-db</artifactId>
-        <version>0.7-SNAPSHOT</version>
+        <version>0.7</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-test-filer</artifactId>
-        <version>0.7-SNAPSHOT</version>
+        <version>0.7</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-test-utils</artifactId>
-        <version>0.7-SNAPSHOT</version>
+        <version>0.7</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-filer-default</artifactId>
-        <version>0.7-SNAPSHOT</version>
+        <version>0.7</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
@@ -177,12 +177,12 @@
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-subsys-flatfile</artifactId>
-        <version>0.7-SNAPSHOT</version>
+        <version>0.7</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-subsys-http</artifactId>
-        <version>0.7-SNAPSHOT</version>
+        <version>0.7</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
@@ -192,18 +192,18 @@
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-subsys-maven</artifactId>
-        <version>0.7-SNAPSHOT</version>
+        <version>0.7</version>
       </dependency>
       
       <dependency>
         <groupId>org.commonjava.tensor</groupId>
         <artifactId>tensor-core</artifactId>
-        <version>${tensor-version}</version>
+        <version>0.4</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.tensor</groupId>
         <artifactId>tensor-web-basics</artifactId>
-        <version>${tensor-version}</version>
+        <version>0.4</version>
       </dependency>
       
       <dependency>
