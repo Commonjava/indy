@@ -30,14 +30,4 @@
   <modules>
     <module>default</module>
   </modules>
-  
-  <profiles>
-    <profile>
-      <id>experimental</id>
-      
-      <modules>
-        <module>gridfs</module>
-      </modules>
-    </profile>
-  </profiles>
 </project>

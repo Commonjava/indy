@@ -21,18 +21,28 @@ public final class PathUtils
             final String[] subParts = part.split( "/" );
             for ( final String subPart : subParts )
             {
-                if ( subPart.trim()
-                            .length() < 1 )
+                final String normal = normalizePathPart( subPart );
+                if ( normal.length() < 1 )
                 {
                     continue;
                 }
 
                 sb.append( "/" )
-                  .append( subPart.replace( '\\', '/' ) );
+                  .append( normal );
             }
         }
 
         return sb.toString();
     }
 
+    public static String normalizePathPart( final String path )
+    {
+        String result = path.trim();
+        while ( result.startsWith( "/" ) && result.length() > 1 )
+        {
+            result = result.substring( 1 );
+        }
+
+        return result.replace( '\\', '/' );
+    }
 }

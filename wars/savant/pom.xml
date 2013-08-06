@@ -26,7 +26,7 @@
   <!-- <packaging>war</packaging> -->
   
   <name>AProx :: Savant</name>
-  <description>REST + JS UI + Tensor + Autoprox</description>
+  <description>REST + JS UI + Cartographer + DotMaven + Autoprox</description>
   
   <dependencies>
     <dependency>
@@ -51,7 +51,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-tensor</artifactId>
+      <artifactId>aprox-depgraph</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>

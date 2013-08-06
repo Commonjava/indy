@@ -31,10 +31,12 @@ import org.commonjava.aprox.dotmaven.data.StorageAdvisor;
 import org.commonjava.aprox.dotmaven.store.SubStore;
 import org.commonjava.aprox.dotmaven.util.StoreURIMatcher;
 import org.commonjava.aprox.filer.FileManager;
-import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
+import org.commonjava.aprox.util.LocationUtils;
+import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.util.logging.Logger;
 
 @RequestScoped
@@ -81,7 +83,7 @@ public class ArtifactStoreSubStore
         final StorageAdvice advice = getStorageAdviceFor( matcher );
 
         final String path = matcher.getStorePath();
-        final StorageItem item = fileManager.getStorageReference( advice.getDeployableStore(), path );
+        final Transfer item = fileManager.getStorageReference( advice.getDeployableStore(), path );
         try
         {
             item.mkdirs();
@@ -110,7 +112,7 @@ public class ArtifactStoreSubStore
         final StorageAdvice advice = getStorageAdviceFor( matcher );
 
         final String path = matcher.getStorePath();
-        final StorageItem item = fileManager.getStorageReference( advice.getDeployableStore(), path );
+        final Transfer item = fileManager.getStorageReference( advice.getDeployableStore(), path );
         try
         {
             item.createFile();
@@ -128,14 +130,14 @@ public class ArtifactStoreSubStore
     public InputStream getResourceContent( final ITransaction transaction, final String resourceUri )
     {
         final StoreURIMatcher matcher = new StoreURIMatcher( resourceUri );
-        final StorageItem item = getStorageItem( matcher );
+        final Transfer item = getTransfer( matcher );
         if ( item == null )
         {
             throw new WebdavException( "Cannot read content: " + resourceUri );
         }
 
         final String path = item.getPath();
-        final StoreKey key = item.getStoreKey();
+        final StoreKey key = LocationUtils.getKey( item );
 
         try
         {
@@ -148,7 +150,7 @@ public class ArtifactStoreSubStore
         }
     }
 
-    private StorageItem getStorageItem( final StoreURIMatcher matcher )
+    private Transfer getTransfer( final StoreURIMatcher matcher )
     {
         final String resourceUri = matcher.getURI();
 
@@ -163,7 +165,7 @@ public class ArtifactStoreSubStore
         final String path = matcher.getStorePath();
         final StoreKey key = matcher.getStoreKey();
 
-        StorageItem item = null;
+        Transfer item = null;
         try
         {
             if ( StoreType.group == key.getType() )
@@ -171,11 +173,11 @@ public class ArtifactStoreSubStore
                 final List<ArtifactStore> stores = aprox.getOrderedStoresInGroup( key.getName() );
                 for ( final ArtifactStore store : stores )
                 {
-                    //                    logger.info( "Getting StorageItem for: %s from: %s", path, store );
-                    final StorageItem si = fileManager.getStorageReference( store, path );
+                    //                    logger.info( "Getting Transfer for: %s from: %s", path, store );
+                    final Transfer si = fileManager.getStorageReference( store, path );
                     if ( si.exists() )
                     {
-                        //                        logger.info( "Using StorageItem: %s for path: %s", si, path );
+                        //                        logger.info( "Using Transfer: %s for path: %s", si, path );
                         item = si;
                         break;
                     }
@@ -184,11 +186,11 @@ public class ArtifactStoreSubStore
             else
             {
                 final ArtifactStore store = aprox.getArtifactStore( key );
-                //                logger.info( "Getting StorageItem for: %s from: %s", path, store );
-                final StorageItem si = fileManager.getStorageReference( store, path );
+                //                logger.info( "Getting Transfer for: %s from: %s", path, store );
+                final Transfer si = fileManager.getStorageReference( store, path );
                 if ( si.exists() )
                 {
-                    //                    logger.info( "Using StorageItem: %s for path: %s", si, path );
+                    //                    logger.info( "Using Transfer: %s for path: %s", si, path );
                     item = si;
                 }
             }
@@ -218,17 +220,17 @@ public class ArtifactStoreSubStore
         final StorageAdvice advice = getStorageAdviceFor( matcher );
 
         final String path = matcher.getStorePath();
-        final StorageItem item = fileManager.getStorageReference( advice.getDeployableStore(), path );
+        final Transfer item = fileManager.getStorageReference( advice.getDeployableStore(), path );
         Writer writer = null;
         try
         {
             if ( characterEncoding != null )
             {
-                writer = new OutputStreamWriter( item.openOutputStream(), characterEncoding );
+                writer = new OutputStreamWriter( item.openOutputStream( TransferOperation.UPLOAD ), characterEncoding );
             }
             else
             {
-                writer = new OutputStreamWriter( item.openOutputStream() );
+                writer = new OutputStreamWriter( item.openOutputStream( TransferOperation.UPLOAD ) );
             }
 
             copy( content, writer );
@@ -258,7 +260,7 @@ public class ArtifactStoreSubStore
             String path = matcher.getStorePath();
             if ( isEmpty( path ) )
             {
-                path = StorageItem.ROOT;
+                path = Transfer.ROOT;
             }
 
             final StoreKey key = matcher.getStoreKey();
@@ -270,7 +272,7 @@ public class ArtifactStoreSubStore
                     final Set<String> noms = new TreeSet<String>();
                     for ( final ArtifactStore store : stores )
                     {
-                        final StorageItem item = fileManager.getStorageReference( store, path );
+                        final Transfer item = fileManager.getStorageReference( store, path );
                         if ( !item.exists() )
                         {
                             continue;
@@ -278,7 +280,7 @@ public class ArtifactStoreSubStore
 
                         if ( !item.isDirectory() )
                         {
-                            logger.error( "StorageItem: %s in %s is not a directory.", path, store.getKey() );
+                            logger.error( "Transfer: %s in %s is not a directory.", path, store.getKey() );
                             continue;
                         }
 
@@ -290,10 +292,10 @@ public class ArtifactStoreSubStore
                 else
                 {
                     final ArtifactStore store = aprox.getArtifactStore( key );
-                    final StorageItem item = fileManager.getStorageReference( store, path );
+                    final Transfer item = fileManager.getStorageReference( store, path );
                     if ( !item.exists() || !item.isDirectory() )
                     {
-                        logger.error( "StorageItem: %s in %s is not a directory.", path, store.getKey() );
+                        logger.error( "Transfer: %s in %s is not a directory.", path, store.getKey() );
                         names = new String[] {};
                     }
                     else
@@ -346,7 +348,7 @@ public class ArtifactStoreSubStore
         final StoreURIMatcher matcher = new StoreURIMatcher( path );
         if ( matcher.hasStorePath() )
         {
-            final StorageItem item = getStorageItem( matcher );
+            final Transfer item = getTransfer( matcher );
             if ( item != null )
             {
                 return item.getDetachedFile()
@@ -373,7 +375,7 @@ public class ArtifactStoreSubStore
         final StorageAdvice advice = getStorageAdviceFor( matcher );
 
         final String path = matcher.getStorePath();
-        final StorageItem item = fileManager.getStorageReference( advice.getDeployableStore(), path );
+        final Transfer item = fileManager.getStorageReference( advice.getDeployableStore(), path );
         try
         {
             if ( item.exists() )
@@ -398,7 +400,7 @@ public class ArtifactStoreSubStore
         final StoreURIMatcher matcher = new StoreURIMatcher( uri );
         if ( matcher.hasStorePath() )
         {
-            final StorageItem item = getStorageItem( matcher );
+            final Transfer item = getTransfer( matcher );
 
             if ( item == null )
             {

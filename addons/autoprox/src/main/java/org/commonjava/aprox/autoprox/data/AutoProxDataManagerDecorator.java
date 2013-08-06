@@ -27,7 +27,7 @@ import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.aprox.subsys.http.AproxHttp;
+import org.commonjava.aprox.subsys.http.AproxHttpProvider;
 import org.commonjava.util.logging.Logger;
 
 @Decorator
@@ -55,7 +55,7 @@ public abstract class AutoProxDataManagerDecorator
     private AutoProxModel autoproxModel;
 
     @Inject
-    private AproxHttp http;
+    private AproxHttpProvider http;
 
     @Override
     public Group getGroup( final String name )

@@ -25,10 +25,10 @@ import javax.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.filer.FileManager;
-import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.live.AbstractAProxLiveTest;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Repository;
+import org.commonjava.maven.galley.model.Transfer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -56,7 +56,7 @@ public class PathRetrieverLiveTest
         final Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
         final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
 
-        final StorageItem stream = downloader.retrieve( repo, path );
+        final Transfer stream = downloader.retrieve( repo, path );
         final String pom = IOUtils.toString( stream.openInputStream() );
 
         assertThat( pom.contains( "<artifactId>maven-model</artifactId>" ), equalTo( true ) );
@@ -75,7 +75,7 @@ public class PathRetrieverLiveTest
         repos.add( repo );
         repos.add( repo2 );
 
-        final StorageItem stream = downloader.retrieveFirst( repos, path );
+        final Transfer stream = downloader.retrieveFirst( repos, path );
         final String pom = IOUtils.toString( stream.openInputStream() );
 
         assertThat( pom.contains( "<artifactId>maven-model</artifactId>" ), equalTo( true ) );

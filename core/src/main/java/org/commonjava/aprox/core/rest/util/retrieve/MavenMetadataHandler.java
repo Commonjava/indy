@@ -27,16 +27,15 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.core.Response;
 
-import org.commonjava.aprox.change.event.FileEventManager;
-import org.commonjava.aprox.change.event.FileStorageEvent;
 import org.commonjava.aprox.core.rest.util.GroupMergeHelper;
 import org.commonjava.aprox.core.rest.util.MavenMetadataMerger;
 import org.commonjava.aprox.filer.FileManager;
-import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.retrieve.GroupPathHandler;
+import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.model.TransferOperation;
 
 @ApplicationScoped
 public class MavenMetadataHandler
@@ -50,9 +49,6 @@ public class MavenMetadataHandler
     private FileManager fileManager;
 
     @Inject
-    private FileEventManager fileEvent;
-
-    @Inject
     private MavenMetadataMerger merger;
 
     @Override
@@ -62,21 +58,21 @@ public class MavenMetadataHandler
     }
 
     @Override
-    public StorageItem retrieve( final Group group, final List<? extends ArtifactStore> stores, final String path )
+    public Transfer retrieve( final Group group, final List<? extends ArtifactStore> stores, final String path )
         throws AproxWorkflowException
     {
-        final StorageItem target = fileManager.getStorageReference( group, path );
+        final Transfer target = fileManager.getStorageReference( group, path );
 
         if ( !target.exists() )
         {
-            final Set<StorageItem> sources = fileManager.retrieveAll( stores, path );
+            final Set<Transfer> sources = fileManager.retrieveAll( stores, path );
             final byte[] merged = merger.merge( sources, group, path );
             if ( merged != null )
             {
                 OutputStream fos = null;
                 try
                 {
-                    fos = target.openOutputStream( true );
+                    fos = target.openOutputStream( TransferOperation.GENERATE, true );
                     fos.write( merged );
 
                 }
@@ -93,11 +89,6 @@ public class MavenMetadataHandler
                 }
 
                 helper.writeChecksumsAndMergeInfo( merged, sources, group, path );
-
-                if ( fileEvent != null )
-                {
-                    fileEvent.fire( new FileStorageEvent( FileStorageEvent.Type.GENERATE, target ) );
-                }
             }
         }
 
@@ -110,14 +101,14 @@ public class MavenMetadataHandler
     }
 
     @Override
-    public StorageItem store( final Group group, final List<? extends ArtifactStore> stores, final String path,
-                              final InputStream stream )
+    public Transfer store( final Group group, final List<? extends ArtifactStore> stores, final String path,
+                           final InputStream stream )
         throws AproxWorkflowException
     {
         if ( path.endsWith( MavenMetadataMerger.METADATA_NAME ) )
         {
             // delete so it'll be recomputed.
-            final StorageItem target = fileManager.getStorageReference( group, path );
+            final Transfer target = fileManager.getStorageReference( group, path );
             try
             {
                 target.delete();
@@ -139,7 +130,7 @@ public class MavenMetadataHandler
     public boolean delete( final Group group, final List<? extends ArtifactStore> stores, final String path )
         throws AproxWorkflowException, IOException
     {
-        final StorageItem target = fileManager.getStorageReference( group, path );
+        final Transfer target = fileManager.getStorageReference( group, path );
 
         if ( target == null )
         {

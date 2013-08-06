@@ -32,19 +32,20 @@ import org.apache.maven.index.updater.IndexUpdateResult;
 import org.apache.maven.index.updater.IndexUpdater;
 import org.apache.maven.index.updater.ResourceFetcher;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
-import org.commonjava.aprox.change.event.FileStorageEvent;
 import org.commonjava.aprox.change.event.ProxyManagerDeleteEvent;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.indexer.inject.IndexCreatorSet;
-import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
+import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.maven.galley.event.FileStorageEvent;
+import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.shelflife.ExpirationManager;
 import org.commonjava.shelflife.ExpirationManagerException;
 import org.commonjava.shelflife.event.ExpirationEvent;
@@ -116,8 +117,8 @@ public class IndexHandler
 
     public void onStorage( @Observes final FileStorageEvent event )
     {
-        final StorageItem item = event.getStorageItem();
-        final StoreKey key = item.getStoreKey();
+        final Transfer item = event.getTransfer();
+        final StoreKey key = LocationUtils.getKey( item );
         final String path = item.getPath();
         if ( !isIndexable( path ) )
         {
@@ -274,7 +275,7 @@ public class IndexHandler
                 final StoreKey key = store.getKey();
                 final IndexingContext context = entry.getValue();
 
-                final StorageItem item = fileManager.getStorageReference( store, INDEX_PROPERTIES );
+                final Transfer item = fileManager.getStorageReference( store, INDEX_PROPERTIES );
                 if ( !item.exists() )
                 {
                     if ( updateRepositoryIndexes || key.getType() == StoreType.deploy_point )

@@ -3,6 +3,7 @@ package org.commonjava.aprox.core.change;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.aprox.core.change.sl.ExpirationConstants.APROX_EVENT;
 import static org.commonjava.aprox.core.change.sl.ExpirationConstants.APROX_FILE_EVENT;
+import static org.commonjava.aprox.util.LocationUtils.getKey;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -28,11 +29,6 @@ import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
-import org.commonjava.aprox.change.event.FileAccessEvent;
-import org.commonjava.aprox.change.event.FileDeletionEvent;
-import org.commonjava.aprox.change.event.FileEvent;
-import org.commonjava.aprox.change.event.FileStorageEvent;
-import org.commonjava.aprox.change.event.FileStorageEvent.Type;
 import org.commonjava.aprox.change.event.ProxyManagerDeleteEvent;
 import org.commonjava.aprox.change.event.ProxyManagerUpdateType;
 import org.commonjava.aprox.conf.AproxConfiguration;
@@ -43,7 +39,6 @@ import org.commonjava.aprox.core.change.sl.StoreMatcher;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.filer.FileManager;
-import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.model.Group;
@@ -52,6 +47,12 @@ import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.rest.util.ArtifactPathInfo;
 import org.commonjava.aprox.rest.util.ArtifactPathInfo.SnapshotInfo;
+import org.commonjava.maven.galley.event.FileAccessEvent;
+import org.commonjava.maven.galley.event.FileDeletionEvent;
+import org.commonjava.maven.galley.event.FileEvent;
+import org.commonjava.maven.galley.event.FileStorageEvent;
+import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.shelflife.ExpirationManager;
 import org.commonjava.shelflife.ExpirationManagerException;
 import org.commonjava.shelflife.event.ExpirationEvent;
@@ -91,7 +92,7 @@ public class TimeoutManager
                 final String path = (String) event.getExpiration()
                                                   .getData();
 
-                final StorageItem toDelete = fileManager.getStorageReference( key, path );
+                final Transfer toDelete = fileManager.getStorageReference( key, path );
                 if ( toDelete.exists() )
                 {
                     try
@@ -118,7 +119,7 @@ public class TimeoutManager
 
     public void onFileStorageEvent( @Observes final FileStorageEvent event )
     {
-        final Type type = event.getType();
+        final TransferOperation type = event.getType();
 
         switch ( type )
         {
@@ -145,25 +146,30 @@ public class TimeoutManager
 
     public void onFileAccessEvent( @Observes final FileAccessEvent event )
     {
-        final StoreType type = event.getStorageItem()
-                                    .getStoreKey()
-                                    .getType();
+        final StoreKey key = getKey( event );
+        if ( key != null )
+        {
+            final StoreType type = key.getType();
 
-        if ( type == StoreType.deploy_point )
-        {
-            setSnapshotTimeouts( event );
-        }
-        else if ( type == StoreType.repository )
-        {
-            setProxyTimeouts( event );
+            if ( type == StoreType.deploy_point )
+            {
+                setSnapshotTimeouts( event );
+            }
+            else if ( type == StoreType.repository )
+            {
+                setProxyTimeouts( event );
+            }
         }
     }
 
     public void onFileDeletionEvent( @Observes final FileDeletionEvent event )
     {
-        cancel( event.getStorageItem()
-                     .getStoreKey(), event.getStorageItem()
-                                          .getPath() );
+        final StoreKey key = getKey( event );
+        if ( key != null )
+        {
+            cancel( key, event.getTransfer()
+                              .getPath() );
+        }
     }
 
     public void onStoreUpdate( @Observes final ArtifactStoreUpdateEvent event )
@@ -274,14 +280,14 @@ public class TimeoutManager
 
     private Set<String> listAllFiles( final ArtifactStore store, final FilenameFilter filter )
     {
-        final StorageItem storeRoot = fileManager.getStoreRootDirectory( store.getKey() );
+        final Transfer storeRoot = fileManager.getStoreRootDirectory( store.getKey() );
         final Set<String> paths = new HashSet<String>();
         listAll( storeRoot, "", paths, filter );
 
         return paths;
     }
 
-    private void listAll( final StorageItem dir, final String parentPath, final Set<String> capturedFiles,
+    private void listAll( final Transfer dir, final String parentPath, final Set<String> capturedFiles,
                           final FilenameFilter filter )
     {
         final String[] files = dir.exists() ? dir.list() : null;
@@ -292,7 +298,7 @@ public class TimeoutManager
                 final File d = dir.getDetachedFile();
                 if ( filter == null || filter.accept( d, file ) )
                 {
-                    final StorageItem child = dir.getChild( file );
+                    final Transfer child = dir.getChild( file );
 
                     final String childPath = new File( parentPath, file ).getPath();
                     if ( child.isDirectory() )
@@ -336,7 +342,7 @@ public class TimeoutManager
         for ( final String name : names )
         {
             final StoreKey key = new StoreKey( type, name );
-            final StorageItem dir = fileManager.getStoreRootDirectory( key );
+            final Transfer dir = fileManager.getStoreRootDirectory( key );
             if ( dir.exists() && dir.isDirectory() )
             {
                 try
@@ -361,16 +367,20 @@ public class TimeoutManager
 
     private void setProxyTimeouts( final FileEvent event )
     {
+        final StoreKey key = getKey( event );
+        if ( key == null )
+        {
+            return;
+        }
+
         Repository repo = null;
         try
         {
-            repo = (Repository) dataManager.getArtifactStore( event.getStorageItem()
-                                                                   .getStoreKey() );
+            repo = (Repository) dataManager.getArtifactStore( key );
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( "Failed to retrieve store for: %s. Reason: %s", e, event.getStorageItem()
-                                                                                  .getStoreKey(), e.getMessage() );
+            logger.error( "Failed to retrieve store for: %s. Reason: %s", e, key, e.getMessage() );
         }
 
         if ( repo == null )
@@ -378,7 +388,7 @@ public class TimeoutManager
             return;
         }
 
-        final String path = event.getStorageItem()
+        final String path = event.getTransfer()
                                  .getPath();
 
         long timeout = config.getPassthroughTimeoutSeconds() * 1000;
@@ -405,11 +415,16 @@ public class TimeoutManager
 
     private void setSnapshotTimeouts( final FileEvent event )
     {
+        final StoreKey key = getKey( event );
+        if ( key == null )
+        {
+            return;
+        }
+
         DeployPoint deploy = null;
         try
         {
-            final ArtifactStore store = dataManager.getArtifactStore( event.getStorageItem()
-                                                                           .getStoreKey() );
+            final ArtifactStore store = dataManager.getArtifactStore( key );
             if ( store instanceof DeployPoint )
             {
                 deploy = (DeployPoint) store;
@@ -422,8 +437,7 @@ public class TimeoutManager
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( "Failed to retrieve deploy point for: %s. Reason: %s", e, event.getStorageItem()
-                                                                                         .getStoreKey(), e.getMessage() );
+            logger.error( "Failed to retrieve deploy point for: %s. Reason: %s", e, key, e.getMessage() );
         }
 
         if ( deploy == null )
@@ -431,7 +445,7 @@ public class TimeoutManager
             return;
         }
 
-        final String path = event.getStorageItem()
+        final String path = event.getTransfer()
                                  .getPath();
 
         if ( ArtifactPathInfo.isSnapshot( path ) && deploy.getSnapshotTimeoutSeconds() > 0 )
@@ -475,9 +489,13 @@ public class TimeoutManager
 
     private void cleanMetadata( final FileEvent event )
     {
-        final StoreKey key = event.getStorageItem()
-                                  .getStoreKey();
-        final String path = event.getStorageItem()
+        final StoreKey key = getKey( event );
+        if ( key == null )
+        {
+            return;
+        }
+
+        final String path = event.getTransfer()
                                  .getPath();
 
         cleanMetadata( key, path );
@@ -496,7 +514,7 @@ public class TimeoutManager
 
                     cancel( key, path );
 
-                    final StorageItem item = fileManager.getStorageReference( group, path );
+                    final Transfer item = fileManager.getStorageReference( group, path );
                     if ( item.exists() )
                     {
                         try
@@ -572,17 +590,16 @@ public class TimeoutManager
     {
         final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
 
-        final StorageItem item = fileManager.getStorageReference( key, path );
+        final Transfer item = fileManager.getStorageReference( key, path );
         if ( item.getParent() == null || item.getParent()
                                              .getParent() == null )
         {
             return;
         }
 
-        final StorageItem metadata =
-            fileManager.getStorageReference( item.getStoreKey(), item.getParent()
-                                                                     .getParent()
-                                                                     .getPath(), "maven-metadata.xml" );
+        final Transfer metadata = fileManager.getStorageReference( key, item.getParent()
+                                                                            .getParent()
+                                                                            .getPath(), "maven-metadata.xml" );
 
         if ( metadata.exists() )
         {
@@ -636,7 +653,7 @@ public class TimeoutManager
                     }
                 }
 
-                writer = new OutputStreamWriter( metadata.openOutputStream( true ) );
+                writer = new OutputStreamWriter( metadata.openOutputStream( TransferOperation.GENERATE, true ) );
                 new MetadataXpp3Writer().write( writer, md );
             }
             catch ( final IOException e )

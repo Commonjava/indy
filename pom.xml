@@ -43,7 +43,6 @@
     <arquillian-version>1.0.1.Final</arquillian-version>
     <qarqas-version>0.3</qarqas-version>
     <shelflife-version>0.3</shelflife-version>
-    <tensor-version>0.4-SNAPSHOT</tensor-version>
   </properties>
   
   <distributionManagement>
@@ -123,7 +122,7 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-tensor</artifactId>
+        <artifactId>aprox-depgraph</artifactId>
         <version>0.8-SNAPSHOT</version>
       </dependency>
       <dependency>
@@ -154,12 +153,6 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-test-filer</artifactId>
-        <version>0.8-SNAPSHOT</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-test-utils</artifactId>
         <version>0.8-SNAPSHOT</version>
         <scope>test</scope>
@@ -168,11 +161,6 @@
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-filer-default</artifactId>
         <version>0.8-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-filer-gridfs</artifactId>
-        <version>0.7-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
@@ -195,15 +183,31 @@
         <version>0.8-SNAPSHOT</version>
       </dependency>
       
+      
       <dependency>
-        <groupId>org.commonjava.tensor</groupId>
-        <artifactId>tensor-core</artifactId>
-        <version>0.5-SNAPSHOT</version>
+        <groupId>org.commonjava.maven.galley</groupId>
+        <artifactId>galley-core</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.tensor</groupId>
-        <artifactId>tensor-web-basics</artifactId>
-        <version>0.5-SNAPSHOT</version>
+        <groupId>org.commonjava.maven.galley</groupId>
+        <artifactId>galley-transport-filearc</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.maven.galley</groupId>
+        <artifactId>galley-transport-httpclient</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.maven.cartographer</groupId>
+        <artifactId>cartographer</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.maven.galley</groupId>
+        <artifactId>galley-api</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
       </dependency>
       
       <dependency>

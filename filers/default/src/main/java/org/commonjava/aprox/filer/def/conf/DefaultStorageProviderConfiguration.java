@@ -9,8 +9,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.commonjava.aprox.conf.AbstractAproxConfigInfo;
-import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.aprox.conf.AbstractAproxFeatureConfig;
+import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.aprox.inject.Production;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.ConfigNames;
@@ -69,9 +69,9 @@ public class DefaultStorageProviderConfiguration
     }
 
     @ConfigNames( "storage.dir" )
-    public DefaultStorageProviderConfiguration( final File definitionsDir )
+    public DefaultStorageProviderConfiguration( final File storageBasedir )
     {
-        this.storageBasedir = definitionsDir;
+        this.storageBasedir = storageBasedir;
     }
 
     public File getStorageRootDirectory()

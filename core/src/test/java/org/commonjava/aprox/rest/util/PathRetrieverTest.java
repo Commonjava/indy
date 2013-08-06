@@ -27,12 +27,10 @@ import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.core.filer.DefaultFileManager;
 import org.commonjava.aprox.filer.FileManager;
-import org.commonjava.aprox.filer.def.DefaultStorageProvider;
-import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
-import org.commonjava.aprox.io.StorageItem;
+import org.commonjava.aprox.fixture.GalleyFixture;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Repository;
-import org.commonjava.aprox.subsys.http.AproxHttp;
+import org.commonjava.maven.galley.model.Transfer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -48,16 +46,15 @@ public class PathRetrieverTest
     @Rule
     public final TemporaryFolder tempFolder = new TemporaryFolder();
 
+    private GalleyFixture fixture;
+
     @Before
     public void setupTest()
         throws IOException
     {
         repoRoot = tempFolder.newFolder( "repository" );
-        downloader =
-            new DefaultFileManager( new DefaultAproxConfiguration(),
-                                    new DefaultStorageProvider( new DefaultStorageProviderConfiguration( repoRoot ) ),
-                                    AproxHttp.getInstance()/*, new DefaultNotFoundCache( new MemoryExpirationManager(),
-                                                                                       new DefaultAproxConfiguration() )*/);
+        fixture = new GalleyFixture( repoRoot );
+        downloader = new DefaultFileManager( new DefaultAproxConfiguration(), fixture.getTransfers() );
     }
 
     @Test
@@ -67,7 +64,7 @@ public class PathRetrieverTest
         final Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
         final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
 
-        final StorageItem stream = downloader.retrieve( repo, path );
+        final Transfer stream = downloader.retrieve( repo, path );
         final String pom = IOUtils.toString( stream.openInputStream() );
 
         assertThat( pom.contains( "<artifactId>maven-model</artifactId>" ), equalTo( true ) );
@@ -86,7 +83,7 @@ public class PathRetrieverTest
         repos.add( repo );
         repos.add( repo2 );
 
-        final StorageItem stream = downloader.retrieveFirst( repos, path );
+        final Transfer stream = downloader.retrieveFirst( repos, path );
         final String pom = IOUtils.toString( stream.openInputStream() );
 
         assertThat( pom.contains( "<artifactId>maven-model</artifactId>" ), equalTo( true ) );

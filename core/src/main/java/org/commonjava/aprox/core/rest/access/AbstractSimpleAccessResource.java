@@ -23,9 +23,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.commonjava.aprox.filer.FileManager;
-import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.rest.AproxWorkflowException;
+import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.util.logging.Logger;
 
 public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
@@ -118,7 +118,7 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
             {
                 try
                 {
-                    final StorageItem item = fileManager.retrieve( store, path );
+                    final Transfer item = fileManager.retrieve( store, path );
                     if ( item == null || item.isDirectory() )
                     {
                         response = Response.status( Status.NOT_FOUND )

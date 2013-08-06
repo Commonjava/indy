@@ -16,6 +16,7 @@
 package org.commonjava.aprox.core.rest.util;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.commonjava.aprox.util.LocationUtils.getKey;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
@@ -26,8 +27,9 @@ import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.util.logging.Logger;
 
 @javax.enterprise.context.ApplicationScoped
@@ -40,14 +42,14 @@ public class MavenMetadataMerger
     private final Logger logger = new Logger( getClass() );
 
     @Override
-    public byte[] merge( final Set<StorageItem> sources, final Group group, final String path )
+    public byte[] merge( final Set<Transfer> sources, final Group group, final String path )
     {
         final Metadata master = new Metadata();
         final MetadataXpp3Reader reader = new MetadataXpp3Reader();
         final FileReader fr = null;
 
         boolean merged = false;
-        for ( final StorageItem src : sources )
+        for ( final Transfer src : sources )
         {
             try
             {
@@ -59,13 +61,15 @@ public class MavenMetadataMerger
             }
             catch ( final IOException e )
             {
-                logger.error( "Cannot read metadata: %s from artifact-store: %s. Reason: %s", e, src.getPath(),
-                              src.getStoreKey(), e.getMessage() );
+                final StoreKey key = getKey( src );
+                logger.error( "Cannot read metadata: %s from artifact-store: %s. Reason: %s", e, src.getPath(), key,
+                              e.getMessage() );
             }
             catch ( final XmlPullParserException e )
             {
-                logger.error( "Cannot parse metadata: %s from artifact-store: %s. Reason: %s", e, src.getPath(),
-                              src.getStoreKey(), e.getMessage() );
+                final StoreKey key = getKey( src );
+                logger.error( "Cannot parse metadata: %s from artifact-store: %s. Reason: %s", e, src.getPath(), key,
+                              e.getMessage() );
             }
             finally
             {

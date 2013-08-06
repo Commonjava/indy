@@ -10,11 +10,11 @@ import javax.ws.rs.core.Response;
 import org.commonjava.aprox.core.rest.util.retrieve.GroupHandlerChain;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.GroupContentManager;
+import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.util.logging.Logger;
 
 @javax.enterprise.context.ApplicationScoped
@@ -34,7 +34,7 @@ public class DefaultGroupContentManager
      * @see org.commonjava.aprox.core.rest.util.GroupContentManager#retrieve(java.lang.String, java.lang.String)
      */
     @Override
-    public StorageItem retrieve( final String name, final String path )
+    public Transfer retrieve( final String name, final String path )
         throws AproxWorkflowException
     {
         // TODO:
@@ -66,7 +66,7 @@ public class DefaultGroupContentManager
         }
 
         // logger.info( "Download: %s\nFrom: %s", path, stores );
-        final StorageItem item = handlerChain.retrieve( group, stores, path );
+        final Transfer item = handlerChain.retrieve( group, stores, path );
         if ( item == null || item.isDirectory() )
         {
             return null;
@@ -79,7 +79,7 @@ public class DefaultGroupContentManager
      * @see org.commonjava.aprox.core.rest.util.GroupContentManager#store(java.lang.String, java.lang.String, java.io.InputStream)
      */
     @Override
-    public StorageItem store( final String name, final String path, final InputStream stream )
+    public Transfer store( final String name, final String path, final InputStream stream )
         throws AproxWorkflowException
     {
         List<? extends ArtifactStore> stores = null;

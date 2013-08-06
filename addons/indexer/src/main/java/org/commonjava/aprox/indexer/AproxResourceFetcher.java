@@ -10,10 +10,10 @@ import org.apache.maven.index.updater.ResourceFetcher;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.filer.FileManager;
-import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.rest.AproxWorkflowException;
+import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.util.logging.Logger;
 
 public class AproxResourceFetcher
@@ -70,7 +70,7 @@ public class AproxResourceFetcher
         try
         {
             logger.info( "Retrieving: '%s' from store: %s", path, store.getKey() );
-            final StorageItem item = fileManager.retrieve( store, path );
+            final Transfer item = fileManager.retrieve( store, path );
 
             if ( item == null || !item.exists() )
             {

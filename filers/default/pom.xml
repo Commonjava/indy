@@ -34,9 +34,5 @@
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-test-filer</artifactId>
-    </dependency>
   </dependencies>
 </project>

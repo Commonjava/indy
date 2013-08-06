@@ -16,6 +16,7 @@
 package org.commonjava.aprox.core.rest.util;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.commonjava.aprox.util.LocationUtils.getKey;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
@@ -28,8 +29,9 @@ import org.apache.maven.archetype.catalog.ArchetypeCatalog;
 import org.apache.maven.archetype.catalog.io.xpp3.ArchetypeCatalogXpp3Reader;
 import org.apache.maven.archetype.catalog.io.xpp3.ArchetypeCatalogXpp3Writer;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.util.logging.Logger;
 
 @javax.enterprise.context.ApplicationScoped
@@ -44,7 +46,7 @@ public class ArchetypeCatalogMerger
     private final Logger logger = new Logger( getClass() );
 
     @Override
-    public byte[] merge( final Set<StorageItem> sources, final Group group, final String path )
+    public byte[] merge( final Set<Transfer> sources, final Group group, final String path )
     {
         final ArchetypeCatalog master = new ArchetypeCatalog();
         final ArchetypeCatalogXpp3Reader reader = new ArchetypeCatalogXpp3Reader();
@@ -53,7 +55,7 @@ public class ArchetypeCatalogMerger
         boolean merged = false;
 
         final Set<String> seen = new HashSet<String>();
-        for ( final StorageItem src : sources )
+        for ( final Transfer src : sources )
         {
             try
             {
@@ -72,13 +74,15 @@ public class ArchetypeCatalogMerger
             }
             catch ( final IOException e )
             {
+                final StoreKey key = getKey( src );
                 logger.error( "Cannot read archetype catalog: %s from artifact-store: %s. Reason: %s", e,
-                              src.getPath(), src.getStoreKey(), e.getMessage() );
+                              src.getPath(), key, e.getMessage() );
             }
             catch ( final XmlPullParserException e )
             {
+                final StoreKey key = getKey( src );
                 logger.error( "Cannot parse archetype catalog: %s from artifact-store: %s. Reason: %s", e,
-                              src.getPath(), src.getStoreKey(), e.getMessage() );
+                              src.getPath(), key, e.getMessage() );
             }
             finally
             {

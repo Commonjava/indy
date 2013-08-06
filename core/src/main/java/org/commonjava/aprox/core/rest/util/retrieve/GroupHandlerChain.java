@@ -23,11 +23,11 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.filer.FileManager;
-import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.retrieve.GroupPathHandler;
+import org.commonjava.maven.galley.model.Transfer;
 
 @javax.enterprise.context.ApplicationScoped
 public class GroupHandlerChain
@@ -41,7 +41,7 @@ public class GroupHandlerChain
     @Inject
     private FileManager downloader;
 
-    public StorageItem retrieve( final Group group, final List<? extends ArtifactStore> stores, final String path )
+    public Transfer retrieve( final Group group, final List<? extends ArtifactStore> stores, final String path )
         throws AproxWorkflowException
     {
         for ( final GroupPathHandler handler : handlers )
@@ -58,8 +58,8 @@ public class GroupHandlerChain
         return downloader.retrieveFirst( stores, path );
     }
 
-    public StorageItem store( final Group group, final List<? extends ArtifactStore> stores, final String path,
-                              final InputStream stream )
+    public Transfer store( final Group group, final List<? extends ArtifactStore> stores, final String path,
+                           final InputStream stream )
         throws AproxWorkflowException
     {
         for ( final GroupPathHandler handler : handlers )

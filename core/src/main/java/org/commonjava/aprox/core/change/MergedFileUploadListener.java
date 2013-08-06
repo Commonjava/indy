@@ -15,24 +15,26 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.change;
 
+import static org.commonjava.aprox.util.LocationUtils.getKey;
+
 import java.io.IOException;
 import java.util.Set;
 
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.change.event.FileDeletionEvent;
-import org.commonjava.aprox.change.event.FileEvent;
-import org.commonjava.aprox.change.event.FileEventManager;
+import org.commonjava.aprox.change.event.AproxFileEventManager;
 import org.commonjava.aprox.core.rest.util.ArchetypeCatalogMerger;
 import org.commonjava.aprox.core.rest.util.MavenMetadataMerger;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.filer.FileManager;
-import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.rest.util.retrieve.GroupPathHandler;
+import org.commonjava.maven.galley.event.FileDeletionEvent;
+import org.commonjava.maven.galley.event.FileEvent;
+import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.util.logging.Logger;
 
 @javax.enterprise.context.ApplicationScoped
@@ -48,15 +50,14 @@ public class MergedFileUploadListener
     private FileManager fileManager;
 
     @Inject
-    private FileEventManager fileEvent;
+    private AproxFileEventManager fileEvent;
 
     public void reMergeUploaded( @Observes final FileEvent event )
     {
-        final String path = event.getStorageItem()
+        final String path = event.getTransfer()
                                  .getPath();
 
-        final StoreKey key = event.getStorageItem()
-                                  .getStoreKey();
+        final StoreKey key = getKey( event );
 
         if ( !path.endsWith( MavenMetadataMerger.METADATA_NAME )
             && !path.endsWith( ArchetypeCatalogMerger.CATALOG_NAME ) )
@@ -93,13 +94,13 @@ public class MergedFileUploadListener
     private void reMerge( final Group group, final String path )
         throws IOException
     {
-        final StorageItem[] toDelete =
+        final Transfer[] toDelete =
             { fileManager.getStorageReference( group, path ),
                 fileManager.getStorageReference( group, path + GroupPathHandler.MERGEINFO_SUFFIX ),
                 fileManager.getStorageReference( group, path + GroupPathHandler.SHA_SUFFIX ),
                 fileManager.getStorageReference( group, path + GroupPathHandler.MD5_SUFFIX ) };
 
-        for ( final StorageItem item : toDelete )
+        for ( final Transfer item : toDelete )
         {
             if ( item.exists() )
             {

@@ -29,7 +29,7 @@
   
   <modules>
     <module>autoprox</module>
-    <module>tensor</module>
+    <module>depgraph</module>
     <module>dot-maven</module>
     <module>indexer</module>
   </modules>

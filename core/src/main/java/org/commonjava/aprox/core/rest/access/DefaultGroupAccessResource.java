@@ -15,6 +15,8 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.rest.access;
 
+import static org.commonjava.aprox.util.LocationUtils.getKey;
+
 import java.io.IOException;
 
 import javax.activation.MimetypesFileTypeMap;
@@ -33,11 +35,12 @@ import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.model.DeployPoint;
+import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.access.GroupAccessResource;
 import org.commonjava.aprox.rest.util.GroupContentManager;
+import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.util.logging.Logger;
 
 import com.wordnik.swagger.annotations.Api;
@@ -111,7 +114,7 @@ public class DefaultGroupAccessResource
     {
         try
         {
-            final StorageItem item = groupContentManager.retrieve( name, path );
+            final Transfer item = groupContentManager.retrieve( name, path );
 
             if ( item == null )
             {
@@ -154,12 +157,13 @@ public class DefaultGroupAccessResource
     {
         try
         {
-            final StorageItem item = groupContentManager.store( name, path, request.getInputStream() );
+            final Transfer item = groupContentManager.store( name, path, request.getInputStream() );
+            final StoreKey key = getKey( item );
+
             DeployPoint deploy;
             try
             {
-                deploy = dataManager.getDeployPoint( item.getStoreKey()
-                                                         .getName() );
+                deploy = dataManager.getDeployPoint( key.getName() );
             }
             catch ( final ProxyDataException e )
             {

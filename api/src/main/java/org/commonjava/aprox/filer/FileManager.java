@@ -19,12 +19,12 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
 
-import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ArtifactPathInfo;
+import org.commonjava.maven.galley.model.Transfer;
 
 public interface FileManager
 {
@@ -33,26 +33,26 @@ public interface FileManager
 
     String ROOT_PATH = "/";
 
-    StorageItem retrieveFirst( final List<? extends ArtifactStore> stores, final String path )
+    Transfer retrieveFirst( final List<? extends ArtifactStore> stores, final String path )
         throws AproxWorkflowException;
 
-    Set<StorageItem> retrieveAll( final List<? extends ArtifactStore> stores, final String path )
+    Set<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path )
         throws AproxWorkflowException;
 
-    StorageItem retrieve( final ArtifactStore store, final String path )
+    Transfer retrieve( final ArtifactStore store, final String path )
         throws AproxWorkflowException;
 
-    StorageItem store( final DeployPoint deploy, final String path, final InputStream stream )
+    Transfer store( final DeployPoint deploy, final String path, final InputStream stream )
         throws AproxWorkflowException;
 
-    StorageItem store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream )
+    Transfer store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream )
         throws AproxWorkflowException;
 
-    StorageItem getStoreRootDirectory( StoreKey key );
+    Transfer getStoreRootDirectory( StoreKey key );
 
-    StorageItem getStorageReference( final StoreKey key, final String... path );
+    Transfer getStorageReference( final StoreKey key, final String... path );
 
-    StorageItem getStorageReference( final ArtifactStore store, final String... path );
+    Transfer getStorageReference( final ArtifactStore store, final String... path );
 
     ArtifactPathInfo parsePathInfo( String path );
 

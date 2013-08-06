@@ -19,10 +19,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.rest.AproxWorkflowException;
+import org.commonjava.maven.galley.model.Transfer;
 
 public interface GroupPathHandler
 {
@@ -35,10 +35,10 @@ public interface GroupPathHandler
 
     boolean canHandle( String path );
 
-    StorageItem retrieve( Group group, List<? extends ArtifactStore> stores, String path )
+    Transfer retrieve( Group group, List<? extends ArtifactStore> stores, String path )
         throws AproxWorkflowException;
 
-    StorageItem store( Group group, List<? extends ArtifactStore> stores, String path, InputStream stream )
+    Transfer store( Group group, List<? extends ArtifactStore> stores, String path, InputStream stream )
         throws AproxWorkflowException;
 
     boolean delete( Group group, List<? extends ArtifactStore> stores, String path )
