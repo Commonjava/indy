@@ -19,7 +19,7 @@ import org.commonjava.aprox.io.StorageItem;
 import org.commonjava.aprox.io.StorageProvider;
 import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.tensor.fixture.TestConfigProvider;
-import org.commonjava.aprox.tensor.fixture.TestTensorCoreProvider;
+import org.commonjava.aprox.tensor.fixture.TestDepgraphProvider;
 import org.commonjava.tensor.data.CartoDataManager;
 import org.commonjava.web.json.test.WebFixture;
 import org.commonjava.web.test.fixture.TestWarArchiveBuilder;
@@ -88,7 +88,7 @@ public class TensorStorageListenerLiveTest
     @Deployment
     public static WebArchive createWar()
     {
-        return new TestWarArchiveBuilder( new File( "target/test-assembly.war" ), TensorStorageListenerLiveTest.class ).withExtraClasses( TestTensorCoreProvider.class,
+        return new TestWarArchiveBuilder( new File( "target/test-assembly.war" ), TensorStorageListenerLiveTest.class ).withExtraClasses( TestDepgraphProvider.class,
                                                                                                                                           TestConfigProvider.class/*,
                                                                                                                                                                   TestDiscoverer.class*/)
                                                                                                                        .withLog4jProperties()

@@ -18,6 +18,8 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
+import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
+import org.commonjava.aprox.depgraph.preset.PresetFactory;
 import org.commonjava.maven.atlas.graph.filter.DependencyFilter;
 import org.commonjava.maven.atlas.graph.filter.ExtensionFilter;
 import org.commonjava.maven.atlas.graph.filter.OrFilter;
@@ -46,7 +48,7 @@ public class RequestAdvisor
     private CartoDataManager tensor;
 
     @Inject
-    private TensorConfig config;
+    private AproxDepgraphConfig config;
 
     @Inject
     private Instance<PresetFactory> presetFactoryInstances;

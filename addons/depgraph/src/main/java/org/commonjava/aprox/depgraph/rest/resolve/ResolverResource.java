@@ -4,10 +4,8 @@ import static org.commonjava.aprox.depgraph.util.RequestUtils.getBooleanParamWit
 import static org.commonjava.aprox.depgraph.util.RequestUtils.getLongParamWithDefault;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.URI;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.enterprise.context.RequestScoped;
@@ -25,47 +23,33 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.commonjava.aprox.depgraph.preset.WorkspaceRecorder;
 import org.commonjava.aprox.depgraph.util.RequestAdvisor;
-import org.commonjava.maven.atlas.common.ref.ProjectVersionRef;
-import org.commonjava.maven.atlas.effective.EProjectGraph;
-import org.commonjava.maven.atlas.effective.filter.ProjectRelationshipFilter;
-import org.commonjava.tensor.agg.AggregationOptions;
-import org.commonjava.tensor.agg.DefaultAggregatorOptions;
-import org.commonjava.tensor.agg.GraphAggregator;
-import org.commonjava.tensor.data.CartoDataException;
-import org.commonjava.tensor.data.CartoDataManager;
-import org.commonjava.tensor.discover.DefaultDiscoveryConfig;
-import org.commonjava.tensor.discover.DiscoveryResult;
-import org.commonjava.tensor.discover.DiscoverySourceManager;
-import org.commonjava.tensor.discover.ProjectRelationshipDiscoverer;
-import org.commonjava.tensor.inject.TensorData;
+import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.cartographer.agg.AggregationOptions;
+import org.commonjava.maven.cartographer.agg.DefaultAggregatorOptions;
+import org.commonjava.maven.cartographer.data.CartoDataException;
+import org.commonjava.maven.cartographer.discover.DefaultDiscoveryConfig;
+import org.commonjava.maven.cartographer.discover.DiscoverySourceManager;
+import org.commonjava.maven.cartographer.ops.ResolveOps;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.ser.JsonSerializer;
 
-@Path( "/depgraph/graph/resolve/{from: (.+)}" )
+@Path( "/depgraph/resolve/{from: (.+)}" )
 @Produces( MediaType.APPLICATION_JSON )
 @RequestScoped
-public class GraphResolverResource
+public class ResolverResource
 {
 
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private CartoDataManager data;
+    private ResolveOps ops;
 
     @Inject
-    private ProjectRelationshipDiscoverer discoverer;
-
-    @Inject
-    @TensorData
     private JsonSerializer serializer;
 
     @Inject
     private DiscoverySourceManager sourceManager;
-
-    @Inject
-    private GraphAggregator aggregator;
 
     @Inject
     private RequestAdvisor requestAdvisor;
@@ -80,8 +64,6 @@ public class GraphResolverResource
         Response response = Response.status( Status.NO_CONTENT )
                                     .build();
 
-        final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
-
         final URI source = sourceManager.createSourceURI( from );
         if ( source == null )
         {
@@ -95,47 +77,22 @@ public class GraphResolverResource
             return response;
         }
 
+        final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
+        final AggregationOptions options = createAggregationOptions( request, source );
+
+        ProjectVersionRef resolved;
         try
         {
-            sourceManager.activateWorkspaceSources( from );
+            resolved = ops.resolveGraph( from, options, ref );
+
+            final String json = serializer.toString( Collections.singletonMap( "resolvedGAV", resolved ) );
+            response = Response.ok( json )
+                               .build();
+
         }
         catch ( final CartoDataException e )
         {
-            logger.error( "Failed to activate source locations for source: %s. Reason: %s", e, from, e.getMessage() );
-            return Response.serverError()
-                           .build();
-        }
-
-        final DefaultDiscoveryConfig config = new DefaultDiscoveryConfig( source );
-        try
-        {
-            final DiscoveryResult result = discoverer.discoverRelationships( ref, config );
-            if ( result != null && data.contains( result.getSelectedRef() ) )
-            {
-                final ProjectVersionRef selected = result.getSelectedRef();
-
-                final AggregationOptions options = createAggregationOptions( request, source );
-                final ProjectRelationshipFilter filter = options.getFilter();
-
-                final EProjectGraph graph = data.getProjectGraph( filter, selected );
-                if ( recurse )
-                {
-                    aggregator.connectIncomplete( graph, options );
-                }
-
-                if ( filter instanceof WorkspaceRecorder )
-                {
-                    ( (WorkspaceRecorder) filter ).save( data.getCurrentWorkspace() );
-                }
-
-                final String json = serializer.toString( Collections.singletonMap( "resolvedGAV", selected ) );
-                response = Response.ok( json )
-                                   .build();
-            }
-        }
-        catch ( final CartoDataException e )
-        {
-            logger.error( "Failed to discover: %s. Reason: %s", e, ref, e.getMessage() );
+            logger.error( "Failed to resolve graph: %s from: %s. Reason: %s", e, ref, from, e.getMessage() );
 
             response = Response.serverError()
                                .build();
@@ -170,64 +127,16 @@ public class GraphResolverResource
             return response;
         }
 
-        try
-        {
-            sourceManager.activateWorkspaceSources( from );
-        }
-        catch ( final CartoDataException e )
-        {
-            logger.error( "Failed to activate source locations for source: %s. Reason: %s", e, from, e.getMessage() );
-            return Response.serverError()
-                           .build();
-        }
-
+        final AggregationOptions options = createAggregationOptions( request, source );
         final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
 
         try
         {
-            final Set<ProjectVersionRef> seen = new HashSet<ProjectVersionRef>();
+            final Set<ProjectVersionRef> failed = ops.resolveIncomplete( from, options, ref );
 
-            final PrintStream ps = new PrintStream( resp.getOutputStream() );
+            final String json = serializer.toString( Collections.singletonMap( "failures", failed ) );
 
-            final AggregationOptions options = createAggregationOptions( request, source );
-            int changed;
-            do
-            {
-                final Set<ProjectVersionRef> incomplete = requestAdvisor.getIncomplete( ref, request );
-
-                changed = 0;
-                if ( incomplete != null && !incomplete.isEmpty() )
-                {
-                    for ( final ProjectVersionRef r : incomplete )
-                    {
-                        if ( seen.contains( r ) )
-                        {
-                            continue;
-                        }
-
-                        changed++;
-                        try
-                        {
-                            final DiscoveryResult result =
-                                discoverer.discoverRelationships( r, options.getDiscoveryConfig() );
-
-                            if ( result != null )
-                            {
-                                ps.println( result.getSelectedRef() );
-                            }
-                        }
-                        catch ( final CartoDataException e )
-                        {
-                            ps.printf( "%s: ERROR %s\n", r, e.getMessage() );
-                        }
-
-                        seen.add( r );
-                    }
-                }
-            }
-            while ( recurse && changed > 0 );
-
-            response = Response.ok()
+            response = Response.ok( json )
                                .build();
         }
         catch ( final CartoDataException e )

@@ -95,7 +95,7 @@ public class AproxModelDiscoverer
     private CartoDataManager dataManager;
 
     @Inject
-    private DepgraphModelCache tensorModelCache;
+    private DepgraphModelCache modelCache;
 
     public AproxModelDiscoverer()
     {
@@ -104,7 +104,7 @@ public class AproxModelDiscoverer
     public AproxModelDiscoverer( final StoreDataManager aprox, final ModelReader modelReader,
                                  final ModelBuilder modelBuilder, final FileManager fileManager,
                                  final MavenModelProcessor modelProcessor, final CartoDataManager dataManager,
-                                 final DepgraphModelCache tensorModelCache )
+                                 final DepgraphModelCache modelCache )
     {
         this.aprox = aprox;
         this.modelReader = modelReader;
@@ -112,7 +112,7 @@ public class AproxModelDiscoverer
         this.fileManager = fileManager;
         this.modelProcessor = modelProcessor;
         this.dataManager = dataManager;
-        this.tensorModelCache = tensorModelCache;
+        this.modelCache = modelCache;
     }
 
     public DiscoveryResult discoverRelationships( final Transfer item )
@@ -351,7 +351,7 @@ public class AproxModelDiscoverer
     {
         final ModelBuildingRequest request = new DefaultModelBuildingRequest();
         request.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL );
-        request.setModelCache( tensorModelCache );
+        request.setModelCache( modelCache );
         request.setModelSource( new StoreModelSource( item, false ) );
         request.setModelResolver( new ArtifactStoreModelResolver( fileManager, stores, false ) );
         request.setSystemProperties( System.getProperties() );

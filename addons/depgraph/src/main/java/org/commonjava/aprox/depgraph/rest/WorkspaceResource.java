@@ -1,10 +1,5 @@
 package org.commonjava.aprox.depgraph.rest;
 
-import static org.commonjava.maven.atlas.effective.util.RelationshipUtils.POM_ROOT_URI;
-import static org.commonjava.maven.atlas.effective.util.RelationshipUtils.profileLocation;
-
-import java.net.URI;
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.enterprise.context.RequestScoped;
@@ -25,17 +20,15 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
-import org.commonjava.maven.atlas.common.ref.ProjectRef;
-import org.commonjava.maven.atlas.common.ref.ProjectVersionRef;
-import org.commonjava.maven.atlas.common.version.SingleVersion;
-import org.commonjava.maven.atlas.common.version.VersionUtils;
-import org.commonjava.maven.atlas.effective.workspace.GraphWorkspace;
-import org.commonjava.maven.atlas.effective.workspace.GraphWorkspaceConfiguration;
-import org.commonjava.maven.atlas.spi.GraphDriverException;
-import org.commonjava.tensor.data.CartoDataException;
-import org.commonjava.tensor.data.CartoDataManager;
-import org.commonjava.tensor.discover.DiscoverySourceManager;
-import org.commonjava.tensor.inject.TensorData;
+import org.commonjava.maven.atlas.graph.spi.GraphDriverException;
+import org.commonjava.maven.atlas.graph.workspace.GraphWorkspace;
+import org.commonjava.maven.atlas.graph.workspace.GraphWorkspaceConfiguration;
+import org.commonjava.maven.atlas.ident.ref.ProjectRef;
+import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.atlas.ident.version.SingleVersion;
+import org.commonjava.maven.atlas.ident.version.VersionUtils;
+import org.commonjava.maven.cartographer.data.CartoDataException;
+import org.commonjava.maven.cartographer.ops.WorkspaceOps;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.model.Listing;
 import org.commonjava.web.json.ser.JsonSerializer;
@@ -49,20 +42,16 @@ public class WorkspaceResource
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private CartoDataManager dataManager;
+    private WorkspaceOps ops;
 
     @Inject
-    private DiscoverySourceManager sourceFactory;
-
-    @Inject
-    @TensorData
     private JsonSerializer serializer;
 
     @Path( "/{id}" )
     @DELETE
     public Response delete( @PathParam( "id" ) final String id )
     {
-        if ( !dataManager.deleteWorkspace( id ) )
+        if ( !ops.delete( id ) )
         {
             return Response.noContent()
                            .build();
@@ -79,7 +68,7 @@ public class WorkspaceResource
     {
         try
         {
-            final GraphWorkspace workspace = dataManager.createWorkspace( new GraphWorkspaceConfiguration() );
+            final GraphWorkspace workspace = ops.create( new GraphWorkspaceConfiguration() );
 
             final String json = serializer.toString( workspace );
 
@@ -108,7 +97,7 @@ public class WorkspaceResource
             ServletSerializerUtils.fromRequestBody( request, serializer, GraphWorkspaceConfiguration.class );
         try
         {
-            final GraphWorkspace workspace = dataManager.createWorkspace( config );
+            final GraphWorkspace workspace = ops.create( config );
 
             final String json = serializer.toString( workspace );
 
@@ -139,9 +128,26 @@ public class WorkspaceResource
                                     .build();
 
         GraphWorkspace ws;
+        boolean modified = false;
+        ProjectRef pr = null;
         try
         {
-            ws = dataManager.setCurrentWorkspace( id );
+            final SingleVersion ver = VersionUtils.createSingleVersion( newVersion );
+
+            ws = ops.get( id );
+            if ( oldVersion == null )
+            {
+                pr = new ProjectRef( groupId, artifactId );
+                modified = ws.selectVersionForAll( pr, ver );
+            }
+            else
+            {
+                final ProjectVersionRef orig = new ProjectVersionRef( groupId, artifactId, oldVersion );
+                final ProjectVersionRef selected = ws.selectVersion( orig, ver );
+
+                modified = selected.equals( orig );
+                pr = orig;
+            }
         }
         catch ( final CartoDataException e )
         {
@@ -149,66 +155,11 @@ public class WorkspaceResource
             return Response.serverError()
                            .build();
         }
-
-        if ( ws == null )
+        catch ( final GraphDriverException e )
         {
-            logger.debug( "No workspace found for: %s", id );
-            return Response.status( Status.NOT_FOUND )
-                           .entity( "No workspace for id: " + id )
+            logger.error( "Failed to select: %s for: %s. Reason: %s", e, newVersion, pr, e.getMessage() );
+            return Response.serverError()
                            .build();
-        }
-
-        final SingleVersion ver = VersionUtils.createSingleVersion( newVersion );
-
-        boolean modified = false;
-
-        final Set<ProjectVersionRef> oldRefs = new HashSet<ProjectVersionRef>();
-        if ( oldVersion != null )
-        {
-            final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, oldVersion );
-            oldRefs.add( ref );
-            try
-            {
-                ws.selectVersion( ref, ver );
-                modified = true;
-            }
-            catch ( final GraphDriverException e )
-            {
-                logger.error( "Failed to select version: %s (originally: %s) for GAV: %s. Reason: %s", e, ver,
-                              newVersion, ref, e.getMessage() );
-                return Response.serverError()
-                               .build();
-            }
-        }
-        else
-        {
-            try
-            {
-                final Set<ProjectVersionRef> matches =
-                    dataManager.getMatchingGAVs( new ProjectRef( groupId, artifactId ) );
-                for ( final ProjectVersionRef gav : matches )
-                {
-                    try
-                    {
-                        ws.selectVersion( gav, ver );
-                        modified = true;
-                    }
-                    catch ( final GraphDriverException e )
-                    {
-                        logger.error( "Failed to select version: %s (originally: %s) for GAV: %s. Reason: %s", e, ver,
-                                      newVersion, gav, e.getMessage() );
-                        return Response.serverError()
-                                       .build();
-                    }
-                }
-            }
-            catch ( final CartoDataException e )
-            {
-                logger.error( "Failed to retrieve matching GAVs for: %s:%s. Reason: %s", e, groupId, artifactId,
-                              e.getMessage() );
-                return Response.serverError()
-                               .build();
-            }
         }
 
         if ( modified )
@@ -239,7 +190,7 @@ public class WorkspaceResource
         GraphWorkspace ws;
         try
         {
-            ws = dataManager.setCurrentWorkspace( id );
+            ws = ops.get( id );
         }
         catch ( final CartoDataException e )
         {
@@ -273,7 +224,7 @@ public class WorkspaceResource
         Response response = Response.notModified()
                                     .build();
 
-        final Set<GraphWorkspace> ws = dataManager.getAllWorkspaces();
+        final Set<GraphWorkspace> ws = ops.list();
 
         if ( ws == null || ws.isEmpty() )
         {
@@ -302,7 +253,37 @@ public class WorkspaceResource
         GraphWorkspace ws;
         try
         {
-            ws = dataManager.setCurrentWorkspace( id );
+            ws = ops.get( id );
+
+            if ( ws == null )
+            {
+                logger.debug( "No workspace found for: %s", id );
+                return Response.status( Status.NOT_FOUND )
+                               .entity( "No workspace for id: " + id )
+                               .build();
+            }
+
+            boolean modified = false;
+
+            if ( source != null )
+            {
+                ops.addSource( source, ws );
+                modified = true;
+            }
+
+            if ( modified )
+            {
+                final String json = serializer.toString( ws );
+                response = Response.ok( json )
+                                   .location( uriInfo.getAbsolutePathBuilder()
+                                                     .path( getClass() )
+                                                     .path( ws.getId() )
+                                                     .build() )
+                                   .build();
+            }
+
+            // detach from the threadlocal...
+            ws.close();
         }
         catch ( final CartoDataException e )
         {
@@ -311,45 +292,14 @@ public class WorkspaceResource
                            .build();
         }
 
-        if ( ws == null )
-        {
-            logger.debug( "No workspace found for: %s", id );
-            return Response.status( Status.NOT_FOUND )
-                           .entity( "No workspace for id: " + id )
-                           .build();
-        }
-
-        boolean modified = false;
-
-        if ( source != null )
-        {
-            final URI src = sourceFactory.createSourceURI( source );
-            ws.addActiveSource( src );
-            modified = true;
-        }
-
-        if ( modified )
-        {
-            final String json = serializer.toString( ws );
-            response = Response.ok( json )
-                               .location( uriInfo.getAbsolutePathBuilder()
-                                                 .path( getClass() )
-                                                 .path( ws.getId() )
-                                                 .build() )
-                               .build();
-        }
-
-        // detach from the threadlocal...
-        ws.close();
-
         return response;
     }
 
-    @Path( "/{id}/pomloc/{pom-location}" )
+    @Path( "/{id}/profile/{profile}" )
     @PUT
     @Produces( MediaType.APPLICATION_JSON )
-    public Response addPomLocation( @PathParam( "id" ) final String id,
-                                    @PathParam( "pom-location" ) final String pomLoc, @Context final UriInfo uriInfo )
+    public Response addPomLocation( @PathParam( "id" ) final String id, @PathParam( "profile" ) final String profile,
+                                    @Context final UriInfo uriInfo )
     {
         Response response = Response.notModified()
                                     .build();
@@ -357,7 +307,7 @@ public class WorkspaceResource
         GraphWorkspace ws;
         try
         {
-            ws = dataManager.setCurrentWorkspace( id );
+            ws = ops.get( id );
         }
         catch ( final CartoDataException e )
         {
@@ -374,25 +324,14 @@ public class WorkspaceResource
                            .build();
         }
 
-        boolean modified = false;
-
-        if ( pomLoc != null && !POM_ROOT_URI.equals( pomLoc ) )
-        {
-            final URI pomLocation = profileLocation( pomLoc );
-            ws.addActivePomLocation( pomLocation );
-            modified = true;
-        }
-
-        if ( modified )
-        {
-            final String json = serializer.toString( ws );
-            response = Response.ok( json )
-                               .location( uriInfo.getAbsolutePathBuilder()
-                                                 .path( getClass() )
-                                                 .path( ws.getId() )
-                                                 .build() )
-                               .build();
-        }
+        ops.addProfile( profile, ws );
+        final String json = serializer.toString( ws );
+        response = Response.ok( json )
+                           .location( uriInfo.getAbsolutePathBuilder()
+                                             .path( getClass() )
+                                             .path( ws.getId() )
+                                             .build() )
+                           .build();
 
         // detach from the threadlocal...
         ws.close();

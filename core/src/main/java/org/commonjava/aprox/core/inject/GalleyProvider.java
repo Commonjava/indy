@@ -13,7 +13,7 @@ import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.maven.galley.spi.event.FileEventManager;
 import org.commonjava.maven.galley.spi.io.TransferDecorator;
 import org.commonjava.maven.galley.spi.transport.TransportManager;
-import org.commonjava.maven.galley.transport.SimpleTransportManager;
+import org.commonjava.maven.galley.transport.TransportManagerImpl;
 import org.commonjava.maven.galley.transport.htcli.Http;
 import org.commonjava.maven.galley.transport.htcli.HttpClientTransport;
 
@@ -43,7 +43,7 @@ public class GalleyProvider
 
     public void setup()
     {
-        transportManager = new SimpleTransportManager( new HttpClientTransport( http ) );
+        transportManager = new TransportManagerImpl( new HttpClientTransport( http ) );
         transferManager =
             new TransferManagerImpl( transportManager, cacheProvider, fileEventManager, transferDecorator, executor );
     }

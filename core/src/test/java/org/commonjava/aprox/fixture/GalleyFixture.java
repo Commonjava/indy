@@ -15,7 +15,7 @@ import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.maven.galley.spi.event.FileEventManager;
 import org.commonjava.maven.galley.spi.io.TransferDecorator;
 import org.commonjava.maven.galley.spi.transport.TransportManager;
-import org.commonjava.maven.galley.transport.SimpleTransportManager;
+import org.commonjava.maven.galley.transport.TransportManagerImpl;
 import org.commonjava.maven.galley.transport.htcli.HttpClientTransport;
 
 public class GalleyFixture
@@ -36,7 +36,7 @@ public class GalleyFixture
     public GalleyFixture( final File repoRoot )
     {
         final AproxHttpProvider aproxHttp = new AproxHttpProvider().setup();
-        transports = new SimpleTransportManager( new HttpClientTransport( aproxHttp.getHttpComponent() ) );
+        transports = new TransportManagerImpl( new HttpClientTransport( aproxHttp.getHttpComponent() ) );
 
         cache = new FileCacheProvider( repoRoot, new KeyBasedPathGenerator() );
         events = new AproxFileEventManager();

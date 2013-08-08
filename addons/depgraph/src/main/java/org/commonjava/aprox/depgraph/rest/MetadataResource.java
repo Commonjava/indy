@@ -19,13 +19,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.commonjava.maven.atlas.common.ref.ProjectVersionRef;
-import org.commonjava.maven.atlas.effective.ref.EProjectKey;
-import org.commonjava.maven.atlas.effective.util.RelationshipUtils;
-import org.commonjava.tensor.data.CartoDataException;
-import org.commonjava.tensor.data.CartoDataManager;
-import org.commonjava.tensor.discover.DiscoverySourceManager;
-import org.commonjava.tensor.inject.TensorData;
+import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.cartographer.data.CartoDataException;
+import org.commonjava.maven.cartographer.ops.MetadataOps;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.ser.JsonSerializer;
 import org.commonjava.web.json.ser.ServletSerializerUtils;
@@ -42,14 +38,10 @@ public class MetadataResource
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private CartoDataManager dataManager;
+    private MetadataOps ops;
 
     @Inject
-    @TensorData
     private JsonSerializer serializer;
-
-    @Inject
-    private DiscoverySourceManager sourceFactory;
 
     @Path( "/batch" )
     @POST
@@ -65,6 +57,7 @@ public class MetadataResource
 
         final Map<ProjectVersionRef, Map<String, String>> batch =
             ServletSerializerUtils.fromRequestBody( request, serializer, tt );
+
         if ( batch != null && !batch.isEmpty() )
         {
             for ( final Map.Entry<ProjectVersionRef, Map<String, String>> entry : batch.entrySet() )
@@ -73,8 +66,7 @@ public class MetadataResource
                 final Map<String, String> metadata = entry.getValue();
 
                 logger.info( "Adding metadata for: %s\n\n  ", ref, join( metadata.entrySet(), "\n  " ) );
-
-                dataManager.addMetadata( new EProjectKey( RelationshipUtils.UNKNOWN_SOURCE_URI, ref ), metadata );
+                ops.updateMetadata( ref, metadata );
             }
 
             response = Response.ok()
@@ -96,7 +88,7 @@ public class MetadataResource
         Map<String, String> metadata = null;
         try
         {
-            metadata = dataManager.getMetadata( ref );
+            metadata = ops.getMetadata( ref );
         }
         catch ( final CartoDataException e )
         {
@@ -125,27 +117,21 @@ public class MetadataResource
                                     .build();
 
         final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
-        Map<String, String> metadata = null;
         try
         {
-            metadata = dataManager.getMetadata( ref );
-        }
-        catch ( final CartoDataException e )
-        {
-            logger.error( "Failed to retrieve metadata map for: %s. Reason: %s", e, ref, e.getMessage() );
-            response = Response.serverError()
-                               .build();
-        }
-
-        if ( metadata != null )
-        {
-            final String value = metadata.get( key );
+            final String value = ops.getMetadataValue( ref, key );
             if ( value != null )
             {
                 final String json = serializer.toString( Collections.singletonMap( key, value ) );
                 response = Response.ok( json )
                                    .build();
             }
+        }
+        catch ( final CartoDataException e )
+        {
+            logger.error( "Failed to retrieve metadata map for: %s. Reason: %s", e, ref, e.getMessage() );
+            response = Response.serverError()
+                               .build();
         }
 
         return response;
@@ -171,7 +157,7 @@ public class MetadataResource
 
             logger.info( "Adding metadata for: %s\n\n  ", ref, join( metadata.entrySet(), "\n  " ) );
 
-            dataManager.addMetadata( new EProjectKey( RelationshipUtils.UNKNOWN_SOURCE_URI, ref ), metadata );
+            ops.updateMetadata( ref, metadata );
 
             response = Response.ok()
                                .build();

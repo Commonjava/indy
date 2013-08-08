@@ -14,7 +14,7 @@ import org.commonjava.aprox.model.Repository;
 import org.commonjava.maven.galley.auth.AttributePasswordManager;
 import org.commonjava.maven.galley.spi.auth.PasswordManager;
 import org.commonjava.maven.galley.transport.htcli.Http;
-import org.commonjava.maven.galley.transport.htcli.internal.HttpImpl;
+import org.commonjava.maven.galley.transport.htcli.HttpImpl;
 
 public class AproxHttpProvider
 {

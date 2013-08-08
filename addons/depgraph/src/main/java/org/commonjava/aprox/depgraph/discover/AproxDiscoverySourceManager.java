@@ -25,6 +25,15 @@ public class AproxDiscoverySourceManager
     @Inject
     private StoreDataManager stores;
 
+    protected AproxDiscoverySourceManager()
+    {
+    }
+
+    public AproxDiscoverySourceManager( final StoreDataManager stores )
+    {
+        this.stores = stores;
+    }
+
     @Override
     public URI createSourceURI( final String source )
     {
