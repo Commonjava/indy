@@ -49,7 +49,7 @@ public class TestConfigProvider
     public void start()
         throws IOException
     {
-        dbDir = File.createTempFile( "tensor.live.", ".dir" );
+        dbDir = File.createTempFile( "depgraph.live.", ".dir" );
         dbDir.delete();
         dbDir.mkdirs();
     }
@@ -71,7 +71,7 @@ public class TestConfigProvider
     @Produces
     @Default
     @TestData
-    public synchronized AproxDepgraphConfig getTensorConfig()
+    public synchronized AproxDepgraphConfig getDepgraphConfig()
     {
         if ( config == null )
         {

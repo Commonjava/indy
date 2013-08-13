@@ -11,16 +11,15 @@ import java.io.OutputStream;
 
 import javax.inject.Inject;
 
-import org.commonjava.aprox.change.event.FileAccessEvent;
-import org.commonjava.aprox.change.event.AproxFileEventManager;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depgraph.DepgraphStorageListener;
-import org.commonjava.aprox.io.StorageItem;
-import org.commonjava.aprox.io.StorageProvider;
 import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.tensor.fixture.TestConfigProvider;
-import org.commonjava.aprox.tensor.fixture.TestDepgraphProvider;
-import org.commonjava.tensor.data.CartoDataManager;
+import org.commonjava.aprox.util.LocationUtils;
+import org.commonjava.maven.galley.TransferManager;
+import org.commonjava.maven.galley.event.FileAccessEvent;
+import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.web.json.test.WebFixture;
 import org.commonjava.web.test.fixture.TestWarArchiveBuilder;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -35,7 +34,7 @@ import org.junit.rules.TestName;
 
 //@RunWith( Arquillian.class )
 @Ignore
-public class TensorStorageListenerLiveTest
+public class DepgraphStorageListenerLiveTest
 {
 
     @Inject
@@ -45,12 +44,9 @@ public class TensorStorageListenerLiveTest
     private StoreDataManager aproxData;
 
     @Inject
-    private StorageProvider provider;
+    private TransferManager transfers;
 
     private static File repoRoot;
-
-    @Inject
-    protected CartoDataManager tensorData;
 
     @Rule
     public WebFixture webFixture = new WebFixture();
@@ -88,13 +84,12 @@ public class TensorStorageListenerLiveTest
     @Deployment
     public static WebArchive createWar()
     {
-        return new TestWarArchiveBuilder( new File( "target/test-assembly.war" ), TensorStorageListenerLiveTest.class ).withExtraClasses( TestDepgraphProvider.class,
-                                                                                                                                          TestConfigProvider.class/*,
-                                                                                                                                                                  TestDiscoverer.class*/)
-                                                                                                                       .withLog4jProperties()
-                                                                                                                       //                                                                                                                       .withClassloaderResources( "arquillian.xml" )
-                                                                                                                       .withBeansXml( "META-INF/beans.xml" )
-                                                                                                                       .build();
+        return new TestWarArchiveBuilder( new File( "target/test-assembly.war" ), DepgraphStorageListenerLiveTest.class ).withExtraClasses( TestConfigProvider.class/*,
+                                                                                                                                                                    TestDiscoverer.class*/)
+                                                                                                                         .withLog4jProperties()
+                                                                                                                         //                                                                                                                       .withClassloaderResources( "arquillian.xml" )
+                                                                                                                         .withBeansXml( "META-INF/beans.xml" )
+                                                                                                                         .build();
     }
 
     @Test
@@ -109,10 +104,11 @@ public class TensorStorageListenerLiveTest
         aproxData.storeDeployPoint( dp );
 
         final String path = "/org/test/no-parent/1.0/no-parent-1.0.pom";
+        final Transfer ref = transfers.getCacheReference( LocationUtils.toLocation( dp ), path );
         OutputStream os = null;
         try
         {
-            os = provider.openOutputStream( dp.getKey(), path );
+            os = ref.openOutputStream( TransferOperation.DOWNLOAD, false );
             copy( is, os );
         }
         finally
@@ -121,8 +117,7 @@ public class TensorStorageListenerLiveTest
             closeQuietly( os );
         }
 
-        listener.handleFileAccessEvent( new FileAccessEvent( new StorageItem( dp.getKey(), provider,
-                                                                              new AproxFileEventManager(), path ) ) );
+        listener.handleFileAccessEvent( new FileAccessEvent( ref ) );
     }
 
     @Test
@@ -137,10 +132,11 @@ public class TensorStorageListenerLiveTest
         aproxData.storeDeployPoint( dp );
 
         final String path = "/org/test/with-parent/1.0/with-parent-1.0.pom";
+        final Transfer ref = transfers.getCacheReference( LocationUtils.toLocation( dp ), path );
         OutputStream os = null;
         try
         {
-            os = provider.openOutputStream( dp.getKey(), path );
+            os = ref.openOutputStream( TransferOperation.DOWNLOAD, false );
             copy( is, os );
         }
         finally
@@ -149,8 +145,7 @@ public class TensorStorageListenerLiveTest
             closeQuietly( os );
         }
 
-        listener.handleFileAccessEvent( new FileAccessEvent( new StorageItem( dp.getKey(), provider,
-                                                                              new AproxFileEventManager(), path ) ) );
+        listener.handleFileAccessEvent( new FileAccessEvent( ref ) );
     }
 
     //    @Test

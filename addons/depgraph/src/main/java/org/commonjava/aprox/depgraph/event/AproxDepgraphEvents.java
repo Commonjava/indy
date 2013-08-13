@@ -4,6 +4,7 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
+import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.rest.util.ArtifactPathInfo;
@@ -21,6 +22,7 @@ import org.commonjava.maven.galley.event.FileNotFoundEvent;
 import org.commonjava.util.logging.Logger;
 
 @ApplicationScoped
+@Default
 public class AproxDepgraphEvents
     implements CartoEventManager
 {

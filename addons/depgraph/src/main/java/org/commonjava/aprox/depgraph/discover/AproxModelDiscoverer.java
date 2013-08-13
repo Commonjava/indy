@@ -62,7 +62,6 @@ import org.commonjava.maven.cartographer.discover.DiscoveryResult;
 import org.commonjava.maven.cartographer.util.MavenModelProcessor;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.util.logging.Logger;
-import org.neo4j.kernel.DeadlockDetectedException;
 
 @ApplicationScoped
 public class AproxModelDiscoverer
@@ -170,22 +169,31 @@ public class AproxModelDiscoverer
                 // TODO: We only need to translate the Model into a series of ProjectRelationship's once...optimize these API calls!
                 return storeRelationships( effectiveModel, source, originatingStore, path );
             }
-            catch ( final DeadlockDetectedException e )
+            catch ( final RuntimeException e )
             {
-                final long standoff = ( Math.abs( RAND.nextInt() ) % 8 ) * 4000;
-                logger.warn( "Detected deadlock scenario; retrying relationship storage for: %s in %d ms.",
-                             effectiveModel.getId(), standoff );
-
-                try
+                if ( e.getClass()
+                      .getSimpleName()
+                      .contains( "Deadlock" ) )
                 {
-                    Thread.sleep( standoff );
-                }
-                catch ( final InterruptedException ie )
-                {
-                    break;
-                }
+                    final long standoff = ( Math.abs( RAND.nextInt() ) % 8 ) * 4000;
+                    logger.warn( "Detected deadlock scenario; retrying relationship storage for: %s in %d ms.",
+                                 effectiveModel.getId(), standoff );
 
-                retry = true;
+                    try
+                    {
+                        Thread.sleep( standoff );
+                    }
+                    catch ( final InterruptedException ie )
+                    {
+                        break;
+                    }
+
+                    retry = true;
+                }
+                else
+                {
+                    throw e;
+                }
             }
             count++;
 
