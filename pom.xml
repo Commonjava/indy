@@ -211,6 +211,12 @@
       </dependency>
       
       <dependency>
+        <groupId>org.commonjava.maven.atlas</groupId>
+        <artifactId>atlas-driver-neo4j-embedded</artifactId>
+        <version>0.9.0-SNAPSHOT</version>
+      </dependency>
+      
+      <dependency>
         <groupId>org.commonjava.qarqas</groupId>
         <artifactId>qarqas-test-harness</artifactId>
         <version>${version.plugin.qarqas}</version>
@@ -242,7 +248,7 @@
       
       
       <!-- override web-commons-bom to see if this fixes the https self-signed PEM problem -->
-      <dependency>
+      <!-- <dependency>
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpclient</artifactId>
         <version>4.1.1</version>
@@ -252,7 +258,7 @@
             <artifactId>commons-logging</artifactId>
           </exclusion>
         </exclusions>
-      </dependency>
+      </dependency> -->
       
       <dependency>
         <groupId>log4j</groupId>

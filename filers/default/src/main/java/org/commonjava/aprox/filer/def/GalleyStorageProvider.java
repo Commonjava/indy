@@ -8,8 +8,7 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.filer.KeyBasedPathGenerator;
 import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
-import org.commonjava.maven.galley.cache.FileCacheProvider;
-import org.commonjava.maven.galley.spi.cache.CacheProvider;
+import org.commonjava.maven.galley.cache.FileCacheProviderConfig;
 
 public class GalleyStorageProvider
 {
@@ -17,7 +16,7 @@ public class GalleyStorageProvider
     @Inject
     private DefaultStorageProviderConfiguration config;
 
-    private CacheProvider cacheProvider;
+    private FileCacheProviderConfig cacheProviderConfig;
 
     public GalleyStorageProvider()
     {
@@ -32,12 +31,13 @@ public class GalleyStorageProvider
     @PostConstruct
     public void setup()
     {
-        this.cacheProvider = new FileCacheProvider( config.getStorageRootDirectory(), new KeyBasedPathGenerator() );
+        this.cacheProviderConfig =
+            new FileCacheProviderConfig( config.getStorageRootDirectory() ).withPathGenerator( new KeyBasedPathGenerator() );
     }
 
     @Produces
-    public CacheProvider getCacheProvider()
+    public FileCacheProviderConfig getCacheProviderConfig()
     {
-        return cacheProvider;
+        return cacheProviderConfig;
     }
 }

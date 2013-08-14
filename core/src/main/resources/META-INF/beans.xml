@@ -23,6 +23,7 @@
   <alternatives>
     <class>org.commonjava.shelflife.clock.ThreadedClockSource</class>
     <class>org.commonjava.shelflife.event.ThreadedEventManager</class>
-  </alternatives>
+<!--     <class>org.commonjava.aprox.filer.KeyBasedPathGenerator</class>
+ -->  </alternatives>
   
 </beans>
