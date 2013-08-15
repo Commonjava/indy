@@ -6,10 +6,12 @@ import java.net.URI;
 import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.inject.Production;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
@@ -18,6 +20,8 @@ import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.discover.DiscoverySourceManager;
 
 @ApplicationScoped
+@Production
+@Default
 public class AproxDiscoverySourceManager
     implements DiscoverySourceManager
 {

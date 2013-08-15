@@ -7,6 +7,7 @@ import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 
+import org.commonjava.aprox.inject.Production;
 import org.commonjava.aprox.rest.util.ArtifactPathInfo;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.version.InvalidVersionSpecificationException;
@@ -23,6 +24,7 @@ import org.commonjava.util.logging.Logger;
 
 @ApplicationScoped
 @Default
+@Production
 public class AproxDepgraphEvents
     implements CartoEventManager
 {

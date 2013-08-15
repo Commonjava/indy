@@ -21,6 +21,7 @@ import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depgraph.maven.DepgraphModelCache;
 import org.commonjava.aprox.depgraph.util.AproxDepgraphUtils;
 import org.commonjava.aprox.filer.FileManager;
+import org.commonjava.aprox.inject.Production;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
@@ -42,7 +43,7 @@ import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.util.logging.Logger;
 
 @javax.enterprise.context.ApplicationScoped
-//@Production
+@Production
 @Default
 public class AproxProjectGraphDiscoverer
     implements ProjectRelationshipDiscoverer
