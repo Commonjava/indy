@@ -135,4 +135,10 @@ public class RepositoryLocation
         return repository.getKey();
     }
 
+    @Override
+    public boolean allowsDownloading()
+    {
+        return true;
+    }
+
 }

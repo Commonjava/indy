@@ -95,4 +95,10 @@ public class CacheOnlyLocation
         return key;
     }
 
+    @Override
+    public boolean allowsDownloading()
+    {
+        return false;
+    }
+
 }
