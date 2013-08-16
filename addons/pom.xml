@@ -46,7 +46,6 @@
       <id>experimental</id>
       
       <modules>
-        <module>repobuilder</module>
       </modules>
     </profile>
   </profiles>
