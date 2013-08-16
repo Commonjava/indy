@@ -19,6 +19,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.ops.MetadataOps;
@@ -41,6 +42,7 @@ public class MetadataResource
     private MetadataOps ops;
 
     @Inject
+    @DepgraphSpecific
     private JsonSerializer serializer;
 
     @Path( "/batch" )

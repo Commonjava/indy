@@ -21,6 +21,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
+import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.depgraph.util.RequestAdvisor;
 import org.commonjava.maven.atlas.graph.filter.ProjectRelationshipFilter;
 import org.commonjava.maven.atlas.graph.model.EProjectGraph;
@@ -28,9 +29,6 @@ import org.commonjava.maven.atlas.graph.traverse.model.BuildOrder;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.version.InvalidVersionSpecificationException;
 import org.commonjava.maven.cartographer.data.CartoDataException;
-import org.commonjava.maven.cartographer.data.CartoDataManager;
-import org.commonjava.maven.cartographer.discover.DiscoverySourceManager;
-import org.commonjava.maven.cartographer.event.CartoEventManager;
 import org.commonjava.maven.cartographer.ops.GraphOps;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.model.Listing;
@@ -44,22 +42,11 @@ public class GraphResource
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private CartoDataManager data;
-
-    //    @Inject
-    //    private ProjectRelationshipDiscoverer discoverer;
-
-    @Inject
-    private CartoEventManager events;
-
-    @Inject
     private GraphOps ops;
 
     @Inject
+    @DepgraphSpecific
     private JsonSerializer serializer;
-
-    @Inject
-    private DiscoverySourceManager sourceFactory;
 
     @Inject
     private RequestAdvisor requestAdvisor;

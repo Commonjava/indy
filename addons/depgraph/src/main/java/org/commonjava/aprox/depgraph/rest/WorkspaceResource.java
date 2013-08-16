@@ -20,6 +20,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.maven.atlas.graph.spi.GraphDriverException;
 import org.commonjava.maven.atlas.graph.workspace.GraphWorkspace;
 import org.commonjava.maven.atlas.graph.workspace.GraphWorkspaceConfiguration;
@@ -45,6 +46,7 @@ public class WorkspaceResource
     private WorkspaceOps ops;
 
     @Inject
+    @DepgraphSpecific
     private JsonSerializer serializer;
 
     @Path( "/{id}" )

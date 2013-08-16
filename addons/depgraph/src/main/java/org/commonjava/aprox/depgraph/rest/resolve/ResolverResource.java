@@ -6,6 +6,7 @@ import static org.commonjava.aprox.depgraph.util.RequestUtils.getLongParamWithDe
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import javax.enterprise.context.RequestScoped;
@@ -23,6 +24,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.depgraph.util.RequestAdvisor;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.agg.AggregationOptions;
@@ -46,6 +48,7 @@ public class ResolverResource
     private ResolveOps ops;
 
     @Inject
+    @DepgraphSpecific
     private JsonSerializer serializer;
 
     @Inject
@@ -80,12 +83,12 @@ public class ResolverResource
         final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
         final AggregationOptions options = createAggregationOptions( request, source );
 
-        ProjectVersionRef resolved;
+        List<ProjectVersionRef> resolved;
         try
         {
             resolved = ops.resolveGraph( from, options, ref );
 
-            final String json = serializer.toString( Collections.singletonMap( "resolvedGAV", resolved ) );
+            final String json = serializer.toString( Collections.singletonMap( "resolvedTopLevelGAVs", resolved ) );
             response = Response.ok( json )
                                .build();
 

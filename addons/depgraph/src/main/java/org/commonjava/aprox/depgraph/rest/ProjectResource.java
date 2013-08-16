@@ -18,6 +18,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.depgraph.util.RequestAdvisor;
 import org.commonjava.maven.atlas.graph.filter.DependencyOnlyFilter;
 import org.commonjava.maven.atlas.graph.filter.ExtensionOnlyFilter;
@@ -43,6 +44,7 @@ public class ProjectResource
     private GraphOps ops;
 
     @Inject
+    @DepgraphSpecific
     private JsonSerializer serializer;
 
     @Inject

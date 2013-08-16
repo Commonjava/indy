@@ -14,6 +14,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.commonjava.aprox.depgraph.dto.GAVWithPreset;
+import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.depgraph.json.DepgraphSerializationException;
 import org.commonjava.aprox.depgraph.json.GAVWithPresetSer;
 import org.commonjava.aprox.depgraph.util.GraphRetriever;
@@ -46,6 +47,7 @@ public class CalculatorResource
     private RequestAdvisor advisor;
 
     @Inject
+    @DepgraphSpecific
     private JsonSerializer serializer;
 
     @Inject
