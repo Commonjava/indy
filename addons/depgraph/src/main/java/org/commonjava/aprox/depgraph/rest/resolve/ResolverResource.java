@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -86,7 +85,7 @@ public class ResolverResource
         List<ProjectVersionRef> resolved;
         try
         {
-            resolved = ops.resolveGraph( from, options, ref );
+            resolved = ops.resolve( from, options, ref );
 
             final String json = serializer.toString( Collections.singletonMap( "resolvedTopLevelGAVs", resolved ) );
             response = Response.ok( json )
@@ -130,12 +129,14 @@ public class ResolverResource
             return response;
         }
 
-        final AggregationOptions options = createAggregationOptions( request, source );
+        final DefaultAggregatorOptions options = createAggregationOptions( request, source );
+        options.setProcessIncompleteSubgraphs( true );
+
         final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
 
         try
         {
-            final Set<ProjectVersionRef> failed = ops.resolveIncomplete( from, options, ref );
+            final List<ProjectVersionRef> failed = ops.resolve( from, options, ref );
 
             final String json = serializer.toString( Collections.singletonMap( "failures", failed ) );
 
@@ -154,7 +155,7 @@ public class ResolverResource
         return response;
     }
 
-    private AggregationOptions createAggregationOptions( final HttpServletRequest request, final URI source )
+    private DefaultAggregatorOptions createAggregationOptions( final HttpServletRequest request, final URI source )
     {
         final DefaultAggregatorOptions options = new DefaultAggregatorOptions();
         options.setFilter( requestAdvisor.createRelationshipFilter( request ) );

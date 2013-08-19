@@ -147,8 +147,8 @@ public class DownloadManifestBuilder
             final AggregationOptions options = createAggregationOptions( dto, sourceUri );
             if ( dto.isResolve() )
             {
-                roots = ops.resolveGraph( dto.getSource()
-                                             .toString(), options, rootsArray );
+                roots = ops.resolve( dto.getSource()
+                                        .toString(), options, rootsArray );
                 rootsArray = roots.toArray( new ProjectVersionRef[roots.size()] );
             }
 
@@ -364,8 +364,8 @@ public class DownloadManifestBuilder
             final AggregationOptions options = createAggregationOptions( dto, sourceUri );
             if ( dto.isResolve() )
             {
-                roots = ops.resolveGraph( dto.getSource()
-                                             .toString(), options, rootsArray );
+                roots = ops.resolve( dto.getSource()
+                                        .toString(), options, rootsArray );
                 rootsArray = roots.toArray( new ProjectVersionRef[roots.size()] );
             }
 
