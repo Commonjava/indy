@@ -174,11 +174,6 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-subsys-infinispan</artifactId>
-        <version>0.7-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-subsys-maven</artifactId>
         <version>0.9-SNAPSHOT</version>
       </dependency>
@@ -202,7 +197,7 @@
       <dependency>
         <groupId>org.commonjava.maven.cartographer</groupId>
         <artifactId>cartographer</artifactId>
-        <version>0.1.1-SNAPSHOT</version>
+        <version>0.1.1</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.maven.galley</groupId>

@@ -36,8 +36,6 @@ import javax.ws.rs.core.Response.Status;
 
 import org.commonjava.aprox.change.event.AproxFileEventManager;
 import org.commonjava.aprox.change.event.ArtifactStoreRescanEvent;
-import org.commonjava.aprox.conf.AproxConfiguration;
-import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.DeployPoint;
@@ -63,13 +61,7 @@ public class DefaultFileManager
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private AproxConfiguration config;
-
-    @Inject
     private Event<ArtifactStoreRescanEvent> rescanEvent;
-
-    @Inject
-    private StoreDataManager storeDataManager;
 
     @Inject
     private AproxFileEventManager fileEventManager;
@@ -91,10 +83,9 @@ public class DefaultFileManager
     {
     }
 
-    public DefaultFileManager( final AproxConfiguration config, final TransferManager transfers/*,
+    public DefaultFileManager( final TransferManager transfers/*,
                                                                                                final NotFoundCache nfc*/)
     {
-        this.config = config;
         this.transfers = transfers/*,
                                        final NotFoundCache nfc*/;
         //        this.nfc = nfc;

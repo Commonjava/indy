@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
-import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.core.filer.DefaultFileManager;
 import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.fixture.GalleyFixture;
@@ -54,7 +53,7 @@ public class PathRetrieverTest
     {
         repoRoot = tempFolder.newFolder( "repository" );
         fixture = new GalleyFixture( repoRoot );
-        downloader = new DefaultFileManager( new DefaultAproxConfiguration(), fixture.getTransfers() );
+        downloader = new DefaultFileManager( fixture.getTransfers() );
     }
 
     @Test

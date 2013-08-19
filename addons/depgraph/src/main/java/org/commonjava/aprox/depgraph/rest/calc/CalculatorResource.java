@@ -17,12 +17,9 @@ import org.commonjava.aprox.depgraph.dto.GAVWithPreset;
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.depgraph.json.DepgraphSerializationException;
 import org.commonjava.aprox.depgraph.json.GAVWithPresetSer;
-import org.commonjava.aprox.depgraph.util.GraphRetriever;
 import org.commonjava.aprox.depgraph.util.RequestAdvisor;
 import org.commonjava.maven.atlas.graph.filter.ProjectRelationshipFilter;
 import org.commonjava.maven.cartographer.data.CartoDataException;
-import org.commonjava.maven.cartographer.data.CartoDataManager;
-import org.commonjava.maven.cartographer.discover.DiscoverySourceManager;
 import org.commonjava.maven.cartographer.dto.GraphCalculation;
 import org.commonjava.maven.cartographer.dto.GraphDifference;
 import org.commonjava.maven.cartographer.ops.CalculationOps;
@@ -38,9 +35,6 @@ public class CalculatorResource
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private CartoDataManager data;
-
-    @Inject
     private CalculationOps ops;
 
     @Inject
@@ -49,12 +43,6 @@ public class CalculatorResource
     @Inject
     @DepgraphSpecific
     private JsonSerializer serializer;
-
-    @Inject
-    private GraphRetriever retriever;
-
-    @Inject
-    private DiscoverySourceManager sourceFactory;
 
     @Path( "/diff/{gavp1: ([^:]+):([^:]+):([^:]+):([^/]+)}/{gavp2: ([^:]+):([^:]+):([^:]+):([^/]+)}" )
     @GET
