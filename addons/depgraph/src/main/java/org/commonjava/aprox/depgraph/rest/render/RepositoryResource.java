@@ -1,0 +1,286 @@
+package org.commonjava.aprox.depgraph.rest.render;
+
+import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.apache.commons.io.IOUtils.copy;
+import static org.apache.commons.lang.StringUtils.join;
+import static org.commonjava.web.json.ser.ServletSerializerUtils.fromRequestBody;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
+
+import org.commonjava.aprox.depgraph.dto.WebOperationConfigDTO;
+import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
+import org.commonjava.aprox.depgraph.util.RequestAdvisor;
+import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.galley.KeyedLocation;
+import org.commonjava.aprox.rest.AproxWorkflowException;
+import org.commonjava.maven.atlas.graph.filter.ProjectRelationshipFilter;
+import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
+import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.cartographer.data.CartoDataException;
+import org.commonjava.maven.cartographer.ops.ResolveOps;
+import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.util.logging.Logger;
+import org.commonjava.web.json.ser.JsonSerializer;
+
+@Path( "/depgraph/repo" )
+public class RepositoryResource
+{
+
+    private final Logger logger = new Logger( getClass() );
+
+    @Inject
+    private ResolveOps ops;
+
+    @Inject
+    @DepgraphSpecific
+    private JsonSerializer serializer;
+
+    @Inject
+    private RequestAdvisor requestAdvisor;
+
+    @POST
+    @Path( "/urlmap" )
+    @Produces( "application/json" )
+    public Response getUrlMap( @Context final HttpServletRequest req, @Context final HttpServletResponse resp,
+                               @Context final UriInfo info )
+    {
+        final Map<ProjectVersionRef, Set<String>> urlMap = new HashMap<>();
+
+        try
+        {
+            final Map<ProjectVersionRef, Map<ArtifactRef, Transfer>> contents = resolveContents( req );
+
+            for ( final Entry<ProjectVersionRef, Map<ArtifactRef, Transfer>> entry : contents.entrySet() )
+            {
+                final ProjectVersionRef gav = entry.getKey();
+                final Map<ArtifactRef, Transfer> items = entry.getValue();
+
+                final Set<String> urls = new HashSet<>();
+                urlMap.put( gav, urls );
+
+                for ( final Transfer item : items.values() )
+                {
+                    urls.add( formatUrlMapUrl( item, info ) );
+                }
+            }
+        }
+        catch ( final MalformedURLException e )
+        {
+            logger.error( "Failed to generate runtime repository. Reason: %s", e, e.getMessage() );
+
+            return Response.serverError()
+                           .build();
+        }
+        catch ( final AproxWorkflowException e )
+        {
+            return e.getResponse();
+        }
+
+        final String json = serializer.toString( urlMap );
+
+        return Response.ok( json )
+                       .type( "application/json" )
+                       .build();
+    }
+
+    @POST
+    @Path( "/downlog" )
+    @Produces( "text/plain" )
+    public Response getDownloadLog( @Context final HttpServletRequest req, @Context final HttpServletResponse resp,
+                                    @Context final UriInfo info )
+    {
+        final Set<String> downLog = new HashSet<>();
+        try
+        {
+            final Map<ProjectVersionRef, Map<ArtifactRef, Transfer>> contents = resolveContents( req );
+
+            for ( final Map<ArtifactRef, Transfer> items : contents.values() )
+            {
+                for ( final Transfer item : items.values() )
+                {
+                    logger.info( "Adding: '%s'", item.getPath() );
+                    downLog.add( formatDownlogEntry( item, info ) );
+                }
+            }
+        }
+        catch ( final MalformedURLException e )
+        {
+            logger.error( "Failed to generate runtime repository. Reason: %s", e, e.getMessage() );
+
+            return Response.serverError()
+                           .build();
+        }
+        catch ( final AproxWorkflowException e )
+        {
+            return e.getResponse();
+        }
+
+        final String output = join( downLog, "\n" );
+
+        return Response.ok( output )
+                       .type( "text/plain" )
+                       .build();
+    }
+
+    @POST
+    @Path( "/zip" )
+    @Produces( "application/zip" )
+    public Response getZipRepository( @Context final HttpServletRequest req, @Context final HttpServletResponse resp )
+    {
+        Response response = Response.noContent()
+                                    .build();
+
+        ZipOutputStream stream = null;
+        try
+        {
+            final Map<ProjectVersionRef, Map<ArtifactRef, Transfer>> contents = resolveContents( req );
+
+            final OutputStream os = resp.getOutputStream();
+            stream = new ZipOutputStream( os );
+
+            for ( final Map<ArtifactRef, Transfer> items : contents.values() )
+            {
+
+                for ( final Transfer item : items.values() )
+                {
+                    final ZipEntry ze = new ZipEntry( item.getPath() );
+                    stream.putNextEntry( ze );
+
+                    InputStream itemStream = null;
+                    try
+                    {
+                        itemStream = item.openInputStream();
+                        copy( itemStream, stream );
+                    }
+                    finally
+                    {
+                        closeQuietly( itemStream );
+                    }
+                }
+            }
+        }
+        catch ( final IOException e )
+        {
+            logger.error( "Failed to generate runtime repository. Reason: %s", e, e.getMessage() );
+
+            return Response.serverError()
+                           .build();
+        }
+        catch ( final AproxWorkflowException e )
+        {
+            return e.getResponse();
+        }
+        finally
+        {
+            closeQuietly( stream );
+        }
+
+        response = Response.ok()
+                           .type( "application/zip" )
+                           .build();
+
+        return response;
+    }
+
+    private String formatDownlogEntry( final Transfer item, final UriInfo info )
+        throws MalformedURLException
+    {
+        final KeyedLocation kl = (KeyedLocation) item.getLocation();
+        final StoreKey key = kl.getKey();
+
+        final URI uri = info.getBaseUriBuilder()
+                            .path( key.getType()
+                                      .singularEndpointName() )
+                            .path( key.getName() )
+                            .path( item.getPath() )
+                            .build();
+
+        return String.format( "Downloading: %s", uri.toURL()
+                                                    .toExternalForm() );
+    }
+
+    private String formatUrlMapUrl( final Transfer item, final UriInfo info )
+        throws MalformedURLException
+    {
+        final KeyedLocation kl = (KeyedLocation) item.getLocation();
+        final StoreKey key = kl.getKey();
+
+        final URI uri = info.getBaseUriBuilder()
+                            .path( key.getType()
+                                      .singularEndpointName() )
+                            .path( key.getName() )
+                            .path( item.getPath() )
+                            .build();
+
+        return uri.toURL()
+                  .toExternalForm();
+    }
+
+    private Map<ProjectVersionRef, Map<ArtifactRef, Transfer>> resolveContents( final HttpServletRequest req )
+        throws AproxWorkflowException
+    {
+        final WebOperationConfigDTO dto = fromRequestBody( req, serializer, WebOperationConfigDTO.class );
+
+        if ( dto == null )
+        {
+            logger.warn( "Repository archive configuration is missing." );
+            throw new AproxWorkflowException( Response.status( Status.BAD_REQUEST )
+                                                      .entity( "JSON configuration not supplied" )
+                                                      .build() );
+        }
+
+        if ( !dto.isValid() )
+        {
+            logger.warn( "Repository archive configuration is invalid: %s", dto );
+            throw new AproxWorkflowException( Response.status( Status.BAD_REQUEST )
+                                                      .entity( "Invalid configuration" )
+                                                      .build() );
+        }
+
+        final ProjectRelationshipFilter presetFilter = requestAdvisor.getPresetFilter( dto.getPreset() );
+        dto.setFilter( presetFilter );
+
+        Map<ProjectVersionRef, Map<ArtifactRef, Transfer>> contents;
+        try
+        {
+            contents = ops.resolveRepositoryContents( dto );
+        }
+        catch ( final CartoDataException e )
+        {
+            logger.error( "Failed to resolve repository contents for: %s. Reason: %s", e, dto, e.getMessage() );
+            throw new AproxWorkflowException( Response.serverError()
+                                                      .build() );
+        }
+
+        if ( contents == null )
+        {
+            throw new AproxWorkflowException( Response.status( Status.BAD_REQUEST )
+                                                      .build() );
+        }
+
+        return contents;
+    }
+
+}

@@ -101,4 +101,10 @@ public class CacheOnlyLocation
         return false;
     }
 
+    @Override
+    public String toString()
+    {
+        return key.toString();
+    }
+
 }

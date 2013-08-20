@@ -5,9 +5,12 @@ import java.util.List;
 
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.DeployPoint;
+import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.model.galley.CacheOnlyLocation;
+import org.commonjava.aprox.model.galley.GroupLocation;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.model.galley.RepositoryLocation;
 import org.commonjava.maven.galley.auth.AttributePasswordManager;
@@ -20,6 +23,11 @@ public final class LocationUtils
 {
     private LocationUtils()
     {
+    }
+
+    public static GroupLocation toLocation( final Group group )
+    {
+        return new GroupLocation( group.getName() );
     }
 
     public static RepositoryLocation toLocation( final Repository repository )
@@ -39,6 +47,11 @@ public final class LocationUtils
 
     public static CacheOnlyLocation toLocation( final StoreKey key )
     {
+        if ( key.getType() == StoreType.group )
+        {
+            return new GroupLocation( key.getName() );
+        }
+
         return new CacheOnlyLocation( key );
     }
 

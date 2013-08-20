@@ -182,27 +182,27 @@
       <dependency>
         <groupId>org.commonjava.maven.galley</groupId>
         <artifactId>galley-core</artifactId>
-        <version>0.1.0</version>
+        <version>0.2.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.maven.galley</groupId>
         <artifactId>galley-transport-filearc</artifactId>
-        <version>0.1.0</version>
+        <version>0.2.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.maven.galley</groupId>
         <artifactId>galley-transport-httpclient</artifactId>
-        <version>0.1.0</version>
+        <version>0.2.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.maven.cartographer</groupId>
         <artifactId>cartographer</artifactId>
-        <version>0.1.1</version>
+        <version>0.1.2-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.maven.galley</groupId>
         <artifactId>galley-api</artifactId>
-        <version>0.1.0</version>
+        <version>0.2.0-SNAPSHOT</version>
       </dependency>
       
       <dependency>
