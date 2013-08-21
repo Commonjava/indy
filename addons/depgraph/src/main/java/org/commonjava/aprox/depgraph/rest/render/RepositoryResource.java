@@ -3,6 +3,7 @@ package org.commonjava.aprox.depgraph.rest.render;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.apache.commons.io.IOUtils.copy;
 import static org.apache.commons.lang.StringUtils.join;
+import static org.commonjava.maven.galley.util.UrlUtils.buildUrl;
 import static org.commonjava.web.json.ser.ServletSerializerUtils.fromRequestBody;
 
 import java.io.IOException;
@@ -66,11 +67,13 @@ public class RepositoryResource
     public Response getUrlMap( @Context final HttpServletRequest req, @Context final HttpServletResponse resp,
                                @Context final UriInfo info )
     {
+        final WebOperationConfigDTO dto = fromRequestBody( req, serializer, WebOperationConfigDTO.class );
+
         final Map<ProjectVersionRef, Set<String>> urlMap = new HashMap<>();
 
         try
         {
-            final Map<ProjectVersionRef, Map<ArtifactRef, Transfer>> contents = resolveContents( req );
+            final Map<ProjectVersionRef, Map<ArtifactRef, Transfer>> contents = resolveContents( dto, req );
 
             for ( final Entry<ProjectVersionRef, Map<ArtifactRef, Transfer>> entry : contents.entrySet() )
             {
@@ -82,7 +85,7 @@ public class RepositoryResource
 
                 for ( final Transfer item : items.values() )
                 {
-                    urls.add( formatUrlMapUrl( item, info ) );
+                    urls.add( formatUrlMapUrl( item, info, dto.getLocalUrls() ) );
                 }
             }
         }
@@ -111,17 +114,19 @@ public class RepositoryResource
     public Response getDownloadLog( @Context final HttpServletRequest req, @Context final HttpServletResponse resp,
                                     @Context final UriInfo info )
     {
+        final WebOperationConfigDTO dto = fromRequestBody( req, serializer, WebOperationConfigDTO.class );
+
         final Set<String> downLog = new HashSet<>();
         try
         {
-            final Map<ProjectVersionRef, Map<ArtifactRef, Transfer>> contents = resolveContents( req );
+            final Map<ProjectVersionRef, Map<ArtifactRef, Transfer>> contents = resolveContents( dto, req );
 
             for ( final Map<ArtifactRef, Transfer> items : contents.values() )
             {
                 for ( final Transfer item : items.values() )
                 {
                     logger.info( "Adding: '%s'", item.getPath() );
-                    downLog.add( formatDownlogEntry( item, info ) );
+                    downLog.add( formatDownlogEntry( item, info, dto.getLocalUrls() ) );
                 }
             }
         }
@@ -149,13 +154,15 @@ public class RepositoryResource
     @Produces( "application/zip" )
     public Response getZipRepository( @Context final HttpServletRequest req, @Context final HttpServletResponse resp )
     {
+        final WebOperationConfigDTO dto = fromRequestBody( req, serializer, WebOperationConfigDTO.class );
+
         Response response = Response.noContent()
                                     .build();
 
         ZipOutputStream stream = null;
         try
         {
-            final Map<ProjectVersionRef, Map<ArtifactRef, Transfer>> contents = resolveContents( req );
+            final Map<ProjectVersionRef, Map<ArtifactRef, Transfer>> contents = resolveContents( dto, req );
 
             final OutputStream os = resp.getOutputStream();
             stream = new ZipOutputStream( os );
@@ -204,45 +211,60 @@ public class RepositoryResource
         return response;
     }
 
-    private String formatDownlogEntry( final Transfer item, final UriInfo info )
+    private String formatDownlogEntry( final Transfer item, final UriInfo info, final boolean localUrls )
         throws MalformedURLException
     {
         final KeyedLocation kl = (KeyedLocation) item.getLocation();
         final StoreKey key = kl.getKey();
 
-        final URI uri = info.getBaseUriBuilder()
-                            .path( key.getType()
-                                      .singularEndpointName() )
-                            .path( key.getName() )
-                            .path( item.getPath() )
-                            .build();
+        if ( localUrls )
+        {
+            final URI uri = info.getBaseUriBuilder()
+                                .path( key.getType()
+                                          .singularEndpointName() )
+                                .path( key.getName() )
+                                .path( item.getPath() )
+                                .build();
 
-        return String.format( "Downloading: %s", uri.toURL()
-                                                    .toExternalForm() );
+            return String.format( "Downloading: %s", uri.toURL()
+                                                        .toExternalForm() );
+        }
+        else
+        {
+            return "Downloading: " + buildUrl( item.getLocation()
+                                                   .getUri(), item.getPath() );
+        }
     }
 
-    private String formatUrlMapUrl( final Transfer item, final UriInfo info )
+    private String formatUrlMapUrl( final Transfer item, final UriInfo info, final boolean localUrls )
         throws MalformedURLException
     {
         final KeyedLocation kl = (KeyedLocation) item.getLocation();
         final StoreKey key = kl.getKey();
 
-        final URI uri = info.getBaseUriBuilder()
-                            .path( key.getType()
-                                      .singularEndpointName() )
-                            .path( key.getName() )
-                            .path( item.getPath() )
-                            .build();
+        if ( localUrls )
+        {
+            final URI uri = info.getBaseUriBuilder()
+                                .path( key.getType()
+                                          .singularEndpointName() )
+                                .path( key.getName() )
+                                .path( item.getPath() )
+                                .build();
 
-        return uri.toURL()
-                  .toExternalForm();
+            return uri.toURL()
+                      .toExternalForm();
+        }
+        else
+        {
+            return buildUrl( item.getLocation()
+                                 .getUri(), item.getPath() );
+        }
     }
 
-    private Map<ProjectVersionRef, Map<ArtifactRef, Transfer>> resolveContents( final HttpServletRequest req )
+    private Map<ProjectVersionRef, Map<ArtifactRef, Transfer>> resolveContents( final WebOperationConfigDTO dto,
+                                                                                final HttpServletRequest req )
         throws AproxWorkflowException
     {
-        final WebOperationConfigDTO dto = fromRequestBody( req, serializer, WebOperationConfigDTO.class );
-
         if ( dto == null )
         {
             logger.warn( "Repository archive configuration is missing." );

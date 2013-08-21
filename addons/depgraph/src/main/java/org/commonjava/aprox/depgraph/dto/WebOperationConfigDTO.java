@@ -13,6 +13,8 @@ public class WebOperationConfigDTO
 
     private String preset;
 
+    private Boolean localUrls;
+
     public String getPreset()
     {
         return preset;
@@ -37,6 +39,16 @@ public class WebOperationConfigDTO
     public Location getSourceLocation()
     {
         return LocationUtils.toLocation( source );
+    }
+
+    public Boolean getLocalUrls()
+    {
+        return localUrls == null ? false : localUrls;
+    }
+
+    public void setLocalUrls( final Boolean localUrls )
+    {
+        this.localUrls = localUrls;
     }
 
 }
