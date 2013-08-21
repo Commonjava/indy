@@ -86,6 +86,10 @@ public class ResolverResource
         try
         {
             resolved = ops.resolve( from, options, ref );
+            if ( resolved == null || resolved.isEmpty() )
+            {
+                resolved = Collections.singletonList( ref );
+            }
 
             final String json = serializer.toString( Collections.singletonMap( "resolvedTopLevelGAVs", resolved ) );
             response = Response.ok( json )
