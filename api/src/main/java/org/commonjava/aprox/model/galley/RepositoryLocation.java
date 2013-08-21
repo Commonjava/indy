@@ -147,4 +147,10 @@ public class RepositoryLocation
         return repository.getKey()
                          .toString();
     }
+
+    @Override
+    public String getName()
+    {
+        return getKey().toString();
+    }
 }

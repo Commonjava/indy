@@ -107,4 +107,10 @@ public class CacheOnlyLocation
         return key.toString();
     }
 
+    @Override
+    public String getName()
+    {
+        return getKey().toString();
+    }
+
 }

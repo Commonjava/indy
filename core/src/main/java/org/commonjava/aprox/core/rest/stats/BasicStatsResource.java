@@ -12,7 +12,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import org.commonjava.aprox.core.rest.AbstractURLAliasingResource;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.inject.AproxData;
@@ -24,7 +23,6 @@ import org.commonjava.web.json.ser.JsonSerializer;
 @Path( "/stats" )
 @javax.enterprise.context.ApplicationScoped
 public class BasicStatsResource
-    extends AbstractURLAliasingResource
 {
 
     private final Logger logger = new Logger( getClass() );

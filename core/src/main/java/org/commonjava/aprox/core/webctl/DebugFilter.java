@@ -1,4 +1,4 @@
-package org.commonjava.aprox.depgraph.web;
+package org.commonjava.aprox.core.webctl;
 
 import java.io.IOException;
 
@@ -8,11 +8,12 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 
 import org.commonjava.util.logging.Logger;
 
-//@WebFilter( "/api/1.0/rel/*" )
+@WebFilter( "/*" )
 public class DebugFilter
     implements Filter
 {
@@ -22,7 +23,7 @@ public class DebugFilter
     @Override
     public void destroy()
     {
-        logger.info( "Filter destroy()" );
+        //        logger.info( "Filter destroy()" );
     }
 
     @Override
@@ -30,8 +31,9 @@ public class DebugFilter
         throws IOException, ServletException
     {
         final HttpServletRequest request = (HttpServletRequest) req;
-        logger.info( "\n\n\n\n\nDEBUG\n\nPath Translated: %s\nPath Info: %s\nContext Path: %s\n\n\n\n",
-                     request.getPathTranslated(), request.getPathInfo(), request.getContextPath() );
+        logger.info( "REQUEST:\n  URI: %s\n  Path Translated: %s\n  Path Info: %s\n  Context Path: %s\n\n",
+                     request.getRequestURI(), request.getPathTranslated(), request.getPathInfo(),
+                     request.getContextPath() );
 
         chain.doFilter( request, resp );
     }
@@ -40,7 +42,7 @@ public class DebugFilter
     public void init( final FilterConfig config )
         throws ServletException
     {
-        logger.info( "Filter init(..)" );
+        //        logger.info( "Filter init(..)" );
         //        ctx = config.getServletContext();
     }
 
