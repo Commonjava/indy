@@ -52,6 +52,10 @@ import org.commonjava.web.json.ser.JsonSerializer;
 public class RepositoryResource
 {
 
+    private static final String URLMAP_DATA_REPO_URL = "repoUrl";
+
+    private static final String URLMAP_DATA_FILES = "files";
+
     private final Logger logger = new Logger( getClass() );
 
     @Inject
@@ -73,7 +77,7 @@ public class RepositoryResource
     public Response getUrlMap( @Context final HttpServletRequest req, @Context final HttpServletResponse resp,
                                @Context final UriInfo info )
     {
-        final Map<ProjectVersionRef, Set<String>> urlMap = new HashMap<>();
+        final Map<ProjectVersionRef, Map<String, Object>> result = new HashMap<>();
 
         try
         {
@@ -86,12 +90,21 @@ public class RepositoryResource
                 final ProjectVersionRef gav = entry.getKey();
                 final Map<ArtifactRef, Transfer> items = entry.getValue();
 
-                final Set<String> urls = new HashSet<>();
-                urlMap.put( gav, urls );
+                final Map<String, Object> data = new HashMap<>();
+                result.put( gav, data );
+
+                final Set<String> files = new HashSet<>();
+                data.put( URLMAP_DATA_FILES, files );
 
                 for ( final Transfer item : items.values() )
                 {
-                    urls.add( formatUrlMapUrl( item, info, dto.getLocalUrls() ) );
+                    if ( !data.containsKey( URLMAP_DATA_REPO_URL ) )
+                    {
+                        data.put( URLMAP_DATA_REPO_URL, formatUrlMapRepositoryUrl( item, info, dto.getLocalUrls() ) );
+                    }
+
+                    files.add( item.getDetachedFile()
+                                   .getName() );
                 }
             }
         }
@@ -107,7 +120,7 @@ public class RepositoryResource
             return e.getResponse();
         }
 
-        final String json = serializer.toString( urlMap );
+        final String json = serializer.toString( result );
 
         return Response.ok( json )
                        .type( "application/json" )
@@ -242,7 +255,7 @@ public class RepositoryResource
         }
     }
 
-    private String formatUrlMapUrl( final Transfer item, final UriInfo info, final boolean localUrls )
+    private String formatUrlMapRepositoryUrl( final Transfer item, final UriInfo info, final boolean localUrls )
         throws MalformedURLException
     {
         final KeyedLocation kl = (KeyedLocation) item.getLocation();
@@ -254,7 +267,6 @@ public class RepositoryResource
                                 .path( key.getType()
                                           .singularEndpointName() )
                                 .path( key.getName() )
-                                .path( item.getPath() )
                                 .build();
 
             return uri.toURL()
@@ -262,8 +274,8 @@ public class RepositoryResource
         }
         else
         {
-            return buildUrl( item.getLocation()
-                                 .getUri(), item.getPath() );
+            return item.getLocation()
+                       .getUri();
         }
     }
 
@@ -315,6 +327,8 @@ public class RepositoryResource
         throws AproxWorkflowException
     {
         final WebOperationConfigDTO dto = fromRequestBody( req, serializer, WebOperationConfigDTO.class );
+        logger.info( "Got configuration:\n\n%s\n\n", serializer.toString( dto ) );
+
         try
         {
             dto.calculateLocations( storeData );

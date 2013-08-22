@@ -318,6 +318,7 @@ public class AproxModelDiscoverer
         // NOTE: We need a way to flush out the old relationships reliably when updating!
         final boolean concrete = versionSpec.isConcrete();
 
+        // TODO: .contains() is EXPENSIVE due to path-membership analysis!!!
         final boolean contains = dataManager.contains( ref );
 
         boolean hasError = false;

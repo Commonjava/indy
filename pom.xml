@@ -208,7 +208,7 @@
       <dependency>
         <groupId>org.commonjava.maven.atlas</groupId>
         <artifactId>atlas-driver-neo4j-embedded</artifactId>
-        <version>0.9.0</version>
+        <version>0.9.1-SNAPSHOT</version>
       </dependency>
       
       <dependency>
