@@ -290,6 +290,12 @@ public class IndexHandler
 
                 updated.add( store );
 
+                if ( context == null )
+                {
+                    // TODO: Stand off for a bit?
+                    return;
+                }
+
                 try
                 {
                     groupContext.merge( context.getIndexDirectory() );
@@ -439,6 +445,30 @@ public class IndexHandler
 
         try
         {
+            /* TODO:
+            15:19:27,359 ERROR [org.commonjava.aprox.indexer.IndexHandler] (aprox-indexer-0) 
+            Failed to create indexing context for: repository:central. 
+                Reason: Cannot forcefully unlock a NativeFSLock which is held by 
+                another indexer component: /var/lib/aprox/storage/repository-central/.index/write.lock: 
+            org.apache.lucene.store.LockReleaseFailedException: 
+                Cannot forcefully unlock a NativeFSLock which is held by another 
+                indexer component: /var/lib/aprox/storage/repository-central/.index/write.lock
+            at org.apache.lucene.store.NativeFSLock.release(NativeFSLockFactory.java:295) [lucene-core-3.6.1.jar:3.6.1 1362471 - thetaphi - 2012-07-17 12:40:12]
+            at org.apache.lucene.index.IndexWriter.unlock(IndexWriter.java:4624) [lucene-core-3.6.1.jar:3.6.1 1362471 - thetaphi - 2012-07-17 12:40:12]
+            at org.apache.maven.index.context.DefaultIndexingContext.prepareCleanIndex(DefaultIndexingContext.java:232) [indexer-core-5.1.0.jar:5.1.0]
+            at org.apache.maven.index.context.DefaultIndexingContext.prepareIndex(DefaultIndexingContext.java:206) [indexer-core-5.1.0.jar:5.1.0]
+            at org.apache.maven.index.context.DefaultIndexingContext.<init>(DefaultIndexingContext.java:147) [indexer-core-5.1.0.jar:5.1.0]
+            at org.apache.maven.index.context.DefaultIndexingContext.<init>(DefaultIndexingContext.java:155) [indexer-core-5.1.0.jar:5.1.0]
+            at org.apache.maven.index.DefaultIndexer.createIndexingContext(DefaultIndexer.java:76) [indexer-core-5.1.0.jar:5.1.0]
+            at org.commonjava.aprox.indexer.IndexHandler.getIndexingContext(IndexHandler.java:442) [classes:]
+            at org.commonjava.aprox.indexer.IndexHandler.getContextsFor(IndexHandler.java:411) [classes:]
+            at org.commonjava.aprox.indexer.IndexHandler.updateMergedIndex(IndexHandler.java:264) [classes:]
+            at org.commonjava.aprox.indexer.IndexHandler.access$300(IndexHandler.java:57) [classes:]
+            at org.commonjava.aprox.indexer.IndexHandler$AdditionRunnable.run(IndexHandler.java:578) [classes:]
+            at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145) [rt.jar:1.7.0_25]
+            at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615) [rt.jar:1.7.0_25]
+            at java.lang.Thread.run(Thread.java:724) [rt.jar:1.7.0_25]
+             */
             final IndexingContext context =
                 indexer.createIndexingContext( id, id, rootDir, indexDir, id, null, true, true, indexers );
 
