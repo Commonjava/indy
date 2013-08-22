@@ -13,12 +13,9 @@ import javax.inject.Inject;
 
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
-import org.apache.maven.model.building.ModelBuilder;
-import org.apache.maven.model.io.ModelReader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.depgraph.maven.DepgraphModelCache;
 import org.commonjava.aprox.depgraph.util.AproxDepgraphUtils;
 import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.inject.Production;
@@ -38,7 +35,6 @@ import org.commonjava.maven.cartographer.data.CartoDataManager;
 import org.commonjava.maven.cartographer.discover.DiscoveryConfig;
 import org.commonjava.maven.cartographer.discover.DiscoveryResult;
 import org.commonjava.maven.cartographer.discover.ProjectRelationshipDiscoverer;
-import org.commonjava.maven.cartographer.util.MavenModelProcessor;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.util.logging.Logger;
 
@@ -65,24 +61,6 @@ public class AproxProjectGraphDiscoverer
 
     @Inject
     private StoreDataManager storeManager;
-
-    @Inject
-    private ModelReader modelReader;
-
-    @Inject
-    private ModelBuilder modelBuilder;
-
-    @Inject
-    private MavenModelProcessor modelProcessor;
-
-    @Inject
-    private DepgraphModelCache tensorModelCache;
-
-    //  public TensorStorageListenerRunnable( final StoreDataManager aprox, final ModelReader modelReader,
-    //  final ModelBuilder modelBuilder, final FileManager fileManager,
-    //  final MavenModelProcessor modelProcessor,
-    //  final CartoDataManager dataManager, final TensorModelCache tensorModelCache,
-    //  final Transfer item )
 
     @Override
     public DiscoveryResult discoverRelationships( final ProjectVersionRef ref, final DiscoveryConfig discoveryConfig )

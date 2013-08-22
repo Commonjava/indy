@@ -15,6 +15,7 @@ import org.commonjava.maven.galley.auth.AttributePasswordManager;
 import org.commonjava.maven.galley.spi.auth.PasswordManager;
 import org.commonjava.maven.galley.transport.htcli.Http;
 import org.commonjava.maven.galley.transport.htcli.HttpImpl;
+import org.commonjava.maven.galley.transport.htcli.model.HttpLocation;
 
 public class AproxHttpProvider
 {
@@ -46,7 +47,7 @@ public class AproxHttpProvider
 
     public void bindRepositoryCredentialsTo( final Repository repository, final HttpRequest request )
     {
-        http.bindCredentialsTo( toLocation( repository ), request );
+        http.bindCredentialsTo( (HttpLocation) toLocation( repository ), request );
 
         if ( repository.getProxyHost() != null )
         {

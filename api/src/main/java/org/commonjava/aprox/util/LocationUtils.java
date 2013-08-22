@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.DeployPoint;
-import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
@@ -25,24 +24,33 @@ public final class LocationUtils
     {
     }
 
-    public static GroupLocation toLocation( final Group group )
+    public static KeyedLocation toLocation( final ArtifactStore store )
     {
-        return new GroupLocation( group.getName() );
-    }
+        final StoreType type = store.getKey()
+                                    .getType();
+        switch ( type )
+        {
+            case group:
+            {
+                return new GroupLocation( store.getName() );
+            }
+            case deploy_point:
+            {
+                return new CacheOnlyLocation( (DeployPoint) store );
+            }
+            case repository:
+            default:
+            {
+                final Repository repository = (Repository) store;
+                final RepositoryLocation location = new RepositoryLocation( repository );
+                AttributePasswordManager.bind( location, PasswordIdentifier.KEY_PASSWORD, repository.getKeyPassword() );
+                AttributePasswordManager.bind( location, PasswordIdentifier.PROXY_PASSWORD,
+                                               repository.getProxyPassword() );
+                AttributePasswordManager.bind( location, PasswordIdentifier.USER_PASSWORD, repository.getPassword() );
 
-    public static RepositoryLocation toLocation( final Repository repository )
-    {
-        final RepositoryLocation location = new RepositoryLocation( repository );
-        AttributePasswordManager.bind( location, PasswordIdentifier.KEY_PASSWORD, repository.getKeyPassword() );
-        AttributePasswordManager.bind( location, PasswordIdentifier.PROXY_PASSWORD, repository.getProxyPassword() );
-        AttributePasswordManager.bind( location, PasswordIdentifier.USER_PASSWORD, repository.getPassword() );
-
-        return location;
-    }
-
-    public static CacheOnlyLocation toLocation( final DeployPoint deploy )
-    {
-        return new CacheOnlyLocation( deploy );
+                return location;
+            }
+        }
     }
 
     public static CacheOnlyLocation toLocation( final StoreKey key )
@@ -62,11 +70,11 @@ public final class LocationUtils
         {
             if ( store instanceof Repository )
             {
-                locations.add( toLocation( (Repository) store ) );
+                locations.add( toLocation( store ) );
             }
             else if ( store instanceof DeployPoint )
             {
-                locations.add( toLocation( (DeployPoint) store ) );
+                locations.add( toLocation( store ) );
             }
             else
             {

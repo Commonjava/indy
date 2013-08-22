@@ -30,10 +30,13 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depgraph.dto.WebOperationConfigDTO;
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.depgraph.util.RequestAdvisor;
 import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.galley.CacheOnlyLocation;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.maven.atlas.graph.filter.ProjectRelationshipFilter;
@@ -61,18 +64,21 @@ public class RepositoryResource
     @Inject
     private RequestAdvisor requestAdvisor;
 
+    @Inject
+    private StoreDataManager storeData;
+
     @POST
     @Path( "/urlmap" )
     @Produces( "application/json" )
     public Response getUrlMap( @Context final HttpServletRequest req, @Context final HttpServletResponse resp,
                                @Context final UriInfo info )
     {
-        final WebOperationConfigDTO dto = fromRequestBody( req, serializer, WebOperationConfigDTO.class );
-
         final Map<ProjectVersionRef, Set<String>> urlMap = new HashMap<>();
 
         try
         {
+            final WebOperationConfigDTO dto = readDTO( req );
+
             final Map<ProjectVersionRef, Map<ArtifactRef, Transfer>> contents = resolveContents( dto, req );
 
             for ( final Entry<ProjectVersionRef, Map<ArtifactRef, Transfer>> entry : contents.entrySet() )
@@ -114,11 +120,11 @@ public class RepositoryResource
     public Response getDownloadLog( @Context final HttpServletRequest req, @Context final HttpServletResponse resp,
                                     @Context final UriInfo info )
     {
-        final WebOperationConfigDTO dto = fromRequestBody( req, serializer, WebOperationConfigDTO.class );
-
         final Set<String> downLog = new HashSet<>();
         try
         {
+            final WebOperationConfigDTO dto = readDTO( req );
+
             final Map<ProjectVersionRef, Map<ArtifactRef, Transfer>> contents = resolveContents( dto, req );
 
             for ( final Map<ArtifactRef, Transfer> items : contents.values() )
@@ -154,14 +160,14 @@ public class RepositoryResource
     @Produces( "application/zip" )
     public Response getZipRepository( @Context final HttpServletRequest req, @Context final HttpServletResponse resp )
     {
-        final WebOperationConfigDTO dto = fromRequestBody( req, serializer, WebOperationConfigDTO.class );
-
         Response response = Response.noContent()
                                     .build();
 
         ZipOutputStream stream = null;
         try
         {
+            final WebOperationConfigDTO dto = readDTO( req );
+
             final Map<ProjectVersionRef, Map<ArtifactRef, Transfer>> contents = resolveContents( dto, req );
 
             final OutputStream os = resp.getOutputStream();
@@ -217,7 +223,7 @@ public class RepositoryResource
         final KeyedLocation kl = (KeyedLocation) item.getLocation();
         final StoreKey key = kl.getKey();
 
-        if ( localUrls )
+        if ( localUrls || kl instanceof CacheOnlyLocation )
         {
             final URI uri = info.getBaseUriBuilder()
                                 .path( key.getType()
@@ -242,7 +248,7 @@ public class RepositoryResource
         final KeyedLocation kl = (KeyedLocation) item.getLocation();
         final StoreKey key = kl.getKey();
 
-        if ( localUrls )
+        if ( localUrls || kl instanceof CacheOnlyLocation )
         {
             final URI uri = info.getBaseUriBuilder()
                                 .path( key.getType()
@@ -303,6 +309,25 @@ public class RepositoryResource
         }
 
         return contents;
+    }
+
+    private WebOperationConfigDTO readDTO( final HttpServletRequest req )
+        throws AproxWorkflowException
+    {
+        final WebOperationConfigDTO dto = fromRequestBody( req, serializer, WebOperationConfigDTO.class );
+        try
+        {
+            dto.calculateLocations( storeData );
+            return dto;
+        }
+        catch ( final ProxyDataException e )
+        {
+            logger.error( "Failed to lookup one or more source/excludedSource ArtifactStores for: %s. Reason: %s", e,
+                          dto, e.getMessage() );
+
+            throw new AproxWorkflowException( Response.serverError()
+                                                      .build() );
+        }
     }
 
 }
