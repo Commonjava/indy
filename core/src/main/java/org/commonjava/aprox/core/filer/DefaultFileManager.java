@@ -149,14 +149,14 @@ public class DefaultFileManager
         {
             if ( store instanceof Repository )
             {
-                target = transfers.retrieve( LocationUtils.toLocation( (Repository) store ), path );
+                target = transfers.retrieve( LocationUtils.toLocation( store ), path );
             }
             else
             {
-                target = transfers.getCacheReference( LocationUtils.toLocation( (DeployPoint) store ), path );
+                target = transfers.getCacheReference( LocationUtils.toLocation( store ), path );
             }
 
-            if ( target.exists() )
+            if ( target != null && target.exists() )
             {
                 //                logger.info( "Using stored copy from artifact store: %s for: %s", store.getName(), path );
                 final Transfer item = getStorageReference( store.getKey(), path );
