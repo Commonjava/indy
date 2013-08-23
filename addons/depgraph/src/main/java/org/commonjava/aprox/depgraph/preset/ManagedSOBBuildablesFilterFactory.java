@@ -21,6 +21,6 @@ public class ManagedSOBBuildablesFilterFactory
     @Override
     public String getPresetId()
     {
-        return "sob-build";
+        return "managed-sob-build";
     }
 }

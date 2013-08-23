@@ -21,6 +21,6 @@ public class ManagedShippingOrientedBuildFilterFactory
     @Override
     public String getPresetId()
     {
-        return "sob";
+        return "managed-sob";
     }
 }
