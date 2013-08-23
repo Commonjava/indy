@@ -16,6 +16,7 @@
 package org.commonjava.aprox.depgraph.discover;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.apache.commons.lang.StringUtils.join;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -176,7 +177,7 @@ public class AproxModelDiscoverer
                       .contains( "Deadlock" ) )
                 {
                     final long standoff = ( Math.abs( RAND.nextInt() ) % 8 ) * 4000;
-                    logger.warn( "Detected deadlock scenario; retrying relationship storage for: %s in %d ms.",
+                    logger.warn( "DEADLOCK!!\n\n  Detected deadlock scenario; retrying relationship storage for: %s in %d ms.",
                                  effectiveModel.getId(), standoff );
 
                     try
@@ -318,7 +319,6 @@ public class AproxModelDiscoverer
         // NOTE: We need a way to flush out the old relationships reliably when updating!
         final boolean concrete = versionSpec.isConcrete();
 
-        // TODO: .contains() is EXPENSIVE due to path-membership analysis!!!
         final boolean contains = dataManager.contains( ref );
 
         boolean hasError = false;
@@ -374,7 +374,10 @@ public class AproxModelDiscoverer
 
             if ( result.getProblems() != null )
             {
-                // TODO
+                logArtifactError( source, path,
+                                  new CartoDataException( "POM: %s contains unparsable or invalid values:\n  %s.",
+                                                          path, join( result.getProblems(), "\n  " ) ) );
+                return null;
             }
         }
         catch ( final ModelBuildingException e )

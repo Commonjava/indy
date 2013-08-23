@@ -13,7 +13,7 @@ import org.commonjava.aprox.model.galley.GroupLocation;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.model.galley.RepositoryLocation;
 import org.commonjava.maven.galley.auth.AttributePasswordManager;
-import org.commonjava.maven.galley.auth.PasswordIdentifier;
+import org.commonjava.maven.galley.auth.PasswordEntry;
 import org.commonjava.maven.galley.event.FileEvent;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
@@ -43,10 +43,10 @@ public final class LocationUtils
             {
                 final Repository repository = (Repository) store;
                 final RepositoryLocation location = new RepositoryLocation( repository );
-                AttributePasswordManager.bind( location, PasswordIdentifier.KEY_PASSWORD, repository.getKeyPassword() );
-                AttributePasswordManager.bind( location, PasswordIdentifier.PROXY_PASSWORD,
+                AttributePasswordManager.bind( location, PasswordEntry.KEY_PASSWORD, repository.getKeyPassword() );
+                AttributePasswordManager.bind( location, PasswordEntry.PROXY_PASSWORD,
                                                repository.getProxyPassword() );
-                AttributePasswordManager.bind( location, PasswordIdentifier.USER_PASSWORD, repository.getPassword() );
+                AttributePasswordManager.bind( location, PasswordEntry.USER_PASSWORD, repository.getPassword() );
 
                 return location;
             }

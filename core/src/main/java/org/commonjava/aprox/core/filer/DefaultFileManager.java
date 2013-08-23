@@ -49,6 +49,7 @@ import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.event.FileAccessEvent;
+import org.commonjava.maven.galley.model.Resource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.util.logging.Logger;
@@ -147,13 +148,14 @@ public class DefaultFileManager
         Transfer target = null;
         try
         {
+            final Resource res = new Resource( LocationUtils.toLocation( store ), path );
             if ( store instanceof Repository )
             {
-                target = transfers.retrieve( LocationUtils.toLocation( store ), path );
+                target = transfers.retrieve( res );
             }
             else
             {
-                target = transfers.getCacheReference( LocationUtils.toLocation( store ), path );
+                target = transfers.getCacheReference( res );
             }
 
             if ( target != null && target.exists() )
@@ -329,13 +331,13 @@ public class DefaultFileManager
     @Override
     public Transfer getStorageReference( final ArtifactStore store, final String... path )
     {
-        return transfers.getCacheReference( LocationUtils.toLocation( store.getKey() ), path );
+        return transfers.getCacheReference( new Resource( LocationUtils.toLocation( store.getKey() ), path ) );
     }
 
     @Override
     public Transfer getStorageReference( final StoreKey key, final String... path )
     {
-        return transfers.getCacheReference( LocationUtils.toLocation( key ), path );
+        return transfers.getCacheReference( new Resource( LocationUtils.toLocation( key ), path ) );
     }
 
     @Override

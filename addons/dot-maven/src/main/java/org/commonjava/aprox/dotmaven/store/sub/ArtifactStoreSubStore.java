@@ -35,6 +35,7 @@ import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.util.LocationUtils;
+import org.commonjava.maven.galley.model.Resource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.util.logging.Logger;
@@ -260,7 +261,7 @@ public class ArtifactStoreSubStore
             String path = matcher.getStorePath();
             if ( isEmpty( path ) )
             {
-                path = Transfer.ROOT;
+                path = Resource.ROOT;
             }
 
             final StoreKey key = matcher.getStoreKey();

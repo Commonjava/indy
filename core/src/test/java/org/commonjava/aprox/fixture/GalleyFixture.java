@@ -11,9 +11,11 @@ import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.TransferManagerImpl;
 import org.commonjava.maven.galley.cache.FileCacheProvider;
 import org.commonjava.maven.galley.io.NoOpTransferDecorator;
+import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.maven.galley.spi.event.FileEventManager;
 import org.commonjava.maven.galley.spi.io.TransferDecorator;
+import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.commonjava.maven.galley.spi.transport.TransportManager;
 import org.commonjava.maven.galley.transport.TransportManagerImpl;
 import org.commonjava.maven.galley.transport.htcli.HttpClientTransport;
@@ -33,6 +35,8 @@ public class GalleyFixture
 
     private final ExecutorService executor;
 
+    private final NotFoundCache nfc;
+
     public GalleyFixture( final File repoRoot )
     {
         final AproxHttpProvider aproxHttp = new AproxHttpProvider().setup();
@@ -42,8 +46,9 @@ public class GalleyFixture
         events = new AproxFileEventManager();
         decorator = new NoOpTransferDecorator();
         executor = Executors.newFixedThreadPool( 2 );
+        nfc = new MemoryNotFoundCache();
 
-        transfers = new TransferManagerImpl( transports, cache, events, decorator, executor );
+        transfers = new TransferManagerImpl( transports, cache, nfc, events, decorator, executor );
     }
 
     public TransferManager getTransfers()
@@ -74,6 +79,11 @@ public class GalleyFixture
     public ExecutorService getExecutor()
     {
         return executor;
+    }
+
+    public NotFoundCache getNotFoundCache()
+    {
+        return nfc;
     }
 
 }
