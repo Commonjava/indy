@@ -1,6 +1,7 @@
 package org.commonjava.aprox.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.commonjava.aprox.model.ArtifactStore;
@@ -44,8 +45,7 @@ public final class LocationUtils
                 final Repository repository = (Repository) store;
                 final RepositoryLocation location = new RepositoryLocation( repository );
                 AttributePasswordManager.bind( location, PasswordEntry.KEY_PASSWORD, repository.getKeyPassword() );
-                AttributePasswordManager.bind( location, PasswordEntry.PROXY_PASSWORD,
-                                               repository.getProxyPassword() );
+                AttributePasswordManager.bind( location, PasswordEntry.PROXY_PASSWORD, repository.getProxyPassword() );
                 AttributePasswordManager.bind( location, PasswordEntry.USER_PASSWORD, repository.getPassword() );
 
                 return location;
@@ -61,6 +61,11 @@ public final class LocationUtils
         }
 
         return new CacheOnlyLocation( key );
+    }
+
+    public static List<? extends KeyedLocation> toLocations( final ArtifactStore... stores )
+    {
+        return toLocations( Arrays.asList( stores ) );
     }
 
     public static List<? extends KeyedLocation> toLocations( final List<? extends ArtifactStore> stores )

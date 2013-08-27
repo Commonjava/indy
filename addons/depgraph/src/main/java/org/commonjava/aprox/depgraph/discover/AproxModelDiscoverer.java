@@ -21,12 +21,10 @@ import static org.apache.commons.lang.StringUtils.join;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -40,18 +38,14 @@ import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingResult;
 import org.apache.maven.model.io.ModelParseException;
 import org.apache.maven.model.io.ModelReader;
-import org.commonjava.aprox.data.ProxyDataException;
-import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depgraph.maven.ArtifactStoreModelResolver;
 import org.commonjava.aprox.depgraph.maven.DepgraphModelCache;
 import org.commonjava.aprox.depgraph.maven.PropertyExpressionResolver;
 import org.commonjava.aprox.depgraph.maven.StoreModelSource;
 import org.commonjava.aprox.depgraph.util.AproxDepgraphUtils;
-import org.commonjava.aprox.filer.FileManager;
-import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.galley.KeyedLocation;
+import org.commonjava.aprox.model.galley.RepositoryLocation;
 import org.commonjava.aprox.rest.util.ArtifactPathInfo;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.atlas.graph.model.EProjectKey;
@@ -61,6 +55,7 @@ import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.data.CartoDataManager;
 import org.commonjava.maven.cartographer.discover.DiscoveryResult;
 import org.commonjava.maven.cartographer.util.MavenModelProcessor;
+import org.commonjava.maven.galley.ArtifactManager;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.util.logging.Logger;
 
@@ -77,16 +72,13 @@ public class AproxModelDiscoverer
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private StoreDataManager aprox;
-
-    @Inject
     private ModelReader modelReader;
 
     @Inject
     private ModelBuilder modelBuilder;
 
     @Inject
-    private FileManager fileManager;
+    private ArtifactManager artifactManager;
 
     @Inject
     private MavenModelProcessor modelProcessor;
@@ -101,21 +93,18 @@ public class AproxModelDiscoverer
     {
     }
 
-    public AproxModelDiscoverer( final StoreDataManager aprox, final ModelReader modelReader,
-                                 final ModelBuilder modelBuilder, final FileManager fileManager,
-                                 final MavenModelProcessor modelProcessor, final CartoDataManager dataManager,
-                                 final DepgraphModelCache modelCache )
+    public AproxModelDiscoverer( final ModelReader modelReader, final ModelBuilder modelBuilder, final ArtifactManager artifactManager,
+                                 final MavenModelProcessor modelProcessor, final CartoDataManager dataManager, final DepgraphModelCache modelCache )
     {
-        this.aprox = aprox;
         this.modelReader = modelReader;
         this.modelBuilder = modelBuilder;
-        this.fileManager = fileManager;
+        this.artifactManager = artifactManager;
         this.modelProcessor = modelProcessor;
         this.dataManager = dataManager;
         this.modelCache = modelCache;
     }
 
-    public DiscoveryResult discoverRelationships( final Transfer item )
+    public DiscoveryResult discoverRelationships( final Transfer item, final List<? extends KeyedLocation> locations )
         throws CartoDataException
     {
         final String path = item.getPath();
@@ -127,24 +116,7 @@ public class AproxModelDiscoverer
 
         final StoreKey key = LocationUtils.getKey( item );
 
-        ArtifactStore originatingStore;
-        try
-        {
-            originatingStore = aprox.getArtifactStore( key );
-        }
-        catch ( final ProxyDataException e )
-        {
-            throw new CartoDataException( "Failed to retrieve store for: %s. Reason: %s", e, key, e.getMessage() );
-        }
-
-        //        logger.info( "Logging: %s with Tensor relationship-graphing system.", event );
-        final List<ArtifactStore> stores = getRelevantStores( originatingStore );
-        if ( stores == null )
-        {
-            throw new CartoDataException( "No stores found for: %s.", key );
-        }
-
-        final URI source = AproxDepgraphUtils.toDiscoveryURI( originatingStore.getKey() );
+        final URI source = AproxDepgraphUtils.toDiscoveryURI( key );
 
         final Model rawModel = loadRawModel( item, source );
         if ( !shouldStore( rawModel, source, path ) )
@@ -152,10 +124,9 @@ public class AproxModelDiscoverer
             return null;
         }
 
-        final Model effectiveModel = loadEffectiveModel( item, source, stores );
+        final Model effectiveModel = loadEffectiveModel( item, source, locations );
         if ( effectiveModel == null )
         {
-            // TODO: Will this ever actually be null??
             return null;
         }
 
@@ -167,8 +138,7 @@ public class AproxModelDiscoverer
 
             try
             {
-                // TODO: We only need to translate the Model into a series of ProjectRelationship's once...optimize these API calls!
-                return storeRelationships( effectiveModel, source, originatingStore, path );
+                return storeRelationships( effectiveModel, source, (KeyedLocation) item.getLocation(), path );
             }
             catch ( final RuntimeException e )
             {
@@ -200,29 +170,23 @@ public class AproxModelDiscoverer
 
             if ( count >= MAX_RETRIES )
             {
-                logger.error( "Failed to store relationships for %s after %s attempts. Giving up.",
-                              effectiveModel.getId(), count );
+                logger.error( "Failed to store relationships for %s after %s attempts. Giving up.", effectiveModel.getId(), count );
             }
         }
         while ( retry && count < MAX_RETRIES );
 
-        throw new RetryFailedException(
-                                        "Failed to store relationships in %d tries. Database deadlocks prevented storage.",
-                                        MAX_RETRIES );
+        throw new RetryFailedException( "Failed to store relationships in %d tries. Database deadlocks prevented storage.", MAX_RETRIES );
     }
 
-    private DiscoveryResult storeRelationships( final Model effectiveModel, final URI source,
-                                                final ArtifactStore originatingStore, final String path )
+    private DiscoveryResult storeRelationships( final Model effectiveModel, final URI source, final KeyedLocation location, final String path )
     {
         try
         {
             // TODO: Pass on the profiles that were activated when the effective model was built.
             final DiscoveryResult result = modelProcessor.storeModelRelationships( effectiveModel, source );
 
-            if ( originatingStore instanceof Repository )
+            if ( location instanceof RepositoryLocation )
             {
-                final Repository repo = (Repository) originatingStore;
-
                 final Map<String, String> metadata = dataManager.getMetadata( result.getSelectedRef() );
                 String foundIn = null;
                 if ( metadata != null )
@@ -240,7 +204,7 @@ public class AproxModelDiscoverer
                     foundIn += ",";
                 }
 
-                foundIn += repo.getName() + "@" + repo.getUrl();
+                foundIn += location.getName() + "@" + location.getUri();
 
                 dataManager.addMetadata( result.getSelectedRef(), FOUND_IN_METADATA, foundIn );
             }
@@ -251,13 +215,12 @@ public class AproxModelDiscoverer
         {
             final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
 
-            logger.error( "Failed to store relationships for POM: %s (ID from pathInfo: %s). Reason: %s", e,
-                          effectiveModel.getId(), pathInfo == null ? "NONE" : pathInfo.getProjectId(), e.getMessage() );
+            logger.error( "Failed to store relationships for POM: %s (ID from pathInfo: %s). Reason: %s", e, effectiveModel.getId(),
+                          pathInfo == null ? "NONE" : pathInfo.getProjectId(), e.getMessage() );
 
             if ( pathInfo != null )
             {
-                logProjectError( source, pathInfo.getGroupId(), pathInfo.getArtifactId(), pathInfo.getVersion(), e,
-                                 path );
+                logProjectError( source, pathInfo.getGroupId(), pathInfo.getArtifactId(), pathInfo.getVersion(), e, path );
             }
             // TODO: Disable for some time period...
         }
@@ -293,22 +256,14 @@ public class AproxModelDiscoverer
             }
         }
 
-        //        try
-        //        {
         final ProjectVersionRef ref = new ProjectVersionRef( g, a, v );
 
-        final ProjectVersionRef parsed =
-            new ProjectVersionRef( pathInfo.getGroupId(), pathInfo.getArtifactId(), pathInfo.getVersion() );
+        final ProjectVersionRef parsed = new ProjectVersionRef( pathInfo.getGroupId(), pathInfo.getArtifactId(), pathInfo.getVersion() );
 
         if ( !parsed.equals( ref ) )
         {
-            logProjectError( source,
-                             pathInfo.getGroupId(),
-                             pathInfo.getArtifactId(),
-                             pathInfo.getVersion(),
-                             new CartoDataException(
-                                                     "Coordinate from POM: '%s' doesn't match coordinate parsed from path: '%s'",
-                                                     ref, parsed ), path );
+            logProjectError( source, pathInfo.getGroupId(), pathInfo.getArtifactId(), pathInfo.getVersion(),
+                             new CartoDataException( "Coordinate from POM: '%s' doesn't match coordinate parsed from path: '%s'", ref, parsed ), path );
 
             return false;
         }
@@ -333,36 +288,18 @@ public class AproxModelDiscoverer
         }
 
         return !hasError && ( !concrete || !contains );
-        //        }
-        //        catch ( final InvalidVersionSpecificationException e )
-        //        {
-        //            logger.error( "Failed to parse version for: %s (ID from pathInfo: %s). Error: %s", e, rawModel.getId(),
-        //                          pathInfo == null ? "NONE" : pathInfo.getProjectId(), e.getMessage() );
-        //
-        //            if ( pathInfo != null )
-        //            {
-        //                logProjectError( source, pathInfo.getGroupId(), pathInfo.getArtifactId(), pathInfo.getVersion(), e,
-        //                                 path );
-        //            }
-        //        }
-        //        catch ( final CartoDataException e )
-        //        {
-        //            logger.error( "Failed to check whether Tensor has captured: %s. Error: %s", e, rawModel.getId(),
-        //                          e.getMessage() );
-        //            logProjectError( g, a, v, e );
-        //        }
-
-        //        return false;
     }
 
-    protected Model loadEffectiveModel( final Transfer item, final URI source, final List<ArtifactStore> stores )
+    // FIXME: No way of knowing what was injected by profiles triggered on system properties or environment-specific characteristics. 
+    // We need a better way to parse these!
+    protected Model loadEffectiveModel( final Transfer item, final URI source, final List<? extends KeyedLocation> locations )
         throws CartoDataException
     {
         final ModelBuildingRequest request = new DefaultModelBuildingRequest();
         request.setValidationLevel( ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL );
         request.setModelCache( modelCache );
         request.setModelSource( new StoreModelSource( item, false ) );
-        request.setModelResolver( new ArtifactStoreModelResolver( fileManager, stores, false ) );
+        request.setModelResolver( new ArtifactStoreModelResolver( artifactManager, locations, false ) );
         request.setSystemProperties( System.getProperties() );
 
         final String path = item.getPath();
@@ -372,26 +309,26 @@ public class AproxModelDiscoverer
         {
             result = modelBuilder.build( request );
 
-            if ( result.getProblems() != null )
+            if ( result.getProblems() != null && !result.getProblems()
+                                                        .isEmpty() )
             {
-                logArtifactError( source, path,
-                                  new CartoDataException( "POM: %s contains unparsable or invalid values:\n  %s.",
-                                                          path, join( result.getProblems(), "\n  " ) ) );
+                logArtifactError( source,
+                                  path,
+                                  new CartoDataException( "POM: %s contains unparsable or invalid values:\n  %s.", path, join( result.getProblems(),
+                                                                                                                               "\n  " ) ) );
                 return null;
             }
         }
         catch ( final ModelBuildingException e )
         {
             logArtifactError( source, path, e );
-            throw new CartoDataException( "Cannot build model instance for POM: %s. Reason: %s", e, path,
-                                          e.getMessage() );
+            throw new CartoDataException( "Cannot build model instance for POM: %s. Reason: %s", e, path, e.getMessage() );
         }
 
         return result.getEffectiveModel();
     }
 
-    private void logProjectError( final URI source, final String g, final String a, final String v, final Throwable e,
-                                  final String path )
+    private void logProjectError( final URI source, final String g, final String a, final String v, final Throwable e, final String path )
     {
         try
         {
@@ -414,9 +351,8 @@ public class AproxModelDiscoverer
         {
             try
             {
-                dataManager.addError( new EProjectKey( source, new ProjectVersionRef( info.getGroupId(),
-                                                                                      info.getArtifactId(),
-                                                                                      info.getVersion() ) ), e );
+                dataManager.addError( new EProjectKey( source, new ProjectVersionRef( info.getGroupId(), info.getArtifactId(), info.getVersion() ) ),
+                                      e );
             }
             catch ( final CartoDataException e1 )
             {
@@ -455,48 +391,6 @@ public class AproxModelDiscoverer
         {
             closeQuietly( stream );
         }
-    }
-
-    protected List<ArtifactStore> getRelevantStores( final ArtifactStore originatingStore )
-    {
-        List<ArtifactStore> stores = new ArrayList<ArtifactStore>();
-        stores.add( originatingStore );
-
-        try
-        {
-            final Set<? extends Group> groups = aprox.getGroupsContaining( originatingStore.getKey() );
-            for ( final Group group : groups )
-            {
-                if ( group == null )
-                {
-                    continue;
-                }
-
-                final List<? extends ArtifactStore> orderedStores =
-                    aprox.getOrderedConcreteStoresInGroup( group.getName() );
-
-                if ( orderedStores != null )
-                {
-                    for ( final ArtifactStore as : orderedStores )
-                    {
-                        if ( as == null || stores.contains( as ) )
-                        {
-                            continue;
-                        }
-
-                        stores.add( as );
-                    }
-                }
-            }
-        }
-        catch ( final ProxyDataException e )
-        {
-            logger.error( "Cannot lookup full store list for groups containing artifact store: %s. Reason: %s", e,
-                          originatingStore.getKey(), e.getMessage() );
-            stores = null;
-        }
-
-        return stores;
     }
 
     public DiscoveryResult getDiscoveryResult()

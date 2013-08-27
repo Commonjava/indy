@@ -17,14 +17,14 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depgraph.util.AproxDepgraphUtils;
-import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.inject.Production;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.aprox.rest.AproxWorkflowException;
-import org.commonjava.aprox.rest.util.GroupContentManager;
+import org.commonjava.aprox.model.galley.KeyedLocation;
+import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.atlas.graph.model.EProjectKey;
+import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.version.InvalidVersionSpecificationException;
 import org.commonjava.maven.atlas.ident.version.MultiVersionSpec;
@@ -35,6 +35,9 @@ import org.commonjava.maven.cartographer.data.CartoDataManager;
 import org.commonjava.maven.cartographer.discover.DiscoveryConfig;
 import org.commonjava.maven.cartographer.discover.DiscoveryResult;
 import org.commonjava.maven.cartographer.discover.ProjectRelationshipDiscoverer;
+import org.commonjava.maven.galley.ArtifactManager;
+import org.commonjava.maven.galley.ArtifactMetadataManager;
+import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.util.logging.Logger;
 
@@ -48,13 +51,13 @@ public class AproxProjectGraphDiscoverer
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private GroupContentManager groupContentManager;
-
-    @Inject
     private AproxModelDiscoverer discoverer;
 
     @Inject
-    private FileManager fileManager;
+    private ArtifactManager artifactManager;
+
+    @Inject
+    private ArtifactMetadataManager artifactMetaManager;
 
     @Inject
     private CartoDataManager dataManager;
@@ -66,11 +69,6 @@ public class AproxProjectGraphDiscoverer
     public DiscoveryResult discoverRelationships( final ProjectVersionRef ref, final DiscoveryConfig discoveryConfig )
         throws CartoDataException
     {
-        if ( dataManager.hasErrors( ref ) )
-        {
-            return null;
-        }
-
         final URI source = discoveryConfig.getDiscoverySource();
 
         ProjectVersionRef specific = ref;
@@ -101,48 +99,67 @@ public class AproxProjectGraphDiscoverer
 
         try
         {
-            final ArtifactStore store = storeManager.getArtifactStore( key );
-
-            final String path = pomPath( specific );
+            final ArtifactRef pomRef = specific.asPomArtifact();
 
             final Transfer retrieved;
-            if ( store == null )
-            {
-                throw new CartoDataException( "Cannot discover %s from: %s. No such store.", key );
-            }
-            else if ( key == null )
-            {
-                retrieved = fileManager.retrieveFirst( storeManager.getAllConcreteArtifactStores(), path );
-            }
-            else if ( key.getType() == StoreType.group )
-            {
-                final List<ArtifactStore> concrete = storeManager.getOrderedConcreteStoresInGroup( key.getName() );
-                retrieved = fileManager.retrieveFirst( concrete, path );
-            }
-            else
-            {
-                retrieved = fileManager.retrieve( store, path );
-            }
+            final List<? extends KeyedLocation> locations = getLocations( key );
+
+            retrieved = artifactManager.retrieveFirst( locations, pomRef );
 
             if ( retrieved != null )
             {
-                return discoverer.discoverRelationships( retrieved );
+                return discoverer.discoverRelationships( retrieved, locations );
             }
             else
             {
                 return null;
             }
         }
-        catch ( final AproxWorkflowException e )
+        catch ( final TransferException e )
         {
-            throw new CartoDataException( "Discovery of project-relationships for: '%s' failed. Error: %s", e, ref,
-                                          e.getMessage() );
+            throw new CartoDataException( "Discovery of project-relationships for: '%s' failed. Error: %s", e, ref, e.getMessage() );
+        }
+    }
+
+    private List<? extends KeyedLocation> getLocations( final StoreKey key )
+        throws CartoDataException
+    {
+        ArtifactStore store;
+        try
+        {
+            store = storeManager.getArtifactStore( key );
         }
         catch ( final ProxyDataException e )
         {
-            throw new CartoDataException( "Discovery of project-relationships for: '%s' failed. Error: %s", e, ref,
-                                          e.getMessage() );
+            throw new CartoDataException( "Failed to lookup ArtifactStore for key: %s. Reason: %s", e, key, e.getMessage() );
         }
+
+        List<? extends KeyedLocation> locations = LocationUtils.toLocations( store );
+        if ( key == null )
+        {
+            locations = LocationUtils.toLocations( storeManager.getAllConcreteArtifactStores() );
+        }
+        else if ( store == null )
+        {
+            throw new CartoDataException( "Cannot discover %s from: %s. No such store.", key );
+        }
+        else if ( key.getType() == StoreType.group )
+        {
+            List<ArtifactStore> concrete;
+            try
+            {
+                concrete = storeManager.getOrderedConcreteStoresInGroup( key.getName() );
+            }
+            catch ( final ProxyDataException e )
+            {
+                throw new CartoDataException( "Failed to lookup ordered list of concrete ArtifactStores for group: %s. Reason: %s", e, key,
+                                              e.getMessage() );
+            }
+
+            locations = LocationUtils.toLocations( concrete );
+        }
+
+        return locations;
     }
 
     @Override
@@ -210,37 +227,15 @@ public class AproxProjectGraphDiscoverer
     {
         final StoreKey key = AproxDepgraphUtils.getDiscoveryStore( discoveryConfig.getDiscoverySource() );
 
-        final String metadataPath = versionMetadataPath( projectId );
         Transfer item;
         try
         {
-            if ( key == null )
-            {
-                item = fileManager.retrieveFirst( storeManager.getAllConcreteArtifactStores(), metadataPath );
-            }
-            else if ( !storeManager.hasArtifactStore( key ) )
-            {
-                throw new CartoDataException( "Cannot discover versions from: '%s'. No such store.", key );
-            }
-            else if ( key.getType() == StoreType.group )
-            {
-                item = groupContentManager.retrieve( key.getName(), metadataPath );
-            }
-            else
-            {
-                final ArtifactStore store = storeManager.getArtifactStore( key );
-                item = fileManager.retrieve( store, metadataPath );
-            }
+            final List<? extends KeyedLocation> locations = getLocations( key );
+            item = artifactMetaManager.retrieveFirst( locations, projectId, "maven-metadata.xml" );
         }
-        catch ( final AproxWorkflowException e )
+        catch ( final TransferException e )
         {
-            throw new CartoDataException( "Failed to retrieve version metadata: %s from tensor group: %s. Reason: %s",
-                                          e, metadataPath, key.getName(), e.getMessage() );
-        }
-        catch ( final ProxyDataException e )
-        {
-            throw new CartoDataException( "Failed to retrieve version metadata: %s from tensor group: %s. Reason: %s",
-                                          e, metadataPath, key.getName(), e.getMessage() );
+            throw new CartoDataException( "Failed to retrieve version metadata for: %s from: %s. Reason: %s", e, projectId, key, e.getMessage() );
         }
 
         final List<SingleVersion> versions = new ArrayList<SingleVersion>();
@@ -261,43 +256,22 @@ public class AproxProjectGraphDiscoverer
                         }
                         catch ( final InvalidVersionSpecificationException e )
                         {
-                            logger.error( "[SKIPPING] Invalid version: %s for project: %s. Reason: %s", spec,
-                                          projectId, e.getMessage() );
+                            logger.error( "[SKIPPING] Invalid version: %s for project: %s. Reason: %s", spec, projectId, e.getMessage() );
                         }
                     }
                 }
             }
             catch ( final IOException e )
             {
-                throw new CartoDataException( "Failed to read version metadata: %s. Reason: %s", e, item.getPath(),
-                                              e.getMessage() );
+                throw new CartoDataException( "Failed to read version metadata: %s. Reason: %s", e, item.getPath(), e.getMessage() );
             }
             catch ( final XmlPullParserException e )
             {
-                throw new CartoDataException( "Failed to parse version metadata: %s. Reason: %s", e, item.getPath(),
-                                              e.getMessage() );
+                throw new CartoDataException( "Failed to parse version metadata: %s. Reason: %s", e, item.getPath(), e.getMessage() );
             }
         }
 
         return versions;
-    }
-
-    private String versionMetadataPath( final ProjectVersionRef projectId )
-    {
-        return artifactIdPath( projectId ) + "/maven-metadata.xml";
-    }
-
-    private String pomPath( final ProjectVersionRef projectId )
-    {
-        final String version = projectId.getVersionString();
-
-        return artifactIdPath( projectId ) + '/' + version + "/" + projectId.getArtifactId() + "-" + version + ".pom";
-    }
-
-    private String artifactIdPath( final ProjectVersionRef projectId )
-    {
-        return projectId.getGroupId()
-                        .replace( '.', '/' ) + '/' + projectId.getArtifactId();
     }
 
 }

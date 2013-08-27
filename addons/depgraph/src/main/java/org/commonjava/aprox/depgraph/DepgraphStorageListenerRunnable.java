@@ -15,14 +15,28 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depgraph.discover.AproxModelDiscoverer;
+import org.commonjava.aprox.model.ArtifactStore;
+import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.galley.KeyedLocation;
+import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.discover.DiscoveryResult;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.util.logging.Logger;
 
 public class DepgraphStorageListenerRunnable
     implements Runnable
 {
+
+    private final Logger logger = new Logger( getClass() );
 
     private final Transfer item;
 
@@ -32,9 +46,12 @@ public class DepgraphStorageListenerRunnable
 
     private CartoDataException error;
 
-    public DepgraphStorageListenerRunnable( final AproxModelDiscoverer discoverer, final Transfer item )
+    private final StoreDataManager aprox;
+
+    public DepgraphStorageListenerRunnable( final AproxModelDiscoverer discoverer, final StoreDataManager aprox, final Transfer item )
     {
         this.discoverer = discoverer;
+        this.aprox = aprox;
         this.item = item;
     }
 
@@ -46,9 +63,40 @@ public class DepgraphStorageListenerRunnable
     @Override
     public void run()
     {
+        final StoreKey key = LocationUtils.getKey( item );
+
+        ArtifactStore originatingStore = null;
         try
         {
-            result = discoverer.discoverRelationships( item );
+            originatingStore = aprox.getArtifactStore( key );
+        }
+        catch ( final ProxyDataException e )
+        {
+            error = new CartoDataException( "Failed to retrieve store for: %s. Reason: %s", e, key, e.getMessage() );
+        }
+
+        if ( originatingStore == null )
+        {
+            return;
+        }
+
+        //        logger.info( "Logging: %s with Tensor relationship-graphing system.", event );
+        final List<ArtifactStore> stores = getRelevantStores( originatingStore );
+        if ( stores == null || stores.isEmpty() )
+        {
+            error = new CartoDataException( "No stores found for: %s.", key );
+        }
+
+        if ( error != null )
+        {
+            return;
+        }
+
+        final List<? extends KeyedLocation> locations = LocationUtils.toLocations( stores );
+
+        try
+        {
+            result = discoverer.discoverRelationships( item, locations );
         }
         catch ( final CartoDataException e )
         {
@@ -65,4 +113,46 @@ public class DepgraphStorageListenerRunnable
     {
         return error;
     }
+
+    private List<ArtifactStore> getRelevantStores( final ArtifactStore originatingStore )
+    {
+        List<ArtifactStore> stores = new ArrayList<ArtifactStore>();
+        stores.add( originatingStore );
+
+        try
+        {
+            final Set<? extends Group> groups = aprox.getGroupsContaining( originatingStore.getKey() );
+            for ( final Group group : groups )
+            {
+                if ( group == null )
+                {
+                    continue;
+                }
+
+                final List<? extends ArtifactStore> orderedStores = aprox.getOrderedConcreteStoresInGroup( group.getName() );
+
+                if ( orderedStores != null )
+                {
+                    for ( final ArtifactStore as : orderedStores )
+                    {
+                        if ( as == null || stores.contains( as ) )
+                        {
+                            continue;
+                        }
+
+                        stores.add( as );
+                    }
+                }
+            }
+        }
+        catch ( final ProxyDataException e )
+        {
+            logger.error( "Cannot lookup full store list for groups containing artifact store: %s. Reason: %s", e, originatingStore.getKey(),
+                          e.getMessage() );
+            stores = null;
+        }
+
+        return stores;
+    }
+
 }

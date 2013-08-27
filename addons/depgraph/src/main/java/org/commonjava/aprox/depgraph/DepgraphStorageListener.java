@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutorService;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
+import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depgraph.discover.AproxModelDiscoverer;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.maven.galley.event.FileAccessEvent;
@@ -33,7 +34,10 @@ public class DepgraphStorageListener
     private AproxModelDiscoverer discoverer;
 
     @Inject
-    @ExecutorConfig( priority = 8, threads = 2, named = "tensor-listener" )
+    private StoreDataManager aprox;
+
+    @Inject
+    @ExecutorConfig( priority = 8, threads = 2, named = "depgraph-listener" )
     private ExecutorService executor;
 
     private final Logger logger = new Logger( getClass() );
@@ -48,8 +52,8 @@ public class DepgraphStorageListener
             return;
         }
 
-        logger.info( "[SUBMIT] TensorStorageListenerRunnable for: %s", event );
+        logger.info( "[SUBMIT] DepgraphStorageListenerRunnable for: %s", event );
 
-        executor.execute( new DepgraphStorageListenerRunnable( discoverer, event.getTransfer() ) );
+        executor.execute( new DepgraphStorageListenerRunnable( discoverer, aprox, event.getTransfer() ) );
     }
 }

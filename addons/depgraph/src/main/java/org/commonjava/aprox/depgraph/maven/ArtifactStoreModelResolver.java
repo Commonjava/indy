@@ -15,7 +15,6 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.maven;
 
-import java.net.URI;
 import java.util.List;
 
 import org.apache.maven.model.Repository;
@@ -24,33 +23,28 @@ import org.apache.maven.model.resolution.InvalidRepositoryException;
 import org.apache.maven.model.resolution.ModelResolver;
 import org.apache.maven.model.resolution.UnresolvableModelException;
 import org.codehaus.plexus.component.annotations.Component;
-import org.commonjava.aprox.filer.FileManager;
-import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.rest.AproxWorkflowException;
+import org.commonjava.aprox.model.galley.KeyedLocation;
+import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.atlas.ident.version.InvalidVersionSpecificationException;
+import org.commonjava.maven.galley.ArtifactManager;
+import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.model.Transfer;
-import org.sonatype.aether.artifact.Artifact;
-import org.sonatype.aether.util.artifact.DefaultArtifact;
-import org.sonatype.aether.util.layout.MavenDefaultLayout;
-import org.sonatype.aether.util.layout.RepositoryLayout;
 
 @Component( role = ModelResolver.class, hint = "aprox" )
 public class ArtifactStoreModelResolver
     implements ModelResolver
 {
 
-    private final RepositoryLayout layout = new MavenDefaultLayout();
-
-    private final FileManager fileManager;
-
-    private final List<ArtifactStore> stores;
+    private final List<? extends KeyedLocation> locations;
 
     private final boolean fireEvents;
 
-    public ArtifactStoreModelResolver( final FileManager fileManager, final List<ArtifactStore> stores,
-                                       final boolean fireEvents )
+    private final ArtifactManager artifactManager;
+
+    public ArtifactStoreModelResolver( final ArtifactManager artifactManager, final List<? extends KeyedLocation> locations, final boolean fireEvents )
     {
-        this.fileManager = fileManager;
-        this.stores = stores;
+        this.artifactManager = artifactManager;
+        this.locations = locations;
         this.fireEvents = fireEvents;
     }
 
@@ -58,30 +52,25 @@ public class ArtifactStoreModelResolver
     public ModelSource resolveModel( final String groupId, final String artifactId, final String version )
         throws UnresolvableModelException
     {
-        final Artifact a = new DefaultArtifact( groupId, artifactId, "pom", version );
-        final URI uri = layout.getPath( a );
-
-        String path = uri.getPath();
-        while ( ( path.startsWith( "/" ) || path.startsWith( "\\" ) ) && path.length() > 1 )
-        {
-            path = path.substring( 1 );
-        }
-
         Transfer stream;
         try
         {
-            stream = fileManager.retrieveFirst( stores, path );
+            stream = artifactManager.retrieveFirst( locations, new ProjectVersionRef( groupId, artifactId, version ).asPomArtifact() );
         }
-        catch ( final AproxWorkflowException e )
+        catch ( final InvalidVersionSpecificationException e )
         {
-            throw new UnresolvableModelException( "Cannot resolve POM from available repositories: " + e.getMessage(),
-                                                  groupId, artifactId, version, e );
+            throw new UnresolvableModelException( "Cannot resolve POM from available repositories: " + e.getMessage(), groupId, artifactId, version,
+                                                  e );
+        }
+        catch ( final TransferException e )
+        {
+            throw new UnresolvableModelException( "Cannot resolve POM from available repositories: " + e.getMessage(), groupId, artifactId, version,
+                                                  e );
         }
 
         if ( stream == null )
         {
-            throw new UnresolvableModelException( "Cannot find POM in available repositories.", groupId, artifactId,
-                                                  version );
+            throw new UnresolvableModelException( "Cannot find POM in available repositories.", groupId, artifactId, version );
         }
 
         return new StoreModelSource( stream, fireEvents );
