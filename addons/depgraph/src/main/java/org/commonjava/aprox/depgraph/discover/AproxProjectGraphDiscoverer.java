@@ -166,6 +166,11 @@ public class AproxProjectGraphDiscoverer
     public ProjectVersionRef resolveSpecificVersion( final ProjectVersionRef ref, final DiscoveryConfig discoveryConfig )
         throws CartoDataException
     {
+        if ( ref.isRelease() )
+        {
+            return ref;
+        }
+
         final List<SingleVersion> versions = getVersions( ref, discoveryConfig );
 
         Collections.sort( versions );
