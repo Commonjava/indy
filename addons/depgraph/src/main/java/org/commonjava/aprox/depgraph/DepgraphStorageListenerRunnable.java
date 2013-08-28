@@ -96,7 +96,7 @@ public class DepgraphStorageListenerRunnable
 
         try
         {
-            result = discoverer.discoverRelationships( item, locations );
+            result = discoverer.discoverRelationships( item, locations, true );
         }
         catch ( final CartoDataException e )
         {

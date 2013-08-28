@@ -15,9 +15,8 @@ import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.data.CartoDataManager;
 import org.commonjava.maven.cartographer.event.CartoEventManager;
 import org.commonjava.maven.cartographer.event.CartoEventManagerImpl;
-import org.commonjava.maven.cartographer.event.MissingRelationshipsEvent;
-import org.commonjava.maven.cartographer.event.NewRelationshipsEvent;
 import org.commonjava.maven.cartographer.event.ProjectRelationshipsErrorEvent;
+import org.commonjava.maven.cartographer.event.RelationshipStorageEvent;
 import org.commonjava.maven.galley.event.FileErrorEvent;
 import org.commonjava.maven.galley.event.FileNotFoundEvent;
 import org.commonjava.util.logging.Logger;
@@ -34,7 +33,10 @@ public class AproxDepgraphEvents
     private CartoEventManagerImpl delegate;
 
     @Inject
-    private Event<MissingRelationshipsEvent> missingEvents;
+    private Event<RelationshipStorageEvent> storageEvents;
+
+    @Inject
+    private Event<ProjectRelationshipsErrorEvent> errorEvents;
 
     protected AproxDepgraphEvents()
     {
@@ -61,16 +63,14 @@ public class AproxDepgraphEvents
             //            logger.info( "Unlocking %s due to file download error.", info );
             if ( info != null )
             {
-                final ProjectVersionRef ref =
-                    new ProjectVersionRef( info.getGroupId(), info.getArtifactId(), info.getVersion() );
+                final ProjectVersionRef ref = new ProjectVersionRef( info.getGroupId(), info.getArtifactId(), info.getVersion() );
 
                 delegate.notifyOfGraph( ref );
             }
         }
         catch ( final InvalidVersionSpecificationException e )
         {
-            logger.error( "Cannot parse version for path: '%s'. Failed to unlock waiting threads. Reason: %s", e, path,
-                          e.getMessage() );
+            logger.error( "Cannot parse version for path: '%s'. Failed to unlock waiting threads. Reason: %s", e, path, e.getMessage() );
         }
     }
 
@@ -83,40 +83,35 @@ public class AproxDepgraphEvents
             //            logger.info( "Unlocking %s due to unresolvable POM.", info );
             if ( info != null )
             {
-                final ProjectVersionRef ref =
-                    new ProjectVersionRef( info.getGroupId(), info.getArtifactId(), info.getVersion() );
+                final ProjectVersionRef ref = new ProjectVersionRef( info.getGroupId(), info.getArtifactId(), info.getVersion() );
 
                 delegate.notifyOfGraph( ref );
             }
         }
         catch ( final InvalidVersionSpecificationException e )
         {
-            logger.error( "Cannot parse version for path: '%s'. Failed to unlock waiting threads. Reason: %s", e, path,
-                          e.getMessage() );
+            logger.error( "Cannot parse version for path: '%s'. Failed to unlock waiting threads. Reason: %s", e, path, e.getMessage() );
         }
     }
 
     @Override
-    public void fireMissing( final MissingRelationshipsEvent missingRelationshipsEvent )
+    public void fireStorageEvent( final RelationshipStorageEvent evt )
     {
-        delegate.fireMissing( missingRelationshipsEvent );
-
-        if ( missingEvents != null )
+        delegate.fireStorageEvent( evt );
+        if ( storageEvents != null )
         {
-            missingEvents.fire( missingRelationshipsEvent );
+            storageEvents.fire( evt );
         }
     }
 
     @Override
-    public void unlockOnNewRelationshipsEvent( final NewRelationshipsEvent evt )
+    public void fireErrorEvent( final ProjectRelationshipsErrorEvent evt )
     {
-        delegate.unlockOnNewRelationshipsEvent( evt );
-    }
-
-    @Override
-    public void unlockOnRelationshipsErrorEvent( final ProjectRelationshipsErrorEvent evt )
-    {
-        delegate.unlockOnRelationshipsErrorEvent( evt );
+        delegate.fireErrorEvent( evt );
+        if ( errorEvents != null )
+        {
+            errorEvents.fire( evt );
+        }
     }
 
     @Override

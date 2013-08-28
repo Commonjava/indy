@@ -66,7 +66,7 @@ public class AproxProjectGraphDiscoverer
     private StoreDataManager storeManager;
 
     @Override
-    public DiscoveryResult discoverRelationships( final ProjectVersionRef ref, final DiscoveryConfig discoveryConfig )
+    public DiscoveryResult discoverRelationships( final ProjectVersionRef ref, final DiscoveryConfig discoveryConfig, final boolean storeRelationships )
         throws CartoDataException
     {
         final URI source = discoveryConfig.getDiscoverySource();
@@ -108,7 +108,7 @@ public class AproxProjectGraphDiscoverer
 
             if ( retrieved != null )
             {
-                return discoverer.discoverRelationships( retrieved, locations );
+                return discoverer.discoverRelationships( retrieved, locations, storeRelationships );
             }
             else
             {

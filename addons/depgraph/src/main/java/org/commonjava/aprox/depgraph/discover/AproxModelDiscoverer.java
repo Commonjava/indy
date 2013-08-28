@@ -45,7 +45,6 @@ import org.commonjava.aprox.depgraph.maven.StoreModelSource;
 import org.commonjava.aprox.depgraph.util.AproxDepgraphUtils;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.galley.KeyedLocation;
-import org.commonjava.aprox.model.galley.RepositoryLocation;
 import org.commonjava.aprox.rest.util.ArtifactPathInfo;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.atlas.graph.model.EProjectKey;
@@ -62,8 +61,6 @@ import org.commonjava.util.logging.Logger;
 @ApplicationScoped
 public class AproxModelDiscoverer
 {
-
-    private static final String FOUND_IN_METADATA = "found-in-repo";
 
     private static final int MAX_RETRIES = 5;
 
@@ -104,7 +101,7 @@ public class AproxModelDiscoverer
         this.modelCache = modelCache;
     }
 
-    public DiscoveryResult discoverRelationships( final Transfer item, final List<? extends KeyedLocation> locations )
+    public DiscoveryResult discoverRelationships( final Transfer item, final List<? extends KeyedLocation> locations, final boolean storeRelationships )
         throws CartoDataException
     {
         final String path = item.getPath();
@@ -138,7 +135,15 @@ public class AproxModelDiscoverer
 
             try
             {
-                return storeRelationships( effectiveModel, source, (KeyedLocation) item.getLocation(), path );
+                if ( storeRelationships )
+                {
+                    // TODO: Pass on the profiles that were activated when the effective model was built.
+                    return modelProcessor.storeModelRelationships( effectiveModel, source );
+                }
+                else
+                {
+                    return modelProcessor.readRelationships( effectiveModel, source );
+                }
             }
             catch ( final RuntimeException e )
             {
@@ -176,56 +181,6 @@ public class AproxModelDiscoverer
         while ( retry && count < MAX_RETRIES );
 
         throw new RetryFailedException( "Failed to store relationships in %d tries. Database deadlocks prevented storage.", MAX_RETRIES );
-    }
-
-    private DiscoveryResult storeRelationships( final Model effectiveModel, final URI source, final KeyedLocation location, final String path )
-    {
-        try
-        {
-            // TODO: Pass on the profiles that were activated when the effective model was built.
-            final DiscoveryResult result = modelProcessor.storeModelRelationships( effectiveModel, source );
-
-            if ( location instanceof RepositoryLocation )
-            {
-                final Map<String, String> metadata = dataManager.getMetadata( result.getSelectedRef() );
-                String foundIn = null;
-                if ( metadata != null )
-                {
-                    foundIn = metadata.get( FOUND_IN_METADATA );
-                }
-
-                if ( foundIn == null )
-                {
-                    foundIn = "";
-                }
-
-                if ( foundIn.length() > 0 )
-                {
-                    foundIn += ",";
-                }
-
-                foundIn += location.getName() + "@" + location.getUri();
-
-                dataManager.addMetadata( result.getSelectedRef(), FOUND_IN_METADATA, foundIn );
-            }
-
-            return result;
-        }
-        catch ( final CartoDataException e )
-        {
-            final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
-
-            logger.error( "Failed to store relationships for POM: %s (ID from pathInfo: %s). Reason: %s", e, effectiveModel.getId(),
-                          pathInfo == null ? "NONE" : pathInfo.getProjectId(), e.getMessage() );
-
-            if ( pathInfo != null )
-            {
-                logProjectError( source, pathInfo.getGroupId(), pathInfo.getArtifactId(), pathInfo.getVersion(), e, path );
-            }
-            // TODO: Disable for some time period...
-        }
-
-        return null;
     }
 
     // TODO: Somehow, we're ending up in an infinite loop for maven poms...
