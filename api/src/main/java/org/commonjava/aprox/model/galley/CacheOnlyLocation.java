@@ -28,6 +28,11 @@ public class CacheOnlyLocation
         this.key = key;
     }
 
+    public boolean hasDeployPoint()
+    {
+        return deploy != null;
+    }
+
     @Override
     public boolean allowsPublishing()
     {
@@ -55,7 +60,7 @@ public class CacheOnlyLocation
     @Override
     public String getUri()
     {
-        return null;
+        return "aprox:" + key;
     }
 
     @Override

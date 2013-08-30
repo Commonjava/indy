@@ -2,6 +2,7 @@ package org.commonjava.aprox.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.commonjava.aprox.model.ArtifactStore;
@@ -53,7 +54,7 @@ public final class LocationUtils
         }
     }
 
-    public static CacheOnlyLocation toLocation( final StoreKey key )
+    public static CacheOnlyLocation toCacheLocation( final StoreKey key )
     {
         if ( key.getType() == StoreType.group )
         {
@@ -61,6 +62,22 @@ public final class LocationUtils
         }
 
         return new CacheOnlyLocation( key );
+    }
+
+    public static List<? extends KeyedLocation> toCacheLocations( final StoreKey... keys )
+    {
+        return toCacheLocations( Arrays.asList( keys ) );
+    }
+
+    public static List<? extends KeyedLocation> toCacheLocations( final Collection<StoreKey> keys )
+    {
+        final List<KeyedLocation> result = new ArrayList<>();
+        for ( final StoreKey key : keys )
+        {
+            result.add( toCacheLocation( key ) );
+        }
+
+        return result;
     }
 
     public static List<? extends KeyedLocation> toLocations( final ArtifactStore... stores )
@@ -73,18 +90,7 @@ public final class LocationUtils
         final List<KeyedLocation> locations = new ArrayList<>();
         for ( final ArtifactStore store : stores )
         {
-            if ( store instanceof Repository )
-            {
-                locations.add( toLocation( store ) );
-            }
-            else if ( store instanceof DeployPoint )
-            {
-                locations.add( toLocation( store ) );
-            }
-            else
-            {
-                locations.add( toLocation( store.getKey() ) );
-            }
+            locations.add( toLocation( store ) );
         }
 
         return locations;

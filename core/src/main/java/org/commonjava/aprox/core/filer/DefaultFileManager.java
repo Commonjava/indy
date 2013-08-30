@@ -221,8 +221,7 @@ public class DefaultFileManager
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to store: %s in deploy store: %s. Reason: %s", e, path, deploy.getName(),
-                          e.getMessage() );
+            logger.error( "Failed to store: %s in deploy store: %s. Reason: %s", e, path, deploy.getName(), e.getMessage() );
 
             throw new AproxWorkflowException( Response.serverError()
                                                       .build() );
@@ -325,19 +324,19 @@ public class DefaultFileManager
     @Override
     public Transfer getStoreRootDirectory( final StoreKey key )
     {
-        return transfers.getStoreRootDirectory( LocationUtils.toLocation( key ) );
+        return transfers.getStoreRootDirectory( LocationUtils.toCacheLocation( key ) );
     }
 
     @Override
     public Transfer getStorageReference( final ArtifactStore store, final String... path )
     {
-        return transfers.getCacheReference( new Resource( LocationUtils.toLocation( store.getKey() ), path ) );
+        return transfers.getCacheReference( new Resource( LocationUtils.toCacheLocation( store.getKey() ), path ) );
     }
 
     @Override
     public Transfer getStorageReference( final StoreKey key, final String... path )
     {
-        return transfers.getCacheReference( new Resource( LocationUtils.toLocation( key ), path ) );
+        return transfers.getCacheReference( new Resource( LocationUtils.toCacheLocation( key ), path ) );
     }
 
     @Override
@@ -393,8 +392,7 @@ public class DefaultFileManager
             catch ( final IOException e )
             {
                 throw new AproxWorkflowException( Response.serverError()
-                                                          .build(), "Failed to delete stored location: %s. Reason: %s",
-                                                  e, item, e.getMessage() );
+                                                          .build(), "Failed to delete stored location: %s. Reason: %s", e, item, e.getMessage() );
             }
         }
 
@@ -415,8 +413,7 @@ public class DefaultFileManager
     public void rescan( final ArtifactStore store )
         throws AproxWorkflowException
     {
-        executor.execute( new Rescanner( getStorageReference( store.getKey() ), rescansInProgress, fileEventManager,
-                                         rescanEvent ) );
+        executor.execute( new Rescanner( getStorageReference( store.getKey() ), rescansInProgress, fileEventManager, rescanEvent ) );
     }
 
     private static final class Rescanner
@@ -432,8 +429,7 @@ public class DefaultFileManager
 
         private final AproxFileEventManager fileEventManager;
 
-        public Rescanner( final Transfer start, final Map<StoreKey, Byte> rescansInProgress,
-                          final AproxFileEventManager fileEventManager,
+        public Rescanner( final Transfer start, final Map<StoreKey, Byte> rescansInProgress, final AproxFileEventManager fileEventManager,
                           final Event<ArtifactStoreRescanEvent> rescanEvent )
         {
             this.start = start;

@@ -1,14 +1,9 @@
 package org.commonjava.aprox.depgraph.dto;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import org.commonjava.aprox.data.ProxyDataException;
-import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.cartographer.dto.RepositoryContentRecipe;
 import org.commonjava.maven.galley.model.Location;
@@ -65,13 +60,11 @@ public class WebOperationConfigDTO
         this.excludedSources = excludedSources;
     }
 
-    public void calculateLocations( final StoreDataManager storeData )
-        throws ProxyDataException
+    public void calculateLocations()
     {
         if ( source != null )
         {
-            final ArtifactStore store = storeData.getArtifactStore( source );
-            setSourceLocation( LocationUtils.toLocation( store ) );
+            setSourceLocation( LocationUtils.toCacheLocation( source ) );
         }
 
         if ( excludedSources != null )
@@ -84,17 +77,7 @@ public class WebOperationConfigDTO
                     continue;
                 }
 
-                final ArtifactStore store = storeData.getArtifactStore( key );
-                excluded.add( LocationUtils.toLocation( store ) );
-
-                if ( key.getType() == StoreType.group )
-                {
-                    final List<ArtifactStore> members = storeData.getOrderedConcreteStoresInGroup( key.getName() );
-                    for ( final ArtifactStore member : members )
-                    {
-                        excluded.add( LocationUtils.toLocation( member ) );
-                    }
-                }
+                excluded.add( LocationUtils.toCacheLocation( key ) );
             }
 
             setExcludedSourceLocations( excluded );

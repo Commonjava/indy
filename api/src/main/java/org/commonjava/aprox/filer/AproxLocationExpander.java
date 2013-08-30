@@ -11,7 +11,10 @@ import javax.inject.Inject;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
+import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.galley.CacheOnlyLocation;
 import org.commonjava.aprox.model.galley.GroupLocation;
+import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.model.Location;
@@ -53,9 +56,21 @@ public class AproxLocationExpander
                 }
                 catch ( final ProxyDataException e )
                 {
-                    throw new TransferException(
-                                                 "Failed to lookup ordered concrete artifact stores contained in group: %s. Reason: %s",
-                                                 e, gl, e.getMessage() );
+                    throw new TransferException( "Failed to lookup ordered concrete artifact stores contained in group: %s. Reason: %s", e, gl,
+                                                 e.getMessage() );
+                }
+            }
+            else if ( location instanceof CacheOnlyLocation && !( (CacheOnlyLocation) location ).hasDeployPoint() )
+            {
+                final StoreKey key = ( (KeyedLocation) location ).getKey();
+                try
+                {
+                    final ArtifactStore store = data.getArtifactStore( key );
+                    result.add( LocationUtils.toLocation( store ) );
+                }
+                catch ( final ProxyDataException e )
+                {
+                    throw new TransferException( "Failed to lookup store for key: %s. Reason: %s", e, key, e.getMessage() );
                 }
             }
             else

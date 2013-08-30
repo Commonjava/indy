@@ -26,6 +26,8 @@ public class AproxDiscoverySourceManager
     implements DiscoverySourceManager
 {
 
+    private static final String APROX_URI_PREFIX = "aprox:";
+
     @Inject
     private StoreDataManager stores;
 
@@ -41,8 +43,18 @@ public class AproxDiscoverySourceManager
     @Override
     public URI createSourceURI( final String source )
     {
-        final StoreKey key = StoreKey.fromString( source );
+        final StoreKey key = StoreKey.fromString( normalize( source ) );
         return toDiscoveryURI( key );
+    }
+
+    private String normalize( final String source )
+    {
+        if ( source.startsWith( APROX_URI_PREFIX ) )
+        {
+            return source.substring( APROX_URI_PREFIX.length() );
+        }
+
+        return source;
     }
 
     @Override
@@ -59,13 +71,12 @@ public class AproxDiscoverySourceManager
         {
             for ( final String src : sources )
             {
-                final StoreKey key = StoreKey.fromString( src );
+                final StoreKey key = StoreKey.fromString( normalize( src ) );
                 if ( key.getType() == StoreType.group )
                 {
                     try
                     {
-                        final List<ArtifactStore> orderedStores =
-                            stores.getOrderedConcreteStoresInGroup( key.getName() );
+                        final List<ArtifactStore> orderedStores = stores.getOrderedConcreteStoresInGroup( key.getName() );
                         for ( final ArtifactStore store : orderedStores )
                         {
                             ws.addActiveSource( toDiscoveryURI( store.getKey() ) );
@@ -73,8 +84,7 @@ public class AproxDiscoverySourceManager
                     }
                     catch ( final ProxyDataException e )
                     {
-                        throw new CartoDataException( "Failed to lookup ordered concrete stores for: %s. Reason: %s",
-                                                      e, key, e.getMessage() );
+                        throw new CartoDataException( "Failed to lookup ordered concrete stores for: %s. Reason: %s", e, key, e.getMessage() );
                     }
                 }
                 else

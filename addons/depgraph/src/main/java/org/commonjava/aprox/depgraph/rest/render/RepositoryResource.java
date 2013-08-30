@@ -30,8 +30,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
-import org.commonjava.aprox.data.ProxyDataException;
-import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depgraph.dto.WebOperationConfigDTO;
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.depgraph.util.RequestAdvisor;
@@ -67,9 +65,6 @@ public class RepositoryResource
 
     @Inject
     private RequestAdvisor requestAdvisor;
-
-    @Inject
-    private StoreDataManager storeData;
 
     @POST
     @Path( "/urlmap" )
@@ -298,6 +293,9 @@ public class RepositoryResource
                                                       .build() );
         }
 
+        final ProjectRelationshipFilter presetFilter = requestAdvisor.getPresetFilter( dto.getPreset() );
+        dto.setFilter( presetFilter );
+
         if ( !dto.isValid() )
         {
             logger.warn( "Repository archive configuration is invalid: %s", dto );
@@ -305,9 +303,6 @@ public class RepositoryResource
                                                       .entity( "Invalid configuration" )
                                                       .build() );
         }
-
-        final ProjectRelationshipFilter presetFilter = requestAdvisor.getPresetFilter( dto.getPreset() );
-        dto.setFilter( presetFilter );
 
         Map<ProjectVersionRef, Map<ArtifactRef, Transfer>> contents;
         try
@@ -336,18 +331,8 @@ public class RepositoryResource
         final WebOperationConfigDTO dto = fromRequestBody( req, serializer, WebOperationConfigDTO.class );
         logger.info( "Got configuration:\n\n%s\n\n", serializer.toString( dto ) );
 
-        try
-        {
-            dto.calculateLocations( storeData );
-            return dto;
-        }
-        catch ( final ProxyDataException e )
-        {
-            logger.error( "Failed to lookup one or more source/excludedSource ArtifactStores for: %s. Reason: %s", e, dto, e.getMessage() );
-
-            throw new AproxWorkflowException( Response.serverError()
-                                                      .build() );
-        }
+        dto.calculateLocations();
+        return dto;
     }
 
 }

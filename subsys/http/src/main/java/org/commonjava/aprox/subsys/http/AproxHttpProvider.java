@@ -34,6 +34,12 @@ public class AproxHttpProvider
     }
 
     @Produces
+    public PasswordManager getPasswordManager()
+    {
+        return passwordManager;
+    }
+
+    @Produces
     public Http getHttpComponent()
     {
         return http;
