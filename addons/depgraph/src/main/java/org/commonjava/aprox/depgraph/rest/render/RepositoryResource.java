@@ -74,8 +74,7 @@ public class RepositoryResource
     @POST
     @Path( "/urlmap" )
     @Produces( "application/json" )
-    public Response getUrlMap( @Context final HttpServletRequest req, @Context final HttpServletResponse resp,
-                               @Context final UriInfo info )
+    public Response getUrlMap( @Context final HttpServletRequest req, @Context final HttpServletResponse resp, @Context final UriInfo info )
     {
         final Map<ProjectVersionRef, Map<String, Object>> result = new HashMap<>();
 
@@ -130,8 +129,7 @@ public class RepositoryResource
     @POST
     @Path( "/downlog" )
     @Produces( "text/plain" )
-    public Response getDownloadLog( @Context final HttpServletRequest req, @Context final HttpServletResponse resp,
-                                    @Context final UriInfo info )
+    public Response getDownloadLog( @Context final HttpServletRequest req, @Context final HttpServletResponse resp, @Context final UriInfo info )
     {
         final Set<String> downLog = new HashSet<>();
         try
@@ -186,12 +184,22 @@ public class RepositoryResource
             final OutputStream os = resp.getOutputStream();
             stream = new ZipOutputStream( os );
 
+            final Set<String> seenPaths = new HashSet<>();
+
             for ( final Map<ArtifactRef, Transfer> items : contents.values() )
             {
 
                 for ( final Transfer item : items.values() )
                 {
-                    final ZipEntry ze = new ZipEntry( item.getPath() );
+                    final String path = item.getPath();
+                    if ( seenPaths.contains( path ) )
+                    {
+                        continue;
+                    }
+
+                    seenPaths.add( path );
+
+                    final ZipEntry ze = new ZipEntry( path );
                     stream.putNextEntry( ze );
 
                     InputStream itemStream = null;
@@ -279,8 +287,7 @@ public class RepositoryResource
         }
     }
 
-    private Map<ProjectVersionRef, Map<ArtifactRef, Transfer>> resolveContents( final WebOperationConfigDTO dto,
-                                                                                final HttpServletRequest req )
+    private Map<ProjectVersionRef, Map<ArtifactRef, Transfer>> resolveContents( final WebOperationConfigDTO dto, final HttpServletRequest req )
         throws AproxWorkflowException
     {
         if ( dto == null )
@@ -336,8 +343,7 @@ public class RepositoryResource
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( "Failed to lookup one or more source/excludedSource ArtifactStores for: %s. Reason: %s", e,
-                          dto, e.getMessage() );
+            logger.error( "Failed to lookup one or more source/excludedSource ArtifactStores for: %s. Reason: %s", e, dto, e.getMessage() );
 
             throw new AproxWorkflowException( Response.serverError()
                                                       .build() );
