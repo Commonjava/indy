@@ -22,6 +22,7 @@ import static org.apache.commons.lang.StringUtils.isEmpty;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -120,7 +121,8 @@ public class DefaultFileManager
     {
         try
         {
-            return transfers.retrieveAll( LocationUtils.toLocations( stores ), path );
+            // FIXME: Needs to be a list?
+            return new HashSet<>( transfers.retrieveAll( LocationUtils.toLocations( stores ), path ) );
         }
         catch ( final TransferException e )
         {
