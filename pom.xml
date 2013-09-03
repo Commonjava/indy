@@ -45,7 +45,7 @@
     <shelflife-version>0.3</shelflife-version>
     <atlasVersion>0.9.1</atlasVersion>
     <galleyVersion>0.2.0</galleyVersion>
-    <cartoVersion>0.2.0</cartoVersion>
+    <cartoVersion>0.2.1-SNAPSHOT</cartoVersion>
   </properties>
   
   <distributionManagement>
