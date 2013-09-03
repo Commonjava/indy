@@ -43,6 +43,9 @@
     <arquillian-version>1.0.1.Final</arquillian-version>
     <qarqas-version>0.3</qarqas-version>
     <shelflife-version>0.3</shelflife-version>
+    <atlasVersion>0.9.1</atlasVersion>
+    <galleyVersion>0.2.0</galleyVersion>
+    <cartoVersion>0.2.0</cartoVersion>
   </properties>
   
   <distributionManagement>
@@ -182,33 +185,33 @@
       <dependency>
         <groupId>org.commonjava.maven.galley</groupId>
         <artifactId>galley-core</artifactId>
-        <version>0.2.0-SNAPSHOT</version>
+        <version>${galleyVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.maven.galley</groupId>
         <artifactId>galley-transport-filearc</artifactId>
-        <version>0.2.0-SNAPSHOT</version>
+        <version>${galleyVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.maven.galley</groupId>
         <artifactId>galley-transport-httpclient</artifactId>
-        <version>0.2.0-SNAPSHOT</version>
+        <version>${galleyVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.maven.cartographer</groupId>
         <artifactId>cartographer</artifactId>
-        <version>0.1.2-SNAPSHOT</version>
+        <version>${cartoVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.maven.galley</groupId>
         <artifactId>galley-api</artifactId>
-        <version>0.2.0-SNAPSHOT</version>
+        <version>${galleyVersion}</version>
       </dependency>
       
       <dependency>
         <groupId>org.commonjava.maven.atlas</groupId>
         <artifactId>atlas-driver-neo4j-embedded</artifactId>
-        <version>0.9.1-SNAPSHOT</version>
+        <version>${atlasVersion}</version>
       </dependency>
       
       <dependency>
