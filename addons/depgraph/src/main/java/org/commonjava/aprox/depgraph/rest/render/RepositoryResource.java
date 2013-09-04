@@ -9,6 +9,8 @@ import static org.commonjava.web.json.ser.ServletSerializerUtils.fromRequestBody
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.HashMap;
@@ -42,7 +44,9 @@ import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.ops.ResolveOps;
+import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.spi.transport.LocationExpander;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.ser.JsonSerializer;
 
@@ -65,6 +69,9 @@ public class RepositoryResource
 
     @Inject
     private RequestAdvisor requestAdvisor;
+
+    @Inject
+    private LocationExpander locationExpander;
 
     @POST
     @Path( "/urlmap" )
@@ -311,8 +318,10 @@ public class RepositoryResource
         }
         catch ( final CartoDataException e )
         {
-            logger.error( "Failed to resolve repository contents for: %s. Reason: %s", e, dto, e.getMessage() );
+            final String message = String.format( "Failed to resolve repository contents for: %s. Reason: %s", dto, e.getMessage() );
+            logger.error( message, e );
             throw new AproxWorkflowException( Response.serverError()
+                                                      .entity( toString( message, e ) )
                                                       .build() );
         }
 
@@ -325,13 +334,31 @@ public class RepositoryResource
         return contents;
     }
 
+    private Object toString( final String message, final CartoDataException e )
+    {
+        final StringWriter sw = new StringWriter();
+        sw.write( message );
+        sw.write( "\n" );
+        e.printStackTrace( new PrintWriter( sw ) );
+        return sw;
+    }
+
     private WebOperationConfigDTO readDTO( final HttpServletRequest req )
         throws AproxWorkflowException
     {
         final WebOperationConfigDTO dto = fromRequestBody( req, serializer, WebOperationConfigDTO.class );
         logger.info( "Got configuration:\n\n%s\n\n", serializer.toString( dto ) );
 
-        dto.calculateLocations();
+        try
+        {
+            dto.calculateLocations( locationExpander );
+        }
+        catch ( final TransferException e )
+        {
+            throw new AproxWorkflowException( Response.status( Status.BAD_REQUEST )
+                                                      .entity( "One or more sources/excluded sources is invalid." )
+                                                      .build() );
+        }
         return dto;
     }
 

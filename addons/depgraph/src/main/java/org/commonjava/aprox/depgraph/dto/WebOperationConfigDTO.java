@@ -6,7 +6,9 @@ import java.util.Set;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.cartographer.dto.RepositoryContentRecipe;
+import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.model.Location;
+import org.commonjava.maven.galley.spi.transport.LocationExpander;
 
 public class WebOperationConfigDTO
     extends RepositoryContentRecipe
@@ -60,7 +62,8 @@ public class WebOperationConfigDTO
         this.excludedSources = excludedSources;
     }
 
-    public void calculateLocations()
+    public void calculateLocations( final LocationExpander locationExpander )
+        throws TransferException
     {
         if ( source != null )
         {
@@ -77,7 +80,9 @@ public class WebOperationConfigDTO
                     continue;
                 }
 
-                excluded.add( LocationUtils.toCacheLocation( key ) );
+                final Location loc = LocationUtils.toCacheLocation( key );
+                excluded.add( loc );
+                excluded.addAll( locationExpander.expand( loc ) );
             }
 
             setExcludedSourceLocations( excluded );
