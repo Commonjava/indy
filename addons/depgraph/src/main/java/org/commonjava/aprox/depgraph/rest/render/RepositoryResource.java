@@ -9,8 +9,6 @@ import static org.commonjava.web.json.ser.ServletSerializerUtils.fromRequestBody
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.HashMap;
@@ -295,9 +293,7 @@ public class RepositoryResource
         if ( dto == null )
         {
             logger.warn( "Repository archive configuration is missing." );
-            throw new AproxWorkflowException( Response.status( Status.BAD_REQUEST )
-                                                      .entity( "JSON configuration not supplied" )
-                                                      .build() );
+            throw new AproxWorkflowException( Status.BAD_REQUEST, "JSON configuration not supplied" );
         }
 
         final ProjectRelationshipFilter presetFilter = requestAdvisor.getPresetFilter( dto.getPreset() );
@@ -306,9 +302,7 @@ public class RepositoryResource
         if ( !dto.isValid() )
         {
             logger.warn( "Repository archive configuration is invalid: %s", dto );
-            throw new AproxWorkflowException( Response.status( Status.BAD_REQUEST )
-                                                      .entity( "Invalid configuration" )
-                                                      .build() );
+            throw new AproxWorkflowException( Status.BAD_REQUEST, "Invalid configuration: %s", dto );
         }
 
         Map<ProjectVersionRef, Map<ArtifactRef, Transfer>> contents;
@@ -318,29 +312,11 @@ public class RepositoryResource
         }
         catch ( final CartoDataException e )
         {
-            final String message = String.format( "Failed to resolve repository contents for: %s. Reason: %s", dto, e.getMessage() );
-            logger.error( message, e );
-            throw new AproxWorkflowException( Response.serverError()
-                                                      .entity( toString( message, e ) )
-                                                      .build() );
-        }
-
-        if ( contents == null )
-        {
-            throw new AproxWorkflowException( Response.status( Status.BAD_REQUEST )
-                                                      .build() );
+            logger.error( "Failed to resolve repository contents for: %s. Reason: %s", e, dto, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to resolve repository contents for: %s. Reason: %s", e, dto, e.getMessage() );
         }
 
         return contents;
-    }
-
-    private Object toString( final String message, final CartoDataException e )
-    {
-        final StringWriter sw = new StringWriter();
-        sw.write( message );
-        sw.write( "\n" );
-        e.printStackTrace( new PrintWriter( sw ) );
-        return sw;
     }
 
     private WebOperationConfigDTO readDTO( final HttpServletRequest req )
@@ -355,10 +331,9 @@ public class RepositoryResource
         }
         catch ( final TransferException e )
         {
-            throw new AproxWorkflowException( Response.status( Status.BAD_REQUEST )
-                                                      .entity( "One or more sources/excluded sources is invalid." )
-                                                      .build() );
+            throw new AproxWorkflowException( Status.BAD_REQUEST, "One or more sources/excluded sources is invalid: %s", e, e.getMessage() );
         }
+
         return dto;
     }
 

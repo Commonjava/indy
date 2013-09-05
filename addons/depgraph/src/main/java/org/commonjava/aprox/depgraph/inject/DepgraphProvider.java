@@ -13,8 +13,8 @@ import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.aprox.depgraph.json.DepgraphSerializationAdapter;
 import org.commonjava.aprox.model.io.StoreKeySerializer;
 import org.commonjava.maven.atlas.graph.EGraphManager;
-import org.commonjava.maven.atlas.graph.spi.neo4j.FileNeo4JEGraphDriver;
-import org.commonjava.maven.cartographer.data.GraphWorkspaceHolder;
+import org.commonjava.maven.atlas.graph.spi.neo4j.FileNeo4jWorkspaceFactory;
+import org.commonjava.maven.cartographer.data.CartoDataManager;
 import org.commonjava.web.json.ser.JsonSerializer;
 
 @ApplicationScoped
@@ -25,7 +25,7 @@ public class DepgraphProvider
     private AproxDepgraphConfig config;
 
     @Inject
-    private GraphWorkspaceHolder workspaceHolder;
+    private CartoDataManager data;
 
     private EGraphManager graphs;
 
@@ -44,9 +44,7 @@ public class DepgraphProvider
     @PostConstruct
     public void setup()
     {
-        this.graphs = new EGraphManager( new FileNeo4JEGraphDriver( config.getDatabaseDir() ) );
-        this.serializer =
-            new JsonSerializer( new StoreKeySerializer(), new DepgraphSerializationAdapter( graphs, workspaceHolder ) );
+        this.graphs = new EGraphManager( new FileNeo4jWorkspaceFactory( config.getDatabaseDir(), false ) );
     }
 
     @PreDestroy
@@ -65,8 +63,13 @@ public class DepgraphProvider
     @Produces
     @DepgraphSpecific
     @Default
-    public JsonSerializer getJsonSerializer()
+    public synchronized JsonSerializer getJsonSerializer()
     {
+        if ( serializer == null )
+        {
+            serializer = new JsonSerializer( new StoreKeySerializer(), new DepgraphSerializationAdapter( data ) );
+        }
+
         return serializer;
     }
 

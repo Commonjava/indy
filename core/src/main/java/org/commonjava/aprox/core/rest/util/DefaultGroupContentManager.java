@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.ws.rs.core.Response;
 
 import org.commonjava.aprox.core.rest.util.retrieve.GroupHandlerChain;
 import org.commonjava.aprox.data.ProxyDataException;
@@ -59,10 +58,7 @@ public class DefaultGroupContentManager
         catch ( final ProxyDataException e )
         {
             logger.error( "Failed to retrieve repository-group information: %s. Reason: %s", e, name, e.getMessage() );
-            throw new AproxWorkflowException( Response.serverError()
-                                                      .build(),
-                                              "Failed to retrieve repository-group information: %s. Reason: %s", e,
-                                              name, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve repository-group information: %s. Reason: %s", e, name, e.getMessage() );
         }
 
         // logger.info( "Download: %s\nFrom: %s", path, stores );
@@ -100,10 +96,7 @@ public class DefaultGroupContentManager
         catch ( final ProxyDataException e )
         {
             logger.error( "Failed to retrieve repository-group information: %s. Reason: %s", e, name, e.getMessage() );
-            throw new AproxWorkflowException( Response.serverError()
-                                                      .build(),
-                                              "Failed to retrieve repository-group information: %s. Reason: %s", e,
-                                              name, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve repository-group information: %s. Reason: %s", e, name, e.getMessage() );
         }
 
         return handlerChain.store( group, stores, path, stream );
@@ -131,10 +124,7 @@ public class DefaultGroupContentManager
         catch ( final ProxyDataException e )
         {
             logger.error( "Failed to retrieve repository-group information: %s. Reason: %s", e, name, e.getMessage() );
-            throw new AproxWorkflowException( Response.serverError()
-                                                      .build(),
-                                              "Failed to retrieve repository-group information: %s. Reason: %s", e,
-                                              name, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve repository-group information: %s. Reason: %s", e, name, e.getMessage() );
         }
 
         return handlerChain.delete( group, stores, path );

@@ -25,7 +25,6 @@ import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.ws.rs.core.Response;
 
 import org.commonjava.aprox.core.rest.util.ArchetypeCatalogMerger;
 import org.commonjava.aprox.core.rest.util.GroupMergeHelper;
@@ -77,10 +76,7 @@ public class ArchetypeCatalogHandler
                 }
                 catch ( final IOException e )
                 {
-                    throw new AproxWorkflowException( Response.serverError()
-                                                              .build(),
-                                                      "Failed to write merged archetype catalog to: %s.\nError: %s", e,
-                                                      target, e.getMessage() );
+                    throw new AproxWorkflowException( "Failed to write merged archetype catalog to: %s.\nError: %s", e, target, e.getMessage() );
                 }
                 finally
                 {
@@ -100,8 +96,7 @@ public class ArchetypeCatalogHandler
     }
 
     @Override
-    public Transfer store( final Group group, final List<? extends ArtifactStore> stores, final String path,
-                           final InputStream stream )
+    public Transfer store( final Group group, final List<? extends ArtifactStore> stores, final String path, final InputStream stream )
         throws AproxWorkflowException
     {
         if ( path.endsWith( ArchetypeCatalogMerger.CATALOG_NAME ) )
@@ -114,11 +109,8 @@ public class ArchetypeCatalogHandler
             }
             catch ( final IOException e )
             {
-                throw new AproxWorkflowException(
-                                                  Response.serverError()
-                                                          .build(),
-                                                  "Failed to delete generated file (to allow re-generation on demand: %s. Error: %s",
-                                                  e, target.getFullPath(), e.getMessage() );
+                throw new AproxWorkflowException( "Failed to delete generated file (to allow re-generation on demand: %s. Error: %s", e,
+                                                  target.getFullPath(), e.getMessage() );
             }
         }
 

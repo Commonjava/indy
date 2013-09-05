@@ -32,7 +32,6 @@ import java.util.concurrent.Executors;
 
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.commonjava.aprox.change.event.AproxFileEventManager;
@@ -106,8 +105,7 @@ public class DefaultFileManager
         catch ( final TransferException e )
         {
             logger.error( e.getMessage(), e );
-            throw new AproxWorkflowException( Response.serverError()
-                                                      .build() );
+            throw new AproxWorkflowException( "Failed to retrieve first path: %s from: %s. Reason: %s", e, path, stores, e.getMessage() );
         }
     }
 
@@ -127,8 +125,7 @@ public class DefaultFileManager
         catch ( final TransferException e )
         {
             logger.error( e.getMessage(), e );
-            throw new AproxWorkflowException( Response.serverError()
-                                                      .build() );
+            throw new AproxWorkflowException( "Failed to retrieve ALL paths: %s from: %s. Reason: %s", e, path, stores, e.getMessage() );
         }
     }
 
@@ -175,8 +172,7 @@ public class DefaultFileManager
         catch ( final TransferException e )
         {
             logger.error( e.getMessage(), e );
-            throw new AproxWorkflowException( Response.serverError()
-                                                      .build() );
+            throw new AproxWorkflowException( "Failed to retrieve path: %s from: %s. Reason: %s", e, path, store, e.getMessage() );
         }
     }
 
@@ -195,15 +191,13 @@ public class DefaultFileManager
             if ( !deploy.isAllowSnapshots() )
             {
                 logger.error( "Cannot store snapshot in non-snapshot deploy point: %s", deploy.getName() );
-                throw new AproxWorkflowException( Response.status( Status.BAD_REQUEST )
-                                                          .build() );
+                throw new AproxWorkflowException( Status.BAD_REQUEST, "Cannot store snapshot in non-snapshot deploy point: %s", deploy.getName() );
             }
         }
         else if ( !deploy.isAllowReleases() )
         {
             logger.error( "Cannot store release in snapshot-only deploy point: %s", deploy.getName() );
-            throw new AproxWorkflowException( Response.status( Status.BAD_REQUEST )
-                                                      .build() );
+            throw new AproxWorkflowException( Status.BAD_REQUEST, "Cannot store release in snapshot-only deploy point: %s", deploy.getName() );
         }
 
         final Transfer target = getStorageReference( deploy, path );
@@ -225,8 +219,7 @@ public class DefaultFileManager
         {
             logger.error( "Failed to store: %s in deploy store: %s. Reason: %s", e, path, deploy.getName(), e.getMessage() );
 
-            throw new AproxWorkflowException( Response.serverError()
-                                                      .build() );
+            throw new AproxWorkflowException( "Failed to store: %s in deploy store: %s. Reason: %s", e, path, deploy.getName(), e.getMessage() );
         }
         finally
         {
@@ -282,9 +275,7 @@ public class DefaultFileManager
         if ( selected == null )
         {
             logger.warn( "Cannot deploy. No valid deploy points in group." );
-            throw new AproxWorkflowException( Response.status( Status.BAD_REQUEST )
-                                                      .entity( "No deployment locations available." )
-                                                      .build() );
+            throw new AproxWorkflowException( Status.BAD_REQUEST, "No deployment locations available." );
         }
 
         store( selected, path, stream );
@@ -387,14 +378,12 @@ public class DefaultFileManager
             {
                 if ( !item.delete() )
                 {
-                    throw new AproxWorkflowException( Response.serverError()
-                                                              .build(), "Failed to delete: %s.", item );
+                    throw new AproxWorkflowException( "Failed to delete: %s.", item );
                 }
             }
             catch ( final IOException e )
             {
-                throw new AproxWorkflowException( Response.serverError()
-                                                          .build(), "Failed to delete stored location: %s. Reason: %s", e, item, e.getMessage() );
+                throw new AproxWorkflowException( "Failed to delete stored location: %s. Reason: %s", e, item, e.getMessage() );
             }
         }
 

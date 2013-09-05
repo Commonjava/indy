@@ -121,9 +121,7 @@ public class DefaultDeployPointAccessResource
         }
         catch ( final ProxyDataException e )
         {
-            throw new AproxWorkflowException( Response.serverError()
-                                                      .build(), "Failed to retrieve deploy store: %s. Reason: %s", e,
-                                              name, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve deploy store: %s. Reason: %s", e, name, e.getMessage() );
         }
     }
 

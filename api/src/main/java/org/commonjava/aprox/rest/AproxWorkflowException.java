@@ -1,44 +1,82 @@
 package org.commonjava.aprox.rest;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.MessageFormat;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
 
 public class AproxWorkflowException
     extends Exception
 {
 
-    private final Response response;
-
-    private Object[] params;
+    private final Object[] params;
 
     private transient String formattedMessage;
 
-    public AproxWorkflowException( final Response response )
-    {
-        this.response = response;
-    }
+    private Status status;
 
-    public AproxWorkflowException( final Response response, final String message, final Object... params )
+    public AproxWorkflowException( final String message, final Object... params )
     {
         super( message );
-        this.response = response;
         this.params = params;
     }
 
-    public AproxWorkflowException( final Response response, final String message, final Throwable cause,
-                                  final Object... params )
+    public AproxWorkflowException( final String message, final Throwable cause, final Object... params )
     {
         super( message, cause );
-        this.response = response;
         this.params = params;
+    }
+
+    public AproxWorkflowException( final Status status, final String message, final Object... params )
+    {
+        super( message );
+        this.params = params;
+        this.status = status;
+    }
+
+    private Object formatEntity()
+    {
+        final StringWriter sw = new StringWriter();
+        sw.append( getMessage() );
+
+        final Throwable cause = getCause();
+        if ( cause != null )
+        {
+            sw.append( "\n\n" );
+            cause.printStackTrace( new PrintWriter( sw ) );
+        }
+
+        return sw;
     }
 
     private static final long serialVersionUID = 1L;
 
     public Response getResponse()
     {
-        return response;
+        return getResponse( true );
+    }
+
+    public Response getResponse( final boolean includeExplanation )
+    {
+        ResponseBuilder rb;
+        if ( status != null )
+        {
+            rb = Response.status( status );
+        }
+        else
+        {
+            rb = Response.serverError();
+        }
+
+        if ( includeExplanation )
+        {
+            rb.entity( formatEntity() );
+        }
+
+        return rb.build();
     }
 
     @Override

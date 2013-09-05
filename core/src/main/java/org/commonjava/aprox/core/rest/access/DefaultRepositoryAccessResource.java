@@ -57,9 +57,7 @@ public class DefaultRepositoryAccessResource
         }
         catch ( final ProxyDataException e )
         {
-            throw new AproxWorkflowException( Response.serverError()
-                                                      .build(), "Failed to retrieve repository: %s. Reason: %s", e,
-                                              name, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve repository: %s. Reason: %s", e, name, e.getMessage() );
         }
     }
 

@@ -1,4 +1,4 @@
-package org.commonjava.aprox.tensor.util;
+package org.commonjava.aprox.depgraph.util;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;

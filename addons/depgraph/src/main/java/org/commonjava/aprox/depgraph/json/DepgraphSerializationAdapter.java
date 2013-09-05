@@ -1,6 +1,5 @@
 package org.commonjava.aprox.depgraph.json;
 
-import org.commonjava.maven.atlas.graph.EGraphManager;
 import org.commonjava.maven.atlas.graph.model.EProjectCycle;
 import org.commonjava.maven.atlas.graph.model.EProjectDirectRelationships;
 import org.commonjava.maven.atlas.graph.model.EProjectGraph;
@@ -16,7 +15,7 @@ import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.version.SingleVersion;
-import org.commonjava.maven.cartographer.data.GraphWorkspaceHolder;
+import org.commonjava.maven.cartographer.data.CartoDataManager;
 import org.commonjava.web.json.ser.WebSerializationAdapter;
 
 import com.google.gson.GsonBuilder;
@@ -25,25 +24,22 @@ public class DepgraphSerializationAdapter
     implements WebSerializationAdapter
 {
 
-    private final EGraphManager graphs;
+    private final CartoDataManager data;
 
-    private final GraphWorkspaceHolder sessionManager;
-
-    public DepgraphSerializationAdapter( final EGraphManager graphs, final GraphWorkspaceHolder sessionManager )
+    public DepgraphSerializationAdapter( final CartoDataManager data )
     {
-        this.graphs = graphs;
-        this.sessionManager = sessionManager;
+        this.data = data;
     }
 
     @Override
     public void register( final GsonBuilder gson )
     {
         gson.registerTypeAdapter( ArtifactRef.class, new ArtifactRefSer() );
-        gson.registerTypeAdapter( EProjectGraph.class, new EProjectGraphSer( graphs, sessionManager ) );
+        gson.registerTypeAdapter( EProjectGraph.class, new EProjectGraphSer( data ) );
         gson.registerTypeAdapter( EProjectCycle.class, new EProjectCycleSer() );
         gson.registerTypeAdapter( EProjectKey.class, new EProjectKeySer() );
         gson.registerTypeAdapter( EProjectDirectRelationships.class, new EProjectRelsSer() );
-        gson.registerTypeAdapter( EProjectWeb.class, new EProjectWebSer( graphs, sessionManager ) );
+        gson.registerTypeAdapter( EProjectWeb.class, new EProjectWebSer( data ) );
         gson.registerTypeAdapter( ProjectRef.class, new ProjectRefSer() );
         gson.registerTypeAdapter( ProjectRelationship.class, new ProjectRelationshipSer() );
         gson.registerTypeAdapter( ParentRelationship.class, new ProjectRelationshipSer() );

@@ -1,4 +1,4 @@
-package org.commonjava.aprox.tensor.live;
+package org.commonjava.aprox.depgraph.live;
 
 import static org.apache.commons.io.FileUtils.forceDelete;
 import static org.apache.commons.io.IOUtils.closeQuietly;
@@ -13,8 +13,8 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depgraph.DepgraphStorageListener;
+import org.commonjava.aprox.depgraph.fixture.TestConfigProvider;
 import org.commonjava.aprox.model.DeployPoint;
-import org.commonjava.aprox.tensor.fixture.TestConfigProvider;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.event.FileAccessEvent;

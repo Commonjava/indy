@@ -25,7 +25,6 @@ import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.ws.rs.core.Response;
 
 import org.commonjava.aprox.core.rest.util.GroupMergeHelper;
 import org.commonjava.aprox.core.rest.util.MavenMetadataMerger;
@@ -78,10 +77,7 @@ public class MavenMetadataHandler
                 }
                 catch ( final IOException e )
                 {
-                    throw new AproxWorkflowException( Response.serverError()
-                                                              .build(),
-                                                      "Failed to write merged metadata to: %s.\nError: %s", e, target,
-                                                      e.getMessage() );
+                    throw new AproxWorkflowException( "Failed to write merged metadata to: %s.\nError: %s", e, target, e.getMessage() );
                 }
                 finally
                 {
@@ -101,8 +97,7 @@ public class MavenMetadataHandler
     }
 
     @Override
-    public Transfer store( final Group group, final List<? extends ArtifactStore> stores, final String path,
-                           final InputStream stream )
+    public Transfer store( final Group group, final List<? extends ArtifactStore> stores, final String path, final InputStream stream )
         throws AproxWorkflowException
     {
         if ( path.endsWith( MavenMetadataMerger.METADATA_NAME ) )
@@ -116,10 +111,8 @@ public class MavenMetadataHandler
             catch ( final IOException e )
             {
                 throw new AproxWorkflowException(
-                                                  Response.serverError()
-                                                          .build(),
-                                                  "Failed to delete generated file (to allow re-generation on demand: %s. Error: %s",
-                                                  e, target.getFullPath(), e.getMessage() );
+
+                "Failed to delete generated file (to allow re-generation on demand: %s. Error: %s", e, target.getFullPath(), e.getMessage() );
             }
         }
 

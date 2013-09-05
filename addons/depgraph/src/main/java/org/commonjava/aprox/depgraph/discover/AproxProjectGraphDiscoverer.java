@@ -103,6 +103,10 @@ public class AproxProjectGraphDiscoverer
 
             final Transfer retrieved;
             final List<? extends KeyedLocation> locations = getLocations( key );
+            if ( locations == null || locations.isEmpty() )
+            {
+                return null;
+            }
 
             retrieved = artifactManager.retrieveFirst( locations, pomRef );
 
@@ -134,7 +138,7 @@ public class AproxProjectGraphDiscoverer
             throw new CartoDataException( "Failed to lookup ArtifactStore for key: %s. Reason: %s", e, key, e.getMessage() );
         }
 
-        List<? extends KeyedLocation> locations = LocationUtils.toLocations( store );
+        List<? extends KeyedLocation> locations;
         if ( key == null )
         {
             locations = LocationUtils.toLocations( storeManager.getAllConcreteArtifactStores() );
@@ -157,6 +161,10 @@ public class AproxProjectGraphDiscoverer
             }
 
             locations = LocationUtils.toLocations( concrete );
+        }
+        else
+        {
+            locations = LocationUtils.toLocations( store );
         }
 
         return locations;

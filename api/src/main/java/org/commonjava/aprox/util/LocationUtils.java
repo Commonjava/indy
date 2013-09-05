@@ -28,6 +28,11 @@ public final class LocationUtils
 
     public static KeyedLocation toLocation( final ArtifactStore store )
     {
+        if ( store == null )
+        {
+            return null;
+        }
+
         final StoreType type = store.getKey()
                                     .getType();
         switch ( type )
@@ -56,6 +61,11 @@ public final class LocationUtils
 
     public static CacheOnlyLocation toCacheLocation( final StoreKey key )
     {
+        if ( key == null )
+        {
+            return null;
+        }
+
         if ( key.getType() == StoreType.group )
         {
             return new GroupLocation( key.getName() );
@@ -74,7 +84,11 @@ public final class LocationUtils
         final List<KeyedLocation> result = new ArrayList<>();
         for ( final StoreKey key : keys )
         {
-            result.add( toCacheLocation( key ) );
+            final KeyedLocation loc = toCacheLocation( key );
+            if ( loc != null )
+            {
+                result.add( loc );
+            }
         }
 
         return result;
@@ -90,7 +104,11 @@ public final class LocationUtils
         final List<KeyedLocation> locations = new ArrayList<>();
         for ( final ArtifactStore store : stores )
         {
-            locations.add( toLocation( store ) );
+            final KeyedLocation loc = toLocation( store );
+            if ( loc != null )
+            {
+                locations.add( loc );
+            }
         }
 
         return locations;
@@ -103,6 +121,11 @@ public final class LocationUtils
 
     public static StoreKey getKey( final Transfer transfer )
     {
+        if ( transfer == null )
+        {
+            return null;
+        }
+
         final Location loc = transfer.getLocation();
 
         if ( loc instanceof KeyedLocation )

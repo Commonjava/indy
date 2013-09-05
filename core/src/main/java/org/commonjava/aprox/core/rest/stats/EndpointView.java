@@ -61,4 +61,43 @@ public final class EndpointView
     {
         return getKey().compareTo( point.getKey() );
     }
+
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ( ( resourceUri == null ) ? 0 : resourceUri.hashCode() );
+        return result;
+    }
+
+    @Override
+    public boolean equals( final Object obj )
+    {
+        if ( this == obj )
+        {
+            return true;
+        }
+        if ( obj == null )
+        {
+            return false;
+        }
+        if ( getClass() != obj.getClass() )
+        {
+            return false;
+        }
+        final EndpointView other = (EndpointView) obj;
+        if ( resourceUri == null )
+        {
+            if ( other.resourceUri != null )
+            {
+                return false;
+            }
+        }
+        else if ( !resourceUri.equals( other.resourceUri ) )
+        {
+            return false;
+        }
+        return true;
+    }
 }

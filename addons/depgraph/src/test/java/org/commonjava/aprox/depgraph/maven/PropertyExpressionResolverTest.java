@@ -1,4 +1,4 @@
-package org.commonjava.aprox.tensor.maven;
+package org.commonjava.aprox.depgraph.maven;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;

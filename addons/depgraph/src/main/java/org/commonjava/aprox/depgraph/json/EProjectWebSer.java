@@ -5,12 +5,12 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.commonjava.maven.atlas.graph.EGraphManager;
 import org.commonjava.maven.atlas.graph.model.EProjectCycle;
 import org.commonjava.maven.atlas.graph.model.EProjectWeb;
 import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.cartographer.data.GraphWorkspaceHolder;
+import org.commonjava.maven.cartographer.data.CartoDataException;
+import org.commonjava.maven.cartographer.data.CartoDataManager;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
@@ -23,14 +23,11 @@ public class EProjectWebSer
     extends AbstractProjectNetSer<EProjectWeb>
 {
 
-    private final EGraphManager graphs;
+    private final CartoDataManager data;
 
-    private final GraphWorkspaceHolder sessionManager;
-
-    public EProjectWebSer( final EGraphManager graphs, final GraphWorkspaceHolder sessionManager )
+    public EProjectWebSer( final CartoDataManager data )
     {
-        this.graphs = graphs;
-        this.sessionManager = sessionManager;
+        this.data = data;
     }
 
     @Override
@@ -58,9 +55,16 @@ public class EProjectWebSer
         final Collection<ProjectRelationship<?>> rels = deserializeRelationships( obj, ctx );
         final Set<EProjectCycle> cycles = deserializeCycles( obj, ctx );
 
-        graphs.storeRelationships( rels );
-
-        final EProjectWeb web = graphs.getWeb( sessionManager.getCurrentWorkspace(), roots );
+        final EProjectWeb web;
+        try
+        {
+            data.storeRelationships( rels );
+            web = data.getProjectWeb( roots.toArray( new ProjectVersionRef[roots.size()] ) );
+        }
+        catch ( final CartoDataException e )
+        {
+            throw new JsonParseException( "Failed to store relationships or retrieve resulting project web.", e );
+        }
 
         for ( final EProjectCycle cycle : cycles )
         {

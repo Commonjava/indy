@@ -95,8 +95,7 @@ public class WorkspaceResource
     @Produces( MediaType.APPLICATION_JSON )
     public Response createFrom( @Context final UriInfo uriInfo, @Context final HttpServletRequest request )
     {
-        final GraphWorkspaceConfiguration config =
-            ServletSerializerUtils.fromRequestBody( request, serializer, GraphWorkspaceConfiguration.class );
+        final GraphWorkspaceConfiguration config = ServletSerializerUtils.fromRequestBody( request, serializer, GraphWorkspaceConfiguration.class );
         try
         {
             final GraphWorkspace workspace = ops.create( config );
@@ -122,8 +121,7 @@ public class WorkspaceResource
     @GET
     @Produces( MediaType.APPLICATION_JSON )
     public Response select( @PathParam( "id" ) final String id, @PathParam( "groupId" ) final String groupId,
-                            @PathParam( "artifactId" ) final String artifactId,
-                            @PathParam( "newVersion" ) final String newVersion,
+                            @PathParam( "artifactId" ) final String artifactId, @PathParam( "newVersion" ) final String newVersion,
                             @QueryParam( "for" ) final String oldVersion, @Context final UriInfo uriInfo )
     {
         Response response = Response.notModified()
@@ -140,12 +138,12 @@ public class WorkspaceResource
             if ( oldVersion == null )
             {
                 pr = new ProjectRef( groupId, artifactId );
-                modified = ws.selectVersionForAll( pr, ver );
+                modified = ws.selectVersionForAll( pr, new ProjectVersionRef( pr, ver ) );
             }
             else
             {
                 final ProjectVersionRef orig = new ProjectVersionRef( groupId, artifactId, oldVersion );
-                final ProjectVersionRef selected = ws.selectVersion( orig, ver );
+                final ProjectVersionRef selected = ws.selectVersion( orig, orig.selectVersion( ver ) );
 
                 modified = selected.equals( orig );
                 pr = orig;
@@ -176,7 +174,7 @@ public class WorkspaceResource
         }
 
         // detach from the threadlocal...
-        ws.close();
+        ws.detach();
 
         return response;
     }
@@ -214,7 +212,7 @@ public class WorkspaceResource
                            .build();
 
         // detach from the threadlocal...
-        ws.close();
+        ws.detach();
 
         return response;
     }
@@ -246,8 +244,7 @@ public class WorkspaceResource
     @Path( "/{id}/source/{source}" )
     @PUT
     @Produces( MediaType.APPLICATION_JSON )
-    public Response addSource( @PathParam( "id" ) final String id, @PathParam( "source" ) final String source,
-                               @Context final UriInfo uriInfo )
+    public Response addSource( @PathParam( "id" ) final String id, @PathParam( "source" ) final String source, @Context final UriInfo uriInfo )
     {
         Response response = Response.notModified()
                                     .build();
@@ -285,7 +282,7 @@ public class WorkspaceResource
             }
 
             // detach from the threadlocal...
-            ws.close();
+            ws.detach();
         }
         catch ( final CartoDataException e )
         {
@@ -300,8 +297,7 @@ public class WorkspaceResource
     @Path( "/{id}/profile/{profile}" )
     @PUT
     @Produces( MediaType.APPLICATION_JSON )
-    public Response addPomLocation( @PathParam( "id" ) final String id, @PathParam( "profile" ) final String profile,
-                                    @Context final UriInfo uriInfo )
+    public Response addPomLocation( @PathParam( "id" ) final String id, @PathParam( "profile" ) final String profile, @Context final UriInfo uriInfo )
     {
         Response response = Response.notModified()
                                     .build();
@@ -336,7 +332,7 @@ public class WorkspaceResource
                            .build();
 
         // detach from the threadlocal...
-        ws.close();
+        ws.detach();
 
         return response;
     }

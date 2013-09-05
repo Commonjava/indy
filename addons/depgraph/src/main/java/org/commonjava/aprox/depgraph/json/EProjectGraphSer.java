@@ -4,12 +4,12 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Set;
 
-import org.commonjava.maven.atlas.graph.EGraphManager;
 import org.commonjava.maven.atlas.graph.model.EProjectCycle;
 import org.commonjava.maven.atlas.graph.model.EProjectGraph;
 import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.cartographer.data.GraphWorkspaceHolder;
+import org.commonjava.maven.cartographer.data.CartoDataException;
+import org.commonjava.maven.cartographer.data.CartoDataManager;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -24,14 +24,11 @@ public class EProjectGraphSer
     implements JsonSerializer<EProjectGraph>, JsonDeserializer<EProjectGraph>
 {
 
-    private final EGraphManager graphs;
+    private final CartoDataManager data;
 
-    private final GraphWorkspaceHolder sessionManager;
-
-    public EProjectGraphSer( final EGraphManager graphs, final GraphWorkspaceHolder sessionManager )
+    public EProjectGraphSer( final CartoDataManager data )
     {
-        this.graphs = graphs;
-        this.sessionManager = sessionManager;
+        this.data = data;
     }
 
     @Override
@@ -40,15 +37,23 @@ public class EProjectGraphSer
     {
         final JsonObject obj = src.getAsJsonObject();
 
-        final ProjectVersionRef project =
-            ctx.deserialize( obj.get( SerializationConstants.PROJECT_VERSION ), ProjectVersionRef.class );
+        final ProjectVersionRef project = ctx.deserialize( obj.get( SerializationConstants.PROJECT_VERSION ), ProjectVersionRef.class );
 
         final Collection<ProjectRelationship<?>> rels = deserializeRelationships( obj, ctx );
 
         final Set<EProjectCycle> cycles = deserializeCycles( obj, ctx );
 
-        graphs.storeRelationships( rels );
-        final EProjectGraph graph = graphs.getGraph( sessionManager.getCurrentWorkspace(), project );
+        final EProjectGraph graph;
+        try
+        {
+            data.storeRelationships( rels );
+            graph = data.getProjectGraph( project );
+        }
+        catch ( final CartoDataException e )
+        {
+            throw new JsonParseException( "Failed to store relationships or retrieve resulting project web.", e );
+        }
+
         if ( graph != null && cycles != null && !cycles.isEmpty() )
         {
             for ( final EProjectCycle cycle : cycles )
