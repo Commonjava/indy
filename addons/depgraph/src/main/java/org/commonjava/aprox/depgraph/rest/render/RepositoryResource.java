@@ -6,6 +6,7 @@ import static org.apache.commons.lang.StringUtils.join;
 import static org.commonjava.maven.galley.util.UrlUtils.buildUrl;
 import static org.commonjava.web.json.ser.ServletSerializerUtils.fromRequestBody;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -43,6 +44,8 @@ import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.ops.ResolveOps;
 import org.commonjava.maven.galley.TransferException;
+import org.commonjava.maven.galley.TransferManager;
+import org.commonjava.maven.galley.model.Resource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.spi.transport.LocationExpander;
 import org.commonjava.util.logging.Logger;
@@ -71,6 +74,9 @@ public class RepositoryResource
     @Inject
     private LocationExpander locationExpander;
 
+    @Inject
+    private TransferManager transferManager;
+
     @POST
     @Path( "/urlmap" )
     @Produces( "application/json" )
@@ -82,12 +88,12 @@ public class RepositoryResource
         {
             final WebOperationConfigDTO dto = readDTO( req );
 
-            final Map<ProjectVersionRef, Map<ArtifactRef, Transfer>> contents = resolveContents( dto, req );
+            final Map<ProjectVersionRef, Map<ArtifactRef, Resource>> contents = resolveContents( dto, req );
 
-            for ( final Entry<ProjectVersionRef, Map<ArtifactRef, Transfer>> entry : contents.entrySet() )
+            for ( final Entry<ProjectVersionRef, Map<ArtifactRef, Resource>> entry : contents.entrySet() )
             {
                 final ProjectVersionRef gav = entry.getKey();
-                final Map<ArtifactRef, Transfer> items = entry.getValue();
+                final Map<ArtifactRef, Resource> items = entry.getValue();
 
                 final Map<String, Object> data = new HashMap<>();
                 result.put( gav, data );
@@ -95,15 +101,14 @@ public class RepositoryResource
                 final Set<String> files = new HashSet<>();
                 data.put( URLMAP_DATA_FILES, files );
 
-                for ( final Transfer item : items.values() )
+                for ( final Resource item : items.values() )
                 {
                     if ( !data.containsKey( URLMAP_DATA_REPO_URL ) )
                     {
                         data.put( URLMAP_DATA_REPO_URL, formatUrlMapRepositoryUrl( item, info, dto.getLocalUrls() ) );
                     }
 
-                    files.add( item.getDetachedFile()
-                                   .getName() );
+                    files.add( new File( item.getPath() ).getName() );
                 }
             }
         }
@@ -136,11 +141,11 @@ public class RepositoryResource
         {
             final WebOperationConfigDTO dto = readDTO( req );
 
-            final Map<ProjectVersionRef, Map<ArtifactRef, Transfer>> contents = resolveContents( dto, req );
+            final Map<ProjectVersionRef, Map<ArtifactRef, Resource>> contents = resolveContents( dto, req );
 
-            for ( final Map<ArtifactRef, Transfer> items : contents.values() )
+            for ( final Map<ArtifactRef, Resource> items : contents.values() )
             {
-                for ( final Transfer item : items.values() )
+                for ( final Resource item : items.values() )
                 {
                     logger.info( "Adding: '%s'", item.getPath() );
                     downLog.add( formatDownlogEntry( item, info, dto.getLocalUrls() ) );
@@ -171,74 +176,84 @@ public class RepositoryResource
     @Produces( "application/zip" )
     public Response getZipRepository( @Context final HttpServletRequest req, @Context final HttpServletResponse resp )
     {
-        Response response = Response.noContent()
-                                    .build();
-
-        ZipOutputStream stream = null;
         try
         {
-            final WebOperationConfigDTO dto = readDTO( req );
+            Response response = Response.noContent()
+                                        .build();
 
-            final Map<ProjectVersionRef, Map<ArtifactRef, Transfer>> contents = resolveContents( dto, req );
-
-            final OutputStream os = resp.getOutputStream();
-            stream = new ZipOutputStream( os );
-
-            final Set<String> seenPaths = new HashSet<>();
-
-            for ( final Map<ArtifactRef, Transfer> items : contents.values() )
+            ZipOutputStream stream = null;
+            try
             {
+                final WebOperationConfigDTO dto = readDTO( req );
 
-                for ( final Transfer item : items.values() )
+                final Map<ProjectVersionRef, Map<ArtifactRef, Resource>> contents = resolveContents( dto, req );
+
+                final OutputStream os = resp.getOutputStream();
+                stream = new ZipOutputStream( os );
+
+                final Set<String> seenPaths = new HashSet<>();
+
+                for ( final Map<ArtifactRef, Resource> items : contents.values() )
                 {
-                    final String path = item.getPath();
-                    if ( seenPaths.contains( path ) )
-                    {
-                        continue;
-                    }
 
-                    seenPaths.add( path );
-
-                    final ZipEntry ze = new ZipEntry( path );
-                    stream.putNextEntry( ze );
-
-                    InputStream itemStream = null;
-                    try
+                    for ( final Resource item : items.values() )
                     {
-                        itemStream = item.openInputStream();
-                        copy( itemStream, stream );
-                    }
-                    finally
-                    {
-                        closeQuietly( itemStream );
+                        final String path = item.getPath();
+                        if ( seenPaths.contains( path ) )
+                        {
+                            continue;
+                        }
+
+                        seenPaths.add( path );
+
+                        final Transfer transfer = transferManager.retrieve( item );
+                        if ( transfer != null )
+                        {
+                            final ZipEntry ze = new ZipEntry( path );
+                            stream.putNextEntry( ze );
+
+                            InputStream itemStream = null;
+                            try
+                            {
+                                itemStream = transfer.openInputStream();
+                                copy( itemStream, stream );
+                            }
+                            finally
+                            {
+                                closeQuietly( itemStream );
+                            }
+                        }
                     }
                 }
             }
-        }
-        catch ( final IOException e )
-        {
-            logger.error( "Failed to generate runtime repository. Reason: %s", e, e.getMessage() );
+            catch ( final IOException e )
+            {
+                throw new AproxWorkflowException( "Failed to generate runtime repository. Reason: %s", e, e.getMessage() );
+            }
+            catch ( final TransferException e )
+            {
+                throw new AproxWorkflowException( "Failed to generate runtime repository. Reason: %s", e, e.getMessage() );
+            }
+            finally
+            {
+                closeQuietly( stream );
+            }
 
-            return Response.serverError()
-                           .build();
+            response = Response.ok()
+                               .type( "application/zip" )
+                               .build();
+
+            return response;
         }
         catch ( final AproxWorkflowException e )
         {
+            logger.error( e.getMessage(), e );
             return e.getResponse();
         }
-        finally
-        {
-            closeQuietly( stream );
-        }
 
-        response = Response.ok()
-                           .type( "application/zip" )
-                           .build();
-
-        return response;
     }
 
-    private String formatDownlogEntry( final Transfer item, final UriInfo info, final boolean localUrls )
+    private String formatDownlogEntry( final Resource item, final UriInfo info, final boolean localUrls )
         throws MalformedURLException
     {
         final KeyedLocation kl = (KeyedLocation) item.getLocation();
@@ -263,7 +278,7 @@ public class RepositoryResource
         }
     }
 
-    private String formatUrlMapRepositoryUrl( final Transfer item, final UriInfo info, final boolean localUrls )
+    private String formatUrlMapRepositoryUrl( final Resource item, final UriInfo info, final boolean localUrls )
         throws MalformedURLException
     {
         final KeyedLocation kl = (KeyedLocation) item.getLocation();
@@ -287,7 +302,7 @@ public class RepositoryResource
         }
     }
 
-    private Map<ProjectVersionRef, Map<ArtifactRef, Transfer>> resolveContents( final WebOperationConfigDTO dto, final HttpServletRequest req )
+    private Map<ProjectVersionRef, Map<ArtifactRef, Resource>> resolveContents( final WebOperationConfigDTO dto, final HttpServletRequest req )
         throws AproxWorkflowException
     {
         if ( dto == null )
@@ -305,7 +320,7 @@ public class RepositoryResource
             throw new AproxWorkflowException( Status.BAD_REQUEST, "Invalid configuration: %s", dto );
         }
 
-        Map<ProjectVersionRef, Map<ArtifactRef, Transfer>> contents;
+        Map<ProjectVersionRef, Map<ArtifactRef, Resource>> contents;
         try
         {
             contents = ops.resolveRepositoryContents( dto );
