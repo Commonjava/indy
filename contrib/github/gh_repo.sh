@@ -55,6 +55,7 @@ clone) echo "Cloning repos"
 sync)  echo "Syncing repos"
 
 function repo_sync {
+    cd $repo
     TAG=`git describe --abbrev=0 --tags`
     git fetch upstream
     git checkout master
