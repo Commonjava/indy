@@ -5,7 +5,7 @@ import javax.inject.Inject;
 import org.commonjava.web.config.ConfigurationException;
 
 public abstract class AbstractAproxFeatureConfig<T, U extends T>
-    implements AproxFeatureConfig<T, U>
+    implements AproxFeatureConfig
 {
 
     private final Class<U> implCls;
