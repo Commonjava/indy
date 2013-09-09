@@ -8,9 +8,9 @@
 # sync    : syncs a forked repo with upstream repo
 # build   : executes a maven build
 # deploy  : deploys the built war to the deployment dir
-# scratch : removes the local maven repo and executes a targets 
+# scratch : removes the local maven repo and executes targets 
 #           sync, build and deploy 
-# info    : provide repo information for trouble-shooting
+# info    : provides repo information for trouble-shooting
 #
 # Notes on workflow:
 #
