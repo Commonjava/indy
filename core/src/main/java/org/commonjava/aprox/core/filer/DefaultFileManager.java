@@ -49,9 +49,11 @@ import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.event.FileAccessEvent;
-import org.commonjava.maven.galley.model.Resource;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
+import org.commonjava.maven.galley.model.VirtualResource;
+import org.commonjava.maven.galley.spi.transport.LocationExpander;
 import org.commonjava.util.logging.Logger;
 
 @javax.enterprise.context.ApplicationScoped
@@ -80,16 +82,17 @@ public class DefaultFileManager
     @Inject
     private TransferManager transfers;
 
+    @Inject
+    private LocationExpander locationExpander;
+
     public DefaultFileManager()
     {
     }
 
-    public DefaultFileManager( final TransferManager transfers/*,
-                                                                                               final NotFoundCache nfc*/)
+    public DefaultFileManager( final TransferManager transfers, final LocationExpander locationExpander )
     {
-        this.transfers = transfers/*,
-                                       final NotFoundCache nfc*/;
-        //        this.nfc = nfc;
+        this.transfers = transfers;
+        this.locationExpander = locationExpander;
         this.fileEventManager = new AproxFileEventManager();
         executor = Executors.newFixedThreadPool( 10 );
     }
@@ -100,7 +103,7 @@ public class DefaultFileManager
     {
         try
         {
-            return transfers.retrieveFirst( LocationUtils.toLocations( stores ), path );
+            return transfers.retrieveFirst( locationExpander.expand( new VirtualResource( LocationUtils.toLocations( stores ), path ) ) );
         }
         catch ( final TransferException e )
         {
@@ -120,7 +123,7 @@ public class DefaultFileManager
         try
         {
             // FIXME: Needs to be a list?
-            return new HashSet<>( transfers.retrieveAll( LocationUtils.toLocations( stores ), path ) );
+            return new HashSet<>( transfers.retrieveAll( locationExpander.expand( new VirtualResource( LocationUtils.toLocations( stores ), path ) ) ) );
         }
         catch ( final TransferException e )
         {
@@ -147,7 +150,7 @@ public class DefaultFileManager
         Transfer target = null;
         try
         {
-            final Resource res = new Resource( LocationUtils.toLocation( store ), path );
+            final ConcreteResource res = new ConcreteResource( LocationUtils.toLocation( store ), path );
             if ( store instanceof Repository )
             {
                 target = transfers.retrieve( res );
@@ -323,13 +326,13 @@ public class DefaultFileManager
     @Override
     public Transfer getStorageReference( final ArtifactStore store, final String... path )
     {
-        return transfers.getCacheReference( new Resource( LocationUtils.toCacheLocation( store.getKey() ), path ) );
+        return transfers.getCacheReference( new ConcreteResource( LocationUtils.toCacheLocation( store.getKey() ), path ) );
     }
 
     @Override
     public Transfer getStorageReference( final StoreKey key, final String... path )
     {
-        return transfers.getCacheReference( new Resource( LocationUtils.toCacheLocation( key ), path ) );
+        return transfers.getCacheReference( new ConcreteResource( LocationUtils.toCacheLocation( key ), path ) );
     }
 
     @Override

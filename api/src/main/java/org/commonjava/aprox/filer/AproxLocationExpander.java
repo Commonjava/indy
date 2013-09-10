@@ -17,7 +17,10 @@ import org.commonjava.aprox.model.galley.GroupLocation;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.galley.TransferException;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Location;
+import org.commonjava.maven.galley.model.Resource;
+import org.commonjava.maven.galley.model.VirtualResource;
 import org.commonjava.maven.galley.spi.transport.LocationExpander;
 
 @ApplicationScoped
@@ -27,6 +30,15 @@ public class AproxLocationExpander
 
     @Inject
     private StoreDataManager data;
+
+    protected AproxLocationExpander()
+    {
+    }
+
+    public AproxLocationExpander( final StoreDataManager data )
+    {
+        this.data = data;
+    }
 
     @Override
     public List<Location> expand( final Location... locations )
@@ -80,6 +92,23 @@ public class AproxLocationExpander
         }
 
         return result;
+    }
+
+    @Override
+    public VirtualResource expand( final Resource resource )
+        throws TransferException
+    {
+        List<Location> locations;
+        if ( resource instanceof VirtualResource )
+        {
+            locations = expand( ( (VirtualResource) resource ).getLocations() );
+        }
+        else
+        {
+            locations = expand( ( (ConcreteResource) resource ).getLocation() );
+        }
+
+        return new VirtualResource( locations, resource.getPath() );
     }
 
 }

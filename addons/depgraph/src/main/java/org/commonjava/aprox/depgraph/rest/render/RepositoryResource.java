@@ -12,8 +12,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -45,7 +47,9 @@ import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.ops.ResolveOps;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferManager;
-import org.commonjava.maven.galley.model.Resource;
+import org.commonjava.maven.galley.model.ArtifactBatch;
+import org.commonjava.maven.galley.model.ConcreteResource;
+import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.spi.transport.LocationExpander;
 import org.commonjava.util.logging.Logger;
@@ -88,12 +92,12 @@ public class RepositoryResource
         {
             final WebOperationConfigDTO dto = readDTO( req );
 
-            final Map<ProjectVersionRef, Map<ArtifactRef, Resource>> contents = resolveContents( dto, req );
+            final Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> contents = resolveContents( dto, req );
 
-            for ( final Entry<ProjectVersionRef, Map<ArtifactRef, Resource>> entry : contents.entrySet() )
+            for ( final Entry<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> entry : contents.entrySet() )
             {
                 final ProjectVersionRef gav = entry.getKey();
-                final Map<ArtifactRef, Resource> items = entry.getValue();
+                final Map<ArtifactRef, ConcreteResource> items = entry.getValue();
 
                 final Map<String, Object> data = new HashMap<>();
                 result.put( gav, data );
@@ -101,7 +105,7 @@ public class RepositoryResource
                 final Set<String> files = new HashSet<>();
                 data.put( URLMAP_DATA_FILES, files );
 
-                for ( final Resource item : items.values() )
+                for ( final ConcreteResource item : items.values() )
                 {
                     if ( !data.containsKey( URLMAP_DATA_REPO_URL ) )
                     {
@@ -141,11 +145,11 @@ public class RepositoryResource
         {
             final WebOperationConfigDTO dto = readDTO( req );
 
-            final Map<ProjectVersionRef, Map<ArtifactRef, Resource>> contents = resolveContents( dto, req );
+            final Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> contents = resolveContents( dto, req );
 
-            for ( final Map<ArtifactRef, Resource> items : contents.values() )
+            for ( final Map<ArtifactRef, ConcreteResource> items : contents.values() )
             {
-                for ( final Resource item : items.values() )
+                for ( final ConcreteResource item : items.values() )
                 {
                     logger.info( "Adding: '%s'", item.getPath() );
                     downLog.add( formatDownlogEntry( item, info, dto.getLocalUrls() ) );
@@ -186,19 +190,19 @@ public class RepositoryResource
             {
                 final WebOperationConfigDTO dto = readDTO( req );
 
-                final Map<ProjectVersionRef, Map<ArtifactRef, Resource>> contents = resolveContents( dto, req );
+                final Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> contents = resolveContents( dto, req );
 
-                final OutputStream os = resp.getOutputStream();
-                stream = new ZipOutputStream( os );
-
+                final Map<ArtifactRef, List<? extends Location>> entries = new HashMap<>();
                 final Set<String> seenPaths = new HashSet<>();
 
-                for ( final Map<ArtifactRef, Resource> items : contents.values() )
+                for ( final Map<ArtifactRef, ConcreteResource> artifactResources : contents.values() )
                 {
-
-                    for ( final Resource item : items.values() )
+                    for ( final Entry<ArtifactRef, ConcreteResource> entry : artifactResources.entrySet() )
                     {
-                        final String path = item.getPath();
+                        final ArtifactRef ref = entry.getKey();
+                        final ConcreteResource resource = entry.getValue();
+
+                        final String path = resource.getPath();
                         if ( seenPaths.contains( path ) )
                         {
                             continue;
@@ -206,22 +210,34 @@ public class RepositoryResource
 
                         seenPaths.add( path );
 
-                        final Transfer transfer = transferManager.retrieve( item );
-                        if ( transfer != null )
-                        {
-                            final ZipEntry ze = new ZipEntry( path );
-                            stream.putNextEntry( ze );
+                        entries.put( ref, Arrays.asList( resource.getLocation() ) );
+                    }
+                }
 
-                            InputStream itemStream = null;
-                            try
-                            {
-                                itemStream = transfer.openInputStream();
-                                copy( itemStream, stream );
-                            }
-                            finally
-                            {
-                                closeQuietly( itemStream );
-                            }
+                ArtifactBatch batch = new ArtifactBatch( entries );
+                batch = transferManager.batchRetrieve( batch );
+
+                final OutputStream os = resp.getOutputStream();
+                stream = new ZipOutputStream( os );
+
+                for ( final Transfer item : batch.getTransfers()
+                                                 .values() )
+                {
+                    final String path = item.getPath();
+                    if ( item != null )
+                    {
+                        final ZipEntry ze = new ZipEntry( path );
+                        stream.putNextEntry( ze );
+
+                        InputStream itemStream = null;
+                        try
+                        {
+                            itemStream = item.openInputStream();
+                            copy( itemStream, stream );
+                        }
+                        finally
+                        {
+                            closeQuietly( itemStream );
                         }
                     }
                 }
@@ -253,7 +269,7 @@ public class RepositoryResource
 
     }
 
-    private String formatDownlogEntry( final Resource item, final UriInfo info, final boolean localUrls )
+    private String formatDownlogEntry( final ConcreteResource item, final UriInfo info, final boolean localUrls )
         throws MalformedURLException
     {
         final KeyedLocation kl = (KeyedLocation) item.getLocation();
@@ -278,7 +294,7 @@ public class RepositoryResource
         }
     }
 
-    private String formatUrlMapRepositoryUrl( final Resource item, final UriInfo info, final boolean localUrls )
+    private String formatUrlMapRepositoryUrl( final ConcreteResource item, final UriInfo info, final boolean localUrls )
         throws MalformedURLException
     {
         final KeyedLocation kl = (KeyedLocation) item.getLocation();
@@ -302,7 +318,7 @@ public class RepositoryResource
         }
     }
 
-    private Map<ProjectVersionRef, Map<ArtifactRef, Resource>> resolveContents( final WebOperationConfigDTO dto, final HttpServletRequest req )
+    private Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> resolveContents( final WebOperationConfigDTO dto, final HttpServletRequest req )
         throws AproxWorkflowException
     {
         if ( dto == null )
@@ -320,7 +336,7 @@ public class RepositoryResource
             throw new AproxWorkflowException( Status.BAD_REQUEST, "Invalid configuration: %s", dto );
         }
 
-        Map<ProjectVersionRef, Map<ArtifactRef, Resource>> contents;
+        Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> contents;
         try
         {
             contents = ops.resolveRepositoryContents( dto );

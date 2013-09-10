@@ -18,7 +18,7 @@ import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.event.FileAccessEvent;
-import org.commonjava.maven.galley.model.Resource;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.web.json.test.WebFixture;
@@ -105,7 +105,7 @@ public class DepgraphStorageListenerLiveTest
         aproxData.storeDeployPoint( dp );
 
         final String path = "/org/test/no-parent/1.0/no-parent-1.0.pom";
-        final Transfer ref = transfers.getCacheReference( new Resource( LocationUtils.toLocation( dp ), path ) );
+        final Transfer ref = transfers.getCacheReference( new ConcreteResource( LocationUtils.toLocation( dp ), path ) );
         OutputStream os = null;
         try
         {
@@ -133,7 +133,7 @@ public class DepgraphStorageListenerLiveTest
         aproxData.storeDeployPoint( dp );
 
         final String path = "/org/test/with-parent/1.0/with-parent-1.0.pom";
-        final Transfer ref = transfers.getCacheReference( new Resource( LocationUtils.toLocation( dp ), path ) );
+        final Transfer ref = transfers.getCacheReference( new ConcreteResource( LocationUtils.toLocation( dp ), path ) );
         OutputStream os = null;
         try
         {

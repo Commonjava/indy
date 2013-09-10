@@ -5,7 +5,7 @@ import javax.enterprise.inject.Default;
 
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.galley.KeyedLocation;
-import org.commonjava.maven.galley.model.Resource;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.spi.io.PathGenerator;
 
 @Default
@@ -15,7 +15,7 @@ public class KeyBasedPathGenerator
 {
 
     @Override
-    public String getFilePath( final Resource resource )
+    public String getFilePath( final ConcreteResource resource )
     {
         final KeyedLocation kl = (KeyedLocation) resource.getLocation();
         final StoreKey key = kl.getKey();

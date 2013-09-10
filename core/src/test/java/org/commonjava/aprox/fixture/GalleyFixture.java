@@ -41,6 +41,8 @@ public class GalleyFixture
 
     private final NotFoundCache nfc;
 
+    private final ExecutorService batchExecutor;
+
     public GalleyFixture( final File repoRoot )
     {
         final AproxHttpProvider aproxHttp = new AproxHttpProvider().setup();
@@ -50,6 +52,7 @@ public class GalleyFixture
         events = new AproxFileEventManager();
         decorator = new NoOpTransferDecorator();
         executor = Executors.newFixedThreadPool( 2 );
+        batchExecutor = Executors.newFixedThreadPool( 2 );
         nfc = new MemoryNotFoundCache();
 
         final DownloadHandler dh = new DownloadHandler( nfc, executor );
@@ -57,7 +60,7 @@ public class GalleyFixture
         final ListingHandler lh = new ListingHandler( nfc );
         final ExistenceHandler eh = new ExistenceHandler( nfc );
 
-        transfers = new TransferManagerImpl( transports, cache, nfc, events, decorator, dh, uh, lh, eh );
+        transfers = new TransferManagerImpl( transports, cache, nfc, events, decorator, dh, uh, lh, eh, batchExecutor );
     }
 
     public TransferManager getTransfers()

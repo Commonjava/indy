@@ -19,6 +19,7 @@ import org.commonjava.maven.cartographer.event.ProjectRelationshipsErrorEvent;
 import org.commonjava.maven.cartographer.event.RelationshipStorageEvent;
 import org.commonjava.maven.galley.event.FileErrorEvent;
 import org.commonjava.maven.galley.event.FileNotFoundEvent;
+import org.commonjava.maven.galley.model.Resource;
 import org.commonjava.util.logging.Logger;
 
 @ApplicationScoped
@@ -76,7 +77,8 @@ public class AproxDepgraphEvents
 
     public void unlockOnFileNotFoundEvent( @Observes final FileNotFoundEvent evt )
     {
-        final String path = evt.getPath();
+        final Resource resource = evt.getResource();
+        final String path = resource.getPath();
         try
         {
             final ArtifactPathInfo info = ArtifactPathInfo.parse( path );

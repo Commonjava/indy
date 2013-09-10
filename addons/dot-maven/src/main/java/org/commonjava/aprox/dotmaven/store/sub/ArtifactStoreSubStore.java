@@ -35,9 +35,9 @@ import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.util.LocationUtils;
-import org.commonjava.maven.galley.model.Resource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
+import org.commonjava.maven.galley.util.PathUtils;
 import org.commonjava.util.logging.Logger;
 
 @RequestScoped
@@ -75,10 +75,8 @@ public class ArtifactStoreSubStore
         final StoreURIMatcher matcher = new StoreURIMatcher( folderUri );
         if ( !matcher.hasStorePath() )
         {
-            throw new WebdavException(
-                                       "No store-level path specified: '"
-                                           + folderUri
-                                           + "'. This URI references either a list of stores, a root store directory, or something else equally read-only." );
+            throw new WebdavException( "No store-level path specified: '" + folderUri
+                + "'. This URI references either a list of stores, a root store directory, or something else equally read-only." );
         }
 
         final StorageAdvice advice = getStorageAdviceFor( matcher );
@@ -92,8 +90,7 @@ public class ArtifactStoreSubStore
         catch ( final IOException e )
         {
             logger.error( "Failed to create folder: %s in store: %s. Reason: %s", e, path, advice.getStore()
-                                                                                                 .getKey(),
-                          e.getMessage() );
+                                                                                                 .getKey(), e.getMessage() );
             throw new WebdavException( "Failed to create folder: " + folderUri );
         }
     }
@@ -104,10 +101,8 @@ public class ArtifactStoreSubStore
         final StoreURIMatcher matcher = new StoreURIMatcher( resourceUri );
         if ( !matcher.hasStorePath() )
         {
-            throw new WebdavException(
-                                       "No store-level path specified: '"
-                                           + resourceUri
-                                           + "'. This URI references either a list of stores, a root store directory, or something else equally read-only." );
+            throw new WebdavException( "No store-level path specified: '" + resourceUri
+                + "'. This URI references either a list of stores, a root store directory, or something else equally read-only." );
         }
 
         final StorageAdvice advice = getStorageAdviceFor( matcher );
@@ -121,8 +116,7 @@ public class ArtifactStoreSubStore
         catch ( final IOException e )
         {
             logger.error( "Failed to create file: %s in store: %s. Reason: %s", e, path, advice.getStore()
-                                                                                               .getKey(),
-                          e.getMessage() );
+                                                                                               .getKey(), e.getMessage() );
             throw new WebdavException( "Failed to create file: " + resourceUri );
         }
     }
@@ -157,10 +151,8 @@ public class ArtifactStoreSubStore
 
         if ( !matcher.hasStorePath() )
         {
-            throw new WebdavException(
-                                       "No store-level path specified: '"
-                                           + resourceUri
-                                           + "'. This URI references either a list of stores, a root store directory, or something else that cannot be read as a file." );
+            throw new WebdavException( "No store-level path specified: '" + resourceUri
+                + "'. This URI references either a list of stores, a root store directory, or something else that cannot be read as a file." );
         }
 
         final String path = matcher.getStorePath();
@@ -206,16 +198,14 @@ public class ArtifactStoreSubStore
     }
 
     @Override
-    public long setResourceContent( final ITransaction transaction, final String resourceUri,
-                                    final InputStream content, final String contentType, final String characterEncoding )
+    public long setResourceContent( final ITransaction transaction, final String resourceUri, final InputStream content, final String contentType,
+                                    final String characterEncoding )
     {
         final StoreURIMatcher matcher = new StoreURIMatcher( resourceUri );
         if ( !matcher.hasStorePath() )
         {
-            throw new WebdavException(
-                                       "No store-level path specified: '"
-                                           + resourceUri
-                                           + "'. This URI references either a list of stores, a root store directory, or something else equally read-only." );
+            throw new WebdavException( "No store-level path specified: '" + resourceUri
+                + "'. This URI references either a list of stores, a root store directory, or something else equally read-only." );
         }
 
         final StorageAdvice advice = getStorageAdviceFor( matcher );
@@ -261,7 +251,7 @@ public class ArtifactStoreSubStore
             String path = matcher.getStorePath();
             if ( isEmpty( path ) )
             {
-                path = Resource.ROOT;
+                path = PathUtils.ROOT;
             }
 
             final StoreKey key = matcher.getStoreKey();
@@ -367,10 +357,8 @@ public class ArtifactStoreSubStore
         final StoreURIMatcher matcher = new StoreURIMatcher( uri );
         if ( !matcher.hasStorePath() )
         {
-            throw new WebdavException(
-                                       "No store-level path specified: '"
-                                           + uri
-                                           + "'. This URI references either a list of stores, a root store directory, or something else equally read-only." );
+            throw new WebdavException( "No store-level path specified: '" + uri
+                + "'. This URI references either a list of stores, a root store directory, or something else equally read-only." );
         }
 
         final StorageAdvice advice = getStorageAdviceFor( matcher );
@@ -387,8 +375,7 @@ public class ArtifactStoreSubStore
         catch ( final IOException e )
         {
             logger.error( "Failed to delete file: %s in store: %s. Reason: %s", e, path, advice.getStore()
-                                                                                               .getKey(),
-                          e.getMessage() );
+                                                                                               .getKey(), e.getMessage() );
             throw new WebdavException( "Failed to delete file: " + uri );
         }
     }
@@ -447,8 +434,7 @@ public class ArtifactStoreSubStore
         }
         catch ( final DotMavenException e )
         {
-            logger.error( "Failed to retrieve storage advice for: %s (URI: %s)\nReason: %s", e, key, uri,
-                          e.getMessage() );
+            logger.error( "Failed to retrieve storage advice for: %s (URI: %s)\nReason: %s", e, key, uri, e.getMessage() );
             throw new WebdavException( "Cannot create: " + uri );
         }
 

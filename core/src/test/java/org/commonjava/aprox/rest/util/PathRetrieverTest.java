@@ -25,8 +25,10 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.core.filer.DefaultFileManager;
+import org.commonjava.aprox.filer.AproxLocationExpander;
 import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.fixture.GalleyFixture;
+import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Repository;
 import org.commonjava.maven.galley.model.Transfer;
@@ -47,13 +49,16 @@ public class PathRetrieverTest
 
     private GalleyFixture fixture;
 
+    private MemoryStoreDataManager data;
+
     @Before
     public void setupTest()
         throws IOException
     {
         repoRoot = tempFolder.newFolder( "repository" );
         fixture = new GalleyFixture( repoRoot );
-        downloader = new DefaultFileManager( fixture.getTransfers() );
+        data = new MemoryStoreDataManager();
+        downloader = new DefaultFileManager( fixture.getTransfers(), new AproxLocationExpander( data ) );
     }
 
     @Test
@@ -61,6 +66,8 @@ public class PathRetrieverTest
         throws Exception
     {
         final Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
+        data.storeRepository( repo );
+
         final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
 
         final Transfer stream = downloader.retrieve( repo, path );
@@ -75,6 +82,9 @@ public class PathRetrieverTest
     {
         final Repository repo = new Repository( "dummy", "http://www.nowhere.com/" );
         final Repository repo2 = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
+
+        data.storeRepository( repo );
+        data.storeRepository( repo2 );
 
         final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
 
