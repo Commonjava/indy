@@ -21,6 +21,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
+import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.maven.atlas.graph.spi.GraphDriverException;
 import org.commonjava.maven.atlas.graph.workspace.GraphWorkspace;
 import org.commonjava.maven.atlas.graph.workspace.GraphWorkspaceConfiguration;
@@ -53,10 +54,18 @@ public class WorkspaceResource
     @DELETE
     public Response delete( @PathParam( "id" ) final String id )
     {
-        if ( !ops.delete( id ) )
+        try
         {
-            return Response.noContent()
-                           .build();
+            if ( !ops.delete( id ) )
+            {
+                return Response.serverError()
+                               .entity( "Delete failed" )
+                               .build();
+            }
+        }
+        catch ( final CartoDataException e )
+        {
+            return new AproxWorkflowException( e.getMessage(), e ).getResponse();
         }
 
         return Response.ok()
