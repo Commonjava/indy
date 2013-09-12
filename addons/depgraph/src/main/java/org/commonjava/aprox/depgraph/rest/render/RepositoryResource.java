@@ -4,7 +4,6 @@ import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.apache.commons.io.IOUtils.copy;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.commonjava.maven.galley.util.UrlUtils.buildUrl;
-import static org.commonjava.web.json.ser.ServletSerializerUtils.fromRequestBody;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,9 +11,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -33,6 +35,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.depgraph.dto.WebOperationConfigDTO;
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.depgraph.util.RequestAdvisor;
@@ -45,6 +48,7 @@ import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.ops.ResolveOps;
+import org.commonjava.maven.cartographer.util.ProjectVersionRefComparator;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.model.ArtifactBatch;
@@ -86,7 +90,7 @@ public class RepositoryResource
     @Produces( "application/json" )
     public Response getUrlMap( @Context final HttpServletRequest req, @Context final HttpServletResponse resp, @Context final UriInfo info )
     {
-        final Map<ProjectVersionRef, Map<String, Object>> result = new HashMap<>();
+        final Map<ProjectVersionRef, Map<String, Object>> result = new LinkedHashMap<>();
 
         try
         {
@@ -94,16 +98,17 @@ public class RepositoryResource
 
             final Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> contents = resolveContents( dto, req );
 
-            for ( final Entry<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> entry : contents.entrySet() )
+            final List<ProjectVersionRef> topKeys = new ArrayList<>( contents.keySet() );
+            Collections.sort( topKeys, new ProjectVersionRefComparator() );
+
+            for ( final ProjectVersionRef gav : topKeys )
             {
-                final ProjectVersionRef gav = entry.getKey();
-                final Map<ArtifactRef, ConcreteResource> items = entry.getValue();
+                final Map<ArtifactRef, ConcreteResource> items = contents.get( gav );
 
                 final Map<String, Object> data = new HashMap<>();
                 result.put( gav, data );
 
                 final Set<String> files = new HashSet<>();
-                data.put( URLMAP_DATA_FILES, files );
 
                 for ( final ConcreteResource item : items.values() )
                 {
@@ -114,6 +119,10 @@ public class RepositoryResource
 
                     files.add( new File( item.getPath() ).getName() );
                 }
+
+                final List<String> sortedFiles = new ArrayList<>( files );
+                Collections.sort( sortedFiles );
+                data.put( URLMAP_DATA_FILES, sortedFiles );
             }
         }
         catch ( final MalformedURLException e )
@@ -353,8 +362,18 @@ public class RepositoryResource
     private WebOperationConfigDTO readDTO( final HttpServletRequest req )
         throws AproxWorkflowException
     {
-        final WebOperationConfigDTO dto = fromRequestBody( req, serializer, WebOperationConfigDTO.class );
-        logger.info( "Got configuration:\n\n%s\n\n", serializer.toString( dto ) );
+        String json;
+        try
+        {
+            json = IOUtils.toString( req.getInputStream() );
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxWorkflowException( "Failed to read configuration JSON from request body. Reason: %s", e, e.getMessage() );
+        }
+
+        logger.info( "Got configuration JSON:\n\n%s\n\n", json );
+        final WebOperationConfigDTO dto = serializer.fromString( json, WebOperationConfigDTO.class );
 
         try
         {

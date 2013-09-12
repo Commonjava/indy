@@ -67,7 +67,7 @@ public class DepgraphProvider
     {
         if ( serializer == null )
         {
-            serializer = new JsonSerializer( new StoreKeySerializer(), new DepgraphSerializationAdapter( data ) );
+            serializer = new JsonSerializer( new StoreKeySerializer(), new DepgraphSerializationAdapter( data ), new PrettyPrintAdapter() );
         }
 
         return serializer;
