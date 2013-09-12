@@ -16,6 +16,7 @@
 package org.commonjava.aprox.depgraph;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -96,7 +97,7 @@ public class DepgraphStorageListenerRunnable
 
         try
         {
-            result = discoverer.discoverRelationships( item, locations, true );
+            result = discoverer.discoverRelationships( item, locations, Collections.<String> emptySet(), true );
         }
         catch ( final CartoDataException e )
         {

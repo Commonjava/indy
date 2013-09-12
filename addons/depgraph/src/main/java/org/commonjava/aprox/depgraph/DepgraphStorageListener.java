@@ -44,16 +44,16 @@ public class DepgraphStorageListener
 
     public void handleFileAccessEvent( @Observes final FileAccessEvent event )
     {
-        final String path = event.getTransfer()
-                                 .getPath();
-
-        if ( !path.endsWith( ".pom" ) )
-        {
-            return;
-        }
-
-        logger.info( "[SUBMIT] DepgraphStorageListenerRunnable for: %s", event );
-
-        executor.execute( new DepgraphStorageListenerRunnable( discoverer, aprox, event.getTransfer() ) );
+        //        final String path = event.getTransfer()
+        //                                 .getPath();
+        //
+        //        if ( !path.endsWith( ".pom" ) )
+        //        {
+        //            return;
+        //        }
+        //
+        //        logger.info( "[SUBMIT] DepgraphStorageListenerRunnable for: %s", event );
+        //
+        //        executor.execute( new DepgraphStorageListenerRunnable( discoverer, aprox, event.getTransfer() ) );
     }
 }

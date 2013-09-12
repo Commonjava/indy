@@ -24,7 +24,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
+import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -48,11 +48,13 @@ import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.rest.util.ArtifactPathInfo;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.atlas.graph.model.EProjectKey;
+import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.version.VersionSpec;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.data.CartoDataManager;
 import org.commonjava.maven.cartographer.discover.DiscoveryResult;
+import org.commonjava.maven.cartographer.discover.patch.PatcherSupport;
 import org.commonjava.maven.cartographer.util.MavenModelProcessor;
 import org.commonjava.maven.galley.ArtifactManager;
 import org.commonjava.maven.galley.model.Transfer;
@@ -61,10 +63,6 @@ import org.commonjava.util.logging.Logger;
 @ApplicationScoped
 public class AproxModelDiscoverer
 {
-
-    private static final int MAX_RETRIES = 5;
-
-    private static final Random RAND = new Random();
 
     private final Logger logger = new Logger( getClass() );
 
@@ -86,12 +84,16 @@ public class AproxModelDiscoverer
     @Inject
     private DepgraphModelCache modelCache;
 
+    @Inject
+    private PatcherSupport patchers;
+
     public AproxModelDiscoverer()
     {
     }
 
     public AproxModelDiscoverer( final ModelReader modelReader, final ModelBuilder modelBuilder, final ArtifactManager artifactManager,
-                                 final MavenModelProcessor modelProcessor, final CartoDataManager dataManager, final DepgraphModelCache modelCache )
+                                 final MavenModelProcessor modelProcessor, final CartoDataManager dataManager, final DepgraphModelCache modelCache,
+                                 final PatcherSupport patchers )
     {
         this.modelReader = modelReader;
         this.modelBuilder = modelBuilder;
@@ -99,9 +101,11 @@ public class AproxModelDiscoverer
         this.modelProcessor = modelProcessor;
         this.dataManager = dataManager;
         this.modelCache = modelCache;
+        this.patchers = patchers;
     }
 
-    public DiscoveryResult discoverRelationships( final Transfer item, final List<? extends KeyedLocation> locations, final boolean storeRelationships )
+    public DiscoveryResult discoverRelationships( final Transfer item, final List<? extends KeyedLocation> locations,
+                                                  final Set<String> enabledPatchers, final boolean storeRelationships )
         throws CartoDataException
     {
         final String path = item.getPath();
@@ -127,60 +131,20 @@ public class AproxModelDiscoverer
             return null;
         }
 
-        boolean retry = false;
-        int count = 0;
-        do
+        DiscoveryResult result = modelProcessor.readRelationships( effectiveModel, source );
+
+        if ( result != null )
         {
-            retry = false;
+            result = patchers.patch( result, enabledPatchers, locations, effectiveModel, item );
 
-            try
+            if ( storeRelationships )
             {
-                if ( storeRelationships )
-                {
-                    // TODO: Pass on the profiles that were activated when the effective model was built.
-                    return modelProcessor.storeModelRelationships( effectiveModel, source );
-                }
-                else
-                {
-                    return modelProcessor.readRelationships( effectiveModel, source );
-                }
-            }
-            catch ( final RuntimeException e )
-            {
-                if ( e.getClass()
-                      .getSimpleName()
-                      .contains( "Deadlock" ) )
-                {
-                    final long standoff = ( Math.abs( RAND.nextInt() ) % 8 ) * 4000;
-                    logger.warn( "DEADLOCK!!\n\n  Detected deadlock scenario; retrying relationship storage for: %s in %d ms.",
-                                 effectiveModel.getId(), standoff );
-
-                    try
-                    {
-                        Thread.sleep( standoff );
-                    }
-                    catch ( final InterruptedException ie )
-                    {
-                        break;
-                    }
-
-                    retry = true;
-                }
-                else
-                {
-                    throw e;
-                }
-            }
-            count++;
-
-            if ( count >= MAX_RETRIES )
-            {
-                logger.error( "Failed to store relationships for %s after %s attempts. Giving up.", effectiveModel.getId(), count );
+                final Set<ProjectRelationship<?>> rejected = dataManager.storeRelationships( result.getAcceptedRelationships() );
+                result = new DiscoveryResult( result.getSource(), result, rejected );
             }
         }
-        while ( retry && count < MAX_RETRIES );
 
-        throw new RetryFailedException( "Failed to store relationships in %d tries. Database deadlocks prevented storage.", MAX_RETRIES );
+        return result;
     }
 
     // TODO: Somehow, we're ending up in an infinite loop for maven poms...

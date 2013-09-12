@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Level;
 import org.commonjava.aprox.core.filer.DefaultFileManager;
 import org.commonjava.aprox.filer.AproxLocationExpander;
 import org.commonjava.aprox.filer.FileManager;
@@ -32,7 +33,9 @@ import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Repository;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.util.logging.Log4jUtil;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -50,6 +53,12 @@ public class PathRetrieverTest
     private GalleyFixture fixture;
 
     private MemoryStoreDataManager data;
+
+    @BeforeClass
+    public static void logging()
+    {
+        Log4jUtil.configure( Level.DEBUG );
+    }
 
     @Before
     public void setupTest()

@@ -18,15 +18,12 @@ package org.commonjava.aprox.rest.util;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Level;
 import org.commonjava.aprox.filer.FileManager;
-import org.commonjava.aprox.live.fixture.ProxyConfigProvider;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Repository;
 import org.commonjava.maven.galley.model.Transfer;
@@ -56,13 +53,6 @@ public class PathRetrieverWeldTest
     @Before
     public void setup()
     {
-        final File storage = temp.newFolder( "storage" );
-
-        final Properties p = System.getProperties();
-        p.remove( ProxyConfigProvider.REPO_ROOT_DIR );
-        p.setProperty( ProxyConfigProvider.REPO_ROOT_DIR, storage.getAbsolutePath() );
-        System.setProperties( p );
-
         final WeldContainer weld = new Weld().initialize();
         downloader = weld.instance()
                          .select( FileManager.class )
