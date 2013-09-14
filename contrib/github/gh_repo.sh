@@ -32,7 +32,7 @@ PWD=`pwd`
 APROX_WAR=${APROX_WAR:=$PWD/aprox/wars/savant/target/aprox.war}
 DEPLOY_DIR=${DEPLOY_DIR:=/var/lib/jboss-as/standalone/deployments/}
 WORKSPACE=${WORKSPACE:=$HOME/workspace}
-USER=${USER:=$USER}
+USER=$USER # Define GitHub username here.
 MAINTAINER=${MAINTAINER:=jdcasey}
 
 # Debugging (comment out if not required)
