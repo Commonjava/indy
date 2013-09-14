@@ -1,5 +1,7 @@
 package org.commonjava.aprox.depgraph.discover;
 
+import static org.apache.commons.lang.StringUtils.join;
+
 import java.net.URI;
 import java.util.List;
 
@@ -84,12 +86,14 @@ public class AproxProjectGraphDiscoverer
         }
         catch ( final InvalidVersionSpecificationException e )
         {
+            logger.error( e.getMessage(), e );
             dataManager.addError( new EProjectKey( source, ref ), e );
             specific = null;
         }
 
         if ( specific == null )
         {
+            logger.info( "Specific version NOT resolved. Skipping discovery: %s", ref );
             return null;
         }
 
@@ -103,6 +107,7 @@ public class AproxProjectGraphDiscoverer
             final List<? extends KeyedLocation> locations = getLocations( key );
             if ( locations == null || locations.isEmpty() )
             {
+                logger.info( "NO LOCATIONS given for resolving: %s", pomRef );
                 return null;
             }
 
@@ -114,6 +119,7 @@ public class AproxProjectGraphDiscoverer
             }
             else
             {
+                logger.info( "%s NOT FOUND in:\n  %s", pomRef, join( locations, "\n  " ) );
                 return null;
             }
         }

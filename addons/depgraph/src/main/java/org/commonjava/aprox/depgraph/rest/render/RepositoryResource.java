@@ -14,6 +14,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -177,7 +178,10 @@ public class RepositoryResource
             return e.getResponse();
         }
 
-        final String output = join( downLog, "\n" );
+        final List<String> sorted = new ArrayList<>( downLog );
+        Collections.sort( sorted );
+
+        final String output = join( sorted, "\n" );
 
         return Response.ok( output )
                        .type( "text/plain" )
@@ -229,8 +233,19 @@ public class RepositoryResource
                 final OutputStream os = resp.getOutputStream();
                 stream = new ZipOutputStream( os );
 
-                for ( final Transfer item : batch.getTransfers()
-                                                 .values() )
+                final List<Transfer> items = new ArrayList<>( batch.getTransfers()
+                                                                   .values() );
+                Collections.sort( items, new Comparator<Transfer>()
+                {
+                    @Override
+                    public int compare( final Transfer f, final Transfer s )
+                    {
+                        return f.getPath()
+                                .compareTo( s.getPath() );
+                    }
+                } );
+
+                for ( final Transfer item : items )
                 {
                     final String path = item.getPath();
                     if ( item != null )

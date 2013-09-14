@@ -83,7 +83,7 @@ public class WorkspaceResource
 
             final String json = serializer.toString( workspace );
 
-            return Response.created( uriInfo.getAbsolutePathBuilder()
+            return Response.created( uriInfo.getBaseUriBuilder()
                                             .path( getClass() )
                                             .path( workspace.getId() )
                                             .build() )

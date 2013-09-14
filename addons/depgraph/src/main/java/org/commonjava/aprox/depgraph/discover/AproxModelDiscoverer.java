@@ -112,6 +112,7 @@ public class AproxModelDiscoverer
 
         if ( !path.endsWith( ".pom" ) )
         {
+            logger.info( "NOT a POM: %s", path );
             return null;
         }
 
@@ -181,9 +182,11 @@ public class AproxModelDiscoverer
 
         if ( !parsed.equals( ref ) )
         {
-            logProjectError( source, pathInfo.getGroupId(), pathInfo.getArtifactId(), pathInfo.getVersion(),
-                             new CartoDataException( "Coordinate from POM: '%s' doesn't match coordinate parsed from path: '%s'", ref, parsed ), path );
+            final CartoDataException error =
+                new CartoDataException( "Coordinate from POM: '%s' doesn't match coordinate parsed from path: '%s'", ref, parsed );
+            logProjectError( source, pathInfo.getGroupId(), pathInfo.getArtifactId(), pathInfo.getVersion(), error, path );
 
+            logger.error( error.getMessage(), error );
             return false;
         }
 
@@ -192,13 +195,16 @@ public class AproxModelDiscoverer
         // If this is a snapshot version, store it again in order to update it.
         // NOTE: We need a way to flush out the old relationships reliably when updating!
         final boolean concrete = versionSpec.isConcrete();
+        logger.info( "Is %s concrete? Variable-version refs will trigger re-resolution. %s", ref, concrete );
 
-        final boolean contains = dataManager.contains( ref );
+        //        final boolean contains = dataManager.contains( ref );
+        //        logger.info( "Is %s already in the graph? %s", ref, contains );
 
         boolean hasError = false;
         try
         {
             hasError = dataManager.hasErrors( ref );
+            logger.info( "Do we have an existing error for: %s? %s", ref, hasError );
         }
         catch ( final CartoDataException e )
         {
@@ -206,7 +212,8 @@ public class AproxModelDiscoverer
             hasError = true;
         }
 
-        return !hasError && ( !concrete || !contains );
+        //        return !hasError && ( !concrete || !contains );
+        return !hasError || !concrete;
     }
 
     // FIXME: No way of knowing what was injected by profiles triggered on system properties or environment-specific characteristics. 
