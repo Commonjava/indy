@@ -9,6 +9,7 @@ module Depgraph
   
     def initialize( host, port )
       @http = HTTP.new(host, port)
+      @http.read_timeout = 10800
     end
     
     def get(subpath, &block)

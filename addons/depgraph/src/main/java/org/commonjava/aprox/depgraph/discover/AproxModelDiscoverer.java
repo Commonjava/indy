@@ -136,6 +136,7 @@ public class AproxModelDiscoverer
 
         if ( result != null )
         {
+            logger.info( "Attempting to patch results for: %s", result.getSelectedRef() );
             result = patchers.patch( result, enabledPatchers, locations, effectiveModel, item );
 
             if ( storeRelationships )

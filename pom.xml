@@ -201,6 +201,16 @@
         <groupId>org.commonjava.maven.cartographer</groupId>
         <artifactId>cartographer</artifactId>
         <version>${cartoVersion}</version>
+        <exclusions>
+          <exclusion>  
+            <artifactId>xercesImpl</artifactId>  
+            <groupId>xerces</groupId>  
+          </exclusion>  
+          <exclusion>  
+            <artifactId>xalan</artifactId>  
+            <groupId>xalan</groupId>  
+          </exclusion>  
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.commonjava.maven.galley</groupId>
