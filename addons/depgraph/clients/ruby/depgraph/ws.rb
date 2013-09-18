@@ -108,7 +108,7 @@ Usage:
 
       def run()
         if ( @options[:verb] == 'delete')
-          @ws.delete( @options['wsid'] )
+          @ws.delete( @options[:wsid] )
         else
           puts @ws.send(@options[:verb].to_sym)
         end
