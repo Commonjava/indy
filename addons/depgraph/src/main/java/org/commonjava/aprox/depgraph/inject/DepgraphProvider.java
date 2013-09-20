@@ -15,6 +15,8 @@ import org.commonjava.aprox.model.io.StoreKeySerializer;
 import org.commonjava.maven.atlas.graph.EGraphManager;
 import org.commonjava.maven.atlas.graph.spi.neo4j.FileNeo4jWorkspaceFactory;
 import org.commonjava.maven.cartographer.data.CartoDataManager;
+import org.commonjava.maven.galley.maven.defaults.MavenPluginDefaults;
+import org.commonjava.maven.galley.maven.defaults.StandardMaven304PluginDefaults;
 import org.commonjava.web.json.ser.JsonSerializer;
 
 @ApplicationScoped
@@ -26,6 +28,8 @@ public class DepgraphProvider
 
     @Inject
     private CartoDataManager data;
+
+    private MavenPluginDefaults pluginDefaults;
 
     private EGraphManager graphs;
 
@@ -45,6 +49,7 @@ public class DepgraphProvider
     public void setup()
     {
         this.graphs = new EGraphManager( new FileNeo4jWorkspaceFactory( config.getDatabaseDir(), false ) );
+        pluginDefaults = new StandardMaven304PluginDefaults();
     }
 
     @PreDestroy
@@ -52,6 +57,12 @@ public class DepgraphProvider
         throws IOException
     {
         this.graphs.close();
+    }
+
+    @Produces
+    public MavenPluginDefaults getPluginDefaults()
+    {
+        return pluginDefaults;
     }
 
     @Produces
