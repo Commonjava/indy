@@ -17,6 +17,8 @@ import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
+import org.commonjava.maven.galley.maven.defaults.MavenPluginDefaults;
+import org.commonjava.maven.galley.maven.defaults.StandardMaven304PluginDefaults;
 import org.commonjava.web.json.test.WebFixture;
 
 @javax.enterprise.context.ApplicationScoped
@@ -33,6 +35,20 @@ public class TestConfigProvider
     private final WebFixture http = new WebFixture();
 
     private DefaultStorageProviderConfiguration storageConfig;
+
+    private MavenPluginDefaults pluginDefaults;
+
+    @Produces
+    @Default
+    public synchronized MavenPluginDefaults getPluginDefaults()
+    {
+        if ( pluginDefaults == null )
+        {
+            pluginDefaults = new StandardMaven304PluginDefaults();
+        }
+
+        return pluginDefaults;
+    }
 
     @Produces
     @Default
@@ -69,8 +85,7 @@ public class TestConfigProvider
         {
             model = new AutoProxModel();
             model.setRepo( new Repository( "repo", http.resourceUrl( "target/${name}" ) ) );
-            model.setGroup( new Group( "group", new StoreKey( StoreType.repository, "first" ),
-                                       new StoreKey( StoreType.repository, "second" ) ) );
+            model.setGroup( new Group( "group", new StoreKey( StoreType.repository, "first" ), new StoreKey( StoreType.repository, "second" ) ) );
 
             System.out.println( "\n\n\n\nSet Autoprox URL: " + model.getRepo()
                                                                     .getUrl() + "\n\n\n\n" );
