@@ -77,7 +77,7 @@ public class AproxProjectGraphDiscoverer
             if ( !ref.isSpecificVersion() )
             {
                 specific = resolveSpecificVersion( ref, discoveryConfig );
-                if ( specific.equals( ref ) )
+                if ( specific == null || specific.equals( ref ) )
                 {
                     logger.warn( "Cannot resolve specific version of: '%s'.", ref );
                     return null;
