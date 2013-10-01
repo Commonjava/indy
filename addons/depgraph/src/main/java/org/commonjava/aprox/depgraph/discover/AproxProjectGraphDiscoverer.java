@@ -86,7 +86,7 @@ public class AproxProjectGraphDiscoverer
         }
         catch ( final InvalidVersionSpecificationException e )
         {
-            logger.error( e.getMessage(), e );
+            logger.error( "Invalid version for: %s. Reason: %s", e, ref, e.getMessage() );
             dataManager.addError( new EProjectKey( source, ref ), e );
             specific = null;
         }
