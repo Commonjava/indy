@@ -184,6 +184,11 @@
       
       <dependency>
         <groupId>org.commonjava.maven.galley</groupId>
+        <artifactId>galley-api</artifactId>
+        <version>${galleyVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.maven.galley</groupId>
         <artifactId>galley-core</artifactId>
         <version>${galleyVersion}</version>
       </dependency>
@@ -209,13 +214,12 @@
           <exclusion>  
             <artifactId>xalan</artifactId>  
             <groupId>xalan</groupId>  
-          </exclusion>  
+          </exclusion>
+          <exclusion>
+            <groupId>org.codehaus.woodstox</groupId>
+            <artifactId>woodstox-core-asl</artifactId>
+          </exclusion>
         </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.maven.galley</groupId>
-        <artifactId>galley-api</artifactId>
-        <version>${galleyVersion}</version>
       </dependency>
       
       <dependency>
@@ -326,6 +330,7 @@
         <artifactId>weft</artifactId>
         <version>0.3-SNAPSHOT</version>
       </dependency>
+      
     </dependencies>
   </dependencyManagement>
   
