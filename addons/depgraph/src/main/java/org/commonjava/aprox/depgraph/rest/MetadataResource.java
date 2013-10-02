@@ -52,13 +52,11 @@ public class MetadataResource
         Response response = Response.status( Status.NOT_MODIFIED )
                                     .build();
 
-        final TypeToken<Map<ProjectVersionRef, Map<String, String>>> tt =
-            new TypeToken<Map<ProjectVersionRef, Map<String, String>>>()
-            {
-            };
+        final TypeToken<Map<ProjectVersionRef, Map<String, String>>> tt = new TypeToken<Map<ProjectVersionRef, Map<String, String>>>()
+        {
+        };
 
-        final Map<ProjectVersionRef, Map<String, String>> batch =
-            ServletSerializerUtils.fromRequestBody( request, serializer, tt );
+        final Map<ProjectVersionRef, Map<String, String>> batch = ServletSerializerUtils.fromRequestBody( request, serializer, tt );
 
         if ( batch != null && !batch.isEmpty() )
         {
@@ -78,7 +76,7 @@ public class MetadataResource
         return response;
     }
 
-    @Path( "/{g}/{a}/{v}/all" )
+    @Path( "/for/{g}/{a}/{v}" )
     @GET
     public Response getMetadata( @PathParam( "g" ) final String groupId, @PathParam( "a" ) final String artifactId,
                                  @PathParam( "v" ) final String version )
@@ -109,10 +107,9 @@ public class MetadataResource
         return response;
     }
 
-    @Path( "/{g}/{a}/{v}/{k}" )
+    @Path( "/forkey/{g}/{a}/{v}/{k}" )
     @GET
-    public Response getMetadataValue( @PathParam( "g" ) final String groupId,
-                                      @PathParam( "a" ) final String artifactId,
+    public Response getMetadataValue( @PathParam( "g" ) final String groupId, @PathParam( "a" ) final String artifactId,
                                       @PathParam( "v" ) final String version, @PathParam( "k" ) final String key )
     {
         Response response = Response.status( Status.NO_CONTENT )

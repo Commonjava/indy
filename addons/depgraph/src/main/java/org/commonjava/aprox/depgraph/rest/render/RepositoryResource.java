@@ -37,9 +37,9 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.io.IOUtils;
+import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.aprox.depgraph.dto.WebOperationConfigDTO;
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
-import org.commonjava.aprox.depgraph.util.RequestAdvisor;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.galley.CacheOnlyLocation;
 import org.commonjava.aprox.model.galley.KeyedLocation;
@@ -49,6 +49,7 @@ import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.ops.ResolveOps;
+import org.commonjava.maven.cartographer.preset.PresetSelector;
 import org.commonjava.maven.cartographer.util.ProjectVersionRefComparator;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferManager;
@@ -78,13 +79,16 @@ public class RepositoryResource
     private JsonSerializer serializer;
 
     @Inject
-    private RequestAdvisor requestAdvisor;
-
-    @Inject
     private LocationExpander locationExpander;
 
     @Inject
     private TransferManager transferManager;
+
+    @Inject
+    private PresetSelector presets;
+
+    @Inject
+    private AproxDepgraphConfig config;
 
     @POST
     @Path( "/urlmap" )
@@ -351,7 +355,7 @@ public class RepositoryResource
             throw new AproxWorkflowException( Status.BAD_REQUEST, "JSON configuration not supplied" );
         }
 
-        final ProjectRelationshipFilter presetFilter = requestAdvisor.getPresetFilter( dto.getPreset() );
+        final ProjectRelationshipFilter presetFilter = presets.getPresetFilter( dto.getPreset(), config.getDefaultWebFilterPreset() );
         dto.setFilter( presetFilter );
 
         if ( !dto.isValid() )

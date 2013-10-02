@@ -1,28 +1,30 @@
 package org.commonjava.aprox.depgraph.rest.calc;
 
-import java.util.Collections;
+import java.io.IOException;
+import java.util.List;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
-import org.commonjava.aprox.depgraph.dto.GAVWithPreset;
+import org.apache.commons.io.IOUtils;
+import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
-import org.commonjava.aprox.depgraph.json.DepgraphSerializationException;
-import org.commonjava.aprox.depgraph.json.GAVWithPresetSer;
-import org.commonjava.aprox.depgraph.util.RequestAdvisor;
-import org.commonjava.maven.atlas.graph.filter.ProjectRelationshipFilter;
+import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.dto.GraphCalculation;
+import org.commonjava.maven.cartographer.dto.GraphComposition;
+import org.commonjava.maven.cartographer.dto.GraphDescription;
 import org.commonjava.maven.cartographer.dto.GraphDifference;
 import org.commonjava.maven.cartographer.ops.CalculationOps;
+import org.commonjava.maven.cartographer.preset.PresetSelector;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.ser.JsonSerializer;
 
@@ -38,34 +40,40 @@ public class CalculatorResource
     private CalculationOps ops;
 
     @Inject
-    private RequestAdvisor advisor;
-
-    @Inject
     @DepgraphSpecific
     private JsonSerializer serializer;
 
-    @Path( "/diff/{gavp1: ([^:]+):([^:]+):([^:]+):([^/]+)}/{gavp2: ([^:]+):([^:]+):([^:]+):([^/]+)}" )
+    @Inject
+    private PresetSelector presets;
+
+    @Inject
+    private AproxDepgraphConfig config;
+
+    @Path( "/diff" )
     @GET
-    public Response difference( @PathParam( "gavp1" ) final String gavp1, @PathParam( "gavp2" ) final String gavp2,
-                                @Context final HttpServletRequest request )
+    public Response difference( @Context final HttpServletRequest request )
     {
         Response response;
         try
         {
-            final GAVWithPreset first = GAVWithPresetSer.parsePathSegment( gavp1 );
-            final ProjectRelationshipFilter firstFilter = advisor.getPresetFilter( first.getPreset() );
+            final GraphComposition dto = readDTO( request );
+            final List<GraphDescription> graphs = dto.getGraphs();
 
-            final GAVWithPreset second = GAVWithPresetSer.parsePathSegment( gavp1 );
-            final ProjectRelationshipFilter secondFilter = advisor.getPresetFilter( second.getPreset() );
+            if ( graphs.size() != 2 )
+            {
+                response =
+                    Response.status( Status.BAD_REQUEST )
+                            .entity( "You must specify EXACTLY two graph descriptions (GAV-set with optional filter preset) in order to perform a diff." )
+                            .build();
+            }
+            else
+            {
+                final GraphDifference difference = ops.difference( graphs.get( 0 ), graphs.get( 1 ) );
+                final String json = serializer.toString( difference );
 
-            final GraphDifference difference =
-                ops.difference( Collections.singleton( first.getGAV() ), firstFilter,
-                                Collections.singleton( second.getGAV() ), secondFilter );
-
-            final String json = serializer.toString( difference );
-
-            response = Response.ok( json )
-                               .build();
+                response = Response.ok( json )
+                                   .build();
+            }
         }
         catch ( final CartoDataException e )
         {
@@ -73,38 +81,46 @@ public class CalculatorResource
             response = Response.serverError()
                                .build();
         }
-        catch ( final DepgraphSerializationException e )
+        catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to read input: %s", e, e.getMessage() );
-            response = Response.serverError()
-                               .build();
+            logger.error( "Failed to read configuration for diff: %s", e, e.getMessage() );
+            response = e.getResponse();
         }
 
         return response;
     }
 
-    @Path( "/subtract/{gavp1: ([^:]+):([^:]+):([^:]+):([^/]+)}/{gavp2: ([^:]+):([^:]+):([^:]+):([^/]+)}" )
     @GET
-    public Response subtract( @PathParam( "gavp1" ) final String gavp1, @PathParam( "gavp2" ) final String gavp2,
-                              @Context final HttpServletRequest request )
+    public Response calculate( @Context final HttpServletRequest request )
     {
         Response response;
         try
         {
-            final GAVWithPreset first = GAVWithPresetSer.parsePathSegment( gavp1 );
-            final ProjectRelationshipFilter firstFilter = advisor.getPresetFilter( first.getPreset() );
+            final GraphComposition dto = readDTO( request );
+            final List<GraphDescription> graphs = dto.getGraphs();
 
-            final GAVWithPreset second = GAVWithPresetSer.parsePathSegment( gavp1 );
-            final ProjectRelationshipFilter secondFilter = advisor.getPresetFilter( second.getPreset() );
+            if ( graphs.size() < 2 )
+            {
+                response =
+                    Response.status( Status.BAD_REQUEST )
+                            .entity( "You must specify AT LEAST two graph descriptions (GAV-set with optional filter preset) in order to perform a calculation." )
+                            .build();
+            }
+            else if ( dto.getCalculation() == null )
+            {
+                response = Response.status( Status.BAD_REQUEST )
+                                   .entity( "You must specify a calculation type." )
+                                   .build();
+            }
+            else
+            {
+                final GraphCalculation result = ops.calculate( dto.getCalculation(), graphs );
 
-            final GraphCalculation result =
-                ops.subtract( Collections.singleton( first.getGAV() ), firstFilter,
-                              Collections.singleton( second.getGAV() ), secondFilter );
+                final String json = serializer.toString( result );
 
-            final String json = serializer.toString( result );
-
-            response = Response.ok( json )
-                               .build();
+                response = Response.ok( json )
+                                   .build();
+            }
         }
         catch ( final CartoDataException e )
         {
@@ -112,92 +128,33 @@ public class CalculatorResource
             response = Response.serverError()
                                .build();
         }
-        catch ( final DepgraphSerializationException e )
+        catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to read input: %s", e, e.getMessage() );
-            response = Response.serverError()
-                               .build();
+            logger.error( "Failed to read configuration for diff: %s", e, e.getMessage() );
+            response = e.getResponse();
         }
 
         return response;
     }
 
-    @Path( "/add/{gavp1: ([^:]+):([^:]+):([^:]+):([^/]+)}/{gavp2: ([^:]+):([^:]+):([^:]+):([^/]+)}" )
-    @GET
-    public Response add( @PathParam( "gavp1" ) final String gavp1, @PathParam( "gavp2" ) final String gavp2,
-                         @Context final HttpServletRequest request )
+    private GraphComposition readDTO( final HttpServletRequest req )
+        throws AproxWorkflowException
     {
-        Response response;
+        String json;
         try
         {
-            final GAVWithPreset first = GAVWithPresetSer.parsePathSegment( gavp1 );
-            final ProjectRelationshipFilter firstFilter = advisor.getPresetFilter( first.getPreset() );
-
-            final GAVWithPreset second = GAVWithPresetSer.parsePathSegment( gavp1 );
-            final ProjectRelationshipFilter secondFilter = advisor.getPresetFilter( second.getPreset() );
-
-            final GraphCalculation result =
-                ops.add( Collections.singleton( first.getGAV() ), firstFilter,
-                         Collections.singleton( second.getGAV() ), secondFilter );
-
-            final String json = serializer.toString( result );
-
-            response = Response.ok( json )
-                               .build();
+            json = IOUtils.toString( req.getInputStream() );
         }
-        catch ( final CartoDataException e )
+        catch ( final IOException e )
         {
-            logger.error( "Failed to retrieve graph(s): %s", e, e.getMessage() );
-            response = Response.serverError()
-                               .build();
-        }
-        catch ( final DepgraphSerializationException e )
-        {
-            logger.error( "Failed to read input: %s", e, e.getMessage() );
-            response = Response.serverError()
-                               .build();
+            throw new AproxWorkflowException( "Failed to read configuration JSON from request body. Reason: %s", e, e.getMessage() );
         }
 
-        return response;
+        logger.info( "Got configuration JSON:\n\n%s\n\n", json );
+        final GraphComposition dto = serializer.fromString( json, GraphComposition.class );
+
+        dto.resolveFilters( presets, config.getDefaultWebFilterPreset() );
+
+        return dto;
     }
-
-    @Path( "/intersection/{gavp1: ([^:]+):([^:]+):([^:]+):([^/]+)}/{gavp2: ([^:]+):([^:]+):([^:]+):([^/]+)}" )
-    @GET
-    public Response intersection( @PathParam( "gavp1" ) final String gavp1, @PathParam( "gavp2" ) final String gavp2,
-                                  @Context final HttpServletRequest request )
-    {
-        Response response;
-        try
-        {
-            final GAVWithPreset first = GAVWithPresetSer.parsePathSegment( gavp1 );
-            final ProjectRelationshipFilter firstFilter = advisor.getPresetFilter( first.getPreset() );
-
-            final GAVWithPreset second = GAVWithPresetSer.parsePathSegment( gavp1 );
-            final ProjectRelationshipFilter secondFilter = advisor.getPresetFilter( second.getPreset() );
-
-            final GraphCalculation result =
-                ops.intersection( Collections.singleton( first.getGAV() ), firstFilter,
-                                  Collections.singleton( second.getGAV() ), secondFilter );
-
-            final String json = serializer.toString( result );
-
-            response = Response.ok( json )
-                               .build();
-        }
-        catch ( final CartoDataException e )
-        {
-            logger.error( "Failed to retrieve graph(s): %s", e, e.getMessage() );
-            response = Response.serverError()
-                               .build();
-        }
-        catch ( final DepgraphSerializationException e )
-        {
-            logger.error( "Failed to read input: %s", e, e.getMessage() );
-            response = Response.serverError()
-                               .build();
-        }
-
-        return response;
-    }
-
 }

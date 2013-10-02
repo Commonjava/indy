@@ -6,20 +6,15 @@ import static org.commonjava.aprox.depgraph.util.RequestUtils.getStringParamWith
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
-import org.commonjava.aprox.depgraph.preset.PresetFactory;
 import org.commonjava.maven.atlas.graph.filter.DependencyFilter;
 import org.commonjava.maven.atlas.graph.filter.ExtensionFilter;
 import org.commonjava.maven.atlas.graph.filter.OrFilter;
@@ -27,7 +22,6 @@ import org.commonjava.maven.atlas.graph.filter.ParentFilter;
 import org.commonjava.maven.atlas.graph.filter.PluginRuntimeFilter;
 import org.commonjava.maven.atlas.graph.filter.ProjectRelationshipFilter;
 import org.commonjava.maven.atlas.graph.model.EProjectGraph;
-import org.commonjava.maven.atlas.graph.workspace.GraphWorkspace;
 import org.commonjava.maven.atlas.ident.DependencyScope;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.data.CartoDataException;
@@ -35,8 +29,8 @@ import org.commonjava.maven.cartographer.data.CartoDataManager;
 import org.commonjava.maven.cartographer.discover.DefaultDiscoveryConfig;
 import org.commonjava.maven.cartographer.discover.DiscoveryConfig;
 import org.commonjava.maven.cartographer.discover.DiscoverySourceManager;
+import org.commonjava.maven.cartographer.preset.PresetSelector;
 import org.commonjava.util.logging.Logger;
-import org.neo4j.helpers.collection.Iterables;
 
 @ApplicationScoped
 public class RequestAdvisor
@@ -45,51 +39,22 @@ public class RequestAdvisor
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private CartoDataManager tensor;
+    private CartoDataManager carto;
 
     @Inject
     private AproxDepgraphConfig config;
 
     @Inject
-    private Instance<PresetFactory> presetFactoryInstances;
-
-    private Map<String, PresetFactory> presetFactories;
+    private PresetSelector presetSelector;
 
     public RequestAdvisor()
     {
     }
 
-    public RequestAdvisor( final CartoDataManager tensor, final Iterable<PresetFactory> presetFactoryInstances )
+    public RequestAdvisor( final CartoDataManager carto, final PresetSelector presetSelector )
     {
-        this.tensor = tensor;
-        mapPresets( presetFactoryInstances );
-    }
-
-    @PostConstruct
-    public void mapPresets()
-    {
-        mapPresets( presetFactoryInstances );
-    }
-
-    private void mapPresets( final Iterable<PresetFactory> presetFilters )
-    {
-        logger.info( "\n\n\n\nLoading %d presets...\n\n\n", Iterables.toList( presetFilters )
-                                                                     .size() );
-
-        presetFactories = new HashMap<String, PresetFactory>();
-        for ( final PresetFactory filter : presetFilters )
-        {
-            final String named = filter.getPresetId();
-            if ( named != null )
-            {
-                logger.info( "Loaded preset filter: %s (%s)", named, filter );
-                presetFactories.put( named, filter );
-            }
-            else
-            {
-                logger.info( "Skipped unnamed preset: %s", filter );
-            }
-        }
+        this.carto = carto;
+        this.presetSelector = presetSelector;
     }
 
     public Set<ProjectVersionRef> getIncomplete( final ProjectVersionRef ref, final HttpServletRequest request )
@@ -100,19 +65,19 @@ public class RequestAdvisor
         Set<ProjectVersionRef> incomplete;
         if ( ref != null )
         {
-            incomplete = tensor.getIncompleteSubgraphsFor( filter, ref );
+            incomplete = carto.getIncompleteSubgraphsFor( filter, ref );
 
             if ( incomplete != null )
             {
                 if ( filter != null )
                 {
-                    incomplete = tensor.pathFilter( filter, incomplete, ref );
+                    incomplete = carto.pathFilter( filter, incomplete, ref );
                 }
             }
         }
         else
         {
-            incomplete = tensor.getAllIncompleteSubgraphs();
+            incomplete = carto.getAllIncompleteSubgraphs();
         }
 
         return incomplete;
@@ -120,7 +85,7 @@ public class RequestAdvisor
 
     public ProjectRelationshipFilter createRelationshipFilter( final HttpServletRequest request )
     {
-        ProjectRelationshipFilter filter = getPresetFilter( request.getParameter( "preset" ) );
+        ProjectRelationshipFilter filter = presetSelector.getPresetFilter( request.getParameter( "preset" ), config.getDefaultWebFilterPreset() );
         if ( filter != null )
         {
             return filter;
@@ -129,8 +94,7 @@ public class RequestAdvisor
         final List<ProjectRelationshipFilter> filters = new ArrayList<ProjectRelationshipFilter>();
         if ( getBooleanParamWithDefault( request, "d", true ) )
         {
-            filters.add( new DependencyFilter( DependencyScope.getScope( getStringParamWithDefault( request, "s",
-                                                                                                    "runtime" ) ) ) );
+            filters.add( new DependencyFilter( DependencyScope.getScope( getStringParamWithDefault( request, "s", "runtime" ) ) ) );
         }
         if ( getBooleanParamWithDefault( request, "pa", true ) )
         {
@@ -151,8 +115,7 @@ public class RequestAdvisor
         return filter;
     }
 
-    public DiscoveryConfig createDiscoveryConfig( final HttpServletRequest request, final URI source,
-                                                  final DiscoverySourceManager sourceFactory )
+    public DiscoveryConfig createDiscoveryConfig( final HttpServletRequest request, final URI source, final DiscoverySourceManager sourceFactory )
     {
         DiscoveryConfig result = DiscoveryConfig.DISABLED;
         if ( getBooleanParamWithDefault( request, "discover", false ) )
@@ -177,32 +140,6 @@ public class RequestAdvisor
     {
         // TODO Report to log...
         // TODO Find a way to advise the client that the response is incomplete.
-    }
-
-    public ProjectRelationshipFilter getPresetFilter( String preset )
-    {
-        if ( preset == null )
-        {
-            preset = config.getDefaultWebFilterPreset();
-        }
-
-        if ( preset != null )
-        {
-            final PresetFactory factory = presetFactories.get( preset );
-            if ( factory != null )
-            {
-                final GraphWorkspace ws = tensor.getCurrentWorkspace();
-                final ProjectRelationshipFilter filter = factory.newFilter( ws );
-
-                logger.info( "Returning filter: %s for preset: %s", filter, preset );
-                return filter;
-            }
-
-            // TODO: Is there a more elegant way to handle this?
-            throw new IllegalArgumentException( "Invalid preset: " + preset );
-        }
-
-        return null;
     }
 
 }
