@@ -26,8 +26,6 @@ import org.apache.commons.io.FileUtils;
 import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
-import org.commonjava.maven.galley.maven.defaults.MavenPluginDefaults;
-import org.commonjava.maven.galley.maven.defaults.StandardMaven304PluginDefaults;
 
 @javax.enterprise.context.ApplicationScoped
 public class ProxyConfigProvider
@@ -41,7 +39,7 @@ public class ProxyConfigProvider
 
     private File dir;
 
-    private MavenPluginDefaults pluginDefaults;
+    //    private MavenPluginDefaults pluginDefaults;
 
     @PreDestroy
     public synchronized void deleteRepoDir()
@@ -50,17 +48,17 @@ public class ProxyConfigProvider
         FileUtils.forceDelete( dir );
     }
 
-    @Produces
-    @Default
-    public synchronized MavenPluginDefaults getPluginDefaults()
-    {
-        if ( pluginDefaults == null )
-        {
-            pluginDefaults = new StandardMaven304PluginDefaults();
-        }
-
-        return pluginDefaults;
-    }
+    //    @Produces
+    //    @Default
+    //    public synchronized MavenPluginDefaults getPluginDefaults()
+    //    {
+    //        if ( pluginDefaults == null )
+    //        {
+    //            pluginDefaults = new StandardMaven304PluginDefaults();
+    //        }
+    //
+    //        return pluginDefaults;
+    //    }
 
     @Produces
     @Default

@@ -5,7 +5,6 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Properties;
 
-import org.commonjava.aprox.depgraph.maven.PropertyExpressionResolver;
 import org.junit.Test;
 
 public class PropertyExpressionResolverTest

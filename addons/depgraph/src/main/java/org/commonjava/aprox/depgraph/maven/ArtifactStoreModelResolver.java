@@ -26,8 +26,8 @@ import org.codehaus.plexus.component.annotations.Component;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.version.InvalidVersionSpecificationException;
-import org.commonjava.maven.galley.ArtifactManager;
 import org.commonjava.maven.galley.TransferException;
+import org.commonjava.maven.galley.maven.ArtifactManager;
 import org.commonjava.maven.galley.model.Transfer;
 
 @Component( role = ModelResolver.class, hint = "aprox" )

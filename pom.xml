@@ -330,7 +330,12 @@
         <artifactId>weft</artifactId>
         <version>0.3-SNAPSHOT</version>
       </dependency>
-      
+
+      <dependency>
+        <groupId>org.commonjava.maven.galley</groupId>
+        <artifactId>galley-maven</artifactId>
+        <version>${galleyVersion}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   

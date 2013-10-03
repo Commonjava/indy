@@ -128,6 +128,10 @@
       <groupId>org.commonjava.maven.atlas</groupId>
       <artifactId>atlas-driver-jung</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.maven.galley</groupId>
+      <artifactId>galley-maven</artifactId>
+    </dependency>
   </dependencies>
   
   <build>

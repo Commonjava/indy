@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 
 import java.net.URI;
 
-import org.commonjava.aprox.depgraph.util.AproxDepgraphUtils;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.junit.Test;

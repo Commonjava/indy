@@ -17,8 +17,6 @@ import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.maven.galley.maven.defaults.MavenPluginDefaults;
-import org.commonjava.maven.galley.maven.defaults.StandardMaven304PluginDefaults;
 import org.commonjava.web.json.test.WebFixture;
 
 @javax.enterprise.context.ApplicationScoped
@@ -36,19 +34,19 @@ public class TestConfigProvider
 
     private DefaultStorageProviderConfiguration storageConfig;
 
-    private MavenPluginDefaults pluginDefaults;
-
-    @Produces
-    @Default
-    public synchronized MavenPluginDefaults getPluginDefaults()
-    {
-        if ( pluginDefaults == null )
-        {
-            pluginDefaults = new StandardMaven304PluginDefaults();
-        }
-
-        return pluginDefaults;
-    }
+    //    private MavenPluginDefaults pluginDefaults;
+    //
+    //    @Produces
+    //    @Default
+    //    public synchronized MavenPluginDefaults getPluginDefaults()
+    //    {
+    //        if ( pluginDefaults == null )
+    //        {
+    //            pluginDefaults = new StandardMaven304PluginDefaults();
+    //        }
+    //
+    //        return pluginDefaults;
+    //    }
 
     @Produces
     @Default

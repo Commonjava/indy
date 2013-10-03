@@ -44,7 +44,6 @@ import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.galley.CacheOnlyLocation;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.rest.AproxWorkflowException;
-import org.commonjava.maven.atlas.graph.filter.ProjectRelationshipFilter;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.data.CartoDataException;
@@ -355,8 +354,7 @@ public class RepositoryResource
             throw new AproxWorkflowException( Status.BAD_REQUEST, "JSON configuration not supplied" );
         }
 
-        final ProjectRelationshipFilter presetFilter = presets.getPresetFilter( dto.getPreset(), config.getDefaultWebFilterPreset() );
-        dto.setFilter( presetFilter );
+        dto.resolveFilters( presets, config.getDefaultWebFilterPreset() );
 
         if ( !dto.isValid() )
         {

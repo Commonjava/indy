@@ -32,8 +32,8 @@ import org.commonjava.maven.cartographer.data.CartoDataManager;
 import org.commonjava.maven.cartographer.discover.DiscoveryResult;
 import org.commonjava.maven.cartographer.discover.patch.PatcherSupport;
 import org.commonjava.maven.cartographer.util.MavenModelProcessor;
-import org.commonjava.maven.galley.maven.reader.MavenPomReader;
-import org.commonjava.maven.galley.maven.view.MavenPomView;
+import org.commonjava.maven.galley.maven.model.view.MavenPomView;
+import org.commonjava.maven.galley.maven.parse.MavenPomReader;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.util.logging.Logger;
 
