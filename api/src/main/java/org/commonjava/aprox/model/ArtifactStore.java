@@ -142,4 +142,10 @@ public abstract class ArtifactStore
         return metadata == null ? null : metadata.get( key );
     }
 
+    @Override
+    public String toString()
+    {
+        return String.format( "ArtifactStore [key=%s]", key );
+    }
+
 }

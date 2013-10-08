@@ -32,6 +32,7 @@ import org.commonjava.maven.cartographer.data.CartoDataManager;
 import org.commonjava.maven.cartographer.discover.DiscoveryResult;
 import org.commonjava.maven.cartographer.discover.patch.PatcherSupport;
 import org.commonjava.maven.cartographer.util.MavenModelProcessor;
+import org.commonjava.maven.galley.maven.GalleyMavenException;
 import org.commonjava.maven.galley.maven.model.view.MavenPomView;
 import org.commonjava.maven.galley.maven.parse.MavenPomReader;
 import org.commonjava.maven.galley.model.Transfer;
@@ -100,7 +101,15 @@ public class AproxModelDiscoverer
 
         final URI source = AproxDepgraphUtils.toDiscoveryURI( key );
 
-        final MavenPomView pomView = pomReader.read( item, locations );
+        MavenPomView pomView;
+        try
+        {
+            pomView = pomReader.read( item, locations );
+        }
+        catch ( final GalleyMavenException e )
+        {
+            throw new CartoDataException( "Failed to parse: %s. Reason: %s", e, item, e.getMessage() );
+        }
 
         //        final Model rawModel = loadRawModel( item, source );
         //        if ( !shouldStore( rawModel, source, path ) )

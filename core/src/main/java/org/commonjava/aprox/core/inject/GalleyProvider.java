@@ -5,10 +5,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 
-import org.commonjava.aprox.filer.KeyBasedPathGenerator;
 import org.commonjava.maven.galley.io.NoOpTransferDecorator;
 import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
-import org.commonjava.maven.galley.spi.io.PathGenerator;
 import org.commonjava.maven.galley.spi.io.TransferDecorator;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 
@@ -18,7 +16,7 @@ public class GalleyProvider
 
     private TransferDecorator decorator;
 
-    private PathGenerator pathgen;
+    //    private PathGenerator pathgen;
 
     private NotFoundCache nfc;
 
@@ -26,16 +24,17 @@ public class GalleyProvider
     public void setup()
     {
         decorator = new NoOpTransferDecorator();
-        pathgen = new KeyBasedPathGenerator();
+        //        pathgen = new KeyBasedPathGenerator();
         nfc = new MemoryNotFoundCache();
     }
 
-    @Produces
-    @Default
-    public PathGenerator getPathGenerator()
-    {
-        return pathgen;
-    }
+    //
+    //    @Produces
+    //    @Default
+    //    public PathGenerator getPathGenerator()
+    //    {
+    //        return pathgen;
+    //    }
 
     @Produces
     @Default

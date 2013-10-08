@@ -113,12 +113,16 @@ public class RepositoryResource
                 result.put( gav, data );
 
                 final Set<String> files = new HashSet<>();
+                KeyedLocation kl = null;
 
                 for ( final ConcreteResource item : items.values() )
                 {
-                    if ( !data.containsKey( URLMAP_DATA_REPO_URL ) )
+                    final KeyedLocation loc = (KeyedLocation) item.getLocation();
+
+                    // TODO: Can we do a better job of setting this intelligently?
+                    if ( kl == null )
                     {
-                        data.put( URLMAP_DATA_REPO_URL, formatUrlMapRepositoryUrl( item, info, dto.getLocalUrls() ) );
+                        kl = loc;
                     }
 
                     files.add( new File( item.getPath() ).getName() );
@@ -126,6 +130,7 @@ public class RepositoryResource
 
                 final List<String> sortedFiles = new ArrayList<>( files );
                 Collections.sort( sortedFiles );
+                data.put( URLMAP_DATA_REPO_URL, formatUrlMapRepositoryUrl( kl, info, dto.getLocalUrls() ) );
                 data.put( URLMAP_DATA_FILES, sortedFiles );
             }
         }
@@ -321,14 +326,12 @@ public class RepositoryResource
         }
     }
 
-    private String formatUrlMapRepositoryUrl( final ConcreteResource item, final UriInfo info, final boolean localUrls )
+    private String formatUrlMapRepositoryUrl( final KeyedLocation kl, final UriInfo info, final boolean localUrls )
         throws MalformedURLException
     {
-        final KeyedLocation kl = (KeyedLocation) item.getLocation();
-        final StoreKey key = kl.getKey();
-
         if ( localUrls || kl instanceof CacheOnlyLocation )
         {
+            final StoreKey key = kl.getKey();
             final URI uri = info.getBaseUriBuilder()
                                 .path( key.getType()
                                           .singularEndpointName() )
@@ -340,8 +343,7 @@ public class RepositoryResource
         }
         else
         {
-            return item.getLocation()
-                       .getUri();
+            return kl.getUri();
         }
     }
 

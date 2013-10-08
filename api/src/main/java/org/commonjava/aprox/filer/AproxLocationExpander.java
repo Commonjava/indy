@@ -1,5 +1,7 @@
 package org.commonjava.aprox.filer;
 
+import static org.apache.commons.lang.StringUtils.join;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -22,11 +24,14 @@ import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Resource;
 import org.commonjava.maven.galley.model.VirtualResource;
 import org.commonjava.maven.galley.spi.transport.LocationExpander;
+import org.commonjava.util.logging.Logger;
 
 @ApplicationScoped
 public class AproxLocationExpander
     implements LocationExpander
 {
+
+    private final Logger logger = new Logger( getClass() );
 
     @Inject
     private StoreDataManager data;
@@ -59,10 +64,12 @@ public class AproxLocationExpander
                 final GroupLocation gl = (GroupLocation) location;
                 try
                 {
+                    logger.info( "Expanding group: %s", gl.getKey() );
                     final List<ArtifactStore> members = data.getOrderedConcreteStoresInGroup( gl.getKey()
                                                                                                 .getName() );
                     if ( members != null )
                     {
+                        logger.info( "Expanded group: %s to:\n  %s", gl.getKey(), join( members, "\n  " ) );
                         result.addAll( LocationUtils.toLocations( members ) );
                     }
                 }
@@ -78,6 +85,7 @@ public class AproxLocationExpander
                 try
                 {
                     final ArtifactStore store = data.getArtifactStore( key );
+                    logger.info( "Adding single store: %s for location: %s", store, location );
                     result.add( LocationUtils.toLocation( store ) );
                 }
                 catch ( final ProxyDataException e )
@@ -87,6 +95,7 @@ public class AproxLocationExpander
             }
             else
             {
+                logger.info( "No expansion available for location: %s", location );
                 result.add( location );
             }
         }

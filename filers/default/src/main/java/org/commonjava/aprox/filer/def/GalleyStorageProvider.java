@@ -6,7 +6,6 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.filer.KeyBasedPathGenerator;
 import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
 import org.commonjava.maven.galley.cache.FileCacheProviderConfig;
 
@@ -17,6 +16,12 @@ public class GalleyStorageProvider
     private DefaultStorageProviderConfiguration config;
 
     private FileCacheProviderConfig cacheProviderConfig;
+
+    //    private KeyBasedPathGenerator pathGen;
+
+    //    private NoOpTransferDecorator transferDecorator;
+
+    //    private AproxFileEventManager fileEvents;
 
     public GalleyStorageProvider()
     {
@@ -31,9 +36,29 @@ public class GalleyStorageProvider
     @PostConstruct
     public void setup()
     {
-        this.cacheProviderConfig =
-            new FileCacheProviderConfig( config.getStorageRootDirectory() ).withPathGenerator( new KeyBasedPathGenerator() );
+        //        this.pathGen = new KeyBasedPathGenerator();
+        //        this.transferDecorator = new NoOpTransferDecorator();
+        //        this.fileEvents = new AproxFileEventManager();
+        this.cacheProviderConfig = new FileCacheProviderConfig( config.getStorageRootDirectory() );
     }
+
+    //    @Produces
+    //    public KeyBasedPathGenerator getPathGenerator()
+    //    {
+    //        return pathGen;
+    //    }
+
+    //    @Produces
+    //    public TransferDecorator getTransferDecorator()
+    //    {
+    //        return transferDecorator;
+    //    }
+
+    //    @Produces
+    //    public FileEventManager getFileEventManager()
+    //    {
+    //        return fileEvents;
+    //    }
 
     @Produces
     public FileCacheProviderConfig getCacheProviderConfig()
