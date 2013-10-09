@@ -69,8 +69,15 @@ public class AproxLocationExpander
                                                                                                 .getName() );
                     if ( members != null )
                     {
-                        logger.info( "Expanded group: %s to:\n  %s", gl.getKey(), join( members, "\n  " ) );
-                        result.addAll( LocationUtils.toLocations( members ) );
+                        for ( final ArtifactStore member : members )
+                        {
+                            if ( !result.contains( member ) )
+                            {
+                                logger.info( "expansion += %s", member.getKey() );
+                                result.add( LocationUtils.toLocation( member ) );
+                            }
+                        }
+                        logger.info( "Expanded group: %s to:\n  %s", gl.getKey(), join( result, "\n  " ) );
                     }
                 }
                 catch ( final ProxyDataException e )

@@ -12,4 +12,10 @@ public class GroupLocation
     {
         super( new StoreKey( StoreType.group, name ) );
     }
+
+    @Override
+    public String toString()
+    {
+        return "GroupLocation [" + getKey() + "]";
+    }
 }

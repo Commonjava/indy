@@ -1,5 +1,6 @@
 package org.commonjava.aprox.depgraph.discover;
 
+import static org.commonjava.aprox.depgraph.util.AproxDepgraphUtils.APROX_URI_PREFIX;
 import static org.commonjava.aprox.depgraph.util.AproxDepgraphUtils.toDiscoveryURI;
 
 import java.net.URI;
@@ -18,6 +19,7 @@ import org.commonjava.aprox.model.StoreType;
 import org.commonjava.maven.atlas.graph.workspace.GraphWorkspace;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.discover.DiscoverySourceManager;
+import org.commonjava.util.logging.Logger;
 
 @ApplicationScoped
 @Production
@@ -26,7 +28,7 @@ public class AproxDiscoverySourceManager
     implements DiscoverySourceManager
 {
 
-    private static final String APROX_URI_PREFIX = "aprox:";
+    private final Logger logger = new Logger( getClass() );
 
     @Inject
     private StoreDataManager stores;
@@ -44,14 +46,20 @@ public class AproxDiscoverySourceManager
     public URI createSourceURI( final String source )
     {
         final StoreKey key = StoreKey.fromString( normalize( source ) );
-        return toDiscoveryURI( key );
+        logger.info( "Got source-URI store-key: '%s'", key );
+        final URI result = toDiscoveryURI( key );
+        logger.info( "Resulting source URI: '%s'", result );
+        return result;
     }
 
     private String normalize( final String source )
     {
+        logger.info( "Normalizing source URI: '%s'", source );
         if ( source.startsWith( APROX_URI_PREFIX ) )
         {
-            return source.substring( APROX_URI_PREFIX.length() );
+            final String result = source.substring( APROX_URI_PREFIX.length() );
+            logger.info( "Normalized source URI: '%s'", result );
+            return result;
         }
 
         return source;

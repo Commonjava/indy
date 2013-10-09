@@ -119,12 +119,14 @@ public class RepositoryResource
                 {
                     final KeyedLocation loc = (KeyedLocation) item.getLocation();
 
-                    // TODO: Can we do a better job of setting this intelligently?
-                    if ( kl == null )
+                    // FIXME: we're squashing some potential variation in the locations here!
+                    // if we're not looking for local urls, allow any cache-only location to be overridden...
+                    if ( kl == null || ( !dto.getLocalUrls() && ( kl instanceof CacheOnlyLocation ) ) )
                     {
                         kl = loc;
                     }
 
+                    logger.info( "Adding %s (keyLocation: %s)", item, kl );
                     files.add( new File( item.getPath() ).getName() );
                 }
 
@@ -165,11 +167,15 @@ public class RepositoryResource
 
             final Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> contents = resolveContents( dto, req );
 
-            for ( final Map<ArtifactRef, ConcreteResource> items : contents.values() )
+            final List<ProjectVersionRef> refs = new ArrayList<>( contents.keySet() );
+            Collections.sort( refs );
+
+            for ( final ProjectVersionRef ref : refs )
             {
+                final Map<ArtifactRef, ConcreteResource> items = contents.get( ref );
                 for ( final ConcreteResource item : items.values() )
                 {
-                    logger.info( "Adding: '%s'", item.getPath() );
+                    logger.info( "Adding: '%s'", item );
                     downLog.add( formatDownlogEntry( item, info, dto.getLocalUrls() ) );
                 }
             }

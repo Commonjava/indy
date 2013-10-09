@@ -9,6 +9,7 @@ import org.commonjava.maven.cartographer.dto.RepositoryContentRecipe;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.spi.transport.LocationExpander;
+import org.commonjava.util.logging.Logger;
 
 public class WebOperationConfigDTO
     extends RepositoryContentRecipe
@@ -65,9 +66,11 @@ public class WebOperationConfigDTO
     public void calculateLocations( final LocationExpander locationExpander )
         throws TransferException
     {
+        final Logger logger = new Logger( getClass() );
         if ( source != null )
         {
             setSourceLocation( LocationUtils.toCacheLocation( source ) );
+            logger.info( "Set sourceLocation to: '%s'", getSourceLocation() );
         }
 
         if ( excludedSources != null )

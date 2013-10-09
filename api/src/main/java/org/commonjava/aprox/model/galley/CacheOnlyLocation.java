@@ -109,7 +109,7 @@ public class CacheOnlyLocation
     @Override
     public String toString()
     {
-        return key.toString();
+        return "Cache-only location [" + key + "]";
     }
 
     @Override

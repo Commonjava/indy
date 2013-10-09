@@ -10,6 +10,8 @@ public final class AproxDepgraphUtils
 
     public static final String APROX_SCHEME = "aprox";
 
+    public static final String APROX_URI_PREFIX = APROX_SCHEME + ":";
+
     private AproxDepgraphUtils()
     {
     }
@@ -32,13 +34,12 @@ public final class AproxDepgraphUtils
     {
         try
         {
-            return new URI( APROX_SCHEME + ":" + key.getType()
-                                                    .name() + ":" + key.getName() );
+            return new URI( APROX_URI_PREFIX + key.getType()
+                                                  .name() + ":" + key.getName() );
         }
         catch ( final URISyntaxException e )
         {
-            throw new IllegalStateException( "Failed to construct URI for ArtifactStore: " + key + ". Reason: "
-                + e.getMessage(), e );
+            throw new IllegalStateException( "Failed to construct URI for ArtifactStore: " + key + ". Reason: " + e.getMessage(), e );
         }
     }
 
