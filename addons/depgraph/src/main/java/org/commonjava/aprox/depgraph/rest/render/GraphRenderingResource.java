@@ -34,7 +34,7 @@ import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.ops.GraphRenderingOps;
 import org.commonjava.util.logging.Logger;
 
-@Path( "/depgraph/render" )
+@Path( "/depgraph/render/graph" )
 @RequestScoped
 public class GraphRenderingResource
 {
@@ -60,8 +60,7 @@ public class GraphRenderingResource
             config = AggregatorConfigUtils.read( request.getInputStream() );
             final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( request );
 
-            final Model model =
-                ops.generateBOM( new ProjectVersionRef( groupId, artifactId, version ), filter, config.getRoots() );
+            final Model model = ops.generateBOM( new ProjectVersionRef( groupId, artifactId, version ), filter, config.getRoots() );
 
             final StringWriter writer = new StringWriter();
             new MavenXpp3Writer().write( writer, model );
@@ -117,8 +116,7 @@ public class GraphRenderingResource
         }
         catch ( final CartoDataException e )
         {
-            logger.error( "Failed to lookup project graph for: %s:%s:%s. Reason: %s", e, groupId, artifactId, version,
-                          e.getMessage() );
+            logger.error( "Failed to lookup project graph for: %s:%s:%s. Reason: %s", e, groupId, artifactId, version, e.getMessage() );
 
             response = Response.serverError()
                                .build();
@@ -152,8 +150,7 @@ public class GraphRenderingResource
             final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( request );
 
             final String tree =
-                ops.depTree( ref, filter, scope == null ? DependencyScope.runtime : DependencyScope.getScope( scope ),
-                             collapseTransitives );
+                ops.depTree( ref, filter, scope == null ? DependencyScope.runtime : DependencyScope.getScope( scope ), collapseTransitives );
 
             if ( tree != null )
             {
@@ -163,8 +160,7 @@ public class GraphRenderingResource
         }
         catch ( final CartoDataException e )
         {
-            logger.error( "Failed to lookup project graph for: %s:%s:%s. Reason: %s", e, groupId, artifactId, version,
-                          e.getMessage() );
+            logger.error( "Failed to lookup project graph for: %s:%s:%s. Reason: %s", e, groupId, artifactId, version, e.getMessage() );
 
             response = Response.serverError()
                                .build();

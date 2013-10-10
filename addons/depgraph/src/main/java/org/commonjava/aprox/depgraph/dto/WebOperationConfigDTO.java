@@ -19,19 +19,7 @@ public class WebOperationConfigDTO
 
     private Set<StoreKey> excludedSources;
 
-    private String preset;
-
     private Boolean localUrls;
-
-    public String getPreset()
-    {
-        return preset;
-    }
-
-    public void setPreset( final String preset )
-    {
-        this.preset = preset;
-    }
 
     public StoreKey getSource()
     {

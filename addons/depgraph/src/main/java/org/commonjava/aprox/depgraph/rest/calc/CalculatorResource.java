@@ -114,7 +114,7 @@ public class CalculatorResource
             }
             else
             {
-                final GraphCalculation result = ops.calculate( dto.getCalculation(), graphs );
+                final GraphCalculation result = ops.calculate( dto );
 
                 final String json = serializer.toString( result );
 

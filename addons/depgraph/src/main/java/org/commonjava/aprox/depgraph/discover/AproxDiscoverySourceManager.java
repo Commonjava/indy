@@ -4,6 +4,8 @@ import static org.commonjava.aprox.depgraph.util.AproxDepgraphUtils.APROX_URI_PR
 import static org.commonjava.aprox.depgraph.util.AproxDepgraphUtils.toDiscoveryURI;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -16,9 +18,11 @@ import org.commonjava.aprox.inject.Production;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
+import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.atlas.graph.workspace.GraphWorkspace;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.discover.DiscoverySourceManager;
+import org.commonjava.maven.galley.model.Location;
 import org.commonjava.util.logging.Logger;
 
 @ApplicationScoped
@@ -101,6 +105,37 @@ public class AproxDiscoverySourceManager
                 }
             }
         }
+    }
+
+    @Override
+    public Location createLocation( final Object source )
+    {
+        final StoreKey key = StoreKey.fromString( normalize( source.toString() ) );
+        return LocationUtils.toCacheLocation( key );
+    }
+
+    @Override
+    public List<? extends Location> createLocations( final Object... sources )
+    {
+        final List<StoreKey> keys = new ArrayList<>( sources.length );
+        for ( final Object source : sources )
+        {
+            keys.add( StoreKey.fromString( normalize( source.toString() ) ) );
+        }
+
+        return LocationUtils.toCacheLocations( keys );
+    }
+
+    @Override
+    public List<? extends Location> createLocations( final Collection<Object> sources )
+    {
+        final List<StoreKey> keys = new ArrayList<>( sources.size() );
+        for ( final Object source : sources )
+        {
+            keys.add( StoreKey.fromString( normalize( source.toString() ) ) );
+        }
+
+        return LocationUtils.toCacheLocations( keys );
     }
 
 }

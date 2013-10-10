@@ -2,6 +2,7 @@ package org.commonjava.aprox.depgraph.rest;
 
 import static org.apache.commons.lang.StringUtils.join;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 
@@ -19,10 +20,16 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.io.IOUtils;
+import org.commonjava.aprox.depgraph.dto.MetadataCollationDTO;
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
+import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.data.CartoDataException;
+import org.commonjava.maven.cartographer.dto.MetadataCollation;
 import org.commonjava.maven.cartographer.ops.MetadataOps;
+import org.commonjava.maven.galley.TransferException;
+import org.commonjava.maven.galley.spi.transport.LocationExpander;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.ser.JsonSerializer;
 import org.commonjava.web.json.ser.ServletSerializerUtils;
@@ -44,6 +51,9 @@ public class MetadataResource
     @Inject
     @DepgraphSpecific
     private JsonSerializer serializer;
+
+    @Inject
+    private LocationExpander locationExpander;
 
     @Path( "/batch" )
     @POST
@@ -164,4 +174,69 @@ public class MetadataResource
 
         return response;
     }
+
+    @Path( "/collate" )
+    @POST
+    public Response getCorrelation( @Context final HttpServletRequest req )
+    {
+        Response response = Response.status( Status.NOT_FOUND )
+                                    .build();
+
+        try
+        {
+            final MetadataCollationDTO dto = readCollationDTO( req );
+            if ( dto == null )
+            {
+                return response;
+            }
+
+            try
+            {
+                final MetadataCollation result = ops.collate( dto );
+                final String json = serializer.toString( result );
+                response = Response.ok( json )
+                                   .build();
+            }
+            catch ( final CartoDataException e )
+            {
+                throw new AproxWorkflowException( "Failed to resolve or collate graph contents by metadata: %s. Reason: %s", e, dto, e.getMessage() );
+            }
+        }
+        catch ( final AproxWorkflowException e )
+        {
+            logger.error( e.getMessage(), e );
+            response = e.getResponse();
+        }
+
+        return response;
+    }
+
+    private MetadataCollationDTO readCollationDTO( final HttpServletRequest req )
+        throws AproxWorkflowException
+    {
+        String json;
+        try
+        {
+            json = IOUtils.toString( req.getInputStream() );
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxWorkflowException( "Failed to read configuration JSON from request body. Reason: %s", e, e.getMessage() );
+        }
+
+        logger.info( "Got configuration JSON:\n\n%s\n\n", json );
+        final MetadataCollationDTO dto = serializer.fromString( json, MetadataCollationDTO.class );
+
+        try
+        {
+            dto.calculateLocations( locationExpander );
+        }
+        catch ( final TransferException e )
+        {
+            throw new AproxWorkflowException( Status.BAD_REQUEST, "One or more sources/excluded sources is invalid: %s", e, e.getMessage() );
+        }
+
+        return dto;
+    }
+
 }

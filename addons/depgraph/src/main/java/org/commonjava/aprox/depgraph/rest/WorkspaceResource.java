@@ -230,6 +230,7 @@ public class WorkspaceResource
     @Produces( MediaType.APPLICATION_JSON )
     public Response list()
     {
+        logger.info( "Listing workspaces..." );
         Response response = Response.notModified()
                                     .build();
 
@@ -237,8 +238,8 @@ public class WorkspaceResource
 
         if ( ws == null || ws.isEmpty() )
         {
-            logger.debug( "No workspaces found." );
-            return Response.status( Status.NOT_FOUND )
+            logger.info( "No workspaces found." );
+            return Response.status( Status.NO_CONTENT )
                            .entity( "No workspaces found." )
                            .build();
         }
