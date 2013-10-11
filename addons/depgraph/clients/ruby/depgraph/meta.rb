@@ -23,9 +23,9 @@ module Depgraph
       puts "collate started #{Time.now}"
     
       filename = "collate-#{@workspace}.json"
-      @http.post('meta/collate', @config){|body|
+      @http.post('meta/collate', @config){|response|
         File.open(filename, 'w+'){|f|
-          f.puts(body)
+          f.puts(response.body)
         }
       
         puts "Wrote collate to: #{filename}"

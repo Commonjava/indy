@@ -12,7 +12,6 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -52,10 +51,9 @@ import org.commonjava.maven.cartographer.preset.PresetSelector;
 import org.commonjava.maven.cartographer.util.ProjectVersionRefComparator;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferManager;
-import org.commonjava.maven.galley.model.ArtifactBatch;
 import org.commonjava.maven.galley.model.ConcreteResource;
-import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.model.TransferBatch;
 import org.commonjava.maven.galley.spi.transport.LocationExpander;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.ser.JsonSerializer;
@@ -219,9 +217,10 @@ public class RepositoryResource
 
                 final Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> contents = resolveContents( dto, req );
 
-                final Map<ArtifactRef, List<? extends Location>> entries = new HashMap<>();
+                final Set<ConcreteResource> entries = new HashSet<>();
                 final Set<String> seenPaths = new HashSet<>();
 
+                logger.info( "Iterating contents with %d GAVs.", contents.size() );
                 for ( final Map<ArtifactRef, ConcreteResource> artifactResources : contents.values() )
                 {
                     for ( final Entry<ArtifactRef, ConcreteResource> entry : artifactResources.entrySet() )
@@ -229,21 +228,28 @@ public class RepositoryResource
                         final ArtifactRef ref = entry.getKey();
                         final ConcreteResource resource = entry.getValue();
 
+                        logger.info( "Checking %s (%s) for inclusion...", ref, resource );
+
                         final String path = resource.getPath();
                         if ( seenPaths.contains( path ) )
                         {
+                            logger.info( "Conflicting path: %s. Skipping %s.", path, ref );
                             continue;
                         }
 
                         seenPaths.add( path );
 
-                        entries.put( ref, Arrays.asList( resource.getLocation() ) );
+                        logger.info( "Adding to batch: %s via resource: %s", ref, resource );
+                        entries.add( resource );
                     }
                 }
 
-                ArtifactBatch batch = new ArtifactBatch( entries );
+                logger.info( "Starting batch retrieval of %d artifacts.", entries.size() );
+                TransferBatch batch = new TransferBatch( entries );
                 batch = transferManager.batchRetrieve( batch );
 
+                logger.info( "Retrieved %d artifacts. Creating zip.", batch.getTransfers()
+                                                                           .size() );
                 final OutputStream os = resp.getOutputStream();
                 stream = new ZipOutputStream( os );
 
@@ -261,6 +267,7 @@ public class RepositoryResource
 
                 for ( final Transfer item : items )
                 {
+                    logger.info( "Adding: %s", item );
                     final String path = item.getPath();
                     if ( item != null )
                     {

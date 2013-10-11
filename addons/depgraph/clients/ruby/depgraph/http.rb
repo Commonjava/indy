@@ -21,7 +21,7 @@ module Depgraph
       response = @http.request(req)
 
       if ( response.code == '200' || response.code == '201' )
-        block.call(response.body)
+        block.call(response)
       else
         raise "ERR: #{response.code} #{response.message}"
       end
@@ -54,7 +54,7 @@ module Depgraph
       response = @http.request(req)
 
       if ( response.code == '200' || response.code == '201' )
-        block.call(response.body)
+        block.call(response)
       else
         raise "ERR: #{response.code} #{response.message}"
       end

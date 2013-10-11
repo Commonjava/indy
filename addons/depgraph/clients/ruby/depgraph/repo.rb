@@ -23,9 +23,9 @@ module Depgraph
       puts "urlmap started #{Time.now}"
     
       filename = "urlmap-#{@workspace}.json"
-      @http.post('repo/urlmap', @config){|body|
+      @http.post('repo/urlmap', @config){|response|
         File.open(filename, 'w+'){|f|
-          f.puts(body)
+          f.puts(response.body)
         }
       
         puts "Wrote urlmap to: #{filename}"
@@ -38,9 +38,9 @@ module Depgraph
       puts "downlog started #{Time.now}"
     
       filename = "downlog-#{@workspace}.txt"
-      @http.post('repo/downlog', @config){|body|
+      @http.post('repo/downlog', @config){|response|
         File.open(filename, 'w+'){|f|
-          f.puts(body)
+          f.puts(response.body)
         }
       
         puts "Wrote downlog to: #{filename}"
@@ -50,6 +50,18 @@ module Depgraph
     end
     
     def zip()
+      puts "repo.zip started #{Time.now}"
+    
+      filename = "repo-#{@workspace}.zip"
+      @http.post('repo/zip', @config){|response|
+        File.open(filename, 'w+'){|f|
+          f.write(response.body)
+        }
+      
+        puts "Wrote repo.zip to: #{filename}"
+      }
+    
+      puts "repo.zip ended #{Time.now}"
     end
     
     def shutdown()

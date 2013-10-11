@@ -14,8 +14,8 @@ module Depgraph
     def create()
       puts "Creating new workspace..."
       ws = nil
-      workspace = @http.post('ws/new'){|body|
-        response = JSON.parse( body )
+      workspace = @http.post('ws/new'){|response|
+        response = JSON.parse( response.body )
         ws = response['id']
       }
       
@@ -30,8 +30,8 @@ module Depgraph
     def list()
       puts "Listing workspaces..."
       workspaces = []
-      @http.get('ws'){|body|
-        parsed = JSON.parse( body )
+      @http.get('ws'){|response|
+        parsed = JSON.parse( response.body )
         parsed['items'].each{|ws|
           workspaces << ws['id']
         }
