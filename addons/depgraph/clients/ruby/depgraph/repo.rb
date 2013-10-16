@@ -53,14 +53,16 @@ module Depgraph
       puts "repo.zip started #{Time.now}"
     
       filename = "repo-#{@workspace}.zip"
-      @http.post('repo/zip', @config){|response|
-        File.open(filename, 'w+'){|f|
+      File.open(filename, 'w+'){|f|
+        @http.post('repo/zip', @config){|response|
+          #response.read_body {|seg|
+          #  f.write(seg)
+          #}
           f.write(response.body)
         }
-      
-        puts "Wrote repo.zip to: #{filename}"
       }
     
+      puts "Wrote repo.zip to: #{filename}"
       puts "repo.zip ended #{Time.now}"
     end
     

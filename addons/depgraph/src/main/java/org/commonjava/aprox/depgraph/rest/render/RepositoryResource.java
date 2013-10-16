@@ -228,7 +228,7 @@ public class RepositoryResource
                         final ArtifactRef ref = entry.getKey();
                         final ConcreteResource resource = entry.getValue();
 
-                        logger.info( "Checking %s (%s) for inclusion...", ref, resource );
+                        //                        logger.info( "Checking %s (%s) for inclusion...", ref, resource );
 
                         final String path = resource.getPath();
                         if ( seenPaths.contains( path ) )
@@ -239,7 +239,7 @@ public class RepositoryResource
 
                         seenPaths.add( path );
 
-                        logger.info( "Adding to batch: %s via resource: %s", ref, resource );
+                        //                        logger.info( "Adding to batch: %s via resource: %s", ref, resource );
                         entries.add( resource );
                     }
                 }
@@ -267,7 +267,7 @@ public class RepositoryResource
 
                 for ( final Transfer item : items )
                 {
-                    logger.info( "Adding: %s", item );
+                    //                    logger.info( "Adding: %s", item );
                     final String path = item.getPath();
                     if ( item != null )
                     {
