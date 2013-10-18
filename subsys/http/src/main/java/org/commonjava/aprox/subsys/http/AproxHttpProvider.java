@@ -25,12 +25,10 @@ public class AproxHttpProvider
     private PasswordManager passwordManager;
 
     @PostConstruct
-    public AproxHttpProvider setup()
+    public void setup()
     {
         passwordManager = new AttributePasswordManager();
         http = new HttpImpl( passwordManager );
-
-        return this;
     }
 
     @Produces

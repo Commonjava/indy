@@ -135,7 +135,7 @@ public class TimeoutManager
                 setProxyTimeouts( event );
                 break;
             }
-            case GENERATE:
+            default:
             {
                 break;
             }

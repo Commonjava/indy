@@ -22,15 +22,13 @@ import javax.servlet.annotation.WebListener;
 
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.Repository;
-import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.stats.AProxVersioning;
+import org.commonjava.shelflife.ExpirationManager;
+import org.commonjava.shelflife.ExpirationManagerException;
 import org.commonjava.util.logging.Logger;
 
 @WebListener
-public class InstallerListener
+public class BootListener
     implements ServletContextListener
 {
 
@@ -40,32 +38,28 @@ public class InstallerListener
     private StoreDataManager dataManager;
 
     @Inject
+    private ExpirationManager expirationManager;
+
+    @Inject
     private AProxVersioning versioning;
 
     @Override
     public void contextInitialized( final ServletContextEvent sce )
     {
         logger.info( "\n\n\n\n\n STARTING AProx\n    Version: %s\n    Built-By: %s\n    Commit-ID: %s\n    Built-On: %s\n\n\n\n\n",
-                     versioning.getVersion(), versioning.getBuilder(), versioning.getCommitId(),
-                     versioning.getTimestamp() );
+                     versioning.getVersion(), versioning.getBuilder(), versioning.getCommitId(), versioning.getTimestamp() );
 
         logger.info( "Verfiying that AProx DB + basic data is installed..." );
         try
         {
             dataManager.install();
-            if ( !dataManager.hasRepository( "central" ) )
-            {
-                dataManager.storeRepository( new Repository( "central", "http://repo1.maven.apache.org/maven2/" ), true );
-            }
 
-            if ( !dataManager.hasGroup( "public" ) )
-            {
-                dataManager.storeGroup( new Group( "public", new StoreKey( StoreType.repository, "central" ) ), true );
-            }
+            // make sure the expiration manager is running...
+            expirationManager.loadNextExpirations();
         }
-        catch ( final ProxyDataException e )
+        catch ( final ProxyDataException | ExpirationManagerException e )
         {
-            throw new RuntimeException( "Failed to install proxy database: " + e.getMessage(), e );
+            throw new RuntimeException( "Failed to boot aprox components: " + e.getMessage(), e );
         }
 
         logger.info( "...done." );
@@ -75,8 +69,7 @@ public class InstallerListener
     public void contextDestroyed( final ServletContextEvent sce )
     {
         logger.info( "\n\n\n\n\n SHUTTING DOWN AProx\n    Version: %s\n    Built-By: %s\n    Commit-ID: %s\n    Built-On: %s\n\n\n\n\n",
-                     versioning.getVersion(), versioning.getBuilder(), versioning.getCommitId(),
-                     versioning.getTimestamp() );
+                     versioning.getVersion(), versioning.getBuilder(), versioning.getCommitId(), versioning.getTimestamp() );
 
     }
 

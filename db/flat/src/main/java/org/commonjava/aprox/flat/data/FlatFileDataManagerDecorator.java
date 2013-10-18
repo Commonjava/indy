@@ -49,8 +49,7 @@ public abstract class FlatFileDataManagerDecorator
     {
     }
 
-    protected FlatFileDataManagerDecorator( final StoreDataManager dataManager, final FlatFileConfiguration config,
-                                            final JsonSerializer serializer )
+    protected FlatFileDataManagerDecorator( final StoreDataManager dataManager, final FlatFileConfiguration config, final JsonSerializer serializer )
     {
         this.dataManager = dataManager;
         this.config = config;
@@ -304,8 +303,7 @@ public abstract class FlatFileDataManagerDecorator
             }
             catch ( final IOException e )
             {
-                throw new ProxyDataException( "Cannot write definition: %s to: %s. Reason: %s", e, store, f,
-                                              e.getMessage() );
+                throw new ProxyDataException( "Cannot write definition: %s to: %s. Reason: %s", e, store, f, e.getMessage() );
             }
         }
     }
@@ -387,6 +385,18 @@ public abstract class FlatFileDataManagerDecorator
         catch ( final IOException e )
         {
             throw new ProxyDataException( "Failed to delete AProx storage files: %s", e, e.getMessage() );
+        }
+    }
+
+    @Override
+    public void install()
+        throws ProxyDataException
+    {
+        if ( !config.getStorageDir( APROX_STORE )
+                    .isDirectory() )
+        {
+            dataManager.storeRepository( new Repository( "central", "http://repo1.maven.apache.org/maven2/" ), true );
+            dataManager.storeGroup( new Group( "public", new StoreKey( StoreType.repository, "central" ) ), true );
         }
     }
 

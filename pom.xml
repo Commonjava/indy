@@ -42,7 +42,7 @@
     <jbossas-version>7.1.1.Final</jbossas-version>
     <arquillian-version>1.0.1.Final</arquillian-version>
     <qarqas-version>0.3</qarqas-version>
-    <shelflife-version>0.3</shelflife-version>
+    <shelflife-version>0.4-SNAPSHOT</shelflife-version>
     <atlasVersion>0.9.2-SNAPSHOT</atlasVersion>
     <galleyVersion>0.3.0-SNAPSHOT</galleyVersion>
     <cartoVersion>0.2.1-SNAPSHOT</cartoVersion>
@@ -74,7 +74,7 @@
       <dependency>
         <groupId>org.commonjava.boms</groupId>
         <artifactId>web-commons-bom</artifactId>
-        <version>5</version>
+        <version>6-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -324,11 +324,6 @@
         <artifactId>atlas-driver-jung</artifactId>
         <version>${atlasVersion}</version>
         <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.cdi.util</groupId>
-        <artifactId>weft</artifactId>
-        <version>0.3-SNAPSHOT</version>
       </dependency>
 
       <dependency>

@@ -45,7 +45,9 @@ public class GalleyFixture
 
     public GalleyFixture( final File repoRoot )
     {
-        final AproxHttpProvider aproxHttp = new AproxHttpProvider().setup();
+        final AproxHttpProvider aproxHttp = new AproxHttpProvider();
+        aproxHttp.setup();
+
         transports = new TransportManagerImpl( new HttpClientTransport( aproxHttp.getHttpComponent() ) );
 
         events = new AproxFileEventManager();
