@@ -57,6 +57,7 @@ import org.commonjava.shelflife.ExpirationManagerException;
 import org.commonjava.shelflife.event.ExpirationEvent;
 import org.commonjava.shelflife.event.ExpirationEventType;
 import org.commonjava.shelflife.match.AndMatcher;
+import org.commonjava.shelflife.match.KeyMatcher;
 import org.commonjava.shelflife.model.Expiration;
 import org.commonjava.shelflife.model.ExpirationKey;
 import org.commonjava.util.logging.Logger;
@@ -396,7 +397,10 @@ public class TimeoutManager
             //                + timeout ) );
             try
             {
-                expirationManager.schedule( createAproxFileExpiration( repo, path, timeout ) );
+                final Expiration expiration = createAproxFileExpiration( repo, path, timeout );
+                expirationManager.cancelAll( new KeyMatcher( expiration.getKey() ) );
+
+                expirationManager.schedule( expiration );
             }
             catch ( final ExpirationManagerException e )
             {
@@ -447,7 +451,10 @@ public class TimeoutManager
             //            logger.info( "[SNAPSHOT TIMEOUT SET] %s/%s; %s", deploy.getKey(), path, new Date( timeout ) );
             try
             {
-                expirationManager.schedule( createAproxFileExpiration( deploy, path, timeout ) );
+                final Expiration expiration = createAproxFileExpiration( deploy, path, timeout );
+                expirationManager.cancelAll( new KeyMatcher( expiration.getKey() ) );
+
+                expirationManager.schedule( expiration );
             }
             catch ( final ExpirationManagerException e )
             {
