@@ -15,14 +15,11 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph;
 
-import java.util.concurrent.ExecutorService;
-
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depgraph.discover.AproxModelDiscoverer;
-import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.util.logging.Logger;
 
@@ -36,9 +33,9 @@ public class DepgraphStorageListener
     @Inject
     private StoreDataManager aprox;
 
-    @Inject
-    @ExecutorConfig( priority = 8, threads = 2, named = "depgraph-listener" )
-    private ExecutorService executor;
+    //    @Inject
+    //    @ExecutorConfig( priority = 8, threads = 2, named = "depgraph-listener" )
+    //    private ExecutorService executor;
 
     private final Logger logger = new Logger( getClass() );
 
