@@ -28,6 +28,7 @@ import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
+import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.data.CartoDataManager;
 import org.commonjava.maven.cartographer.discover.DiscoveryResult;
@@ -74,7 +75,7 @@ public class AproxModelDiscoverer
         this.metadataScannerSupport = metadataScannerSupport;
     }
 
-    public DiscoveryResult discoverRelationships( final Transfer item, final List<? extends KeyedLocation> locations,
+    public DiscoveryResult discoverRelationships( final ProjectVersionRef ref, final Transfer item, final List<? extends KeyedLocation> locations,
                                                   final Set<String> enabledPatchers, final boolean storeRelationships )
         throws CartoDataException
     {
@@ -93,7 +94,7 @@ public class AproxModelDiscoverer
         MavenPomView pomView;
         try
         {
-            pomView = pomReader.read( item, locations );
+            pomView = pomReader.read( ref, item, locations );
         }
         catch ( final GalleyMavenException e )
         {

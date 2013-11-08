@@ -115,7 +115,7 @@ public class AproxProjectGraphDiscoverer
 
             if ( retrieved != null )
             {
-                return discoverer.discoverRelationships( retrieved, locations, discoveryConfig.getEnabledPatchers(), storeRelationships );
+                return discoverer.discoverRelationships( specific, retrieved, locations, discoveryConfig.getEnabledPatchers(), storeRelationships );
             }
             else
             {

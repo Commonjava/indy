@@ -28,6 +28,7 @@ import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.util.LocationUtils;
+import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.discover.DiscoveryResult;
 import org.commonjava.maven.galley.model.Transfer;
@@ -49,10 +50,14 @@ public class DepgraphStorageListenerRunnable
 
     private final StoreDataManager aprox;
 
-    public DepgraphStorageListenerRunnable( final AproxModelDiscoverer discoverer, final StoreDataManager aprox, final Transfer item )
+    private final ProjectVersionRef ref;
+
+    public DepgraphStorageListenerRunnable( final AproxModelDiscoverer discoverer, final StoreDataManager aprox, final ProjectVersionRef ref,
+                                            final Transfer item )
     {
         this.discoverer = discoverer;
         this.aprox = aprox;
+        this.ref = ref;
         this.item = item;
     }
 
@@ -97,7 +102,7 @@ public class DepgraphStorageListenerRunnable
 
         try
         {
-            result = discoverer.discoverRelationships( item, locations, Collections.<String> emptySet(), true );
+            result = discoverer.discoverRelationships( ref, item, locations, Collections.<String> emptySet(), true );
         }
         catch ( final CartoDataException e )
         {
