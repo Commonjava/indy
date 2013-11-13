@@ -19,6 +19,7 @@ import org.commonjava.maven.galley.maven.defaults.MavenPluginDefaults;
 import org.commonjava.maven.galley.maven.defaults.MavenPluginImplications;
 import org.commonjava.maven.galley.maven.defaults.StandardMaven304PluginDefaults;
 import org.commonjava.maven.galley.maven.defaults.StandardMavenPluginImplications;
+import org.commonjava.maven.galley.maven.parse.XMLInfrastructure;
 import org.commonjava.web.json.ser.JsonSerializer;
 
 @ApplicationScoped
@@ -30,6 +31,9 @@ public class DepgraphProvider
 
     @Inject
     private CartoDataManager data;
+
+    @Inject
+    private XMLInfrastructure xml;
 
     private MavenPluginDefaults pluginDefaults;
 
@@ -54,7 +58,7 @@ public class DepgraphProvider
     {
         this.graphs = new EGraphManager( new FileNeo4jWorkspaceFactory( config.getDatabaseDir(), false ) );
         pluginDefaults = new StandardMaven304PluginDefaults();
-        pluginImplications = new StandardMavenPluginImplications();
+        pluginImplications = new StandardMavenPluginImplications( xml );
     }
 
     @PreDestroy
