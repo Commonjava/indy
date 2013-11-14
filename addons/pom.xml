@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.commonjava.aprox</groupId>
     <artifactId>aprox-parent</artifactId>
-    <version>0.8.3-SNAPSHOT</version>
+    <version>0.9.0</version>
   </parent>
   
   <artifactId>aprox-addons</artifactId>
