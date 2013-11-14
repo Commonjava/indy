@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.commonjava.aprox.wars</groupId>
     <artifactId>aprox-wars</artifactId>
-    <version>0.9.0</version>
+    <version>0.9.1-SNAPSHOT</version>
   </parent>
   
   <artifactId>aprox-rest-min</artifactId>
