@@ -72,6 +72,32 @@ public class WorkspaceResource
                        .build();
     }
 
+    @Path( "/{id}" )
+    @PUT
+    @Produces( MediaType.APPLICATION_JSON )
+    public Response createNamed( @PathParam( "id" ) final String id, @Context final UriInfo uriInfo )
+    {
+        try
+        {
+            final GraphWorkspace workspace = ops.create( id, new GraphWorkspaceConfiguration() );
+
+            final String json = serializer.toString( workspace );
+
+            return Response.created( uriInfo.getBaseUriBuilder()
+                                            .path( getClass() )
+                                            .path( workspace.getId() )
+                                            .build() )
+                           .entity( json )
+                           .build();
+        }
+        catch ( final CartoDataException e )
+        {
+            logger.error( "Failed to create new workspace: ", e, e.getMessage() );
+            return Response.serverError()
+                           .build();
+        }
+    }
+
     @Path( "/new" )
     @POST
     @Produces( MediaType.APPLICATION_JSON )
