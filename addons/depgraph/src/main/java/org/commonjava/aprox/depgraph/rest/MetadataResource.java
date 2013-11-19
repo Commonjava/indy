@@ -21,6 +21,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
+import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.aprox.depgraph.dto.MetadataCollationDTO;
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.rest.AproxWorkflowException;
@@ -28,6 +29,7 @@ import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.dto.MetadataCollation;
 import org.commonjava.maven.cartographer.ops.MetadataOps;
+import org.commonjava.maven.cartographer.preset.PresetSelector;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.spi.transport.LocationExpander;
 import org.commonjava.util.logging.Logger;
@@ -54,6 +56,12 @@ public class MetadataResource
 
     @Inject
     private LocationExpander locationExpander;
+
+    @Inject
+    private PresetSelector presets;
+
+    @Inject
+    private AproxDepgraphConfig config;
 
     @Path( "/batch" )
     @POST
@@ -177,7 +185,7 @@ public class MetadataResource
 
     @Path( "/collate" )
     @POST
-    public Response getCorrelation( @Context final HttpServletRequest req )
+    public Response getCollation( @Context final HttpServletRequest req )
     {
         Response response = Response.status( Status.NOT_FOUND )
                                     .build();
@@ -226,6 +234,8 @@ public class MetadataResource
 
         logger.info( "Got configuration JSON:\n\n%s\n\n", json );
         final MetadataCollationDTO dto = serializer.fromString( json, MetadataCollationDTO.class );
+
+        dto.resolveFilters( presets, config.getDefaultWebFilterPreset() );
 
         try
         {
