@@ -5,6 +5,8 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Collections;
+import java.util.Set;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -150,7 +152,8 @@ public class GraphRenderingResource
             final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( request );
 
             final String tree =
-                ops.depTree( ref, filter, scope == null ? DependencyScope.runtime : DependencyScope.getScope( scope ), collapseTransitives );
+                ops.depTree( ref, filter, scope == null ? DependencyScope.runtime : DependencyScope.getScope( scope ), collapseTransitives,
+                             Collections.<String, Set<ProjectVersionRef>> emptyMap() );
 
             if ( tree != null )
             {
