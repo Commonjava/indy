@@ -19,9 +19,15 @@ package org.commonjava.aprox.rest.util;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.maven.galley.model.Transfer;
 
+/**
+ * @deprecated Use {@link FileManager} directly instead.
+ * @author jdcasey
+ */
+@Deprecated
 public interface GroupContentManager
 {
 

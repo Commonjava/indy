@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ArtifactPathInfo;
@@ -43,7 +42,7 @@ public interface FileManager
     Transfer retrieve( final ArtifactStore store, final String path )
         throws AproxWorkflowException;
 
-    Transfer store( final DeployPoint deploy, final String path, final InputStream stream )
+    Transfer store( final ArtifactStore store, final String path, final InputStream stream )
         throws AproxWorkflowException;
 
     Transfer store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream )

@@ -20,8 +20,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.ws.rs.core.Response.Status;
-
 import org.apache.maven.index.updater.ResourceFetcher;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
@@ -29,6 +27,7 @@ import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.rest.AproxWorkflowException;
+import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.util.logging.Logger;
 
@@ -98,15 +97,13 @@ public class AproxResourceFetcher
         catch ( final AproxWorkflowException e )
         {
             logger.error( "Failed to retrieve: %s from: %s. Reason: %s", e, path, store.getKey(), e );
-            if ( e.getResponse()
-                  .getStatus() == Status.NOT_FOUND.getStatusCode() )
+            if ( e.getStatus() == ApplicationStatus.NOT_FOUND.code() )
             {
                 throw new FileNotFoundException( name );
             }
             else
             {
-                throw new IOException( String.format( "Failed to retrieve: %s from: %s. Reason: %s", path,
-                                                      store.getKey(), e ), e );
+                throw new IOException( String.format( "Failed to retrieve: %s from: %s. Reason: %s", path, store.getKey(), e ), e );
             }
         }
     }

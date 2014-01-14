@@ -20,6 +20,7 @@ import static org.apache.commons.lang.StringUtils.isEmpty;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.Map;
 
 public final class UrlUtils
@@ -39,8 +40,7 @@ public final class UrlUtils
     {
         if ( isEmpty( dbUrl ) )
         {
-            throw new IllegalArgumentException(
-                                                "Cannot calculate sibling database URL based on empty or null database URL." );
+            throw new IllegalArgumentException( "Cannot calculate sibling database URL based on empty or null database URL." );
         }
 
         final StringBuilder sb = new StringBuilder();
@@ -64,8 +64,7 @@ public final class UrlUtils
             return sb.toString();
         }
 
-        throw new IllegalArgumentException( "Cannot calculate sibling database URL for: '" + dbUrl
-            + "' (cannot find last path separator '/')" );
+        throw new IllegalArgumentException( "Cannot calculate sibling database URL for: '" + dbUrl + "' (cannot find last path separator '/')" );
     }
 
     public static String buildUrl( final String baseUrl, final String... parts )
@@ -83,32 +82,34 @@ public final class UrlUtils
         }
 
         final StringBuilder urlBuilder = new StringBuilder();
-
-        if ( parts[0] == null || !parts[0].startsWith( baseUrl ) )
-        {
-            urlBuilder.append( baseUrl );
-        }
-
-        for ( String part : parts )
-        {
-            if ( part == null || part.trim()
-                                     .length() < 1 )
-            {
-                continue;
-            }
-
-            if ( part.startsWith( "/" ) )
-            {
-                part = part.substring( 1 );
-            }
-
-            if ( urlBuilder.length() > 0 && urlBuilder.charAt( urlBuilder.length() - 1 ) != '/' )
-            {
-                urlBuilder.append( "/" );
-            }
-
-            urlBuilder.append( part );
-        }
+        urlBuilder.append( Paths.get( baseUrl, parts )
+                                .toString() );
+        //
+        //        if ( parts[0] == null || !parts[0].startsWith( baseUrl ) )
+        //        {
+        //            urlBuilder.append( baseUrl );
+        //        }
+        //
+        //        for ( String part : parts )
+        //        {
+        //            if ( part == null || part.trim()
+        //                                     .length() < 1 )
+        //            {
+        //                continue;
+        //            }
+        //
+        //            if ( part.startsWith( "/" ) )
+        //            {
+        //                part = part.substring( 1 );
+        //            }
+        //
+        //            if ( urlBuilder.length() > 0 && urlBuilder.charAt( urlBuilder.length() - 1 ) != '/' )
+        //            {
+        //                urlBuilder.append( "/" );
+        //            }
+        //
+        //            urlBuilder.append( part );
+        //        }
 
         if ( params != null && !params.isEmpty() )
         {

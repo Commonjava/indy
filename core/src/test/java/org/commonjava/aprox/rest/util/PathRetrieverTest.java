@@ -22,6 +22,7 @@ import static org.junit.Assert.assertThat;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
@@ -33,6 +34,7 @@ import org.commonjava.aprox.fixture.GalleyFixture;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.rest.util.retrieve.GroupPathHandler;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.util.logging.Log4jUtil;
 import org.junit.Before;
@@ -68,7 +70,9 @@ public class PathRetrieverTest
         repoRoot = tempFolder.newFolder( "repository" );
         fixture = new GalleyFixture( repoRoot );
         data = new MemoryStoreDataManager();
-        downloader = new DefaultFileManager( fixture.getTransfers(), new AproxLocationExpander( data ) );
+
+        downloader =
+            new DefaultFileManager( data, fixture.getTransfers(), new AproxLocationExpander( data ), Collections.<GroupPathHandler> emptySet() );
     }
 
     @Test

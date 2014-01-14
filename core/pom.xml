@@ -32,7 +32,7 @@
       <artifactId>archetype-catalog</artifactId>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-api</artifactId>
     </dependency>
     <dependency>

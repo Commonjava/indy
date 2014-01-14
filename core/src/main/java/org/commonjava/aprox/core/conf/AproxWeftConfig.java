@@ -17,8 +17,8 @@
 package org.commonjava.aprox.core.conf;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Produces;
 import javax.inject.Named;
-import javax.ws.rs.Produces;
 
 import org.commonjava.aprox.conf.AbstractAproxMapConfig;
 import org.commonjava.cdi.util.weft.config.DefaultWeftConfig;

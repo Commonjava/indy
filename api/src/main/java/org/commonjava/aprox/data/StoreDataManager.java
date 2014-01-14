@@ -57,6 +57,9 @@ public interface StoreDataManager
     List<DeployPoint> getAllDeployPoints()
         throws ProxyDataException;
 
+    List<ArtifactStore> getAllConcreteArtifactStores()
+        throws ProxyDataException;
+
     List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
         throws ProxyDataException;
 
@@ -133,7 +136,5 @@ public interface StoreDataManager
     boolean hasDeployPoint( String name );
 
     boolean hasArtifactStore( StoreKey key );
-
-    List<ArtifactStore> getAllConcreteArtifactStores();
 
 }

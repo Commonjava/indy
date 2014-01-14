@@ -33,6 +33,7 @@ import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.rest.AproxWorkflowException;
+import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.aprox.rest.util.retrieve.GroupPathHandler;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
@@ -122,7 +123,7 @@ public class MavenMetadataHandler
 
     @Override
     public boolean delete( final Group group, final List<? extends ArtifactStore> stores, final String path )
-        throws AproxWorkflowException, IOException
+        throws AproxWorkflowException
     {
         final Transfer target = fileManager.getStorageReference( group, path );
 
@@ -131,9 +132,17 @@ public class MavenMetadataHandler
             return false;
         }
 
-        target.delete();
+        try
+        {
+            target.delete();
 
-        helper.deleteChecksumsAndMergeInfo( group, path );
+            helper.deleteChecksumsAndMergeInfo( group, path );
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to delete one or more group files for: %s:%s. Reason: %s", e,
+                                              group.getKey(), path, e.getMessage() );
+        }
 
         return true;
     }

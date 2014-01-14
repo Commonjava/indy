@@ -22,9 +22,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.ws.rs.core.Response.Status;
-
 import org.commonjava.aprox.rest.AproxWorkflowException;
+import org.commonjava.aprox.rest.util.ApplicationStatus;
 
 public class ReplicationDTO
     implements Iterable<ReplicationAction>
@@ -100,7 +99,7 @@ public class ReplicationDTO
 
         if ( sb.length() > 0 )
         {
-            throw new AproxWorkflowException( Status.BAD_REQUEST, sb.toString() );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, sb.toString() );
         }
     }
 

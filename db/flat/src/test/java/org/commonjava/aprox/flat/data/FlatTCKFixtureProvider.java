@@ -222,6 +222,7 @@ public class FlatTCKFixtureProvider
 
         @Override
         public List<ArtifactStore> getAllConcreteArtifactStores()
+            throws ProxyDataException
         {
             return getDataManager().getAllConcreteArtifactStores();
         }

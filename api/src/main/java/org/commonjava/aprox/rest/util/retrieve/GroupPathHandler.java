@@ -16,7 +16,6 @@
  ******************************************************************************/
 package org.commonjava.aprox.rest.util.retrieve;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -43,6 +42,6 @@ public interface GroupPathHandler
         throws AproxWorkflowException;
 
     boolean delete( Group group, List<? extends ArtifactStore> stores, String path )
-        throws AproxWorkflowException, IOException;
+        throws AproxWorkflowException;
 
 }

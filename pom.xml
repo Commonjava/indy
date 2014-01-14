@@ -43,11 +43,15 @@
     <jbossas-version>7.1.1.Final</jbossas-version>
     <arquillian-version>1.0.1.Final</arquillian-version>
     <qarqas-version>0.3</qarqas-version>
-    <shelflife-version>0.5</shelflife-version>
-    <weftVersion>0.5</weftVersion>
-    <atlasVersion>0.9.6</atlasVersion>
-    <galleyVersion>0.3.3.1</galleyVersion>
-    <cartoVersion>0.3.4.1</cartoVersion>
+    <shelflife-version>0.5-SNAPSHOT</shelflife-version>
+    <weftVersion>0.5-SNAPSHOT</weftVersion>
+    <atlasVersion>0.9.6-SNAPSHOT</atlasVersion>
+    <galleyVersion>0.3.3-SNAPSHOT</galleyVersion>
+    <cartoVersion>0.3.3-SNAPSHOT</cartoVersion>
+    
+    <vertx.version>2.0.0-final</vertx.version>
+    <vertx.testtools.version>2.0.0-final</vertx.testtools.version>
+    <vabrVersion>1.2-SNAPSHOT</vabrVersion>
   </properties>
   
   <distributionManagement>
@@ -60,6 +64,7 @@
   
   <modules>
     <module>api</module>
+    <module>bindings</module>
     <module>core</module>
     <module>subsys</module>
     <module>db</module>
@@ -349,26 +354,55 @@
         <artifactId>galley-maven</artifactId>
         <version>${galleyVersion}</version>
       </dependency>
+      
+      <!-- Support for Vert.x bindings -->
+      <dependency>
+        <groupId>org.commonjava.vertx</groupId>
+        <artifactId>vabr-api</artifactId>
+        <version>${vabrVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.vertx</groupId>
+        <artifactId>vabr-processor</artifactId>
+        <version>${vabrVersion}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-core</artifactId>
+        <version>${vertx.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-platform</artifactId>
+        <version>${vertx.version}</version>
+      </dependency>
+      
+      <!-- Support for manually embedding CDI when needed -->
+      <dependency>
+        <groupId>org.jboss.weld.se</groupId>
+        <artifactId>weld-se-core</artifactId>
+        <version>1.1.8.Final</version>
+      </dependency>
+      
     </dependencies>
   </dependencyManagement>
   
   <dependencies>
     <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>resteasy-jaxrs</artifactId>
-      <!-- <scope>provided</scope> -->
-    </dependency>
-    <dependency>
       <groupId>javax.enterprise</groupId>
       <artifactId>cdi-api</artifactId>
-      <!-- <scope>provided</scope> -->
+    </dependency>
+<!--     
+    <dependency>
+      <groupId>org.jboss.resteasy</groupId>
+      <artifactId>resteasy-jaxrs</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jboss.spec.javax.servlet</groupId>
       <artifactId>jboss-servlet-api_3.0_spec</artifactId>
-      <!-- <scope>provided</scope> -->
     </dependency>
-    
+ -->    
     <dependency>
       <groupId>com.wordnik</groupId>
       <artifactId>swagger-annotations_2.9.1</artifactId>

@@ -23,7 +23,9 @@ import static org.apache.commons.lang.StringUtils.isEmpty;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,20 +33,27 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.event.Event;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
-import javax.ws.rs.core.Response.Status;
 
 import org.commonjava.aprox.change.event.AproxFileEventManager;
 import org.commonjava.aprox.change.event.ArtifactStoreRescanEvent;
+import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.DeployPoint;
+import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.rest.AproxWorkflowException;
+import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.aprox.rest.util.ArtifactPathInfo;
+import org.commonjava.aprox.rest.util.retrieve.GroupPathHandler;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.maven.galley.TransferException;
@@ -63,6 +72,11 @@ public class DefaultFileManager
 {
 
     private final Logger logger = new Logger( getClass() );
+
+    @Inject
+    private Instance<GroupPathHandler> groupHandlerInstances;
+
+    private Set<GroupPathHandler> groupHandlers;
 
     @Inject
     private Event<ArtifactStoreRescanEvent> rescanEvent;
@@ -86,16 +100,40 @@ public class DefaultFileManager
     @Inject
     private LocationExpander locationExpander;
 
-    public DefaultFileManager()
+    @Inject
+    private StoreDataManager storeManager;
+
+    protected DefaultFileManager()
     {
     }
 
-    public DefaultFileManager( final TransferManager transfers, final LocationExpander locationExpander )
+    public DefaultFileManager( final StoreDataManager storeManager, final TransferManager transfers, final LocationExpander locationExpander,
+                               final Collection<GroupPathHandler> groupHandlers )
     {
+        this.storeManager = storeManager;
         this.transfers = transfers;
         this.locationExpander = locationExpander;
         this.fileEventManager = new AproxFileEventManager();
         executor = Executors.newFixedThreadPool( 10 );
+
+        this.groupHandlers = new LinkedHashSet<GroupPathHandler>();
+        if ( groupHandlers != null )
+        {
+            this.groupHandlers.addAll( groupHandlers );
+        }
+    }
+
+    @PostConstruct
+    public void cdiInit()
+    {
+        groupHandlers = new LinkedHashSet<GroupPathHandler>();
+        if ( groupHandlerInstances != null )
+        {
+            for ( final GroupPathHandler h : groupHandlerInstances )
+            {
+                groupHandlers.add( h );
+            }
+        }
     }
 
     @Override
@@ -148,7 +186,14 @@ public class DefaultFileManager
     private Transfer retrieve( final ArtifactStore store, final String path, final boolean suppressFailures )
         throws AproxWorkflowException
     {
-        Transfer target = null;
+        Transfer target = store.getKey()
+                               .getType() == StoreType.group ? groupRetrieve( (Group) store, path, suppressFailures ) : null;
+
+        if ( target != null )
+        {
+            return null;
+        }
+
         try
         {
             final ConcreteResource res = new ConcreteResource( LocationUtils.toLocation( store ), path );
@@ -186,22 +231,39 @@ public class DefaultFileManager
      * java.lang.String, java.io.InputStream)
      */
     @Override
-    public Transfer store( final DeployPoint deploy, final String path, final InputStream stream )
+    public Transfer store( final ArtifactStore store, final String path, final InputStream stream )
         throws AproxWorkflowException
     {
+        final Transfer result = store.getKey()
+                                     .getType() == StoreType.group ? groupStore( (Group) store, path, stream ) : null;
+        if ( result != null )
+        {
+            return result;
+        }
+
+        if ( store.getKey()
+                  .getType() != StoreType.deploy_point )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot deploy to non-deploy point artifact store: %s.", store.getKey() );
+        }
+
+        final DeployPoint deploy = (DeployPoint) store;
+
         final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
         if ( pathInfo != null && pathInfo.isSnapshot() )
         {
             if ( !deploy.isAllowSnapshots() )
             {
                 logger.error( "Cannot store snapshot in non-snapshot deploy point: %s", deploy.getName() );
-                throw new AproxWorkflowException( Status.BAD_REQUEST, "Cannot store snapshot in non-snapshot deploy point: %s", deploy.getName() );
+                throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot store snapshot in non-snapshot deploy point: %s",
+                                                  deploy.getName() );
             }
         }
         else if ( !deploy.isAllowReleases() )
         {
             logger.error( "Cannot store release in snapshot-only deploy point: %s", deploy.getName() );
-            throw new AproxWorkflowException( Status.BAD_REQUEST, "Cannot store release in snapshot-only deploy point: %s", deploy.getName() );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot store release in snapshot-only deploy point: %s",
+                                              deploy.getName() );
         }
 
         final Transfer target = getStorageReference( deploy, path );
@@ -279,7 +341,7 @@ public class DefaultFileManager
         if ( selected == null )
         {
             logger.warn( "Cannot deploy. No valid deploy points in group." );
-            throw new AproxWorkflowException( Status.BAD_REQUEST, "No deployment locations available." );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "No deployment locations available." );
         }
 
         store( selected, path, stream );
@@ -353,6 +415,12 @@ public class DefaultFileManager
     public boolean delete( final ArtifactStore store, final String path )
         throws AproxWorkflowException
     {
+        if ( store.getKey()
+                  .getType() == StoreType.group )
+        {
+            return groupDelete( (Group) store, path );
+        }
+
         final Transfer item = getStorageReference( store, path == null ? ROOT_PATH : path );
         return doDelete( item );
     }
@@ -402,6 +470,90 @@ public class DefaultFileManager
         {
             rescan( store );
         }
+    }
+
+    protected Transfer groupRetrieve( final Group store, final String path, final boolean suppressFailures )
+        throws AproxWorkflowException
+    {
+        List<ArtifactStore> stores;
+        try
+        {
+            stores = storeManager.getOrderedConcreteStoresInGroup( store.getName() );
+        }
+        catch ( final ProxyDataException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to lookup membership of group: '%s'. Reason: %s'", e,
+                                              store.getKey(), e.getMessage() );
+        }
+
+        for ( final GroupPathHandler handler : groupHandlers )
+        {
+
+            if ( handler.canHandle( path ) )
+            {
+                //                logger.info( "Retrieving path: %s using GroupPathHandler: %s", path, handler.getClass()
+                //                                                                                            .getName() );
+                return handler.retrieve( store, stores, path );
+            }
+        }
+
+        return null;
+    }
+
+    protected Transfer groupStore( final Group store, final String path, final InputStream stream )
+        throws AproxWorkflowException
+    {
+        List<ArtifactStore> stores;
+        try
+        {
+            stores = storeManager.getOrderedConcreteStoresInGroup( store.getName() );
+        }
+        catch ( final ProxyDataException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to lookup membership of group: '%s'. Reason: %s'", e,
+                                              store.getKey(), e.getMessage() );
+        }
+
+        for ( final GroupPathHandler handler : groupHandlers )
+        {
+
+            if ( handler.canHandle( path ) )
+            {
+                //                logger.info( "Retrieving path: %s using GroupPathHandler: %s", path, handler.getClass()
+                //                                                                                            .getName() );
+                return handler.store( store, stores, path, stream );
+            }
+        }
+
+        return null;
+    }
+
+    protected boolean groupDelete( final Group store, final String path )
+        throws AproxWorkflowException
+    {
+        List<ArtifactStore> stores;
+        try
+        {
+            stores = storeManager.getOrderedConcreteStoresInGroup( store.getName() );
+        }
+        catch ( final ProxyDataException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to lookup membership of group: '%s'. Reason: %s'", e,
+                                              store.getKey(), e.getMessage() );
+        }
+
+        for ( final GroupPathHandler handler : groupHandlers )
+        {
+
+            if ( handler.canHandle( path ) )
+            {
+                //                logger.info( "Retrieving path: %s using GroupPathHandler: %s", path, handler.getClass()
+                //                                                                                            .getName() );
+                return handler.delete( store, stores, path );
+            }
+        }
+
+        return false;
     }
 
     @Override
