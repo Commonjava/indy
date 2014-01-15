@@ -45,9 +45,9 @@
     <qarqas-version>0.3</qarqas-version>
     <shelflife-version>0.5-SNAPSHOT</shelflife-version>
     <weftVersion>0.5-SNAPSHOT</weftVersion>
-    <atlasVersion>0.9.6-SNAPSHOT</atlasVersion>
-    <galleyVersion>0.3.3-SNAPSHOT</galleyVersion>
-    <cartoVersion>0.3.3-SNAPSHOT</cartoVersion>
+    <atlasVersion>0.9.7-SNAPSHOT</atlasVersion>
+    <galleyVersion>0.3.4-SNAPSHOT</galleyVersion>
+    <cartoVersion>0.3.5-SNAPSHOT</cartoVersion>
   </properties>
   
   <distributionManagement>
