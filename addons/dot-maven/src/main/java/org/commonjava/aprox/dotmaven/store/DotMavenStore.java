@@ -32,12 +32,10 @@ import javax.enterprise.context.RequestScoped;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
-import net.sf.webdav.ITransaction;
-import net.sf.webdav.IWebdavStore;
 import net.sf.webdav.StoredObject;
 import net.sf.webdav.exceptions.WebdavException;
-
-import org.commonjava.aprox.dotmaven.webctl.RequestInfo;
+import net.sf.webdav.spi.ITransaction;
+import net.sf.webdav.spi.IWebdavStore;
 
 @RequestScoped
 public class DotMavenStore
@@ -47,9 +45,6 @@ public class DotMavenStore
 
     @Inject
     private Instance<SubStore> injectedSubstores;
-
-    @Inject
-    private RequestInfo requestInfo;
 
     private List<SubStore> substores;
 
@@ -96,6 +91,7 @@ public class DotMavenStore
 
     @Override
     public void createFolder( final ITransaction transaction, final String folderUri )
+        throws WebdavException
     {
         //        logger.info( "create folder: %s, %s", transaction, folderUri );
         final SubStore store = select( folderUri );
@@ -126,6 +122,7 @@ public class DotMavenStore
 
     @Override
     public void createResource( final ITransaction transaction, final String resourceUri )
+        throws WebdavException
     {
         //        logger.info( "create resource: %s, %s", transaction, resourceUri );
         final SubStore store = select( resourceUri );
@@ -137,6 +134,7 @@ public class DotMavenStore
 
     @Override
     public InputStream getResourceContent( final ITransaction transaction, final String resourceUri )
+        throws WebdavException
     {
         //        logger.info( "get content: %s, %s", transaction, resourceUri );
         final SubStore store = select( resourceUri );
@@ -149,8 +147,9 @@ public class DotMavenStore
     }
 
     @Override
-    public long setResourceContent( final ITransaction transaction, final String resourceUri,
-                                    final InputStream content, final String contentType, final String characterEncoding )
+    public long setResourceContent( final ITransaction transaction, final String resourceUri, final InputStream content, final String contentType,
+                                    final String characterEncoding )
+        throws WebdavException
     {
         //        logger.info( "set content: %s, %s", transaction, resourceUri );
         final SubStore store = select( resourceUri );
@@ -164,6 +163,7 @@ public class DotMavenStore
 
     @Override
     public String[] getChildrenNames( final ITransaction transaction, final String folderUri )
+        throws WebdavException
     {
         //        logger.info( "get children names: %s, %s", transaction, folderUri );
         if ( "/".equals( folderUri ) )
@@ -190,6 +190,7 @@ public class DotMavenStore
 
     @Override
     public long getResourceLength( final ITransaction transaction, final String path )
+        throws WebdavException
     {
         //        logger.info( "get length: %s, %s", transaction, path );
         final SubStore store = select( path );
@@ -203,6 +204,7 @@ public class DotMavenStore
 
     @Override
     public void removeObject( final ITransaction transaction, final String uri )
+        throws WebdavException
     {
         //        logger.info( "remove: %s, %s", transaction, uri );
         final SubStore store = select( uri );
@@ -214,6 +216,7 @@ public class DotMavenStore
 
     @Override
     public StoredObject getStoredObject( final ITransaction transaction, final String uri )
+        throws WebdavException
     {
         //        final HttpSession session = requestInfo.getRequest()
         //                                               .getSession();

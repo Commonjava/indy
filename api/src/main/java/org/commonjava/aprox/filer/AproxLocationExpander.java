@@ -72,7 +72,7 @@ public class AproxLocationExpander
     public <T extends Location> List<Location> expand( final Collection<T> locations )
         throws TransferException
     {
-        final List<Location> result = new ArrayList<>();
+        final List<Location> result = new ArrayList<Location>();
         for ( final Location location : locations )
         {
             if ( location instanceof GroupLocation )

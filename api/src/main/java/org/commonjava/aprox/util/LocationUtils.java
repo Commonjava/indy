@@ -97,7 +97,7 @@ public final class LocationUtils
 
     public static List<? extends KeyedLocation> toCacheLocations( final Collection<StoreKey> keys )
     {
-        final List<KeyedLocation> result = new ArrayList<>();
+        final List<KeyedLocation> result = new ArrayList<KeyedLocation>();
         for ( final StoreKey key : keys )
         {
             final KeyedLocation loc = toCacheLocation( key );
@@ -117,7 +117,7 @@ public final class LocationUtils
 
     public static List<? extends KeyedLocation> toLocations( final List<? extends ArtifactStore> stores )
     {
-        final List<KeyedLocation> locations = new ArrayList<>();
+        final List<KeyedLocation> locations = new ArrayList<KeyedLocation>();
         for ( final ArtifactStore store : stores )
         {
             final KeyedLocation loc = toLocation( store );

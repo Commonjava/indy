@@ -18,7 +18,7 @@ package org.commonjava.aprox.dotmaven.store;
 
 import java.security.Principal;
 
-import net.sf.webdav.ITransaction;
+import net.sf.webdav.spi.ITransaction;
 
 public class StoreTxn
     implements ITransaction

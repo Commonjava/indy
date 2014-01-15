@@ -162,7 +162,8 @@ public class DefaultFileManager
         try
         {
             // FIXME: Needs to be a list?
-            return new HashSet<>( transfers.retrieveAll( locationExpander.expand( new VirtualResource( LocationUtils.toLocations( stores ), path ) ) ) );
+            return new HashSet<Transfer>( transfers.retrieveAll( locationExpander.expand( new VirtualResource( LocationUtils.toLocations( stores ),
+                                                                                                               path ) ) ) );
         }
         catch ( final TransferException e )
         {

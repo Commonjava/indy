@@ -123,7 +123,11 @@ public class AdminController
             // make sure the expiration manager is running...
             expirationManager.loadNextExpirations();
         }
-        catch ( final ProxyDataException | ExpirationManagerException e )
+        catch ( final ExpirationManagerException e )
+        {
+            throw new RuntimeException( "Failed to boot aprox components: " + e.getMessage(), e );
+        }
+        catch ( final ProxyDataException e )
         {
             throw new RuntimeException( "Failed to boot aprox components: " + e.getMessage(), e );
         }

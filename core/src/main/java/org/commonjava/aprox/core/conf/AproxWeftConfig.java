@@ -17,10 +17,12 @@
 package org.commonjava.aprox.core.conf;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Named;
 
 import org.commonjava.aprox.conf.AbstractAproxMapConfig;
+import org.commonjava.aprox.inject.Production;
 import org.commonjava.cdi.util.weft.config.DefaultWeftConfig;
 import org.commonjava.web.config.ConfigurationException;
 
@@ -62,45 +64,37 @@ public class AproxWeftConfig
 
         final int v = Integer.parseInt( value );
 
-        switch ( name )
+        if ( DEFAULT_THREADS.equals( name ) )
         {
-            case DEFAULT_THREADS:
+            weftConfig.configureDefaultThreads( v );
+        }
+        else if ( DEFAULT_PRIORITY.equals( name ) )
+        {
+            weftConfig.configureDefaultPriority( v );
+        }
+        else
+        {
+            final int lastIdx = name.lastIndexOf( '.' );
+            if ( lastIdx > -1 && name.length() > lastIdx )
             {
-                weftConfig.configureDefaultThreads( v );
-                break;
-            }
-            case DEFAULT_PRIORITY:
-            {
-                weftConfig.configureDefaultPriority( v );
-                break;
-            }
-            default:
-            {
-                final int lastIdx = name.lastIndexOf( '.' );
-                if ( lastIdx > -1 && name.length() > lastIdx )
-                {
-                    final String pool = name.substring( 0, lastIdx );
-                    final String suffix = name.substring( lastIdx );
+                final String pool = name.substring( 0, lastIdx );
+                final String suffix = name.substring( lastIdx );
 
-                    switch ( suffix )
-                    {
-                        case THREADS_SUFFIX:
-                        {
-                            weftConfig.configureThreads( pool, v );
-                            break;
-                        }
-                        case PRIORITY_SUFFIX:
-                        {
-                            weftConfig.configurePriority( pool, v );
-                            break;
-                        }
-                    }
+                if ( THREADS_SUFFIX.equals( suffix ) )
+                {
+                    weftConfig.configureThreads( pool, v );
+                }
+                else if ( PRIORITY_SUFFIX.equals( suffix ) )
+                {
+                    weftConfig.configurePriority( pool, v );
                 }
             }
         }
     }
 
     @Produces
+    @Production
+    @Default
     public DefaultWeftConfig getWeftConfig()
     {
         return weftConfig;

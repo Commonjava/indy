@@ -35,9 +35,9 @@ import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import net.sf.webdav.ITransaction;
 import net.sf.webdav.StoredObject;
 import net.sf.webdav.exceptions.WebdavException;
+import net.sf.webdav.spi.ITransaction;
 
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
@@ -87,6 +87,7 @@ public class ArtifactStoreSubStore
 
     @Override
     public void createFolder( final ITransaction transaction, final String folderUri )
+        throws WebdavException
     {
         final StoreURIMatcher matcher = new StoreURIMatcher( folderUri );
         if ( !matcher.hasStorePath() )
@@ -113,6 +114,7 @@ public class ArtifactStoreSubStore
 
     @Override
     public void createResource( final ITransaction transaction, final String resourceUri )
+        throws WebdavException
     {
         final StoreURIMatcher matcher = new StoreURIMatcher( resourceUri );
         if ( !matcher.hasStorePath() )
@@ -139,6 +141,7 @@ public class ArtifactStoreSubStore
 
     @Override
     public InputStream getResourceContent( final ITransaction transaction, final String resourceUri )
+        throws WebdavException
     {
         final StoreURIMatcher matcher = new StoreURIMatcher( resourceUri );
         final Transfer item = getTransfer( matcher );
@@ -162,6 +165,7 @@ public class ArtifactStoreSubStore
     }
 
     private Transfer getTransfer( final StoreURIMatcher matcher )
+        throws WebdavException
     {
         final String resourceUri = matcher.getURI();
 
@@ -216,6 +220,7 @@ public class ArtifactStoreSubStore
     @Override
     public long setResourceContent( final ITransaction transaction, final String resourceUri, final InputStream content, final String contentType,
                                     final String characterEncoding )
+        throws WebdavException
     {
         final StoreURIMatcher matcher = new StoreURIMatcher( resourceUri );
         if ( !matcher.hasStorePath() )
@@ -259,6 +264,7 @@ public class ArtifactStoreSubStore
 
     @Override
     public String[] getChildrenNames( final ITransaction transaction, final String folderUri )
+        throws WebdavException
     {
         String[] names;
         final StoreURIMatcher matcher = new StoreURIMatcher( folderUri );
@@ -351,6 +357,7 @@ public class ArtifactStoreSubStore
 
     @Override
     public long getResourceLength( final ITransaction transaction, final String path )
+        throws WebdavException
     {
         final StoreURIMatcher matcher = new StoreURIMatcher( path );
         if ( matcher.hasStorePath() )
@@ -369,6 +376,7 @@ public class ArtifactStoreSubStore
 
     @Override
     public void removeObject( final ITransaction transaction, final String uri )
+        throws WebdavException
     {
         final StoreURIMatcher matcher = new StoreURIMatcher( uri );
         if ( !matcher.hasStorePath() )
@@ -398,6 +406,7 @@ public class ArtifactStoreSubStore
 
     @Override
     public StoredObject getStoredObject( final ITransaction transaction, final String uri )
+        throws WebdavException
     {
         final StoredObject so = new StoredObject();
 
@@ -429,6 +438,7 @@ public class ArtifactStoreSubStore
     }
 
     private StorageAdvice getStorageAdviceFor( final StoreURIMatcher matcher )
+        throws WebdavException
     {
         final String uri = matcher.getURI();
         final StoreKey key = matcher.getStoreKey();

@@ -110,8 +110,7 @@ public class DefaultAproxConfiguration
     @Override
     public int getNotFoundCacheTimeoutSeconds()
     {
-        return notFoundCacheTimeoutSeconds == null ? DEFAULT_NOT_FOUND_CACHE_TIMEOUT_SECONDS
-                        : notFoundCacheTimeoutSeconds;
+        return notFoundCacheTimeoutSeconds == null ? DEFAULT_NOT_FOUND_CACHE_TIMEOUT_SECONDS : notFoundCacheTimeoutSeconds;
     }
 
 }

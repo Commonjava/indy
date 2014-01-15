@@ -20,8 +20,9 @@ import static org.apache.commons.lang.StringUtils.isEmpty;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Paths;
 import java.util.Map;
+
+import org.commonjava.maven.galley.util.PathUtils;
 
 public final class UrlUtils
 {
@@ -82,8 +83,12 @@ public final class UrlUtils
         }
 
         final StringBuilder urlBuilder = new StringBuilder();
-        urlBuilder.append( Paths.get( baseUrl, parts )
-                                .toString() );
+
+        final String[] arry = new String[parts.length + 1];
+        arry[0] = baseUrl;
+        System.arraycopy( parts, 0, arry, 1, parts.length );
+
+        urlBuilder.append( PathUtils.normalize( arry ) );
         //
         //        if ( parts[0] == null || !parts[0].startsWith( baseUrl ) )
         //        {

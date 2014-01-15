@@ -23,10 +23,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.file.Paths;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Level;
+import org.commonjava.maven.galley.util.PathUtils;
 import org.commonjava.util.logging.Log4jUtil;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -164,8 +164,11 @@ public class RequestBodyInputStreamTest
 
     private String getResource( final String base, final String... parts )
     {
-        final String path = Paths.get( base, parts )
-                                 .toString();
+        final String[] arry = new String[parts.length + 1];
+        arry[0] = base;
+        System.arraycopy( parts, 0, arry, 1, parts.length );
+
+        final String path = PathUtils.normalize( arry );
 
         final URL resource = Thread.currentThread()
                                    .getContextClassLoader()

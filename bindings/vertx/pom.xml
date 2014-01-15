@@ -29,8 +29,14 @@
 
   <dependencies>
     <dependency>
+      <groupId>javax.enterprise</groupId>
+      <artifactId>cdi-api</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
       <groupId>org.jboss.weld.se</groupId>
       <artifactId>weld-se-core</artifactId>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.vertx</groupId>
@@ -53,5 +59,39 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
     </dependency>
+    <dependency>
+      <groupId>args4j</groupId>
+      <artifactId>args4j</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-db-memory</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-filer-default</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.shelflife</groupId>
+      <artifactId>shelflife-store-memory</artifactId>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
+  
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+            <source>1.6</source>
+            <target>1.6</target>
+            <annotationProcessors>
+              <annotationProcessor>org.commonjava.vertx.vabr.anno.proc.RoutingAnnotationProcessor</annotationProcessor>
+            </annotationProcessors>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 </project>

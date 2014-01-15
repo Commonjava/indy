@@ -16,11 +16,10 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.vertx.util;
 
-import java.nio.file.Paths;
-
 import javax.enterprise.context.RequestScoped;
 
 import org.commonjava.aprox.core.util.UriFormatter;
+import org.commonjava.maven.galley.util.PathUtils;
 
 @RequestScoped
 public class VertXUriFormatter
@@ -30,9 +29,11 @@ public class VertXUriFormatter
     @Override
     public String formatAbsolutePathTo( final String base, final String... parts )
     {
-        return Paths.get( "/api/1.0", Paths.get( base, parts )
-                                           .toString() )
-                    .toString();
+        final String[] arry = new String[parts.length + 1];
+        arry[0] = base;
+        System.arraycopy( parts, 0, arry, 1, parts.length );
+
+        return PathUtils.normalize( arry );
     }
 
 }

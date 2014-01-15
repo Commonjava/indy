@@ -70,6 +70,11 @@
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-subsys-http</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.jboss.resteasy</groupId>
+      <artifactId>jaxrs-api</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   
   <profiles>

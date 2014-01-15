@@ -93,7 +93,7 @@ public class ReplicationController
         List<EndpointView> remoteEndpoints = null;
 
         final boolean overwrite = dto.isOverwrite();
-        final Set<StoreKey> replicated = new HashSet<>();
+        final Set<StoreKey> replicated = new HashSet<StoreKey>();
         for ( final ReplicationAction action : dto )
         {
             if ( action == null )
@@ -213,7 +213,7 @@ public class ReplicationController
         }
 
         //        logger.info( "\n\n\n\n\n[AutoProx] Checking URL: %s from:", new Throwable(), url );
-        final List<ArtifactStore> result = new ArrayList<>();
+        final List<ArtifactStore> result = new ArrayList<ArtifactStore>();
 
         HttpGet req = newGet( reposUrl, dto );
 

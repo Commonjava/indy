@@ -29,7 +29,7 @@ public class RepositoryLocation
 
     private final Repository repository;
 
-    private final Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes = new HashMap<String, Object>();
 
     public RepositoryLocation( final Repository repository )
     {

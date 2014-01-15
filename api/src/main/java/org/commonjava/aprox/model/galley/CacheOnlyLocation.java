@@ -28,7 +28,7 @@ public class CacheOnlyLocation
 
     private final DeployPoint deploy;
 
-    private final Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes = new HashMap<String, Object>();
 
     private final StoreKey key;
 

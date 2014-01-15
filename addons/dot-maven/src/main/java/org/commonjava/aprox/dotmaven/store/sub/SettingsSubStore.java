@@ -31,9 +31,9 @@ import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import net.sf.webdav.ITransaction;
 import net.sf.webdav.StoredObject;
 import net.sf.webdav.exceptions.WebdavException;
+import net.sf.webdav.spi.ITransaction;
 
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
@@ -77,18 +77,21 @@ public class SettingsSubStore
 
     @Override
     public void createFolder( final ITransaction transaction, final String folderUri )
+        throws WebdavException
     {
         throw new WebdavException( "Settings folder is read-only." );
     }
 
     @Override
     public void createResource( final ITransaction transaction, final String resourceUri )
+        throws WebdavException
     {
         throw new WebdavException( "Settings folder is read-only." );
     }
 
     @Override
     public InputStream getResourceContent( final ITransaction transaction, final String resourceUri )
+        throws WebdavException
     {
         final SettingsURIMatcher matcher = new SettingsURIMatcher( resourceUri );
         if ( matcher.isSettingsFileResource() )
@@ -101,14 +104,16 @@ public class SettingsSubStore
     }
 
     @Override
-    public long setResourceContent( final ITransaction transaction, final String resourceUri,
-                                    final InputStream content, final String contentType, final String characterEncoding )
+    public long setResourceContent( final ITransaction transaction, final String resourceUri, final InputStream content, final String contentType,
+                                    final String characterEncoding )
+        throws WebdavException
     {
         throw new WebdavException( "Read-only resource." );
     }
 
     @Override
     public String[] getChildrenNames( final ITransaction transaction, final String folderUri )
+        throws WebdavException
     {
         final SettingsURIMatcher matcher = new SettingsURIMatcher( folderUri );
 
@@ -150,6 +155,7 @@ public class SettingsSubStore
 
     @Override
     public long getResourceLength( final ITransaction transaction, final String path )
+        throws WebdavException
     {
         final SettingsURIMatcher matcher = new SettingsURIMatcher( path );
 
@@ -163,6 +169,7 @@ public class SettingsSubStore
     }
 
     private synchronized SettingsTemplate getSettingsTemplate( final URIMatcher matcher )
+        throws WebdavException
     {
         SettingsTemplate template = templates.get( matcher.getURI() );
         if ( template == null )
@@ -199,12 +206,14 @@ public class SettingsSubStore
 
     @Override
     public void removeObject( final ITransaction transaction, final String uri )
+        throws WebdavException
     {
         throw new WebdavException( "Read-only resource." );
     }
 
     @Override
     public StoredObject getStoredObject( final ITransaction transaction, final String uri )
+        throws WebdavException
     {
         final StoredObject so = new StoredObject();
         final Date d = new Date();

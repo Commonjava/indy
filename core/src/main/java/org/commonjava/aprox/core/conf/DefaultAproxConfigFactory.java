@@ -50,6 +50,13 @@ public class DefaultAproxConfigFactory
     @Inject
     private Instance<AbstractAproxMapConfig> mapConfigs;
 
+    private static String configPath = CONFIG_PATH;
+
+    public static void setConfigPath( final String path )
+    {
+        configPath = path;
+    }
+
     public DefaultAproxConfigFactory()
         throws ConfigurationException
     {
@@ -70,18 +77,17 @@ public class DefaultAproxConfigFactory
             with( section.getSectionName(), section );
         }
 
-        logger.info( "\n\n[CONFIG] Reading configuration from %s", CONFIG_PATH );
+        logger.info( "\n\n[CONFIG] Reading configuration from %s", configPath );
 
         InputStream stream = null;
         try
         {
-            stream = ConfigFileUtils.readFileWithIncludes( CONFIG_PATH );
+            stream = ConfigFileUtils.readFileWithIncludes( configPath );
             new DotConfConfigurationReader( this ).loadConfiguration( stream );
         }
         catch ( final IOException e )
         {
-            throw new ConfigurationException( "Cannot open configuration file: %s. Reason: %s", e, CONFIG_PATH,
-                                              e.getMessage() );
+            throw new ConfigurationException( "Cannot open configuration file: %s. Reason: %s", e, configPath, e.getMessage() );
         }
         finally
         {

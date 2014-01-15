@@ -18,9 +18,9 @@ package org.commonjava.aprox.dotmaven.store;
 
 import java.io.InputStream;
 
-import net.sf.webdav.ITransaction;
 import net.sf.webdav.StoredObject;
 import net.sf.webdav.exceptions.WebdavException;
+import net.sf.webdav.spi.ITransaction;
 
 public interface SubStore
 {
@@ -51,7 +51,8 @@ public interface SubStore
      * @throws WebdavException
      *      if something goes wrong on the store level
      */
-    void createFolder( ITransaction transaction, String folderUri );
+    void createFolder( ITransaction transaction, String folderUri )
+        throws WebdavException;
 
     /**
      * Creates a content resource at the position specified by
@@ -65,7 +66,8 @@ public interface SubStore
      * @throws WebdavException
      *      if something goes wrong on the store level
      */
-    void createResource( ITransaction transaction, String resourceUri );
+    void createResource( ITransaction transaction, String resourceUri )
+        throws WebdavException;
 
     /**
      * Gets the content of the resource specified by <code>resourceUri</code>.
@@ -79,7 +81,8 @@ public interface SubStore
      * @throws WebdavException
      *      if something goes wrong on the store level
      */
-    InputStream getResourceContent( ITransaction transaction, String resourceUri );
+    InputStream getResourceContent( ITransaction transaction, String resourceUri )
+        throws WebdavException;
 
     /**
      * Sets / stores the content of the resource specified by
@@ -101,8 +104,8 @@ public interface SubStore
      * @throws WebdavException
      *      if something goes wrong on the store level
      */
-    long setResourceContent( ITransaction transaction, String resourceUri, InputStream content, String contentType,
-                             String characterEncoding );
+    long setResourceContent( ITransaction transaction, String resourceUri, InputStream content, String contentType, String characterEncoding )
+        throws WebdavException;
 
     /**
      * Gets the names of the children of the folder specified by
@@ -118,7 +121,8 @@ public interface SubStore
      * @throws WebdavException
      *      if something goes wrong on the store level
      */
-    String[] getChildrenNames( ITransaction transaction, String folderUri );
+    String[] getChildrenNames( ITransaction transaction, String folderUri )
+        throws WebdavException;
 
     /**
      * Gets the length of the content resource specified by
@@ -135,7 +139,8 @@ public interface SubStore
      * @throws WebdavException
      *      if something goes wrong on the store level
      */
-    long getResourceLength( ITransaction transaction, String path );
+    long getResourceLength( ITransaction transaction, String path )
+        throws WebdavException;
 
     /**
      * Removes the object specified by <code>uri</code>.
@@ -148,7 +153,8 @@ public interface SubStore
      * @throws WebdavException
      *      if something goes wrong on the store level
      */
-    void removeObject( ITransaction transaction, String uri );
+    void removeObject( ITransaction transaction, String uri )
+        throws WebdavException;
 
     /**
      * Gets the storedObject specified by <code>uri</code>
@@ -159,6 +165,8 @@ public interface SubStore
      * @param uri
      *      URI
      * @return StoredObject
+     * @throws WebdavException 
      */
-    StoredObject getStoredObject( ITransaction transaction, String uri );
+    StoredObject getStoredObject( ITransaction transaction, String uri )
+        throws WebdavException;
 }

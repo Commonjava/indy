@@ -20,7 +20,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import javax.enterprise.context.RequestScoped;
-import javax.servlet.http.HttpServletRequest;
+
+import net.sf.webdav.spi.WebdavRequest;
 
 @RequestScoped
 public class RequestInfo
@@ -30,14 +31,14 @@ public class RequestInfo
 
     //    private final Logger logger = new Logger( getClass() );
 
-    private HttpServletRequest request;
+    private WebdavRequest request;
 
-    public HttpServletRequest getRequest()
+    public WebdavRequest getRequest()
     {
         return request;
     }
 
-    public void setRequest( final HttpServletRequest request )
+    public void setRequest( final WebdavRequest request )
     {
         this.request = request;
     }
@@ -49,7 +50,7 @@ public class RequestInfo
             return null;
         }
 
-        String baseUrl = request.getRequestURL()
+        String baseUrl = request.getRequestURI()
                                 .toString();
         //        logger.info( "Request: %s", baseUrl );
 
