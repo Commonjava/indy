@@ -38,9 +38,6 @@ import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.web.json.test.WebFixture;
-import org.commonjava.web.test.fixture.TestWarArchiveBuilder;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -98,16 +95,16 @@ public class DepgraphStorageListenerLiveTest
         aproxData.clear();
     }
 
-    @Deployment
-    public static WebArchive createWar()
-    {
-        return new TestWarArchiveBuilder( new File( "target/test-assembly.war" ), DepgraphStorageListenerLiveTest.class ).withExtraClasses( TestConfigProvider.class/*,
-                                                                                                                                                                    TestDiscoverer.class*/)
-                                                                                                                         .withLog4jProperties()
-                                                                                                                         //                                                                                                                       .withClassloaderResources( "arquillian.xml" )
-                                                                                                                         .withBeansXml( "META-INF/beans.xml" )
-                                                                                                                         .build();
-    }
+    //    @Deployment
+    //    public static WebArchive createWar()
+    //    {
+    //        return new TestWarArchiveBuilder( new File( "target/test-assembly.war" ), DepgraphStorageListenerLiveTest.class ).withExtraClasses( TestConfigProvider.class/*,
+    //                                                                                                                                                                    TestDiscoverer.class*/)
+    //                                                                                                                         .withLog4jProperties()
+    //                                                                                                                         //                                                                                                                       .withClassloaderResources( "arquillian.xml" )
+    //                                                                                                                         .withBeansXml( "META-INF/beans.xml" )
+    //                                                                                                                         .build();
+    //    }
 
     @Test
     public void readPomWithoutParent()

@@ -52,6 +52,7 @@
     <vertx.version>2.0.0-final</vertx.version>
     <vertx.testtools.version>2.0.0-final</vertx.testtools.version>
     <vabrVersion>1.2-SNAPSHOT</vabrVersion>
+    <webdav-version>3.0-SNAPSHOT</webdav-version>
   </properties>
   
   <distributionManagement>
@@ -344,8 +345,18 @@
       
       <dependency>
         <groupId>org.commonjava.web</groupId>
-        <artifactId>webdav-handler</artifactId>
-        <version>3.0-SNAPSHOT</version>
+        <artifactId>webdav-handler-common</artifactId>
+        <version>${webdav-version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.web</groupId>
+        <artifactId>webdav-handler-vertx</artifactId>
+        <version>${webdav-version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.web</groupId>
+        <artifactId>webdav-handler-jaxrs</artifactId>
+        <version>${webdav-version</version>
       </dependency>
       
       <dependency>

@@ -16,6 +16,9 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.jaxrs.util;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
@@ -28,17 +31,17 @@ public final class AproxExceptionUtils
     {
     }
 
-    public static Response formatResponse( final AproxWorkflowException error )
+    public static Response formatResponse( final Throwable error )
     {
         return formatResponse( error, true );
     }
 
-    public static Response formatResponse( final AproxWorkflowException error, final boolean includeExplanation )
+    public static Response formatResponse( final Throwable error, final boolean includeExplanation )
     {
         ResponseBuilder rb;
-        if ( error.getStatus() > 0 )
+        if ( ( error instanceof AproxWorkflowException ) && ( (AproxWorkflowException) error ).getStatus() > 0 )
         {
-            rb = Response.status( error.getStatus() );
+            rb = Response.status( ( (AproxWorkflowException) error ).getStatus() );
         }
         else
         {
@@ -47,10 +50,25 @@ public final class AproxExceptionUtils
 
         if ( includeExplanation )
         {
-            rb.entity( error.formatEntity() );
+            rb.entity( formatEntity( error ) );
         }
 
         return rb.build();
+    }
+
+    public static CharSequence formatEntity( final Throwable error )
+    {
+        final StringWriter sw = new StringWriter();
+        sw.append( error.getMessage() );
+
+        final Throwable cause = error.getCause();
+        if ( cause != null )
+        {
+            sw.append( "\n\n" );
+            cause.printStackTrace( new PrintWriter( sw ) );
+        }
+
+        return sw.toString();
     }
 
 }

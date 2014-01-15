@@ -64,7 +64,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.web</groupId>
-      <artifactId>webdav-handler</artifactId>
+      <artifactId>webdav-handler-common</artifactId>
     </dependency>
   </dependencies>
 </project>

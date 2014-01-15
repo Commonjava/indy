@@ -16,6 +16,9 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.vertx.util;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import org.commonjava.aprox.core.util.UriFormatter;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationHeader;
@@ -96,8 +99,7 @@ public final class ResponseUtils
 
         if ( includeExplanation )
         {
-            response.write( error.formatEntity()
-                                 .toString() );
+            response.write( formatEntity( error ).toString() );
         }
     }
 
@@ -115,6 +117,21 @@ public final class ResponseUtils
         {
             response.write( error.getMessage() );
         }
+    }
+
+    public static CharSequence formatEntity( final Throwable error )
+    {
+        final StringWriter sw = new StringWriter();
+        sw.append( error.getMessage() );
+
+        final Throwable cause = error.getCause();
+        if ( cause != null )
+        {
+            sw.append( "\n\n" );
+            cause.printStackTrace( new PrintWriter( sw ) );
+        }
+
+        return sw.toString();
     }
 
 }

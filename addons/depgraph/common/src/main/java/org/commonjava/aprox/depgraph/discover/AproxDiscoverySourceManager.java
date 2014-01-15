@@ -133,7 +133,7 @@ public class AproxDiscoverySourceManager
     @Override
     public List<? extends Location> createLocations( final Object... sources )
     {
-        final List<StoreKey> keys = new ArrayList<>( sources.length );
+        final List<StoreKey> keys = new ArrayList<StoreKey>( sources.length );
         for ( final Object source : sources )
         {
             keys.add( StoreKey.fromString( normalize( source.toString() ) ) );
@@ -145,7 +145,7 @@ public class AproxDiscoverySourceManager
     @Override
     public List<? extends Location> createLocations( final Collection<Object> sources )
     {
-        final List<StoreKey> keys = new ArrayList<>( sources.size() );
+        final List<StoreKey> keys = new ArrayList<StoreKey>( sources.size() );
         for ( final Object source : sources )
         {
             keys.add( StoreKey.fromString( normalize( source.toString() ) ) );

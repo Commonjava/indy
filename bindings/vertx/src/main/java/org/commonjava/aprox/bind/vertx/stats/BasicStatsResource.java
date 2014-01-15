@@ -16,6 +16,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.vertx.stats;
 
+import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatEntity;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithEntity;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
 
@@ -67,7 +68,7 @@ public class BasicStatsResource
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to retrieve endpoint listing: %s", e, e.formatEntity() );
+            logger.error( "Failed to retrieve endpoint listing: %s", e, formatEntity( e ) );
             formatResponse( e, request.response() );
         }
     }

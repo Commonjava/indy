@@ -35,13 +35,6 @@
   
   <profiles>
     <profile>
-      <id>deprecated</id>
-      
-      <modules>
-        <module>couch</module>
-      </modules>
-    </profile>
-    <profile>
       <id>experimental</id>
       
       <modules>

@@ -79,7 +79,7 @@ public class WebOperationConfigDTO
 
         if ( excludedSources != null )
         {
-            final Set<Location> excluded = new HashSet<>();
+            final Set<Location> excluded = new HashSet<Location>();
             for ( final StoreKey key : excludedSources )
             {
                 if ( key == null )

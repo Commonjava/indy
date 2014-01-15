@@ -74,7 +74,7 @@ public class BasicStatsResource
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to retrieve endpoint listing: %s", e, e.formatEntity() );
+            logger.error( "Failed to retrieve endpoint listing: %s", e, AproxExceptionUtils.formatEntity( e ) );
             return AproxExceptionUtils.formatResponse( e );
         }
 

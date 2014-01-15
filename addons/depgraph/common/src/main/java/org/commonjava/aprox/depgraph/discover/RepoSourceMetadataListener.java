@@ -68,10 +68,10 @@ public class RepoSourceMetadataListener
             return;
         }
 
-        final Map<URI, Repository> repos = new HashMap<>();
-        final Set<URI> unmatchedSources = new HashSet<>();
+        final Map<URI, Repository> repos = new HashMap<URI, Repository>();
+        final Set<URI> unmatchedSources = new HashSet<URI>();
 
-        final Set<ProjectVersionRef> seen = new HashSet<>();
+        final Set<ProjectVersionRef> seen = new HashSet<ProjectVersionRef>();
         for ( final ProjectRelationship<?> rel : stored )
         {
             final ProjectVersionRef ref = rel.getDeclaring()

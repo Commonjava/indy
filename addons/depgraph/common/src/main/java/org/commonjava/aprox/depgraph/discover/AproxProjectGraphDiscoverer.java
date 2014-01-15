@@ -161,7 +161,14 @@ public class AproxProjectGraphDiscoverer
         List<? extends KeyedLocation> locations;
         if ( key == null )
         {
-            locations = LocationUtils.toLocations( storeManager.getAllConcreteArtifactStores() );
+            try
+            {
+                locations = LocationUtils.toLocations( storeManager.getAllConcreteArtifactStores() );
+            }
+            catch ( final ProxyDataException e )
+            {
+                throw new CartoDataException( "Cannot retrieve full list of non-group artifact stores. Reason: %s", e, e.getMessage() );
+            }
         }
         else if ( store == null )
         {

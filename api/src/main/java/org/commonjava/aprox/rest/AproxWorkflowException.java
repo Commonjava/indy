@@ -16,8 +16,6 @@
  ******************************************************************************/
 package org.commonjava.aprox.rest;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.text.MessageFormat;
 
 import org.commonjava.aprox.rest.util.ApplicationStatus;
@@ -55,21 +53,6 @@ public class AproxWorkflowException
         super( message );
         this.params = params;
         this.status = status;
-    }
-
-    public CharSequence formatEntity()
-    {
-        final StringWriter sw = new StringWriter();
-        sw.append( getMessage() );
-
-        final Throwable cause = getCause();
-        if ( cause != null )
-        {
-            sw.append( "\n\n" );
-            cause.printStackTrace( new PrintWriter( sw ) );
-        }
-
-        return sw.toString();
     }
 
     private static final long serialVersionUID = 1L;
