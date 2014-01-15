@@ -29,7 +29,7 @@
   
   <packaging>pom</packaging>
   
-  <name>AProx :: Parent POM</name>
+  <name>AProx :: Project Root</name>
   
   <scm>
     <connection>scm:git:http://jdcasey@github.com/jdcasey/aprox.git</connection>
@@ -124,7 +124,27 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-depgraph</artifactId>
+        <artifactId>aprox-bindings-jaxrs</artifactId>
+        <version>0.9.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-bindings-vertx</artifactId>
+        <version>0.9.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-depgraph-common</artifactId>
+        <version>0.9.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-depgraph-jaxrs</artifactId>
+        <version>0.9.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-depgraph-vertx</artifactId>
         <version>0.9.2-SNAPSHOT</version>
       </dependency>
       <dependency>
@@ -134,7 +154,17 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-dot-maven</artifactId>
+        <artifactId>aprox-dot-maven-common</artifactId>
+        <version>0.9.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-dot-maven-jaxrs</artifactId>
+        <version>0.9.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-dot-maven-vertx</artifactId>
         <version>0.9.2-SNAPSHOT</version>
       </dependency>
       <dependency>

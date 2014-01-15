@@ -23,7 +23,7 @@
   </parent>
   
   <artifactId>aprox-db-couch</artifactId>
-  <name>AProx :: Couch Database</name>
+  <name>AProx :: DB :: Couch</name>
   
   <dependencyManagement>
     <dependencies>

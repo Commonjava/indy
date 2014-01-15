@@ -25,7 +25,7 @@
   <artifactId>aprox-easyprox</artifactId>
   <!-- <packaging>war</packaging> -->
   
-  <name>AProx :: EasyProx</name>
+  <name>AProx :: WARs :: EasyProx</name>
   <description>REST + JS UI + Dot-Maven + Autoprox</description>
   
   <dependencies>
@@ -51,7 +51,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-dot-maven</artifactId>
+      <artifactId>aprox-dot-maven-jaxrs</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox.ui</groupId>

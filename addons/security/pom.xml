@@ -23,7 +23,7 @@
   </parent>
   
   <artifactId>aprox-security</artifactId>
-  <name>AProx :: RBAC Overlay</name>
+  <name>AProx :: Add-Ons :: RBAC Overlay</name>
   
   <properties>
     <badgr-version>0.1-SNAPSHOT</badgr-version>

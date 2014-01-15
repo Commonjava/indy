@@ -26,7 +26,7 @@
   <artifactId>aprox-tools</artifactId>
   <packaging>pom</packaging>
 
-  <name>AProx :: Build-Time Tooling</name>
+  <name>AProx :: Tooling :: Parent</name>
   
   <modules>
     <module>assemblies</module>

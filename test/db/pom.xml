@@ -24,7 +24,7 @@
   </parent>
   
   <artifactId>aprox-test-db</artifactId>
-  <name>AProx :: Database TCK</name>
+  <name>AProx :: TCK :: Database</name>
   
   <dependencies>
     <dependency>

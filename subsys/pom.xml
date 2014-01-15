@@ -26,7 +26,7 @@
   <artifactId>aprox-subsystems</artifactId>
   <packaging>pom</packaging>
 
-  <name>AProx :: Subsystems Parent</name>
+  <name>AProx :: Subsystems :: Parent</name>
   
   <modules>
     <module>flatfile</module>

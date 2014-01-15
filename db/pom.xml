@@ -26,7 +26,7 @@
   <artifactId>aprox-db</artifactId>
   <packaging>pom</packaging>
 
-  <name>AProx :: Databases Parent</name>
+  <name>AProx :: DB :: Parent</name>
   
   <modules>
     <module>memory</module>

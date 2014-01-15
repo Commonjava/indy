@@ -24,7 +24,7 @@
   </parent>
   
   <artifactId>aprox-test-utils</artifactId>
-  <name>AProx :: Filer TCK</name>
+  <name>AProx :: TCK :: Utils</name>
   
   <dependencies>
     <dependency>

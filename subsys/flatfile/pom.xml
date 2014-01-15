@@ -25,7 +25,7 @@
   
   <artifactId>aprox-subsys-flatfile</artifactId>
 
-  <name>AProx :: Flat-File Subsystem</name>
+  <name>AProx :: Subsystems :: Flat-File</name>
   
   <dependencies>
     <dependency>

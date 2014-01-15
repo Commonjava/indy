@@ -13,30 +13,32 @@
   GNU General Public License for more details.
   
   You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses />.
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-addons</artifactId>
-    <version>0.9.2-SNAPSHOT</version>
+    <artifactId>aprox-dot-maven</artifactId>
+    <version>0.9.1-EXP-SNAPSHOT</version>
   </parent>
-  <artifactId>aprox-autoprox</artifactId>
-  <name>AProx :: Add-Ons :: Auto-Proxy</name>
+  
+  <artifactId>aprox-dot-maven-jaxrs</artifactId>
+  <name>AProx :: Add-Ons :: Dot-Maven (.m2 WebDAV) :: JAX-RS Bindings</name>
 
   <dependencies>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-api</artifactId>
+      <artifactId>aprox-dot-maven-common</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-bindings-jaxrs</artifactId>
+    </dependency>
+    
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-    </dependency>
-    <dependency>
-    	<groupId>org.commonjava.aprox</groupId>
-    	<artifactId>aprox-core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.qarqas</groupId>
@@ -64,15 +66,6 @@
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-filer-default</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-subsys-http</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>jaxrs-api</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

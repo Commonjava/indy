@@ -13,17 +13,17 @@
   GNU General Public License for more details.
   
   You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses />.
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-addons</artifactId>
-    <version>0.9.2-SNAPSHOT</version>
+    <artifactId>aprox-dot-maven</artifactId>
+    <version>0.9.1-EXP-SNAPSHOT</version>
   </parent>
-  <artifactId>aprox-autoprox</artifactId>
-  <name>AProx :: Add-Ons :: Auto-Proxy</name>
+  <artifactId>aprox-dot-maven-common</artifactId>
+  <name>AProx :: Add-Ons :: Dot-Maven (.m2 WebDAV) :: Common Core</name>
 
   <dependencies>
     <dependency>
@@ -37,10 +37,6 @@
     <dependency>
     	<groupId>org.commonjava.aprox</groupId>
     	<artifactId>aprox-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.qarqas</groupId>
-      <artifactId>qarqas-test-harness</artifactId>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
@@ -67,33 +63,8 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-subsys-http</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>jaxrs-api</artifactId>
-      <scope>test</scope>
+      <groupId>org.commonjava.web</groupId>
+      <artifactId>webdav-handler</artifactId>
     </dependency>
   </dependencies>
-  
-  <profiles>
-    <profile>
-      <id>its</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.commonjava.maven.plugins</groupId>
-            <artifactId>qarqas-maven-plugin</artifactId>
-          </plugin>
-          <plugin>
-            <artifactId>maven-assembly-plugin</artifactId>
-          </plugin>
-          <plugin>
-            <artifactId>maven-failsafe-plugin</artifactId>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>

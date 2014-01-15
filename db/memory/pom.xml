@@ -24,7 +24,7 @@
   </parent>
   
   <artifactId>aprox-db-memory</artifactId>
-  <name>AProx :: In-Memory Database</name>
+  <name>AProx :: DB :: In-Memory</name>
   
   <dependencies>
     <dependency>

@@ -24,7 +24,7 @@
   </parent>
   
   <artifactId>aprox-db-flat</artifactId>
-  <name>AProx :: Flat-File Database</name>
+  <name>AProx :: DB :: Flat-File</name>
   
   <dependencies>
     <dependency>

@@ -9,7 +9,7 @@
   
   <artifactId>aprox-basic</artifactId>
 
-  <name>AProx :: Basic WAR</name>
+  <name>AProx :: WARs :: Basic + UI</name>
   
   <dependencies>
     <dependency>

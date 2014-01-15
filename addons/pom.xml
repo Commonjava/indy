@@ -27,7 +27,7 @@
   <artifactId>aprox-addons</artifactId>
   <packaging>pom</packaging>
 
-  <name>AProx :: Add-Ons</name>
+  <name>AProx :: Add-Ons :: Parent</name>
   
   <modules>
     <module>autoprox</module>

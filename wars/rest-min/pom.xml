@@ -24,7 +24,7 @@
   
   <artifactId>aprox-rest-min</artifactId>
   
-  <name>AProx :: Minimal REST WAR</name>
+  <name>AProx :: WARs :: Minimal REST</name>
   
   <dependencies>
     <dependency>

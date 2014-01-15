@@ -25,7 +25,7 @@
   <artifactId>aprox-rest-sec</artifactId>
   <!-- <packaging>war</packaging> -->
   
-  <name>AProx :: REST WAR with RBAC Security</name>
+  <name>AProx :: WARs :: REST + RBAC Security</name>
   
   <dependencies>
     <dependency>

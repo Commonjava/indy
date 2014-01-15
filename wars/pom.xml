@@ -26,7 +26,7 @@
   <artifactId>aprox-wars</artifactId>
   <packaging>pom</packaging>
 
-  <name>AProx :: WARs</name>
+  <name>AProx :: WARs :: Parent</name>
   
   <modules>
     <module>rest-min</module>

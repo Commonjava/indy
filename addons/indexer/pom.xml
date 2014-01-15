@@ -24,7 +24,7 @@
   </parent>
   
   <artifactId>aprox-indexer</artifactId>
-  <name>AProx :: Index Merger</name>
+  <name>AProx :: Add-Ons :: Index Merger</name>
 
   <dependencies>
     <dependency>

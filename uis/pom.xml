@@ -26,7 +26,7 @@
   <artifactId>aprox-uis</artifactId>
   <packaging>pom</packaging>
 
-  <name>AProx :: UIs</name>
+  <name>AProx :: UIs :: Parent</name>
   
   <modules>
     <module>monorail</module>

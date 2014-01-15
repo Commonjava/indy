@@ -25,7 +25,7 @@
   <artifactId>aprox-rest-min</artifactId>
   <packaging>war</packaging>
   
-  <name>AProx :: UI Development WAR</name>
+  <name>AProx :: WARs :: UI Development</name>
   
   <properties>
     <maven.test.skip>true</maven.test.skip>

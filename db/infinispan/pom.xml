@@ -23,7 +23,7 @@
   </parent>
   
   <artifactId>aprox-db-infinispan</artifactId>
-  <name>AProx :: Infinispan Database</name>
+  <name>AProx :: DB :: Infinispan</name>
   
   <dependencies>
     <dependency>

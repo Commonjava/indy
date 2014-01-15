@@ -25,7 +25,7 @@
   
   <artifactId>aprox-subsys-infinispan</artifactId>
 
-  <name>AProx :: Infinispan Subsystem</name>
+  <name>AProx :: Subsystems :: Infinispan</name>
   
   <dependencies>
     <!-- <dependency>

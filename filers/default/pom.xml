@@ -25,7 +25,7 @@
   
   <artifactId>aprox-filer-default</artifactId>
 
-  <name>AProx :: Default File Manager</name>
+  <name>AProx :: File Management :: Default</name>
   <dependencies>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>

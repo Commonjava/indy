@@ -26,7 +26,7 @@
   <artifactId>aprox-bindings</artifactId>
   <packaging>pom</packaging>
 
-  <name>AProx :: Bindings Parent</name>
+  <name>AProx :: Bindings :: Parent</name>
   
   <modules>
     <module>jaxrs</module>

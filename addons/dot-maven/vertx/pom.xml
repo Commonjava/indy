@@ -15,19 +15,27 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-bindings</artifactId>
-    <version>0.9.2-SNAPSHOT</version>
+    <artifactId>aprox-dot-maven</artifactId>
+    <version>0.9.1-EXP-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-bindings-vertx</artifactId>
-  <name>AProx :: Bindings :: Vert.X</name>
+  <artifactId>aprox-dot-maven-vertx</artifactId>
+  <name>AProx :: Add-Ons :: Dot-Maven (.m2 WebDAV) :: Vert.X Bindings</name>
 
   <dependencies>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-dot-maven-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-bindings-vertx</artifactId>
+    </dependency>
+    
     <dependency>
       <groupId>javax.enterprise</groupId>
       <artifactId>cdi-api</artifactId>
@@ -55,26 +63,34 @@
       <groupId>io.vertx</groupId>
       <artifactId>vertx-platform</artifactId>
     </dependency>
+    
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
     </dependency>
     <dependency>
-      <groupId>args4j</groupId>
-      <artifactId>args4j</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-db-memory</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-filer-default</artifactId>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.shelflife</groupId>
       <artifactId>shelflife-store-memory</artifactId>
-      <scope>compile</scope>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.web</groupId>
+      <artifactId>json-test-harness</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-db-memory</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-filer-default</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
   

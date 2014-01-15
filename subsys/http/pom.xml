@@ -25,7 +25,7 @@
   
   <artifactId>aprox-subsys-http</artifactId>
 
-  <name>AProx :: HTTP Client Subsystem</name>
+  <name>AProx :: Subsystems :: HTTP</name>
   
   <dependencies>
     <dependency>
