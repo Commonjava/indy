@@ -91,7 +91,6 @@ done
 	else
 	    repo_sync
 	fi
-done
     ;;
 build)  echo  "Building sources"
 	# Build sources
@@ -132,7 +131,7 @@ info) echo "Retrieving repo info"
       for repo in $REPOS
           do
               echo -e "Repo info for $repo"
-              cd $repo
+              cd $WORKSPACE/$repo
               git remote -v
               git branch
               git tag
