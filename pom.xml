@@ -13,7 +13,7 @@
   GNU General Public License for more details.
   
   You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  along with this program.  If not, see <http://www.gnu.org/licenses />.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
@@ -25,7 +25,7 @@
   
   <groupId>org.commonjava.aprox</groupId>
   <artifactId>aprox-parent</artifactId>
-  <version>0.9.1-SNAPSHOT</version>
+  <version>0.9.1</version>
   
   <packaging>pom</packaging>
   
@@ -92,7 +92,7 @@
       <dependency>
         <groupId>org.commonjava.aprox.ui</groupId>
         <artifactId>aprox-ui-monorail</artifactId>
-        <version>0.9.1-SNAPSHOT</version>
+        <version>0.9.1</version>
         <type>war</type>
         <scope>runtime</scope>
       </dependency>
@@ -100,12 +100,12 @@
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-api</artifactId>
-        <version>0.9.1-SNAPSHOT</version>
+        <version>0.9.1</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-core</artifactId>
-        <version>0.9.1-SNAPSHOT</version>
+        <version>0.9.1</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
@@ -115,64 +115,64 @@
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-db-flat</artifactId>
-        <version>0.9.1-SNAPSHOT</version>
+        <version>0.9.1</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-depgraph</artifactId>
-        <version>0.9.1-SNAPSHOT</version>
+        <version>0.9.1</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-autoprox</artifactId>
-        <version>0.9.1-SNAPSHOT</version>
+        <version>0.9.1</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-dot-maven</artifactId>
-        <version>0.9.1-SNAPSHOT</version>
+        <version>0.9.1</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-indexer</artifactId>
-        <version>0.9.1-SNAPSHOT</version>
+        <version>0.9.1</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-db-memory</artifactId>
-        <version>0.9.1-SNAPSHOT</version>
+        <version>0.9.1</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-test-db</artifactId>
-        <version>0.9.1-SNAPSHOT</version>
+        <version>0.9.1</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-test-utils</artifactId>
-        <version>0.9.1-SNAPSHOT</version>
+        <version>0.9.1</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-filer-default</artifactId>
-        <version>0.9.1-SNAPSHOT</version>
+        <version>0.9.1</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-subsys-flatfile</artifactId>
-        <version>0.9.1-SNAPSHOT</version>
+        <version>0.9.1</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-subsys-http</artifactId>
-        <version>0.9.1-SNAPSHOT</version>
+        <version>0.9.1</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-subsys-maven</artifactId>
-        <version>0.9.1-SNAPSHOT</version>
+        <version>0.9.1</version>
       </dependency>
       
       
