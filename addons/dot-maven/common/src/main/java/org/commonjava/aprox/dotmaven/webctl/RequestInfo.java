@@ -54,7 +54,7 @@ public class RequestInfo
                                 .toString();
         //        logger.info( "Request: %s", baseUrl );
 
-        final int idx = baseUrl.indexOf( DotMavenServlet.NAME );
+        final int idx = baseUrl.indexOf( DotMavenService.NAME );
         if ( idx > 0 )
         {
             baseUrl = baseUrl.substring( 0, idx );

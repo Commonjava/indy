@@ -28,18 +28,19 @@ import net.sf.webdav.spi.WebdavConfig;
 import net.sf.webdav.spi.WebdavRequest;
 import net.sf.webdav.spi.WebdavResponse;
 
-public class DotMavenServlet
+public class DotMavenService
     extends WebdavService
 {
-    public DotMavenServlet( final WebdavConfig config, final IWebdavStore store, final IMimeTyper mimeTyper )
-    {
-        super( config, store, mimeTyper );
-    }
-
     public static final String NAME = "mavdav";
 
     @Inject
     private RequestInfo requestInfo;
+
+    @Inject
+    public DotMavenService( final WebdavConfig config, final IWebdavStore store, final IMimeTyper mimeTyper )
+    {
+        super( config, store, mimeTyper );
+    }
 
     @Override
     public void service( final WebdavRequest request, final WebdavResponse response )

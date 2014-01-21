@@ -356,8 +356,8 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.web</groupId>
-        <artifactId>webdav-handler-jaxrs</artifactId>
-        <version>${webdav-version</version>
+        <artifactId>webdav-handler-servlet</artifactId>
+        <version>${webdav-version}</version>
       </dependency>
       
       <dependency>

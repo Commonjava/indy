@@ -35,6 +35,23 @@
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-bindings-jaxrs</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.web</groupId>
+      <artifactId>webdav-handler-servlet</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.jboss.resteasy</groupId>
+      <artifactId>resteasy-jaxrs</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.enterprise</groupId>
+      <artifactId>cdi-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.spec.javax.servlet</groupId>
+      <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+    </dependency>
     
     <dependency>
       <groupId>junit</groupId>
