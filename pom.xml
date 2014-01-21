@@ -38,6 +38,7 @@
   </scm>
   
   <properties>
+    <javaVersion>1.6</javaVersion>
     <qarqas.clientKey>aprox</qarqas.clientKey>
     <slf4j-version>1.6.1</slf4j-version>
     <jbossas-version>7.1.1.Final</jbossas-version>
@@ -482,8 +483,8 @@
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
           <configuration>
-            <source>1.6</source>
-            <target>1.6</target>
+            <source>${javaVersion}</source>
+            <target>${javaVersion}</target>
           </configuration>
         </plugin>
         <!-- <plugin>

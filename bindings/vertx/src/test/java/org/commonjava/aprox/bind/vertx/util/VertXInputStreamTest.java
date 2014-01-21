@@ -35,10 +35,10 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.file.AsyncFile;
 import org.vertx.java.core.impl.DefaultVertx;
 
-public class RequestBodyInputStreamTest
+public class VertXInputStreamTest
 {
 
-    private static final String BASE = "RequestBodyInputStream";
+    private static final String BASE = VertXInputStream.class.getSimpleName();
 
     @BeforeClass
     public static void setupClass()

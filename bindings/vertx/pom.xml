@@ -26,6 +26,10 @@
   
   <artifactId>aprox-bindings-vertx</artifactId>
   <name>AProx :: Bindings :: Vert.X</name>
+  
+  <properties>
+    <javaVersion>1.7</javaVersion>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -84,8 +88,8 @@
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
           <configuration>
-            <source>1.6</source>
-            <target>1.6</target>
+            <source>${javaVersion}</source>
+            <target>${javaVersion}</target>
             <annotationProcessors>
               <annotationProcessor>org.commonjava.vertx.vabr.anno.proc.RoutingAnnotationProcessor</annotationProcessor>
             </annotationProcessors>

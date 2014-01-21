@@ -26,6 +26,10 @@
   <artifactId>aprox-dot-maven-vertx</artifactId>
   <name>AProx :: Add-Ons :: Dot-Maven (.m2 WebDAV) :: Vert.X Bindings</name>
 
+  <properties>
+    <javaVersion>1.7</javaVersion>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
@@ -100,8 +104,8 @@
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
           <configuration>
-            <source>1.6</source>
-            <target>1.6</target>
+            <source>${javaVersion}</source>
+            <target>${javaVersion}</target>
             <annotationProcessors>
               <annotationProcessor>org.commonjava.vertx.vabr.anno.proc.RoutingAnnotationProcessor</annotationProcessor>
             </annotationProcessors>
