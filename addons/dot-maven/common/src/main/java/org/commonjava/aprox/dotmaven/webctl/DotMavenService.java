@@ -18,7 +18,9 @@ package org.commonjava.aprox.dotmaven.webctl;
 
 import java.io.IOException;
 
+import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import net.sf.webdav.WebdavService;
 import net.sf.webdav.exceptions.WebdavException;
@@ -28,6 +30,8 @@ import net.sf.webdav.spi.WebdavConfig;
 import net.sf.webdav.spi.WebdavRequest;
 import net.sf.webdav.spi.WebdavResponse;
 
+@Alternative
+@Named
 public class DotMavenService
     extends WebdavService
 {

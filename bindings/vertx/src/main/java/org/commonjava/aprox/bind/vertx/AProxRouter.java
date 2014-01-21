@@ -16,7 +16,7 @@ public class AProxRouter
     extends ApplicationRouter
 {
 
-    private static final String PREFIX = "/api/1.0";
+    public static final String PREFIX = "/api/1.0";
 
     @Inject
     private Instance<RouteHandler> routeHandlerInstances;
