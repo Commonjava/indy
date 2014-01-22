@@ -19,8 +19,10 @@ package org.commonjava.aprox.bind.vertx.util;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import org.commonjava.aprox.core.dto.CreationDTO;
 import org.commonjava.aprox.core.util.UriFormatter;
 import org.commonjava.aprox.rest.AproxWorkflowException;
+import org.commonjava.aprox.rest.util.ApplicationContent;
 import org.commonjava.aprox.rest.util.ApplicationHeader;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -64,12 +66,36 @@ public final class ResponseUtils
                .putHeader( ApplicationHeader.location.key(), location );
     }
 
-    public static void formatOkResponseWithEntity( final HttpServerRequest request, final String json )
+    public static void formatCreatedResponse( final HttpServerRequest request, final CreationDTO dto )
+    {
+        request.response()
+               .setStatusCode( ApplicationStatus.CREATED.code() )
+               .setStatusMessage( ApplicationStatus.CREATED.message() )
+               .putHeader( ApplicationHeader.location.key(), dto.getUri()
+                                                                .toString() );
+
+        final String json = dto.getJsonResponse();
+        if ( json != null )
+        {
+            request.response()
+                   .putHeader( ApplicationHeader.content_type.key(), ApplicationContent.application_json );
+            request.response()
+                   .write( json );
+        }
+    }
+
+    public static void formatOkResponseWithJsonEntity( final HttpServerRequest request, final String json )
+    {
+        formatOkResponseWithEntity( request, json, ApplicationContent.application_json );
+    }
+
+    public static void formatOkResponseWithEntity( final HttpServerRequest request, final String output, final String contentType )
     {
         request.response()
                .setStatusCode( ApplicationStatus.OK.code() )
                .setStatusMessage( ApplicationStatus.OK.message() )
-               .write( json );
+               .putHeader( ApplicationHeader.content_type.key(), contentType )
+               .write( output );
     }
 
     public static void formatBadRequestResponse( final HttpServerRequest request, final String error )
@@ -80,16 +106,42 @@ public final class ResponseUtils
                .write( "{\"error\": \"" + error + "\"}" );
     }
 
-    public static void formatResponse( final AproxWorkflowException error, final HttpServerResponse response )
+    public static void formatResponse( final Throwable error, final HttpServerResponse response )
     {
-        formatResponse( error, response, true );
+        formatResponse( null, error, true, response );
     }
 
-    public static void formatResponse( final AproxWorkflowException error, final HttpServerResponse response, final boolean includeExplanation )
+    public static void formatResponse( final ApplicationStatus status, final Throwable error, final HttpServerResponse response )
     {
-        if ( error.getStatus() > 0 )
+        formatResponse( status, error, true, response );
+    }
+
+    public static void formatResponse( final Throwable error, final boolean includeExplanation, final HttpServerResponse response )
+    {
+        formatResponse( null, error, includeExplanation, response );
+    }
+
+    public static void formatResponse( final ApplicationStatus status, final Throwable error, final boolean includeExplanation,
+                                       final HttpServerResponse response )
+    {
+        if ( status != null )
         {
-            response.setStatusCode( error.getStatus() );
+            response.setStatusCode( status.code() )
+                    .setStatusMessage( status.message() );
+        }
+        else if ( ( error instanceof AproxWorkflowException ) && ( (AproxWorkflowException) error ).getStatus() > 0 )
+        {
+            final int sc = ( (AproxWorkflowException) error ).getStatus();
+            final ApplicationStatus stat = ApplicationStatus.getStatus( sc );
+            if ( stat != null )
+            {
+                response.setStatusCode( sc )
+                        .setStatusMessage( stat.message() );
+            }
+            else
+            {
+                response.setStatusCode( sc );
+            }
         }
         else
         {
@@ -100,22 +152,6 @@ public final class ResponseUtils
         if ( includeExplanation )
         {
             response.write( formatEntity( error ).toString() );
-        }
-    }
-
-    public static void formatResponse( final Throwable e, final HttpServerResponse response )
-    {
-        formatResponse( e, response, true );
-    }
-
-    public static void formatResponse( final Throwable error, final HttpServerResponse response, final boolean includeExplanation )
-    {
-        response.setStatusCode( ApplicationStatus.SERVER_ERROR.code() )
-                .setStatusMessage( ApplicationStatus.SERVER_ERROR.message() );
-
-        if ( includeExplanation )
-        {
-            response.write( error.getMessage() );
         }
     }
 

@@ -19,7 +19,7 @@ package org.commonjava.aprox.bind.vertx.admin;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatBadRequestResponse;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatCreatedResponse;
-import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithEntity;
+import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
 
 import java.util.List;
@@ -28,7 +28,7 @@ import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.bind.vertx.util.PathParam;
-import org.commonjava.aprox.bind.vertx.util.RequestUtils;
+import org.commonjava.aprox.bind.vertx.util.RequestSerialHelper;
 import org.commonjava.aprox.core.model.io.AProxModelSerializer;
 import org.commonjava.aprox.core.rest.AdminController;
 import org.commonjava.aprox.core.util.UriFormatter;
@@ -59,7 +59,7 @@ public class AdminResource
     private AProxModelSerializer modelSerializer;
 
     @Inject
-    private RequestUtils modelServletUtils;
+    private RequestSerialHelper modelServletUtils;
 
     @Inject
     private UriFormatter uriFormatter;
@@ -172,7 +172,7 @@ public class AdminResource
             final String json = modelSerializer.storeListingToString( listing );
             logger.info( "JSON:\n\n%s", json );
 
-            formatOkResponseWithEntity( request, json );
+            formatOkResponseWithJsonEntity( request, json );
         }
         catch ( final AproxWorkflowException e )
         {
@@ -208,7 +208,7 @@ public class AdminResource
             }
             else
             {
-                formatOkResponseWithEntity( request, modelSerializer.toString( store ) );
+                formatOkResponseWithJsonEntity( request, modelSerializer.toString( store ) );
             }
         }
         catch ( final AproxWorkflowException e )

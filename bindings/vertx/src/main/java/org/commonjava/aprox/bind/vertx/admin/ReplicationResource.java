@@ -16,7 +16,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.vertx.admin;
 
-import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithEntity;
+import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
 
 import java.util.LinkedHashMap;
@@ -25,7 +25,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
-import org.commonjava.aprox.bind.vertx.util.RequestUtils;
+import org.commonjava.aprox.bind.vertx.util.RequestSerialHelper;
 import org.commonjava.aprox.core.dto.repl.ReplicationDTO;
 import org.commonjava.aprox.core.rest.ReplicationController;
 import org.commonjava.aprox.inject.AproxData;
@@ -55,7 +55,7 @@ public class ReplicationResource
     @Routes( { @Route( path = "/admin/replicate", method = Method.POST, contentType = ApplicationContent.application_json ) } )
     public void replicate( final HttpServerRequest req )
     {
-        final ReplicationDTO dto = RequestUtils.fromRequestBody( req, serializer, ReplicationDTO.class );
+        final ReplicationDTO dto = RequestSerialHelper.fromRequestBody( req, serializer, ReplicationDTO.class );
         try
         {
             final Set<StoreKey> replicated = controller.replicate( dto );
@@ -63,7 +63,7 @@ public class ReplicationResource
             final Map<String, Object> params = new LinkedHashMap<String, Object>();
             params.put( "replicationCount", replicated.size() );
             params.put( "items", replicated );
-            formatOkResponseWithEntity( req, serializer.toString( params ) );
+            formatOkResponseWithJsonEntity( req, serializer.toString( params ) );
         }
         catch ( final AproxWorkflowException e )
         {

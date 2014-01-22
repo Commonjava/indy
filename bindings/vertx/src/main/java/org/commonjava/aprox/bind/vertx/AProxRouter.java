@@ -8,8 +8,8 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import org.commonjava.vertx.vabr.ApplicationRouter;
-import org.commonjava.vertx.vabr.RouteCollection;
-import org.commonjava.vertx.vabr.RouteHandler;
+import org.commonjava.vertx.vabr.route.RouteCollection;
+import org.commonjava.vertx.vabr.route.RouteHandler;
 
 @ApplicationScoped
 public class AProxRouter
@@ -37,7 +37,7 @@ public class AProxRouter
     @PostConstruct
     public void cdiInit()
     {
-        bind( routeHandlerInstances, routeCollectionInstances );
+        bindRoutes( routeHandlerInstances, routeCollectionInstances );
     }
 
 }

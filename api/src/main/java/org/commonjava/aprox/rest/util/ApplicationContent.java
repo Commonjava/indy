@@ -21,6 +21,14 @@ public final class ApplicationContent
 
     public static final String application_json = "application/json";
 
+    public static final String application_xml = "application/xml";
+
+    public static final String application_zip = "application/zip";
+
+    public static final String text_plain = "text/plain";
+
+    public static final String text_html = "text/html";
+
     private ApplicationContent()
     {
     }

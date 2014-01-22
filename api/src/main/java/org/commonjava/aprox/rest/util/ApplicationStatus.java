@@ -22,6 +22,7 @@ public enum ApplicationStatus
     /* @formatter:off */
     OK( 200, "Ok" ), 
     CREATED( 201, "Created" ), 
+    NO_CONTENT(204, "No Content"),
     
     MOVED_PERMANENTLY( 301, "Moved Permanently" ),
     FOUND( 302, "Found" ),
@@ -55,6 +56,19 @@ public enum ApplicationStatus
     public String message()
     {
         return message;
+    }
+
+    public static ApplicationStatus getStatus( final int status )
+    {
+        for ( final ApplicationStatus as : values() )
+        {
+            if ( as.code() == status )
+            {
+                return as;
+            }
+        }
+
+        return null;
     }
 
 }

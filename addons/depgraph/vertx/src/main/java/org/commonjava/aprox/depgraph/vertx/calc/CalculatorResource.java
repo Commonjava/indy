@@ -14,63 +14,63 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package org.commonjava.aprox.bind.vertx.stats;
+package org.commonjava.aprox.depgraph.vertx.calc;
 
-import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatEntity;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
+import static org.commonjava.aprox.rest.util.ApplicationContent.application_json;
 
+import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.core.rest.StatsController;
-import org.commonjava.aprox.core.util.UriFormatter;
-import org.commonjava.aprox.inject.AproxData;
+import org.commonjava.aprox.bind.vertx.util.VertXInputStream;
+import org.commonjava.aprox.depgraph.rest.CalculatorController;
 import org.commonjava.aprox.rest.AproxWorkflowException;
-import org.commonjava.aprox.rest.util.ApplicationContent;
 import org.commonjava.util.logging.Logger;
-import org.commonjava.vertx.vabr.Method;
+import org.commonjava.vertx.vabr.anno.PathPrefix;
 import org.commonjava.vertx.vabr.anno.Route;
-import org.commonjava.vertx.vabr.anno.Routes;
-import org.commonjava.web.json.ser.JsonSerializer;
 import org.vertx.java.core.http.HttpServerRequest;
 
-//@Path( "/stats" )
-@javax.enterprise.context.ApplicationScoped
-public class BasicStatsResource
+@PathPrefix( "/depgraph/calc" )
+@RequestScoped
+public class CalculatorResource
 {
 
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    @AproxData
-    private JsonSerializer serializer;
+    private CalculatorController controller;
 
-    @Inject
-    private StatsController statsController;
-
-    @Inject
-    private UriFormatter uriFormatter;
-
-    @Routes( { @Route( path = "/stats/version-info", method = Method.GET, contentType = ApplicationContent.application_json ) } )
-    public void getAProxVersion( final HttpServerRequest request )
-    {
-        formatOkResponseWithJsonEntity( request, serializer.toString( statsController.getVersionInfo() ) );
-    }
-
-    @Routes( { @Route( path = "/stats/all-endpoints", method = Method.GET, contentType = ApplicationContent.application_json ) } )
-    public void getAllEndpoints( final HttpServerRequest request )
+    @Route( path = "/diff", contentType = application_json )
+    public void difference( final HttpServerRequest request )
     {
         try
         {
-            final String json = serializer.toString( statsController.getEndpointsListing( uriFormatter ) );
-
+            // FIXME Figure out the character encoding!
+            final String json = controller.difference( new VertXInputStream( request ), null );
             formatOkResponseWithJsonEntity( request, json );
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to retrieve endpoint listing: %s", e, formatEntity( e ) );
+            logger.error( e.getMessage(), e );
             formatResponse( e, request.response() );
         }
     }
 
+    @Route( contentType = application_json )
+    public void calculate( final HttpServerRequest request )
+        throws AproxWorkflowException
+    {
+        try
+        {
+            // FIXME Figure out the character encoding!
+            final String json = controller.calculate( new VertXInputStream( request ), null );
+            formatOkResponseWithJsonEntity( request, json );
+        }
+        catch ( final AproxWorkflowException e )
+        {
+            logger.error( e.getMessage(), e );
+            formatResponse( e, request.response() );
+        }
+    }
 }

@@ -92,9 +92,10 @@ public class AproxDiscoverySourceManager
     }
 
     @Override
-    public void activateWorkspaceSources( final GraphWorkspace ws, final String... sources )
+    public boolean activateWorkspaceSources( final GraphWorkspace ws, final String... sources )
         throws CartoDataException
     {
+        boolean result = false;
         if ( ws != null )
         {
             for ( final String src : sources )
@@ -107,7 +108,16 @@ public class AproxDiscoverySourceManager
                         final List<ArtifactStore> orderedStores = stores.getOrderedConcreteStoresInGroup( key.getName() );
                         for ( final ArtifactStore store : orderedStores )
                         {
-                            ws.addActiveSource( toDiscoveryURI( store.getKey() ) );
+                            final URI uri = toDiscoveryURI( store.getKey() );
+                            if ( ws.getActiveSources()
+                                   .contains( uri ) )
+                            {
+                                continue;
+                            }
+
+                            ws.addActiveSource( uri );
+                            result = result || ws.getActiveSources()
+                                                 .contains( uri );
                         }
                     }
                     catch ( final ProxyDataException e )
@@ -117,10 +127,19 @@ public class AproxDiscoverySourceManager
                 }
                 else
                 {
-                    ws.addActiveSource( toDiscoveryURI( key ) );
+                    final URI uri = toDiscoveryURI( key );
+                    if ( !ws.getActiveSources()
+                            .contains( uri ) )
+                    {
+                        ws.addActiveSource( uri );
+                        result = result || ws.getActiveSources()
+                                             .contains( uri );
+                    }
                 }
             }
         }
+
+        return result;
     }
 
     @Override

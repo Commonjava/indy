@@ -23,6 +23,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.commonjava.aprox.rest.AproxWorkflowException;
+import org.commonjava.aprox.rest.util.ApplicationStatus;
 
 public final class AproxExceptionUtils
 {
@@ -33,13 +34,27 @@ public final class AproxExceptionUtils
 
     public static Response formatResponse( final Throwable error )
     {
-        return formatResponse( error, true );
+        return formatResponse( null, error, true );
+    }
+
+    public static Response formatResponse( final ApplicationStatus status, final Throwable error )
+    {
+        return formatResponse( status, error, true );
     }
 
     public static Response formatResponse( final Throwable error, final boolean includeExplanation )
     {
+        return formatResponse( null, error, includeExplanation );
+    }
+
+    public static Response formatResponse( final ApplicationStatus status, final Throwable error, final boolean includeExplanation )
+    {
         ResponseBuilder rb;
-        if ( ( error instanceof AproxWorkflowException ) && ( (AproxWorkflowException) error ).getStatus() > 0 )
+        if ( status != null )
+        {
+            rb = Response.status( status.code() );
+        }
+        else if ( ( error instanceof AproxWorkflowException ) && ( (AproxWorkflowException) error ).getStatus() > 0 )
         {
             rb = Response.status( ( (AproxWorkflowException) error ).getStatus() );
         }
