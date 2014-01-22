@@ -431,7 +431,7 @@
         <groupId>javax.enterprise</groupId>
         <artifactId>cdi-api</artifactId>
         <version>1.1</version>
-        <scope>test</scope>
+        <scope>provided</scope>
       </dependency>
 
       <dependency>

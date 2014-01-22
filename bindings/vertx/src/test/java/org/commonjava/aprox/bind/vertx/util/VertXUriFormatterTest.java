@@ -32,7 +32,7 @@ public class VertXUriFormatterTest
         final String storeName = "test-repo";
         final StoreType type = StoreType.repository;
 
-        final String uri = new VertXUriFormatter().formatAbsolutePathTo( type.singularEndpointName(), storeName, path );
+        final String uri = new VertXUriFormatter().formatAbsolutePathTo( "/api/1.0", type.singularEndpointName(), storeName, path );
         assertThat( uri, equalTo( "/api/1.0/" + type.singularEndpointName() + "/" + storeName + "/" + path ) );
     }
 
