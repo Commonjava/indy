@@ -94,7 +94,14 @@ public abstract class FlatFileDataManagerDecorator
                 {
                     final String json = FileUtils.readFileToString( f );
                     final DeployPoint dp = serializer.fromString( json, DeployPoint.class );
-                    dataManager.storeDeployPoint( dp );
+                    if ( dp == null )
+                    {
+                        f.delete();
+                    }
+                    else
+                    {
+                        dataManager.storeDeployPoint( dp );
+                    }
                 }
                 catch ( final IOException e )
                 {
@@ -114,7 +121,14 @@ public abstract class FlatFileDataManagerDecorator
                 {
                     final String json = FileUtils.readFileToString( f );
                     final Repository r = serializer.fromString( json, Repository.class );
-                    dataManager.storeRepository( r );
+                    if ( r == null )
+                    {
+                        f.delete();
+                    }
+                    else
+                    {
+                        dataManager.storeRepository( r );
+                    }
                 }
                 catch ( final IOException e )
                 {
@@ -134,7 +148,14 @@ public abstract class FlatFileDataManagerDecorator
                 {
                     final String json = FileUtils.readFileToString( f );
                     final Group g = serializer.fromString( json, Group.class );
-                    dataManager.storeGroup( g );
+                    if ( g == null )
+                    {
+                        f.delete();
+                    }
+                    else
+                    {
+                        dataManager.storeGroup( g );
+                    }
                 }
                 catch ( final IOException e )
                 {

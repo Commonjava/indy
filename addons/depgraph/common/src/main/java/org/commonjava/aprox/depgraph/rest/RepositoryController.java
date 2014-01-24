@@ -361,6 +361,10 @@ public class RepositoryController
 
         logger.info( "Got configuration JSON:\n\n%s\n\n", json );
         final WebOperationConfigDTO dto = serializer.fromString( json, WebOperationConfigDTO.class );
+        if ( dto == null )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "No configuration found in request body!" );
+        }
 
         try
         {

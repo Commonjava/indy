@@ -233,9 +233,12 @@ public class ReplicationController
                 {
                 }.getType() );
 
-                for ( final Repository store : listing.getItems() )
+                if ( listing != null )
                 {
-                    result.add( store );
+                    for ( final Repository store : listing.getItems() )
+                    {
+                        result.add( store );
+                    }
                 }
             }
             else
