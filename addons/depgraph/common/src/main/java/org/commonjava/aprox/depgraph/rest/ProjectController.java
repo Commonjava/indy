@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
@@ -38,7 +38,7 @@ import org.commonjava.maven.cartographer.ops.GraphOps;
 import org.commonjava.web.json.model.Listing;
 import org.commonjava.web.json.ser.JsonSerializer;
 
-@RequestScoped
+@ApplicationScoped
 public class ProjectController
 {
     @Inject

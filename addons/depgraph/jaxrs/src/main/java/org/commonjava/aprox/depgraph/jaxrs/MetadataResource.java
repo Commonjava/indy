@@ -18,7 +18,7 @@ package org.commonjava.aprox.depgraph.jaxrs;
 
 import java.io.IOException;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -40,7 +40,7 @@ import org.commonjava.util.logging.Logger;
 @Path( "/depgraph/meta" )
 @Consumes( MediaType.APPLICATION_JSON )
 @Produces( MediaType.APPLICATION_JSON )
-@RequestScoped
+@ApplicationScoped
 public class MetadataResource
 {
 

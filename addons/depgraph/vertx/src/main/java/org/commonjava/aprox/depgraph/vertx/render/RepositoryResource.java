@@ -34,12 +34,14 @@ import org.commonjava.aprox.rest.util.ApplicationContent;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.Method;
-import org.commonjava.vertx.vabr.anno.PathPrefix;
+import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
+import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.vertx.java.core.http.HttpServerRequest;
 
-@PathPrefix( "/depgraph/repo" )
+@Handles( prefix = "/depgraph/repo" )
 public class RepositoryResource
+    implements RequestHandler
 {
 
     private final Logger logger = new Logger( getClass() );

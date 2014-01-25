@@ -16,39 +16,38 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.vertx.access;
 
-import javax.enterprise.context.RequestScoped;
-import javax.enterprise.inject.Default;
-
 import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.vertx.vabr.Method;
+import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
+import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.vertx.java.core.http.HttpServerRequest;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiError;
 import com.wordnik.swagger.annotations.ApiOperation;
 
+@Handles( prefix = "/deploy/:name" )
 @Api( description = "Handles GET/PUT/DELETE requests for content in a hosted deploy-point store", value = "Handle deploy-point content" )
-@RequestScoped
-@Default
 public class DefaultDeployPointAccessResource
     extends AbstractSimpleAccessResource<DeployPoint>
+    implements RequestHandler
 {
     /*
      * (non-Javadoc)
      * @see org.commonjava.aprox.core.rest.access.DeployPointAccessResource#createContent(java.lang.String,
      * java.lang.String, javax.servlet.http.HttpServletRequest)
      */
-    @Routes( { @Route( path = "/deploy/:name/:path=(.+)", method = Method.PUT ) } )
+    @Routes( { @Route( path = "/:path=(.+)", method = Method.PUT ) } )
     @ApiOperation( value = "Store new content at the given path in store with the given name." )
     public void createContent( final HttpServerRequest request )
     {
         doCreate( request );
     }
 
-    @Routes( { @Route( path = "/deploy/:name:?path=(/.+)", method = Method.DELETE ) } )
+    @Routes( { @Route( path = ":?path=(/.+)", method = Method.DELETE ) } )
     @ApiOperation( value = "Delete content at the given path in deploy-point with the given name." )
     @ApiError( code = 404, reason = "If either the deploy-point or the path within the deploy-point doesn't exist" )
     public void deleteContent( final HttpServerRequest request )
@@ -56,7 +55,7 @@ public class DefaultDeployPointAccessResource
         doDelete( request );
     }
 
-    @Routes( { @Route( path = "/deploy/:name:?path=(/.+)", method = Method.GET ) } )
+    @Routes( { @Route( path = ":?path=(/.+)", method = Method.GET ) } )
     @ApiOperation( value = "Retrieve content given by path in deploy-point with the given name." )
     @ApiError( code = 404, reason = "If either the deploy-point or the path within the deploy-point doesn't exist" )
     public void getContent( final HttpServerRequest request )

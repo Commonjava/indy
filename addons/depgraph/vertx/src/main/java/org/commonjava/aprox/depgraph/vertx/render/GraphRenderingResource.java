@@ -28,7 +28,7 @@ import static org.commonjava.aprox.rest.util.ApplicationContent.text_plain;
 import static org.commonjava.aprox.rest.util.RequestUtils.parseQueryMap;
 import static org.commonjava.vertx.vabr.Method.POST;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.bind.vertx.util.VertXInputStream;
@@ -37,14 +37,16 @@ import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.maven.atlas.ident.DependencyScope;
 import org.commonjava.util.logging.Logger;
-import org.commonjava.vertx.vabr.anno.PathPrefix;
+import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
+import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.vertx.java.core.MultiMap;
 import org.vertx.java.core.http.HttpServerRequest;
 
-@PathPrefix( "/depgraph/render/graph" )
-@RequestScoped
+@Handles( prefix = "/depgraph/render/graph" )
+@ApplicationScoped
 public class GraphRenderingResource
+    implements RequestHandler
 {
 
     private static final String TYPE_GRAPHVIZ = "text/x-graphviz";

@@ -19,7 +19,7 @@ package org.commonjava.aprox.depgraph.rest;
 import java.io.InputStream;
 import java.util.List;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
@@ -35,7 +35,7 @@ import org.commonjava.maven.cartographer.ops.CalculationOps;
 import org.commonjava.maven.cartographer.preset.PresetSelector;
 import org.commonjava.web.json.ser.JsonSerializer;
 
-@RequestScoped
+@ApplicationScoped
 public class CalculatorController
 {
 

@@ -20,20 +20,22 @@ import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkRespons
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
 import static org.commonjava.aprox.rest.util.ApplicationContent.application_json;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.bind.vertx.util.VertXInputStream;
 import org.commonjava.aprox.depgraph.rest.CalculatorController;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.util.logging.Logger;
-import org.commonjava.vertx.vabr.anno.PathPrefix;
+import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
+import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.vertx.java.core.http.HttpServerRequest;
 
-@PathPrefix( "/depgraph/calc" )
-@RequestScoped
+@Handles( prefix = "/depgraph/calc" )
+@ApplicationScoped
 public class CalculatorResource
+    implements RequestHandler
 {
 
     private final Logger logger = new Logger( getClass() );

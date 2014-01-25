@@ -16,26 +16,26 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.vertx.access;
 
-import javax.enterprise.context.RequestScoped;
-
 import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.vertx.vabr.Method;
+import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
+import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.vertx.java.core.http.HttpServerRequest;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiError;
 import com.wordnik.swagger.annotations.ApiOperation;
 
-//@Path( "/repository" )
+@Handles( prefix = "/repository/:name" )
 @Api( description = "Handles GET/DELETE requests for content in a remote repository (proxy) store", value = "Handle repository content" )
-@RequestScoped
 public class DefaultRepositoryAccessResource
     extends AbstractSimpleAccessResource<Repository>
+    implements RequestHandler
 {
-    @Routes( { @Route( path = "/repository/:name:?path=(/.+)", method = Method.DELETE ) } )
+    @Routes( { @Route( path = ":?path=(/.+)", method = Method.DELETE ) } )
     @ApiOperation( value = "Delete content at the given path in repository's cache with the given name." )
     @ApiError( code = 404, reason = "If either the repository or the path within the repository doesn't exist" )
     public void deleteContent( final HttpServerRequest request )
@@ -43,7 +43,7 @@ public class DefaultRepositoryAccessResource
         doDelete( request );
     }
 
-    @Routes( { @Route( path = "/repository/:name:?path=(/.+)", method = Method.GET ) } )
+    @Routes( { @Route( path = ":?path=(/.+)", method = Method.GET ) } )
     @ApiOperation( value = "Retrieve content given by path in repository with the given name." )
     @ApiError( code = 404, reason = "If either the repository or the path within the repository doesn't exist" )
     public void getContent( final HttpServerRequest request )

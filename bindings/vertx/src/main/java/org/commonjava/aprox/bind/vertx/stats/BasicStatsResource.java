@@ -29,14 +29,16 @@ import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationContent;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.Method;
+import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
+import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.commonjava.web.json.ser.JsonSerializer;
 import org.vertx.java.core.http.HttpServerRequest;
 
-//@Path( "/stats" )
-@javax.enterprise.context.ApplicationScoped
+@Handles( prefix = "/stats" )
 public class BasicStatsResource
+    implements RequestHandler
 {
 
     private final Logger logger = new Logger( getClass() );
@@ -51,13 +53,13 @@ public class BasicStatsResource
     @Inject
     private UriFormatter uriFormatter;
 
-    @Routes( { @Route( path = "/stats/version-info", method = Method.GET, contentType = ApplicationContent.application_json ) } )
+    @Routes( { @Route( path = "/version-info", method = Method.GET, contentType = ApplicationContent.application_json ) } )
     public void getAProxVersion( final HttpServerRequest request )
     {
         formatOkResponseWithJsonEntity( request, serializer.toString( statsController.getVersionInfo() ) );
     }
 
-    @Routes( { @Route( path = "/stats/all-endpoints", method = Method.GET, contentType = ApplicationContent.application_json ) } )
+    @Routes( { @Route( path = "/all-endpoints", method = Method.GET, contentType = ApplicationContent.application_json ) } )
     public void getAllEndpoints( final HttpServerRequest request )
     {
         try

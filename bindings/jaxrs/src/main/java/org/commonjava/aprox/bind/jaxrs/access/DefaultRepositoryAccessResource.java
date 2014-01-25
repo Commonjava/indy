@@ -16,7 +16,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.jaxrs.access;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -33,7 +33,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 
 @Path( "/repository" )
 @Api( description = "Handles GET/DELETE requests for content in a remote repository (proxy) store", value = "Handle repository content" )
-@RequestScoped
+@ApplicationScoped
 public class DefaultRepositoryAccessResource
     extends AbstractSimpleAccessResource<Repository>
 {

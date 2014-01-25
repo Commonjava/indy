@@ -20,7 +20,7 @@ import static org.apache.commons.lang.StringUtils.join;
 
 import java.util.List;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -49,7 +49,7 @@ import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.model.Listing;
 
 @Path( "/admin/{type}" )
-@RequestScoped
+@ApplicationScoped
 public class AdminResource
 {
 

@@ -74,6 +74,7 @@
     <module>test</module>
     <module>tools</module>
     <module>addons</module>
+    <module>launchers</module>
     <module>wars</module>
     <module>uis</module>
   </modules>
@@ -114,11 +115,11 @@
         <artifactId>aprox-core</artifactId>
         <version>0.9.2-SNAPSHOT</version>
       </dependency>
-      <dependency>
+      <!-- <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-db-infinispan</artifactId>
         <version>0.7-SNAPSHOT</version>
-      </dependency>
+      </dependency> -->
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-db-flat</artifactId>
@@ -428,10 +429,32 @@
         <scope>test</scope>
       </dependency>
       <dependency>
+        <groupId>org.jboss.weld.se</groupId>
+        <artifactId>weld-se</artifactId>
+        <version>2.1.1.Final</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.javassist</groupId>
+        <artifactId>javassist</artifactId>
+        <version>3.18.1-GA</version>
+      </dependency>
+      <dependency>
         <groupId>javax.enterprise</groupId>
         <artifactId>cdi-api</artifactId>
         <version>1.1</version>
         <scope>provided</scope>
+      </dependency>
+      
+      <dependency>
+        <groupId>asm</groupId>
+        <artifactId>asm-all</artifactId>
+        <version>3.3.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.xbean</groupId>
+        <artifactId>xbean-asm-shaded</artifactId>
+        <version>3.16</version>
       </dependency>
 
       <dependency>

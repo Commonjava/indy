@@ -20,7 +20,7 @@ import static org.commonjava.aprox.model.StoreType.deploy_point;
 
 import java.util.List;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.data.ProxyDataException;
@@ -30,7 +30,7 @@ import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.model.StoreType;
 
-@RequestScoped
+@ApplicationScoped
 public class StorageAdvisor
 {
 

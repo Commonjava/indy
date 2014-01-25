@@ -80,6 +80,7 @@ public final class ResponseUtils
             request.response()
                    .putHeader( ApplicationHeader.content_type.key(), ApplicationContent.application_json );
             request.response()
+                   .setChunked( true )
                    .write( json );
         }
     }
@@ -95,6 +96,7 @@ public final class ResponseUtils
                .setStatusCode( ApplicationStatus.OK.code() )
                .setStatusMessage( ApplicationStatus.OK.message() )
                .putHeader( ApplicationHeader.content_type.key(), contentType )
+               .setChunked( true )
                .write( output );
     }
 
@@ -103,6 +105,7 @@ public final class ResponseUtils
         request.response()
                .setStatusCode( ApplicationStatus.BAD_REQUEST.code() )
                .setStatusMessage( ApplicationStatus.BAD_REQUEST.message() )
+               .setChunked( true )
                .write( "{\"error\": \"" + error + "\"}" );
     }
 
@@ -151,7 +154,8 @@ public final class ResponseUtils
 
         if ( includeExplanation )
         {
-            response.write( formatEntity( error ).toString() );
+            response.setChunked( true )
+                    .write( formatEntity( error ).toString() );
         }
     }
 

@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -56,7 +56,7 @@ import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.util.PathUtils;
 import org.commonjava.util.logging.Logger;
 
-@RequestScoped
+@ApplicationScoped
 @Named( "stores" )
 public class ArtifactStoreSubStore
     implements SubStore

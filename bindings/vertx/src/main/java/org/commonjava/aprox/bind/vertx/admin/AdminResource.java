@@ -24,7 +24,6 @@ import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
 
 import java.util.List;
 
-import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.bind.vertx.util.PathParam;
@@ -40,14 +39,16 @@ import org.commonjava.aprox.rest.util.ApplicationContent;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.Method;
+import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
+import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.commonjava.web.json.model.Listing;
 import org.vertx.java.core.http.HttpServerRequest;
 
-//@Path( "/admin/{type}" )
-@RequestScoped
+@Handles( prefix = "/admin/:type" )
 public class AdminResource
+    implements RequestHandler
 {
 
     private final Logger logger = new Logger( getClass() );
@@ -74,7 +75,7 @@ public class AdminResource
      * (non-Javadoc)
      * @see org.commonjava.aprox.core.rest.admin.DeployPointAdminResource#create()
      */
-    @Routes( { @Route( path = "/admin/:type", method = Method.POST, contentType = ApplicationContent.application_json ) } )
+    @Routes( { @Route( method = Method.POST, contentType = ApplicationContent.application_json ) } )
     public void create( final HttpServerRequest request )
     {
         final String type = request.params()
@@ -112,7 +113,7 @@ public class AdminResource
      * (non-Javadoc)
      * @see org.commonjava.aprox.core.rest.admin.DeployPointAdminResource#store(java.lang.String)
      */
-    @Routes( { @Route( path = "/admin/:type/:name", method = Method.PUT, contentType = ApplicationContent.application_json ) } )
+    @Routes( { @Route( path = "/:name", method = Method.PUT, contentType = ApplicationContent.application_json ) } )
     public void store( final HttpServerRequest request )
     {
         final String type = request.params()
@@ -154,7 +155,7 @@ public class AdminResource
      * (non-Javadoc)
      * @see org.commonjava.aprox.core.rest.admin.DeployPointAdminResource#getAll()
      */
-    @Routes( { @Route( path = "/admin/:type", method = Method.GET, contentType = ApplicationContent.application_json ) } )
+    @Routes( { @Route( method = Method.GET, contentType = ApplicationContent.application_json ) } )
     public void getAll( final HttpServerRequest request )
     {
         final String type = request.params()
@@ -185,7 +186,7 @@ public class AdminResource
      * (non-Javadoc)
      * @see org.commonjava.aprox.core.rest.admin.DeployPointAdminResource#get(java.lang.String)
      */
-    @Routes( { @Route( path = "/admin/:type/:name", method = Method.GET, contentType = ApplicationContent.application_json ) } )
+    @Routes( { @Route( path = "/:name", method = Method.GET, contentType = ApplicationContent.application_json ) } )
     public void get( final HttpServerRequest request )
     {
         final String type = request.params()
@@ -222,7 +223,7 @@ public class AdminResource
      * (non-Javadoc)
      * @see org.commonjava.aprox.core.rest.admin.DeployPointAdminResource#delete(java.lang.String)
      */
-    @Routes( { @Route( path = "/admin/:type/:name", method = Method.DELETE ) } )
+    @Routes( { @Route( path = "/:name", method = Method.DELETE ) } )
     public void delete( final HttpServerRequest request )
     {
         final String type = request.params()

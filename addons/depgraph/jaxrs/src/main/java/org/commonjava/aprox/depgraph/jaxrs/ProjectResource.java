@@ -16,7 +16,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.jaxrs;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -36,7 +36,7 @@ import org.commonjava.util.logging.Logger;
 
 @Path( "/depgraph/project" )
 @Produces( MediaType.APPLICATION_JSON )
-@RequestScoped
+@ApplicationScoped
 public class ProjectResource
 {
     private final Logger logger = new Logger( getClass() );

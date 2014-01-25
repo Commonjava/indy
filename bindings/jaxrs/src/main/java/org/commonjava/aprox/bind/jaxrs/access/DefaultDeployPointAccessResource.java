@@ -16,7 +16,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.jaxrs.access;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
@@ -38,7 +38,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 
 @Path( "/deploy" )
 @Api( description = "Handles GET/PUT/DELETE requests for content in a hosted deploy-point store", value = "Handle deploy-point content" )
-@RequestScoped
+@ApplicationScoped
 @Default
 public class DefaultDeployPointAccessResource
     extends AbstractSimpleAccessResource<DeployPoint>

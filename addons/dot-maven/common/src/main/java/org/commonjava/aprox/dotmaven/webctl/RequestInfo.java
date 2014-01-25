@@ -19,11 +19,11 @@ package org.commonjava.aprox.dotmaven.webctl;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 
 import net.sf.webdav.spi.WebdavRequest;
 
-@RequestScoped
+@ApplicationScoped
 public class RequestInfo
 {
 

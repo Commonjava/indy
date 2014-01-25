@@ -34,13 +34,16 @@ import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationContent;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.Method;
+import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
+import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.commonjava.web.json.ser.JsonSerializer;
 import org.vertx.java.core.http.HttpServerRequest;
 
-//@Path( "/admin/replicate" )
+@Handles( prefix = "/admin/replicate" )
 public class ReplicationResource
+    implements RequestHandler
 {
 
     private final Logger logger = new Logger( getClass() );
@@ -52,7 +55,7 @@ public class ReplicationResource
     @AproxData
     private JsonSerializer serializer;
 
-    @Routes( { @Route( path = "/admin/replicate", method = Method.POST, contentType = ApplicationContent.application_json ) } )
+    @Routes( { @Route( method = Method.POST, contentType = ApplicationContent.application_json ) } )
     public void replicate( final HttpServerRequest req )
     {
         final ReplicationDTO dto = RequestSerialHelper.fromRequestBody( req, serializer, ReplicationDTO.class );

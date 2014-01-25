@@ -21,7 +21,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Set;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.core.dto.CreationDTO;
@@ -41,7 +41,7 @@ import org.commonjava.maven.cartographer.ops.WorkspaceOps;
 import org.commonjava.web.json.model.Listing;
 import org.commonjava.web.json.ser.JsonSerializer;
 
-@RequestScoped
+@ApplicationScoped
 public class WorkspaceController
 {
 

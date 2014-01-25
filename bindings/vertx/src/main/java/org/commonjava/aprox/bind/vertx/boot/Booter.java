@@ -17,7 +17,6 @@
 package org.commonjava.aprox.bind.vertx.boot;
 
 import org.apache.log4j.Level;
-import org.commonjava.aprox.bind.vertx.AProxRouter;
 import org.commonjava.aprox.core.conf.DefaultAproxConfigFactory;
 import org.commonjava.util.logging.Log4jUtil;
 import org.jboss.weld.environment.se.Weld;
@@ -97,6 +96,8 @@ public class Booter
         final AProxRouter router = container.instance()
                                             .select( AProxRouter.class )
                                             .get();
+
+        //        router.cdiInit();
 
         setVertx( new DefaultVertx() );
 

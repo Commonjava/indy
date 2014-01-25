@@ -69,7 +69,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-db-memory</artifactId>
+      <artifactId>aprox-db-flat</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
@@ -77,8 +77,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.shelflife</groupId>
-      <artifactId>shelflife-store-memory</artifactId>
-      <scope>compile</scope>
+      <artifactId>shelflife-store-flat</artifactId>
     </dependency>
   </dependencies>
   

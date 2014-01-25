@@ -21,7 +21,7 @@ import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
 
 import java.io.IOException;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.bind.vertx.util.PathParam;
@@ -44,7 +44,7 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
 
     private final Logger logger = new Logger( getClass() );
 
-    @RequestScoped
+    @ApplicationScoped
     private ContentController contentController;
 
     @Inject

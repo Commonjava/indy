@@ -18,7 +18,7 @@ package org.commonjava.aprox.depgraph.jaxrs.render;
 
 import java.io.IOException;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DefaultValue;
@@ -40,7 +40,7 @@ import org.commonjava.maven.atlas.ident.DependencyScope;
 import org.commonjava.util.logging.Logger;
 
 @Path( "/depgraph/render/graph" )
-@RequestScoped
+@ApplicationScoped
 public class GraphRenderingResource
 {
 

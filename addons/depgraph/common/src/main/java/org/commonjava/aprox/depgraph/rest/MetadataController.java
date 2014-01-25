@@ -22,7 +22,7 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
@@ -42,7 +42,7 @@ import org.commonjava.web.json.ser.JsonSerializer;
 
 import com.google.gson.reflect.TypeToken;
 
-@RequestScoped
+@ApplicationScoped
 public class MetadataController
 {
 

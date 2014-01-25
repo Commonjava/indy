@@ -1,0 +1,429 @@
+
+
+
+Dependency tree for: org.commonjava.aprox.launch:aprox-launcher-min:0.9.1-EXP-SNAPSHOT: 
+
+
+org.commonjava.aprox.launch:aprox-launcher-min:0.9.1-EXP-SNAPSHOT (VARIABLE, ROOT)
+  org.commonjava.aprox:aprox-api:jar:0.9.1-EXP-SNAPSHOT:compile (VARIABLE, NOT-RESOLVED)
+    ???
+  javax.inject:javax.inject:jar:1:compile (NOT-RESOLVED)
+    ???
+  log4j:log4j:jar:1.2.12:compile (NOT-RESOLVED)
+    ???
+  org.slf4j:slf4j-ext:jar:1.6.1:compile
+    javassist:javassist:jar:3.4.GA:compile (OPTIONAL, NOT-RESOLVED)
+      ???
+    commons-lang:commons-lang:jar:2.4:compile (OPTIONAL)
+      org.apache.commons:commons-parent:pom:9 (PARENT)
+        org.apache:apache:pom:4 (PARENT, NOT-RESOLVED)
+          ???
+    org.slf4j:slf4j-api:jar:1.6.1:compile
+      org.slf4j:slf4j-parent:pom:1.6.1 (PARENT)
+    ch.qos.cal10n:cal10n-api:jar:0.7.4:compile
+      ch.qos.cal10n:cal10n-parent:pom:0.7.4 (PARENT)
+    org.slf4j:slf4j-parent:pom:1.6.1 (PARENT)
+  org.commonjava.aprox.launch:aprox-launchers:pom:0.9.1-EXP-SNAPSHOT (PARENT, VARIABLE, NOT-RESOLVED)
+    ???
+  org.slf4j:jcl-over-slf4j:jar:1.6.1:compile
+    org.slf4j:slf4j-api:jar:1.6.1:compile
+      org.slf4j:slf4j-parent:pom:1.6.1 (PARENT)
+    org.slf4j:slf4j-parent:pom:1.6.1 (PARENT)
+  javax.enterprise:cdi-api:jar:1.1:compile
+    javax.el:el-api:jar:2.2:compile
+      org.glassfish.web:el:pom:2.2 (PARENT)
+    javax.annotation:jsr250-api:jar:1.0:compile (NOT-RESOLVED)
+      ???
+    org.jboss.weld:weld-parent:pom:21 (PARENT)
+    org.jboss.spec.javax.ejb:jboss-ejb-api_3.1_spec:jar:1.0.0.CR2:compile (OPTIONAL)
+      org.jboss.spec:jboss-specs-parent:pom:1.0.0.Beta2 (PARENT)
+        org.jboss:jboss-parent:pom:5 (PARENT)
+      org.jboss.spec.javax.transaction:jboss-transaction-api_1.1_spec:jar:1.0.0.Beta1:compile
+        org.jboss.spec:jboss-specs-parent:pom:1.0.0.Beta2 (PARENT) [was: org.jboss.spec:jboss-specs-parent:1.0.0.Beta1]
+      javax.xml:jaxrpc-api:jar:1.1:compile (NOT-RESOLVED)
+        ???
+    javax.inject:javax.inject:jar:1:compile (NOT-RESOLVED)
+      ???
+    org.jboss.spec.javax.interceptor:jboss-interceptors-api_1.1_spec:jar:1.0.0.Beta1:compile
+      org.jboss.spec:jboss-specs-parent:pom:1.0.0.Beta2 (PARENT) [was: org.jboss.spec:jboss-specs-parent:1.0.0.Beta1]
+  org.slf4j:jul-to-slf4j:jar:1.6.1:compile
+    org.slf4j:slf4j-parent:pom:1.6.1 (PARENT)
+    org.slf4j:slf4j-api:jar:1.6.1:compile
+      org.slf4j:slf4j-parent:pom:1.6.1 (PARENT)
+  org.commonjava.aprox:aprox-core:jar:0.9.1-EXP-SNAPSHOT:compile (VARIABLE, NOT-RESOLVED)
+    ???
+  org.commonjava.shelflife:shelflife-store-flat:jar:0.5:compile
+    org.commonjava.util:logging:jar:1.3:compile
+      org.commonjava:commonjava:pom:2 (PARENT)
+      log4j:log4j:jar:1.2.12:compile (NOT-RESOLVED)
+        ???
+    org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+      ???
+    org.jboss.arquillian:arquillian-bom:pom:1.0.1.Final (BOM)
+      org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+        ???
+      org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+        ???
+      org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+        ???
+    org.commonjava.shelflife:shelflife-api:jar:0.5:compile
+      commons-lang:commons-lang:jar:2.4:compile [was: commons-lang:commons-lang:2.6]
+      org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+        ???
+      org.commonjava.util:logging:jar:1.3:compile
+        org.commonjava:commonjava:pom:2 (PARENT)
+        log4j:log4j:jar:1.2.12:compile (NOT-RESOLVED)
+          ???
+      org.jboss.arquillian:arquillian-bom:pom:1.0.1.Final (BOM)
+        org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+          ???
+        org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+          ???
+        org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+          ???
+      org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+        ???
+      org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+        ???
+      org.commonjava.boms:web-commons-bom:pom:6 (BOM)
+        org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+          ???
+        org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+          ???
+        org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+          ???
+        org.jboss.arquillian:arquillian-bom:pom:1.0.1.Final (BOM)
+          org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+            ???
+          org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+            ???
+          org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+            ???
+      org.commonjava.shelflife:shelflife:pom:0.5 (PARENT)
+        org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+          ???
+        org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+          ???
+        org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+          ???
+      org.commonjava.cdi.util:weft:jar:0.3:compile
+        org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+          ???
+        org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+          ???
+        org.commonjava:commonjava:pom:2 (PARENT)
+        org.jboss.arquillian:arquillian-bom:pom:1.0.1.Final (BOM)
+          org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+            ???
+          org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+            ???
+          org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+            ???
+        org.commonjava.boms:web-commons-bom:pom:6 (BOM) [was: org.commonjava.boms:web-commons-bom:4]
+        org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+          ???
+        org.commonjava.util:logging:jar:1.3:compile [was: org.commonjava.util:logging:1.2]
+    commons-codec:commons-codec:jar:1.6:compile
+      org.apache.commons:commons-parent:pom:9 (PARENT) [was: org.apache.commons:commons-parent:22]
+    org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+      ???
+    org.commonjava.boms:web-commons-bom:pom:6 (BOM)
+      org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+        ???
+      org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+        ???
+      org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+        ???
+      org.jboss.arquillian:arquillian-bom:pom:1.0.1.Final (BOM)
+        org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+          ???
+        org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+          ???
+        org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+          ???
+    org.commonjava.web:json-serialization:jar:0.5:compile
+      org.apache.httpcomponents:httpclient:jar:4.1.1:compile
+        org.apache.httpcomponents:httpcomponents-client:pom:4.1.1 (PARENT)
+          org.apache.httpcomponents:project:pom:4.1.1 (PARENT)
+        commons-codec:commons-codec:jar:1.6:compile [was: commons-codec:commons-codec:1.4]
+        org.apache.httpcomponents:httpcore:jar:4.1:compile
+          org.apache.httpcomponents:httpcomponents-core:pom:4.1 (PARENT)
+            org.apache.httpcomponents:project:pom:4.1.1 (PARENT)
+        commons-logging:commons-logging:jar:1.1.1:compile
+          avalon-framework:avalon-framework:jar:4.1.3:compile (OPTIONAL, NOT-RESOLVED)
+            ???
+          org.apache.commons:commons-parent:pom:9 (PARENT) [was: org.apache.commons:commons-parent:5]
+          log4j:log4j:jar:1.2.12:compile (OPTIONAL, NOT-RESOLVED)
+            ???
+          logkit:logkit:jar:1.0.1:compile (OPTIONAL, NOT-RESOLVED)
+            ???
+      commons-io:commons-io:jar:2.0.1:compile
+        org.apache.commons:commons-parent:pom:9 (PARENT) [was: org.apache.commons:commons-parent:15]
+      org.commonjava.web:json-tools:pom:0.5 (PARENT)
+        org.commonjava:commonjava:pom:2 (PARENT)
+        org.commonjava.util:logging:jar:1.3:compile [was: org.commonjava.util:logging:1.2]
+      commons-lang:commons-lang:jar:2.4:compile [was: commons-lang:commons-lang:2.5]
+      com.google.code.gson:gson:jar:1.7.2:compile (OPTIONAL)
+        org.sonatype.oss:oss-parent:pom:5 (PARENT)
+      org.commonjava.util:logging:jar:1.3:compile [was: org.commonjava.util:logging:1.2]
+    com.google.code.gson:gson:jar:1.7.2:compile [was: com.google.code.gson:gson:2.2.2]
+    org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+      ???
+    org.commonjava.cdi.util:weft:jar:0.3:compile
+      org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+        ???
+      org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+        ???
+      org.commonjava:commonjava:pom:2 (PARENT)
+      org.jboss.arquillian:arquillian-bom:pom:1.0.1.Final (BOM)
+        org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+          ???
+        org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+          ???
+        org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+          ???
+      org.commonjava.boms:web-commons-bom:pom:6 (BOM) [was: org.commonjava.boms:web-commons-bom:4]
+      org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+        ???
+      org.commonjava.util:logging:jar:1.3:compile [was: org.commonjava.util:logging:1.2]
+    org.commonjava.shelflife:shelflife-stores:pom:0.5 (PARENT)
+      org.commonjava.shelflife:shelflife-api:jar:0.5:compile
+        commons-lang:commons-lang:jar:2.4:compile [was: commons-lang:commons-lang:2.6]
+        org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+          ???
+        org.commonjava.util:logging:jar:1.3:compile
+          org.commonjava:commonjava:pom:2 (PARENT)
+          log4j:log4j:jar:1.2.12:compile (NOT-RESOLVED)
+            ???
+        org.jboss.arquillian:arquillian-bom:pom:1.0.1.Final (BOM)
+          org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+            ???
+          org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+            ???
+          org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+            ???
+        org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+          ???
+        org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+          ???
+        org.commonjava.boms:web-commons-bom:pom:6 (BOM)
+          org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+            ???
+          org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+            ???
+          org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+            ???
+          org.jboss.arquillian:arquillian-bom:pom:1.0.1.Final (BOM)
+            org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+              ???
+            org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+              ???
+            org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+              ???
+        org.commonjava.shelflife:shelflife:pom:0.5 (PARENT)
+          org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+            ???
+          org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+            ???
+          org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+            ???
+        org.commonjava.cdi.util:weft:jar:0.3:compile
+          org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+            ???
+          org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+            ???
+          org.commonjava:commonjava:pom:2 (PARENT)
+          org.jboss.arquillian:arquillian-bom:pom:1.0.1.Final (BOM)
+            org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+              ???
+            org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+              ???
+            org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+              ???
+          org.commonjava.boms:web-commons-bom:pom:6 (BOM) [was: org.commonjava.boms:web-commons-bom:4]
+          org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+            ???
+          org.commonjava.util:logging:jar:1.3:compile [was: org.commonjava.util:logging:1.2]
+      org.commonjava.util:logging:jar:1.3:compile
+        org.commonjava:commonjava:pom:2 (PARENT)
+        log4j:log4j:jar:1.2.12:compile (NOT-RESOLVED)
+          ???
+      org.commonjava.boms:web-commons-bom:pom:6 (BOM)
+        org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+          ???
+        org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+          ???
+        org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+          ???
+        org.jboss.arquillian:arquillian-bom:pom:1.0.1.Final (BOM)
+          org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+            ???
+          org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+            ???
+          org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+            ???
+      org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+        ???
+      org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+        ???
+      org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+        ???
+      org.commonjava.shelflife:shelflife:pom:0.5 (PARENT)
+        org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+          ???
+        org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+          ???
+        org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+          ???
+      org.commonjava.cdi.util:weft:jar:0.3:compile
+        org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+          ???
+        org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+          ???
+        org.commonjava:commonjava:pom:2 (PARENT)
+        org.jboss.arquillian:arquillian-bom:pom:1.0.1.Final (BOM)
+          org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+            ???
+          org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+            ???
+          org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+            ???
+        org.commonjava.boms:web-commons-bom:pom:6 (BOM) [was: org.commonjava.boms:web-commons-bom:4]
+        org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+          ???
+        org.commonjava.util:logging:jar:1.3:compile [was: org.commonjava.util:logging:1.2]
+      org.jboss.arquillian:arquillian-bom:pom:1.0.1.Final (BOM)
+        org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-bom:pom:1.0.0-beta-7 (BOM, NOT-RESOLVED)
+          ???
+        org.jboss.shrinkwrap:shrinkwrap-bom:pom:1.0.1 (BOM, NOT-RESOLVED)
+          ???
+        org.jboss.shrinkwrap.descriptors:shrinkwrap-descriptors-bom:pom:2.0.0-alpha-3 (BOM, NOT-RESOLVED)
+          ???
+    commons-io:commons-io:jar:2.0.1:compile [was: commons-io:commons-io:2.4]
+  org.commonjava.aprox:aprox-db-flat:jar:0.9.1-EXP-SNAPSHOT:compile (VARIABLE, NOT-RESOLVED)
+    ???
+  org.slf4j:slf4j-api:jar:1.6.1:compile
+    org.slf4j:slf4j-parent:pom:1.6.1 (PARENT)
+  org.commonjava.aprox:aprox-filer-default:jar:0.9.1-EXP-SNAPSHOT:compile (VARIABLE, NOT-RESOLVED)
+    ???
+  org.commonjava.aprox:aprox-parent:pom:0.9.1-EXP-SNAPSHOT (PARENT, VARIABLE, NOT-RESOLVED)
+    ???
+  org.slf4j:slf4j-log4j12:jar:1.6.1:compile
+    org.slf4j:slf4j-parent:pom:1.6.1 (PARENT)
+    org.slf4j:slf4j-api:jar:1.6.1:compile
+      org.slf4j:slf4j-parent:pom:1.6.1 (PARENT)
+    log4j:log4j:jar:1.2.12:compile (NOT-RESOLVED) [was: log4j:log4j:1.2.16]
+      ???
+  args4j:args4j:jar:2.0.12:compile
+    args4j:args4j-site:pom:2.0.12 (PARENT)
+  org.commonjava:commonjava:pom:2 (PARENT) [was: org.commonjava:commonjava:3]
+  org.commonjava.aprox:aprox-bindings-vertx:jar:0.9.1-EXP-SNAPSHOT:compile (VARIABLE, NOT-RESOLVED)
+    ???
+  org.jboss.weld.se:weld-se-core:jar:2.1.1.Final:compile
+    org.jboss.weld:weld-spi:jar:2.1.Final:compile
+      org.jboss.weld:weld-api:jar:2.1.Final:compile
+        org.jboss.weld:weld-api-parent:pom:2.1.Final (PARENT)
+        javax.inject:javax.inject:jar:1:compile (NOT-RESOLVED)
+          ???
+        org.jboss.spec.javax.interceptor:jboss-interceptors-api_1.2_spec:jar:1.0.0.Alpha3:compile (OPTIONAL)
+          org.jboss:jboss-parent:pom:5 (PARENT) [was: org.jboss:jboss-parent:10]
+        org.jboss.spec.javax.servlet:jboss-servlet-api_3.0_spec:jar:1.0.2.Final:compile (OPTIONAL)
+          org.jboss:jboss-parent:pom:5 (PARENT) [was: org.jboss:jboss-parent:9]
+      javax.transaction:jta:jar:1.1:compile (OPTIONAL, NOT-RESOLVED)
+        ???
+      org.jboss.spec.javax.interceptor:jboss-interceptors-api_1.2_spec:jar:1.0.0.Alpha3:compile (OPTIONAL)
+        org.jboss:jboss-parent:pom:5 (PARENT) [was: org.jboss:jboss-parent:10]
+      org.jboss.weld:weld-api-parent:pom:2.1.Final (PARENT)
+      javax.validation:validation-api:jar:1.0.0.GA:compile (OPTIONAL)
+      org.jboss.spec.javax.ejb:jboss-ejb-api_3.2_spec:jar:1.0.0.Alpha2:compile (OPTIONAL)
+        org.jboss:jboss-parent:pom:5 (PARENT) [was: org.jboss:jboss-parent:10]
+      javax.persistence:persistence-api:jar:1.0.2:compile (OPTIONAL, NOT-RESOLVED)
+        ???
+      org.jboss.spec.javax.servlet:jboss-servlet-api_3.0_spec:jar:1.0.2.Final:compile (OPTIONAL)
+        org.jboss:jboss-parent:pom:5 (PARENT) [was: org.jboss:jboss-parent:9]
+      javax.inject:javax.inject:jar:1:compile (NOT-RESOLVED)
+        ???
+    org.jboss.weld:weld-core-impl:jar:2.1.1.Final:compile
+      org.jboss.spec.javax.ejb:jboss-ejb-api_3.1_spec:jar:1.0.0.CR2:compile (OPTIONAL) [was: org.jboss.spec.javax.ejb:jboss-ejb-api_3.1_spec:1.0.2.Final]
+      com.google.guava:guava:jar:13.0.1:compile
+        com.google.guava:guava-parent:pom:13.0.1 (PARENT)
+      org.jboss.spec.javax.servlet:jboss-servlet-api_3.0_spec:jar:1.0.2.Final:compile (OPTIONAL)
+        org.jboss:jboss-parent:pom:5 (PARENT) [was: org.jboss:jboss-parent:9]
+      org.jboss.spec.javax.annotation:jboss-annotations-api_1.2_spec:jar:1.0.0.Alpha1:compile
+        org.jboss:jboss-parent:pom:5 (PARENT) [was: org.jboss:jboss-parent:10]
+      org.jboss.weld:weld-spi:jar:2.1.Final:compile
+        org.jboss.weld:weld-api:jar:2.1.Final:compile
+          org.jboss.weld:weld-api-parent:pom:2.1.Final (PARENT)
+          javax.inject:javax.inject:jar:1:compile (NOT-RESOLVED)
+            ???
+          org.jboss.spec.javax.interceptor:jboss-interceptors-api_1.2_spec:jar:1.0.0.Alpha3:compile (OPTIONAL)
+            org.jboss:jboss-parent:pom:5 (PARENT) [was: org.jboss:jboss-parent:10]
+          org.jboss.spec.javax.servlet:jboss-servlet-api_3.0_spec:jar:1.0.2.Final:compile (OPTIONAL)
+            org.jboss:jboss-parent:pom:5 (PARENT) [was: org.jboss:jboss-parent:9]
+        javax.transaction:jta:jar:1.1:compile (OPTIONAL, NOT-RESOLVED)
+          ???
+        org.jboss.spec.javax.interceptor:jboss-interceptors-api_1.2_spec:jar:1.0.0.Alpha3:compile (OPTIONAL)
+          org.jboss:jboss-parent:pom:5 (PARENT) [was: org.jboss:jboss-parent:10]
+        org.jboss.weld:weld-api-parent:pom:2.1.Final (PARENT)
+        javax.validation:validation-api:jar:1.0.0.GA:compile (OPTIONAL)
+        org.jboss.spec.javax.ejb:jboss-ejb-api_3.2_spec:jar:1.0.0.Alpha2:compile (OPTIONAL)
+          org.jboss:jboss-parent:pom:5 (PARENT) [was: org.jboss:jboss-parent:10]
+        javax.persistence:persistence-api:jar:1.0.2:compile (OPTIONAL, NOT-RESOLVED)
+          ???
+        org.jboss.spec.javax.servlet:jboss-servlet-api_3.0_spec:jar:1.0.2.Final:compile (OPTIONAL)
+          org.jboss:jboss-parent:pom:5 (PARENT) [was: org.jboss:jboss-parent:9]
+        javax.inject:javax.inject:jar:1:compile (NOT-RESOLVED)
+          ???
+      org.jboss.logging:jboss-logging:jar:3.1.3.GA:compile
+        org.jboss:jboss-parent:pom:5 (PARENT) [was: org.jboss:jboss-parent:9]
+      javax.transaction:jta:jar:1.1:compile (OPTIONAL, NOT-RESOLVED)
+        ???
+      org.jboss.spec.javax.el:jboss-el-api_3.0_spec:jar:1.0.0.Alpha1:compile
+        org.jboss:jboss-parent:pom:5 (PARENT) [was: org.jboss:jboss-parent:10]
+      javax.persistence:persistence-api:jar:1.0.2:compile (OPTIONAL, NOT-RESOLVED)
+        ???
+      org.jboss.weld:weld-api:jar:2.1.Final:compile
+        org.jboss.weld:weld-api-parent:pom:2.1.Final (PARENT)
+        javax.inject:javax.inject:jar:1:compile (NOT-RESOLVED)
+          ???
+        org.jboss.spec.javax.interceptor:jboss-interceptors-api_1.2_spec:jar:1.0.0.Alpha3:compile (OPTIONAL)
+          org.jboss:jboss-parent:pom:5 (PARENT) [was: org.jboss:jboss-parent:10]
+        org.jboss.spec.javax.servlet:jboss-servlet-api_3.0_spec:jar:1.0.2.Final:compile (OPTIONAL)
+          org.jboss:jboss-parent:pom:5 (PARENT) [was: org.jboss:jboss-parent:9]
+      net.sourceforge.findbugs:annotations:jar:1.3.2:compile (OPTIONAL, NOT-RESOLVED)
+        ???
+      org.jboss.classfilewriter:jboss-classfilewriter:jar:1.0.4.Final:compile
+        org.jboss:jboss-parent:pom:5 (PARENT) [was: org.jboss:jboss-parent:6-beta-1]
+      org.jboss.weld:weld-api-bom:pom:2.1.Final (BOM)
+        org.jboss.weld:weld-parent:pom:21 (PARENT) [was: org.jboss.weld:weld-parent:22]
+      org.jboss.spec.javax.interceptor:jboss-interceptors-api_1.2_spec:jar:1.0.0.Alpha3:compile
+        org.jboss:jboss-parent:pom:5 (PARENT) [was: org.jboss:jboss-parent:10]
+      org.jboss.weld:weld-core-parent:pom:2.1.1.Final (PARENT)
+        org.jboss.weld:weld-parent:pom:21 (PARENT) [was: org.jboss.weld:weld-parent:26]
+        org.jboss.weld:weld-api-bom:pom:2.1.Final (BOM)
+          org.jboss.weld:weld-parent:pom:21 (PARENT) [was: org.jboss.weld:weld-parent:22]
+    org.jboss.spec.javax.annotation:jboss-annotations-api_1.2_spec:jar:1.0.0.Alpha1:compile
+      org.jboss:jboss-parent:pom:5 (PARENT) [was: org.jboss:jboss-parent:10]
+    javax.enterprise:cdi-api:jar:1.1:compile
+      javax.el:el-api:jar:2.2:compile
+        org.glassfish.web:el:pom:2.2 (PARENT)
+      javax.annotation:jsr250-api:jar:1.0:compile (NOT-RESOLVED)
+        ???
+      org.jboss.weld:weld-parent:pom:21 (PARENT)
+      org.jboss.spec.javax.ejb:jboss-ejb-api_3.1_spec:jar:1.0.0.CR2:compile (OPTIONAL)
+        org.jboss.spec:jboss-specs-parent:pom:1.0.0.Beta2 (PARENT)
+          org.jboss:jboss-parent:pom:5 (PARENT)
+        org.jboss.spec.javax.transaction:jboss-transaction-api_1.1_spec:jar:1.0.0.Beta1:compile
+          org.jboss.spec:jboss-specs-parent:pom:1.0.0.Beta2 (PARENT) [was: org.jboss.spec:jboss-specs-parent:1.0.0.Beta1]
+        javax.xml:jaxrpc-api:jar:1.1:compile (NOT-RESOLVED)
+          ???
+      javax.inject:javax.inject:jar:1:compile (NOT-RESOLVED)
+        ???
+      org.jboss.spec.javax.interceptor:jboss-interceptors-api_1.1_spec:jar:1.0.0.Beta1:compile
+        org.jboss.spec:jboss-specs-parent:pom:1.0.0.Beta2 (PARENT) [was: org.jboss.spec:jboss-specs-parent:1.0.0.Beta1]
+    org.jboss.weld:weld-core-parent:pom:2.1.1.Final (PARENT)
+      org.jboss.weld:weld-parent:pom:21 (PARENT) [was: org.jboss.weld:weld-parent:26]
+      org.jboss.weld:weld-api-bom:pom:2.1.Final (BOM)
+        org.jboss.weld:weld-parent:pom:21 (PARENT) [was: org.jboss.weld:weld-parent:22]
+    org.jboss.weld:weld-api-bom:pom:2.1.Final (BOM)
+      org.jboss.weld:weld-parent:pom:21 (PARENT) [was: org.jboss.weld:weld-parent:22]

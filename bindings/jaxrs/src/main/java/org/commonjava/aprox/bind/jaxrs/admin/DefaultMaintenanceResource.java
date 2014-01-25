@@ -16,7 +16,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.jaxrs.admin;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -32,7 +32,7 @@ import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.util.logging.Logger;
 
 @Path( "/admin/maint" )
-@RequestScoped
+@ApplicationScoped
 public class DefaultMaintenanceResource
 {
 

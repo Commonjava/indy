@@ -18,7 +18,7 @@ package org.commonjava.aprox.depgraph.jaxrs;
 
 import java.io.IOException;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -44,7 +44,7 @@ import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.util.logging.Logger;
 
 @Path( "/depgraph/ws" )
-@RequestScoped
+@ApplicationScoped
 public class WorkspaceResource
 {
 

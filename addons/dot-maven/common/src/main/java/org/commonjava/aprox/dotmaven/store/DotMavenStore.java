@@ -28,7 +28,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import javax.annotation.PostConstruct;
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
@@ -37,7 +37,7 @@ import net.sf.webdav.exceptions.WebdavException;
 import net.sf.webdav.spi.ITransaction;
 import net.sf.webdav.spi.IWebdavStore;
 
-@RequestScoped
+@ApplicationScoped
 public class DotMavenStore
     implements IWebdavStore
 {

@@ -18,24 +18,25 @@ package org.commonjava.aprox.bind.vertx;
 
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatRedirect;
 
-import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.core.util.UriFormatter;
 import org.commonjava.vertx.vabr.Method;
+import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
+import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.vertx.java.core.http.HttpServerRequest;
 
-//@Path( "/" )
-@RequestScoped
+@Handles( key = "apiRootRedirector", prefix = "/" )
 public class RootResource
+    implements RequestHandler
 {
 
     @Inject
     private UriFormatter uriFormatter;
 
-    @Routes( { @Route( path = "/", method = Method.GET ) } )
+    @Routes( { @Route( method = Method.GET ) } )
     public void rootStats( final HttpServerRequest request )
     {
         formatRedirect( request, uriFormatter.formatAbsolutePathTo( "stats/version-info" ) );

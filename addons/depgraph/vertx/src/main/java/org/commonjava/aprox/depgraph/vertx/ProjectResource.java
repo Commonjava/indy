@@ -21,13 +21,13 @@ import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.setStatus;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_artifactId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_groupId;
+import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_version;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.q_artifactId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.q_groupId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.q_scopes;
-import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_version;
 import static org.commonjava.aprox.rest.util.RequestUtils.parseQueryMap;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.depgraph.rest.ProjectController;
@@ -35,14 +35,16 @@ import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.maven.atlas.ident.DependencyScope;
 import org.commonjava.util.logging.Logger;
-import org.commonjava.vertx.vabr.anno.PathPrefix;
+import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
+import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.vertx.java.core.MultiMap;
 import org.vertx.java.core.http.HttpServerRequest;
 
-@PathPrefix( "/depgraph/project" )
-@RequestScoped
+@Handles( prefix = "/depgraph/project" )
+@ApplicationScoped
 public class ProjectResource
+    implements RequestHandler
 {
     private final Logger logger = new Logger( getClass() );
 

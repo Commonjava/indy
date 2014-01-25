@@ -19,7 +19,6 @@ package org.commonjava.aprox.bind.vertx.admin;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.setStatus;
 
-import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.bind.vertx.util.PathParam;
@@ -30,13 +29,15 @@ import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.Method;
+import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
+import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.vertx.java.core.http.HttpServerRequest;
 
-//@Path( "/admin/maint" )
-@RequestScoped
+@Handles( prefix = "/admin/maint" )
 public class DefaultMaintenanceResource
+    implements RequestHandler
 {
 
     private final Logger logger = new Logger( getClass() );
@@ -44,7 +45,7 @@ public class DefaultMaintenanceResource
     @Inject
     private ContentController contentController;
 
-    @Routes( { @Route( path = "/admin/maint/rescan/:type/:name", method = Method.GET ) } )
+    @Routes( { @Route( path = "/rescan/:type/:name", method = Method.GET ) } )
     public void rescan( final HttpServerRequest request )
     {
         final String type = request.params()
@@ -66,7 +67,7 @@ public class DefaultMaintenanceResource
         }
     }
 
-    @Routes( { @Route( path = "/admin/maint/rescan/all", method = Method.GET ) } )
+    @Routes( { @Route( path = "/rescan/all", method = Method.GET ) } )
     public void rescanAll( final HttpServerRequest request )
     {
         try
@@ -83,8 +84,8 @@ public class DefaultMaintenanceResource
 
     /*@formatter:off*/
     @Routes( { 
-        @Route( path = "/admin/maint/delete/all:?path=(/.+)", method = Method.GET ), 
-        @Route( path = "/admin/maint/content/all:?path=(/.+)", method = Method.DELETE ) 
+        @Route( path = "/delete/all:?path=(/.+)", method = Method.GET ), 
+        @Route( path = "/content/all:?path=(/.+)", method = Method.DELETE ) 
     } )
     /*@formatter:on*/
     public void deleteAll( final HttpServerRequest request )

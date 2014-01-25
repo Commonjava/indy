@@ -16,7 +16,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.jaxrs.access;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -37,7 +37,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 
 @Path( "/group" )
 @Api( description = "Handles GET/PUT/DELETE requests for content in the constituency of group store", value = "Handle group content" )
-@RequestScoped
+@ApplicationScoped
 public class DefaultGroupAccessResource
     extends AbstractSimpleAccessResource<Group>
 {

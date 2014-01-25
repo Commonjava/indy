@@ -24,13 +24,13 @@ import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_artifactI
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_groupId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_newVersion;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_profile;
-import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.q_for;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_source;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_wsid;
+import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.q_for;
 import static org.commonjava.aprox.rest.util.ApplicationContent.application_json;
 import static org.commonjava.vertx.vabr.BuiltInParam._classBase;
 
-import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.bind.vertx.util.VertXInputStream;
@@ -41,14 +41,16 @@ import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.Method;
-import org.commonjava.vertx.vabr.anno.PathPrefix;
+import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
+import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.vertx.java.core.MultiMap;
 import org.vertx.java.core.http.HttpServerRequest;
 
-@PathPrefix( "/depgraph/ws" )
-@RequestScoped
+@Handles( prefix = "/depgraph/ws" )
+@ApplicationScoped
 public class WorkspaceResource
+    implements RequestHandler
 {
 
     private final Logger logger = new Logger( getClass() );
