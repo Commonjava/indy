@@ -29,15 +29,27 @@
   <name>AProx :: Launchers :: Parent</name>
   
   <modules>
+    <module>base</module>
     <module>rest-min</module>
     <module>savant</module>
   </modules>
+  
+  <properties>
+    <!-- defaults for assembly -->
+    <distName>${project.artifactId}</distName>
+    <disableLauncher>false</disableLauncher>
+  </properties>
   
   <dependencies>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-bindings-vertx</artifactId>
     </dependency>
+    <dependency>
+      <groupId>args4j</groupId>
+      <artifactId>args4j</artifactId>
+    </dependency>
+    
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-api</artifactId>
@@ -48,7 +60,7 @@
     </dependency>
     
     <!-- NOTE: These are added explicitly to change scope in order to exclude from WARs -->
-    <dependency>
+    <!-- <dependency>
       <groupId>org.jboss.spec</groupId>
       <artifactId>jboss-javaee-6.0</artifactId>
       <scope>compile</scope>
@@ -58,8 +70,8 @@
       <groupId>org.jboss.spec.javax.servlet</groupId>
       <artifactId>jboss-servlet-api_3.0_spec</artifactId>
       <scope>compile</scope>
-    </dependency>
-    <dependency>
+    </dependency> -->
+    <!-- <dependency>
       <groupId>javax.inject</groupId>
       <artifactId>javax.inject</artifactId>
       <scope>compile</scope>
@@ -68,24 +80,24 @@
       <groupId>javax.enterprise</groupId>
       <artifactId>cdi-api</artifactId>
       <scope>compile</scope>
-    </dependency>
-    <dependency>
+    </dependency> -->
+    <!-- <dependency>
       <groupId>org.jboss.weld.se</groupId>
       <artifactId>weld-se-core</artifactId>
       <scope>compile</scope>
-    </dependency>
+    </dependency> -->
     <dependency>
       <groupId>org.jboss.weld.se</groupId>
       <artifactId>weld-se</artifactId>
       <scope>compile</scope>
     </dependency>
-    <dependency>
+    <!-- <dependency>
       <groupId>org.javassist</groupId>
       <artifactId>javassist</artifactId>
       <scope>compile</scope>
-    </dependency>
+    </dependency> -->
     
-    <dependency>
+    <!-- <dependency>
       <groupId>asm</groupId>
       <artifactId>asm-all</artifactId>
       <scope>compile</scope>
@@ -94,7 +106,7 @@
       <groupId>org.apache.xbean</groupId>
       <artifactId>xbean-asm-shaded</artifactId>
       <scope>compile</scope>
-    </dependency>
+    </dependency> -->
     
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -135,12 +147,26 @@
           <artifactId>maven-assembly-plugin</artifactId>
           <executions>
             <execution>
+              <id>launcher-prep</id>
+              <goals>
+                <goal>single</goal>
+              </goals>
+              <phase>prepare-package</phase>
+              <configuration>
+                <skipAssembly>${disableLauncher}</skipAssembly>
+                <descriptorRefs>
+                  <descriptorRef>launcher-prep-classes</descriptorRef>
+                </descriptorRefs>
+              </configuration>
+            </execution>
+            <execution>
               <id>launcher</id>
               <goals>
                 <goal>single</goal>
               </goals>
               <phase>package</phase>
               <configuration>
+                <skipAssembly>${disableLauncher}</skipAssembly>
                 <archive>
                   <manifest>
                     <mainClass>org.commonjava.aprox.bind.vertx.boot.Booter</mainClass>

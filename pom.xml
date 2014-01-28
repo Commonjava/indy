@@ -136,6 +136,12 @@
         <version>0.9.2-SNAPSHOT</version>
       </dependency>
       <dependency>
+        <groupId>org.commonjava.aprox.launch</groupId>
+        <artifactId>aprox-launcher-base</artifactId>
+        <version>0.9.1-EXP-SNAPSHOT</version>
+        <type>tar.gz</type>
+      </dependency>
+      <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-depgraph-common</artifactId>
         <version>0.9.2-SNAPSHOT</version>

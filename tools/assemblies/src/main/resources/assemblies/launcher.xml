@@ -17,25 +17,62 @@
 <assembly>
   <id>launcher</id>
   <formats>
-    <format>jar</format>
+    <format>zip</format>
+    <format>tar.gz</format>
   </formats>
-  <includeBaseDirectory>false</includeBaseDirectory>
+  
+  <includeBaseDirectory>true</includeBaseDirectory>
+  <baseDirectory>${distName}</baseDirectory>
+  
   <dependencySets>
     <dependencySet>
-      <scope>runtime</scope>
+      <useProjectArtifact>true</useProjectArtifact>
+      <useProjectAttachments>false</useProjectAttachments>
+      <includes>
+        <include>${project.groupId}:${project.artifactId}:${project.version}</include>
+      </includes>
       <outputDirectory>/</outputDirectory>
       <unpack>true</unpack>
       <unpackOptions>
         <excludes>
-          <exclude>META-INF/beans.xml</exclude>
+          <exclude>META-INF/**</exclude>
         </excludes>
       </unpackOptions>
     </dependencySet>
+    <dependencySet>
+      <useProjectArtifact>false</useProjectArtifact>
+      <scope>runtime</scope>
+      <includes>
+        <include>org.commonjava.aprox.launch:aprox-launcher-base:tar.gz:${project.version}</include>
+      </includes>
+      <outputDirectory>/</outputDirectory>
+      <directoryMode>770</directoryMode>
+      <unpack>true</unpack>
+      <unpackOptions>
+        <excludes>
+          <exclude>META-INF/**</exclude>
+        </excludes>
+      </unpackOptions>
+    </dependencySet>
+    
+    <dependencySet>
+      <useProjectArtifact>true</useProjectArtifact>
+      <useProjectAttachments>true</useProjectAttachments>
+      <includes>
+        <include>${project.groupId}:${project.artifactId}:jar:launcher-classes:${project.version}</include>
+      </includes>
+      <outputDirectory>lib</outputDirectory>
+      <outputFileNameMapping>aprox-cdi-components-${project.version}.jar</outputFileNameMapping>
+    </dependencySet>
+    
+    <dependencySet>
+      <useProjectArtifact>false</useProjectArtifact>
+      <scope>runtime</scope>
+      <excludes>
+        <exclude>org.commonjava.*</exclude>
+      </excludes>
+      <outputDirectory>lib/thirdparty</outputDirectory>
+    </dependencySet>
   </dependencySets>
-  <files>
-    <file>
-      <source>src/main/resources/META-INF/beans.xml</source>
-      <outputDirectory>META-INF</outputDirectory>
-    </file>
-  </files>
+  
 </assembly>

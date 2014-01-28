@@ -22,34 +22,33 @@
     <version>0.9.1-EXP-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-launcher-min</artifactId>
+  <artifactId>aprox-launcher-base</artifactId>
   
-  <name>AProx :: Launchers :: Minimal REST Launcher</name>
+  <name>AProx :: Launchers :: Launcher Base</name>
   
-  <dependencies>
-    <dependency>
-      <groupId>org.commonjava.aprox.launch</groupId>
-      <artifactId>aprox-launcher-base</artifactId>
-      <type>tar.gz</type>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-db-flat</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-filer-default</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.shelflife</groupId>
-      <artifactId>shelflife-store-flat</artifactId>
-    </dependency>
-  </dependencies>
+  <properties>
+    <disableLauncher>true</disableLauncher>
+  </properties>
   
   <build>
     <plugins>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>launcher-base-tarball</id>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <descriptors>
+                <descriptor>src/main/assembly/tarball.xml</descriptor>
+              </descriptors>
+              <appendAssemblyId>false</appendAssemblyId>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
