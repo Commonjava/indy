@@ -79,7 +79,7 @@ public class PathRetrieverTest
     public void downloadOnePOMFromSingleRepository()
         throws Exception
     {
-        final Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
+        final Repository repo = new Repository( "central", "http://repo.maven.apache.org/maven2/" );
         data.storeRepository( repo );
 
         final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
@@ -95,7 +95,7 @@ public class PathRetrieverTest
         throws Exception
     {
         final Repository repo = new Repository( "dummy", "http://www.nowhere.com/" );
-        final Repository repo2 = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
+        final Repository repo2 = new Repository( "central", "http://repo.maven.apache.org/maven2/" );
 
         data.storeRepository( repo );
         data.storeRepository( repo2 );

@@ -52,7 +52,8 @@ public final class ResponseUtils
     {
         setStatus( ApplicationStatus.FOUND, request );
         request.response()
-               .putHeader( ApplicationHeader.uri.key(), url );
+               .putHeader( ApplicationHeader.uri.key(), url )
+               .end();
     }
 
     public static void formatCreatedResponse( final HttpServerRequest request, final UriFormatter uriFormatter, final String basePath,
@@ -63,7 +64,8 @@ public final class ResponseUtils
         request.response()
                .setStatusCode( ApplicationStatus.CREATED.code() )
                .setStatusMessage( ApplicationStatus.CREATED.message() )
-               .putHeader( ApplicationHeader.location.key(), location );
+               .putHeader( ApplicationHeader.location.key(), location )
+               .end();
     }
 
     public static void formatCreatedResponse( final HttpServerRequest request, final CreationDTO dto )
@@ -106,7 +108,7 @@ public final class ResponseUtils
                .setStatusCode( ApplicationStatus.BAD_REQUEST.code() )
                .setStatusMessage( ApplicationStatus.BAD_REQUEST.message() )
                .setChunked( true )
-               .write( "{\"error\": \"" + error + "\"}" );
+               .write( "{\"error\": \"" + error + "\"}\n" );
     }
 
     public static void formatResponse( final Throwable error, final HttpServerResponse response )
@@ -157,6 +159,8 @@ public final class ResponseUtils
             response.setChunked( true )
                     .write( formatEntity( error ).toString() );
         }
+
+        response.end();
     }
 
     public static CharSequence formatEntity( final Throwable error )
@@ -170,6 +174,8 @@ public final class ResponseUtils
             sw.append( "\n\n" );
             cause.printStackTrace( new PrintWriter( sw ) );
         }
+
+        sw.write( '\n' );
 
         return sw.toString();
     }

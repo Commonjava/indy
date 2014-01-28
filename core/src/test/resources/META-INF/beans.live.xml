@@ -25,5 +25,6 @@
     
     <class>org.commonjava.shelflife.clock.ThreadedClockSource</class>
     <class>org.commonjava.shelflife.event.JEEEventManager</class>
+    <class>org.commonjava.aprox.mem.data.MemoryStoreDataManager</class>
   </alternatives>
 </beans>

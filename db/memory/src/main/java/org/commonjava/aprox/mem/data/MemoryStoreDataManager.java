@@ -27,7 +27,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
+import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
@@ -42,7 +44,8 @@ import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 
-@javax.enterprise.context.ApplicationScoped
+@ApplicationScoped
+@Alternative
 public class MemoryStoreDataManager
     implements StoreDataManager
 {
@@ -373,6 +376,7 @@ public class MemoryStoreDataManager
 
     @Override
     public void deleteArtifactStore( final StoreKey key )
+        throws ProxyDataException
     {
         stores.remove( key );
         fireDeleteEvent( key.getType(), key.getName() );

@@ -187,14 +187,13 @@ public class DefaultFileManager
     private Transfer retrieve( final ArtifactStore store, final String path, final boolean suppressFailures )
         throws AproxWorkflowException
     {
-        Transfer target = store.getKey()
-                               .getType() == StoreType.group ? groupRetrieve( (Group) store, path, suppressFailures ) : null;
-
-        if ( target != null )
+        if ( store.getKey()
+                  .getType() == StoreType.group )
         {
-            return null;
+            return groupRetrieve( (Group) store, path, suppressFailures );
         }
 
+        Transfer target = null;
         try
         {
             final ConcreteResource res = new ConcreteResource( LocationUtils.toLocation( store ), path );
@@ -207,17 +206,18 @@ public class DefaultFileManager
                 target = transfers.getCacheReference( res );
             }
 
-            if ( target != null && target.exists() )
-            {
-                //                logger.info( "Using stored copy from artifact store: %s for: %s", store.getName(), path );
-                final Transfer item = getStorageReference( store.getKey(), path );
-
-                return item;
-            }
-            else
-            {
-                return null;
-            }
+            return target;
+            //            if ( target != null && target.exists() )
+            //            {
+            //                //                logger.info( "Using stored copy from artifact store: %s for: %s", store.getName(), path );
+            //                final Transfer item = getStorageReference( store.getKey(), path );
+            //
+            //                return item;
+            //            }
+            //            else
+            //            {
+            //                return null;
+            //            }
         }
         catch ( final TransferException e )
         {
@@ -235,11 +235,10 @@ public class DefaultFileManager
     public Transfer store( final ArtifactStore store, final String path, final InputStream stream )
         throws AproxWorkflowException
     {
-        final Transfer result = store.getKey()
-                                     .getType() == StoreType.group ? groupStore( (Group) store, path, stream ) : null;
-        if ( result != null )
+        if ( store.getKey()
+                  .getType() == StoreType.group )
         {
-            return result;
+            return groupStore( (Group) store, path, stream );
         }
 
         if ( store.getKey()
@@ -498,7 +497,7 @@ public class DefaultFileManager
             }
         }
 
-        return null;
+        return retrieveFirst( stores, path );
     }
 
     protected Transfer groupStore( final Group store, final String path, final InputStream stream )
@@ -526,7 +525,7 @@ public class DefaultFileManager
             }
         }
 
-        return null;
+        return store( stores, path, stream );
     }
 
     protected boolean groupDelete( final Group store, final String path )
@@ -554,7 +553,7 @@ public class DefaultFileManager
             }
         }
 
-        return false;
+        return deleteAll( stores, path );
     }
 
     @Override
