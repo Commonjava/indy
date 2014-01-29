@@ -8,7 +8,7 @@ class Repository extends Spine.Model
              
   @extend Spine.Model.Ajax
   
-  @url: '/aprox/api/1.0/admin/repositories'
+  @url: window.location.pathname + 'api/1.0/admin/repositories'
   
   @fromJSON: (objects) ->
     return unless objects
