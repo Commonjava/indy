@@ -4,7 +4,7 @@ class Deploy extends Spine.Model
   @configure 'Deploy', 'name', 'allow_snapshots', 'allow_releases', 'snapshot_timeout_seconds'
   @extend Spine.Model.Ajax
   
-  @url: '/aprox/api/1.0/admin/deploys'
+  @url: window.location.pathname + 'api/1.0/admin/deploys'
   
   @fromJSON: (objects) ->
     return unless objects

@@ -5,7 +5,7 @@ class Status extends Spine.Model
              
   @extend Spine.Model.Ajax
   
-  @url: '/aprox/api/1.0/stats/version-info'
+  @url: window.location.pathname + 'api/1.0/stats/version-info'
   
   # Spine.Ajax.disable ->
   #   record.destroy()

@@ -4,7 +4,7 @@ class Group extends Spine.Model
   @configure 'Group', 'name', 'constituents'
   @extend Spine.Model.Ajax
   
-  @url: '/aprox/api/1.0/admin/groups'
+  @url: window.location.pathname + 'api/1.0/admin/groups'
   
   @fromJSON: (objects) ->
     return unless objects
