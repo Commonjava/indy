@@ -28,6 +28,7 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.bind.vertx.util.VertXInputStream;
 import org.commonjava.aprox.bind.vertx.util.VertXOutputStream;
+import org.commonjava.aprox.bind.vertx.util.VertXUriFormatter;
 import org.commonjava.aprox.depgraph.rest.RepositoryController;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationContent;
@@ -54,7 +55,7 @@ public class RepositoryResource
     {
         try
         {
-            final String json = controller.getUrlMap( new VertXInputStream( request ) );
+            final String json = controller.getUrlMap( new VertXInputStream( request ), new VertXUriFormatter() );
 
             if ( json == null )
             {
@@ -77,7 +78,7 @@ public class RepositoryResource
     {
         try
         {
-            final String downlog = controller.getDownloadLog( new VertXInputStream( request ) );
+            final String downlog = controller.getDownloadLog( new VertXInputStream( request ), new VertXUriFormatter() );
             if ( downlog == null )
             {
                 setStatus( ApplicationStatus.NO_CONTENT, request );

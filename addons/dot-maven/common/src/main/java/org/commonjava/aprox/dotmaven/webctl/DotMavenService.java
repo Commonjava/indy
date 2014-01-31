@@ -19,7 +19,6 @@ package org.commonjava.aprox.dotmaven.webctl;
 import java.io.IOException;
 
 import javax.enterprise.inject.Alternative;
-import javax.inject.Inject;
 import javax.inject.Named;
 
 import net.sf.webdav.WebdavService;
@@ -40,7 +39,7 @@ public class DotMavenService
     //    @Inject
     private final RequestInfo requestInfo;
 
-    @Inject
+    //    @Inject
     public DotMavenService( final WebdavConfig config, final IWebdavStore store, final IMimeTyper mimeTyper, final RequestInfo requestInfo )
     {
         super( config, store, mimeTyper );

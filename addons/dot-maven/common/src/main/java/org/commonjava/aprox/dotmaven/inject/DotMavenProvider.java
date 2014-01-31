@@ -6,6 +6,7 @@ import javax.inject.Inject;
 
 import net.sf.webdav.impl.ActivationMimeTyper;
 import net.sf.webdav.impl.SimpleWebdavConfig;
+import net.sf.webdav.spi.IMimeTyper;
 import net.sf.webdav.spi.WebdavConfig;
 
 import org.commonjava.aprox.dotmaven.store.DotMavenStore;
@@ -26,19 +27,32 @@ public class DotMavenProvider
     @Inject
     private DotMavenStore store;
 
+    private IMimeTyper mimeTyper;
+
     @Produces
     public DotMavenService getService()
     {
         if ( service == null )
         {
-            service = new DotMavenService( getConfig(), store, new ActivationMimeTyper(), requestInfo );
+            service = new DotMavenService( getConfig(), store, getMimeTyper(), requestInfo );
         }
 
         return service;
     }
 
     @Produces
-    public WebdavConfig getConfig()
+    public synchronized IMimeTyper getMimeTyper()
+    {
+        if ( mimeTyper == null )
+        {
+            mimeTyper = new ActivationMimeTyper();
+        }
+
+        return mimeTyper;
+    }
+
+    @Produces
+    public synchronized WebdavConfig getConfig()
     {
         if ( config == null )
         {

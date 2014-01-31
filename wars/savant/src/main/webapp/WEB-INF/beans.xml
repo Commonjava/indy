@@ -26,10 +26,11 @@
     
     <class>org.commonjava.shelflife.clock.ThreadedClockSource</class>
     <class>org.commonjava.shelflife.event.JEEEventManager</class>
+    <class>org.commonjava.aprox.flat.data.FlatFileStoreDataManager</class>
   </alternatives>
   
   <decorators>
     <class>org.commonjava.aprox.autoprox.data.AutoProxDataManagerDecorator</class>
-    <class>org.commonjava.aprox.flat.data.FlatFileDataManagerDecorator</class>
+    <!-- <class>org.commonjava.aprox.flat.data.FlatFileDataManagerDecorator</class> -->
   </decorators>
 </beans>

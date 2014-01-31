@@ -26,9 +26,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.UriBuilder;
 
 import org.commonjava.aprox.bind.jaxrs.util.AproxExceptionUtils;
+import org.commonjava.aprox.bind.jaxrs.util.JaxRsUriFormatter;
 import org.commonjava.aprox.depgraph.rest.RepositoryController;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
@@ -46,11 +47,11 @@ public class RepositoryResource
     @POST
     @Path( "/urlmap" )
     @Produces( "application/json" )
-    public Response getUrlMap( @Context final HttpServletRequest req, @Context final HttpServletResponse resp, @Context final UriInfo info )
+    public Response getUrlMap( @Context final HttpServletRequest req, @Context final HttpServletResponse resp, @Context final UriBuilder builder )
     {
         try
         {
-            final String json = controller.getUrlMap( req.getInputStream() );
+            final String json = controller.getUrlMap( req.getInputStream(), new JaxRsUriFormatter( builder ) );
             return Response.ok( json )
                            .type( "application/json" )
                            .build();
@@ -70,11 +71,11 @@ public class RepositoryResource
     @POST
     @Path( "/downlog" )
     @Produces( "text/plain" )
-    public Response getDownloadLog( @Context final HttpServletRequest req, @Context final HttpServletResponse resp, @Context final UriInfo info )
+    public Response getDownloadLog( @Context final HttpServletRequest req, @Context final HttpServletResponse resp, @Context final UriBuilder builder )
     {
         try
         {
-            final String downlog = controller.getDownloadLog( req.getInputStream() );
+            final String downlog = controller.getDownloadLog( req.getInputStream(), new JaxRsUriFormatter( builder ) );
             return Response.ok( downlog )
                            .type( "text/plain" )
                            .build();

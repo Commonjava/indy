@@ -96,10 +96,7 @@ public class RepositoryController
     @Inject
     private AproxDepgraphConfig config;
 
-    @Inject
-    private UriFormatter uriFormatter;
-
-    public String getUrlMap( final InputStream configStream )
+    public String getUrlMap( final InputStream configStream, final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
         final Map<ProjectVersionRef, Map<String, Object>> result = new LinkedHashMap<ProjectVersionRef, Map<String, Object>>();
@@ -140,7 +137,7 @@ public class RepositoryController
 
                 final List<String> sortedFiles = new ArrayList<String>( files );
                 Collections.sort( sortedFiles );
-                data.put( URLMAP_DATA_REPO_URL, formatUrlMapRepositoryUrl( kl, dto.getLocalUrls() ) );
+                data.put( URLMAP_DATA_REPO_URL, formatUrlMapRepositoryUrl( kl, dto.getLocalUrls(), uriFormatter ) );
                 data.put( URLMAP_DATA_FILES, sortedFiles );
             }
         }
@@ -152,7 +149,7 @@ public class RepositoryController
         return serializer.toString( result );
     }
 
-    public String getDownloadLog( final InputStream configStream )
+    public String getDownloadLog( final InputStream configStream, final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
         final Set<String> downLog = new HashSet<String>();
@@ -171,7 +168,7 @@ public class RepositoryController
                 for ( final ConcreteResource item : items.values() )
                 {
                     logger.info( "Adding: '%s'", item );
-                    downLog.add( formatDownlogEntry( item, dto.getLocalUrls() ) );
+                    downLog.add( formatDownlogEntry( item, dto.getLocalUrls(), uriFormatter ) );
                 }
             }
         }
@@ -281,7 +278,7 @@ public class RepositoryController
         }
     }
 
-    private String formatDownlogEntry( final ConcreteResource item, final boolean localUrls )
+    private String formatDownlogEntry( final ConcreteResource item, final boolean localUrls, final UriFormatter uriFormatter )
         throws MalformedURLException
     {
         final KeyedLocation kl = (KeyedLocation) item.getLocation();
@@ -300,7 +297,7 @@ public class RepositoryController
         }
     }
 
-    private String formatUrlMapRepositoryUrl( final KeyedLocation kl, final boolean localUrls )
+    private String formatUrlMapRepositoryUrl( final KeyedLocation kl, final boolean localUrls, final UriFormatter uriFormatter )
         throws MalformedURLException
     {
         if ( localUrls || kl instanceof CacheOnlyLocation )
