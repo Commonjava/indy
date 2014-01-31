@@ -48,7 +48,11 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-dot-maven-jaxrs</artifactId>
+      <artifactId>aprox-dot-maven-vertx</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-depgraph-vertx</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
@@ -66,7 +70,7 @@
   </dependencies>
   
   <build>
-    <finalName>aprox</finalName>
+    <!-- <finalName>aprox</finalName> -->
     
     <plugins>
       <plugin>

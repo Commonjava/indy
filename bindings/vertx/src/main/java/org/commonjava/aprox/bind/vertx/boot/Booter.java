@@ -31,6 +31,7 @@ public class Booter
 {
     public static void main( final String[] args )
     {
+        // FIXME Make this configurable via BootOptions.
         Log4jUtil.configure( Level.DEBUG );
 
         final BootOptions boot = new BootOptions();
@@ -93,11 +94,10 @@ public class Booter
         final Weld weld = new Weld();
         final WeldContainer container = weld.initialize();
 
-        final AProxRouter router = container.instance()
-                                            .select( AProxRouter.class )
-                                            .get();
-
-        //        router.cdiInit();
+        final MasterRouter router = container.instance()
+                                             .select( MasterRouter.class )
+                                             .get();
+        //        router.initializeComponents();
 
         setVertx( new DefaultVertx() );
 

@@ -37,13 +37,14 @@ public class DotMavenService
 {
     public static final String NAME = "mavdav";
 
-    @Inject
-    private RequestInfo requestInfo;
+    //    @Inject
+    private final RequestInfo requestInfo;
 
     @Inject
-    public DotMavenService( final WebdavConfig config, final IWebdavStore store, final IMimeTyper mimeTyper )
+    public DotMavenService( final WebdavConfig config, final IWebdavStore store, final IMimeTyper mimeTyper, final RequestInfo requestInfo )
     {
         super( config, store, mimeTyper );
+        this.requestInfo = requestInfo;
     }
 
     @Override

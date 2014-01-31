@@ -1,4 +1,4 @@
-package org.commonjava.aprox.bind.vertx.boot;
+package org.commonjava.aprox.dotmaven.vertx;
 
 import java.util.Set;
 
@@ -8,40 +8,43 @@ import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
-import javax.inject.Named;
 
+import org.commonjava.aprox.bind.vertx.boot.AproxRouter;
+import org.commonjava.aprox.dotmaven.inject.DotMavenApp;
 import org.commonjava.util.logging.Logger;
-import org.commonjava.vertx.vabr.ApplicationRouter;
 import org.commonjava.vertx.vabr.filter.FilterCollection;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.commonjava.vertx.vabr.route.RouteCollection;
 import org.jboss.weld.environment.se.events.ContainerInitialized;
 
 @ApplicationScoped
-@Named( "rest" )
-public class AProxRouter
-    extends ApplicationRouter
+public class DotMavenRouter
+    extends AproxRouter
 {
 
-    public static final String PREFIX = "/api/1.0";
+    public static final String PREFIX = "/mavdav";
 
     private final Logger logger = new Logger( getClass() );
 
     @Inject
+    @DotMavenApp
     private Instance<RequestHandler> handlerInstances;
 
     @Inject
+    @DotMavenApp
     private Instance<RouteCollection> routeCollectionInstances;
 
     @Inject
+    @DotMavenApp
     private Instance<FilterCollection> filterCollectionInstances;
 
-    protected AProxRouter()
+    protected DotMavenRouter()
     {
         super( PREFIX );
     }
 
-    public AProxRouter( final Set<RequestHandler> handlers, final Set<RouteCollection> routeCollections, final Set<FilterCollection> filterCollections )
+    public DotMavenRouter( final Set<RequestHandler> handlers, final Set<RouteCollection> routeCollections,
+                           final Set<FilterCollection> filterCollections )
     {
         super( PREFIX, handlers, routeCollections );
         bindFilters( handlers, filterCollections );
@@ -49,13 +52,14 @@ public class AProxRouter
 
     public void containerInit( @Observes final Event<ContainerInitialized> evt )
     {
-        cdiInit();
+        initializeComponents();
     }
 
+    @Override
     @PostConstruct
-    public void cdiInit()
+    public void initializeComponents()
     {
-        logger.info( "\n\nCONSTRUCTING WEB ROUTES FOR APROX...\n\n" );
+        logger.info( "\n\nCONSTRUCTING WEB ROUTES FOR Dot-Maven add-on...\n\n" );
         bindRoutes( handlerInstances, routeCollectionInstances );
         bindFilters( handlerInstances, filterCollectionInstances );
         logger.info( "\n\n...done.\n\n" );

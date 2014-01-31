@@ -37,6 +37,7 @@
       <unpackOptions>
         <excludes>
           <exclude>META-INF/*</exclude>
+          <exclude>org/commonjava/web/json/ser/ServletSerializerUtils*</exclude>
         </excludes>
       </unpackOptions>
     </dependencySet>

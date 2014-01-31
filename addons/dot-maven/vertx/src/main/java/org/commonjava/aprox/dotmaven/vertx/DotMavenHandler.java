@@ -9,7 +9,9 @@ import javax.inject.Inject;
 
 import net.sf.webdav.exceptions.WebdavException;
 
-import org.commonjava.aprox.bind.vertx.boot.AProxRouter;
+import org.commonjava.aprox.bind.vertx.boot.MasterRouter;
+import org.commonjava.aprox.bind.vertx.util.PathParam;
+import org.commonjava.aprox.dotmaven.inject.DotMavenApp;
 import org.commonjava.aprox.dotmaven.webctl.DotMavenService;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.Method;
@@ -21,7 +23,8 @@ import org.commonjava.web.vertx.impl.VertXWebdavRequest;
 import org.commonjava.web.vertx.impl.VertXWebdavResponse;
 import org.vertx.java.core.http.HttpServerRequest;
 
-@Handles( "dotMavenDAV" )
+@Handles( key = "dotMavenDAV" )
+@DotMavenApp
 @ApplicationScoped
 public class DotMavenHandler
     implements RequestHandler
@@ -32,12 +35,17 @@ public class DotMavenHandler
     @Inject
     private DotMavenService service;
 
-    @Routes( { @Route( method = Method.ANY, path = "/mavdav/:?path" ) } )
+    // NOTE: /mavdav/ prefix is in the DotMavenRouter.
+    @Routes( { @Route( method = Method.ANY, path = ":?path=(/.+)" ) } )
     public void handle( final HttpServerRequest request )
     {
+        final String path = request.params()
+                                   .get( PathParam.path.key() );
         try
         {
-            service.service( new VertXWebdavRequest( request, AProxRouter.PREFIX, "/mavdav", null ), new VertXWebdavResponse( request.response() ) );
+            logger.info( "WebDAV request: '%s'", path );
+            service.service( new VertXWebdavRequest( request, MasterRouter.PREFIX, "/mavdav", path, null ),
+                             new VertXWebdavResponse( request.response() ) );
         }
         catch ( WebdavException | IOException e )
         {
