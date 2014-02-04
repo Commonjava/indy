@@ -32,6 +32,7 @@
     <module>flatfile</module>
     <module>http</module>
     <module>maven</module>
+    <module>vertx</module>
   </modules>
   
   <profiles>

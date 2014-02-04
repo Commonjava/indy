@@ -34,6 +34,10 @@
   <dependencies>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-subsys-vertx</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-depgraph-common</artifactId>
     </dependency>
     <dependency>

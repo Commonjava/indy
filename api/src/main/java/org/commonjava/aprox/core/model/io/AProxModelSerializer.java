@@ -55,6 +55,11 @@ public class AProxModelSerializer
         return restSerializer.toString( store );
     }
 
+    public JsonSerializer getJsonSerializer()
+    {
+        return restSerializer;
+    }
+
     //    public String groupListingToString( final Listing<Group> listing )
     //    {
     //        return restSerializer.toString( listing, GROUP_LISTING_TYPE_TOKEN.getType() );

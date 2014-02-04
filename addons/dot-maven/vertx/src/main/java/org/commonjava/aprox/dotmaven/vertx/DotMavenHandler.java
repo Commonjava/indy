@@ -14,6 +14,7 @@ import org.commonjava.aprox.bind.vertx.util.PathParam;
 import org.commonjava.aprox.dotmaven.inject.DotMavenApp;
 import org.commonjava.aprox.dotmaven.webctl.DotMavenService;
 import org.commonjava.util.logging.Logger;
+import org.commonjava.vertx.vabr.BindingType;
 import org.commonjava.vertx.vabr.Method;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
@@ -36,7 +37,7 @@ public class DotMavenHandler
     private DotMavenService service;
 
     // NOTE: /mavdav/ prefix is in the DotMavenRouter.
-    @Routes( { @Route( method = Method.ANY, path = ":?path=(/.+)" ) } )
+    @Routes( { @Route( method = Method.ANY, path = ":?path=(/.+)", binding = BindingType.raw ) } )
     public void handle( final HttpServerRequest request )
     {
         final String path = request.params()
@@ -50,7 +51,7 @@ public class DotMavenHandler
         catch ( WebdavException | IOException e )
         {
             logger.error( "Failed to service mavdav request: %s", e, e.getMessage() );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
     }
 

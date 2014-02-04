@@ -80,7 +80,7 @@ public class GraphRenderingResource
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
     }
 
@@ -107,7 +107,7 @@ public class GraphRenderingResource
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
     }
 
@@ -138,7 +138,7 @@ public class GraphRenderingResource
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
     }
 }

@@ -1,4 +1,4 @@
-package org.commonjava.aprox.bind.vertx.boot;
+package org.commonjava.aprox.bind.vertx;
 
 import org.commonjava.vertx.vabr.ApplicationRouter;
 import org.commonjava.vertx.vabr.route.RouteCollection;

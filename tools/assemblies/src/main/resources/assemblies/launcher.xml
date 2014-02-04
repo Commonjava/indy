@@ -54,6 +54,22 @@
         </excludes>
       </unpackOptions>
     </dependencySet>
+    <dependencySet>
+      <useProjectArtifact>false</useProjectArtifact>
+      <scope>runtime</scope>
+      <includes>
+        <include>org.commonjava.aprox.ui*</include>
+      </includes>
+      <outputDirectory>ui</outputDirectory>
+      <directoryMode>775</directoryMode>
+      <fileMode>664</fileMode>
+      <unpack>true</unpack>
+      <unpackOptions>
+        <excludes>
+          <exclude>META-INF/**</exclude>
+        </excludes>
+      </unpackOptions>
+    </dependencySet>
     
     <dependencySet>
       <useProjectArtifact>true</useProjectArtifact>

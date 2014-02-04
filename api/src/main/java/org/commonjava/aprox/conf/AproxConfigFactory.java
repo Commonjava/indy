@@ -20,6 +20,7 @@ import org.commonjava.web.config.ConfigurationException;
 
 public interface AproxConfigFactory
 {
+    String CONFIG_PATH_PROP = "aprox.config";
 
     <T> T getConfiguration( Class<T> configCls )
         throws ConfigurationException;

@@ -16,8 +16,10 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.vertx.boot;
 
+import java.util.Properties;
+
 import org.apache.log4j.Level;
-import org.commonjava.aprox.core.conf.DefaultAproxConfigFactory;
+import org.commonjava.aprox.conf.AproxConfigFactory;
 import org.commonjava.util.logging.Log4jUtil;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
@@ -88,7 +90,9 @@ public class Booter
     {
         if ( bootOptions.getConfig() != null )
         {
-            DefaultAproxConfigFactory.setConfigPath( bootOptions.getConfig() );
+            final Properties properties = System.getProperties();
+            properties.setProperty( AproxConfigFactory.CONFIG_PATH_PROP, bootOptions.getConfig() );
+            System.setProperties( properties );
         }
 
         final Weld weld = new Weld();

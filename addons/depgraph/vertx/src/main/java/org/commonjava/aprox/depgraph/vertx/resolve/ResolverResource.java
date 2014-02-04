@@ -27,8 +27,6 @@ import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.q_recurse;
 import static org.commonjava.aprox.rest.util.RequestUtils.parseQueryMap;
 import static org.commonjava.aprox.rest.util.RequestUtils.toBoolean;
 
-import java.io.IOException;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -79,13 +77,12 @@ public class ResolverResource
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
     }
 
     @Route( "/:groupId/:artifactId/:version/incomplete" )
     public void resolveIncomplete( final HttpServerRequest request )
-        throws IOException
     {
         final MultiMap params = request.params();
         final String f = params.get( p_from.key() );
@@ -109,7 +106,7 @@ public class ResolverResource
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
     }
 

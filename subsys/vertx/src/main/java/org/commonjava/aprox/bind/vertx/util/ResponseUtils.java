@@ -37,21 +37,17 @@ public final class ResponseUtils
 
     public static void setStatus( final ApplicationStatus status, final HttpServerRequest request )
     {
-        request.response()
+        request.resume()
+               .response()
                .setStatusCode( status.code() )
                .setStatusMessage( status.message() );
-    }
-
-    public static void setStatus( final ApplicationStatus status, final HttpServerResponse response )
-    {
-        response.setStatusCode( status.code() )
-                .setStatusMessage( status.message() );
     }
 
     public static void formatRedirect( final HttpServerRequest request, final String url )
     {
         setStatus( ApplicationStatus.FOUND, request );
-        request.response()
+        request.resume()
+               .response()
                .putHeader( ApplicationHeader.uri.key(), url )
                .end();
     }
@@ -61,16 +57,17 @@ public final class ResponseUtils
     {
         final String location = uriFormatter.formatAbsolutePathTo( basePath, params );
 
-        request.response()
-               .setStatusCode( ApplicationStatus.CREATED.code() )
-               .setStatusMessage( ApplicationStatus.CREATED.message() )
+        request.resume()
+               .response()
                .putHeader( ApplicationHeader.location.key(), location )
-               .end();
+               .setStatusCode( ApplicationStatus.CREATED.code() )
+               .setStatusMessage( ApplicationStatus.CREATED.message() );
     }
 
     public static void formatCreatedResponse( final HttpServerRequest request, final CreationDTO dto )
     {
-        request.response()
+        request.resume()
+               .response()
                .setStatusCode( ApplicationStatus.CREATED.code() )
                .setStatusMessage( ApplicationStatus.CREATED.message() )
                .putHeader( ApplicationHeader.location.key(), dto.getUri()
@@ -80,10 +77,12 @@ public final class ResponseUtils
         if ( json != null )
         {
             request.response()
-                   .putHeader( ApplicationHeader.content_type.key(), ApplicationContent.application_json );
+                   .putHeader( ApplicationHeader.content_type.key(), ApplicationContent.application_json )
+                   .putHeader( ApplicationHeader.content_length.key(), Integer.toString( json.length() ) );
+
             request.response()
-                   .setChunked( true )
-                   .write( json );
+                   .write( json )
+                   .end();
         }
     }
 
@@ -94,41 +93,49 @@ public final class ResponseUtils
 
     public static void formatOkResponseWithEntity( final HttpServerRequest request, final String output, final String contentType )
     {
-        request.response()
+        request.resume()
+               .response()
                .setStatusCode( ApplicationStatus.OK.code() )
                .setStatusMessage( ApplicationStatus.OK.message() )
                .putHeader( ApplicationHeader.content_type.key(), contentType )
-               .setChunked( true )
-               .write( output );
+               .putHeader( ApplicationHeader.content_length.key(), Integer.toString( output.length() ) )
+               .write( output )
+               .end();
     }
 
     public static void formatBadRequestResponse( final HttpServerRequest request, final String error )
     {
-        request.response()
+        final String msg = "{\"error\": \"" + error + "\"}\n";
+        request.resume()
+               .response()
                .setStatusCode( ApplicationStatus.BAD_REQUEST.code() )
                .setStatusMessage( ApplicationStatus.BAD_REQUEST.message() )
-               .setChunked( true )
-               .write( "{\"error\": \"" + error + "\"}\n" );
+               .putHeader( ApplicationHeader.content_length.key(), Integer.toString( msg.length() ) )
+               .write( msg )
+               .end();
     }
 
-    public static void formatResponse( final Throwable error, final HttpServerResponse response )
+    public static void formatResponse( final Throwable error, final HttpServerRequest request )
     {
-        formatResponse( null, error, true, response );
+        formatResponse( null, error, true, request );
     }
 
-    public static void formatResponse( final ApplicationStatus status, final Throwable error, final HttpServerResponse response )
+    public static void formatResponse( final ApplicationStatus status, final Throwable error, final HttpServerRequest request )
     {
-        formatResponse( status, error, true, response );
+        formatResponse( status, error, true, request );
     }
 
-    public static void formatResponse( final Throwable error, final boolean includeExplanation, final HttpServerResponse response )
+    public static void formatResponse( final Throwable error, final boolean includeExplanation, final HttpServerRequest request )
     {
-        formatResponse( null, error, includeExplanation, response );
+        formatResponse( null, error, includeExplanation, request );
     }
 
     public static void formatResponse( final ApplicationStatus status, final Throwable error, final boolean includeExplanation,
-                                       final HttpServerResponse response )
+                                       final HttpServerRequest request )
     {
+        final HttpServerResponse response = request.resume()
+                                                   .response();
+
         if ( status != null )
         {
             response.setStatusCode( status.code() )
@@ -156,8 +163,10 @@ public final class ResponseUtils
 
         if ( includeExplanation )
         {
-            response.setChunked( true )
-                    .write( formatEntity( error ).toString() );
+            final String msg = formatEntity( error ).toString();
+            response.putHeader( ApplicationHeader.content_length.key(), Integer.toString( msg.length() ) )
+                    .write( msg )
+                    .end();
         }
 
         response.end();

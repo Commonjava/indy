@@ -33,6 +33,7 @@ import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
 @Handles( prefix = "/admin/maint" )
@@ -46,7 +47,7 @@ public class DefaultMaintenanceResource
     private ContentController contentController;
 
     @Routes( { @Route( path = "/rescan/:type/:name", method = Method.GET ) } )
-    public void rescan( final HttpServerRequest request )
+    public void rescan( final Buffer buffer, final HttpServerRequest request )
     {
         final String type = request.params()
                                    .get( PathParam.type.key() );
@@ -63,12 +64,12 @@ public class DefaultMaintenanceResource
         catch ( final AproxWorkflowException e )
         {
             logger.error( "Failed to rescan: %s. Reason: %s", e, key, e.getMessage() );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
     }
 
     @Routes( { @Route( path = "/rescan/all", method = Method.GET ) } )
-    public void rescanAll( final HttpServerRequest request )
+    public void rescanAll( final Buffer buffer, final HttpServerRequest request )
     {
         try
         {
@@ -78,17 +79,17 @@ public class DefaultMaintenanceResource
         catch ( final AproxWorkflowException e )
         {
             logger.error( "Failed to rescan: ALL. Reason: %s", e, e.getMessage() );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
     }
 
     /*@formatter:off*/
     @Routes( { 
         @Route( path = "/delete/all:?path=(/.+)", method = Method.GET ), 
-        @Route( path = "/content/all:?path=(/.+)", method = Method.DELETE ) 
+        @Route( routeKey="alt", path = "/content/all:?path=(/.+)", method = Method.DELETE ) 
     } )
     /*@formatter:on*/
-    public void deleteAll( final HttpServerRequest request )
+    public void deleteAll( final Buffer buffer, final HttpServerRequest request )
     {
         final String path = request.params()
                                    .get( PathParam.path.key() );
@@ -101,7 +102,7 @@ public class DefaultMaintenanceResource
         catch ( final AproxWorkflowException e )
         {
             logger.error( "Failed to delete: %s in: ALL. Reason: %s", e, e.getMessage() );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
     }
 

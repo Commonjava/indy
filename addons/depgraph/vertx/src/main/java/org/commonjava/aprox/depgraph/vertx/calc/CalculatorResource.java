@@ -55,13 +55,12 @@ public class CalculatorResource
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
     }
 
     @Route( contentType = application_json )
     public void calculate( final HttpServerRequest request )
-        throws AproxWorkflowException
     {
         try
         {
@@ -72,7 +71,7 @@ public class CalculatorResource
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
     }
 }

@@ -67,7 +67,7 @@ public class ProjectResource
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
 
         if ( json != null )
@@ -95,7 +95,7 @@ public class ProjectResource
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
 
         if ( json != null )
@@ -124,7 +124,7 @@ public class ProjectResource
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
 
         if ( json != null )
@@ -154,7 +154,7 @@ public class ProjectResource
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
 
         if ( json != null )
@@ -183,7 +183,7 @@ public class ProjectResource
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
 
         if ( json != null )
@@ -212,7 +212,7 @@ public class ProjectResource
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
 
         if ( json != null )
@@ -241,7 +241,7 @@ public class ProjectResource
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
 
         if ( json != null )
@@ -270,7 +270,7 @@ public class ProjectResource
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
 
         if ( json != null )

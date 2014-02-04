@@ -21,13 +21,13 @@ import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatBadReques
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatCreatedResponse;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
+import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.setStatus;
 
 import java.util.List;
 
 import javax.inject.Inject;
 
 import org.commonjava.aprox.bind.vertx.util.PathParam;
-import org.commonjava.aprox.bind.vertx.util.RequestSerialHelper;
 import org.commonjava.aprox.core.model.io.AProxModelSerializer;
 import org.commonjava.aprox.core.rest.AdminController;
 import org.commonjava.aprox.core.util.UriFormatter;
@@ -36,6 +36,7 @@ import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationContent;
+import org.commonjava.aprox.rest.util.ApplicationHeader;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.Method;
@@ -44,6 +45,7 @@ import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.commonjava.web.json.model.Listing;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
 @Handles( prefix = "/admin/:type" )
@@ -60,9 +62,6 @@ public class AdminResource
     private AProxModelSerializer modelSerializer;
 
     @Inject
-    private RequestSerialHelper modelServletUtils;
-
-    @Inject
     private UriFormatter uriFormatter;
 
     //    @Context
@@ -76,12 +75,16 @@ public class AdminResource
      * @see org.commonjava.aprox.core.rest.admin.DeployPointAdminResource#create()
      */
     @Routes( { @Route( method = Method.POST, contentType = ApplicationContent.application_json ) } )
-    public void create( final HttpServerRequest request )
+    public void create( final Buffer buffer, final HttpServerRequest request )
     {
+        String json = buffer.getString( 0, buffer.length() );
         final String type = request.params()
                                    .get( PathParam.type.key() );
+
         final StoreType st = StoreType.get( type );
-        final ArtifactStore store = modelServletUtils.storeFromRequestBody( st, request );
+
+        final ArtifactStore store = modelSerializer.getJsonSerializer()
+                                                   .fromString( json, st.getStoreClass() );
 
         logger.info( "\n\nGot artifact store: %s\n\n", store );
 
@@ -90,22 +93,25 @@ public class AdminResource
             if ( adminController.store( store, true ) )
             {
                 formatCreatedResponse( request, uriFormatter, "admin", type, store.getName() );
+                json = modelSerializer.toString( store );
                 request.response()
-                       .write( modelSerializer.toString( store ) );
+                       .putHeader( ApplicationHeader.content_length.key(), Integer.toString( json.length() ) )
+                       .write( json )
+                       .end();
             }
             else
             {
+                setStatus( ApplicationStatus.CONFLICT, request );
                 request.response()
-                       .setStatusCode( ApplicationStatus.CONFLICT.code() )
-                       .setStatusMessage( ApplicationStatus.CONFLICT.message() );
-                request.response()
-                       .write( "{\"error\": \"Store already exists.\"}" );
+                       .setChunked( true )
+                       .write( "{\"error\": \"Store already exists.\"}" )
+                       .end();
             }
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to create artifact store: %s. Reason: %s", e, e.getMessage() );
-            formatResponse( e, request.response() );
+            logger.error( e.getMessage(), e );
+            formatResponse( e, request );
         }
     }
 
@@ -114,40 +120,44 @@ public class AdminResource
      * @see org.commonjava.aprox.core.rest.admin.DeployPointAdminResource#store(java.lang.String)
      */
     @Routes( { @Route( path = "/:name", method = Method.PUT, contentType = ApplicationContent.application_json ) } )
-    public void store( final HttpServerRequest request )
+    public void store( final Buffer buffer, final HttpServerRequest request )
     {
+        final String json = buffer.getString( 0, buffer.length() );
         final String type = request.params()
                                    .get( PathParam.type.key() );
         final String name = request.params()
                                    .get( PathParam.name.key() );
 
         final StoreType st = StoreType.get( type );
-        final ArtifactStore store = modelServletUtils.storeFromRequestBody( st, request );
+
+        final ArtifactStore store = modelSerializer.getJsonSerializer()
+                                                   .fromString( json, st.getStoreClass() );
 
         if ( !name.equals( store.getName() ) )
         {
             formatBadRequestResponse( request, String.format( "Store in URL path is: '%s' but in JSON it is: '%s'", name, store.getName() ) );
+            return;
         }
 
         try
         {
             if ( adminController.store( store, false ) )
             {
-                formatCreatedResponse( request, uriFormatter, "admin", type, store.getName() );
+                setStatus( ApplicationStatus.OK, request );
             }
             else
             {
+                setStatus( ApplicationStatus.NOT_MODIFIED, request );
                 request.response()
-                       .setStatusCode( ApplicationStatus.NOT_MODIFIED.code() )
-                       .setStatusMessage( ApplicationStatus.NOT_MODIFIED.message() );
-                request.response()
-                       .write( "{\"error\": \"Store already exists.\"}" );
+                       .setChunked( true )
+                       .write( "{\"error\": \"Store already exists.\"}" )
+                       .end();
             }
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to save proxy: %s. Reason: %s", e, e.getMessage() );
-            formatResponse( e, request.response() );
+            logger.error( e.getMessage(), e );
+            formatResponse( e, request );
         }
     }
 
@@ -156,7 +166,7 @@ public class AdminResource
      * @see org.commonjava.aprox.core.rest.admin.DeployPointAdminResource#getAll()
      */
     @Routes( { @Route( method = Method.GET, contentType = ApplicationContent.application_json ) } )
-    public void getAll( final HttpServerRequest request )
+    public void getAll( final Buffer buffer, final HttpServerRequest request )
     {
         final String type = request.params()
                                    .get( PathParam.type.key() );
@@ -166,6 +176,7 @@ public class AdminResource
         {
             @SuppressWarnings( "unchecked" )
             final List<ArtifactStore> stores = (List<ArtifactStore>) adminController.getAllOfType( st );
+
             logger.info( "Returning listing containing stores:\n\t%s", join( stores, "\n\t" ) );
 
             final Listing<ArtifactStore> listing = new Listing<ArtifactStore>( stores );
@@ -178,7 +189,7 @@ public class AdminResource
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
     }
 
@@ -187,7 +198,7 @@ public class AdminResource
      * @see org.commonjava.aprox.core.rest.admin.DeployPointAdminResource#get(java.lang.String)
      */
     @Routes( { @Route( path = "/:name", method = Method.GET, contentType = ApplicationContent.application_json ) } )
-    public void get( final HttpServerRequest request )
+    public void get( final Buffer buffer, final HttpServerRequest request )
     {
         final String type = request.params()
                                    .get( PathParam.type.key() );
@@ -203,9 +214,9 @@ public class AdminResource
 
             if ( store == null )
             {
+                setStatus( ApplicationStatus.NOT_FOUND, request );
                 request.response()
-                       .setStatusCode( ApplicationStatus.NOT_FOUND.code() )
-                       .setStatusMessage( ApplicationStatus.NOT_FOUND.message() );
+                       .end();
             }
             else
             {
@@ -215,7 +226,7 @@ public class AdminResource
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
     }
 
@@ -224,7 +235,7 @@ public class AdminResource
      * @see org.commonjava.aprox.core.rest.admin.DeployPointAdminResource#delete(java.lang.String)
      */
     @Routes( { @Route( path = "/:name", method = Method.DELETE ) } )
-    public void delete( final HttpServerRequest request )
+    public void delete( final Buffer buffer, final HttpServerRequest request )
     {
         final String type = request.params()
                                    .get( PathParam.type.key() );
@@ -234,17 +245,19 @@ public class AdminResource
         final StoreType st = StoreType.get( type );
         final StoreKey key = new StoreKey( st, name );
 
+        logger.info( "Deleting: %s", key );
         try
         {
             adminController.delete( key );
+
+            setStatus( ApplicationStatus.OK, request );
             request.response()
-                   .setStatusCode( ApplicationStatus.OK.code() )
-                   .setStatusMessage( ApplicationStatus.OK.message() );
+                   .end();
         }
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
     }
 

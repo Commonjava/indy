@@ -49,6 +49,7 @@
     <atlasVersion>0.9.7-SNAPSHOT</atlasVersion>
     <galleyVersion>0.3.4-SNAPSHOT</galleyVersion>
     <cartoVersion>0.3.5-SNAPSHOT</cartoVersion>
+    <configVersion>0.5-SNAPSHOT</configVersion>
     
     <vertx.version>2.0.0-final</vertx.version>
     <vertx.testtools.version>2.0.0-final</vertx.testtools.version>
@@ -101,7 +102,7 @@
         <groupId>org.commonjava.aprox.ui</groupId>
         <artifactId>aprox-ui-monorail</artifactId>
         <version>0.9.2-SNAPSHOT</version>
-        <type>war</type>
+        <!-- <type>war</type> -->
         <scope>runtime</scope>
       </dependency>
       
@@ -205,6 +206,11 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-subsys-vertx</artifactId>
+        <version>0.9.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-subsys-flatfile</artifactId>
         <version>0.9.2-SNAPSHOT</version>
       </dependency>
@@ -220,6 +226,16 @@
       </dependency>
       
       
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>configuration-api</artifactId>
+        <version>${configVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>configuration-dotconf</artifactId>
+        <version>${configVersion}</version>
+      </dependency>
       <dependency>
         <groupId>org.commonjava.cdi.util</groupId>
         <artifactId>weft</artifactId>

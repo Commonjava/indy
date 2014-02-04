@@ -9,7 +9,7 @@ import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.bind.vertx.boot.AproxRouter;
+import org.commonjava.aprox.bind.vertx.AproxRouter;
 import org.commonjava.aprox.dotmaven.inject.DotMavenApp;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.filter.FilterCollection;

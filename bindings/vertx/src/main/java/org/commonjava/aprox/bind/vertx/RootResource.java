@@ -26,6 +26,7 @@ import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
 @Handles( key = "apiRootRedirector", prefix = "/" )
@@ -37,7 +38,7 @@ public class RootResource
     private UriFormatter uriFormatter;
 
     @Routes( { @Route( method = Method.GET ) } )
-    public void rootStats( final HttpServerRequest request )
+    public void rootStats( final Buffer buffer, final HttpServerRequest request )
     {
         formatRedirect( request, uriFormatter.formatAbsolutePathTo( "stats/version-info" ) );
     }

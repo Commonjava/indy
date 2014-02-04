@@ -12,6 +12,7 @@
         <include>org.commonjava*</include>
       </includes>
       <excludes>
+        <exclude>org.commonjava.aprox.ui*</exclude>
         <exclude>org.commonjava*:*:war:*</exclude>
       </excludes>
       
@@ -35,6 +36,22 @@
       <unpack>false</unpack>
     </dependencySet>
     
+    <dependencySet>
+      <scope>runtime</scope>
+      <includes>
+        <include>org.commonjava.aprox.ui*</include>
+      </includes>
+      <outputDirectory>/</outputDirectory>
+      <unpack>true</unpack>
+      <unpackOptions>
+        <excludes>
+          <exclude>WEB-INF/web.xml</exclude>
+          <exclude>WEB-INF/beans.xml</exclude>
+          <exclude>WEB-INF/classes/beans.xml</exclude>
+          <exclude>WEB-INF/classes/log4j.properties</exclude>
+        </excludes>
+      </unpackOptions>
+    </dependencySet>
     <dependencySet>
       <scope>runtime</scope>
       <includes>

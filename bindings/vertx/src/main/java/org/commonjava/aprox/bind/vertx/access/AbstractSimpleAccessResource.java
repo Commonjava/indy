@@ -77,7 +77,7 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
         catch ( final AproxWorkflowException e )
         {
             logger.error( "Failed to upload: %s to: %s. Reason: %s", e, path, name, e.getMessage() );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
     }
 
@@ -98,7 +98,7 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
         catch ( final AproxWorkflowException e )
         {
             logger.error( "Failed to delete artifact: %s from: %s. Reason: %s", e, path, name, e.getMessage() );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
     }
 
@@ -131,12 +131,12 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
         catch ( final AproxWorkflowException e )
         {
             logger.error( "Failed to download artifact: %s from: %s. Reason: %s", e, path, name, e.getMessage() );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
         catch ( final IOException e )
         {
             logger.error( "Failed to download artifact: %s from: %s. Reason: %s", e, path, name, e.getMessage() );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
     }
 

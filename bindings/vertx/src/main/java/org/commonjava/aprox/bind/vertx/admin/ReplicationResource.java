@@ -25,7 +25,6 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
-import org.commonjava.aprox.bind.vertx.util.RequestSerialHelper;
 import org.commonjava.aprox.core.dto.repl.ReplicationDTO;
 import org.commonjava.aprox.core.rest.ReplicationController;
 import org.commonjava.aprox.inject.AproxData;
@@ -39,6 +38,7 @@ import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.commonjava.web.json.ser.JsonSerializer;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
 @Handles( prefix = "/admin/replicate" )
@@ -56,9 +56,11 @@ public class ReplicationResource
     private JsonSerializer serializer;
 
     @Routes( { @Route( method = Method.POST, contentType = ApplicationContent.application_json ) } )
-    public void replicate( final HttpServerRequest req )
+    public void replicate( final Buffer buffer, final HttpServerRequest request )
     {
-        final ReplicationDTO dto = RequestSerialHelper.fromRequestBody( req, serializer, ReplicationDTO.class );
+        final String json = buffer.getString( 0, buffer.length() );
+        final ReplicationDTO dto = serializer.fromString( json, ReplicationDTO.class );
+
         try
         {
             final Set<StoreKey> replicated = controller.replicate( dto );
@@ -66,12 +68,12 @@ public class ReplicationResource
             final Map<String, Object> params = new LinkedHashMap<String, Object>();
             params.put( "replicationCount", replicated.size() );
             params.put( "items", replicated );
-            formatOkResponseWithJsonEntity( req, serializer.toString( params ) );
+            formatOkResponseWithJsonEntity( request, serializer.toString( params ) );
         }
         catch ( final AproxWorkflowException e )
         {
             logger.error( "Replication failed: %s", e, e.getMessage() );
-            formatResponse( e, req.response() );
+            formatResponse( e, request );
         }
     }
 

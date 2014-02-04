@@ -71,7 +71,7 @@ public class WorkspaceHandlerFilter
                 }
                 catch ( final CartoDataException e )
                 {
-                    formatResponse( e, request.response() );
+                    formatResponse( e, request );
 
                     //prevent further work.
                     return;

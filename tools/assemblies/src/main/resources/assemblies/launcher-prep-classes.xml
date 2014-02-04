@@ -30,6 +30,7 @@
         <include>org.commonjava*</include>
       </includes>
       <excludes>
+        <exclude>org.commonjava.aprox.ui*</exclude>
         <exclude>org.commonjava.aprox.launch:aprox-launcher-base</exclude>
       </excludes>
       <outputDirectory>/</outputDirectory>

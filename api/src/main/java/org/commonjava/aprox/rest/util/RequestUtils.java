@@ -3,6 +3,8 @@ package org.commonjava.aprox.rest.util;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 import static org.apache.commons.lang.StringUtils.join;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,6 +17,18 @@ public final class RequestUtils
 
     private RequestUtils()
     {
+    }
+
+    private static final String DATE_HEADER_FMT = "EEE, dd MMM yyyy HH:mm:ss zzz";
+
+    public static String formatDateHeader( final long date )
+    {
+        return new SimpleDateFormat( DATE_HEADER_FMT ).format( new Date( date ) );
+    }
+
+    public static String formatDateHeader( final Date date )
+    {
+        return new SimpleDateFormat( DATE_HEADER_FMT ).format( date );
     }
 
     public static Map<String, String[]> parseQueryMap( final String query )

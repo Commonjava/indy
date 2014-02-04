@@ -50,7 +50,7 @@ public class DefaultAproxConfigFactory
     @Inject
     private Instance<AbstractAproxMapConfig> mapConfigs;
 
-    private static String configPath = CONFIG_PATH;
+    private static String configPath = System.getProperty( CONFIG_PATH_PROP, CONFIG_PATH );
 
     public static void setConfigPath( final String path )
     {

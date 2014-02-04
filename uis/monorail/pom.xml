@@ -23,7 +23,7 @@
   </parent>
   
   <artifactId>aprox-ui-monorail</artifactId>
-  <packaging>war</packaging>
+  <!-- <packaging>war</packaging> -->
   
   <name>AProx :: UIs :: Monorail</name>
   
@@ -33,7 +33,12 @@
   
   <build>
     <finalName>aprox-ui</finalName>
-    <plugins>
+    <resources>
+      <resource>
+        <directory>src/main/spine/public</directory>
+      </resource>
+    </resources>
+    <!-- <plugins>
       <plugin>
         <artifactId>maven-war-plugin</artifactId>
         <version>2.3</version>
@@ -41,7 +46,7 @@
           <warSourceDirectory>src/main/spine/public</warSourceDirectory>
         </configuration>
       </plugin>
-    </plugins>
+    </plugins> -->
   </build>
   
 </project>

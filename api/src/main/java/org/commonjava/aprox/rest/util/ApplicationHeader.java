@@ -19,7 +19,7 @@ package org.commonjava.aprox.rest.util;
 public enum ApplicationHeader
 {
 
-    content_type( "Content-Type" ), location( "Location" ), uri( "URI" );
+    content_type( "Content-Type" ), location( "Location" ), uri( "URI" ), content_length( "Content-Length" ), last_modified( "Last-Modified" );
 
     private final String key;
 

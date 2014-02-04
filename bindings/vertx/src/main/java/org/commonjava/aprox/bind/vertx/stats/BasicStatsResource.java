@@ -34,6 +34,7 @@ import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.commonjava.web.json.ser.JsonSerializer;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
 @Handles( prefix = "/stats" )
@@ -54,13 +55,13 @@ public class BasicStatsResource
     private UriFormatter uriFormatter;
 
     @Routes( { @Route( path = "/version-info", method = Method.GET, contentType = ApplicationContent.application_json ) } )
-    public void getAProxVersion( final HttpServerRequest request )
+    public void getAProxVersion( final Buffer buffer, final HttpServerRequest request )
     {
         formatOkResponseWithJsonEntity( request, serializer.toString( statsController.getVersionInfo() ) );
     }
 
     @Routes( { @Route( path = "/all-endpoints", method = Method.GET, contentType = ApplicationContent.application_json ) } )
-    public void getAllEndpoints( final HttpServerRequest request )
+    public void getAllEndpoints( final Buffer buffer, final HttpServerRequest request )
     {
         try
         {
@@ -71,7 +72,7 @@ public class BasicStatsResource
         catch ( final AproxWorkflowException e )
         {
             logger.error( "Failed to retrieve endpoint listing: %s", e, formatEntity( e ) );
-            formatResponse( e, request.response() );
+            formatResponse( e, request );
         }
     }
 

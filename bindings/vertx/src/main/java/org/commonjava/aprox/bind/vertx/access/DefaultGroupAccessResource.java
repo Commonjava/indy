@@ -18,11 +18,13 @@ package org.commonjava.aprox.bind.vertx.access;
 
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.StoreType;
+import org.commonjava.vertx.vabr.BindingType;
 import org.commonjava.vertx.vabr.Method;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
 import com.wordnik.swagger.annotations.Api;
@@ -39,7 +41,7 @@ public class DefaultGroupAccessResource
     @Routes( { @Route( path = ":?path=(/.+)", method = Method.DELETE ) } )
     @ApiOperation( value = "Delete content at the given path from all constituent stores within the group with the given name." )
     @ApiError( code = 404, reason = "If the deletion fails" )
-    public void deleteContent( final HttpServerRequest request )
+    public void deleteContent( final Buffer buffer, final HttpServerRequest request )
     {
         doDelete( request );
     }
@@ -52,7 +54,7 @@ public class DefaultGroupAccessResource
     @Routes( { @Route( path = ":?path=(/.+)", method = Method.GET ) } )
     @ApiOperation( value = "Retrieve content from the FIRST constituent store that contains the given path, within the group with the given name." )
     @ApiError( code = 404, reason = "If none of the constituent stores contains the path" )
-    public void getProxyContent( final HttpServerRequest request )
+    public void getProxyContent( final Buffer buffer, final HttpServerRequest request )
     {
         doGet( request );
     }
@@ -62,7 +64,7 @@ public class DefaultGroupAccessResource
      * @see org.commonjava.aprox.core.rest.access.GroupAccessResource#createContent(java.lang.String, java.lang.String,
      * javax.servlet.http.HttpServletRequest)
      */
-    @Routes( { @Route( path = "/:path=(/.+)", method = Method.PUT ) } )
+    @Routes( { @Route( path = "/:path=(/.+)", method = Method.PUT, binding = BindingType.raw ) } )
     @ApiOperation( value = "Store new content at the given path in the first deploy-point store constituent listed in the group with the given name." )
     @ApiError( code = 404, reason = "If the group doesn't contain any deploy-point stores" )
     public void createContent( final HttpServerRequest request )

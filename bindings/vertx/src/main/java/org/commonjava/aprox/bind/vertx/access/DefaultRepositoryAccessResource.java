@@ -23,6 +23,7 @@ import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
 import com.wordnik.swagger.annotations.Api;
@@ -38,7 +39,7 @@ public class DefaultRepositoryAccessResource
     @Routes( { @Route( path = ":?path=(/.+)", method = Method.DELETE ) } )
     @ApiOperation( value = "Delete content at the given path in repository's cache with the given name." )
     @ApiError( code = 404, reason = "If either the repository or the path within the repository doesn't exist" )
-    public void deleteContent( final HttpServerRequest request )
+    public void deleteContent( final Buffer buffer, final HttpServerRequest request )
     {
         doDelete( request );
     }
@@ -46,7 +47,7 @@ public class DefaultRepositoryAccessResource
     @Routes( { @Route( path = ":?path=(/.+)", method = Method.GET ) } )
     @ApiOperation( value = "Retrieve content given by path in repository with the given name." )
     @ApiError( code = 404, reason = "If either the repository or the path within the repository doesn't exist" )
-    public void getContent( final HttpServerRequest request )
+    public void getContent( final Buffer buffer, final HttpServerRequest request )
     {
         doGet( request );
     }

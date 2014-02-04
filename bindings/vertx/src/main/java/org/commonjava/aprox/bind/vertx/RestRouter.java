@@ -1,10 +1,11 @@
-package org.commonjava.aprox.bind.vertx.boot;
+package org.commonjava.aprox.bind.vertx;
 
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
@@ -13,6 +14,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Qualifier;
 
+import org.commonjava.aprox.core.rest.AdminController;
 import org.commonjava.aprox.inject.RestApp;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.filter.FilterCollection;
@@ -39,6 +41,9 @@ public class RestRouter
     @Inject
     private Instance<FilterCollection> filterCollectionInstances;
 
+    @Inject
+    private AdminController adminController;
+
     protected RestRouter()
     {
         super( PREFIX );
@@ -59,6 +64,8 @@ public class RestRouter
     @PostConstruct
     public void initializeComponents()
     {
+        adminController.started();
+
         logger.info( "\n\nCONSTRUCTING WEB ROUTES FOR APROX...\n\n" );
 
         final Set<RouteCollection> routes = new HashSet<>();
@@ -116,6 +123,12 @@ public class RestRouter
         bindRoutes( handlerInstances, routes );
         bindFilters( handlerInstances, filters );
         logger.info( "\n\n...done.\n\n" );
+    }
+
+    @PreDestroy
+    public void stopped()
+    {
+        adminController.stopped();
     }
 
 }

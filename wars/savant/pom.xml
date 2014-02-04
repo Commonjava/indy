@@ -64,7 +64,7 @@
     <dependency>
       <groupId>org.commonjava.aprox.ui</groupId>
       <artifactId>aprox-ui-monorail</artifactId>
-      <type>war</type>
+      <!-- <type>war</type> -->
     </dependency>
     <dependency>
       <groupId>junit</groupId>
