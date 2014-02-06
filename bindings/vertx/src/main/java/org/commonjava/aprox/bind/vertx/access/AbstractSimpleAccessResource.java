@@ -68,8 +68,6 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
         final String path = request.params()
                                    .get( PathParam.path.key() );
 
-        System.out.printf( "PUT %s/%s/%s\n\n", getStoreType().singularEndpointName(), name, path );
-
         final String contentLen = request.headers()
                                          .get( ApplicationHeader.content_length.key() );
         final VertXInputStream stream =
