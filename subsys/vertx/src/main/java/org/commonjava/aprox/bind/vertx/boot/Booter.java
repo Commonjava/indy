@@ -140,7 +140,7 @@ public class Booter
              .requestHandler( router )
              .listen( bootOptions.getPort(), bootOptions.getBind() );
 
-        new org.commonjava.util.logging.Logger( getClass() ).info( "AProx listening on %s:%d", bootOptions.getBind(), bootOptions.getPort() );
+        System.out.printf( "\n\nAProx listening on %s:%d\n\n", bootOptions.getBind(), bootOptions.getPort() );
 
         synchronized ( this )
         {

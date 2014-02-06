@@ -38,8 +38,7 @@ public class JaxRsUriFormatter
     @Override
     public String formatAbsolutePathTo( final String base, final String... parts )
     {
-        UriBuilder b = builder.replacePath( "" )
-                              .path( APP_PATH.value() );
+        UriBuilder b = builder.path( APP_PATH.value() );
 
         b = b.path( base );
         for ( final String part : parts )
