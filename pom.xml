@@ -44,17 +44,17 @@
     <jbossas-version>7.1.1.Final</jbossas-version>
     <arquillian-version>1.0.1.Final</arquillian-version>
     <qarqas-version>0.3</qarqas-version>
-    <shelflife-version>0.6-SNAPSHOT</shelflife-version>
-    <weftVersion>0.6-SNAPSHOT</weftVersion>
-    <atlasVersion>0.9.7-SNAPSHOT</atlasVersion>
-    <galleyVersion>0.3.4-SNAPSHOT</galleyVersion>
-    <cartoVersion>0.3.5-SNAPSHOT</cartoVersion>
-    <configVersion>0.5-SNAPSHOT</configVersion>
+    <shelflife-version>0.5.1</shelflife-version>
+    <weftVersion>0.6</weftVersion>
+    <atlasVersion>0.9.7</atlasVersion>
+    <galleyVersion>0.3.3.1</galleyVersion>
+    <cartoVersion>0.3.5</cartoVersion>
+    <configVersion>0.5</configVersion>
     
     <vertx.version>2.0.0-final</vertx.version>
     <vertx.testtools.version>2.0.0-final</vertx.testtools.version>
-    <vabrVersion>1.2-SNAPSHOT</vabrVersion>
-    <webdav-version>3.0-SNAPSHOT</webdav-version>
+    <vabrVersion>1.2</vabrVersion>
+    <webdav-version>3.0</webdav-version>
   </properties>
   
   <distributionManagement>
