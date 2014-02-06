@@ -301,6 +301,11 @@
       
       <dependency>
         <groupId>org.commonjava.maven.atlas</groupId>
+        <artifactId>atlas-identities</artifactId>
+        <version>${atlasVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.maven.atlas</groupId>
         <artifactId>atlas-driver-neo4j-embedded</artifactId>
         <version>${atlasVersion}</version>
       </dependency>
