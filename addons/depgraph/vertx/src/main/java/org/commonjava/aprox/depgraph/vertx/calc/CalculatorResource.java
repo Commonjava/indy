@@ -23,13 +23,13 @@ import static org.commonjava.aprox.rest.util.ApplicationContent.application_json
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.bind.vertx.util.VertXInputStream;
 import org.commonjava.aprox.depgraph.rest.CalculatorController;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
 @Handles( prefix = "/depgraph/calc" )
@@ -44,12 +44,12 @@ public class CalculatorResource
     private CalculatorController controller;
 
     @Route( path = "/diff", contentType = application_json )
-    public void difference( final HttpServerRequest request )
+    public void difference( final Buffer body, final HttpServerRequest request )
     {
         try
         {
             // FIXME Figure out the character encoding!
-            final String json = controller.difference( new VertXInputStream( request ), null );
+            final String json = controller.difference( body.getString( 0, body.length() ) );
             formatOkResponseWithJsonEntity( request, json );
         }
         catch ( final AproxWorkflowException e )
@@ -60,12 +60,12 @@ public class CalculatorResource
     }
 
     @Route( contentType = application_json )
-    public void calculate( final HttpServerRequest request )
+    public void calculate( final Buffer body, final HttpServerRequest request )
     {
         try
         {
             // FIXME Figure out the character encoding!
-            final String json = controller.calculate( new VertXInputStream( request ), null );
+            final String json = controller.calculate( body.getString( 0, body.length() ) );
             formatOkResponseWithJsonEntity( request, json );
         }
         catch ( final AproxWorkflowException e )

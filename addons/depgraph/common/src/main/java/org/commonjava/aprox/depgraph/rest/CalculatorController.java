@@ -22,8 +22,8 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
+import org.commonjava.aprox.depgraph.util.ConfigDTOHelper;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.maven.cartographer.data.CartoDataException;
@@ -32,7 +32,6 @@ import org.commonjava.maven.cartographer.dto.GraphComposition;
 import org.commonjava.maven.cartographer.dto.GraphDescription;
 import org.commonjava.maven.cartographer.dto.GraphDifference;
 import org.commonjava.maven.cartographer.ops.CalculationOps;
-import org.commonjava.maven.cartographer.preset.PresetSelector;
 import org.commonjava.web.json.ser.JsonSerializer;
 
 @ApplicationScoped
@@ -47,17 +46,27 @@ public class CalculatorController
     private JsonSerializer serializer;
 
     @Inject
-    private PresetSelector presets;
-
-    @Inject
-    private AproxDepgraphConfig config;
+    private ConfigDTOHelper configHelper;
 
     public String difference( final InputStream configStream, final String encoding )
         throws AproxWorkflowException
     {
+        final GraphComposition dto = configHelper.readGraphComposition( configStream, encoding );
+        return difference( dto );
+    }
+
+    public String difference( final String json )
+        throws AproxWorkflowException
+    {
+        final GraphComposition dto = configHelper.readGraphComposition( json );
+        return difference( dto );
+    }
+
+    private String difference( final GraphComposition dto )
+        throws AproxWorkflowException
+    {
         try
         {
-            final GraphComposition dto = readDTO( configStream, encoding );
             final List<GraphDescription> graphs = dto.getGraphs();
 
             if ( graphs.size() != 2 )
@@ -80,9 +89,22 @@ public class CalculatorController
     public String calculate( final InputStream configStream, final String encoding )
         throws AproxWorkflowException
     {
+        final GraphComposition dto = configHelper.readGraphComposition( configStream, encoding );
+        return calculate( dto );
+    }
+
+    public String calculate( final String json )
+        throws AproxWorkflowException
+    {
+        final GraphComposition dto = configHelper.readGraphComposition( json );
+        return calculate( dto );
+    }
+
+    public String calculate( final GraphComposition dto )
+        throws AproxWorkflowException
+    {
         try
         {
-            final GraphComposition dto = readDTO( configStream, encoding );
             final List<GraphDescription> graphs = dto.getGraphs();
 
             if ( graphs.size() < 2 )
@@ -107,13 +129,4 @@ public class CalculatorController
         }
     }
 
-    private GraphComposition readDTO( final InputStream configStream, final String encoding )
-        throws AproxWorkflowException
-    {
-        final GraphComposition dto = serializer.fromStream( configStream, encoding, GraphComposition.class );
-
-        dto.resolveFilters( presets, config.getDefaultWebFilterPreset() );
-
-        return dto;
-    }
 }

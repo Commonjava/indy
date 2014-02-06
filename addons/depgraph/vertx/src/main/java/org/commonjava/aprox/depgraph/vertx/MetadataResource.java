@@ -27,16 +27,16 @@ import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_version;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.bind.vertx.util.VertXInputStream;
 import org.commonjava.aprox.depgraph.rest.MetadataController;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.util.logging.Logger;
-import org.commonjava.vertx.vabr.Method;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
+import org.commonjava.vertx.vabr.types.Method;
 import org.vertx.java.core.MultiMap;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
 @Handles( prefix = "/depgraph/meta" )
@@ -51,12 +51,12 @@ public class MetadataResource
     private MetadataController controller;
 
     @Route( path = "/batch", method = Method.POST )
-    public void batchUpdate( final HttpServerRequest request )
+    public void batchUpdate( final Buffer body, final HttpServerRequest request )
     {
         try
         {
             // FIXME: Figure out character encoding parse.
-            controller.batchUpdate( new VertXInputStream( request ), null );
+            controller.batchUpdate( body.getString( 0, body.length() ) );
             setStatus( ApplicationStatus.OK, request );
         }
         catch ( final AproxWorkflowException e )
@@ -126,7 +126,7 @@ public class MetadataResource
     }
 
     @Route( path = "/:groupId/:artifactId/:version", method = Method.POST )
-    public void updateMetadata( final HttpServerRequest request )
+    public void updateMetadata( final Buffer body, final HttpServerRequest request )
     {
         final MultiMap params = request.params();
         final String gid = params.get( p_groupId.key() );
@@ -136,7 +136,7 @@ public class MetadataResource
         try
         {
             // FIXME: Figure out character encoding parse.
-            controller.updateMetadata( gid, aid, ver, new VertXInputStream( request ), null );
+            controller.updateMetadata( gid, aid, ver, body.getString( 0, body.length() ) );
         }
         catch ( final AproxWorkflowException e )
         {
@@ -148,13 +148,13 @@ public class MetadataResource
     }
 
     @Route( path = "/collate", method = Method.POST )
-    public void getCollation( final HttpServerRequest request )
+    public void getCollation( final Buffer body, final HttpServerRequest request )
     {
         String json = null;
         try
         {
             // FIXME: Figure out character encoding parse.
-            json = controller.getCollation( new VertXInputStream( request ), null );
+            json = controller.getCollation( body.getString( 0, body.length() ) );
         }
         catch ( final AproxWorkflowException e )
         {

@@ -24,12 +24,11 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 
 import org.commonjava.util.logging.Logger;
 
-@WebFilter( "/*" )
+//@WebFilter( "/*" )
 public class DebugFilter
     implements Filter
 {
@@ -47,9 +46,8 @@ public class DebugFilter
         throws IOException, ServletException
     {
         final HttpServletRequest request = (HttpServletRequest) req;
-        logger.info( "REQUEST:\n  URI: %s\n  Path Translated: %s\n  Path Info: %s\n  Context Path: %s\n\n",
-                     request.getRequestURI(), request.getPathTranslated(), request.getPathInfo(),
-                     request.getContextPath() );
+        logger.info( "REQUEST:\n  URI: %s\n  Path Translated: %s\n  Path Info: %s\n  Context Path: %s\n\n", request.getRequestURI(),
+                     request.getPathTranslated(), request.getPathInfo(), request.getContextPath() );
 
         chain.doFilter( request, resp );
     }

@@ -124,6 +124,19 @@ public class WorkspaceController
         throws AproxWorkflowException
     {
         final GraphWorkspaceConfiguration config = serializer.fromStream( configStream, encoding, GraphWorkspaceConfiguration.class );
+        return createFrom( serviceUrl, uriFormatter, config );
+    }
+
+    public CreationDTO createFrom( final String serviceUrl, final UriFormatter uriFormatter, final String json )
+        throws AproxWorkflowException
+    {
+        final GraphWorkspaceConfiguration config = serializer.fromString( json, GraphWorkspaceConfiguration.class );
+        return createFrom( serviceUrl, uriFormatter, config );
+    }
+
+    public CreationDTO createFrom( final String serviceUrl, final UriFormatter uriFormatter, final GraphWorkspaceConfiguration config )
+        throws AproxWorkflowException
+    {
         GraphWorkspace ws = null;
         try
         {

@@ -23,8 +23,8 @@ import java.io.IOException;
 
 import javax.inject.Inject;
 
+import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.bind.vertx.util.PathParam;
-import org.commonjava.aprox.bind.vertx.util.VertXInputStream;
 import org.commonjava.aprox.core.rest.ContentController;
 import org.commonjava.aprox.core.util.UriFormatter;
 import org.commonjava.aprox.model.ArtifactStore;
@@ -36,6 +36,7 @@ import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.util.logging.Logger;
+import org.commonjava.vertx.vabr.util.VertXInputStream;
 import org.vertx.java.core.http.HttpServerRequest;
 
 public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
@@ -61,12 +62,18 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
 
     protected void doCreate( final HttpServerRequest request )
     {
+        request.pause();
         final String name = request.params()
                                    .get( PathParam.name.key() );
         final String path = request.params()
                                    .get( PathParam.path.key() );
 
-        final VertXInputStream stream = new VertXInputStream( request );
+        System.out.printf( "PUT %s/%s/%s\n\n", getStoreType().singularEndpointName(), name, path );
+
+        final String contentLen = request.headers()
+                                         .get( ApplicationHeader.content_length.key() );
+        final VertXInputStream stream =
+            contentLen == null ? new VertXInputStream( request ) : new VertXInputStream( request, Long.parseLong( contentLen ) );
         try
         {
             final Transfer stored = getContentController().store( getStoreType(), name, path, stream );
@@ -78,6 +85,18 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
         {
             logger.error( "Failed to upload: %s to: %s. Reason: %s", e, path, name, e.getMessage() );
             formatResponse( e, request );
+        }
+        finally
+        {
+            IOUtils.closeQuietly( stream );
+            try
+            {
+                request.response()
+                       .end();
+            }
+            catch ( final IllegalStateException e )
+            {
+            }
         }
     }
 

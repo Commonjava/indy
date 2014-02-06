@@ -28,23 +28,23 @@ import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_source;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_wsid;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.q_for;
 import static org.commonjava.aprox.rest.util.ApplicationContent.application_json;
-import static org.commonjava.vertx.vabr.BuiltInParam._classBase;
+import static org.commonjava.vertx.vabr.types.BuiltInParam._classBase;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.bind.vertx.util.VertXInputStream;
 import org.commonjava.aprox.bind.vertx.util.VertXUriFormatter;
 import org.commonjava.aprox.core.dto.CreationDTO;
 import org.commonjava.aprox.depgraph.rest.WorkspaceController;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.util.logging.Logger;
-import org.commonjava.vertx.vabr.Method;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
+import org.commonjava.vertx.vabr.types.Method;
 import org.vertx.java.core.MultiMap;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
 @Handles( prefix = "/depgraph/ws" )
@@ -124,14 +124,14 @@ public class WorkspaceResource
     }
 
     @Route( path = "/new/from", method = Method.POST, contentType = application_json )
-    public void createFrom( final HttpServerRequest request )
+    public void createFrom( final Buffer body, final HttpServerRequest request )
     {
         try
         {
             // FIXME Figure out the character encoding!
             final CreationDTO dto =
                 controller.createFrom( request.params()
-                                              .get( _classBase.key() ), new VertXUriFormatter(), new VertXInputStream( request ), null );
+                                              .get( _classBase.key() ), new VertXUriFormatter(), body.getString( 0, body.length() ) );
             if ( dto != null )
             {
                 formatCreatedResponse( request, dto );

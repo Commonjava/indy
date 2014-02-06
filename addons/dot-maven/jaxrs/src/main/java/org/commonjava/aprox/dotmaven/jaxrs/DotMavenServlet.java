@@ -16,7 +16,7 @@ import org.commonjava.util.logging.Logger;
 import org.commonjava.web.dav.servlet.impl.ServletWebdavRequest;
 import org.commonjava.web.dav.servlet.impl.ServletWebdavResponse;
 
-@WebServlet( { "/mavdav", "/mavdav/**" } )
+@WebServlet( { "/mavdav", "/mavdav/", "/mavdav/*", "/mavdav/**" } )
 public class DotMavenServlet
     extends HttpServlet
 {
@@ -29,7 +29,7 @@ public class DotMavenServlet
     private DotMavenService service;
 
     @Override
-    protected void service( final HttpServletRequest req, final HttpServletResponse resp )
+    public void service( final HttpServletRequest req, final HttpServletResponse resp )
         throws ServletException, IOException
     {
         try

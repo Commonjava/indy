@@ -26,18 +26,18 @@ import static org.commonjava.aprox.rest.util.ApplicationContent.text_plain;
 
 import javax.inject.Inject;
 
-import org.commonjava.aprox.bind.vertx.util.VertXInputStream;
-import org.commonjava.aprox.bind.vertx.util.VertXOutputStream;
 import org.commonjava.aprox.bind.vertx.util.VertXUriFormatter;
 import org.commonjava.aprox.depgraph.rest.RepositoryController;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationContent;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.util.logging.Logger;
-import org.commonjava.vertx.vabr.Method;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
+import org.commonjava.vertx.vabr.types.Method;
+import org.commonjava.vertx.vabr.util.VertXOutputStream;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
 @Handles( prefix = "/depgraph/repo" )
@@ -51,11 +51,11 @@ public class RepositoryResource
     private RepositoryController controller;
 
     @Route( path = "/urlmap", method = Method.POST, contentType = application_json )
-    public void getUrlMap( final HttpServerRequest request )
+    public void getUrlMap( final Buffer body, final HttpServerRequest request )
     {
         try
         {
-            final String json = controller.getUrlMap( new VertXInputStream( request ), new VertXUriFormatter() );
+            final String json = controller.getUrlMap( body.getString( 0, body.length() ), new VertXUriFormatter() );
 
             if ( json == null )
             {
@@ -74,11 +74,11 @@ public class RepositoryResource
     }
 
     @Route( path = "/downlog", method = Method.POST, contentType = text_plain )
-    public void getDownloadLog( final HttpServerRequest request )
+    public void getDownloadLog( final Buffer body, final HttpServerRequest request )
     {
         try
         {
-            final String downlog = controller.getDownloadLog( new VertXInputStream( request ), new VertXUriFormatter() );
+            final String downlog = controller.getDownloadLog( body.getString( 0, body.length() ), new VertXUriFormatter() );
             if ( downlog == null )
             {
                 setStatus( ApplicationStatus.NO_CONTENT, request );
@@ -96,11 +96,11 @@ public class RepositoryResource
     }
 
     @Route( path = "/zip", method = Method.POST, contentType = application_zip )
-    public void getZipRepository( final HttpServerRequest request )
+    public void getZipRepository( final Buffer body, final HttpServerRequest request )
     {
         try
         {
-            controller.getZipRepository( new VertXInputStream( request ), new VertXOutputStream( request.response() ) );
+            controller.getZipRepository( body.getString( 0, body.length() ), new VertXOutputStream( request.response() ) );
             setStatus( ApplicationStatus.OK, request );
         }
         catch ( final AproxWorkflowException e )

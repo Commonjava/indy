@@ -24,6 +24,9 @@ import javax.inject.Inject;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
+import org.commonjava.aprox.model.DeployPoint;
+import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.rest.AproxWorkflowException;
@@ -119,6 +122,34 @@ public class AdminController
         try
         {
             storeManager.install();
+            Repository central = storeManager.getRepository( "central" );
+            if ( central == null )
+            {
+                central = new Repository( "central", "http://repo.maven.apache.org/maven2/" );
+                central.setCacheTimeoutSeconds( 86400 );
+                storeManager.storeRepository( central );
+            }
+
+            DeployPoint local = storeManager.getDeployPoint( "local-deployments" );
+            if ( local == null )
+            {
+                local = new DeployPoint( "local-deployments" );
+                local.setAllowReleases( true );
+                local.setAllowSnapshots( true );
+                local.setSnapshotTimeoutSeconds( 86400 );
+
+                storeManager.storeDeployPoint( local );
+            }
+
+            Group pub = storeManager.getGroup( "public" );
+            if ( pub == null )
+            {
+                pub = new Group( "public" );
+                pub.addConstituent( central );
+                pub.addConstituent( local );
+
+                storeManager.storeGroup( pub );
+            }
 
             // make sure the expiration manager is running...
             expirationManager.loadNextExpirations();

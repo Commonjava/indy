@@ -42,11 +42,11 @@ import java.util.zip.ZipOutputStream;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.core.util.UriFormatter;
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.aprox.depgraph.dto.WebOperationConfigDTO;
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
+import org.commonjava.aprox.depgraph.util.ConfigDTOHelper;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.galley.CacheOnlyLocation;
 import org.commonjava.aprox.model.galley.KeyedLocation;
@@ -63,7 +63,6 @@ import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferBatch;
-import org.commonjava.maven.galley.spi.transport.LocationExpander;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.ser.JsonSerializer;
 
@@ -85,9 +84,6 @@ public class RepositoryController
     private JsonSerializer serializer;
 
     @Inject
-    private LocationExpander locationExpander;
-
-    @Inject
     private TransferManager transferManager;
 
     @Inject
@@ -96,14 +92,30 @@ public class RepositoryController
     @Inject
     private AproxDepgraphConfig config;
 
+    @Inject
+    private ConfigDTOHelper configHelper;
+
     public String getUrlMap( final InputStream configStream, final UriFormatter uriFormatter )
+        throws AproxWorkflowException
+    {
+        final WebOperationConfigDTO dto = configHelper.readWebOperationDTO( configStream );
+        return getUrlMap( dto, uriFormatter );
+    }
+
+    public String getUrlMap( final String json, final UriFormatter uriFormatter )
+        throws AproxWorkflowException
+    {
+        final WebOperationConfigDTO dto = configHelper.readWebOperationDTO( json );
+        return getUrlMap( dto, uriFormatter );
+    }
+
+    private String getUrlMap( final WebOperationConfigDTO dto, final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
         final Map<ProjectVersionRef, Map<String, Object>> result = new LinkedHashMap<ProjectVersionRef, Map<String, Object>>();
 
         try
         {
-            final WebOperationConfigDTO dto = readDTO( configStream );
 
             final Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> contents = resolveContents( dto );
 
@@ -152,11 +164,23 @@ public class RepositoryController
     public String getDownloadLog( final InputStream configStream, final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
+        final WebOperationConfigDTO dto = configHelper.readWebOperationDTO( configStream );
+        return getDownloadLog( dto, uriFormatter );
+    }
+
+    public String getDownloadLog( final String json, final UriFormatter uriFormatter )
+        throws AproxWorkflowException
+    {
+        final WebOperationConfigDTO dto = configHelper.readWebOperationDTO( json );
+        return getDownloadLog( dto, uriFormatter );
+    }
+
+    public String getDownloadLog( final WebOperationConfigDTO dto, final UriFormatter uriFormatter )
+        throws AproxWorkflowException
+    {
         final Set<String> downLog = new HashSet<String>();
         try
         {
-            final WebOperationConfigDTO dto = readDTO( configStream );
-
             final Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> contents = resolveContents( dto );
 
             final List<ProjectVersionRef> refs = new ArrayList<ProjectVersionRef>( contents.keySet() );
@@ -186,11 +210,23 @@ public class RepositoryController
     public void getZipRepository( final InputStream configStream, final OutputStream zipStream )
         throws AproxWorkflowException
     {
+        final WebOperationConfigDTO dto = configHelper.readWebOperationDTO( configStream );
+        getZipRepository( dto, zipStream );
+    }
+
+    public void getZipRepository( final String json, final OutputStream zipStream )
+        throws AproxWorkflowException
+    {
+        final WebOperationConfigDTO dto = configHelper.readWebOperationDTO( json );
+        getZipRepository( dto, zipStream );
+    }
+
+    public void getZipRepository( final WebOperationConfigDTO dto, final OutputStream zipStream )
+        throws AproxWorkflowException
+    {
         ZipOutputStream stream = null;
         try
         {
-            final WebOperationConfigDTO dto = readDTO( configStream );
-
             final Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> contents = resolveContents( dto );
 
             final Set<ConcreteResource> entries = new HashSet<ConcreteResource>();
@@ -341,38 +377,6 @@ public class RepositoryController
         }
 
         return contents;
-    }
-
-    private WebOperationConfigDTO readDTO( final InputStream configStream )
-        throws AproxWorkflowException
-    {
-        String json;
-        try
-        {
-            json = IOUtils.toString( configStream );
-        }
-        catch ( final IOException e )
-        {
-            throw new AproxWorkflowException( "Failed to read configuration JSON from request body. Reason: %s", e, e.getMessage() );
-        }
-
-        logger.info( "Got configuration JSON:\n\n%s\n\n", json );
-        final WebOperationConfigDTO dto = serializer.fromString( json, WebOperationConfigDTO.class );
-        if ( dto == null )
-        {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "No configuration found in request body!" );
-        }
-
-        try
-        {
-            dto.calculateLocations( locationExpander );
-        }
-        catch ( final TransferException e )
-        {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "One or more sources/excluded sources is invalid: %s", e, e.getMessage() );
-        }
-
-        return dto;
     }
 
 }

@@ -26,11 +26,11 @@ import org.commonjava.maven.atlas.graph.workspace.GraphWorkspace;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.data.CartoDataManager;
 import org.commonjava.util.logging.Logger;
-import org.commonjava.vertx.vabr.Method;
 import org.commonjava.vertx.vabr.anno.FilterRoute;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.filter.ExecutionChain;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
+import org.commonjava.vertx.vabr.types.Method;
 import org.vertx.java.core.http.HttpServerRequest;
 
 @Handles( "workspaceFilter" )

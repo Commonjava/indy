@@ -44,8 +44,8 @@
     <jbossas-version>7.1.1.Final</jbossas-version>
     <arquillian-version>1.0.1.Final</arquillian-version>
     <qarqas-version>0.3</qarqas-version>
-    <shelflife-version>0.5</shelflife-version>
-    <weftVersion>0.5</weftVersion>
+    <shelflife-version>0.6-SNAPSHOT</shelflife-version>
+    <weftVersion>0.6-SNAPSHOT</weftVersion>
     <atlasVersion>0.9.7-SNAPSHOT</atlasVersion>
     <galleyVersion>0.3.4-SNAPSHOT</galleyVersion>
     <cartoVersion>0.3.5-SNAPSHOT</cartoVersion>

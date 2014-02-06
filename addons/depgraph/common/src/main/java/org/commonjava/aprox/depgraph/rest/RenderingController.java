@@ -12,7 +12,7 @@ import javax.inject.Inject;
 
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
-import org.commonjava.aprox.depgraph.util.AggregatorConfigUtils;
+import org.commonjava.aprox.depgraph.util.ConfigDTOHelper;
 import org.commonjava.aprox.depgraph.util.RequestAdvisor;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
@@ -34,14 +34,31 @@ public class RenderingController
     @Inject
     private RequestAdvisor requestAdvisor;
 
+    @Inject
+    private ConfigDTOHelper configHelper;
+
     public String bomFor( final String groupId, final String artifactId, final String version, final Map<String, String[]> params,
                           final InputStream configStream )
         throws AproxWorkflowException
     {
-        AggregatorConfig config = null;
+        final AggregatorConfig config = configHelper.readAggregatorConfig( configStream );
+        return bomFor( groupId, artifactId, version, params, config );
+    }
+
+    public String bomFor( final String groupId, final String artifactId, final String version, final Map<String, String[]> params,
+                          final String listing )
+        throws AproxWorkflowException
+    {
+        final AggregatorConfig config = configHelper.readAggregatorConfig( listing );
+        return bomFor( groupId, artifactId, version, params, config );
+    }
+
+    public String bomFor( final String groupId, final String artifactId, final String version, final Map<String, String[]> params,
+                          final AggregatorConfig config )
+        throws AproxWorkflowException
+    {
         try
         {
-            config = AggregatorConfigUtils.read( configStream );
             final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( params );
 
             final Model model = ops.generateBOM( new ProjectVersionRef( groupId, artifactId, version ), filter, config.getRoots() );

@@ -18,6 +18,7 @@ package org.commonjava.aprox.depgraph.rest;
 
 import static org.apache.commons.lang.StringUtils.join;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
@@ -25,18 +26,16 @@ import java.util.Map;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
+import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.depgraph.dto.MetadataCollationDTO;
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
+import org.commonjava.aprox.depgraph.util.ConfigDTOHelper;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.dto.MetadataCollation;
 import org.commonjava.maven.cartographer.ops.MetadataOps;
-import org.commonjava.maven.cartographer.preset.PresetSelector;
-import org.commonjava.maven.galley.TransferException;
-import org.commonjava.maven.galley.spi.transport.LocationExpander;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.ser.JsonSerializer;
 
@@ -56,28 +55,36 @@ public class MetadataController
     private JsonSerializer serializer;
 
     @Inject
-    private LocationExpander locationExpander;
-
-    @Inject
-    private PresetSelector presets;
-
-    @Inject
-    private AproxDepgraphConfig config;
+    private ConfigDTOHelper configHelper;
 
     public void batchUpdate( final InputStream stream, final String encoding )
         throws AproxWorkflowException
     {
-        String enc = encoding;
-        if ( enc == null )
-        {
-            enc = "UTF-8";
-        }
+        final String json = readJson( stream, encoding );
+        batchUpdate( json );
+    }
 
+    private String readJson( final InputStream stream, final String encoding )
+        throws AproxWorkflowException
+    {
+        try
+        {
+            return encoding == null ? IOUtils.toString( stream ) : IOUtils.toString( stream, encoding );
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot read metadata mapping JSON from stream: %s", e, e.getMessage() );
+        }
+    }
+
+    public void batchUpdate( final String json )
+        throws AproxWorkflowException
+    {
         final TypeToken<Map<ProjectVersionRef, Map<String, String>>> tt = new TypeToken<Map<ProjectVersionRef, Map<String, String>>>()
         {
         };
 
-        final Map<ProjectVersionRef, Map<String, String>> batch = serializer.fromStream( stream, enc, tt );
+        final Map<ProjectVersionRef, Map<String, String>> batch = serializer.fromString( json, tt );
         if ( batch == null || batch.isEmpty() )
         {
             throw new AproxWorkflowException( ApplicationStatus.NOT_MODIFIED, "No changes found in metadata request." );
@@ -128,17 +135,18 @@ public class MetadataController
     public void updateMetadata( final String groupId, final String artifactId, final String version, final InputStream stream, final String encoding )
         throws AproxWorkflowException
     {
-        String enc = encoding;
-        if ( enc == null )
-        {
-            enc = "UTF-8";
-        }
+        final String json = readJson( stream, encoding );
+        updateMetadata( groupId, artifactId, version, json );
+    }
 
+    public void updateMetadata( final String groupId, final String artifactId, final String version, final String json )
+        throws AproxWorkflowException
+    {
         final TypeToken<Map<String, String>> tt = new TypeToken<Map<String, String>>()
         {
         };
 
-        final Map<String, String> metadata = serializer.fromStream( stream, enc, tt );
+        final Map<String, String> metadata = serializer.fromString( json, tt );
 
         if ( metadata == null || metadata.isEmpty() )
         {
@@ -155,8 +163,20 @@ public class MetadataController
     public String getCollation( final InputStream configStream, final String encoding )
         throws AproxWorkflowException
     {
-        final MetadataCollationDTO dto = readCollationDTO( configStream, encoding );
+        final MetadataCollationDTO dto = configHelper.readCollationDTO( configStream, encoding );
+        return getCollation( dto );
+    }
 
+    public String getCollation( final String json )
+        throws AproxWorkflowException
+    {
+        final MetadataCollationDTO dto = configHelper.readCollationDTO( json );
+        return getCollation( dto );
+    }
+
+    private String getCollation( final MetadataCollationDTO dto )
+        throws AproxWorkflowException
+    {
         try
         {
             final MetadataCollation result = ops.collate( dto );
@@ -166,35 +186,6 @@ public class MetadataController
         {
             throw new AproxWorkflowException( "Failed to resolve or collate graph contents by metadata: %s. Reason: %s", e, dto, e.getMessage() );
         }
-    }
-
-    private MetadataCollationDTO readCollationDTO( final InputStream configStream, final String encoding )
-        throws AproxWorkflowException
-    {
-        String enc = encoding;
-        if ( enc == null )
-        {
-            enc = "UTF-8";
-        }
-
-        final MetadataCollationDTO dto = serializer.fromStream( configStream, enc, MetadataCollationDTO.class );
-        if ( dto == null )
-        {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "No collation configuration found in request body!" );
-        }
-
-        dto.resolveFilters( presets, config.getDefaultWebFilterPreset() );
-
-        try
-        {
-            dto.calculateLocations( locationExpander );
-        }
-        catch ( final TransferException e )
-        {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "One or more sources/excluded sources is invalid: %s", e, e.getMessage() );
-        }
-
-        return dto;
     }
 
 }

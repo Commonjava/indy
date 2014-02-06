@@ -18,12 +18,12 @@ package org.commonjava.aprox.bind.vertx.access;
 
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.vertx.vabr.BindingType;
-import org.commonjava.vertx.vabr.Method;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
+import org.commonjava.vertx.vabr.types.BindingType;
+import org.commonjava.vertx.vabr.types.Method;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
@@ -64,7 +64,7 @@ public class DefaultGroupAccessResource
      * @see org.commonjava.aprox.core.rest.access.GroupAccessResource#createContent(java.lang.String, java.lang.String,
      * javax.servlet.http.HttpServletRequest)
      */
-    @Routes( { @Route( path = "/:path=(/.+)", method = Method.PUT, binding = BindingType.raw ) } )
+    @Routes( { @Route( path = ":path=(/.+)", method = Method.PUT, binding = BindingType.raw ) } )
     @ApiOperation( value = "Store new content at the given path in the first deploy-point store constituent listed in the group with the given name." )
     @ApiError( code = 404, reason = "If the group doesn't contain any deploy-point stores" )
     public void createContent( final HttpServerRequest request )

@@ -21,11 +21,11 @@ import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatRedirect;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.core.util.UriFormatter;
-import org.commonjava.vertx.vabr.Method;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
+import org.commonjava.vertx.vabr.types.Method;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 

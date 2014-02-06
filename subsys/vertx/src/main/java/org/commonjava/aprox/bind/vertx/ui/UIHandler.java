@@ -5,8 +5,8 @@ import static org.commonjava.aprox.rest.util.ApplicationStatus.BAD_REQUEST;
 import static org.commonjava.aprox.rest.util.ApplicationStatus.NOT_FOUND;
 import static org.commonjava.aprox.rest.util.ApplicationStatus.OK;
 import static org.commonjava.aprox.rest.util.RequestUtils.formatDateHeader;
-import static org.commonjava.vertx.vabr.Method.ANY;
-import static org.commonjava.vertx.vabr.Method.GET;
+import static org.commonjava.vertx.vabr.types.Method.ANY;
+import static org.commonjava.vertx.vabr.types.Method.GET;
 
 import java.io.File;
 
@@ -18,10 +18,10 @@ import org.commonjava.aprox.bind.vertx.conf.UIConfiguration;
 import org.commonjava.aprox.bind.vertx.util.PathParam;
 import org.commonjava.aprox.rest.util.ApplicationHeader;
 import org.commonjava.util.logging.Logger;
-import org.commonjava.vertx.vabr.Method;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
+import org.commonjava.vertx.vabr.types.Method;
 import org.vertx.java.core.http.HttpServerRequest;
 
 @Handles( key = "UIHandler" )

@@ -26,12 +26,11 @@ import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.q_scope;
 import static org.commonjava.aprox.rest.util.ApplicationContent.application_xml;
 import static org.commonjava.aprox.rest.util.ApplicationContent.text_plain;
 import static org.commonjava.aprox.rest.util.RequestUtils.parseQueryMap;
-import static org.commonjava.vertx.vabr.Method.POST;
+import static org.commonjava.vertx.vabr.types.Method.POST;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.bind.vertx.util.VertXInputStream;
 import org.commonjava.aprox.depgraph.rest.RenderingController;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
@@ -41,6 +40,7 @@ import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.vertx.java.core.MultiMap;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
 @Handles( prefix = "/depgraph/render/graph" )
@@ -57,7 +57,7 @@ public class GraphRenderingResource
     private RenderingController controller;
 
     @Route( path = "/bom/:groupId/:artifactId/:version", method = POST, contentType = application_xml )
-    public void bomFor( final HttpServerRequest request )
+    public void bomFor( final Buffer body, final HttpServerRequest request )
     {
         final MultiMap params = request.params();
         final String gid = params.get( p_groupId.key() );
@@ -66,7 +66,7 @@ public class GraphRenderingResource
 
         try
         {
-            final String out = controller.bomFor( gid, aid, ver, parseQueryMap( request.query() ), new VertXInputStream( request ) );
+            final String out = controller.bomFor( gid, aid, ver, parseQueryMap( request.query() ), body.getString( 0, body.length() ) );
             if ( out == null )
             {
                 setStatus( ApplicationStatus.NOT_FOUND, request );

@@ -16,9 +16,17 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.vertx.boot;
 
+import java.net.URL;
 import java.util.Properties;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Layout;
 import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
+import org.apache.log4j.spi.Configurator;
+import org.apache.log4j.spi.LoggerRepository;
 import org.commonjava.aprox.conf.AproxConfigFactory;
 import org.commonjava.util.logging.Log4jUtil;
 import org.jboss.weld.environment.se.Weld;
@@ -34,7 +42,7 @@ public class Booter
     public static void main( final String[] args )
     {
         // FIXME Make this configurable via BootOptions.
-        Log4jUtil.configure( Level.DEBUG );
+        configureLogging();
 
         final BootOptions boot = new BootOptions();
         final CmdLineParser parser = new CmdLineParser( boot );
@@ -59,6 +67,29 @@ public class Booter
         {
             new Booter( boot ).run();
         }
+    }
+
+    private static void configureLogging()
+    {
+        Log4jUtil.configure( Level.WARN );
+
+        final Configurator log4jConfigurator = new Configurator()
+        {
+            @Override
+            public void doConfigure( final URL notUsed, final LoggerRepository repo )
+            {
+                final Layout layout = new PatternLayout( "%d [%t] %-5p %c - %m%n" );
+                final ConsoleAppender cAppender = new ConsoleAppender( layout );
+                cAppender.setThreshold( Level.ALL );
+
+                final Logger logger = repo.getLogger( "org.commonjava" );
+                logger.removeAllAppenders();
+                logger.addAppender( cAppender );
+                logger.setLevel( Level.INFO );
+            }
+        };
+
+        log4jConfigurator.doConfigure( null, LogManager.getLoggerRepository() );
     }
 
     public static void printUsage( final CmdLineParser parser, final CmdLineException error )
@@ -108,6 +139,8 @@ public class Booter
         vertx.createHttpServer()
              .requestHandler( router )
              .listen( bootOptions.getPort(), bootOptions.getBind() );
+
+        new org.commonjava.util.logging.Logger( getClass() ).info( "AProx listening on %s:%d", bootOptions.getBind(), bootOptions.getPort() );
 
         synchronized ( this )
         {

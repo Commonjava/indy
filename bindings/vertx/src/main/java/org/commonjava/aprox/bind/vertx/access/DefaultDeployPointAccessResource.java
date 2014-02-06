@@ -18,12 +18,12 @@ package org.commonjava.aprox.bind.vertx.access;
 
 import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.vertx.vabr.BindingType;
-import org.commonjava.vertx.vabr.Method;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
+import org.commonjava.vertx.vabr.types.BindingType;
+import org.commonjava.vertx.vabr.types.Method;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
@@ -42,7 +42,7 @@ public class DefaultDeployPointAccessResource
      * @see org.commonjava.aprox.core.rest.access.DeployPointAccessResource#createContent(java.lang.String,
      * java.lang.String, javax.servlet.http.HttpServletRequest)
      */
-    @Routes( { @Route( path = "/:path=(.+)", method = Method.PUT, binding = BindingType.raw ) } )
+    @Routes( { @Route( path = ":path=(/.+)", method = Method.PUT, binding = BindingType.raw ) } )
     @ApiOperation( value = "Store new content at the given path in store with the given name." )
     public void createContent( final HttpServerRequest request )
     {
