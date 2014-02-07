@@ -31,6 +31,7 @@
   <modules>
     <module>base</module>
     <module>rest-min</module>
+    <module>easyprox</module>
     <module>savant</module>
   </modules>
   

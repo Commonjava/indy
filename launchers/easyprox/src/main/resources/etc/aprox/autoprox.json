@@ -1,0 +1,30 @@
+{
+  "repo": {
+      "url":"http://repository.jboss.org/repositories/${name}/",
+      "timeout_seconds":30,
+      "host":"repository.jboss.org",
+      "port":80,
+      "is_passthrough":false,
+      "cache_timeout_seconds":7200,
+      "name":"${name}",
+      "key":"repository:${name}",
+      "doctype":"repository"
+    },
+    "deploy": {
+      "allow_snapshots":true,
+      "allow_releases":true,
+      "snapshotTimeoutSeconds":86400,
+      "name":"${name}",
+      "key":"deploy_point:${name}",
+      "doctype":"deploy_point"
+    },
+    "group": {
+      "constituents":[
+        "${deploy}",
+        "${repository}"
+      ],
+      "name":"${name}",
+      "key":"group:${name}",
+      "doctype":"group"
+    }
+}
