@@ -29,12 +29,12 @@ public class EndpointViewListing
 
     private final List<EndpointView> items;
 
-    public EndpointViewListing( final Collection<ArtifactStore> stores, final UriFormatter formatter )
+    public EndpointViewListing( final Collection<ArtifactStore> stores, final String baseUri, final UriFormatter formatter )
     {
         final List<EndpointView> points = new ArrayList<EndpointView>();
         for ( final ArtifactStore store : stores )
         {
-            final EndpointView point = new EndpointView( store, formatter );
+            final EndpointView point = new EndpointView( store, baseUri, formatter );
             if ( !points.contains( point ) )
             {
                 points.add( point );

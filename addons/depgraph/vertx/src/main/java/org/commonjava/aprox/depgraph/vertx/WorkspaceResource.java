@@ -28,7 +28,7 @@ import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_source;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_wsid;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.q_for;
 import static org.commonjava.aprox.rest.util.ApplicationContent.application_json;
-import static org.commonjava.vertx.vabr.types.BuiltInParam._classBase;
+import static org.commonjava.vertx.vabr.types.BuiltInParam._classContextUrl;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -83,7 +83,7 @@ public class WorkspaceResource
         try
         {
             final CreationDTO dto = controller.createNamed( id, request.params()
-                                                                       .get( _classBase.key() ), new VertXUriFormatter() );
+                                                                       .get( _classContextUrl.key() ), new VertXUriFormatter() );
             if ( dto != null )
             {
                 formatCreatedResponse( request, dto );
@@ -105,8 +105,10 @@ public class WorkspaceResource
     {
         try
         {
-            final CreationDTO dto = controller.create( request.params()
-                                                              .get( _classBase.key() ), new VertXUriFormatter() );
+            final String baseUri = request.params()
+                                          .get( _classContextUrl.key() );
+
+            final CreationDTO dto = controller.create( baseUri, new VertXUriFormatter() );
             if ( dto != null )
             {
                 formatCreatedResponse( request, dto );
@@ -131,7 +133,7 @@ public class WorkspaceResource
             // FIXME Figure out the character encoding!
             final CreationDTO dto =
                 controller.createFrom( request.params()
-                                              .get( _classBase.key() ), new VertXUriFormatter(), body.getString( 0, body.length() ) );
+                                              .get( _classContextUrl.key() ), new VertXUriFormatter(), body.getString( 0, body.length() ) );
             if ( dto != null )
             {
                 formatCreatedResponse( request, dto );

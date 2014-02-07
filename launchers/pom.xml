@@ -118,8 +118,8 @@
       <groupId>asm</groupId>
       <artifactId>asm-all</artifactId>
       <scope>compile</scope>
-    </dependency>
-    <dependency>
+    </dependency> -->
+    <!-- <dependency>
       <groupId>org.apache.xbean</groupId>
       <artifactId>xbean-asm-shaded</artifactId>
       <scope>compile</scope>

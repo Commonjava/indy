@@ -30,13 +30,13 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiError;
 import com.wordnik.swagger.annotations.ApiOperation;
 
-@Handles( prefix = "/repository/:name" )
+@Handles( prefix = "/repository" )
 @Api( description = "Handles GET/DELETE requests for content in a remote repository (proxy) store", value = "Handle repository content" )
 public class DefaultRepositoryAccessResource
     extends AbstractSimpleAccessResource<Repository>
     implements RequestHandler
 {
-    @Routes( { @Route( path = ":?path=(/.+)", method = Method.DELETE ) } )
+    @Routes( { @Route( path = "/:name:?path=(/.+)", method = Method.DELETE ) } )
     @ApiOperation( value = "Delete content at the given path in repository's cache with the given name." )
     @ApiError( code = 404, reason = "If either the repository or the path within the repository doesn't exist" )
     public void deleteContent( final Buffer buffer, final HttpServerRequest request )
@@ -44,7 +44,7 @@ public class DefaultRepositoryAccessResource
         doDelete( request );
     }
 
-    @Routes( { @Route( path = ":?path=(/.+)", method = Method.GET ) } )
+    @Routes( { @Route( path = "/:name:path=(/.*)", method = Method.GET ) } )
     @ApiOperation( value = "Retrieve content given by path in repository with the given name." )
     @ApiError( code = 404, reason = "If either the repository or the path within the repository doesn't exist" )
     public void getContent( final Buffer buffer, final HttpServerRequest request )

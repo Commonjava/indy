@@ -26,6 +26,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.model.DeployPoint;
@@ -73,9 +74,10 @@ public class DefaultDeployPointAccessResource
     @ApiError( code = 404, reason = "If either the deploy-point or the path within the deploy-point doesn't exist" )
     @Path( "/{name}{path: (/.+)?}" )
     public Response getContent( @ApiParam( "Name of the deploy-point" ) @PathParam( "name" ) final String name,
-                                @ApiParam( "Content path within the deploy-point" ) @PathParam( "path" ) final String path )
+                                @ApiParam( "Content path within the deploy-point" ) @PathParam( "path" ) final String path,
+                                @Context final UriBuilder uriBuilder )
     {
-        return doGet( name, path );
+        return doGet( name, path, uriBuilder );
     }
 
     @Override

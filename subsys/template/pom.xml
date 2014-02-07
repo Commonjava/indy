@@ -19,30 +19,35 @@
 
   <parent>
     <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-parent</artifactId>
+    <artifactId>aprox-subsystems</artifactId>
     <version>0.10.1-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-subsystems</artifactId>
-  <packaging>pom</packaging>
+  <artifactId>aprox-subsys-template</artifactId>
 
-  <name>AProx :: Subsystems :: Parent</name>
+  <name>AProx :: Subsystems :: Templating</name>
   
-  <modules>
-    <module>flatfile</module>
-    <module>http</module>
-    <module>maven</module>
-    <module>template</module>
-    <module>vertx</module>
-  </modules>
-  
-  <profiles>
-    <profile>
-      <id>experimental</id>
-      
-      <modules>
-        <module>infinispan</module>
-      </modules>
-    </profile>
-  </profiles>
+  <dependencies>
+    <dependency>
+      <groupId>org.codehaus.groovy</groupId>
+      <artifactId>groovy-templates</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.weld.se</groupId>
+      <artifactId>weld-se-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-subsys-flatfile</artifactId>
+    </dependency>
+  </dependencies>
 </project>

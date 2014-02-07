@@ -28,12 +28,16 @@
   
   <dependencies>
     <dependency>
-      <groupId>org.apache.maven.archetype</groupId>
-      <artifactId>archetype-catalog</artifactId>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-api</artifactId>
+      <artifactId>aprox-subsys-template</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.archetype</groupId>
+      <artifactId>archetype-catalog</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>

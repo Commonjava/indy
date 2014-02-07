@@ -55,7 +55,7 @@ public class StatsController
         return versioning;
     }
 
-    public EndpointViewListing getEndpointsListing( final UriFormatter uriFormatter )
+    public EndpointViewListing getEndpointsListing( final String baseUri, final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
         final List<ArtifactStore> stores = new ArrayList<ArtifactStore>();
@@ -68,7 +68,7 @@ public class StatsController
             throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to retrieve all endpoints: %s", e, e.getMessage() );
         }
 
-        return new EndpointViewListing( stores, uriFormatter );
+        return new EndpointViewListing( stores, baseUri, uriFormatter );
     }
 
 }

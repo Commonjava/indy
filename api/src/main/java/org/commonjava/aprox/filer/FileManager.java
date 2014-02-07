@@ -24,6 +24,7 @@ import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ArtifactPathInfo;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 
 public interface FileManager
@@ -66,6 +67,12 @@ public interface FileManager
         throws AproxWorkflowException;
 
     void rescanAll( final List<? extends ArtifactStore> stores )
+        throws AproxWorkflowException;
+
+    List<ConcreteResource> list( ArtifactStore store, String path )
+        throws AproxWorkflowException;
+
+    List<ConcreteResource> list( List<? extends ArtifactStore> stores, String path )
         throws AproxWorkflowException;
 
 }

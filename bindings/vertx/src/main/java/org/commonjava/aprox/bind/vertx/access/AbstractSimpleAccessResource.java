@@ -17,7 +17,10 @@
 package org.commonjava.aprox.bind.vertx.access;
 
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatCreatedResponse;
+import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithEntity;
+import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatRedirect;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
+import static org.commonjava.vertx.vabr.types.BuiltInParam._classContextUrl;
 
 import java.io.IOException;
 
@@ -31,6 +34,7 @@ import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.rest.AproxWorkflowException;
+import org.commonjava.aprox.rest.util.ApplicationContent;
 import org.commonjava.aprox.rest.util.ApplicationHeader;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.aprox.util.LocationUtils;
@@ -135,15 +139,34 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
 
         try
         {
-            final Transfer item = contentController.get( getStoreType(), name, path );
-            final String contentType = contentController.getContentType( path );
+            final String baseUri = request.params()
+                                          .get( _classContextUrl.key() );
 
-            request.response()
-                   .putHeader( ApplicationHeader.content_type.key(), contentType );
+            if ( path.endsWith( "/" ) )
+            {
+                logger.info( "Redirecting to index.html under: %s", path );
+                formatRedirect( request, uriFormatter.formatAbsolutePathTo( baseUri, path, "index.html" ) );
+            }
+            else if ( path.endsWith( "index.html" ) )
+            {
+                logger.info( "Getting listing at: %s", path );
+                final String html = contentController.list( getStoreType(), name, path, baseUri, uriFormatter );
 
-            request.response()
-                   .sendFile( item.getDetachedFile()
-                                  .getCanonicalPath() );
+                formatOkResponseWithEntity( request, html, ApplicationContent.text_html );
+            }
+            else
+            {
+                final Transfer item = contentController.get( getStoreType(), name, path );
+
+                final String contentType = contentController.getContentType( path );
+
+                request.response()
+                       .putHeader( ApplicationHeader.content_type.key(), contentType );
+
+                request.response()
+                       .sendFile( item.getDetachedFile()
+                                      .getCanonicalPath() );
+            }
         }
         catch ( final AproxWorkflowException e )
         {

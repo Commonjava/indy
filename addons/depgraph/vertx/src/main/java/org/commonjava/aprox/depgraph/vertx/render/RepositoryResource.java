@@ -23,6 +23,7 @@ import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.setStatus;
 import static org.commonjava.aprox.rest.util.ApplicationContent.application_json;
 import static org.commonjava.aprox.rest.util.ApplicationContent.application_zip;
 import static org.commonjava.aprox.rest.util.ApplicationContent.text_plain;
+import static org.commonjava.vertx.vabr.types.BuiltInParam._classContextUrl;
 
 import javax.inject.Inject;
 
@@ -55,7 +56,10 @@ public class RepositoryResource
     {
         try
         {
-            final String json = controller.getUrlMap( body.getString( 0, body.length() ), new VertXUriFormatter() );
+            final String baseUri = request.params()
+                                          .get( _classContextUrl.key() );
+
+            final String json = controller.getUrlMap( body.getString( 0, body.length() ), baseUri, new VertXUriFormatter() );
 
             if ( json == null )
             {
@@ -78,7 +82,10 @@ public class RepositoryResource
     {
         try
         {
-            final String downlog = controller.getDownloadLog( body.getString( 0, body.length() ), new VertXUriFormatter() );
+            final String baseUri = request.params()
+                                          .get( _classContextUrl.key() );
+
+            final String downlog = controller.getDownloadLog( body.getString( 0, body.length() ), baseUri, new VertXUriFormatter() );
             if ( downlog == null )
             {
                 setStatus( ApplicationStatus.NO_CONTENT, request );

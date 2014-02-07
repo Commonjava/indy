@@ -51,7 +51,11 @@ public class RepositoryResource
     {
         try
         {
-            final String json = controller.getUrlMap( req.getInputStream(), new JaxRsUriFormatter( builder ) );
+            final String baseUri = builder.path( getClass() )
+                                          .build()
+                                          .toString();
+
+            final String json = controller.getUrlMap( req.getInputStream(), baseUri, new JaxRsUriFormatter( builder ) );
             return Response.ok( json )
                            .type( "application/json" )
                            .build();
@@ -75,7 +79,11 @@ public class RepositoryResource
     {
         try
         {
-            final String downlog = controller.getDownloadLog( req.getInputStream(), new JaxRsUriFormatter( builder ) );
+            final String baseUri = builder.path( getClass() )
+                                          .build()
+                                          .toString();
+
+            final String downlog = controller.getDownloadLog( req.getInputStream(), baseUri, new JaxRsUriFormatter( builder ) );
             return Response.ok( downlog )
                            .type( "text/plain" )
                            .build();

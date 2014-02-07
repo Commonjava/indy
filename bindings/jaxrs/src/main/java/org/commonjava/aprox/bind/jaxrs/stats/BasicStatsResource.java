@@ -23,7 +23,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.UriBuilder;
 
 import org.commonjava.aprox.bind.jaxrs.util.AproxExceptionUtils;
 import org.commonjava.aprox.bind.jaxrs.util.JaxRsUriFormatter;
@@ -48,7 +48,7 @@ public class BasicStatsResource
     private StatsController statsController;
 
     @Context
-    private UriInfo uriInfo;
+    private UriBuilder uriBuilder;
 
     @GET
     @Path( "/version-info" )
@@ -67,7 +67,9 @@ public class BasicStatsResource
         try
         {
             final String json =
-                serializer.toString( statsController.getEndpointsListing( new JaxRsUriFormatter( uriInfo.getAbsolutePathBuilder() ) ) );
+                serializer.toString( statsController.getEndpointsListing( uriBuilder.path( getClass() )
+                                                                                    .build()
+                                                                                    .toString(), new JaxRsUriFormatter( uriBuilder ) ) );
 
             return Response.ok( json )
                            .build();

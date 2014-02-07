@@ -31,15 +31,15 @@ public final class EndpointView
     @SerializedName( "resource_uri" )
     private final String resourceUri;
 
-    public EndpointView( final ArtifactStore store, final UriFormatter uriBuilder )
+    public EndpointView( final ArtifactStore store, final String baseUri, final UriFormatter uriBuilder )
     {
         this.name = store.getName();
 
         this.type = store.getDoctype()
                          .name();
 
-        this.resourceUri = uriBuilder.formatAbsolutePathTo( store.getDoctype()
-                                                                 .singularEndpointName(), store.getName() );
+        this.resourceUri = uriBuilder.formatAbsolutePathTo( baseUri, store.getDoctype()
+                                                                          .singularEndpointName(), store.getName() );
 
     }
 

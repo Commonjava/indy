@@ -16,13 +16,19 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.rest;
 
+import static org.commonjava.maven.galley.util.PathUtils.normalize;
+import static org.commonjava.maven.galley.util.PathUtils.parentPath;
+
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.commonjava.aprox.core.util.UriFormatter;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.filer.FileManager;
@@ -31,6 +37,9 @@ import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
+import org.commonjava.aprox.subsys.template.RenderingException;
+import org.commonjava.aprox.subsys.template.TemplatingEngine;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 
 @ApplicationScoped
@@ -42,6 +51,9 @@ public class ContentController
 
     @Inject
     private FileManager fileManager;
+
+    @Inject
+    private TemplatingEngine templates;
 
     protected ContentController()
     {
@@ -68,7 +80,7 @@ public class ContentController
         final ArtifactStore store = getStore( type, name );
         final Transfer item = fileManager.retrieve( store, path );
 
-        if ( item == null || item.isDirectory() )
+        if ( item == null )
         {
             throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "%s", ( path + ( item == null ? " was not found." : "is a directory" ) ) );
         }
@@ -153,6 +165,37 @@ public class ContentController
         }
 
         return store;
+    }
+
+    public String list( final StoreType type, final String name, final String path, final String serviceUrl, final UriFormatter uriFormatter )
+        throws AproxWorkflowException
+    {
+        final StoreKey key = new StoreKey( type, name );
+        final ArtifactStore store = getStore( key );
+
+        final List<ConcreteResource> items = fileManager.list( store, path );
+        final String parentPath = normalize( normalize( parentPath( normalize( parentPath( path ) ) ) ), "index.html" );
+        final String storeUrl = uriFormatter.formatAbsolutePathTo( serviceUrl, type.singularEndpointName(), name );
+        final String parentUrl = uriFormatter.formatAbsolutePathTo( serviceUrl, type.singularEndpointName(), name, parentPath );
+
+        final Map<String, Object> params = new HashMap<String, Object>();
+        params.put( "items", items );
+        params.put( "parentUrl", parentUrl );
+        params.put( "parentPath", parentPath );
+        params.put( "path", path );
+        params.put( "storeKey", key );
+        params.put( "storeUrl", storeUrl );
+        params.put( "baseUrl", serviceUrl );
+
+        // render...
+        try
+        {
+            return templates.render( "directory-listing", params );
+        }
+        catch ( final RenderingException e )
+        {
+            throw new AproxWorkflowException( e.getMessage(), e );
+        }
     }
 
 }

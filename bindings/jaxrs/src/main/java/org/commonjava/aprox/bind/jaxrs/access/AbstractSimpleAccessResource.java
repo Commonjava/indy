@@ -17,14 +17,20 @@
 package org.commonjava.aprox.bind.jaxrs.access;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.bind.jaxrs.util.AproxExceptionUtils;
+import org.commonjava.aprox.bind.jaxrs.util.JaxRsUriFormatter;
 import org.commonjava.aprox.core.rest.ContentController;
+import org.commonjava.aprox.core.util.UriFormatter;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
@@ -96,7 +102,7 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
 
     protected abstract StoreType getStoreType();
 
-    protected Response doGet( final String name, final String path )
+    protected Response doGet( final String name, final String path, final UriBuilder uriBuilder )
     {
         // TODO:
         // directory request (ends with "/") or empty path (directory request for proxy root)
@@ -107,11 +113,33 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
 
         try
         {
-            final Transfer item = contentController.get( getStoreType(), name, path );
-            final String contentType = contentController.getContentType( path );
+            final UriFormatter uriFormatter = new JaxRsUriFormatter( uriBuilder );
 
-            response = Response.ok( item.openInputStream(), contentType )
-                               .build();
+            if ( path.endsWith( "/" ) )
+            {
+                logger.info( "Redirecting to index.html under: %s", path );
+                response = Response.seeOther( new URI( uriFormatter.formatAbsolutePathTo( uriBuilder.path( getClass() )
+                                                                                                    .build()
+                                                                                                    .toString(), path, "index.html" ) ) )
+                                   .build();
+            }
+            else if ( path.endsWith( "index.html" ) )
+            {
+                logger.info( "Getting listing at: %s", path );
+                final String html = contentController.list( getStoreType(), name, path, uriBuilder.path( getClass() )
+                                                                                                  .build()
+                                                                                                  .toString(), uriFormatter );
+
+                Response.ok( html, MediaType.TEXT_HTML );
+            }
+            else
+            {
+                final Transfer item = contentController.get( getStoreType(), name, path );
+                final String contentType = contentController.getContentType( path );
+
+                response = Response.ok( item.openInputStream(), contentType )
+                                   .build();
+            }
         }
         catch ( final AproxWorkflowException e )
         {
@@ -121,6 +149,12 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
         catch ( final IOException e )
         {
             logger.error( "Failed to download artifact: %s from: %s. Reason: %s", e, path, name, e.getMessage() );
+            response = Response.serverError()
+                               .build();
+        }
+        catch ( final URISyntaxException e )
+        {
+            logger.error( "Failed to format relocation to index.html from: %s from: %s. Reason: %s", e, path, name, e.getMessage() );
             response = Response.serverError()
                                .build();
         }

@@ -42,7 +42,8 @@ public class Booter
     public static void main( final String[] args )
     {
         // FIXME Make this configurable via BootOptions.
-        configureLogging();
+        //        configureLogging();
+        Log4jUtil.configure( Level.INFO );
 
         final BootOptions boot = new BootOptions();
         final CmdLineParser parser = new CmdLineParser( boot );

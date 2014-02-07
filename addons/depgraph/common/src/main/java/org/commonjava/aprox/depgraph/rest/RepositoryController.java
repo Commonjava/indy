@@ -95,21 +95,21 @@ public class RepositoryController
     @Inject
     private ConfigDTOHelper configHelper;
 
-    public String getUrlMap( final InputStream configStream, final UriFormatter uriFormatter )
+    public String getUrlMap( final InputStream configStream, final String baseUri, final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
         final WebOperationConfigDTO dto = configHelper.readWebOperationDTO( configStream );
-        return getUrlMap( dto, uriFormatter );
+        return getUrlMap( dto, baseUri, uriFormatter );
     }
 
-    public String getUrlMap( final String json, final UriFormatter uriFormatter )
+    public String getUrlMap( final String json, final String baseUri, final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
         final WebOperationConfigDTO dto = configHelper.readWebOperationDTO( json );
-        return getUrlMap( dto, uriFormatter );
+        return getUrlMap( dto, baseUri, uriFormatter );
     }
 
-    private String getUrlMap( final WebOperationConfigDTO dto, final UriFormatter uriFormatter )
+    private String getUrlMap( final WebOperationConfigDTO dto, final String baseUri, final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
         final Map<ProjectVersionRef, Map<String, Object>> result = new LinkedHashMap<ProjectVersionRef, Map<String, Object>>();
@@ -149,7 +149,7 @@ public class RepositoryController
 
                 final List<String> sortedFiles = new ArrayList<String>( files );
                 Collections.sort( sortedFiles );
-                data.put( URLMAP_DATA_REPO_URL, formatUrlMapRepositoryUrl( kl, dto.getLocalUrls(), uriFormatter ) );
+                data.put( URLMAP_DATA_REPO_URL, formatUrlMapRepositoryUrl( kl, dto.getLocalUrls(), baseUri, uriFormatter ) );
                 data.put( URLMAP_DATA_FILES, sortedFiles );
             }
         }
@@ -161,21 +161,21 @@ public class RepositoryController
         return serializer.toString( result );
     }
 
-    public String getDownloadLog( final InputStream configStream, final UriFormatter uriFormatter )
+    public String getDownloadLog( final InputStream configStream, final String baseUri, final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
         final WebOperationConfigDTO dto = configHelper.readWebOperationDTO( configStream );
-        return getDownloadLog( dto, uriFormatter );
+        return getDownloadLog( dto, baseUri, uriFormatter );
     }
 
-    public String getDownloadLog( final String json, final UriFormatter uriFormatter )
+    public String getDownloadLog( final String json, final String baseUri, final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
         final WebOperationConfigDTO dto = configHelper.readWebOperationDTO( json );
-        return getDownloadLog( dto, uriFormatter );
+        return getDownloadLog( dto, baseUri, uriFormatter );
     }
 
-    public String getDownloadLog( final WebOperationConfigDTO dto, final UriFormatter uriFormatter )
+    public String getDownloadLog( final WebOperationConfigDTO dto, final String baseUri, final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
         final Set<String> downLog = new HashSet<String>();
@@ -192,7 +192,7 @@ public class RepositoryController
                 for ( final ConcreteResource item : items.values() )
                 {
                     logger.info( "Adding: '%s'", item );
-                    downLog.add( formatDownlogEntry( item, dto.getLocalUrls(), uriFormatter ) );
+                    downLog.add( formatDownlogEntry( item, dto.getLocalUrls(), baseUri, uriFormatter ) );
                 }
             }
         }
@@ -314,7 +314,7 @@ public class RepositoryController
         }
     }
 
-    private String formatDownlogEntry( final ConcreteResource item, final boolean localUrls, final UriFormatter uriFormatter )
+    private String formatDownlogEntry( final ConcreteResource item, final boolean localUrls, final String baseUri, final UriFormatter uriFormatter )
         throws MalformedURLException
     {
         final KeyedLocation kl = (KeyedLocation) item.getLocation();
@@ -322,8 +322,8 @@ public class RepositoryController
 
         if ( localUrls || kl instanceof CacheOnlyLocation )
         {
-            final String uri = uriFormatter.formatAbsolutePathTo( key.getType()
-                                                                     .singularEndpointName(), key.getName() );
+            final String uri = uriFormatter.formatAbsolutePathTo( baseUri, key.getType()
+                                                                              .singularEndpointName(), key.getName() );
             return String.format( "Downloading: %s", uri );
         }
         else
@@ -333,14 +333,14 @@ public class RepositoryController
         }
     }
 
-    private String formatUrlMapRepositoryUrl( final KeyedLocation kl, final boolean localUrls, final UriFormatter uriFormatter )
+    private String formatUrlMapRepositoryUrl( final KeyedLocation kl, final boolean localUrls, final String baseUri, final UriFormatter uriFormatter )
         throws MalformedURLException
     {
         if ( localUrls || kl instanceof CacheOnlyLocation )
         {
             final StoreKey key = kl.getKey();
-            return uriFormatter.formatAbsolutePathTo( key.getType()
-                                                         .singularEndpointName(), key.getName() );
+            return uriFormatter.formatAbsolutePathTo( baseUri, key.getType()
+                                                                  .singularEndpointName(), key.getName() );
         }
         else
         {

@@ -16,6 +16,8 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.vertx.util;
 
+import static org.commonjava.vertx.vabr.types.BuiltInParam._classContextUrl;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -52,10 +54,12 @@ public final class ResponseUtils
                .end();
     }
 
-    public static void formatCreatedResponse( final HttpServerRequest request, final UriFormatter uriFormatter, final String basePath,
-                                              final String... params )
+    public static void formatCreatedResponse( final HttpServerRequest request, final UriFormatter uriFormatter, final String... params )
     {
-        final String location = uriFormatter.formatAbsolutePathTo( basePath, params );
+        final String baseUri = request.params()
+                                      .get( _classContextUrl.key() );
+
+        final String location = uriFormatter.formatAbsolutePathTo( baseUri, params );
 
         request.resume()
                .response()

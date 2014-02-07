@@ -16,12 +16,9 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.vertx.util;
 
-import javax.enterprise.context.ApplicationScoped;
-
 import org.commonjava.aprox.core.util.UriFormatter;
 import org.commonjava.maven.galley.util.PathUtils;
 
-@ApplicationScoped
 public class VertXUriFormatter
     implements UriFormatter
 {

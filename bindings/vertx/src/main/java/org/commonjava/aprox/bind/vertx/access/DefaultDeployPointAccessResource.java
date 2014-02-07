@@ -31,7 +31,7 @@ import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiError;
 import com.wordnik.swagger.annotations.ApiOperation;
 
-@Handles( prefix = "/deploy/:name" )
+@Handles( prefix = "/deploy" )
 @Api( description = "Handles GET/PUT/DELETE requests for content in a hosted deploy-point store", value = "Handle deploy-point content" )
 public class DefaultDeployPointAccessResource
     extends AbstractSimpleAccessResource<DeployPoint>
@@ -42,14 +42,14 @@ public class DefaultDeployPointAccessResource
      * @see org.commonjava.aprox.core.rest.access.DeployPointAccessResource#createContent(java.lang.String,
      * java.lang.String, javax.servlet.http.HttpServletRequest)
      */
-    @Routes( { @Route( path = ":path=(/.+)", method = Method.PUT, binding = BindingType.raw ) } )
+    @Routes( { @Route( path = "/:name:path=(/.+)", method = Method.PUT, binding = BindingType.raw ) } )
     @ApiOperation( value = "Store new content at the given path in store with the given name." )
     public void createContent( final HttpServerRequest request )
     {
         doCreate( request );
     }
 
-    @Routes( { @Route( path = ":?path=(/.+)", method = Method.DELETE ) } )
+    @Routes( { @Route( path = "/:name:?path=(/.+)", method = Method.DELETE ) } )
     @ApiOperation( value = "Delete content at the given path in deploy-point with the given name." )
     @ApiError( code = 404, reason = "If either the deploy-point or the path within the deploy-point doesn't exist" )
     public void deleteContent( final Buffer buffer, final HttpServerRequest request )
@@ -57,7 +57,7 @@ public class DefaultDeployPointAccessResource
         doDelete( request );
     }
 
-    @Routes( { @Route( path = ":?path=(/.+)", method = Method.GET ) } )
+    @Routes( { @Route( path = "/:name:path=(/.*)", method = Method.GET ) } )
     @ApiOperation( value = "Retrieve content given by path in deploy-point with the given name." )
     @ApiError( code = 404, reason = "If either the deploy-point or the path within the deploy-point doesn't exist" )
     public void getContent( final Buffer buffer, final HttpServerRequest request )

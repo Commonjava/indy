@@ -19,6 +19,7 @@ package org.commonjava.aprox.bind.vertx.stats;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatEntity;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
+import static org.commonjava.vertx.vabr.types.BuiltInParam._classContextUrl;
 
 import javax.inject.Inject;
 
@@ -65,7 +66,10 @@ public class BasicStatsResource
     {
         try
         {
-            final String json = serializer.toString( statsController.getEndpointsListing( uriFormatter ) );
+            final String baseUri = request.params()
+                                          .get( _classContextUrl.key() );
+
+            final String json = serializer.toString( statsController.getEndpointsListing( baseUri, uriFormatter ) );
 
             formatOkResponseWithJsonEntity( request, json );
         }

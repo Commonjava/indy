@@ -16,6 +16,8 @@
  ******************************************************************************/
 package org.commonjava.aprox.filer;
 
+import java.io.File;
+
 public final class PathUtils
 {
     private PathUtils()
@@ -60,5 +62,20 @@ public final class PathUtils
         }
 
         return result.replace( '\\', '/' );
+    }
+
+    public static String dirname( final String path )
+    {
+        if ( path == null )
+        {
+            return null;
+        }
+
+        if ( path.endsWith( "/" ) )
+        {
+            return path;
+        }
+
+        return new File( path ).getParent();
     }
 }

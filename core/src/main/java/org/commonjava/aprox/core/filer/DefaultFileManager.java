@@ -23,6 +23,7 @@ import static org.apache.commons.lang.StringUtils.isEmpty;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -43,6 +44,7 @@ import org.commonjava.aprox.change.event.ArtifactStoreRescanEvent;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.filer.FileManager;
+import org.commonjava.aprox.filer.PathUtils;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.model.Group;
@@ -60,6 +62,8 @@ import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.model.ConcreteResource;
+import org.commonjava.maven.galley.model.ListingResult;
+import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.model.VirtualResource;
@@ -134,6 +138,101 @@ public class DefaultFileManager
                 groupHandlers.add( h );
             }
         }
+    }
+
+    @Override
+    public List<ConcreteResource> list( final ArtifactStore store, final String path )
+        throws AproxWorkflowException
+    {
+        final String dir = PathUtils.dirname( path );
+
+        final List<ConcreteResource> result = new ArrayList<ConcreteResource>();
+        if ( store.getKey()
+                  .getType() == StoreType.group )
+        {
+            try
+            {
+                final List<ListingResult> results =
+                    transfers.listAll( locationExpander.expand( new VirtualResource( LocationUtils.toLocations( store ), dir ) ) );
+
+                for ( final ListingResult lr : results )
+                {
+                    for ( final String file : lr.getListing() )
+                    {
+                        result.add( new ConcreteResource( lr.getLocation(), dir, file ) );
+                    }
+                }
+            }
+            catch ( final TransferException e )
+            {
+                logger.error( e.getMessage(), e );
+                throw new AproxWorkflowException( "Failed to list ALL paths: %s from: %s. Reason: %s", e, path, store.getKey(), e.getMessage() );
+            }
+        }
+        else
+        {
+            final Location loc = LocationUtils.toLocation( store );
+            final ConcreteResource res = new ConcreteResource( loc, dir );
+            if ( store instanceof Repository )
+            {
+                try
+                {
+                    final ListingResult lr = transfers.list( res );
+                    if ( lr != null )
+                    {
+                        for ( final String file : lr.getListing() )
+                        {
+                            result.add( new ConcreteResource( loc, dir, file ) );
+                        }
+                    }
+                }
+                catch ( final TransferException e )
+                {
+                    logger.error( e.getMessage(), e );
+                    throw new AproxWorkflowException( "Failed to list path: %s from: %s. Reason: %s", e, path, store.getKey(), e.getMessage() );
+                }
+            }
+            else
+            {
+                final Transfer transfer = transfers.getCacheReference( res );
+                final String[] files = transfer.list();
+                for ( final String file : files )
+                {
+                    result.add( new ConcreteResource( loc, dir, file ) );
+                }
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<ConcreteResource> list( final List<? extends ArtifactStore> stores, final String path )
+        throws AproxWorkflowException
+    {
+        final String dir = PathUtils.dirname( path );
+
+        final List<ConcreteResource> result = new ArrayList<ConcreteResource>();
+        try
+        {
+            final List<ListingResult> results =
+                transfers.listAll( locationExpander.expand( new VirtualResource( LocationUtils.toLocations( stores ), path ) ) );
+
+            for ( final ListingResult lr : results )
+            {
+                for ( final String file : lr.getListing() )
+                {
+                    result.add( new ConcreteResource( lr.getLocation(), dir, file ) );
+                }
+            }
+        }
+        catch ( final TransferException e )
+        {
+            logger.error( e.getMessage(), e );
+            throw new AproxWorkflowException( "Failed to list ALL paths: %s from: %s. Reason: %s", e, path, stores, e.getMessage() );
+        }
+
+        return result;
     }
 
     @Override
