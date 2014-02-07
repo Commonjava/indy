@@ -47,10 +47,11 @@ public final class ResponseUtils
 
     public static void formatRedirect( final HttpServerRequest request, final String url )
     {
-        setStatus( ApplicationStatus.FOUND, request );
+        setStatus( ApplicationStatus.MOVED_PERMANENTLY, request );
         request.resume()
                .response()
                .putHeader( ApplicationHeader.uri.key(), url )
+               .putHeader( ApplicationHeader.location.key(), url )
                .end();
     }
 
