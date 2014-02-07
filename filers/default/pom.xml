@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.commonjava.aprox</groupId>
     <artifactId>aprox-file-managers</artifactId>
-    <version>0.11.0</version>
+    <version>0.11.1-SNAPSHOT</version>
   </parent>
   
   <artifactId>aprox-filer-default</artifactId>
