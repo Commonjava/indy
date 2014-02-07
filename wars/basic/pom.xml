@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.commonjava.aprox.wars</groupId>
     <artifactId>aprox-wars</artifactId>
-    <version>0.10.1-SNAPSHOT</version>
+    <version>0.11.0</version>
   </parent>
   
   <artifactId>aprox-basic</artifactId>
