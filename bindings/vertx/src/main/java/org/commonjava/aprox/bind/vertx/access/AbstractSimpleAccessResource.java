@@ -145,7 +145,7 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
             if ( path.endsWith( "/" ) )
             {
                 logger.info( "Redirecting to index.html under: %s", path );
-                formatRedirect( request, uriFormatter.formatAbsolutePathTo( baseUri, path, "index.html" ) );
+                formatRedirect( request, uriFormatter.formatAbsolutePathTo( baseUri, getStoreType().singularEndpointName(), name, path, "index.html" ) );
             }
             else if ( path.endsWith( "index.html" ) )
             {
