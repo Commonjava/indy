@@ -14,8 +14,8 @@
     <div class="item deploy-item">
       <span class="item-key item-field deploy-name" name="<%= item.name %>"><%= item.name %></span>
       <span class="item-field local-url deploy-local-url">
-        <a href="<%= window.location.protocol %>//<%= window.location.hostname %><%= window.location.pathname %>api/1.0/deploy/<%= item.name %>" target="_new">
-          <%= window.location.protocol %>//<%= window.location.hostname %><%= window.location.pathname %>api/1.0/deploy/<%= item.name %>
+        <a href="<%= window.location.protocol %>//<%= window.location.hostname %><% if window.location.port != 80 && window.location.port != 443: %>:<%= window.location.port %><% end %><%= window.location.pathname %>api/1.0/deploy/<%= item.name %>/" target="_new">
+          <%= window.location.protocol %>//<%= window.location.hostname %><% if window.location.port != 80 && window.location.port != 443: %>:<%= window.location.port %><% end %><%= window.location.pathname %>api/1.0/deploy/<%= item.name %>/
         </a>
       </span>
       <span class="item-field deploy-allow-releases"><span class="right ui-icon <%= if item.allow_releases then "ui-icon-check" else "ui-icon-close" %>"><%= item.allow_releases %></span></span>

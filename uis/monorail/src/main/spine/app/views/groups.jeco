@@ -11,7 +11,7 @@
     <% for item in @items: %>
     <div class="item group-item">
       <span class="item-key item-field group-name" name="<%= item.name %>"><%= item.name %></span>
-      <span class="item-field local-url group-local-url"><a href="<%= window.location.protocol %>//<%= window.location.hostname %><%= window.location.pathname %>api/1.0/group/<%= item.name %>" target="_new"><%= window.location.protocol %>//<%= window.location.hostname %><%= window.location.pathname %>api/1.0/group/<%= item.name %></a></span>
+      <span class="item-field local-url group-local-url"><a href="<%= window.location.protocol %>//<%= window.location.hostname %><% if window.location.port != 80 && window.location.port != 443: %>:<%= window.location.port %><% end %><%= window.location.pathname %>api/1.0/group/<%= item.name %>/" target="_new"><%= window.location.protocol %>//<%= window.location.hostname %><% if window.location.port != 80 && window.location.port != 443: %>:<%= window.location.port %><% end %><%= window.location.pathname %>api/1.0/group/<%= item.name %>/</a></span>
     </div>
     <% end %>
   </div>
