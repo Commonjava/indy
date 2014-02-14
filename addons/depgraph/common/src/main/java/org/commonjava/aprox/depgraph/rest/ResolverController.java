@@ -16,8 +16,8 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.rest;
 
-import static org.commonjava.aprox.rest.util.RequestUtils.getBooleanParamWithDefault;
-import static org.commonjava.aprox.rest.util.RequestUtils.getLongParamWithDefault;
+import static org.commonjava.aprox.util.RequestUtils.getBooleanParamWithDefault;
+import static org.commonjava.aprox.util.RequestUtils.getLongParamWithDefault;
 
 import java.net.URI;
 import java.util.Collections;
@@ -27,10 +27,11 @@ import java.util.Map;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
+import org.commonjava.aprox.depgraph.util.PresetParameterParser;
 import org.commonjava.aprox.depgraph.util.RequestAdvisor;
-import org.commonjava.aprox.rest.AproxWorkflowException;
-import org.commonjava.aprox.rest.util.ApplicationStatus;
+import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.agg.AggregationOptions;
 import org.commonjava.maven.cartographer.agg.DefaultAggregatorOptions;
@@ -59,6 +60,9 @@ public class ResolverController
 
     @Inject
     private RequestAdvisor requestAdvisor;
+
+    @Inject
+    private PresetParameterParser presetParamParser;
 
     public String resolveGraph( final String from, final String groupId, final String artifactId, final String version, final boolean recurse,
                                 final Map<String, String[]> params )
@@ -125,7 +129,7 @@ public class ResolverController
     private DefaultAggregatorOptions createAggregationOptions( final Map<String, String[]> params, final URI source )
     {
         final DefaultAggregatorOptions options = new DefaultAggregatorOptions();
-        options.setFilter( requestAdvisor.createRelationshipFilter( params ) );
+        options.setFilter( requestAdvisor.createRelationshipFilter( params, presetParamParser.parse( params ) ) );
 
         final DefaultDiscoveryConfig dconf = new DefaultDiscoveryConfig( source );
         dconf.setEnabled( true );

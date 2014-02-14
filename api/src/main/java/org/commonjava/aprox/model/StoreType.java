@@ -23,8 +23,8 @@ import java.util.Set;
 public enum StoreType
 {
     group( Group.class, false, "group", "groups" ),
-    repository( Repository.class, false, "repository", "repositories" ),
-    deploy_point( DeployPoint.class, true, "deploy", "deploys" );
+    remote( RemoteRepository.class, false, "remote", "remotes", "repository", "repositories" ),
+    hosted( HostedRepository.class, true, "hosted", "hosted", "deploy", "deploys" );
 
     //    private static final Logger logger = new Logger( StoreType.class );
 
@@ -38,8 +38,8 @@ public enum StoreType
 
     private final Class<? extends ArtifactStore> storeClass;
 
-    private StoreType( final Class<? extends ArtifactStore> storeClass, final boolean writable, final String singular,
-                       final String plural, final String... aliases )
+    private StoreType( final Class<? extends ArtifactStore> storeClass, final boolean writable, final String singular, final String plural,
+                       final String... aliases )
     {
         this.storeClass = storeClass;
         this.writable = writable;

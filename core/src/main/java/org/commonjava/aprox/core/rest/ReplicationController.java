@@ -36,21 +36,21 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.params.ConnRoutePNames;
+import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.core.dto.repl.ReplicationAction;
 import org.commonjava.aprox.core.dto.repl.ReplicationAction.ActionType;
 import org.commonjava.aprox.core.dto.repl.ReplicationDTO;
-import org.commonjava.aprox.core.model.EndpointView;
-import org.commonjava.aprox.core.model.EndpointViewListing;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.dto.EndpointView;
+import org.commonjava.aprox.dto.EndpointViewListing;
 import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.HostedRepository;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.model.Listing;
@@ -119,13 +119,13 @@ public class ReplicationController
                         final String key = "remote-" + view.getType() + "_" + view.getName();
                         if ( ( include == null || key.matches( include ) ) && ( exclude == null || !key.matches( exclude ) ) )
                         {
-                            final StoreKey sk = new StoreKey( StoreType.repository, key );
+                            final StoreKey sk = new StoreKey( StoreType.remote, key );
                             if ( overwrite || !data.hasArtifactStore( sk ) )
                             {
-                                final Repository repo = new Repository( key, view.getResourceURI() );
+                                final RemoteRepository repo = new RemoteRepository( key, view.getResourceURI() );
                                 setProxyAttributes( repo, action );
 
-                                data.storeRepository( repo );
+                                data.storeRemoteRepository( repo );
                                 replicated.add( repo.getKey() );
                             }
                         }
@@ -146,9 +146,9 @@ public class ReplicationController
                         {
                             if ( overwrite || !data.hasArtifactStore( store.getKey() ) )
                             {
-                                if ( store instanceof Repository )
+                                if ( store instanceof RemoteRepository )
                                 {
-                                    setProxyAttributes( ( (Repository) store ), action );
+                                    setProxyAttributes( ( (RemoteRepository) store ), action );
                                 }
 
                                 data.storeArtifactStore( store );
@@ -168,7 +168,7 @@ public class ReplicationController
         return replicated;
     }
 
-    private void setProxyAttributes( final Repository repo, final ReplicationAction action )
+    private void setProxyAttributes( final RemoteRepository repo, final ReplicationAction action )
     {
         if ( action.getProxyHost() != null )
         {
@@ -197,14 +197,14 @@ public class ReplicationController
     {
         final String apiUrl = dto.getApiUrl();
 
-        String reposUrl = null;
+        String remotesUrl = null;
         String groupsUrl = null;
-        String deploysUrl = null;
+        String hostedUrl = null;
         try
         {
-            reposUrl = buildUrl( apiUrl, "/admin/repositories" );
+            remotesUrl = buildUrl( apiUrl, "/admin/remotes" );
             groupsUrl = buildUrl( apiUrl, "/admin/groups" );
-            deploysUrl = buildUrl( apiUrl, "/admin/deploys" );
+            hostedUrl = buildUrl( apiUrl, "/admin/hosted" );
         }
         catch ( final MalformedURLException e )
         {
@@ -215,7 +215,7 @@ public class ReplicationController
         //        logger.info( "\n\n\n\n\n[AutoProx] Checking URL: %s from:", new Throwable(), url );
         final List<ArtifactStore> result = new ArrayList<ArtifactStore>();
 
-        HttpGet req = newGet( reposUrl, dto );
+        HttpGet req = newGet( remotesUrl, dto );
 
         try
         {
@@ -229,13 +229,13 @@ public class ReplicationController
                 final String json = IOUtils.toString( response.getEntity()
                                                               .getContent() );
 
-                final Listing<Repository> listing = serializer.fromString( json, new TypeToken<Listing<Repository>>()
+                final Listing<RemoteRepository> listing = serializer.fromString( json, new TypeToken<Listing<RemoteRepository>>()
                 {
                 }.getType() );
 
                 if ( listing != null )
                 {
-                    for ( final Repository store : listing.getItems() )
+                    for ( final RemoteRepository store : listing.getItems() )
                     {
                         result.add( store );
                     }
@@ -243,16 +243,16 @@ public class ReplicationController
             }
             else
             {
-                throw new AproxWorkflowException( status, "Request: %s failed: %s", reposUrl, statusLine );
+                throw new AproxWorkflowException( status, "Request: %s failed: %s", remotesUrl, statusLine );
             }
         }
         catch ( final ClientProtocolException e )
         {
-            throw new AproxWorkflowException( "Failed to retrieve endpoints from: %s. Reason: %s", e, reposUrl, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve endpoints from: %s. Reason: %s", e, remotesUrl, e.getMessage() );
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( "Failed to read endpoints from: %s. Reason: %s", e, reposUrl, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to read endpoints from: %s. Reason: %s", e, remotesUrl, e.getMessage() );
         }
         finally
         {
@@ -300,7 +300,7 @@ public class ReplicationController
             http.closeConnection();
         }
 
-        req = newGet( deploysUrl, dto );
+        req = newGet( hostedUrl, dto );
 
         try
         {
@@ -314,27 +314,27 @@ public class ReplicationController
                 final String json = IOUtils.toString( response.getEntity()
                                                               .getContent() );
 
-                final Listing<DeployPoint> listing = serializer.fromString( json, new TypeToken<Listing<DeployPoint>>()
+                final Listing<HostedRepository> listing = serializer.fromString( json, new TypeToken<Listing<HostedRepository>>()
                 {
                 }.getType() );
 
-                for ( final DeployPoint store : listing.getItems() )
+                for ( final HostedRepository store : listing.getItems() )
                 {
                     result.add( store );
                 }
             }
             else
             {
-                throw new AproxWorkflowException( status, "Request: %s failed: %s", deploysUrl, statusLine );
+                throw new AproxWorkflowException( status, "Request: %s failed: %s", hostedUrl, statusLine );
             }
         }
         catch ( final ClientProtocolException e )
         {
-            throw new AproxWorkflowException( "Failed to retrieve endpoints from: %s. Reason: %s", e, deploysUrl, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve endpoints from: %s. Reason: %s", e, hostedUrl, e.getMessage() );
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( "Failed to read endpoints from: %s. Reason: %s", e, deploysUrl, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to read endpoints from: %s. Reason: %s", e, hostedUrl, e.getMessage() );
         }
         finally
         {

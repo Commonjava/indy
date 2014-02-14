@@ -27,17 +27,17 @@ import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_profile;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_source;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_wsid;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.q_for;
-import static org.commonjava.aprox.rest.util.ApplicationContent.application_json;
+import static org.commonjava.aprox.util.ApplicationContent.application_json;
 import static org.commonjava.vertx.vabr.types.BuiltInParam._classContextUrl;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.vertx.util.VertXUriFormatter;
-import org.commonjava.aprox.core.dto.CreationDTO;
 import org.commonjava.aprox.depgraph.rest.WorkspaceController;
-import org.commonjava.aprox.rest.AproxWorkflowException;
-import org.commonjava.aprox.rest.util.ApplicationStatus;
+import org.commonjava.aprox.dto.CreationDTO;
+import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;

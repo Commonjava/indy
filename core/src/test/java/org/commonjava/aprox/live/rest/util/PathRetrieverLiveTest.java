@@ -28,7 +28,7 @@ import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.live.AbstractAProxLiveTest;
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.maven.galley.model.Transfer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -54,7 +54,7 @@ public class PathRetrieverLiveTest
     public void downloadOnePOMFromSingleRepository()
         throws Exception
     {
-        final Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
+        final RemoteRepository repo = new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" );
         final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
 
         final Transfer stream = downloader.retrieve( repo, path );
@@ -67,8 +67,8 @@ public class PathRetrieverLiveTest
     public void downloadOnePOMFromSecondRepositoryAfterDummyRepoFails()
         throws Exception
     {
-        final Repository repo = new Repository( "dummy", "http://www.nowhere.com/" );
-        final Repository repo2 = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
+        final RemoteRepository repo = new RemoteRepository( "dummy", "http://www.nowhere.com/" );
+        final RemoteRepository repo2 = new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" );
 
         final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
 

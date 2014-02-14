@@ -31,7 +31,7 @@ import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.util.logging.Log4jUtil;
@@ -69,8 +69,8 @@ public abstract class GroupDataManagerTCK
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
 
-        manager.storeRepository( new Repository( "central", "http://repo1.maven.apache.org/maven2/" ) );
-        manager.storeRepository( new Repository( "repo2", "http://repo1.maven.org/maven2/" ) );
+        manager.storeRemoteRepository( new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" ) );
+        manager.storeRemoteRepository( new RemoteRepository( "repo2", "http://repo1.maven.org/maven2/" ) );
     }
 
     @Test
@@ -145,7 +145,7 @@ public abstract class GroupDataManagerTCK
         final StoreDataManager manager = getFixtureProvider().getDataManager();
 
         final Group grp =
-            new Group( "test", new StoreKey( StoreType.repository, "central" ), new StoreKey( StoreType.repository,
+            new Group( "test", new StoreKey( StoreType.remote, "central" ), new StoreKey( StoreType.remote,
                                                                                               "repo2" ) );
 
         manager.storeGroup( grp );
@@ -159,8 +159,8 @@ public abstract class GroupDataManagerTCK
         assertThat( repos, notNullValue() );
         assertThat( repos.size(), equalTo( 2 ) );
 
-        assertThat( repos.get( 0 ), equalTo( new StoreKey( StoreType.repository, "central" ) ) );
-        assertThat( repos.get( 1 ), equalTo( new StoreKey( StoreType.repository, "repo2" ) ) );
+        assertThat( repos.get( 0 ), equalTo( new StoreKey( StoreType.remote, "central" ) ) );
+        assertThat( repos.get( 1 ), equalTo( new StoreKey( StoreType.remote, "repo2" ) ) );
     }
 
     @Test
@@ -170,7 +170,7 @@ public abstract class GroupDataManagerTCK
         final StoreDataManager manager = getFixtureProvider().getDataManager();
 
         final Group grp =
-            new Group( "test", new StoreKey( StoreType.repository, "repo2" ), new StoreKey( StoreType.repository,
+            new Group( "test", new StoreKey( StoreType.remote, "repo2" ), new StoreKey( StoreType.remote,
                                                                                             "central" ) );
 
         manager.storeGroup( grp );
@@ -193,7 +193,7 @@ public abstract class GroupDataManagerTCK
         final StoreDataManager manager = getFixtureProvider().getDataManager();
 
         final Group grp =
-            new Group( "test", new StoreKey( StoreType.repository, "central" ), new StoreKey( StoreType.repository,
+            new Group( "test", new StoreKey( StoreType.remote, "central" ), new StoreKey( StoreType.remote,
                                                                                               "repo2" ) );
 
         manager.storeGroup( grp );

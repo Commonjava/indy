@@ -26,7 +26,7 @@ import org.apache.http.HttpRequest;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.commonjava.aprox.filer.FileManager;
-import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.maven.galley.auth.AttributePasswordManager;
 import org.commonjava.maven.galley.spi.auth.PasswordManager;
 import org.commonjava.maven.galley.transport.htcli.Http;
@@ -65,7 +65,7 @@ public class AproxHttpProvider
         return http.getClient();
     }
 
-    public void bindRepositoryCredentialsTo( final Repository repository, final HttpRequest request )
+    public void bindRepositoryCredentialsTo( final RemoteRepository repository, final HttpRequest request )
     {
         http.bindCredentialsTo( (HttpLocation) toLocation( repository ), request );
 

@@ -27,11 +27,11 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
+import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.dto.MetadataCollationDTO;
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.depgraph.util.ConfigDTOHelper;
-import org.commonjava.aprox.rest.AproxWorkflowException;
-import org.commonjava.aprox.rest.util.ApplicationStatus;
+import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.dto.MetadataCollation;

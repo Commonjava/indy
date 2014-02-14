@@ -24,15 +24,15 @@ import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_from;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_groupId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_version;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.q_recurse;
-import static org.commonjava.aprox.rest.util.RequestUtils.parseQueryMap;
-import static org.commonjava.aprox.rest.util.RequestUtils.toBoolean;
+import static org.commonjava.aprox.util.RequestUtils.parseQueryMap;
+import static org.commonjava.aprox.util.RequestUtils.toBoolean;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.rest.ResolverController;
-import org.commonjava.aprox.rest.AproxWorkflowException;
-import org.commonjava.aprox.rest.util.ApplicationStatus;
+import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;

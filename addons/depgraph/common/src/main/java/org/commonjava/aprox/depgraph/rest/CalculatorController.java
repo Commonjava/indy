@@ -22,10 +22,10 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.depgraph.util.ConfigDTOHelper;
-import org.commonjava.aprox.rest.AproxWorkflowException;
-import org.commonjava.aprox.rest.util.ApplicationStatus;
+import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.dto.GraphCalculation;
 import org.commonjava.maven.cartographer.dto.GraphComposition;

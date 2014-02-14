@@ -23,17 +23,17 @@ import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_artifactI
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_groupId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_version;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.q_scope;
-import static org.commonjava.aprox.rest.util.ApplicationContent.application_xml;
-import static org.commonjava.aprox.rest.util.ApplicationContent.text_plain;
-import static org.commonjava.aprox.rest.util.RequestUtils.parseQueryMap;
+import static org.commonjava.aprox.util.ApplicationContent.application_xml;
+import static org.commonjava.aprox.util.ApplicationContent.text_plain;
+import static org.commonjava.aprox.util.RequestUtils.parseQueryMap;
 import static org.commonjava.vertx.vabr.types.Method.POST;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.rest.RenderingController;
-import org.commonjava.aprox.rest.AproxWorkflowException;
-import org.commonjava.aprox.rest.util.ApplicationStatus;
+import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.atlas.ident.DependencyScope;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.anno.Handles;

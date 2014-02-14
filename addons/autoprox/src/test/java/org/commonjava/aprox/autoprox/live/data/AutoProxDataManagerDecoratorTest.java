@@ -33,7 +33,7 @@ import org.commonjava.aprox.autoprox.live.fixture.TargetUrlResponder;
 import org.commonjava.aprox.autoprox.live.fixture.TestConfigProvider;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.util.logging.Log4jUtil;
@@ -77,11 +77,11 @@ public class AutoProxDataManagerDecoratorTest
         proxyManager.install();
         proxyManager.clear();
 
-        Repository repo = new Repository( "first", "http://foo.bar/first" );
-        proxyManager.storeRepository( repo );
+        RemoteRepository repo = new RemoteRepository( "first", "http://foo.bar/first" );
+        proxyManager.storeRemoteRepository( repo );
 
-        repo = new Repository( "second", "http://foo.bar/second" );
-        proxyManager.storeRepository( repo );
+        repo = new RemoteRepository( "second", "http://foo.bar/second" );
+        proxyManager.storeRemoteRepository( repo );
     }
 
     @After
@@ -111,10 +111,10 @@ public class AutoProxDataManagerDecoratorTest
         http.get( testUrl, 200 );
 
         config.setEnabled( false );
-        assertThat( proxyManager.getRepository( "test" ), nullValue() );
+        assertThat( proxyManager.getRemoteRepository( "test" ), nullValue() );
         config.setEnabled( true );
 
-        final Repository repo = proxyManager.getRepository( "test" );
+        final RemoteRepository repo = proxyManager.getRemoteRepository( "test" );
 
         assertThat( repo, notNullValue() );
         assertThat( repo.getName(), equalTo( "test" ) );
@@ -148,25 +148,25 @@ public class AutoProxDataManagerDecoratorTest
         int idx = 0;
         StoreKey key = constituents.get( idx );
 
-        assertThat( key.getType(), equalTo( StoreType.deploy_point ) );
+        assertThat( key.getType(), equalTo( StoreType.hosted ) );
         assertThat( key.getName(), equalTo( "test" ) );
 
         idx++;
         key = constituents.get( idx );
 
-        assertThat( key.getType(), equalTo( StoreType.repository ) );
+        assertThat( key.getType(), equalTo( StoreType.remote ) );
         assertThat( key.getName(), equalTo( "test" ) );
 
         idx++;
         key = constituents.get( idx );
 
-        assertThat( key.getType(), equalTo( StoreType.repository ) );
+        assertThat( key.getType(), equalTo( StoreType.remote ) );
         assertThat( key.getName(), equalTo( "first" ) );
 
         idx++;
         key = constituents.get( idx );
 
-        assertThat( key.getType(), equalTo( StoreType.repository ) );
+        assertThat( key.getType(), equalTo( StoreType.remote ) );
         assertThat( key.getName(), equalTo( "second" ) );
     }
 
@@ -178,10 +178,10 @@ public class AutoProxDataManagerDecoratorTest
         http.get( testUrl, 404 );
 
         config.setEnabled( false );
-        assertThat( proxyManager.getRepository( "test" ), nullValue() );
+        assertThat( proxyManager.getRemoteRepository( "test" ), nullValue() );
         config.setEnabled( true );
 
-        final Repository repo = proxyManager.getRepository( "test" );
+        final RemoteRepository repo = proxyManager.getRemoteRepository( "test" );
 
         assertThat( repo, nullValue() );
 

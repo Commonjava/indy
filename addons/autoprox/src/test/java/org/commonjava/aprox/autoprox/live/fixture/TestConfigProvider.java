@@ -30,7 +30,7 @@ import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
 import org.commonjava.aprox.inject.TestData;
 import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.web.json.test.WebFixture;
@@ -98,10 +98,10 @@ public class TestConfigProvider
         if ( model == null )
         {
             model = new AutoProxModel();
-            model.setRepo( new Repository( "repo", http.resourceUrl( "target/${name}" ) ) );
-            model.setGroup( new Group( "group", new StoreKey( StoreType.repository, "first" ), new StoreKey( StoreType.repository, "second" ) ) );
+            model.setRemoteRepository( new RemoteRepository( "repo", http.resourceUrl( "target/${name}" ) ) );
+            model.setGroup( new Group( "group", new StoreKey( StoreType.remote, "first" ), new StoreKey( StoreType.remote, "second" ) ) );
 
-            System.out.println( "\n\n\n\nSet Autoprox URL: " + model.getRepo()
+            System.out.println( "\n\n\n\nSet Autoprox URL: " + model.getRemoteRepository()
                                                                     .getUrl() + "\n\n\n\n" );
         }
 

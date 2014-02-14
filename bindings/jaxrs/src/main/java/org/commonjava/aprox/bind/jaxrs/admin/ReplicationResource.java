@@ -29,12 +29,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
+import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.util.AproxExceptionUtils;
 import org.commonjava.aprox.core.dto.repl.ReplicationDTO;
 import org.commonjava.aprox.core.rest.ReplicationController;
 import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.ser.JsonSerializer;
 import org.commonjava.web.json.ser.ServletSerializerUtils;

@@ -55,13 +55,13 @@ import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.DeployPoint;
+import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.aprox.rest.util.ArtifactPathInfo;
-import org.commonjava.aprox.rest.util.ArtifactPathInfo.SnapshotInfo;
+import org.commonjava.aprox.util.ArtifactPathInfo;
+import org.commonjava.aprox.util.ArtifactPathInfo.SnapshotInfo;
 import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileEvent;
@@ -166,11 +166,11 @@ public class TimeoutManager
         {
             final StoreType type = key.getType();
 
-            if ( type == StoreType.deploy_point )
+            if ( type == StoreType.hosted )
             {
                 setSnapshotTimeouts( event );
             }
-            else if ( type == StoreType.repository )
+            else if ( type == StoreType.remote )
             {
                 setProxyTimeouts( event );
             }
@@ -196,21 +196,21 @@ public class TimeoutManager
             {
                 final StoreKey key = store.getKey();
                 final StoreType type = key.getType();
-                if ( type == StoreType.deploy_point )
+                if ( type == StoreType.hosted )
                 {
                     //                    logger.info( "[ADJUST TIMEOUTS] Adjusting snapshot expirations in: %s", store.getKey() );
-                    rescheduleSnapshotTimeouts( (DeployPoint) store );
+                    rescheduleSnapshotTimeouts( (HostedRepository) store );
                 }
-                else if ( type == StoreType.repository )
+                else if ( type == StoreType.remote )
                 {
                     //                    logger.info( "[ADJUST TIMEOUTS] Adjusting proxied-file expirations in: %s", store.getKey() );
-                    rescheduleProxyTimeouts( (Repository) store );
+                    rescheduleProxyTimeouts( (RemoteRepository) store );
                 }
             }
         }
     }
 
-    private void rescheduleSnapshotTimeouts( final DeployPoint deploy )
+    private void rescheduleSnapshotTimeouts( final HostedRepository deploy )
     {
         long timeout = -1;
         if ( deploy.isAllowSnapshots() && deploy.getSnapshotTimeoutSeconds() > 0 )
@@ -246,7 +246,7 @@ public class TimeoutManager
         }
     }
 
-    private void rescheduleProxyTimeouts( final Repository repo )
+    private void rescheduleProxyTimeouts( final RemoteRepository repo )
     {
         long timeout = -1;
         if ( !repo.isPassthrough() && repo.getCacheTimeoutSeconds() > 0 )
@@ -383,10 +383,10 @@ public class TimeoutManager
             return;
         }
 
-        Repository repo = null;
+        RemoteRepository repo = null;
         try
         {
-            repo = (Repository) dataManager.getArtifactStore( key );
+            repo = (RemoteRepository) dataManager.getArtifactStore( key );
         }
         catch ( final ProxyDataException e )
         {
@@ -434,13 +434,13 @@ public class TimeoutManager
             return;
         }
 
-        DeployPoint deploy = null;
+        HostedRepository deploy = null;
         try
         {
             final ArtifactStore store = dataManager.getArtifactStore( key );
-            if ( store instanceof DeployPoint )
+            if ( store instanceof HostedRepository )
             {
-                deploy = (DeployPoint) store;
+                deploy = (HostedRepository) store;
             }
             else if ( store instanceof Group )
             {
@@ -480,19 +480,19 @@ public class TimeoutManager
         }
     }
 
-    private DeployPoint findDeployPoint( final Group group )
+    private HostedRepository findDeployPoint( final Group group )
         throws ProxyDataException
     {
         for ( final StoreKey key : group.getConstituents() )
         {
-            if ( StoreType.deploy_point == key.getType() )
+            if ( StoreType.hosted == key.getType() )
             {
-                return dataManager.getDeployPoint( key.getName() );
+                return dataManager.getHostedRepository( key.getName() );
             }
             else if ( StoreType.group == key.getType() )
             {
                 final Group grp = dataManager.getGroup( key.getName() );
-                final DeployPoint dp = findDeployPoint( grp );
+                final HostedRepository dp = findDeployPoint( grp );
                 if ( dp != null )
                 {
                     return dp;

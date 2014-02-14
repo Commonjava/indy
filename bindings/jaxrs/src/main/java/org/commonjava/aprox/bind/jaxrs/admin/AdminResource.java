@@ -37,14 +37,14 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.util.AproxExceptionUtils;
 import org.commonjava.aprox.bind.jaxrs.util.ModelServletUtils;
-import org.commonjava.aprox.core.model.io.AProxModelSerializer;
 import org.commonjava.aprox.core.rest.AdminController;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.aprox.rest.AproxWorkflowException;
+import org.commonjava.aprox.util.AProxModelSerializer;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.model.Listing;
 

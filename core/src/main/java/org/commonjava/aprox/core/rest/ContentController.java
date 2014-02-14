@@ -28,17 +28,17 @@ import javax.activation.MimetypesFileTypeMap;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.core.util.UriFormatter;
+import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.aprox.rest.AproxWorkflowException;
-import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.aprox.subsys.template.RenderingException;
 import org.commonjava.aprox.subsys.template.TemplatingEngine;
+import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 

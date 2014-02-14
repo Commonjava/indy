@@ -20,7 +20,7 @@ import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.UriBuilder;
 
 import org.commonjava.aprox.bind.jaxrs.RESTApplication;
-import org.commonjava.aprox.core.util.UriFormatter;
+import org.commonjava.aprox.util.UriFormatter;
 
 public class JaxRsUriFormatter
     implements UriFormatter

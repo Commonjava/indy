@@ -75,6 +75,10 @@
       <artifactId>jaxrs-api</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-subsys-template</artifactId>
+    </dependency>
   </dependencies>
   
   <profiles>

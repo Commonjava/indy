@@ -19,7 +19,7 @@ package org.commonjava.aprox.model.galley;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.maven.galley.transport.htcli.model.HttpLocation;
 
@@ -27,11 +27,11 @@ public class RepositoryLocation
     implements HttpLocation, KeyedLocation
 {
 
-    private final Repository repository;
+    private final RemoteRepository repository;
 
     private final Map<String, Object> attributes = new HashMap<String, Object>();
 
-    public RepositoryLocation( final Repository repository )
+    public RepositoryLocation( final RemoteRepository repository )
     {
         this.repository = repository;
     }

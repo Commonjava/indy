@@ -15,7 +15,7 @@ import org.commonjava.aprox.bind.vertx.util.PathParam;
 import org.commonjava.aprox.bind.vertx.util.ResponseUtils;
 import org.commonjava.aprox.dotmaven.inject.DotMavenApp;
 import org.commonjava.aprox.dotmaven.webctl.DotMavenService;
-import org.commonjava.aprox.rest.util.ApplicationStatus;
+import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;

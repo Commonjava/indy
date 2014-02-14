@@ -33,8 +33,8 @@ import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.fixture.GalleyFixture;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.Repository;
-import org.commonjava.aprox.rest.util.retrieve.GroupPathHandler;
+import org.commonjava.aprox.model.RemoteRepository;
+import org.commonjava.aprox.rest.group.GroupPathHandler;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.util.logging.Log4jUtil;
 import org.junit.Before;
@@ -79,8 +79,8 @@ public class PathRetrieverTest
     public void downloadOnePOMFromSingleRepository()
         throws Exception
     {
-        final Repository repo = new Repository( "central", "http://repo.maven.apache.org/maven2/" );
-        data.storeRepository( repo );
+        final RemoteRepository repo = new RemoteRepository( "central", "http://repo.maven.apache.org/maven2/" );
+        data.storeRemoteRepository( repo );
 
         final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
 
@@ -94,11 +94,11 @@ public class PathRetrieverTest
     public void downloadOnePOMFromSecondRepositoryAfterDummyRepoFails()
         throws Exception
     {
-        final Repository repo = new Repository( "dummy", "http://www.nowhere.com/" );
-        final Repository repo2 = new Repository( "central", "http://repo.maven.apache.org/maven2/" );
+        final RemoteRepository repo = new RemoteRepository( "dummy", "http://www.nowhere.com/" );
+        final RemoteRepository repo2 = new RemoteRepository( "central", "http://repo.maven.apache.org/maven2/" );
 
-        data.storeRepository( repo );
-        data.storeRepository( repo2 );
+        data.storeRemoteRepository( repo );
+        data.storeRemoteRepository( repo2 );
 
         final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
 

@@ -25,14 +25,14 @@ import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_version;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.q_artifactId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.q_groupId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.q_scopes;
-import static org.commonjava.aprox.rest.util.RequestUtils.parseQueryMap;
+import static org.commonjava.aprox.util.RequestUtils.parseQueryMap;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.rest.ProjectController;
-import org.commonjava.aprox.rest.AproxWorkflowException;
-import org.commonjava.aprox.rest.util.ApplicationStatus;
+import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.atlas.ident.DependencyScope;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.anno.Handles;

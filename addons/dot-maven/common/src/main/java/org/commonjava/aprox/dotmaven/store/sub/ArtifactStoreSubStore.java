@@ -99,7 +99,7 @@ public class ArtifactStoreSubStore
         final StorageAdvice advice = getStorageAdviceFor( matcher );
 
         final String path = matcher.getStorePath();
-        final Transfer item = fileManager.getStorageReference( advice.getDeployableStore(), path );
+        final Transfer item = fileManager.getStorageReference( advice.getHostedStore(), path );
         try
         {
             item.mkdirs();
@@ -126,7 +126,7 @@ public class ArtifactStoreSubStore
         final StorageAdvice advice = getStorageAdviceFor( matcher );
 
         final String path = matcher.getStorePath();
-        final Transfer item = fileManager.getStorageReference( advice.getDeployableStore(), path );
+        final Transfer item = fileManager.getStorageReference( advice.getHostedStore(), path );
         try
         {
             item.createFile();
@@ -232,7 +232,7 @@ public class ArtifactStoreSubStore
         final StorageAdvice advice = getStorageAdviceFor( matcher );
 
         final String path = matcher.getStorePath();
-        final Transfer item = fileManager.getStorageReference( advice.getDeployableStore(), path );
+        final Transfer item = fileManager.getStorageReference( advice.getHostedStore(), path );
         Writer writer = null;
         try
         {
@@ -348,8 +348,8 @@ public class ArtifactStoreSubStore
         else
         {
             names =
-                new String[] { StoreType.deploy_point.pluralEndpointName(), StoreType.group.pluralEndpointName(),
-                    StoreType.repository.pluralEndpointName() };
+                new String[] { StoreType.hosted.singularEndpointName(), StoreType.group.singularEndpointName(),
+                    StoreType.remote.singularEndpointName() };
         }
 
         return names;
@@ -388,7 +388,7 @@ public class ArtifactStoreSubStore
         final StorageAdvice advice = getStorageAdviceFor( matcher );
 
         final String path = matcher.getStorePath();
-        final Transfer item = fileManager.getStorageReference( advice.getDeployableStore(), path );
+        final Transfer item = fileManager.getStorageReference( advice.getHostedStore(), path );
         try
         {
             if ( item.exists() )

@@ -110,7 +110,7 @@ public final class StoreKey
         if ( idx < 1 )
         {
             name = id;
-            type = StoreType.repository;
+            type = StoreType.remote;
         }
         else
         {

@@ -28,8 +28,7 @@ public class SettingsURIMatcher
     implements URIMatcher
 {
 
-    public static final String SETTINGS_TYPE_PATTERN =
-        "\\/?settings(\\/(deploys|groups|repositories)(\\/settings-(.+).xml)?)?";
+    public static final String SETTINGS_TYPE_PATTERN = "\\/?settings(\\/(hosted|group|remote)(\\/settings-(.+).xml)?)?";
 
     private static final int TYPE_GRP = 2;
 

@@ -21,12 +21,12 @@ import static org.commonjava.vertx.vabr.types.BuiltInParam._classContextUrl;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import org.commonjava.aprox.core.dto.CreationDTO;
-import org.commonjava.aprox.core.util.UriFormatter;
-import org.commonjava.aprox.rest.AproxWorkflowException;
-import org.commonjava.aprox.rest.util.ApplicationContent;
-import org.commonjava.aprox.rest.util.ApplicationHeader;
-import org.commonjava.aprox.rest.util.ApplicationStatus;
+import org.commonjava.aprox.AproxWorkflowException;
+import org.commonjava.aprox.dto.CreationDTO;
+import org.commonjava.aprox.util.ApplicationContent;
+import org.commonjava.aprox.util.ApplicationHeader;
+import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.aprox.util.UriFormatter;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.HttpServerResponse;
 

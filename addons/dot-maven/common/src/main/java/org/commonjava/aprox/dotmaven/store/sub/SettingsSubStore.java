@@ -122,7 +122,7 @@ public class SettingsSubStore
         {
             for ( final StoreType type : StoreType.values() )
             {
-                names.add( type.pluralEndpointName() );
+                names.add( type.singularEndpointName() );
             }
         }
         else if ( matcher.isSettingsTypeResource() )

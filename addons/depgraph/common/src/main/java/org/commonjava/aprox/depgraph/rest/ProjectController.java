@@ -23,9 +23,10 @@ import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
+import org.commonjava.aprox.depgraph.util.PresetParameterParser;
 import org.commonjava.aprox.depgraph.util.RequestAdvisor;
-import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.maven.atlas.graph.filter.DependencyOnlyFilter;
 import org.commonjava.maven.atlas.graph.filter.ExtensionOnlyFilter;
 import org.commonjava.maven.atlas.graph.filter.PluginOnlyFilter;
@@ -50,6 +51,9 @@ public class ProjectController
 
     @Inject
     private RequestAdvisor requestAdvisor;
+
+    @Inject
+    private PresetParameterParser presetParamParser;
 
     public String errors( final String groupId, final String artifactId, final String version )
         throws AproxWorkflowException
@@ -147,7 +151,7 @@ public class ProjectController
     public String relationshipsSpecifiedBy( final String groupId, final String artifactId, final String version, final Map<String, String[]> params )
         throws AproxWorkflowException
     {
-        final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( params );
+        final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( params, presetParamParser.parse( params ) );
 
         final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
         try
@@ -165,7 +169,7 @@ public class ProjectController
     public String relationshipsTargeting( final String groupId, final String artifactId, final String version, final Map<String, String[]> params )
         throws AproxWorkflowException
     {
-        final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( params );
+        final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( params, presetParamParser.parse( params ) );
         final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
         try
         {

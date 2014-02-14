@@ -19,34 +19,40 @@ package org.commonjava.aprox.model.galley;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.commonjava.aprox.model.DeployPoint;
+import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.maven.galley.spi.cache.CacheProvider;
 
 public class CacheOnlyLocation
     implements KeyedLocation
 {
 
-    private final DeployPoint deploy;
+    private final HostedRepository repo;
 
     private final Map<String, Object> attributes = new HashMap<String, Object>();
 
     private final StoreKey key;
 
-    public CacheOnlyLocation( final DeployPoint deploy )
+    public CacheOnlyLocation( final HostedRepository repo )
     {
-        this.deploy = deploy;
-        this.key = deploy.getKey();
+        this.repo = repo;
+        if ( repo.getStorage() != null )
+        {
+            attributes.put( CacheProvider.ATTR_ALT_STORAGE_LOCATION, repo.getStorage() );
+        }
+
+        this.key = repo.getKey();
     }
 
     public CacheOnlyLocation( final StoreKey key )
     {
-        this.deploy = null;
+        this.repo = null;
         this.key = key;
     }
 
     public boolean hasDeployPoint()
     {
-        return deploy != null;
+        return repo != null;
     }
 
     @Override
@@ -64,13 +70,13 @@ public class CacheOnlyLocation
     @Override
     public boolean allowsSnapshots()
     {
-        return deploy == null ? false : deploy.isAllowSnapshots();
+        return repo == null ? false : repo.isAllowSnapshots();
     }
 
     @Override
     public boolean allowsReleases()
     {
-        return deploy == null ? true : deploy.isAllowReleases();
+        return repo == null ? true : repo.isAllowReleases();
     }
 
     @Override

@@ -14,9 +14,9 @@ import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.HostedRepository;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.subsys.flatfile.conf.FlatFileConfiguration;
@@ -54,7 +54,7 @@ public class FlatFileStoreDataManager
         throws ProxyDataException
     {
         final File basedir = config.getStorageDir( APROX_STORE );
-        final File ddir = new File( basedir, StoreType.deploy_point.name() );
+        final File ddir = new File( basedir, StoreType.hosted.name() );
 
         final String[] dFiles = ddir.list();
         if ( dFiles != null )
@@ -65,14 +65,14 @@ public class FlatFileStoreDataManager
                 try
                 {
                     final String json = FileUtils.readFileToString( f );
-                    final DeployPoint dp = serializer.fromString( json, DeployPoint.class );
+                    final HostedRepository dp = serializer.fromString( json, HostedRepository.class );
                     if ( dp == null )
                     {
                         f.delete();
                     }
                     else
                     {
-                        storeDeployPoint( dp );
+                        storeHostedRepository( dp );
                     }
                 }
                 catch ( final IOException e )
@@ -82,7 +82,7 @@ public class FlatFileStoreDataManager
             }
         }
 
-        final File rdir = new File( basedir, StoreType.repository.name() );
+        final File rdir = new File( basedir, StoreType.remote.name() );
         final String[] rFiles = rdir.list();
         if ( rFiles != null )
         {
@@ -92,14 +92,14 @@ public class FlatFileStoreDataManager
                 try
                 {
                     final String json = FileUtils.readFileToString( f );
-                    final Repository r = serializer.fromString( json, Repository.class );
+                    final RemoteRepository r = serializer.fromString( json, RemoteRepository.class );
                     if ( r == null )
                     {
                         f.delete();
                     }
                     else
                     {
-                        storeRepository( r );
+                        storeRemoteRepository( r );
                     }
                 }
                 catch ( final IOException e )
@@ -138,18 +138,18 @@ public class FlatFileStoreDataManager
     }
 
     @Override
-    public void storeDeployPoints( final Collection<DeployPoint> deploys )
+    public void storeHostedRepositories( final Collection<HostedRepository> deploys )
         throws ProxyDataException
     {
-        super.storeDeployPoints( deploys );
+        super.storeHostedRepositories( deploys );
         store( false, deploys.toArray( new ArtifactStore[] {} ) );
     }
 
     @Override
-    public boolean storeDeployPoint( final DeployPoint deploy )
+    public boolean storeHostedRepository( final HostedRepository deploy )
         throws ProxyDataException
     {
-        final boolean result = super.storeDeployPoint( deploy );
+        final boolean result = super.storeHostedRepository( deploy );
         if ( result )
         {
             store( false, deploy );
@@ -159,10 +159,10 @@ public class FlatFileStoreDataManager
     }
 
     @Override
-    public boolean storeDeployPoint( final DeployPoint deploy, final boolean skipIfExists )
+    public boolean storeHostedRepository( final HostedRepository deploy, final boolean skipIfExists )
         throws ProxyDataException
     {
-        final boolean result = super.storeDeployPoint( deploy, skipIfExists );
+        final boolean result = super.storeHostedRepository( deploy, skipIfExists );
         if ( result )
         {
             store( skipIfExists, deploy );
@@ -172,18 +172,18 @@ public class FlatFileStoreDataManager
     }
 
     @Override
-    public void storeRepositories( final Collection<Repository> repos )
+    public void storeRemoteRepositories( final Collection<RemoteRepository> repos )
         throws ProxyDataException
     {
-        super.storeRepositories( repos );
+        super.storeRemoteRepositories( repos );
         store( false, repos.toArray( new ArtifactStore[] {} ) );
     }
 
     @Override
-    public boolean storeRepository( final Repository proxy )
+    public boolean storeRemoteRepository( final RemoteRepository proxy )
         throws ProxyDataException
     {
-        final boolean result = super.storeRepository( proxy );
+        final boolean result = super.storeRemoteRepository( proxy );
         if ( result )
         {
             store( false, proxy );
@@ -193,10 +193,10 @@ public class FlatFileStoreDataManager
     }
 
     @Override
-    public boolean storeRepository( final Repository repository, final boolean skipIfExists )
+    public boolean storeRemoteRepository( final RemoteRepository repository, final boolean skipIfExists )
         throws ProxyDataException
     {
-        final boolean result = super.storeRepository( repository, skipIfExists );
+        final boolean result = super.storeRemoteRepository( repository, skipIfExists );
         if ( result )
         {
             store( skipIfExists, repository );
@@ -240,35 +240,35 @@ public class FlatFileStoreDataManager
     }
 
     @Override
-    public void deleteDeployPoint( final DeployPoint deploy )
+    public void deleteHostedRepository( final HostedRepository deploy )
         throws ProxyDataException
     {
-        super.deleteDeployPoint( deploy );
+        super.deleteHostedRepository( deploy );
         delete( deploy );
     }
 
     @Override
-    public void deleteDeployPoint( final String name )
+    public void deleteHostedRepository( final String name )
         throws ProxyDataException
     {
-        super.deleteDeployPoint( name );
-        delete( StoreType.deploy_point, name );
+        super.deleteHostedRepository( name );
+        delete( StoreType.hosted, name );
     }
 
     @Override
-    public void deleteRepository( final Repository repo )
+    public void deleteRemoteRepository( final RemoteRepository repo )
         throws ProxyDataException
     {
-        super.deleteRepository( repo );
+        super.deleteRemoteRepository( repo );
         delete( repo );
     }
 
     @Override
-    public void deleteRepository( final String name )
+    public void deleteRemoteRepository( final String name )
         throws ProxyDataException
     {
-        super.deleteRepository( name );
-        delete( StoreType.repository, name );
+        super.deleteRemoteRepository( name );
+        delete( StoreType.remote, name );
     }
 
     @Override
@@ -404,8 +404,8 @@ public class FlatFileStoreDataManager
         if ( !config.getStorageDir( APROX_STORE )
                     .isDirectory() )
         {
-            storeRepository( new Repository( "central", "http://repo1.maven.apache.org/maven2/" ), true );
-            storeGroup( new Group( "public", new StoreKey( StoreType.repository, "central" ) ), true );
+            storeRemoteRepository( new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" ), true );
+            storeGroup( new Group( "public", new StoreKey( StoreType.remote, "central" ) ), true );
         }
     }
 

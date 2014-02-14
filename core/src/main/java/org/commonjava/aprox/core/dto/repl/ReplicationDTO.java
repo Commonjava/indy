@@ -22,8 +22,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.commonjava.aprox.rest.AproxWorkflowException;
-import org.commonjava.aprox.rest.util.ApplicationStatus;
+import org.commonjava.aprox.AproxWorkflowException;
+import org.commonjava.aprox.util.ApplicationStatus;
 
 public class ReplicationDTO
     implements Iterable<ReplicationAction>

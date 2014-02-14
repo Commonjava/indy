@@ -46,9 +46,9 @@
     <qarqas-version>0.3</qarqas-version>
     <shelflife-version>0.5.1</shelflife-version>
     <weftVersion>0.6</weftVersion>
-    <atlasVersion>0.9.7</atlasVersion>
-    <galleyVersion>0.3.3.2</galleyVersion>
-    <cartoVersion>0.3.5</cartoVersion>
+    <atlasVersion>0.9.8-SNAPSHOT</atlasVersion>
+    <galleyVersion>0.4-SNAPSHOT</galleyVersion>
+    <cartoVersion>0.4-SNAPSHOT</cartoVersion>
     <configVersion>0.5</configVersion>
     
     <vertx.version>2.0.0-final</vertx.version>
@@ -116,11 +116,6 @@
         <artifactId>aprox-core</artifactId>
         <version>0.11.3-SNAPSHOT</version>
       </dependency>
-      <!-- <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-db-infinispan</artifactId>
-        <version>0.7-SNAPSHOT</version>
-      </dependency> -->
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-db-flat</artifactId>

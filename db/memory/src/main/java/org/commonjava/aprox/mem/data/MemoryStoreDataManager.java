@@ -38,9 +38,9 @@ import org.commonjava.aprox.change.event.ProxyManagerUpdateType;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.HostedRepository;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 
@@ -65,10 +65,10 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public DeployPoint getDeployPoint( final String name )
+    public HostedRepository getHostedRepository( final String name )
         throws ProxyDataException
     {
-        return (DeployPoint) stores.get( new StoreKey( StoreType.deploy_point, name ) );
+        return (HostedRepository) stores.get( new StoreKey( StoreType.hosted, name ) );
     }
 
     @Override
@@ -79,12 +79,12 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public Repository getRepository( final String name )
+    public RemoteRepository getRemoteRepository( final String name )
         throws ProxyDataException
     {
-        final StoreKey key = new StoreKey( StoreType.repository, name );
+        final StoreKey key = new StoreKey( StoreType.remote, name );
 
-        return (Repository) stores.get( key );
+        return (RemoteRepository) stores.get( key );
     }
 
     @Override
@@ -102,17 +102,17 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public List<Repository> getAllRepositories()
+    public List<RemoteRepository> getAllRemoteRepositories()
         throws ProxyDataException
     {
-        return getAll( StoreType.repository, Repository.class );
+        return getAll( StoreType.remote, RemoteRepository.class );
     }
 
     @Override
-    public List<DeployPoint> getAllDeployPoints()
+    public List<HostedRepository> getAllHostedRepositories()
         throws ProxyDataException
     {
-        return getAll( StoreType.deploy_point, DeployPoint.class );
+        return getAll( StoreType.hosted, HostedRepository.class );
     }
 
     @Override
@@ -216,38 +216,38 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void storeDeployPoints( final Collection<DeployPoint> deploys )
+    public void storeHostedRepositories( final Collection<HostedRepository> repos )
         throws ProxyDataException
     {
-        for ( final DeployPoint deploy : deploys )
+        for ( final HostedRepository repo : repos )
         {
-            store( deploy, false );
+            store( repo, false );
         }
-        fireStoreEvent( ProxyManagerUpdateType.ADD_OR_UPDATE, deploys );
+        fireStoreEvent( ProxyManagerUpdateType.ADD_OR_UPDATE, repos );
     }
 
     @Override
-    public boolean storeDeployPoint( final DeployPoint deploy )
+    public boolean storeHostedRepository( final HostedRepository repo )
         throws ProxyDataException
     {
-        return store( deploy, false );
+        return store( repo, false );
     }
 
     @Override
-    public boolean storeDeployPoint( final DeployPoint deploy, final boolean skipIfExists )
+    public boolean storeHostedRepository( final HostedRepository repo, final boolean skipIfExists )
         throws ProxyDataException
     {
-        final boolean result = store( deploy, skipIfExists );
-        fireStoreEvent( ProxyManagerUpdateType.ADD_OR_UPDATE, deploy );
+        final boolean result = store( repo, skipIfExists );
+        fireStoreEvent( ProxyManagerUpdateType.ADD_OR_UPDATE, repo );
 
         return result;
     }
 
     @Override
-    public void storeRepositories( final Collection<Repository> repos )
+    public void storeRemoteRepositories( final Collection<RemoteRepository> repos )
         throws ProxyDataException
     {
-        for ( final Repository repository : repos )
+        for ( final RemoteRepository repository : repos )
         {
             store( repository, false );
         }
@@ -255,14 +255,14 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public boolean storeRepository( final Repository repository )
+    public boolean storeRemoteRepository( final RemoteRepository repository )
         throws ProxyDataException
     {
         return store( repository, false );
     }
 
     @Override
-    public boolean storeRepository( final Repository repository, final boolean skipIfExists )
+    public boolean storeRemoteRepository( final RemoteRepository repository, final boolean skipIfExists )
         throws ProxyDataException
     {
         final boolean result = store( repository, skipIfExists );
@@ -327,35 +327,35 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void deleteDeployPoint( final DeployPoint deploy )
-        throws ProxyDataException
-    {
-        stores.remove( deploy.getKey() );
-        fireDeleteEvent( StoreType.deploy_point, deploy.getName() );
-    }
-
-    @Override
-    public void deleteDeployPoint( final String name )
-        throws ProxyDataException
-    {
-        stores.remove( new StoreKey( StoreType.deploy_point, name ) );
-        fireDeleteEvent( StoreType.deploy_point, name );
-    }
-
-    @Override
-    public void deleteRepository( final Repository repo )
+    public void deleteHostedRepository( final HostedRepository repo )
         throws ProxyDataException
     {
         stores.remove( repo.getKey() );
-        fireDeleteEvent( StoreType.repository, repo.getName() );
+        fireDeleteEvent( StoreType.hosted, repo.getName() );
     }
 
     @Override
-    public void deleteRepository( final String name )
+    public void deleteHostedRepository( final String name )
         throws ProxyDataException
     {
-        stores.remove( new StoreKey( StoreType.repository, name ) );
-        fireDeleteEvent( StoreType.repository, name );
+        stores.remove( new StoreKey( StoreType.hosted, name ) );
+        fireDeleteEvent( StoreType.hosted, name );
+    }
+
+    @Override
+    public void deleteRemoteRepository( final RemoteRepository repo )
+        throws ProxyDataException
+    {
+        stores.remove( repo.getKey() );
+        fireDeleteEvent( StoreType.remote, repo.getName() );
+    }
+
+    @Override
+    public void deleteRemoteRepository( final String name )
+        throws ProxyDataException
+    {
+        stores.remove( new StoreKey( StoreType.remote, name ) );
+        fireDeleteEvent( StoreType.remote, name );
     }
 
     @Override
@@ -438,7 +438,7 @@ public class MemoryStoreDataManager
         }
     }
 
-    private void fireStoreEvent( final ProxyManagerUpdateType type, final Repository... repos )
+    private void fireStoreEvent( final ProxyManagerUpdateType type, final RemoteRepository... repos )
     {
         if ( storeEvent != null )
         {
@@ -473,7 +473,7 @@ public class MemoryStoreDataManager
     @Override
     public List<ArtifactStore> getAllConcreteArtifactStores()
     {
-        return getAll( StoreType.deploy_point, StoreType.repository );
+        return getAll( StoreType.hosted, StoreType.remote );
     }
 
     @Override
@@ -484,9 +484,9 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public boolean hasRepository( final String name )
+    public boolean hasRemoteRepository( final String name )
     {
-        return hasArtifactStore( new StoreKey( StoreType.repository, name ) );
+        return hasArtifactStore( new StoreKey( StoreType.remote, name ) );
     }
 
     @Override
@@ -496,9 +496,9 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public boolean hasDeployPoint( final String name )
+    public boolean hasHostedRepository( final String name )
     {
-        return hasArtifactStore( new StoreKey( StoreType.deploy_point, name ) );
+        return hasArtifactStore( new StoreKey( StoreType.hosted, name ) );
     }
 
     @Override

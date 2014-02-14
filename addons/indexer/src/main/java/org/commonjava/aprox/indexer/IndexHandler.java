@@ -54,7 +54,7 @@ import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.indexer.inject.IndexCreatorSet;
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.DeployPoint;
+import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
@@ -141,12 +141,12 @@ public class IndexHandler
             return;
         }
 
-        if ( key.getType() == StoreType.deploy_point )
+        if ( key.getType() == StoreType.hosted )
         {
-            DeployPoint store = null;
+            HostedRepository store = null;
             try
             {
-                store = storeDataManager.getDeployPoint( key.getName() );
+                store = storeDataManager.getHostedRepository( key.getName() );
             }
             catch ( final ProxyDataException e )
             {
@@ -294,12 +294,12 @@ public class IndexHandler
                 final Transfer item = fileManager.getStorageReference( store, INDEX_PROPERTIES );
                 if ( !item.exists() )
                 {
-                    if ( updateRepositoryIndexes || key.getType() == StoreType.deploy_point )
+                    if ( updateRepositoryIndexes || key.getType() == StoreType.hosted )
                     {
                         scanIndex( store, context );
                     }
                 }
-                else if ( updateRepositoryIndexes && key.getType() == StoreType.repository )
+                else if ( updateRepositoryIndexes && key.getType() == StoreType.remote )
                 {
                     doIndexUpdate( context, key );
                 }
@@ -514,8 +514,8 @@ public class IndexHandler
 
     private Expiration expirationForDeployPoint( final String name )
     {
-        return new Expiration( new ExpirationKey( StoreType.deploy_point.name(), INDEX_KEY_PREFIX, name ),
-                               DEPLOY_POINT_INDEX_TIMEOUT, new StoreKey( StoreType.deploy_point, name ) );
+        return new Expiration( new ExpirationKey( StoreType.hosted.name(), INDEX_KEY_PREFIX, name ),
+                               DEPLOY_POINT_INDEX_TIMEOUT, new StoreKey( StoreType.hosted, name ) );
     }
 
     public class IndexExpirationRunnable
@@ -545,7 +545,7 @@ public class IndexHandler
                 return;
             }
 
-            if ( type == StoreType.deploy_point )
+            if ( type == StoreType.hosted )
             {
                 scanIndex( store );
             }
@@ -626,7 +626,7 @@ public class IndexHandler
                 else
                 {
                     if ( store.getKey()
-                              .getType() == StoreType.deploy_point )
+                              .getType() == StoreType.hosted )
                     {
                         scanIndex( store );
                     }

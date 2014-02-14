@@ -88,7 +88,7 @@ public class Group
         this.constituents = constituents;
     }
 
-    public void setConstituentProxies( final List<Repository> constituents )
+    public void setConstituentProxies( final List<RemoteRepository> constituents )
     {
         this.constituents = null;
         for ( final ArtifactStore proxy : constituents )
