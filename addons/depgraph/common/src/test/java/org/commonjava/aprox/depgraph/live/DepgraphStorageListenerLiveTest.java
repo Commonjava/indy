@@ -30,7 +30,7 @@ import javax.inject.Inject;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depgraph.DepgraphStorageListener;
 import org.commonjava.aprox.depgraph.fixture.TestConfigProvider;
-import org.commonjava.aprox.model.DeployPoint;
+import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.event.FileAccessEvent;
@@ -113,9 +113,9 @@ public class DepgraphStorageListenerLiveTest
         final InputStream is = Thread.currentThread()
                                      .getContextClassLoader()
                                      .getResourceAsStream( "identity/no-parent-1.0.pom" );
-        final DeployPoint dp = new DeployPoint( "test" );
+        final HostedRepository dp = new HostedRepository( "test" );
 
-        aproxData.storeDeployPoint( dp );
+        aproxData.storeHostedRepository( dp );
 
         final String path = "/org/test/no-parent/1.0/no-parent-1.0.pom";
         final Transfer ref = transfers.getCacheReference( new ConcreteResource( LocationUtils.toLocation( dp ), path ) );
@@ -141,9 +141,9 @@ public class DepgraphStorageListenerLiveTest
         final InputStream is = Thread.currentThread()
                                      .getContextClassLoader()
                                      .getResourceAsStream( "identity/with-parent-1.0.pom" );
-        final DeployPoint dp = new DeployPoint( "test" );
+        final HostedRepository dp = new HostedRepository( "test" );
 
-        aproxData.storeDeployPoint( dp );
+        aproxData.storeHostedRepository( dp );
 
         final String path = "/org/test/with-parent/1.0/with-parent-1.0.pom";
         final Transfer ref = transfers.getCacheReference( new ConcreteResource( LocationUtils.toLocation( dp ), path ) );

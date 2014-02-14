@@ -22,8 +22,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.DeployPoint;
-import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.HostedRepository;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.model.galley.CacheOnlyLocation;
@@ -57,14 +57,14 @@ public final class LocationUtils
             {
                 return new GroupLocation( store.getName() );
             }
-            case deploy_point:
+            case hosted:
             {
-                return new CacheOnlyLocation( (DeployPoint) store );
+                return new CacheOnlyLocation( (HostedRepository) store );
             }
-            case repository:
+            case remote:
             default:
             {
-                final Repository repository = (Repository) store;
+                final RemoteRepository repository = (RemoteRepository) store;
                 final RepositoryLocation location = new RepositoryLocation( repository );
                 AttributePasswordManager.bind( location, PasswordEntry.KEY_PASSWORD, repository.getKeyPassword() );
                 AttributePasswordManager.bind( location, PasswordEntry.PROXY_PASSWORD, repository.getProxyPassword() );

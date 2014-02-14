@@ -27,17 +27,17 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.vertx.util.PathParam;
-import org.commonjava.aprox.core.model.io.AProxModelSerializer;
 import org.commonjava.aprox.core.rest.AdminController;
-import org.commonjava.aprox.core.util.UriFormatter;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.aprox.rest.AproxWorkflowException;
-import org.commonjava.aprox.rest.util.ApplicationContent;
-import org.commonjava.aprox.rest.util.ApplicationHeader;
-import org.commonjava.aprox.rest.util.ApplicationStatus;
+import org.commonjava.aprox.util.AProxModelSerializer;
+import org.commonjava.aprox.util.ApplicationContent;
+import org.commonjava.aprox.util.ApplicationHeader;
+import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;

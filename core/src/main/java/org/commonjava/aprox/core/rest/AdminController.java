@@ -21,17 +21,17 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.DeployPoint;
+import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.aprox.rest.AproxWorkflowException;
-import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.aprox.stats.AProxVersioning;
+import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.shelflife.ExpirationManager;
 import org.commonjava.shelflife.ExpirationManagerException;
 import org.commonjava.util.logging.Logger;
@@ -122,23 +122,23 @@ public class AdminController
         try
         {
             storeManager.install();
-            Repository central = storeManager.getRepository( "central" );
+            RemoteRepository central = storeManager.getRemoteRepository( "central" );
             if ( central == null )
             {
-                central = new Repository( "central", "http://repo.maven.apache.org/maven2/" );
+                central = new RemoteRepository( "central", "http://repo.maven.apache.org/maven2/" );
                 central.setCacheTimeoutSeconds( 86400 );
-                storeManager.storeRepository( central );
+                storeManager.storeRemoteRepository( central );
             }
 
-            DeployPoint local = storeManager.getDeployPoint( "local-deployments" );
+            HostedRepository local = storeManager.getHostedRepository( "local-deployments" );
             if ( local == null )
             {
-                local = new DeployPoint( "local-deployments" );
+                local = new HostedRepository( "local-deployments" );
                 local.setAllowReleases( true );
                 local.setAllowSnapshots( true );
                 local.setSnapshotTimeoutSeconds( 86400 );
 
-                storeManager.storeDeployPoint( local );
+                storeManager.storeHostedRepository( local );
             }
 
             Group pub = storeManager.getGroup( "public" );

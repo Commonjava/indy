@@ -33,13 +33,4 @@
     <module>flat</module>
   </modules>
   
-  <profiles>
-    <profile>
-      <id>experimental</id>
-      
-      <modules>
-        <module>infinispan</module>
-      </modules>
-    </profile>
-  </profiles>
 </project>

@@ -28,7 +28,7 @@ public final class StoreURIMatcher
     implements URIMatcher
 {
     // @formatter:off
-    private static final String STORE_TYPE_PATTERN = "\\/?storage(\\/(deploys|groups|repositories)(\\/([^/]+)(\\/(.+))?)?)?";
+    private static final String STORE_TYPE_PATTERN = "\\/?storage(\\/(hosted|group|remote)(\\/([^/]+)(\\/(.+))?)?)?";
     // @formatter:on
 
     private static final int STORE_TYPE_GRP = 2;

@@ -19,9 +19,9 @@ package org.commonjava.aprox.autoprox.conf;
 import javax.enterprise.inject.Alternative;
 import javax.inject.Named;
 
-import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.HostedRepository;
+import org.commonjava.aprox.model.RemoteRepository;
 
 @javax.enterprise.context.ApplicationScoped
 @Alternative
@@ -29,22 +29,22 @@ import org.commonjava.aprox.model.Repository;
 public class AutoProxModel
 {
 
-    private Repository repo;
+    private RemoteRepository remote;
 
-    private DeployPoint deploy;
+    private HostedRepository hosted;
 
     private Group group;
 
     private String repoValidationPath;
 
-    public Repository getRepo()
+    public RemoteRepository getRemoteRepository()
     {
-        return repo;
+        return remote;
     }
 
-    public DeployPoint getDeploy()
+    public HostedRepository getHostedRepository()
     {
-        return deploy;
+        return hosted;
     }
 
     public Group getGroup()
@@ -52,14 +52,14 @@ public class AutoProxModel
         return group;
     }
 
-    public void setRepo( final Repository repo )
+    public void setRemoteRepository( final RemoteRepository repo )
     {
-        this.repo = repo;
+        this.remote = repo;
     }
 
-    public void setDeploy( final DeployPoint deploy )
+    public void setHostedRepository( final HostedRepository hosted )
     {
-        this.deploy = deploy;
+        this.hosted = hosted;
     }
 
     public void setGroup( final Group group )

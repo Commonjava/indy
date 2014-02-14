@@ -30,7 +30,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.commonjava.aprox.live.AbstractAProxLiveTest;
 import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.model.io.StoreKeySerializer;
@@ -70,8 +70,8 @@ public class GroupAdminResourceLiveTest
     public void seedRepositoriesForGroupTests()
         throws Exception
     {
-        proxyManager.storeRepository( new Repository( "central", "http://repo1.maven.apache.org/maven2/" ) );
-        proxyManager.storeRepository( new Repository( "repo2", "http://repo1.maven.org/maven2/" ) );
+        proxyManager.storeRemoteRepository( new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" ) );
+        proxyManager.storeRemoteRepository( new RemoteRepository( "repo2", "http://repo1.maven.org/maven2/" ) );
     }
 
     @Test
@@ -122,7 +122,7 @@ public class GroupAdminResourceLiveTest
         throws Exception
     {
         final Group grp =
-            new Group( "test", new StoreKey( StoreType.repository, "repo2" ), new StoreKey( StoreType.repository,
+            new Group( "test", new StoreKey( StoreType.remote, "repo2" ), new StoreKey( StoreType.remote,
                                                                                             "central" ) );
 
         webFixture.post( webFixture.resourceUrl( BASE_URL ), grp, HttpStatus.SC_CREATED );
@@ -136,8 +136,8 @@ public class GroupAdminResourceLiveTest
         assertThat( repos, notNullValue() );
         assertThat( repos.size(), equalTo( 2 ) );
 
-        assertThat( repos.get( 0 ), equalTo( new StoreKey( StoreType.repository, "repo2" ) ) );
-        assertThat( repos.get( 1 ), equalTo( new StoreKey( StoreType.repository, "central" ) ) );
+        assertThat( repos.get( 0 ), equalTo( new StoreKey( StoreType.remote, "repo2" ) ) );
+        assertThat( repos.get( 1 ), equalTo( new StoreKey( StoreType.remote, "central" ) ) );
     }
 
     @Test

@@ -32,9 +32,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.util.AproxExceptionUtils;
 import org.commonjava.aprox.depgraph.rest.ResolverController;
-import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.util.logging.Logger;
 
 @Path( "/depgraph/resolve/{from: (.+)}" )

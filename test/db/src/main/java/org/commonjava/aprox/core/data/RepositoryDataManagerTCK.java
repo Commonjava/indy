@@ -29,7 +29,7 @@ import org.apache.log4j.Level;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.util.logging.Log4jUtil;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -50,10 +50,10 @@ public abstract class RepositoryDataManagerTCK
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
 
-        final Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
-        manager.storeRepository( repo, false );
+        final RemoteRepository repo = new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" );
+        manager.storeRemoteRepository( repo, false );
 
-        final Repository result = manager.getRepository( repo.getName() );
+        final RemoteRepository result = manager.getRemoteRepository( repo.getName() );
 
         assertThat( result.getName(), equalTo( repo.getName() ) );
         assertThat( result.getUrl(), equalTo( repo.getUrl() ) );
@@ -67,12 +67,12 @@ public abstract class RepositoryDataManagerTCK
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
 
-        final Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
-        manager.storeRepository( repo, true );
+        final RemoteRepository repo = new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" );
+        manager.storeRemoteRepository( repo, true );
 
-        manager.storeRepository( repo, true );
+        manager.storeRemoteRepository( repo, true );
 
-        final List<? extends Repository> result = manager.getAllRepositories();
+        final List<? extends RemoteRepository> result = manager.getAllRemoteRepositories();
 
         assertThat( result, notNullValue() );
         assertThat( result.size(), equalTo( 1 ) );
@@ -84,12 +84,12 @@ public abstract class RepositoryDataManagerTCK
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
 
-        final Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
-        manager.storeRepository( repo, false );
+        final RemoteRepository repo = new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" );
+        manager.storeRemoteRepository( repo, false );
 
-        manager.deleteRepository( repo.getName() );
+        manager.deleteRemoteRepository( repo.getName() );
 
-        final ArtifactStore result = manager.getRepository( repo.getName() );
+        final ArtifactStore result = manager.getRemoteRepository( repo.getName() );
 
         assertThat( result, nullValue() );
     }
@@ -100,12 +100,12 @@ public abstract class RepositoryDataManagerTCK
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
 
-        final Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
-        manager.storeRepository( repo, false );
+        final RemoteRepository repo = new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" );
+        manager.storeRemoteRepository( repo, false );
 
-        manager.deleteRepository( repo );
+        manager.deleteRemoteRepository( repo );
 
-        final ArtifactStore result = manager.getRepository( repo.getName() );
+        final ArtifactStore result = manager.getRemoteRepository( repo.getName() );
 
         assertThat( result, nullValue() );
     }
@@ -116,22 +116,22 @@ public abstract class RepositoryDataManagerTCK
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
 
-        final Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
-        manager.storeRepository( repo );
+        final RemoteRepository repo = new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" );
+        manager.storeRemoteRepository( repo );
 
-        final Repository repo2 = new Repository( "test", "http://www.google.com" );
-        manager.storeRepository( repo2 );
+        final RemoteRepository repo2 = new RemoteRepository( "test", "http://www.google.com" );
+        manager.storeRemoteRepository( repo2 );
 
-        final List<? extends Repository> repositories = manager.getAllRepositories();
+        final List<? extends RemoteRepository> repositories = manager.getAllRemoteRepositories();
 
         assertThat( repositories, notNullValue() );
         assertThat( repositories.size(), equalTo( 2 ) );
 
-        Collections.sort( repositories, new Comparator<Repository>()
+        Collections.sort( repositories, new Comparator<RemoteRepository>()
         {
 
             @Override
-            public int compare( final Repository r1, final Repository r2 )
+            public int compare( final RemoteRepository r1, final RemoteRepository r2 )
             {
                 return r1.getName()
                          .compareTo( r2.getName() );

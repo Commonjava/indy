@@ -28,7 +28,7 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
@@ -68,7 +68,7 @@ public class RepoSourceMetadataListener
             return;
         }
 
-        final Map<URI, Repository> repos = new HashMap<URI, Repository>();
+        final Map<URI, RemoteRepository> repos = new HashMap<URI, RemoteRepository>();
         final Set<URI> unmatchedSources = new HashSet<URI>();
 
         final Set<ProjectVersionRef> seen = new HashSet<ProjectVersionRef>();
@@ -97,17 +97,17 @@ public class RepoSourceMetadataListener
                     continue;
                 }
 
-                Repository repo = repos.get( src );
+                RemoteRepository repo = repos.get( src );
                 final String scheme = src.getScheme();
 
-                if ( repo != null || StoreType.get( scheme ) == StoreType.repository )
+                if ( repo != null || StoreType.get( scheme ) == StoreType.remote )
                 {
                     if ( repo == null )
                     {
                         final String sub = src.getSchemeSpecificPart();
                         try
                         {
-                            repo = aprox.getRepository( sub );
+                            repo = aprox.getRemoteRepository( sub );
                         }
                         catch ( final ProxyDataException e )
                         {

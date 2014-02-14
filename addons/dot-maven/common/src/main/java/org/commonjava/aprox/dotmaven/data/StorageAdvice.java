@@ -17,7 +17,7 @@
 package org.commonjava.aprox.dotmaven.data;
 
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.DeployPoint;
+import org.commonjava.aprox.model.HostedRepository;
 
 public class StorageAdvice
 {
@@ -29,21 +29,21 @@ public class StorageAdvice
 
     private final ArtifactStore store;
 
-    private final DeployPoint deployableStore;
+    private final HostedRepository hostedStore;
 
-    public StorageAdvice( final ArtifactStore store, final DeployPoint deployableStore, final boolean deployable,
-                          final boolean releasesAllowed, final boolean snapshotsAllowed )
+    public StorageAdvice( final ArtifactStore store, final HostedRepository hostedStore, final boolean deployable, final boolean releasesAllowed,
+                          final boolean snapshotsAllowed )
     {
         this.store = store;
-        this.deployableStore = deployableStore;
+        this.hostedStore = hostedStore;
         this.deployable = deployable;
         this.releasesAllowed = releasesAllowed;
         this.snapshotsAllowed = snapshotsAllowed;
     }
 
-    public DeployPoint getDeployableStore()
+    public HostedRepository getHostedStore()
     {
-        return deployableStore;
+        return hostedStore;
     }
 
     public ArtifactStore getStore()

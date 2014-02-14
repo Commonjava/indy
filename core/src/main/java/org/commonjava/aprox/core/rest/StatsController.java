@@ -22,14 +22,14 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.core.model.EndpointViewListing;
-import org.commonjava.aprox.core.util.UriFormatter;
+import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.dto.EndpointViewListing;
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.rest.AproxWorkflowException;
-import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.aprox.stats.AProxVersioning;
+import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.aprox.util.UriFormatter;
 
 @ApplicationScoped
 public class StatsController

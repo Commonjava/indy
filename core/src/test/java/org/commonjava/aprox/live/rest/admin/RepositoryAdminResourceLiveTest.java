@@ -29,7 +29,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.commonjava.aprox.live.AbstractAProxLiveTest;
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.io.StoreKeySerializer;
 import org.commonjava.web.json.model.Listing;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -65,13 +65,13 @@ public class RepositoryAdminResourceLiveTest
     public void createAndRetrieveCentralRepoProxy()
         throws Exception
     {
-        final Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
+        final RemoteRepository repo = new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" );
         final HttpResponse response = webFixture.post( webFixture.resourceUrl( BASE_URL ), repo, HttpStatus.SC_CREATED );
 
         final String repoUrl = webFixture.resourceUrl( BASE_URL, repo.getName() );
         webFixture.assertLocationHeader( response, repoUrl );
 
-        final Repository result = webFixture.get( repoUrl, Repository.class );
+        final RemoteRepository result = webFixture.get( repoUrl, RemoteRepository.class );
 
         assertThat( result.getName(), equalTo( repo.getName() ) );
         assertThat( result.getUrl(), equalTo( repo.getUrl() ) );
@@ -83,24 +83,24 @@ public class RepositoryAdminResourceLiveTest
     public void createCentralRepoProxyTwiceAndRetrieveOne()
         throws Exception
     {
-        final Repository repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
+        final RemoteRepository repo = new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" );
         webFixture.post( webFixture.resourceUrl( BASE_URL ), repo, HttpStatus.SC_CREATED );
 
         webFixture.post( webFixture.resourceUrl( BASE_URL ), repo, HttpStatus.SC_CONFLICT );
 
-        final Listing<Repository> result =
-            webFixture.getListing( webFixture.resourceUrl( BASE_URL ), new TypeToken<Listing<Repository>>()
+        final Listing<RemoteRepository> result =
+            webFixture.getListing( webFixture.resourceUrl( BASE_URL ), new TypeToken<Listing<RemoteRepository>>()
             {
             } );
 
         assertThat( result, notNullValue() );
 
-        final List<? extends Repository> items = result.getItems();
+        final List<? extends RemoteRepository> items = result.getItems();
 
         assertThat( items, notNullValue() );
         assertThat( items.size(), equalTo( 1 ) );
 
-        final Repository r = items.get( 0 );
+        final RemoteRepository r = items.get( 0 );
         assertThat( r.getName(), equalTo( repo.getName() ) );
         assertThat( r.getUrl(), equalTo( repo.getUrl() ) );
     }
@@ -109,7 +109,7 @@ public class RepositoryAdminResourceLiveTest
     public void createAndDeleteCentralRepoProxy_ByName()
         throws Exception
     {
-        final ArtifactStore repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
+        final ArtifactStore repo = new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" );
         webFixture.post( webFixture.resourceUrl( BASE_URL ), repo, HttpStatus.SC_CREATED );
 
         webFixture.delete( webFixture.resourceUrl( BASE_URL, repo.getName() ) );
@@ -121,29 +121,29 @@ public class RepositoryAdminResourceLiveTest
     public void createTwoReposAndRetrieveAll()
         throws Exception
     {
-        final ArtifactStore repo = new Repository( "central", "http://repo1.maven.apache.org/maven2/" );
+        final ArtifactStore repo = new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" );
         webFixture.post( webFixture.resourceUrl( BASE_URL ), repo, HttpStatus.SC_CREATED );
 
-        final ArtifactStore repo2 = new Repository( "test", "http://www.google.com" );
+        final ArtifactStore repo2 = new RemoteRepository( "test", "http://www.google.com" );
         webFixture.post( webFixture.resourceUrl( BASE_URL ), repo2, HttpStatus.SC_CREATED );
 
-        final Listing<Repository> result =
-            webFixture.getListing( webFixture.resourceUrl( BASE_URL ), new TypeToken<Listing<Repository>>()
+        final Listing<RemoteRepository> result =
+            webFixture.getListing( webFixture.resourceUrl( BASE_URL ), new TypeToken<Listing<RemoteRepository>>()
             {
             } );
 
         assertThat( result, notNullValue() );
 
-        final List<? extends Repository> repositories = result.getItems();
+        final List<? extends RemoteRepository> repositories = result.getItems();
 
         assertThat( repositories, notNullValue() );
         assertThat( repositories.size(), equalTo( 2 ) );
 
-        Collections.sort( repositories, new Comparator<Repository>()
+        Collections.sort( repositories, new Comparator<RemoteRepository>()
         {
 
             @Override
-            public int compare( final Repository r1, final Repository r2 )
+            public int compare( final RemoteRepository r1, final RemoteRepository r2 )
             {
                 return r1.getName()
                          .compareTo( r2.getName() );

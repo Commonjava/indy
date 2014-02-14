@@ -1,0 +1,36 @@
+<div class="remote-edit">
+  <form>
+    <div class="form-line">
+      <label>Name:</label>
+      <% if @name: %>
+        <span class="name"><%= @name %></span>
+      <% else: %>
+        <input class="name-field" type="text" required="true" name="name"/>
+      <% end %>
+    </div>
+  
+    <div class="form-line">
+      <label class="block-label">Remote URL:</label>
+      <input class="url-field" type="url" name="remote_url" required="true" value="<%= @remote_url %>"/>
+    </div>
+    
+    <div class="form-line">
+      <label>Connection Timeout (seconds)</label>
+      <input title="Seconds before connection request to Remote URL will timeout" class="timeout-field" type="number" name="timeout_seconds" value="<%= @timeout_seconds %>"/> sec.
+    </div>
+    
+    <div class="form-line">
+      <label>Passthrough Only?</label>
+      <input class="passthrough endisable" affects="!cache_timeout_field" type="checkbox" name="is_passthrough" <%= "checked=\"true\"" if @is_passthrough %>"/>
+    </div>
+    
+    <div class="form-line" name="cache_timeout_field">
+      <label>Cache Timeout (seconds)</label>
+      <input title="Seconds before proxied artifacts will be deleted" class="timeout-field cache_timeout" type="number" name="cache_timeout_seconds" value="<%= @cache_timeout_seconds %>"/> sec.
+    </div>
+    <div class="button-bar">
+      <a dest="x509" class="button">X.509 Options</a>
+      <a dest="proxies" class="button">Proxy Options</a>
+    </div>
+  </form>
+</div>

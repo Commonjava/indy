@@ -39,24 +39,24 @@ import javax.enterprise.event.Event;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
+import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.change.event.AproxFileEventManager;
 import org.commonjava.aprox.change.event.ArtifactStoreRescanEvent;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.filer.FileManager;
-import org.commonjava.aprox.filer.PathUtils;
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.DeployPoint;
+import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.model.galley.KeyedLocation;
-import org.commonjava.aprox.rest.AproxWorkflowException;
-import org.commonjava.aprox.rest.util.ApplicationStatus;
-import org.commonjava.aprox.rest.util.ArtifactPathInfo;
-import org.commonjava.aprox.rest.util.retrieve.GroupPathHandler;
+import org.commonjava.aprox.rest.group.GroupPathHandler;
+import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.aprox.util.ArtifactPathInfo;
 import org.commonjava.aprox.util.LocationUtils;
+import org.commonjava.aprox.util.PathUtils;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferManager;
@@ -173,7 +173,7 @@ public class DefaultFileManager
         {
             final Location loc = LocationUtils.toLocation( store );
             final ConcreteResource res = new ConcreteResource( loc, dir );
-            if ( store instanceof Repository )
+            if ( store instanceof RemoteRepository )
             {
                 try
                 {
@@ -296,7 +296,7 @@ public class DefaultFileManager
         try
         {
             final ConcreteResource res = new ConcreteResource( LocationUtils.toLocation( store ), path );
-            if ( store instanceof Repository )
+            if ( store instanceof RemoteRepository )
             {
                 target = transfers.retrieve( res );
             }
@@ -341,12 +341,12 @@ public class DefaultFileManager
         }
 
         if ( store.getKey()
-                  .getType() != StoreType.deploy_point )
+                  .getType() != StoreType.hosted )
         {
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot deploy to non-deploy point artifact store: %s.", store.getKey() );
         }
 
-        final DeployPoint deploy = (DeployPoint) store;
+        final HostedRepository deploy = (HostedRepository) store;
 
         final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
         if ( pathInfo != null && pathInfo.isSnapshot() )
@@ -405,13 +405,13 @@ public class DefaultFileManager
     {
         final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
 
-        DeployPoint selected = null;
+        HostedRepository selected = null;
         for ( final ArtifactStore store : stores )
         {
-            if ( store instanceof DeployPoint )
+            if ( store instanceof HostedRepository )
             {
                 //                logger.info( "Found deploy point: %s", store.getName() );
-                final DeployPoint dp = (DeployPoint) store;
+                final HostedRepository dp = (HostedRepository) store;
                 if ( pathInfo == null )
                 {
                     // probably not an artifact, most likely metadata instead...

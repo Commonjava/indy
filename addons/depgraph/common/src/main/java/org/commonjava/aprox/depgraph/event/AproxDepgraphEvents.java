@@ -24,7 +24,7 @@ import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.inject.Production;
-import org.commonjava.aprox.rest.util.ArtifactPathInfo;
+import org.commonjava.aprox.util.ArtifactPathInfo;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.version.InvalidVersionSpecificationException;
 import org.commonjava.maven.cartographer.data.CartoDataException;

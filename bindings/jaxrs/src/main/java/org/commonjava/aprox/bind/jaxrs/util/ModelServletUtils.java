@@ -24,9 +24,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.DeployPoint;
+import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.web.json.ser.JsonSerializer;
 
@@ -42,9 +42,9 @@ public class ModelServletUtils
     {
         switch ( st )
         {
-            case deploy_point:
+            case hosted:
             {
-                return fromRequestBody( request, restSerializer, DeployPoint.class );
+                return fromRequestBody( request, restSerializer, HostedRepository.class );
             }
             case group:
             {
@@ -52,7 +52,7 @@ public class ModelServletUtils
             }
             default:
             {
-                return fromRequestBody( request, restSerializer, Repository.class );
+                return fromRequestBody( request, restSerializer, RemoteRepository.class );
             }
         }
     }

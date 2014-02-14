@@ -16,7 +16,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.dotmaven.data;
 
-import static org.commonjava.aprox.model.StoreType.deploy_point;
+import static org.commonjava.aprox.model.StoreType.hosted;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.dotmaven.DotMavenException;
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.DeployPoint;
+import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.StoreType;
 
 @ApplicationScoped
@@ -39,14 +39,13 @@ public class StorageAdvisor
     @Inject
     private StoreDataManager dataManager;
 
-    @SuppressWarnings( "incomplete-switch" )
     public StorageAdvice getStorageAdvice( final ArtifactStore store )
         throws DotMavenException
     {
         boolean deployable = false;
         boolean releases = true;
         boolean snapshots = false;
-        DeployPoint deployableStore = null;
+        HostedRepository hostedStore = null;
 
         final StoreType type = store.getKey()
                                     .getType();
@@ -61,48 +60,39 @@ public class StorageAdvisor
                 }
                 catch ( final ProxyDataException e )
                 {
-                    throw new DotMavenException(
-                                                 "Failed to retrieve constituent ArtifactStores for group: %s. Reason: %s",
-                                                 e, store.getName(), e.getMessage() );
+                    throw new DotMavenException( "Failed to retrieve constituent ArtifactStores for group: %s. Reason: %s", e, store.getName(),
+                                                 e.getMessage() );
                 }
 
                 for ( final ArtifactStore as : constituents )
                 {
                     if ( as.getKey()
-                           .getType() == deploy_point )
+                           .getType() == hosted )
                     {
                         deployable = true;
 
-                        final DeployPoint dp = (DeployPoint) as;
-                        deployableStore = dp;
-
-                        // TODO: If we have two deploy points with different settings, only the first will be used here!
-                        snapshots = dp.isAllowSnapshots();
-                        releases = dp.isAllowReleases();
-
-                        //                        logger.info( "\n\n\n\nDeploy point: %s allows releases? %s Releases boolean set to: %s\n\n\n\n",
-                        //                                     dp.getName(), dp.isAllowReleases(), releases );
+                        hostedStore = (HostedRepository) as;
+                        snapshots = hostedStore.isAllowSnapshots();
+                        releases = hostedStore.isAllowReleases();
 
                         break all;
                     }
                 }
                 break;
             }
-            case deploy_point:
+            case hosted:
             {
                 deployable = true;
 
-                final DeployPoint dp = (DeployPoint) store;
-                deployableStore = dp;
-                snapshots = dp.isAllowSnapshots();
-                releases = dp.isAllowReleases();
-
-                //                logger.info( "Deploy point: %s allows releases? %s", dp.getName(), dp.isAllowReleases() );
+                hostedStore = (HostedRepository) store;
+                snapshots = hostedStore.isAllowSnapshots();
+                releases = hostedStore.isAllowReleases();
                 break;
             }
+            default:
         }
 
-        return new StorageAdvice( store, deployableStore, deployable, releases, snapshots );
+        return new StorageAdvice( store, hostedStore, deployable, releases, snapshots );
     }
 
 }

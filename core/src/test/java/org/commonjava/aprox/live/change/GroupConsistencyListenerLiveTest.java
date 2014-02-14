@@ -25,7 +25,7 @@ import javax.inject.Inject;
 import org.commonjava.aprox.core.change.GroupConsistencyListener;
 import org.commonjava.aprox.live.AbstractAProxLiveTest;
 import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -50,8 +50,8 @@ public class GroupConsistencyListenerLiveTest
     public void groupsContainingRepositoryModifiedWhenRepositoryDeleted()
         throws Exception
     {
-        final Repository repo = new Repository( "test", "http://repo1.maven.apache.org/maven2/" );
-        proxyManager.storeRepository( repo );
+        final RemoteRepository repo = new RemoteRepository( "test", "http://repo1.maven.apache.org/maven2/" );
+        proxyManager.storeRemoteRepository( repo );
 
         final Group group = new Group( "testGroup", repo.getKey() );
         proxyManager.storeGroup( group );
@@ -72,7 +72,7 @@ public class GroupConsistencyListenerLiveTest
                          .iterator()
                          .next(), equalTo( repo.getKey() ) );
 
-        proxyManager.deleteRepository( repo.getName() );
+        proxyManager.deleteRemoteRepository( repo.getName() );
 
         System.out.println( "Waiting up to 20s for deletions to propagate..." );
         final long start = System.currentTimeMillis();

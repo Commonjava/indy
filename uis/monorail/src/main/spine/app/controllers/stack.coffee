@@ -1,6 +1,6 @@
 Spine = require('spine')
-Repositories = require('controllers/repositories')
-Deploys = require('controllers/deploys')
+RemoteRepositories = require('controllers/remotes')
+HostedRepositories = require('controllers/hosted')
 Groups = require('controllers/groups')
 $ = Spine.$
 
@@ -8,8 +8,8 @@ class Stack extends Spine.Stack
   className: 'main stack'
     
   controllers:
-    repos: Repositories
-    deploys: Deploys
+    remotes: RemoteRepositories
+    hosted: HostedRepositories
     groups: Groups
     
 module.exports = Stack

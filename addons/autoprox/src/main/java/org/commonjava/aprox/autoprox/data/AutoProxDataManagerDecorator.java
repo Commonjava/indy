@@ -38,9 +38,9 @@ import org.commonjava.aprox.autoprox.conf.AutoProxModel;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.HostedRepository;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
@@ -90,19 +90,19 @@ public abstract class AutoProxDataManagerDecorator
         if ( g == null )
         {
             //            logger.info( "AutoProx: creating repository for: %s", name );
-            final Repository proxy = getRepository( name );
+            final RemoteRepository proxy = getRemoteRepository( name );
             if ( proxy != null )
             {
-                DeployPoint dp = null;
+                HostedRepository dp = null;
                 if ( config.isDeployEnabled() )
                 {
-                    dp = dataManager.getDeployPoint( name );
+                    dp = dataManager.getHostedRepository( name );
 
                     if ( dp == null )
                     {
-                        dp = new DeployPoint( name );
+                        dp = new HostedRepository( name );
 
-                        final DeployPoint deployTemplate = autoproxModel.getDeploy();
+                        final HostedRepository deployTemplate = autoproxModel.getHostedRepository();
 
                         if ( deployTemplate != null )
                         {
@@ -111,7 +111,7 @@ public abstract class AutoProxDataManagerDecorator
                             dp.setSnapshotTimeoutSeconds( deployTemplate.getSnapshotTimeoutSeconds() );
                         }
 
-                        dataManager.storeDeployPoint( dp );
+                        dataManager.storeHostedRepository( dp );
                     }
                 }
 
@@ -125,13 +125,12 @@ public abstract class AutoProxDataManagerDecorator
                 {
                     for ( final StoreKey storeKey : groupTemplate.getConstituents() )
                     {
-                        if ( storeKey.getType() == StoreType.repository
-                            && REPO_CONSTITUENT_PLACEHOLDER.equalsIgnoreCase( storeKey.getName() ) )
+                        if ( storeKey.getType() == StoreType.remote && REPO_CONSTITUENT_PLACEHOLDER.equalsIgnoreCase( storeKey.getName() ) )
                         {
                             g.addConstituent( proxy );
                             rFound = true;
                         }
-                        else if ( dp != null && storeKey.getType() == StoreType.deploy_point
+                        else if ( dp != null && storeKey.getType() == StoreType.hosted
                             && DEPLOY_CONSTITUENT_PLACEHOLDER.equalsIgnoreCase( storeKey.getName() ) )
                         {
                             g.addConstituent( dp );
@@ -162,8 +161,7 @@ public abstract class AutoProxDataManagerDecorator
         return g;
     }
 
-    private synchronized boolean checkUrlValidity( final Repository repo, final String proxyUrl,
-                                                   final String validationPath )
+    private synchronized boolean checkUrlValidity( final RemoteRepository repo, final String proxyUrl, final String validationPath )
     {
         String url = null;
         try
@@ -172,8 +170,8 @@ public abstract class AutoProxDataManagerDecorator
         }
         catch ( final MalformedURLException e )
         {
-            logger.error( "Failed to construct repository-validation URL from base: %s and path: %s. Reason: %s", e,
-                          proxyUrl, validationPath, e.getMessage() );
+            logger.error( "Failed to construct repository-validation URL from base: %s and path: %s. Reason: %s", e, proxyUrl, validationPath,
+                          e.getMessage() );
             return false;
         }
 
@@ -210,11 +208,11 @@ public abstract class AutoProxDataManagerDecorator
     }
 
     @Override
-    public Repository getRepository( final String name )
+    public RemoteRepository getRemoteRepository( final String name )
         throws ProxyDataException
     {
         //        logger.info( "DECORATED (getRepository: %s)", name );
-        Repository repo = dataManager.getRepository( name );
+        RemoteRepository repo = dataManager.getRemoteRepository( name );
         if ( !config.isEnabled() )
         {
             //            logger.info( "AutoProx decorator disabled; returning: %s", repo );
@@ -226,14 +224,14 @@ public abstract class AutoProxDataManagerDecorator
         {
             //            logger.info( "AutoProx: creating repository for: %s", name );
 
-            final Repository repoTemplate = autoproxModel.getRepo();
+            final RemoteRepository repoTemplate = autoproxModel.getRemoteRepository();
             final String validationPath = autoproxModel.getRepoValidationPath();
 
             final String url = resolveRepoUrl( repoTemplate.getUrl(), name );
 
             if ( repo == null )
             {
-                repo = new Repository( name, url );
+                repo = new RemoteRepository( name, url );
 
                 repo.setCacheTimeoutSeconds( repoTemplate.getCacheTimeoutSeconds() );
                 repo.setHost( repoTemplate.getHost() );
@@ -256,7 +254,7 @@ public abstract class AutoProxDataManagerDecorator
                     return null;
                 }
 
-                dataManager.storeRepository( repo );
+                dataManager.storeRemoteRepository( repo );
             }
         }
 
@@ -280,9 +278,9 @@ public abstract class AutoProxDataManagerDecorator
             {
                 return getGroup( key.getName() );
             }
-            case repository:
+            case remote:
             {
-                return getRepository( key.getName() );
+                return getRemoteRepository( key.getName() );
             }
             default:
             {

@@ -21,6 +21,7 @@ import javax.enterprise.inject.Default;
 
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.galley.KeyedLocation;
+import org.commonjava.aprox.util.PathUtils;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.spi.io.PathGenerator;
 

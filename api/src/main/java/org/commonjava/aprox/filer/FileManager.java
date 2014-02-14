@@ -20,10 +20,10 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
 
+import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.rest.AproxWorkflowException;
-import org.commonjava.aprox.rest.util.ArtifactPathInfo;
+import org.commonjava.aprox.util.ArtifactPathInfo;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 

@@ -31,9 +31,9 @@ import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.DeployPoint;
+import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.subsys.flatfile.conf.FlatFileConfiguration;
@@ -82,7 +82,7 @@ public abstract class FlatFileDataManagerDecorator
         throws ProxyDataException
     {
         final File basedir = config.getStorageDir( APROX_STORE );
-        final File ddir = new File( basedir, StoreType.deploy_point.name() );
+        final File ddir = new File( basedir, StoreType.hosted.name() );
 
         final String[] dFiles = ddir.list();
         if ( dFiles != null )
@@ -93,14 +93,14 @@ public abstract class FlatFileDataManagerDecorator
                 try
                 {
                     final String json = FileUtils.readFileToString( f );
-                    final DeployPoint dp = serializer.fromString( json, DeployPoint.class );
+                    final HostedRepository dp = serializer.fromString( json, HostedRepository.class );
                     if ( dp == null )
                     {
                         f.delete();
                     }
                     else
                     {
-                        dataManager.storeDeployPoint( dp );
+                        dataManager.storeHostedRepository( dp );
                     }
                 }
                 catch ( final IOException e )
@@ -110,7 +110,7 @@ public abstract class FlatFileDataManagerDecorator
             }
         }
 
-        final File rdir = new File( basedir, StoreType.repository.name() );
+        final File rdir = new File( basedir, StoreType.remote.name() );
         final String[] rFiles = rdir.list();
         if ( rFiles != null )
         {
@@ -120,14 +120,14 @@ public abstract class FlatFileDataManagerDecorator
                 try
                 {
                     final String json = FileUtils.readFileToString( f );
-                    final Repository r = serializer.fromString( json, Repository.class );
+                    final RemoteRepository r = serializer.fromString( json, RemoteRepository.class );
                     if ( r == null )
                     {
                         f.delete();
                     }
                     else
                     {
-                        dataManager.storeRepository( r );
+                        dataManager.storeRemoteRepository( r );
                     }
                 }
                 catch ( final IOException e )
@@ -166,18 +166,18 @@ public abstract class FlatFileDataManagerDecorator
     }
 
     @Override
-    public void storeDeployPoints( final Collection<DeployPoint> deploys )
+    public void storeHostedRepositories( final Collection<HostedRepository> deploys )
         throws ProxyDataException
     {
-        dataManager.storeDeployPoints( deploys );
+        dataManager.storeHostedRepositories( deploys );
         store( false, deploys.toArray( new ArtifactStore[] {} ) );
     }
 
     @Override
-    public boolean storeDeployPoint( final DeployPoint deploy )
+    public boolean storeHostedRepository( final HostedRepository deploy )
         throws ProxyDataException
     {
-        final boolean result = dataManager.storeDeployPoint( deploy );
+        final boolean result = dataManager.storeHostedRepository( deploy );
         if ( result )
         {
             store( false, deploy );
@@ -187,10 +187,10 @@ public abstract class FlatFileDataManagerDecorator
     }
 
     @Override
-    public boolean storeDeployPoint( final DeployPoint deploy, final boolean skipIfExists )
+    public boolean storeHostedRepository( final HostedRepository deploy, final boolean skipIfExists )
         throws ProxyDataException
     {
-        final boolean result = dataManager.storeDeployPoint( deploy, skipIfExists );
+        final boolean result = dataManager.storeHostedRepository( deploy, skipIfExists );
         if ( result )
         {
             store( skipIfExists, deploy );
@@ -200,18 +200,18 @@ public abstract class FlatFileDataManagerDecorator
     }
 
     @Override
-    public void storeRepositories( final Collection<Repository> repos )
+    public void storeRemoteRepositories( final Collection<RemoteRepository> repos )
         throws ProxyDataException
     {
-        dataManager.storeRepositories( repos );
+        dataManager.storeRemoteRepositories( repos );
         store( false, repos.toArray( new ArtifactStore[] {} ) );
     }
 
     @Override
-    public boolean storeRepository( final Repository proxy )
+    public boolean storeRemoteRepository( final RemoteRepository proxy )
         throws ProxyDataException
     {
-        final boolean result = dataManager.storeRepository( proxy );
+        final boolean result = dataManager.storeRemoteRepository( proxy );
         if ( result )
         {
             store( false, proxy );
@@ -221,10 +221,10 @@ public abstract class FlatFileDataManagerDecorator
     }
 
     @Override
-    public boolean storeRepository( final Repository repository, final boolean skipIfExists )
+    public boolean storeRemoteRepository( final RemoteRepository repository, final boolean skipIfExists )
         throws ProxyDataException
     {
-        final boolean result = dataManager.storeRepository( repository, skipIfExists );
+        final boolean result = dataManager.storeRemoteRepository( repository, skipIfExists );
         if ( result )
         {
             store( skipIfExists, repository );
@@ -268,35 +268,35 @@ public abstract class FlatFileDataManagerDecorator
     }
 
     @Override
-    public void deleteDeployPoint( final DeployPoint deploy )
+    public void deleteHostedRepository( final HostedRepository deploy )
         throws ProxyDataException
     {
-        dataManager.deleteDeployPoint( deploy );
+        dataManager.deleteHostedRepository( deploy );
         delete( deploy );
     }
 
     @Override
-    public void deleteDeployPoint( final String name )
+    public void deleteHostedRepository( final String name )
         throws ProxyDataException
     {
-        dataManager.deleteDeployPoint( name );
-        delete( StoreType.deploy_point, name );
+        dataManager.deleteHostedRepository( name );
+        delete( StoreType.hosted, name );
     }
 
     @Override
-    public void deleteRepository( final Repository repo )
+    public void deleteRemoteRepository( final RemoteRepository repo )
         throws ProxyDataException
     {
-        dataManager.deleteRepository( repo );
+        dataManager.deleteRemoteRepository( repo );
         delete( repo );
     }
 
     @Override
-    public void deleteRepository( final String name )
+    public void deleteRemoteRepository( final String name )
         throws ProxyDataException
     {
-        dataManager.deleteRepository( name );
-        delete( StoreType.repository, name );
+        dataManager.deleteRemoteRepository( name );
+        delete( StoreType.remote, name );
     }
 
     @Override
@@ -432,8 +432,8 @@ public abstract class FlatFileDataManagerDecorator
         if ( !config.getStorageDir( APROX_STORE )
                     .isDirectory() )
         {
-            dataManager.storeRepository( new Repository( "central", "http://repo1.maven.apache.org/maven2/" ), true );
-            dataManager.storeGroup( new Group( "public", new StoreKey( StoreType.repository, "central" ) ), true );
+            dataManager.storeRemoteRepository( new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" ), true );
+            dataManager.storeGroup( new Group( "public", new StoreKey( StoreType.remote, "central" ) ), true );
         }
     }
 

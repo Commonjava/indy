@@ -1,6 +1,6 @@
 Spine = require('spine')
-Repository = require('models/repository')
-Deploy = require('models/deploy')
+RemoteRepository = require('models/remote-repository')
+HostedRepository = require('models/hosted-repository')
 Group = require('models/group')
 $ = Spine.$
 
@@ -13,14 +13,14 @@ class GroupsHelper extends Spine.Controller
     
     console.log("Getting stores to match keys: #{keys.join(', ')}")
 
-    repos = Repository.all()
-    console.log( "Checking #{repos.length} repositories")
-    for store in repos
-      store.key = "repository:#{store.name}" unless store.key
-      console.log( "Checking repo: #{store.key}")
+    remoteRepos = RemoteRepository.all()
+    console.log( "Checking #{remoteRepos.length} remote repositories")
+    for store in remoteRepos
+      store.key = "remote:#{store.name}" unless store.key
+      console.log( "Checking remote repo: #{store.key}")
       if keys and store and keys.indexOf( store.key ) > -1
-        console.log("Adding repo: #{store.name}")
-        stores.push({'key': store.key, 'name': store.name, 'type': 'D'})
+        console.log("Adding remote repo: #{store.name}")
+        stores.push({'key': store.key, 'name': store.name, 'type': 'R'})
 
     groups = Group.all()
     console.log( "Checking #{groups.length} groups")
@@ -29,44 +29,44 @@ class GroupsHelper extends Spine.Controller
       console.log( "Checking group: #{store.key}")
       if keys and store and keys.indexOf( store.key ) > -1
         console.log("Adding group: #{store.name}")
-        stores.push({'key': store.key, 'name': store.name, 'type': 'D'})
+        stores.push({'key': store.key, 'name': store.name, 'type': 'G'})
 
-    deploys = Deploy.all()
-    console.log( "Checking #{deploys.length} deploys")
-    for store in deploys
+    hostedRepos = HostedRepository.all()
+    console.log( "Checking #{hostedRepos.length} hostedRepos")
+    for store in hostedRepos
       store.key = "deploy_point:#{store.name}" unless store.key
-      console.log( "Checking deploy point: #{store.key}")
+      console.log( "Checking hosted repository: #{store.key}")
       if keys and store and keys.indexOf( store.key ) > -1
-        console.log("Adding deploy point: #{store.name}")
-        stores.push({'key': store.key, 'name': store.name, 'type': 'D'})
+        console.log("Adding hosted repository: #{store.name}")
+        stores.push({'key': store.key, 'name': store.name, 'type': 'H'})
 
     stores
     
   allAvailable:  ->
     available = []
 
-    repos = Repository.all()
-    available.push({'key': "repository:#{store.name}", 'name': store.name, 'type': 'R'}) for store in Repository.all()
+    remoteRepos = RemoteRepository.all()
+    available.push({'key': "remote:#{store.name}", 'name': store.name, 'type': 'R'}) for store in remoteRepos
 
     groups = Group.all()
-    available.push({'key': "group:#{store.name}", 'name': store.name, 'type': 'G'}) for store in Group.all()
+    available.push({'key': "group:#{store.name}", 'name': store.name, 'type': 'G'}) for store in groups
 
-    deploys = Deploy.all()
-    available.push({'key': "deploy_point:#{store.name}", 'name': store.name, 'type': 'D'}) for store in Deploy.all()
+    hostedRepos = HostedRepository.all()
+    available.push({'key': "hostd:#{store.name}", 'name': store.name, 'type': 'H'}) for store in hostedRepos
     
     available
     
   availableWithSortedConstituents: (constituents) ->
     available = []
   
-    repos = Repository.all()
-    available.push({'key': "repository:#{store.name}", 'name': store.name, 'type': 'R'}) for store in Repository.all()
+    remoteRepos = RemoteRepository.all()
+    available.push({'key': "remote:#{store.name}", 'name': store.name, 'type': 'R'}) for store in remoteRepos
 
     groups = Group.all()
-    available.push({'key': "group:#{store.name}", 'name': store.name, 'type': 'G'}) for store in Group.all()
+    available.push({'key': "group:#{store.name}", 'name': store.name, 'type': 'G'}) for store in groups
 
-    deploys = Deploy.all()
-    available.push({'key': "deploy_point:#{store.name}", 'name': store.name, 'type': 'D'}) for store in Deploy.all()
+    hostedRepos = HostedRepository.all()
+    available.push({'key': "hosted:#{store.name}", 'name': store.name, 'type': 'H'}) for store in hostedRepos
     
     available.sort( (a,b) ->
       ai = if constituents then constituents.indexOf(a.key) else -1

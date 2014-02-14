@@ -25,9 +25,9 @@ import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.DeployPoint;
 import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.HostedRepository;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.subsys.flatfile.conf.FlatFileConfiguration;
@@ -78,17 +78,17 @@ public class FlatTCKFixtureProvider
         }
 
         @Override
-        public DeployPoint getDeployPoint( final String name )
+        public HostedRepository getHostedRepository( final String name )
             throws ProxyDataException
         {
-            return getDataManager().getDeployPoint( name );
+            return getDataManager().getHostedRepository( name );
         }
 
         @Override
-        public Repository getRepository( final String name )
+        public RemoteRepository getRemoteRepository( final String name )
             throws ProxyDataException
         {
-            return getDataManager().getRepository( name );
+            return getDataManager().getRemoteRepository( name );
         }
 
         @Override
@@ -106,17 +106,17 @@ public class FlatTCKFixtureProvider
         }
 
         @Override
-        public List<Repository> getAllRepositories()
+        public List<RemoteRepository> getAllRemoteRepositories()
             throws ProxyDataException
         {
-            return getDataManager().getAllRepositories();
+            return getDataManager().getAllRemoteRepositories();
         }
 
         @Override
-        public List<DeployPoint> getAllDeployPoints()
+        public List<HostedRepository> getAllHostedRepositories()
             throws ProxyDataException
         {
-            return getDataManager().getAllDeployPoints();
+            return getDataManager().getAllHostedRepositories();
         }
 
         @Override
@@ -197,9 +197,9 @@ public class FlatTCKFixtureProvider
         }
 
         @Override
-        public boolean hasRepository( final String name )
+        public boolean hasRemoteRepository( final String name )
         {
-            return getDataManager().hasRepository( name );
+            return getDataManager().hasRemoteRepository( name );
         }
 
         @Override
@@ -209,9 +209,9 @@ public class FlatTCKFixtureProvider
         }
 
         @Override
-        public boolean hasDeployPoint( final String name )
+        public boolean hasHostedRepository( final String name )
         {
-            return getDataManager().hasDeployPoint( name );
+            return getDataManager().hasHostedRepository( name );
         }
 
         @Override

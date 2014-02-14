@@ -23,11 +23,11 @@ import static org.commonjava.vertx.vabr.types.BuiltInParam._classContextUrl;
 
 import javax.inject.Inject;
 
+import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.core.rest.StatsController;
-import org.commonjava.aprox.core.util.UriFormatter;
 import org.commonjava.aprox.inject.AproxData;
-import org.commonjava.aprox.rest.AproxWorkflowException;
-import org.commonjava.aprox.rest.util.ApplicationContent;
+import org.commonjava.aprox.util.ApplicationContent;
+import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;

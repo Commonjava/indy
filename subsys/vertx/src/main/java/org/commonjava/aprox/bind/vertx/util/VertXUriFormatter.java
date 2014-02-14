@@ -16,7 +16,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.vertx.util;
 
-import org.commonjava.aprox.core.util.UriFormatter;
+import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.maven.galley.util.PathUtils;
 
 public class VertXUriFormatter

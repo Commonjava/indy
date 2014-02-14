@@ -4,8 +4,8 @@ class Navbar extends Spine.Controller
   className: 'navbar'
 
   events:
-    'click .repos': 'showRepos'
-    'click .deploys': 'showDeploys'
+    'click .remotes': 'showRemotes'
+    'click .hosted': 'showHosted'
     'click .groups': 'showGroups'
 
   constructor: ->
@@ -21,24 +21,24 @@ class Navbar extends Spine.Controller
 
   light: (type) ->
     switch type
-      when 'repos'
-        $(@el).find('.repos').addClass('ui-state-active')
-        $(@el).find('.deploys').removeClass('ui-state-active')
+      when 'remotes'
+        $(@el).find('.remotes').addClass('ui-state-active')
+        $(@el).find('.hosted').removeClass('ui-state-active')
         $(@el).find('.groups').removeClass('ui-state-active')
-      when 'deploys'
-        $(@el).find('.repos').removeClass('ui-state-active')
-        $(@el).find('.deploys').addClass('ui-state-active')
+      when 'hosted'
+        $(@el).find('.remotes').removeClass('ui-state-active')
+        $(@el).find('.hosted').addClass('ui-state-active')
         $(@el).find('.groups').removeClass('ui-state-active')
       when 'groups'
-        $(@el).find('.repos').removeClass('ui-state-active')
-        $(@el).find('.deploys').removeClass('ui-state-active')
+        $(@el).find('.remotes').removeClass('ui-state-active')
+        $(@el).find('.hosted').removeClass('ui-state-active')
         $(@el).find('.groups').addClass('ui-state-active')
         
-  showRepos: ->
-    @navigate '/repos'
+  showRemotes: ->
+    @navigate '/remotes'
 
-  showDeploys: ->
-    @navigate '/deploys'
+  showHosted: ->
+    @navigate '/hosted'
 
   showGroups: ->
     @navigate '/groups'

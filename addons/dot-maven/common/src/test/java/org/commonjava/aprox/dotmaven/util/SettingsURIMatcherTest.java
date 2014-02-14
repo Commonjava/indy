@@ -27,7 +27,7 @@ public class SettingsURIMatcherTest
     @Test
     public void matchSettingsPath()
     {
-        assertThat( new SettingsURIMatcher( "/settings/groups/settings-public.xml" ).matches(), equalTo( true ) );
+        assertThat( new SettingsURIMatcher( "/settings/group/settings-public.xml" ).matches(), equalTo( true ) );
     }
 
 }

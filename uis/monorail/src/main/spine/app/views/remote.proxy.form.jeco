@@ -1,0 +1,29 @@
+<div class="remote-edit proxy-edit">
+  <form>
+    <fieldset class="invisible">
+      <div class="form-line">
+        <div class="form-field">
+          <label>Proxy Host</label>
+          <input class="host-field" type="text" name="proxy_host" required="true" value="<%= @proxy_host %>"/>
+        </div>
+        <div class="form-field">
+          <label>Port</label>
+          <input class="port-field" type="number" name="proxy_port" required="true" value="<%= @proxy_port %>"/>
+        </div>
+      </div>
+    </fieldset>
+    
+    <fieldset>
+      <legend>Proxy Authentication (optional)</legend>
+      <div class="form-line">
+        <label>Username</label>
+        <input class="user-field" type="text" size="15" name="proxy_user" value="<%= @proxy_user %>"/>
+      </div>
+      <div class="form-line">
+        <label>Password</label>
+        <input title="Password for use with HTTP Proxy" size="15" class="password-field" type="password" name="proxy_password" value="<%= @proxy_password %>"/>
+      </div>
+    </fieldset>
+    
+  </form>
+</div>

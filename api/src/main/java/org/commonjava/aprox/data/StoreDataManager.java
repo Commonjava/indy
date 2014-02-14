@@ -21,19 +21,19 @@ import java.util.List;
 import java.util.Set;
 
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.DeployPoint;
+import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.Repository;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 
 public interface StoreDataManager
 {
 
-    DeployPoint getDeployPoint( final String name )
+    HostedRepository getHostedRepository( final String name )
         throws ProxyDataException;
 
-    Repository getRepository( final String name )
+    RemoteRepository getRemoteRepository( final String name )
         throws ProxyDataException;
 
     Group getGroup( final String name )
@@ -51,10 +51,10 @@ public interface StoreDataManager
     List<Group> getAllGroups()
         throws ProxyDataException;
 
-    List<Repository> getAllRepositories()
+    List<RemoteRepository> getAllRemoteRepositories()
         throws ProxyDataException;
 
-    List<DeployPoint> getAllDeployPoints()
+    List<HostedRepository> getAllHostedRepositories()
         throws ProxyDataException;
 
     List<ArtifactStore> getAllConcreteArtifactStores()
@@ -69,22 +69,22 @@ public interface StoreDataManager
     Set<Group> getGroupsContaining( final StoreKey repo )
         throws ProxyDataException;
 
-    void storeDeployPoints( final Collection<DeployPoint> deploys )
+    void storeHostedRepositories( final Collection<HostedRepository> deploys )
         throws ProxyDataException;
 
-    boolean storeDeployPoint( final DeployPoint deploy )
+    boolean storeHostedRepository( final HostedRepository deploy )
         throws ProxyDataException;
 
-    boolean storeDeployPoint( final DeployPoint deploy, final boolean skipIfExists )
+    boolean storeHostedRepository( final HostedRepository deploy, final boolean skipIfExists )
         throws ProxyDataException;
 
-    void storeRepositories( final Collection<Repository> repos )
+    void storeRemoteRepositories( final Collection<RemoteRepository> repos )
         throws ProxyDataException;
 
-    boolean storeRepository( final Repository proxy )
+    boolean storeRemoteRepository( final RemoteRepository proxy )
         throws ProxyDataException;
 
-    boolean storeRepository( final Repository repository, final boolean skipIfExists )
+    boolean storeRemoteRepository( final RemoteRepository repository, final boolean skipIfExists )
         throws ProxyDataException;
 
     void storeGroups( final Collection<Group> groups )
@@ -102,16 +102,16 @@ public interface StoreDataManager
     boolean storeArtifactStore( ArtifactStore key, boolean skipIfExists )
         throws ProxyDataException;
 
-    void deleteDeployPoint( final DeployPoint deploy )
+    void deleteHostedRepository( final HostedRepository deploy )
         throws ProxyDataException;
 
-    void deleteDeployPoint( final String name )
+    void deleteHostedRepository( final String name )
         throws ProxyDataException;
 
-    void deleteRepository( final Repository repo )
+    void deleteRemoteRepository( final RemoteRepository repo )
         throws ProxyDataException;
 
-    void deleteRepository( final String name )
+    void deleteRemoteRepository( final String name )
         throws ProxyDataException;
 
     void deleteGroup( final Group group )
@@ -129,11 +129,11 @@ public interface StoreDataManager
     void install()
         throws ProxyDataException;
 
-    boolean hasRepository( String name );
+    boolean hasRemoteRepository( String name );
 
     boolean hasGroup( String name );
 
-    boolean hasDeployPoint( String name );
+    boolean hasHostedRepository( String name );
 
     boolean hasArtifactStore( StoreKey key );
 

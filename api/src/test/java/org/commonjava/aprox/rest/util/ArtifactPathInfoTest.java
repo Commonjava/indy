@@ -19,6 +19,7 @@ package org.commonjava.aprox.rest.util;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import org.commonjava.aprox.util.ArtifactPathInfo;
 import org.junit.Test;
 
 public class ArtifactPathInfoTest
