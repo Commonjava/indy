@@ -34,7 +34,17 @@ public class LegacyStorageMigrationAction
     public void execute()
     {
         final File basedir = config.getStorageRootDirectory();
+        if ( !basedir.exists() )
+        {
+            return;
+        }
+
         final File[] dirs = basedir.listFiles();
+        if ( dirs == null || dirs.length < 1 )
+        {
+            return;
+        }
+
         for ( final File dir : dirs )
         {
             final String name = dir.getName();
