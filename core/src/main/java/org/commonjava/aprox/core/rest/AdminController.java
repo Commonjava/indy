@@ -19,14 +19,16 @@ package org.commonjava.aprox.core.rest;
 import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
+import org.commonjava.aprox.action.start.StartAction;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
@@ -49,6 +51,9 @@ public class AdminController
 
     @Inject
     private AProxVersioning versioning;
+
+    @Inject
+    private Instance<StartAction> startActions;
 
     protected AdminController()
     {
@@ -117,6 +122,16 @@ public class AdminController
     {
         logger.info( "\n\n\n\n\n STARTING AProx\n    Version: %s\n    Built-By: %s\n    Commit-ID: %s\n    Built-On: %s\n\n\n\n\n",
                      versioning.getVersion(), versioning.getBuilder(), versioning.getCommitId(), versioning.getTimestamp() );
+
+        if ( startActions != null )
+        {
+            logger.info( "Running startup actions..." );
+            for ( final StartAction action : startActions )
+            {
+                logger.info( "Running startup action: '%s'", action.getId() );
+                action.execute();
+            }
+        }
 
         logger.info( "Verfiying that AProx DB + basic data is installed..." );
         try
