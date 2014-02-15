@@ -77,7 +77,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-subsys-template</artifactId>
+      <artifactId>aprox-subsys-groovy</artifactId>
     </dependency>
   </dependencies>
   
