@@ -30,9 +30,9 @@
   
   <modules>
     <module>flatfile</module>
+    <module>groovy</module>
     <module>http</module>
     <module>maven</module>
-    <module>template</module>
     <module>vertx</module>
   </modules>
   

@@ -18,7 +18,7 @@ package org.commonjava.aprox.subsys.template;
 
 import java.text.MessageFormat;
 
-public class RenderingException
+public class AproxGroovyException
     extends Exception
 {
 
@@ -28,13 +28,13 @@ public class RenderingException
 
     private String formattedMessage;
 
-    public RenderingException( final String message, final Throwable cause, final Object... params )
+    public AproxGroovyException( final String message, final Throwable cause, final Object... params )
     {
         super( message, cause );
         this.params = params;
     }
 
-    public RenderingException( final String message, final Object... params )
+    public AproxGroovyException( final String message, final Object... params )
     {
         super( message );
         this.params = params;

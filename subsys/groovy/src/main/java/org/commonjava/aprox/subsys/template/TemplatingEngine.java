@@ -39,7 +39,7 @@ public class TemplatingEngine
     }
 
     public String render( final String templateKey, final Map<String, Object> params )
-        throws RenderingException
+        throws AproxGroovyException
     {
         final Template template = getTemplate( templateKey );
 
@@ -52,14 +52,15 @@ public class TemplatingEngine
         }
         catch ( final IOException e )
         {
-            throw new RenderingException( "Failed to render template: %s. Reason: %s", e, templateKey, e.getMessage() );
+            throw new AproxGroovyException( "Failed to render template: %s. Reason: %s", e, templateKey, e.getMessage() );
         }
 
         return writer.toString();
     }
 
+    // TODO Cache these...though this will hurt hot-reloading. Perhaps a debug mode configuration?
     private Template getTemplate( final String templateKey )
-        throws RenderingException
+        throws AproxGroovyException
     {
         try
         {
@@ -84,22 +85,22 @@ public class TemplatingEngine
 
             if ( template == null )
             {
-                throw new RenderingException( "Failed to locate template: %s", templateKey );
+                throw new AproxGroovyException( "Failed to locate template: %s", templateKey );
             }
 
             return template;
         }
         catch ( final CompilationFailedException e )
         {
-            throw new RenderingException( "Failed to compile template: %s. Reason: %s", e, templateKey, e.getMessage() );
+            throw new AproxGroovyException( "Failed to compile template: %s. Reason: %s", e, templateKey, e.getMessage() );
         }
         catch ( final ClassNotFoundException e )
         {
-            throw new RenderingException( "Failed to compile template: %s. Reason: %s", e, templateKey, e.getMessage() );
+            throw new AproxGroovyException( "Failed to compile template: %s. Reason: %s", e, templateKey, e.getMessage() );
         }
         catch ( final IOException e )
         {
-            throw new RenderingException( "Failed to read template: %s. Reason: %s", e, templateKey, e.getMessage() );
+            throw new AproxGroovyException( "Failed to read template: %s. Reason: %s", e, templateKey, e.getMessage() );
         }
     }
 }

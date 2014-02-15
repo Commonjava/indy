@@ -18,21 +18,18 @@ package org.commonjava.aprox.autoprox.live.fixture;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.util.Collections;
 
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 
-import org.commonjava.aprox.autoprox.conf.AutoProxConfiguration;
-import org.commonjava.aprox.autoprox.conf.AutoProxModel;
+import org.commonjava.aprox.autoprox.conf.AutoProxConfig;
+import org.commonjava.aprox.autoprox.conf.AutoProxFactory;
+import org.commonjava.aprox.autoprox.conf.FactoryMapping;
 import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
 import org.commonjava.aprox.inject.TestData;
-import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.RemoteRepository;
-import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.model.StoreType;
 import org.commonjava.web.json.test.WebFixture;
 
 @javax.enterprise.context.ApplicationScoped
@@ -40,9 +37,7 @@ public class TestConfigProvider
 {
     public static String REPO_ROOT_DIR = "repo.root.dir";
 
-    private AutoProxModel model;
-
-    private AutoProxConfiguration config;
+    private AutoProxConfig config;
 
     private AproxConfiguration proxyConfig;
 
@@ -78,34 +73,15 @@ public class TestConfigProvider
     @Produces
     @Default
     @TestData
-    public synchronized AutoProxConfiguration getAutoProxConfiguration()
+    public synchronized AutoProxConfig getAutoProxConfig()
     {
         if ( config == null )
         {
-            config = new AutoProxConfiguration();
-            config.setEnabled( true );
-            config.setDeployEnabled( true );
+            final AutoProxFactory fac = new TestAutoProxFactory( http );
+            config = new AutoProxConfig( Collections.singletonList( new FactoryMapping( FactoryMapping.DEFAULT_MATCH, fac ) ), true );
         }
 
         return config;
-    }
-
-    @Produces
-    @Default
-    public synchronized AutoProxModel getAutoProxModel()
-        throws MalformedURLException
-    {
-        if ( model == null )
-        {
-            model = new AutoProxModel();
-            model.setRemoteRepository( new RemoteRepository( "repo", http.resourceUrl( "target/${name}" ) ) );
-            model.setGroup( new Group( "group", new StoreKey( StoreType.remote, "first" ), new StoreKey( StoreType.remote, "second" ) ) );
-
-            System.out.println( "\n\n\n\nSet Autoprox URL: " + model.getRemoteRepository()
-                                                                    .getUrl() + "\n\n\n\n" );
-        }
-
-        return model;
     }
 
     @Produces

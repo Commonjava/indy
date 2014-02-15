@@ -27,11 +27,11 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.apache.log4j.Level;
-import org.commonjava.aprox.autoprox.conf.AutoProxConfiguration;
-import org.commonjava.aprox.autoprox.conf.AutoProxModel;
+import org.commonjava.aprox.autoprox.conf.AutoProxConfig;
 import org.commonjava.aprox.autoprox.live.fixture.TargetUrlResponder;
 import org.commonjava.aprox.autoprox.live.fixture.TestConfigProvider;
 import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.inject.TestData;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
@@ -58,10 +58,8 @@ public class AutoProxDataManagerDecoratorTest
     protected StoreDataManager proxyManager;
 
     @Inject
-    protected AutoProxConfiguration config;
-
-    @Inject
-    protected AutoProxModel autoproxModel;
+    @TestData
+    protected AutoProxConfig config;
 
     @Inject
     protected TargetUrlResponder targetResponder;
@@ -93,12 +91,11 @@ public class AutoProxDataManagerDecoratorTest
     @Deployment
     public static WebArchive createWar()
     {
-        return new TestWarArchiveBuilder( new File( "target/test-assembly.war" ),
-                                          AutoProxDataManagerDecoratorTest.class ).withExtraClasses( TestConfigProvider.class,
-                                                                                                     TargetUrlResponder.class )
-                                                                                  .withLog4jProperties()
-                                                                                  .withBeansXml( "beans.live.xml" )
-                                                                                  .build();
+        return new TestWarArchiveBuilder( new File( "target/test-assembly.war" ), AutoProxDataManagerDecoratorTest.class ).withExtraClasses( TestConfigProvider.class,
+                                                                                                                                             TargetUrlResponder.class )
+                                                                                                                          .withLog4jProperties()
+                                                                                                                          .withBeansXml( "beans.live.xml" )
+                                                                                                                          .build();
     }
 
     @Test

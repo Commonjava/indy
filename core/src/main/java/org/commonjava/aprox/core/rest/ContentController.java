@@ -35,7 +35,7 @@ import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.aprox.subsys.template.RenderingException;
+import org.commonjava.aprox.subsys.template.AproxGroovyException;
 import org.commonjava.aprox.subsys.template.TemplatingEngine;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.UriFormatter;
@@ -192,7 +192,7 @@ public class ContentController
         {
             return templates.render( "directory-listing", params );
         }
-        catch ( final RenderingException e )
+        catch ( final AproxGroovyException e )
         {
             throw new AproxWorkflowException( e.getMessage(), e );
         }

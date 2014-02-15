@@ -23,14 +23,14 @@
     <version>0.12.0-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-subsys-template</artifactId>
+  <artifactId>aprox-subsys-groovy</artifactId>
 
-  <name>AProx :: Subsystems :: Templating</name>
+  <name>AProx :: Subsystems :: Groovy Support</name>
   
   <dependencies>
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
-      <artifactId>groovy-templates</artifactId>
+      <artifactId>groovy-all</artifactId>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

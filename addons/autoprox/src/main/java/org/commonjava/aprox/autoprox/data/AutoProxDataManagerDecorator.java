@@ -20,8 +20,6 @@ import static org.commonjava.aprox.util.UrlUtils.buildUrl;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.List;
-import java.util.regex.Pattern;
 
 import javax.decorator.Decorator;
 import javax.decorator.Delegate;
@@ -33,16 +31,14 @@ import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpHead;
-import org.commonjava.aprox.autoprox.conf.AutoProxConfiguration;
-import org.commonjava.aprox.autoprox.conf.AutoProxModel;
+import org.commonjava.aprox.autoprox.conf.AutoProxConfig;
+import org.commonjava.aprox.autoprox.conf.AutoProxFactory;
+import org.commonjava.aprox.autoprox.conf.FactoryMapping;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.RemoteRepository;
-import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
 import org.commonjava.util.logging.Logger;
 
@@ -50,12 +46,6 @@ import org.commonjava.util.logging.Logger;
 public abstract class AutoProxDataManagerDecorator
     implements StoreDataManager
 {
-
-    private static final String REPO_NAME_URL_PATTERN = Pattern.quote( "${name}" );
-
-    private static final String REPO_CONSTITUENT_PLACEHOLDER = "${repository}";
-
-    private static final String DEPLOY_CONSTITUENT_PLACEHOLDER = "${deploy}";
 
     private final Logger logger = new Logger( getClass() );
 
@@ -65,10 +55,7 @@ public abstract class AutoProxDataManagerDecorator
     private StoreDataManager dataManager;
 
     @Inject
-    private AutoProxConfiguration config;
-
-    @Inject
-    private AutoProxModel autoproxModel;
+    private AutoProxConfig config;
 
     @Inject
     private AproxHttpProvider http;
@@ -89,91 +76,65 @@ public abstract class AutoProxDataManagerDecorator
         //        logger.info( "AutoProx decorator active" );
         if ( g == null )
         {
-            //            logger.info( "AutoProx: creating repository for: %s", name );
-            final RemoteRepository proxy = getRemoteRepository( name );
-            if ( proxy != null )
+            final AutoProxFactory factory = getFactory( name );
+            if ( factory == null )
             {
-                HostedRepository dp = null;
-                if ( config.isDeployEnabled() )
+                return null;
+            }
+
+            //            logger.info( "AutoProx: creating repository for: %s", name );
+            try
+            {
+                final RemoteRepository remote = factory.createRemoteRepository( name );
+                if ( remote == null || checkUrlValidity( remote, remote.getUrl(), factory.getRemoteValidationPath() ) )
                 {
-                    dp = dataManager.getHostedRepository( name );
+                    final HostedRepository hosted = factory.createHostedRepository( name );
 
-                    if ( dp == null )
+                    g = factory.createGroup( name, remote, hosted );
+
+                    if ( g != null )
                     {
-                        dp = new HostedRepository( name );
-
-                        final HostedRepository deployTemplate = autoproxModel.getHostedRepository();
-
-                        if ( deployTemplate != null )
+                        if ( remote != null )
                         {
-                            dp.setAllowReleases( deployTemplate.isAllowReleases() );
-                            dp.setAllowSnapshots( deployTemplate.isAllowSnapshots() );
-                            dp.setSnapshotTimeoutSeconds( deployTemplate.getSnapshotTimeoutSeconds() );
+                            dataManager.storeArtifactStore( remote );
                         }
 
-                        dataManager.storeHostedRepository( dp );
+                        if ( hosted != null )
+                        {
+                            dataManager.storeArtifactStore( hosted );
+                        }
+
+                        dataManager.storeArtifactStore( g );
                     }
                 }
-
-                g = new Group( name );
-
-                boolean rFound = false;
-                boolean dFound = false;
-                final Group groupTemplate = autoproxModel.getGroup();
-
-                if ( groupTemplate != null && groupTemplate.getConstituents() != null )
-                {
-                    for ( final StoreKey storeKey : groupTemplate.getConstituents() )
-                    {
-                        if ( storeKey.getType() == StoreType.remote && REPO_CONSTITUENT_PLACEHOLDER.equalsIgnoreCase( storeKey.getName() ) )
-                        {
-                            g.addConstituent( proxy );
-                            rFound = true;
-                        }
-                        else if ( dp != null && storeKey.getType() == StoreType.hosted
-                            && DEPLOY_CONSTITUENT_PLACEHOLDER.equalsIgnoreCase( storeKey.getName() ) )
-                        {
-                            g.addConstituent( dp );
-                            dFound = true;
-                        }
-                        else
-                        {
-                            g.addConstituent( storeKey );
-                        }
-                    }
-                }
-
-                final List<StoreKey> constituents = g.getConstituents();
-                if ( !rFound )
-                {
-                    constituents.add( 0, proxy.getKey() );
-                }
-
-                if ( dp != null && !dFound )
-                {
-                    constituents.add( 0, dp.getKey() );
-                }
-
-                dataManager.storeGroup( g );
+            }
+            catch ( final MalformedURLException e )
+            {
+                throw new ProxyDataException( "[AUTOPROX] Failed to create/validate new remote repository from factory matching: '%s'. Reason: %s",
+                                              e, name, e.getMessage() );
             }
         }
 
         return g;
     }
 
-    private synchronized boolean checkUrlValidity( final RemoteRepository repo, final String proxyUrl, final String validationPath )
+    private AutoProxFactory getFactory( final String name )
     {
-        String url = null;
-        try
+        for ( final FactoryMapping mapping : config.getFactoryMappings() )
         {
-            url = buildUrl( proxyUrl, validationPath );
+            if ( mapping.matchesName( name ) )
+            {
+                return mapping.getFactory();
+            }
         }
-        catch ( final MalformedURLException e )
-        {
-            logger.error( "Failed to construct repository-validation URL from base: %s and path: %s. Reason: %s", e, proxyUrl, validationPath,
-                          e.getMessage() );
-            return false;
-        }
+
+        return null;
+    }
+
+    private synchronized boolean checkUrlValidity( final RemoteRepository repo, final String proxyUrl, final String validationPath )
+        throws MalformedURLException
+    {
+        final String url = buildUrl( proxyUrl, validationPath );
 
         //        logger.info( "\n\n\n\n\n[AutoProx] Checking URL: %s from:", new Throwable(), url );
         final HttpHead head = new HttpHead( url );
@@ -222,70 +183,36 @@ public abstract class AutoProxDataManagerDecorator
         //        logger.info( "AutoProx decorator active" );
         if ( repo == null )
         {
+            final AutoProxFactory factory = getFactory( name );
+            if ( factory == null )
+            {
+                return null;
+            }
+
             //            logger.info( "AutoProx: creating repository for: %s", name );
 
-            final RemoteRepository repoTemplate = autoproxModel.getRemoteRepository();
-            final String validationPath = autoproxModel.getRepoValidationPath();
-
-            final String url = resolveRepoUrl( repoTemplate.getUrl(), name );
-
-            if ( repo == null )
+            try
             {
-                repo = new RemoteRepository( name, url );
-
-                repo.setCacheTimeoutSeconds( repoTemplate.getCacheTimeoutSeconds() );
-                repo.setHost( repoTemplate.getHost() );
-                repo.setKeyCertPem( repoTemplate.getKeyCertPem() );
-                repo.setKeyPassword( repoTemplate.getKeyPassword() );
-                repo.setPassthrough( repoTemplate.isPassthrough() );
-                repo.setPassword( repoTemplate.getPassword() );
-                repo.setPort( repoTemplate.getPort() );
-                repo.setProxyHost( repoTemplate.getProxyHost() );
-                repo.setProxyPassword( repoTemplate.getProxyPassword() );
-                repo.setProxyPort( repoTemplate.getProxyPort() );
-                repo.setProxyUser( repoTemplate.getProxyUser() );
-                repo.setServerCertPem( repoTemplate.getServerCertPem() );
-                repo.setTimeoutSeconds( repoTemplate.getTimeoutSeconds() );
-                repo.setUser( repoTemplate.getUser() );
-
-                if ( !checkUrlValidity( repo, url, validationPath ) )
+                repo = factory.createRemoteRepository( name );
+                if ( repo != null )
                 {
-                    logger.warn( "Invalid repository URL: %s", url );
-                    return null;
-                }
+                    if ( !checkUrlValidity( repo, repo.getUrl(), factory.getRemoteValidationPath() ) )
+                    {
+                        logger.warn( "Invalid repository URL: %s", repo.getUrl() );
+                        return null;
+                    }
 
-                dataManager.storeRemoteRepository( repo );
+                    dataManager.storeRemoteRepository( repo );
+                }
+            }
+            catch ( final MalformedURLException e )
+            {
+                throw new ProxyDataException( "[AUTOPROX] Failed to create/validate new remote repository from factory matching: '%s'. Reason: %s",
+                                              e, name, e.getMessage() );
             }
         }
 
         return repo;
     }
 
-    private String resolveRepoUrl( final String src, final String name )
-    {
-        return src.replaceAll( REPO_NAME_URL_PATTERN, name );
-    }
-
-    @Override
-    public ArtifactStore getArtifactStore( final StoreKey key )
-        throws ProxyDataException
-    {
-        //        logger.info( "DECORATED (getArtifactStore: %s)", key );
-        final StoreType type = key.getType();
-        switch ( type )
-        {
-            case group:
-            {
-                return getGroup( key.getName() );
-            }
-            case remote:
-            {
-                return getRemoteRepository( key.getName() );
-            }
-            default:
-            {
-                return dataManager.getArtifactStore( key );
-            }
-        }
-    }
 }
