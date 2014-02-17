@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
@@ -127,6 +127,9 @@ public interface StoreDataManager
         throws ProxyDataException;
 
     void install()
+        throws ProxyDataException;
+
+    void reload()
         throws ProxyDataException;
 
     boolean hasRemoteRepository( String name );

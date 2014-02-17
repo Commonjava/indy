@@ -31,8 +31,8 @@ import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
@@ -44,8 +44,6 @@ import org.commonjava.web.json.ser.JsonSerializer;
 public abstract class FlatFileDataManagerDecorator
     implements StoreDataManager
 {
-
-    private static final String APROX_STORE = "aprox";
 
     private final Logger logger = new Logger( getClass() );
 
@@ -81,7 +79,7 @@ public abstract class FlatFileDataManagerDecorator
     public void readDefinitions()
         throws ProxyDataException
     {
-        final File basedir = config.getStorageDir( APROX_STORE );
+        final File basedir = config.getStorageDir( FlatFileStoreDataManager.APROX_STORE );
         final File ddir = new File( basedir, StoreType.hosted.name() );
 
         final String[] dFiles = ddir.list();
@@ -318,7 +316,7 @@ public abstract class FlatFileDataManagerDecorator
     private void store( final boolean skipIfExists, final ArtifactStore... stores )
         throws ProxyDataException
     {
-        final File basedir = config.getStorageDir( APROX_STORE );
+        final File basedir = config.getStorageDir( FlatFileStoreDataManager.APROX_STORE );
         for ( final ArtifactStore store : stores )
         {
             final File dir = new File( basedir, store.getDoctype()
@@ -347,7 +345,7 @@ public abstract class FlatFileDataManagerDecorator
 
     private void delete( final ArtifactStore... stores )
     {
-        final File basedir = config.getStorageDir( APROX_STORE );
+        final File basedir = config.getStorageDir( FlatFileStoreDataManager.APROX_STORE );
         for ( final ArtifactStore store : stores )
         {
             final File dir = new File( basedir, store.getDoctype()
@@ -364,7 +362,7 @@ public abstract class FlatFileDataManagerDecorator
 
     private void delete( final StoreType type, final String name )
     {
-        final File basedir = config.getStorageDir( APROX_STORE );
+        final File basedir = config.getStorageDir( FlatFileStoreDataManager.APROX_STORE );
         final File dir = new File( basedir, type.name() );
 
         final File f = new File( dir, name + ".json" );
@@ -414,7 +412,7 @@ public abstract class FlatFileDataManagerDecorator
     {
         dataManager.clear();
 
-        final File basedir = config.getStorageDir( APROX_STORE );
+        final File basedir = config.getStorageDir( FlatFileStoreDataManager.APROX_STORE );
         try
         {
             FileUtils.forceDelete( basedir );
@@ -429,12 +427,20 @@ public abstract class FlatFileDataManagerDecorator
     public void install()
         throws ProxyDataException
     {
-        if ( !config.getStorageDir( APROX_STORE )
+        if ( !config.getStorageDir( FlatFileStoreDataManager.APROX_STORE )
                     .isDirectory() )
         {
             dataManager.storeRemoteRepository( new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" ), true );
             dataManager.storeGroup( new Group( "public", new StoreKey( StoreType.remote, "central" ) ), true );
         }
+    }
+
+    @Override
+    public void reload()
+        throws ProxyDataException
+    {
+        dataManager.clear();
+        readDefinitions();
     }
 
 }

@@ -1,10 +1,10 @@
 package org.commonjava.aprox.action.start;
 
-public interface StartAction
+public interface MigrationAction
 {
 
     String getId();
 
-    void execute();
+    boolean execute();
 
 }
