@@ -34,6 +34,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.bind.jaxrs.util.AproxExceptionUtils;
 import org.commonjava.aprox.bind.jaxrs.util.JaxRsUriFormatter;
@@ -73,10 +74,11 @@ public class WorkspaceResource
     @Path( "/{id}" )
     @PUT
     @Produces( MediaType.APPLICATION_JSON )
-    public Response createNamed( @PathParam( "id" ) final String id, @Context final UriBuilder uriBuilder )
+    public Response createNamed( @PathParam( "id" ) final String id, @Context final UriInfo uriInfo )
     {
         try
         {
+            final UriBuilder uriBuilder = uriInfo.getBaseUriBuilder();
             final CreationDTO dto = controller.createNamed( id, uriBuilder.path( getClass() )
                                                                           .build()
                                                                           .toString(), new JaxRsUriFormatter( uriBuilder ) );
@@ -96,10 +98,11 @@ public class WorkspaceResource
     @Path( "/new" )
     @POST
     @Produces( MediaType.APPLICATION_JSON )
-    public Response create( @Context final UriBuilder uriBuilder )
+    public Response create( @Context final UriInfo uriInfo )
     {
         try
         {
+            final UriBuilder uriBuilder = uriInfo.getBaseUriBuilder();
             final CreationDTO dto = controller.create( uriBuilder.path( getClass() )
                                                                  .build()
                                                                  .toString(), new JaxRsUriFormatter( uriBuilder ) );
@@ -120,10 +123,11 @@ public class WorkspaceResource
     @POST
     @Consumes( MediaType.APPLICATION_JSON )
     @Produces( MediaType.APPLICATION_JSON )
-    public Response createFrom( @Context final UriBuilder uriBuilder, @Context final HttpServletRequest request )
+    public Response createFrom( @Context final UriInfo uriInfo, @Context final HttpServletRequest request )
     {
         try
         {
+            final UriBuilder uriBuilder = uriInfo.getBaseUriBuilder();
             final CreationDTO dto =
                 controller.createFrom( uriBuilder.path( getClass() )
                                                  .build()
@@ -152,10 +156,11 @@ public class WorkspaceResource
     @Produces( MediaType.APPLICATION_JSON )
     public Response select( @PathParam( "id" ) final String id, @PathParam( "groupId" ) final String groupId,
                             @PathParam( "artifactId" ) final String artifactId, @PathParam( "newVersion" ) final String newVersion,
-                            @QueryParam( "for" ) final String oldVersion, @Context final UriBuilder uriBuilder )
+                            @QueryParam( "for" ) final String oldVersion, @Context final UriInfo uriInfo )
     {
         try
         {
+            final UriBuilder uriBuilder = uriInfo.getBaseUriBuilder();
             final boolean modified = controller.select( id, groupId, artifactId, newVersion, oldVersion, new JaxRsUriFormatter( uriBuilder ) );
             return modified ? Response.ok()
                                       .build() : Response.notModified()
@@ -200,10 +205,11 @@ public class WorkspaceResource
     @Path( "/{id}/source/{source}" )
     @PUT
     @Produces( MediaType.APPLICATION_JSON )
-    public Response addSource( @PathParam( "id" ) final String id, @PathParam( "source" ) final String source, @Context final UriBuilder uriBuilder )
+    public Response addSource( @PathParam( "id" ) final String id, @PathParam( "source" ) final String source, @Context final UriInfo uriInfo )
     {
         try
         {
+            final UriBuilder uriBuilder = uriInfo.getBaseUriBuilder();
             final boolean modified = controller.addSource( id, source, new JaxRsUriFormatter( uriBuilder ) );
             return modified ? Response.ok()
                                       .build() : Response.notModified()
@@ -219,11 +225,11 @@ public class WorkspaceResource
     @Path( "/{id}/profile/{profile}" )
     @PUT
     @Produces( MediaType.APPLICATION_JSON )
-    public Response addPomLocation( @PathParam( "id" ) final String id, @PathParam( "profile" ) final String profile,
-                                    @Context final UriBuilder uriBuilder )
+    public Response addPomLocation( @PathParam( "id" ) final String id, @PathParam( "profile" ) final String profile, @Context final UriInfo uriInfo )
     {
         try
         {
+            final UriBuilder uriBuilder = uriInfo.getBaseUriBuilder();
             final boolean modified = controller.addPomLocation( id, profile, new JaxRsUriFormatter( uriBuilder ) );
             return modified ? Response.ok()
                                       .build() : Response.notModified()

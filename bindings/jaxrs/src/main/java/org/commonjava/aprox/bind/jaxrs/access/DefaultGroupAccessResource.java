@@ -25,7 +25,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.model.Group;
@@ -64,9 +63,9 @@ public class DefaultGroupAccessResource
     @Path( "/{name}{path: (/.+)?}" )
     public Response getProxyContent( @ApiParam( "Name of the store" ) @PathParam( "name" ) final String name,
                                      @ApiParam( "Content path within the store" ) @PathParam( "path" ) final String path,
-                                     @Context final UriBuilder uriBuilder )
+                                     @Context final UriInfo uriInfo )
     {
-        return doGet( name, path, uriBuilder );
+        return doGet( name, path, uriInfo );
     }
 
     /*

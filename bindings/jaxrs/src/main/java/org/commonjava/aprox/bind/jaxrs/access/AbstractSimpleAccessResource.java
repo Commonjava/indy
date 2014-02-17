@@ -102,7 +102,7 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
 
     protected abstract StoreType getStoreType();
 
-    protected Response doGet( final String name, final String path, final UriBuilder uriBuilder )
+    protected Response doGet( final String name, final String path, final UriInfo uriInfo )
     {
         // TODO:
         // directory request (ends with "/") or empty path (directory request for proxy root)
@@ -111,6 +111,7 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
 
         Response response = null;
 
+        final UriBuilder uriBuilder = uriInfo.getBaseUriBuilder();
         try
         {
             final UriFormatter uriFormatter = new JaxRsUriFormatter( uriBuilder );

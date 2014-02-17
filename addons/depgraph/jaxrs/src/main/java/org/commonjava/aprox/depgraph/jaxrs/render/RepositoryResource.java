@@ -27,6 +27,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.bind.jaxrs.util.AproxExceptionUtils;
 import org.commonjava.aprox.bind.jaxrs.util.JaxRsUriFormatter;
@@ -47,10 +48,11 @@ public class RepositoryResource
     @POST
     @Path( "/urlmap" )
     @Produces( "application/json" )
-    public Response getUrlMap( @Context final HttpServletRequest req, @Context final HttpServletResponse resp, @Context final UriBuilder builder )
+    public Response getUrlMap( @Context final HttpServletRequest req, @Context final HttpServletResponse resp, @Context final UriInfo uriInfo )
     {
         try
         {
+            final UriBuilder builder = uriInfo.getBaseUriBuilder();
             final String baseUri = builder.path( getClass() )
                                           .build()
                                           .toString();
@@ -75,10 +77,11 @@ public class RepositoryResource
     @POST
     @Path( "/downlog" )
     @Produces( "text/plain" )
-    public Response getDownloadLog( @Context final HttpServletRequest req, @Context final HttpServletResponse resp, @Context final UriBuilder builder )
+    public Response getDownloadLog( @Context final HttpServletRequest req, @Context final HttpServletResponse resp, @Context final UriInfo uriInfo )
     {
         try
         {
+            final UriBuilder builder = uriInfo.getBaseUriBuilder();
             final String baseUri = builder.path( getClass() )
                                           .build()
                                           .toString();
