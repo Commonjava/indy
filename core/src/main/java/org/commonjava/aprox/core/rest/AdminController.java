@@ -23,7 +23,7 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.action.start.StartAction;
+import org.commonjava.aprox.action.start.MigrationAction;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
@@ -53,7 +53,7 @@ public class AdminController
     private AProxVersioning versioning;
 
     @Inject
-    private Instance<StartAction> startActions;
+    private Instance<MigrationAction> migrationActions;
 
     protected AdminController()
     {
@@ -123,19 +123,20 @@ public class AdminController
         logger.info( "\n\n\n\n\n STARTING AProx\n    Version: %s\n    Built-By: %s\n    Commit-ID: %s\n    Built-On: %s\n\n\n\n\n",
                      versioning.getVersion(), versioning.getBuilder(), versioning.getCommitId(), versioning.getTimestamp() );
 
-        if ( startActions != null )
+        boolean changed = false;
+        if ( migrationActions != null )
         {
             logger.info( "Running startup actions..." );
-            for ( final StartAction action : startActions )
+            for ( final MigrationAction action : migrationActions )
             {
-                logger.info( "Running startup action: '%s'", action.getId() );
-                action.execute();
+                logger.info( "Running migration action: '%s'", action.getId() );
+                changed = action.execute() || changed;
             }
         }
 
-        logger.info( "Verfiying that AProx DB + basic data is installed..." );
         try
         {
+            logger.info( "Verfiying that AProx DB + basic data is installed..." );
             storeManager.install();
             RemoteRepository central = storeManager.getRemoteRepository( "central" );
             if ( central == null )

@@ -28,7 +28,7 @@ import org.commonjava.web.json.ser.JsonSerializer;
 public class FlatFileStoreDataManager
     extends MemoryStoreDataManager
 {
-    private static final String APROX_STORE = "aprox";
+    public static final String APROX_STORE = "aprox";
 
     private final Logger logger = new Logger( getClass() );
 
@@ -407,6 +407,15 @@ public class FlatFileStoreDataManager
             storeRemoteRepository( new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" ), true );
             storeGroup( new Group( "public", new StoreKey( StoreType.remote, "central" ) ), true );
         }
+    }
+
+    @Override
+    public void reload()
+        throws ProxyDataException
+    {
+        // NOTE: Call to super for this, because the local implementation DELETES THE DB DIR!!!
+        super.clear();
+        readDefinitions();
     }
 
 }

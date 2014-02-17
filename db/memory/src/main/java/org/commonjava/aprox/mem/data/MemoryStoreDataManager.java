@@ -507,4 +507,10 @@ public class MemoryStoreDataManager
         return stores.containsKey( key );
     }
 
+    @Override
+    public void reload()
+        throws ProxyDataException
+    {
+    }
+
 }

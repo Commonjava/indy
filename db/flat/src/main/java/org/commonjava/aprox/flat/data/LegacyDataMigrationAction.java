@@ -1,17 +1,21 @@
-package org.commonjava.aprox.filer.def;
+package org.commonjava.aprox.flat.data;
 
 import java.io.File;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.commonjava.aprox.action.start.MigrationAction;
-import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
+import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.model.HostedRepository;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreType;
+import org.commonjava.aprox.subsys.flatfile.conf.FlatFileConfiguration;
 import org.commonjava.util.logging.Logger;
 
-@Named( "legacy-storage-migration" )
-public class LegacyStorageMigrationAction
+@Named( "legacy-storedb-migration" )
+public class LegacyDataMigrationAction
     implements MigrationAction
 {
 
@@ -22,7 +26,10 @@ public class LegacyStorageMigrationAction
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    private DefaultStorageProviderConfiguration config;
+    private FlatFileConfiguration config;
+
+    @Inject
+    private FlatFileStoreDataManager data;
 
     @Override
     public String getId()
@@ -33,7 +40,7 @@ public class LegacyStorageMigrationAction
     @Override
     public boolean execute()
     {
-        final File basedir = config.getStorageRootDirectory();
+        final File basedir = config.getStorageDir( FlatFileStoreDataManager.APROX_STORE );
         if ( !basedir.exists() )
         {
             return false;
@@ -68,6 +75,23 @@ public class LegacyStorageMigrationAction
 
                 changed = true;
             }
+        }
+
+        try
+        {
+            data.reload();
+
+            final List<HostedRepository> hosted = data.getAllHostedRepositories();
+            data.storeHostedRepositories( hosted );
+
+            final List<RemoteRepository> remotes = data.getAllRemoteRepositories();
+            data.storeRemoteRepositories( remotes );
+
+            data.reload();
+        }
+        catch ( final ProxyDataException e )
+        {
+            throw new RuntimeException( "Failed to reload artifact-store definitions: " + e.getMessage(), e );
         }
 
         return changed;
