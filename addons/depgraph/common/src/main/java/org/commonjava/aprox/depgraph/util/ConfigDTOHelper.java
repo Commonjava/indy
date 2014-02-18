@@ -33,9 +33,11 @@ import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.aprox.depgraph.dto.MetadataCollationDTO;
 import org.commonjava.aprox.depgraph.dto.WebOperationConfigDTO;
+import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.depgraph.json.JsonUtils;
-import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.aprox.rest.AproxWorkflowException;
+import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.agg.AggregatorConfig;
 import org.commonjava.maven.cartographer.dto.GraphComposition;
@@ -52,7 +54,7 @@ public class ConfigDTOHelper
     private final Logger logger = new Logger( getClass() );
 
     @Inject
-    @AproxData
+    @DepgraphSpecific
     private JsonSerializer serializer;
 
     @Inject
