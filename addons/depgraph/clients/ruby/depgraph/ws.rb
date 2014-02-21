@@ -54,7 +54,8 @@ module Depgraph
         @options = {
           :verb => 'create',
           :host => HOST,
-          :port => PORT
+          :port => PORT,
+          :context_path => CONTEXT_PATH,
         }
 
         OptionParser.new {|opts|
@@ -78,6 +79,7 @@ Usage:
 
           opts.on('-H', '--host=HOST', 'Aprox hostname'){|host| @options[:host] = host}
           opts.on('-p', '--port=PORT', 'Aprox port'){|port| @options[:port] = port.to_i}
+          opts.on('-c', '--context=PATH', 'Aprox context base-path (default: /aprox)'){|context_path| @options[:context_path]=context_path}
 
           opts.separator ""
 
@@ -102,7 +104,7 @@ Usage:
           end
         }
 
-        @http = Http.new(@options[:host], @options[:port])
+        @http = Http.new(@options[:host], @options[:port], @options[:context_path])
         @ws = Workspace.new(@http)
       end
 

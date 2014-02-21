@@ -5,15 +5,16 @@ module Depgraph
   class Http
     include Net
     
-    DG_BASEPATH = '/aprox/api/1.0/depgraph'
+    DG_BASEPATH = 'api/1.0/depgraph'
   
-    def initialize( host, port )
+    def initialize( host, port, context_path=CONTEXT_PATH )
       @http = HTTP.new(host, port)
       @http.read_timeout = 10800
+      @context_path = context_path
     end
     
     def get(subpath, &block)
-      req_path = "#{DG_BASEPATH}/#{subpath}"
+      req_path = "#{@context_path}#{DG_BASEPATH}/#{subpath}"
       puts "Querying: #{req_path}"
 
       req = HTTP::Get.new( req_path )
@@ -28,7 +29,7 @@ module Depgraph
     end
     
     def delete(subpath)
-      req_path = "#{DG_BASEPATH}/#{subpath}"
+      req_path = "#{@context_path}#{DG_BASEPATH}/#{subpath}"
       puts "Deleting: #{req_path}"
 
       req = HTTP::Delete.new( req_path )
@@ -41,7 +42,7 @@ module Depgraph
     end
   
     def post(subpath, payload=nil, &block)
-      req_path = "#{DG_BASEPATH}/#{subpath}"
+      req_path = "#{@context_path}#{DG_BASEPATH}/#{subpath}"
       puts "Posting: #{req_path}"
 
       if ( payload )
