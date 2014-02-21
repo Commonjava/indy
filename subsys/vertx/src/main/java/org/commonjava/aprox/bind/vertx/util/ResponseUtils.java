@@ -173,8 +173,10 @@ public final class ResponseUtils
                     .write( msg )
                     .end();
         }
-
-        response.end();
+        else
+        {
+            response.end();
+        }
     }
 
     public static CharSequence formatEntity( final Throwable error )
