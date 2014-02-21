@@ -26,6 +26,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
+import org.commonjava.aprox.depgraph.util.PresetParameterParser;
 import org.commonjava.aprox.depgraph.util.RequestAdvisor;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
@@ -54,6 +55,9 @@ public class GraphController
 
     @Inject
     private RequestAdvisor requestAdvisor;
+
+    @Inject
+    private PresetParameterParser presetParamParser;
 
     public void reindex( final String gav )
         throws AproxWorkflowException
@@ -120,7 +124,7 @@ public class GraphController
 
         try
         {
-            final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( params );
+            final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( params, presetParamParser.parse( params ) );
 
             final Set<ProjectVersionRef> result = ref == null ? ops.getAllIncomplete( filter ) : ops.getIncomplete( ref, filter );
 
@@ -140,7 +144,7 @@ public class GraphController
 
         try
         {
-            final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( params );
+            final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( params, presetParamParser.parse( params ) );
 
             final Set<ProjectVersionRef> result = ref == null ? ops.getAllVariable( filter ) : ops.getVariable( ref, filter );
 
@@ -177,7 +181,7 @@ public class GraphController
         throws AproxWorkflowException
     {
         //        final DiscoveryConfig discovery = createDiscoveryConfig( request, null, sourceFactory );
-        final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( params );
+        final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( params, presetParamParser.parse( params ) );
 
         try
         {
@@ -205,7 +209,7 @@ public class GraphController
         try
         {
             //            final DiscoveryConfig discovery = createDiscoveryConfig( request, null, sourceFactory );
-            final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( params );
+            final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( params, presetParamParser.parse( params ) );
 
             final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
             final EProjectGraph graph = ops.getProjectGraph( filter, ref );

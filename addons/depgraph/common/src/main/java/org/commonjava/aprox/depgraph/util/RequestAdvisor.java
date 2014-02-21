@@ -74,10 +74,11 @@ public class RequestAdvisor
         this.presetSelector = presetSelector;
     }
 
-    public Set<ProjectVersionRef> getIncomplete( final ProjectVersionRef ref, final Map<String, String[]> params )
+    public Set<ProjectVersionRef> getIncomplete( final ProjectVersionRef ref, final Map<String, String[]> params,
+                                                 final Map<String, Object> presetParameters )
         throws CartoDataException
     {
-        final ProjectRelationshipFilter filter = createRelationshipFilter( params );
+        final ProjectRelationshipFilter filter = createRelationshipFilter( params, presetParameters );
 
         Set<ProjectVersionRef> incomplete;
         if ( ref != null )
@@ -100,10 +101,11 @@ public class RequestAdvisor
         return incomplete;
     }
 
-    public ProjectRelationshipFilter createRelationshipFilter( final Map<String, String[]> params )
+    public ProjectRelationshipFilter createRelationshipFilter( final Map<String, String[]> params, final Map<String, Object> presetParameters )
     {
         ProjectRelationshipFilter filter =
-            presetSelector.getPresetFilter( getFirstParameterValue( params, "preset" ), config.getDefaultWebFilterPreset() );
+            presetSelector.getPresetFilter( getFirstParameterValue( params, "preset" ), config.getDefaultWebFilterPreset(), presetParameters );
+
         if ( filter != null )
         {
             return filter;

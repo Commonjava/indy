@@ -13,6 +13,7 @@ import javax.inject.Inject;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.commonjava.aprox.depgraph.util.ConfigDTOHelper;
+import org.commonjava.aprox.depgraph.util.PresetParameterParser;
 import org.commonjava.aprox.depgraph.util.RequestAdvisor;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
@@ -37,6 +38,9 @@ public class RenderingController
     @Inject
     private ConfigDTOHelper configHelper;
 
+    @Inject
+    private PresetParameterParser presetParamParser;
+
     public String bomFor( final String groupId, final String artifactId, final String version, final Map<String, String[]> params,
                           final InputStream configStream )
         throws AproxWorkflowException
@@ -59,7 +63,7 @@ public class RenderingController
     {
         try
         {
-            final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( params );
+            final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( params, presetParamParser.parse( params ) );
 
             final Model model = ops.generateBOM( new ProjectVersionRef( groupId, artifactId, version ), filter, config.getRoots() );
 
@@ -83,7 +87,7 @@ public class RenderingController
         throws AproxWorkflowException
     {
         //        final DiscoveryConfig discovery = createDiscoveryConfig( request, null, sourceFactory );
-        final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( params );
+        final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( params, presetParamParser.parse( params ) );
         try
         {
             final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
@@ -120,7 +124,7 @@ public class RenderingController
 
             final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
 
-            final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( params );
+            final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( params, presetParamParser.parse( params ) );
 
             final String tree =
                 ops.depTree( ref, filter, scope == null ? DependencyScope.runtime : scope, false,

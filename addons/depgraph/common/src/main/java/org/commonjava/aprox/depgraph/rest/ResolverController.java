@@ -28,6 +28,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
+import org.commonjava.aprox.depgraph.util.PresetParameterParser;
 import org.commonjava.aprox.depgraph.util.RequestAdvisor;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
@@ -59,6 +60,9 @@ public class ResolverController
 
     @Inject
     private RequestAdvisor requestAdvisor;
+
+    @Inject
+    private PresetParameterParser presetParamParser;
 
     public String resolveGraph( final String from, final String groupId, final String artifactId, final String version, final boolean recurse,
                                 final Map<String, String[]> params )
@@ -125,7 +129,7 @@ public class ResolverController
     private DefaultAggregatorOptions createAggregationOptions( final Map<String, String[]> params, final URI source )
     {
         final DefaultAggregatorOptions options = new DefaultAggregatorOptions();
-        options.setFilter( requestAdvisor.createRelationshipFilter( params ) );
+        options.setFilter( requestAdvisor.createRelationshipFilter( params, presetParamParser.parse( params ) ) );
 
         final DefaultDiscoveryConfig dconf = new DefaultDiscoveryConfig( source );
         dconf.setEnabled( true );
