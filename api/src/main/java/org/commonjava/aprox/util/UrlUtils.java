@@ -20,6 +20,8 @@ import static org.apache.commons.lang.StringUtils.isEmpty;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.commonjava.maven.galley.util.PathUtils;
@@ -84,11 +86,19 @@ public final class UrlUtils
 
         final StringBuilder urlBuilder = new StringBuilder();
 
-        final String[] arry = new String[parts.length + 1];
-        arry[0] = baseUrl;
-        System.arraycopy( parts, 0, arry, 1, parts.length );
+        final List<String> list = new ArrayList<String>();
+        list.add( baseUrl );
+        for ( final String part : parts )
+        {
+            if ( part == null )
+            {
+                continue;
+            }
 
-        urlBuilder.append( PathUtils.normalize( arry ) );
+            list.add( part );
+        }
+
+        urlBuilder.append( PathUtils.normalize( list.toArray( new String[list.size()] ) ) );
         //
         //        if ( parts[0] == null || !parts[0].startsWith( baseUrl ) )
         //        {
