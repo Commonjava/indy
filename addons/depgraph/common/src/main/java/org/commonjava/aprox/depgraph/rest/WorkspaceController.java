@@ -180,7 +180,8 @@ public class WorkspaceController
             if ( oldVersion == null )
             {
                 pr = new ProjectRef( groupId, artifactId );
-                modified = ws.selectVersionForAll( pr, new ProjectVersionRef( pr, ver ) );
+                ws.selectVersion( pr, new ProjectVersionRef( pr, ver ) );
+                modified = true;
             }
             else
             {
@@ -196,10 +197,6 @@ public class WorkspaceController
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException( "Failed to load workspace: %s. Reason: %s", e, id, e.getMessage() );
-        }
-        catch ( final GraphDriverException e )
-        {
-            throw new AproxWorkflowException( "Failed to select: %s for: %s. Reason: %s", e, newVersion, pr, e.getMessage() );
         }
         finally
         {
