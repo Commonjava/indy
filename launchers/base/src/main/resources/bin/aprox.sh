@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -l
 
 THIS=$(cd ${0%/*} && echo $PWD/${0##*/})
 # THIS=`realpath ${0}`
@@ -21,13 +21,14 @@ done
 # echo "Classpath: ${CP}"
 
 JAVA=`which java`
-if [ x${JAVA_HOME} != 'x' ]; then
+$JAVA -version 2>&1 > /dev/null
+if [ $? != 0 ]; then
   PATH=${JAVA_HOME}/bin:${PATH}
-  JAVA=$JAVA_HOME/bin/java
+  JAVA=${JAVA_HOME}/bin/java
 fi
 
 test -f ${BASEDIR}/etc/aprox/env.sh && source ${BASEDIR}/etc/aprox/env.sh
 
-# echo "Command: '${JAVA} -cp ${CP} -Daprox.home=${BASEDIR} ${MAIN_CLASS} -C ${BASEDIR}/etc/main.conf $@'"
+# echo "Command: '${JAVA} -cp ${CP} -Daprox.home=${BASEDIR} ${MAIN_CLASS} -c ${BASEDIR}/etc/main.conf $@'"
 exec "$JAVA" -cp "${CP}" -Daprox.home="${BASEDIR}" ${MAIN_CLASS} -c "${BASEDIR}/etc/aprox/main.conf" "$@"
 
