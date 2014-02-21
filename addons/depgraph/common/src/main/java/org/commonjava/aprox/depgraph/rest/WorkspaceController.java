@@ -29,7 +29,6 @@ import org.commonjava.aprox.core.util.UriFormatter;
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
-import org.commonjava.maven.atlas.graph.spi.GraphDriverException;
 import org.commonjava.maven.atlas.graph.workspace.GraphWorkspace;
 import org.commonjava.maven.atlas.graph.workspace.GraphWorkspaceConfiguration;
 import org.commonjava.maven.atlas.ident.ref.ProjectRef;
@@ -180,7 +179,8 @@ public class WorkspaceController
             if ( oldVersion == null )
             {
                 pr = new ProjectRef( groupId, artifactId );
-                modified = ws.selectVersionForAll( pr, new ProjectVersionRef( pr, ver ) );
+                ws.selectVersion( pr, new ProjectVersionRef( pr, ver ) );
+                modified = true;
             }
             else
             {
@@ -196,10 +196,6 @@ public class WorkspaceController
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException( "Failed to load workspace: %s. Reason: %s", e, id, e.getMessage() );
-        }
-        catch ( final GraphDriverException e )
-        {
-            throw new AproxWorkflowException( "Failed to select: %s for: %s. Reason: %s", e, newVersion, pr, e.getMessage() );
         }
         finally
         {
