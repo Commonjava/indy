@@ -34,13 +34,14 @@ import org.commonjava.aprox.bind.jaxrs.util.AproxExceptionUtils;
 import org.commonjava.aprox.bind.jaxrs.util.JaxRsUriFormatter;
 import org.commonjava.aprox.depgraph.rest.RepositoryController;
 import org.commonjava.aprox.util.ApplicationStatus;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path( "/depgraph/repo" )
 public class RepositoryResource
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private RepositoryController controller;
@@ -64,7 +65,7 @@ public class RepositoryResource
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to retrieve request input stream: %s", e, e.getMessage() );
+            logger.error( "Failed to retrieve request input stream: {}", e, e.getMessage() );
             return AproxExceptionUtils.formatResponse( ApplicationStatus.BAD_REQUEST, e );
         }
         catch ( final AproxWorkflowException e )
@@ -93,7 +94,7 @@ public class RepositoryResource
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to retrieve request input stream: %s", e, e.getMessage() );
+            logger.error( "Failed to retrieve request input stream: {}", e, e.getMessage() );
             return AproxExceptionUtils.formatResponse( ApplicationStatus.BAD_REQUEST, e );
         }
         catch ( final AproxWorkflowException e )
@@ -115,7 +116,7 @@ public class RepositoryResource
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to retrieve request input stream and/or response output stream: %s", e, e.getMessage() );
+            logger.error( "Failed to retrieve request input stream and/or response output stream: {}", e, e.getMessage() );
             return AproxExceptionUtils.formatResponse( ApplicationStatus.BAD_REQUEST, e );
         }
         catch ( final AproxWorkflowException e )

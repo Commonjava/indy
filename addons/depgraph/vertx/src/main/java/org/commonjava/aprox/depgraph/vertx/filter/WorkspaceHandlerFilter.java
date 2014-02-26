@@ -25,12 +25,13 @@ import javax.inject.Inject;
 import org.commonjava.maven.atlas.graph.workspace.GraphWorkspace;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.data.CartoDataManager;
-import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.anno.FilterRoute;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.filter.ExecutionChain;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.commonjava.vertx.vabr.types.Method;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.vertx.java.core.http.HttpServerRequest;
 
 @Handles( "workspaceFilter" )
@@ -38,7 +39,7 @@ public class WorkspaceHandlerFilter
     implements RequestHandler
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private CartoDataManager dataManager;
@@ -62,7 +63,7 @@ public class WorkspaceHandlerFilter
 
             if ( wsid != null )
             {
-                logger.info( "Attempting to load workspace: %s into threadlocal...", wsid );
+                logger.info( "Attempting to load workspace: {} into threadlocal...", wsid );
 
                 try
                 {

@@ -23,7 +23,8 @@ import javax.enterprise.context.ApplicationScoped;
 
 import net.sf.webdav.spi.WebdavRequest;
 
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class RequestInfo
@@ -31,7 +32,7 @@ public class RequestInfo
 
     public static final String MOUNT_POINT = "mount";
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private WebdavRequest request;
 
@@ -55,7 +56,7 @@ public class RequestInfo
         String baseUrl = request.getRequestURI()
                                 .toString();
 
-        logger.info( "DAV RAW Base-URL: %s", baseUrl );
+        logger.info( "DAV RAW Base-URL: {}", baseUrl );
 
         final int idx = baseUrl.indexOf( DotMavenService.NAME );
         if ( idx > 0 )
@@ -67,7 +68,7 @@ public class RequestInfo
             baseUrl = null;
         }
 
-        logger.info( "DAV Processed Base-URL: %s", baseUrl );
+        logger.info( "DAV Processed Base-URL: {}", baseUrl );
 
         return baseUrl;
     }

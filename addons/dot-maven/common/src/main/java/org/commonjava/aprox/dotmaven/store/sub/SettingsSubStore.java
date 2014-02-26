@@ -48,7 +48,8 @@ import org.commonjava.aprox.dotmaven.webctl.RequestInfo;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 @Named( "settings" )
@@ -56,7 +57,7 @@ public class SettingsSubStore
     implements SubStore
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private StoreDataManager aprox;
@@ -136,7 +137,7 @@ public class SettingsSubStore
             }
             catch ( final ProxyDataException e )
             {
-                logger.error( "Failed to retrieve list of artifact stores: %s", e, e.getMessage() );
+                logger.error( "Failed to retrieve list of artifact stores: {}", e, e.getMessage() );
                 throw new WebdavException( "Failed to retrieve list of settings configurations." );
             }
 
@@ -145,7 +146,7 @@ public class SettingsSubStore
                 final String storeName = formatSettingsResourceName( store.getKey()
                                                                           .getType(), store.getName() );
 
-                //                logger.info( "\n\nCreating settings resource for: '%s'\n\n", storeName );
+                //                logger.info( "\n\nCreating settings resource for: '{}'\n\n", storeName );
                 names.add( storeName );
             }
         }
@@ -182,7 +183,7 @@ public class SettingsSubStore
             }
             catch ( final ProxyDataException e )
             {
-                logger.error( "Failed to retrieve artifact store: %s. Reason: %s", e, key, e.getMessage() );
+                logger.error( "Failed to retrieve artifact store: {}. Reason: {}", e, key, e.getMessage() );
                 throw new WebdavException( "Failed to retrieve length for: " + matcher.getURI() );
             }
 
@@ -193,7 +194,7 @@ public class SettingsSubStore
             }
             catch ( final DotMavenException e )
             {
-                logger.error( "Failed to retrieve storage advice for: %s. Reason: %s", e, key, e.getMessage() );
+                logger.error( "Failed to retrieve storage advice for: {}. Reason: {}", e, key, e.getMessage() );
                 throw new WebdavException( "Failed to retrieve length for: " + matcher.getURI() );
             }
 

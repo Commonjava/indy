@@ -54,7 +54,8 @@ import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.util.PathUtils;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 @Named( "stores" )
@@ -62,7 +63,7 @@ public class ArtifactStoreSubStore
     implements SubStore
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private StoreDataManager aprox;
@@ -106,7 +107,7 @@ public class ArtifactStoreSubStore
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to create folder: %s in store: %s. Reason: %s", e, path, advice.getStore()
+            logger.error( "Failed to create folder: {} in store: {}. Reason: {}", e, path, advice.getStore()
                                                                                                  .getKey(), e.getMessage() );
             throw new WebdavException( "Failed to create folder: " + folderUri );
         }
@@ -133,7 +134,7 @@ public class ArtifactStoreSubStore
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to create file: %s in store: %s. Reason: %s", e, path, advice.getStore()
+            logger.error( "Failed to create file: {} in store: {}. Reason: {}", e, path, advice.getStore()
                                                                                                .getKey(), e.getMessage() );
             throw new WebdavException( "Failed to create file: " + resourceUri );
         }
@@ -159,7 +160,7 @@ public class ArtifactStoreSubStore
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to open InputStream for: %s in store: %s. Reason: %s", e, path, key, e.getMessage() );
+            logger.error( "Failed to open InputStream for: {} in store: {}. Reason: {}", e, path, key, e.getMessage() );
             throw new WebdavException( "Failed to get content for: " + resourceUri );
         }
     }
@@ -186,11 +187,11 @@ public class ArtifactStoreSubStore
                 final List<ArtifactStore> stores = aprox.getOrderedStoresInGroup( key.getName() );
                 for ( final ArtifactStore store : stores )
                 {
-                    //                    logger.info( "Getting Transfer for: %s from: %s", path, store );
+                    //                    logger.info( "Getting Transfer for: {} from: {}", path, store );
                     final Transfer si = fileManager.getStorageReference( store, path );
                     if ( si.exists() )
                     {
-                        //                        logger.info( "Using Transfer: %s for path: %s", si, path );
+                        //                        logger.info( "Using Transfer: {} for path: {}", si, path );
                         item = si;
                         break;
                     }
@@ -199,18 +200,18 @@ public class ArtifactStoreSubStore
             else
             {
                 final ArtifactStore store = aprox.getArtifactStore( key );
-                //                logger.info( "Getting Transfer for: %s from: %s", path, store );
+                //                logger.info( "Getting Transfer for: {} from: {}", path, store );
                 final Transfer si = fileManager.getStorageReference( store, path );
                 if ( si.exists() )
                 {
-                    //                    logger.info( "Using Transfer: %s for path: %s", si, path );
+                    //                    logger.info( "Using Transfer: {} for path: {}", si, path );
                     item = si;
                 }
             }
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( "Failed to lookup ArtifactStore(s) for key: %s. Reason: %s", e, key, e.getMessage() );
+            logger.error( "Failed to lookup ArtifactStore(s) for key: {}. Reason: {}", e, key, e.getMessage() );
             throw new WebdavException( "Failed to get content for: " + resourceUri );
         }
 
@@ -252,7 +253,7 @@ public class ArtifactStoreSubStore
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to write file: %s in store: %s. Reason: %s", e, path, advice.getStore()
+            logger.error( "Failed to write file: {} in store: {}. Reason: {}", e, path, advice.getStore()
                                                                                               .getKey(), e.getMessage() );
             throw new WebdavException( "Failed to write file: " + resourceUri );
         }
@@ -293,7 +294,7 @@ public class ArtifactStoreSubStore
 
                         if ( !item.isDirectory() )
                         {
-                            logger.error( "Transfer: %s in %s is not a directory.", path, store.getKey() );
+                            logger.error( "Transfer: {} in {} is not a directory.", path, store.getKey() );
                             continue;
                         }
 
@@ -308,7 +309,7 @@ public class ArtifactStoreSubStore
                     final Transfer item = fileManager.getStorageReference( store, path );
                     if ( !item.exists() || !item.isDirectory() )
                     {
-                        logger.error( "Transfer: %s in %s is not a directory.", path, store.getKey() );
+                        logger.error( "Transfer: {} in {} is not a directory.", path, store.getKey() );
                         names = new String[] {};
                     }
                     else
@@ -319,7 +320,7 @@ public class ArtifactStoreSubStore
             }
             catch ( final ProxyDataException e )
             {
-                logger.error( "Failed to lookup ArtifactStore(s) for key: %s. Reason: %s", e, key, e.getMessage() );
+                logger.error( "Failed to lookup ArtifactStore(s) for key: {}. Reason: {}", e, key, e.getMessage() );
                 throw new WebdavException( "Failed to get listing for: " + folderUri );
             }
         }
@@ -333,7 +334,7 @@ public class ArtifactStoreSubStore
             }
             catch ( final ProxyDataException e )
             {
-                logger.error( "Failed to lookup ArtifactStores of type: %s. Reason: %s", e, type, e.getMessage() );
+                logger.error( "Failed to lookup ArtifactStores of type: {}. Reason: {}", e, type, e.getMessage() );
                 throw new WebdavException( "Failed to get listing for: " + folderUri );
             }
 
@@ -398,7 +399,7 @@ public class ArtifactStoreSubStore
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to delete file: %s in store: %s. Reason: %s", e, path, advice.getStore()
+            logger.error( "Failed to delete file: {} in store: {}. Reason: {}", e, path, advice.getStore()
                                                                                                .getKey(), e.getMessage() );
             throw new WebdavException( "Failed to delete file: " + uri );
         }
@@ -449,7 +450,7 @@ public class ArtifactStoreSubStore
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( "Failed to retrieve artifact store: %s for URI: %s\nReason: %s", e, key, uri, e.getMessage() );
+            logger.error( "Failed to retrieve artifact store: {} for URI: {}\nReason: {}", e, key, uri, e.getMessage() );
             throw new WebdavException( "Cannot create: " + uri );
         }
 
@@ -460,7 +461,7 @@ public class ArtifactStoreSubStore
         }
         catch ( final DotMavenException e )
         {
-            logger.error( "Failed to retrieve storage advice for: %s (URI: %s)\nReason: %s", e, key, uri, e.getMessage() );
+            logger.error( "Failed to retrieve storage advice for: {} (URI: {})\nReason: {}", e, key, uri, e.getMessage() );
             throw new WebdavException( "Cannot create: " + uri );
         }
 

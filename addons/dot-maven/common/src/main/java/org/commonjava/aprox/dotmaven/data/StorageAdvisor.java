@@ -34,7 +34,7 @@ import org.commonjava.aprox.model.StoreType;
 public class StorageAdvisor
 {
 
-    //    private final Logger logger = new Logger( getClass() );
+    //    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private StoreDataManager dataManager;

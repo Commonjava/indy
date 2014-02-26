@@ -118,7 +118,7 @@ public final class StoreKey
             type = StoreType.valueOf( id.substring( 0, idx ) );
         }
 
-        // logger.info( "parsed store-key with type: '%s' and name: '%s'", type, name );
+        // logger.info( "parsed store-key with type: '{}' and name: '{}'", type, name );
 
         return new StoreKey( type, name );
     }

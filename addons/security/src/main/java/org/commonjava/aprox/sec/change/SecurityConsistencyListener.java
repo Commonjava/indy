@@ -30,7 +30,7 @@ import org.commonjava.util.logging.Logger;
 public class SecurityConsistencyListener
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private AProxSecDataManager dataManager;
@@ -40,7 +40,7 @@ public class SecurityConsistencyListener
 
     public void storeDeleted( @Observes final ProxyManagerDeleteEvent event )
     {
-        logger.info( "\n\n\n\nProcessing JEE change notification: %s\n\n\n\n", event );
+        logger.info( "\n\n\n\nProcessing JEE change notification: {}\n\n\n\n", event );
         final StoreType type = event.getType();
         final Collection<String> names = event.getNames();
         for ( final String name : names )

@@ -33,7 +33,8 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.maven.galley.model.Transfer;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @javax.enterprise.context.ApplicationScoped
 public class ArchetypeCatalogMerger
@@ -44,7 +45,7 @@ public class ArchetypeCatalogMerger
 
     public static final String CATALOG_MERGEINFO_SUFFIX = ".info";
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Override
     public byte[] merge( final Set<Transfer> sources, final Group group, final String path )
@@ -76,14 +77,12 @@ public class ArchetypeCatalogMerger
             catch ( final IOException e )
             {
                 final StoreKey key = getKey( src );
-                logger.error( "Cannot read archetype catalog: %s from artifact-store: %s. Reason: %s", e,
-                              src.getPath(), key, e.getMessage() );
+                logger.error( "Cannot read archetype catalog: {} from artifact-store: {}. Reason: {}", e, src.getPath(), key, e.getMessage() );
             }
             catch ( final XmlPullParserException e )
             {
                 final StoreKey key = getKey( src );
-                logger.error( "Cannot parse archetype catalog: %s from artifact-store: %s. Reason: %s", e,
-                              src.getPath(), key, e.getMessage() );
+                logger.error( "Cannot parse archetype catalog: {} from artifact-store: {}. Reason: {}", e, src.getPath(), key, e.getMessage() );
             }
             finally
             {
@@ -102,8 +101,7 @@ public class ArchetypeCatalogMerger
             }
             catch ( final IOException e )
             {
-                logger.error( "Cannot write consolidated archetype catalog: %s to: %s. Reason: %s", e, path,
-                              group.getKey(), e.getMessage() );
+                logger.error( "Cannot write consolidated archetype catalog: {} to: {}. Reason: {}", e, path, group.getKey(), e.getMessage() );
             }
         }
 

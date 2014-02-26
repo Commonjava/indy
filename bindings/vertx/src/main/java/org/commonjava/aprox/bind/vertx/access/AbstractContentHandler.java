@@ -39,14 +39,15 @@ import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.maven.galley.model.Transfer;
-import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.util.VertXInputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.vertx.java.core.http.HttpServerRequest;
 
 public abstract class AbstractContentHandler<T extends ArtifactStore>
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private ContentController contentController;
@@ -85,7 +86,7 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to upload: %s to: %s. Reason: %s", e, path, name, e.getMessage() );
+            logger.error( "Failed to upload: {} to: {}. Reason: {}", e, path, name, e.getMessage() );
             formatResponse( e, request );
         }
         finally
@@ -118,7 +119,7 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to delete artifact: %s from: %s. Reason: %s", e, path, name, e.getMessage() );
+            logger.error( "Failed to delete artifact: {} from: {}. Reason: {}", e, path, name, e.getMessage() );
             formatResponse( e, request );
         }
     }
@@ -144,12 +145,12 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
 
             if ( path.endsWith( "/" ) )
             {
-                logger.info( "Redirecting to index.html under: %s", path );
+                logger.info( "Redirecting to index.html under: {}", path );
                 formatRedirect( request, uriFormatter.formatAbsolutePathTo( baseUri, getStoreType().singularEndpointName(), name, path, "index.html" ) );
             }
             else if ( path.endsWith( "index.html" ) )
             {
-                logger.info( "Getting listing at: %s", path );
+                logger.info( "Getting listing at: {}", path );
                 final String html = contentController.list( getStoreType(), name, path, baseUri, uriFormatter );
 
                 formatOkResponseWithEntity( request, html, ApplicationContent.text_html );
@@ -170,12 +171,12 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to download artifact: %s from: %s. Reason: %s", e, path, name, e.getMessage() );
+            logger.error( "Failed to download artifact: {} from: {}. Reason: {}", e, path, name, e.getMessage() );
             formatResponse( e, request );
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to download artifact: %s from: %s. Reason: %s", e, path, name, e.getMessage() );
+            logger.error( "Failed to download artifact: {} from: {}. Reason: {}", e, path, name, e.getMessage() );
             formatResponse( e, request );
         }
     }

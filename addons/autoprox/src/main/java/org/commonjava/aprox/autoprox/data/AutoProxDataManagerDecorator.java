@@ -40,14 +40,15 @@ import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Decorator
 public abstract class AutoProxDataManagerDecorator
     implements StoreDataManager
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Delegate
     @Any
@@ -64,12 +65,12 @@ public abstract class AutoProxDataManagerDecorator
     public Group getGroup( final String name )
         throws ProxyDataException
     {
-        //        logger.info( "DECORATED (getGroup: %s)", name );
+        //        logger.info( "DECORATED (getGroup: {})", name );
         Group g = dataManager.getGroup( name );
 
         if ( !config.isEnabled() )
         {
-            //            logger.info( "AutoProx decorator disabled; returning: %s", g );
+            //            logger.info( "AutoProx decorator disabled; returning: {}", g );
             return g;
         }
 
@@ -148,16 +149,16 @@ public abstract class AutoProxDataManagerDecorator
                                               .execute( head );
             final StatusLine statusLine = response.getStatusLine();
             final int status = statusLine.getStatusCode();
-            //            logger.info( "[AutoProx] HTTP Status: %s", statusLine );
+            //            logger.info( "[AutoProx] HTTP Status: {}", statusLine );
             result = status == HttpStatus.SC_OK;
         }
         catch ( final ClientProtocolException e )
         {
-            logger.warn( "[AutoProx] Cannot connect to target repository: '%s'.", url );
+            logger.warn( "[AutoProx] Cannot connect to target repository: '{}'.", url );
         }
         catch ( final IOException e )
         {
-            logger.warn( "[AutoProx] Cannot connect to target repository: '%s'.", url );
+            logger.warn( "[AutoProx] Cannot connect to target repository: '{}'.", url );
         }
         finally
         {
@@ -176,7 +177,7 @@ public abstract class AutoProxDataManagerDecorator
         RemoteRepository repo = dataManager.getRemoteRepository( name );
         if ( !config.isEnabled() )
         {
-            //            logger.info( "AutoProx decorator disabled; returning: %s", repo );
+            //            logger.info( "AutoProx decorator disabled; returning: {}", repo );
             return repo;
         }
 
@@ -198,7 +199,7 @@ public abstract class AutoProxDataManagerDecorator
                 {
                     if ( !checkUrlValidity( repo, repo.getUrl(), factory.getRemoteValidationPath() ) )
                     {
-                        logger.warn( "Invalid repository URL: %s", repo.getUrl() );
+                        logger.warn( "Invalid repository URL: {}", repo.getUrl() );
                         return null;
                     }
 

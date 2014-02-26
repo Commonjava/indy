@@ -65,7 +65,7 @@ public class StatsController
         }
         catch ( final ProxyDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to retrieve all endpoints: %s", e, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to retrieve all endpoints: {}", e, e.getMessage() );
         }
 
         return new EndpointViewListing( stores, baseUri, uriFormatter );

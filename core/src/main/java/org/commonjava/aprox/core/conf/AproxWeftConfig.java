@@ -58,7 +58,7 @@ public class AproxWeftConfig
 
         if ( !value.matches( numericPattern ) )
         {
-            throw new ConfigurationException( "Invalid value: '%s' for parameter: '%s'. Only numeric values are accepted for section: '%s'.", value,
+            throw new ConfigurationException( "Invalid value: '{}' for parameter: '{}'. Only numeric values are accepted for section: '{}'.", value,
                                               name, SECTION_NAME );
         }
 

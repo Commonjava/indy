@@ -36,8 +36,9 @@ import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.dto.MetadataCollation;
 import org.commonjava.maven.cartographer.ops.MetadataOps;
-import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.ser.JsonSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.reflect.TypeToken;
 
@@ -45,7 +46,7 @@ import com.google.gson.reflect.TypeToken;
 public class MetadataController
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private MetadataOps ops;
@@ -73,7 +74,7 @@ public class MetadataController
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot read metadata mapping JSON from stream: %s", e, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot read metadata mapping JSON from stream: {}", e, e.getMessage() );
         }
     }
 
@@ -95,7 +96,7 @@ public class MetadataController
             final ProjectVersionRef ref = entry.getKey();
             final Map<String, String> metadata = entry.getValue();
 
-            logger.info( "Adding metadata for: %s\n\n  ", ref, join( metadata.entrySet(), "\n  " ) );
+            logger.info( "Adding metadata for: {}\n\n  ", ref, join( metadata.entrySet(), "\n  " ) );
             ops.updateMetadata( ref, metadata );
         }
     }
@@ -111,7 +112,7 @@ public class MetadataController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to retrieve metadata map for: %s. Reason: %s", e, ref, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve metadata map for: {}. Reason: {}", e, ref, e.getMessage() );
         }
 
         return metadata == null ? null : serializer.toString( metadata );
@@ -128,7 +129,7 @@ public class MetadataController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to retrieve metadata map for: %s. Reason: %s", e, ref, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve metadata map for: {}. Reason: {}", e, ref, e.getMessage() );
         }
     }
 
@@ -155,7 +156,7 @@ public class MetadataController
 
         final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
 
-        logger.info( "Adding metadata for: %s\n\n  ", ref, join( metadata.entrySet(), "\n  " ) );
+        logger.info( "Adding metadata for: {}\n\n  ", ref, join( metadata.entrySet(), "\n  " ) );
 
         ops.updateMetadata( ref, metadata );
     }
@@ -184,7 +185,7 @@ public class MetadataController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to resolve or collate graph contents by metadata: %s. Reason: %s", e, dto, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to resolve or collate graph contents by metadata: {}. Reason: {}", e, dto, e.getMessage() );
         }
     }
 

@@ -11,11 +11,12 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.bind.vertx.AproxRouter;
 import org.commonjava.aprox.dotmaven.inject.DotMavenApp;
-import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.filter.FilterCollection;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.commonjava.vertx.vabr.route.RouteCollection;
 import org.jboss.weld.environment.se.events.ContainerInitialized;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class DotMavenRouter
@@ -24,7 +25,7 @@ public class DotMavenRouter
 
     public static final String PREFIX = "/mavdav";
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     @DotMavenApp

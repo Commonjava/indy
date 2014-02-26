@@ -93,7 +93,7 @@ public class MavenComponentManager
         }
         catch ( final ComponentLookupException e )
         {
-            throw new MavenComponentException( "Failed to lookup maven component: %s:%s. Reason: %s", e,
+            throw new MavenComponentException( "Failed to lookup maven component: {}:{}. Reason: {}", e,
                                                role.getName(), hint, e.getMessage() );
         }
     }
@@ -115,7 +115,7 @@ public class MavenComponentManager
         }
         catch ( final ComponentLookupException e )
         {
-            throw new MavenComponentException( "Failed to lookup maven component: %s. Reason: %s", e, role.getName(),
+            throw new MavenComponentException( "Failed to lookup maven component: {}. Reason: {}", e, role.getName(),
                                                e.getMessage() );
         }
     }

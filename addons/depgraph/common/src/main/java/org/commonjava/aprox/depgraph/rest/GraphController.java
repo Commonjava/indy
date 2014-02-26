@@ -37,14 +37,15 @@ import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.version.InvalidVersionSpecificationException;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.ops.GraphOps;
-import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.model.Listing;
 import org.commonjava.web.json.ser.JsonSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class GraphController
 {
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private GraphOps ops;
@@ -81,7 +82,7 @@ public class GraphController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to reindex: %s. Reason: %s", e, ref == null ? "all projects" : ref, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to reindex: {}. Reason: {}", e, ref == null ? "all projects" : ref, e.getMessage() );
         }
     }
 
@@ -99,7 +100,7 @@ public class GraphController
             Map<ProjectVersionRef, Set<String>> errors;
             if ( ref != null )
             {
-                logger.info( "Retrieving project errors in graph: %s", ref );
+                logger.info( "Retrieving project errors in graph: {}", ref );
                 errors = ops.getErrors( ref );
             }
             else
@@ -112,7 +113,7 @@ public class GraphController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to lookup resolution errors for: %s. Reason: %s", e, ref == null ? "all projects" : ref,
+            throw new AproxWorkflowException( "Failed to lookup resolution errors for: {}. Reason: {}", e, ref == null ? "all projects" : ref,
                                               e.getMessage() );
         }
     }
@@ -132,7 +133,7 @@ public class GraphController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to lookup incomplete subgraphs for: %s. Reason: %s", e, ref == null ? "all projects" : ref,
+            throw new AproxWorkflowException( "Failed to lookup incomplete subgraphs for: {}. Reason: {}", e, ref == null ? "all projects" : ref,
                                               e.getMessage() );
         }
     }
@@ -152,7 +153,7 @@ public class GraphController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to lookup variable subgraphs for: %s. Reason: %s", e, ref == null ? "all projects" : ref,
+            throw new AproxWorkflowException( "Failed to lookup variable subgraphs for: {}. Reason: {}", e, ref == null ? "all projects" : ref,
                                               e.getMessage() );
         }
     }
@@ -168,11 +169,11 @@ public class GraphController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to lookup ancestry for: %s:%s:%s. Reason: %s", e, groupId, artifactId, version, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to lookup ancestry for: {}:{}:{}. Reason: {}", e, groupId, artifactId, version, e.getMessage() );
         }
         catch ( final InvalidVersionSpecificationException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Invalid version in request: '%s'. Reason: %s", e, version,
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Invalid version in request: '{}'. Reason: {}", e, version,
                                               e.getMessage() );
         }
     }
@@ -193,12 +194,12 @@ public class GraphController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to lookup project graph for: %s:%s:%s. Reason: %s", e, groupId, artifactId, version,
+            throw new AproxWorkflowException( "Failed to lookup project graph for: {}:{}:{}. Reason: {}", e, groupId, artifactId, version,
                                               e.getMessage() );
         }
         catch ( final InvalidVersionSpecificationException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Invalid version in request: '%s'. Reason: %s", e, version,
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Invalid version in request: '{}'. Reason: {}", e, version,
                                               e.getMessage() );
         }
     }
@@ -222,17 +223,17 @@ public class GraphController
             }
             else
             {
-                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "Could not find graph: %s", ref );
+                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "Could not find graph: {}", ref );
             }
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to lookup project graph for: %s:%s:%s. Reason: %s", e, groupId, artifactId, version,
+            throw new AproxWorkflowException( "Failed to lookup project graph for: {}:{}:{}. Reason: {}", e, groupId, artifactId, version,
                                               e.getMessage() );
         }
         catch ( final InvalidVersionSpecificationException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Invalid version in request: '%s'. Reason: %s", e, version,
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Invalid version in request: '{}'. Reason: {}", e, version,
                                               e.getMessage() );
         }
     }

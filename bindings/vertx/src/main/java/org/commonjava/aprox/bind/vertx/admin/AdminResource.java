@@ -38,13 +38,14 @@ import org.commonjava.aprox.util.ApplicationContent;
 import org.commonjava.aprox.util.ApplicationHeader;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.UriFormatter;
-import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.commonjava.vertx.vabr.types.Method;
 import org.commonjava.web.json.model.Listing;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
@@ -53,7 +54,7 @@ public class AdminResource
     implements RequestHandler
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private AdminController adminController;
@@ -86,7 +87,7 @@ public class AdminResource
         final ArtifactStore store = modelSerializer.getJsonSerializer()
                                                    .fromString( json, st.getStoreClass() );
 
-        logger.info( "\n\nGot artifact store: %s\n\n", store );
+        logger.info( "\n\nGot artifact store: {}\n\n", store );
 
         try
         {
@@ -177,12 +178,12 @@ public class AdminResource
             @SuppressWarnings( "unchecked" )
             final List<ArtifactStore> stores = (List<ArtifactStore>) adminController.getAllOfType( st );
 
-            logger.info( "Returning listing containing stores:\n\t%s", join( stores, "\n\t" ) );
+            logger.info( "Returning listing containing stores:\n\t{}", join( stores, "\n\t" ) );
 
             final Listing<ArtifactStore> listing = new Listing<ArtifactStore>( stores );
 
             final String json = modelSerializer.storeListingToString( listing );
-            logger.info( "JSON:\n\n%s", json );
+            logger.info( "JSON:\n\n{}", json );
 
             formatOkResponseWithJsonEntity( request, json );
         }
@@ -210,7 +211,7 @@ public class AdminResource
         try
         {
             final ArtifactStore store = adminController.get( key );
-            logger.info( "Returning repository: %s", store );
+            logger.info( "Returning repository: {}", store );
 
             if ( store == null )
             {
@@ -245,7 +246,7 @@ public class AdminResource
         final StoreType st = StoreType.get( type );
         final StoreKey key = new StoreKey( st, name );
 
-        logger.info( "Deleting: %s", key );
+        logger.info( "Deleting: {}", key );
         try
         {
             adminController.delete( key );

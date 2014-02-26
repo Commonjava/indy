@@ -19,7 +19,8 @@ package org.commonjava.aprox.model;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.annotations.SerializedName;
 import com.wordnik.swagger.annotations.ApiClass;
@@ -30,7 +31,7 @@ public class RemoteRepository
 {
     private static final long serialVersionUID = 1L;
 
-    private static final Logger LOGGER = new Logger( RemoteRepository.class );
+    private static final Logger LOGGER = LoggerFactory.getLogger( RemoteRepository.class );
 
     public static final int DEFAULT_TIMEOUT_SECONDS = 120;
 
@@ -165,7 +166,7 @@ public class RemoteRepository
         }
         catch ( final MalformedURLException e )
         {
-            LOGGER.error( "Failed to parse repository URL: '%s'. Reason: %s", e, this.url, e.getMessage() );
+            LOGGER.error( "Failed to parse repository URL: '{}'. Reason: {}", e, this.url, e.getMessage() );
         }
 
         if ( url == null )
@@ -224,8 +225,8 @@ public class RemoteRepository
     @Override
     public String toString()
     {
-        return String.format( "Repository [url=%s, timeoutSeconds=%s, host=%s, port=%s, user=%s, password=%s, getName()=%s, getKey()=%s]",
-                              url, timeoutSeconds, host, port, user, password, getName(), getKey() );
+        return String.format( "Repository [url=%s, timeoutSeconds=%s, host=%s, port=%s, user=%s, password=%s, getName()=%s, getKey()=%s]", url,
+                              timeoutSeconds, host, port, user, password, getName(), getKey() );
     }
 
     public boolean isPassthrough()

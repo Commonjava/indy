@@ -82,7 +82,7 @@ public class ContentController
 
         if ( item == null )
         {
-            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "%s", ( path + ( item == null ? " was not found." : "is a directory" ) ) );
+            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "{}", ( path + ( item == null ? " was not found." : "is a directory" ) ) );
         }
 
         return item;
@@ -119,7 +119,7 @@ public class ContentController
         }
         catch ( final ProxyDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to retrieve list of concrete stores. Reason: %s", e,
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to retrieve list of concrete stores. Reason: {}", e,
                                               e.getMessage() );
         }
     }
@@ -134,7 +134,7 @@ public class ContentController
         }
         catch ( final ProxyDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to retrieve list of concrete stores. Reason: %s", e,
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to retrieve list of concrete stores. Reason: {}", e,
                                               e.getMessage() );
         }
     }
@@ -156,12 +156,12 @@ public class ContentController
         }
         catch ( final ProxyDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Cannot retrieve store: %s. Reason: %s", e, key, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Cannot retrieve store: {}. Reason: {}", e, key, e.getMessage() );
         }
 
         if ( store == null )
         {
-            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "Cannot find store: %s", key );
+            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "Cannot find store: {}", key );
         }
 
         return store;

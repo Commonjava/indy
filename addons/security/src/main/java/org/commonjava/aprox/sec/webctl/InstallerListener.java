@@ -29,7 +29,7 @@ public class InstallerListener
     implements ServletContextListener
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private AProxSecDataManager dataManager;

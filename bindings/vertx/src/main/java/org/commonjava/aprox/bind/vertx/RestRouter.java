@@ -16,11 +16,12 @@ import javax.inject.Qualifier;
 
 import org.commonjava.aprox.core.rest.AdminController;
 import org.commonjava.aprox.inject.RestApp;
-import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.filter.FilterCollection;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.commonjava.vertx.vabr.route.RouteCollection;
 import org.jboss.weld.environment.se.events.ContainerInitialized;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 @Named( "rest" )
@@ -30,7 +31,7 @@ public class RestRouter
 
     public static final String PREFIX = "/api/1.0";
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private Instance<RequestHandler> handlerInstances;

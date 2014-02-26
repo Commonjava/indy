@@ -66,7 +66,7 @@ public class ProjectController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to lookup errors for: %s. Reason: %s", e, ref == null ? "all projects" : ref, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to lookup errors for: {}. Reason: {}", e, ref == null ? "all projects" : ref, e.getMessage() );
         }
     }
 
@@ -81,7 +81,7 @@ public class ProjectController
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException(
-                                              "Failed to lookup project listing matching groupId pattern: '%s' and artifactId pattern: '%s'. Reason: %s",
+                                              "Failed to lookup project listing matching groupId pattern: '{}' and artifactId pattern: '{}'. Reason: {}",
                                               e, groupIdPattern, artifactIdPattern, e.getMessage() );
         }
     }
@@ -96,7 +96,7 @@ public class ProjectController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to lookup parent for: %s:%s:%s. Reason: %s", e, groupId, artifactId, version, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to lookup parent for: {}:{}:{}. Reason: {}", e, groupId, artifactId, version, e.getMessage() );
         }
     }
 
@@ -112,7 +112,7 @@ public class ProjectController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to lookup dependencies for: %s:%s:%s. Reason: %s", e, groupId, artifactId, version,
+            throw new AproxWorkflowException( "Failed to lookup dependencies for: {}:{}:{}. Reason: {}", e, groupId, artifactId, version,
                                               e.getMessage() );
         }
     }
@@ -128,7 +128,7 @@ public class ProjectController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to lookup plugins for: %s:%s:%s. Reason: %s", e, groupId, artifactId, version, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to lookup plugins for: {}:{}:{}. Reason: {}", e, groupId, artifactId, version, e.getMessage() );
         }
     }
 
@@ -143,7 +143,7 @@ public class ProjectController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to lookup extensions for: %s:%s:%s. Reason: %s", e, groupId, artifactId, version,
+            throw new AproxWorkflowException( "Failed to lookup extensions for: {}:{}:{}. Reason: {}", e, groupId, artifactId, version,
                                               e.getMessage() );
         }
     }
@@ -161,7 +161,7 @@ public class ProjectController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to lookup relationships specified by: %s:%s:%s. Reason: %s", e, groupId, artifactId, version,
+            throw new AproxWorkflowException( "Failed to lookup relationships specified by: {}:{}:{}. Reason: {}", e, groupId, artifactId, version,
                                               e.getMessage() );
         }
     }
@@ -178,7 +178,7 @@ public class ProjectController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to lookup relationships targeting: %s:%s:%s. Reason: %s", e, groupId, artifactId, version,
+            throw new AproxWorkflowException( "Failed to lookup relationships targeting: {}:{}:{}. Reason: {}", e, groupId, artifactId, version,
                                               e.getMessage() );
         }
     }

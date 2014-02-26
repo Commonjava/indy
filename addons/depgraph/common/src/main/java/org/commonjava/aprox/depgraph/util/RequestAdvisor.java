@@ -47,13 +47,14 @@ import org.commonjava.maven.cartographer.discover.DefaultDiscoveryConfig;
 import org.commonjava.maven.cartographer.discover.DiscoveryConfig;
 import org.commonjava.maven.cartographer.discover.DiscoverySourceManager;
 import org.commonjava.maven.cartographer.preset.PresetSelector;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class RequestAdvisor
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private CartoDataManager carto;
@@ -130,7 +131,7 @@ public class RequestAdvisor
         }
 
         filter = new OrFilter( filters );
-        logger.info( "FILTER:\n\n%s\n\n", filter );
+        logger.info( "FILTER:\n\n{}\n\n", filter );
 
         return filter;
     }

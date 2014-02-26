@@ -12,9 +12,10 @@ import javax.servlet.http.HttpServletResponse;
 import net.sf.webdav.exceptions.WebdavException;
 
 import org.commonjava.aprox.dotmaven.webctl.DotMavenService;
-import org.commonjava.util.logging.Logger;
 import org.commonjava.web.dav.servlet.impl.ServletWebdavRequest;
 import org.commonjava.web.dav.servlet.impl.ServletWebdavResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @WebServlet( { "/mavdav", "/mavdav/", "/mavdav/*", "/mavdav/**" } )
 public class DotMavenServlet
@@ -23,7 +24,7 @@ public class DotMavenServlet
 
     private static final long serialVersionUID = 1L;
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private DotMavenService service;
@@ -38,7 +39,7 @@ public class DotMavenServlet
         }
         catch ( final WebdavException e )
         {
-            logger.error( "dot-maven request failed: %s", e, e.getMessage() );
+            logger.error( "dot-maven request failed: {}", e, e.getMessage() );
 
             // TODO WebdavException should include a response status code/message.
             resp.sendError( 500, e.getMessage() );

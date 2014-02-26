@@ -68,14 +68,15 @@ import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.model.VirtualResource;
 import org.commonjava.maven.galley.spi.transport.LocationExpander;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @javax.enterprise.context.ApplicationScoped
 public class DefaultFileManager
     implements FileManager
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private Instance<GroupPathHandler> groupHandlerInstances;
@@ -166,7 +167,7 @@ public class DefaultFileManager
             catch ( final TransferException e )
             {
                 logger.error( e.getMessage(), e );
-                throw new AproxWorkflowException( "Failed to list ALL paths: %s from: %s. Reason: %s", e, path, store.getKey(), e.getMessage() );
+                throw new AproxWorkflowException( "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, store.getKey(), e.getMessage() );
             }
         }
         else
@@ -189,7 +190,7 @@ public class DefaultFileManager
                 catch ( final TransferException e )
                 {
                     logger.error( e.getMessage(), e );
-                    throw new AproxWorkflowException( "Failed to list path: %s from: %s. Reason: %s", e, path, store.getKey(), e.getMessage() );
+                    throw new AproxWorkflowException( "Failed to list path: {} from: {}. Reason: {}", e, path, store.getKey(), e.getMessage() );
                 }
             }
             else
@@ -229,7 +230,7 @@ public class DefaultFileManager
         catch ( final TransferException e )
         {
             logger.error( e.getMessage(), e );
-            throw new AproxWorkflowException( "Failed to list ALL paths: %s from: %s. Reason: %s", e, path, stores, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, stores, e.getMessage() );
         }
 
         return result;
@@ -246,7 +247,7 @@ public class DefaultFileManager
         catch ( final TransferException e )
         {
             logger.error( e.getMessage(), e );
-            throw new AproxWorkflowException( "Failed to retrieve first path: %s from: %s. Reason: %s", e, path, stores, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve first path: {} from: {}. Reason: {}", e, path, stores, e.getMessage() );
         }
     }
 
@@ -267,7 +268,7 @@ public class DefaultFileManager
         catch ( final TransferException e )
         {
             logger.error( e.getMessage(), e );
-            throw new AproxWorkflowException( "Failed to retrieve ALL paths: %s from: %s. Reason: %s", e, path, stores, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve ALL paths: {} from: {}. Reason: {}", e, path, stores, e.getMessage() );
         }
     }
 
@@ -308,7 +309,7 @@ public class DefaultFileManager
             return target;
             //            if ( target != null && target.exists() )
             //            {
-            //                //                logger.info( "Using stored copy from artifact store: %s for: %s", store.getName(), path );
+            //                //                logger.info( "Using stored copy from artifact store: {} for: {}", store.getName(), path );
             //                final Transfer item = getStorageReference( store.getKey(), path );
             //
             //                return item;
@@ -321,7 +322,7 @@ public class DefaultFileManager
         catch ( final TransferException e )
         {
             logger.error( e.getMessage(), e );
-            throw new AproxWorkflowException( "Failed to retrieve path: %s from: %s. Reason: %s", e, path, store, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve path: {} from: {}. Reason: {}", e, path, store, e.getMessage() );
         }
     }
 
@@ -343,7 +344,7 @@ public class DefaultFileManager
         if ( store.getKey()
                   .getType() != StoreType.hosted )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot deploy to non-deploy point artifact store: %s.", store.getKey() );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot deploy to non-deploy point artifact store: {}.", store.getKey() );
         }
 
         final HostedRepository deploy = (HostedRepository) store;
@@ -353,15 +354,15 @@ public class DefaultFileManager
         {
             if ( !deploy.isAllowSnapshots() )
             {
-                logger.error( "Cannot store snapshot in non-snapshot deploy point: %s", deploy.getName() );
-                throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot store snapshot in non-snapshot deploy point: %s",
+                logger.error( "Cannot store snapshot in non-snapshot deploy point: {}", deploy.getName() );
+                throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot store snapshot in non-snapshot deploy point: {}",
                                                   deploy.getName() );
             }
         }
         else if ( !deploy.isAllowReleases() )
         {
-            logger.error( "Cannot store release in snapshot-only deploy point: %s", deploy.getName() );
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot store release in snapshot-only deploy point: %s",
+            logger.error( "Cannot store release in snapshot-only deploy point: {}", deploy.getName() );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot store release in snapshot-only deploy point: {}",
                                               deploy.getName() );
         }
 
@@ -382,9 +383,9 @@ public class DefaultFileManager
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to store: %s in deploy store: %s. Reason: %s", e, path, deploy.getName(), e.getMessage() );
+            logger.error( "Failed to store: {} in deploy store: {}. Reason: {}", e, path, deploy.getName(), e.getMessage() );
 
-            throw new AproxWorkflowException( "Failed to store: %s in deploy store: %s. Reason: %s", e, path, deploy.getName(), e.getMessage() );
+            throw new AproxWorkflowException( "Failed to store: {} in deploy store: {}. Reason: {}", e, path, deploy.getName(), e.getMessage() );
         }
         finally
         {
@@ -415,7 +416,7 @@ public class DefaultFileManager
                 if ( pathInfo == null )
                 {
                     // probably not an artifact, most likely metadata instead...
-                    //                    logger.info( "Selecting it for non-artifact storage: %s", path );
+                    //                    logger.info( "Selecting it for non-artifact storage: {}", path );
                     selected = dp;
                     break;
                 }
@@ -423,14 +424,14 @@ public class DefaultFileManager
                 {
                     if ( dp.isAllowSnapshots() )
                     {
-                        //                        logger.info( "Selecting it for snapshot storage: %s", pathInfo );
+                        //                        logger.info( "Selecting it for snapshot storage: {}", pathInfo );
                         selected = dp;
                         break;
                     }
                 }
                 else if ( dp.isAllowReleases() )
                 {
-                    //                    logger.info( "Selecting it for release storage: %s", pathInfo );
+                    //                    logger.info( "Selecting it for release storage: {}", pathInfo );
                     selected = dp;
                     break;
                 }
@@ -549,12 +550,12 @@ public class DefaultFileManager
             {
                 if ( !item.delete() )
                 {
-                    throw new AproxWorkflowException( "Failed to delete: %s.", item );
+                    throw new AproxWorkflowException( "Failed to delete: {}.", item );
                 }
             }
             catch ( final IOException e )
             {
-                throw new AproxWorkflowException( "Failed to delete stored location: %s. Reason: %s", e, item, e.getMessage() );
+                throw new AproxWorkflowException( "Failed to delete stored location: {}. Reason: {}", e, item, e.getMessage() );
             }
         }
 
@@ -581,7 +582,7 @@ public class DefaultFileManager
         }
         catch ( final ProxyDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to lookup membership of group: '%s'. Reason: %s'", e,
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to lookup membership of group: '{}'. Reason: {}'", e,
                                               store.getKey(), e.getMessage() );
         }
 
@@ -590,7 +591,7 @@ public class DefaultFileManager
 
             if ( handler.canHandle( path ) )
             {
-                //                logger.info( "Retrieving path: %s using GroupPathHandler: %s", path, handler.getClass()
+                //                logger.info( "Retrieving path: {} using GroupPathHandler: {}", path, handler.getClass()
                 //                                                                                            .getName() );
                 return handler.retrieve( store, stores, path );
             }
@@ -609,7 +610,7 @@ public class DefaultFileManager
         }
         catch ( final ProxyDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to lookup membership of group: '%s'. Reason: %s'", e,
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to lookup membership of group: '{}'. Reason: {}'", e,
                                               store.getKey(), e.getMessage() );
         }
 
@@ -618,7 +619,7 @@ public class DefaultFileManager
 
             if ( handler.canHandle( path ) )
             {
-                //                logger.info( "Retrieving path: %s using GroupPathHandler: %s", path, handler.getClass()
+                //                logger.info( "Retrieving path: {} using GroupPathHandler: {}", path, handler.getClass()
                 //                                                                                            .getName() );
                 return handler.store( store, stores, path, stream );
             }
@@ -637,7 +638,7 @@ public class DefaultFileManager
         }
         catch ( final ProxyDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to lookup membership of group: '%s'. Reason: %s'", e,
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to lookup membership of group: '{}'. Reason: {}'", e,
                                               store.getKey(), e.getMessage() );
         }
 
@@ -646,7 +647,7 @@ public class DefaultFileManager
 
             if ( handler.canHandle( path ) )
             {
-                //                logger.info( "Retrieving path: %s using GroupPathHandler: %s", path, handler.getClass()
+                //                logger.info( "Retrieving path: {} using GroupPathHandler: {}", path, handler.getClass()
                 //                                                                                            .getName() );
                 return handler.delete( store, stores, path );
             }

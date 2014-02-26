@@ -44,14 +44,15 @@ import org.commonjava.maven.cartographer.dto.GraphComposition;
 import org.commonjava.maven.cartographer.preset.PresetSelector;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.spi.transport.LocationExpander;
-import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.ser.JsonSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class ConfigDTOHelper
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     @DepgraphSpecific
@@ -75,14 +76,14 @@ public class ConfigDTOHelper
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( "Failed to read configuration JSON from request body. Reason: %s", e, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to read configuration JSON from request body. Reason: {}", e, e.getMessage() );
         }
     }
 
     public WebOperationConfigDTO readWebOperationDTO( final String json )
         throws AproxWorkflowException
     {
-        logger.info( "Got configuration JSON:\n\n%s\n\n", json );
+        logger.info( "Got configuration JSON:\n\n{}\n\n", json );
         final WebOperationConfigDTO dto = serializer.fromString( json, WebOperationConfigDTO.class );
         if ( dto == null )
         {
@@ -95,7 +96,7 @@ public class ConfigDTOHelper
         }
         catch ( final TransferException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "One or more sources/excluded sources is invalid: %s", e, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "One or more sources/excluded sources is invalid: {}", e, e.getMessage() );
         }
 
         return dto;
@@ -120,7 +121,7 @@ public class ConfigDTOHelper
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot read GraphComposition JSON from stream: %s", e, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot read GraphComposition JSON from stream: {}", e, e.getMessage() );
         }
 
     }
@@ -134,7 +135,7 @@ public class ConfigDTOHelper
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot read MetadataCollationDTO JSON from stream: %s", e,
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot read MetadataCollationDTO JSON from stream: {}", e,
                                               e.getMessage() );
         }
     }
@@ -156,7 +157,7 @@ public class ConfigDTOHelper
         }
         catch ( final TransferException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "One or more sources/excluded sources is invalid: %s", e, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "One or more sources/excluded sources is invalid: {}", e, e.getMessage() );
         }
 
         return dto;
@@ -172,7 +173,7 @@ public class ConfigDTOHelper
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Failed to read GAV root listing: %s", e, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Failed to read GAV root listing: {}", e, e.getMessage() );
         }
 
         return readAggregatorConfig( lines );

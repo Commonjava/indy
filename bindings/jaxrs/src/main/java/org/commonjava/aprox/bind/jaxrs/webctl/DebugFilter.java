@@ -26,14 +26,15 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 //@WebFilter( "/*" )
 public class DebugFilter
     implements Filter
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Override
     public void destroy()
@@ -46,7 +47,7 @@ public class DebugFilter
         throws IOException, ServletException
     {
         final HttpServletRequest request = (HttpServletRequest) req;
-        logger.info( "REQUEST:\n  URI: %s\n  Path Translated: %s\n  Path Info: %s\n  Context Path: %s\n\n", request.getRequestURI(),
+        logger.info( "REQUEST:\n  URI: {}\n  Path Translated: {}\n  Path Info: {}\n  Context Path: {}\n\n", request.getRequestURI(),
                      request.getPathTranslated(), request.getPathInfo(), request.getContextPath() );
 
         chain.doFilter( request, resp );

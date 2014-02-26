@@ -35,7 +35,7 @@ public class ShiroBasicAuthenticationFilter
 
     public static final String DEFAULT_APPLICATION_NAME = "aprox";
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private PasswordManager passwordManager;
@@ -64,7 +64,7 @@ public class ShiroBasicAuthenticationFilter
             appName = DEFAULT_APPLICATION_NAME;
         }
 
-        logger.info( "  setting application name: '%s'", appName );
+        logger.info( "  setting application name: '{}'", appName );
 
         setApplicationName( String.valueOf( appName ) );
 

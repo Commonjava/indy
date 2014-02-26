@@ -279,7 +279,7 @@ public class ArtifactPathInfo
 
     public String getProjectId()
     {
-        return String.format( getGroupId(), getArtifactId(), getVersion() );
+        return String.format( "%s:%s:%s", getGroupId(), getArtifactId(), getVersion() );
     }
 
 }

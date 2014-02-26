@@ -36,13 +36,14 @@ import org.commonjava.aprox.rest.group.GroupPathHandler;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileEvent;
 import org.commonjava.maven.galley.model.Transfer;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @javax.enterprise.context.ApplicationScoped
 public class MergedFileUploadListener
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private StoreDataManager dataManager;
@@ -60,8 +61,7 @@ public class MergedFileUploadListener
 
         final StoreKey key = getKey( event );
 
-        if ( !path.endsWith( MavenMetadataMerger.METADATA_NAME )
-            && !path.endsWith( ArchetypeCatalogMerger.CATALOG_NAME ) )
+        if ( !path.endsWith( MavenMetadataMerger.METADATA_NAME ) && !path.endsWith( ArchetypeCatalogMerger.CATALOG_NAME ) )
         {
             return;
         }
@@ -80,15 +80,15 @@ public class MergedFileUploadListener
                     }
                     catch ( final IOException e )
                     {
-                        logger.error( "Failed to delete: %s from group: %s. Error: %s", e, path, group, e.getMessage() );
+                        logger.error( "Failed to delete: {} from group: {}. Error: {}", e, path, group, e.getMessage() );
                     }
                 }
             }
         }
         catch ( final ProxyDataException e )
         {
-            logger.warn( "Failed to regenerate maven-metadata.xml for groups after deployment to: %s"
-                + "\nCannot retrieve associated groups: %s", e, key, e.getMessage() );
+            logger.warn( "Failed to regenerate maven-metadata.xml for groups after deployment to: {}" + "\nCannot retrieve associated groups: {}", e,
+                         key, e.getMessage() );
         }
     }
 
@@ -96,8 +96,7 @@ public class MergedFileUploadListener
         throws IOException
     {
         final Transfer[] toDelete =
-            { fileManager.getStorageReference( group, path ),
-                fileManager.getStorageReference( group, path + GroupPathHandler.MERGEINFO_SUFFIX ),
+            { fileManager.getStorageReference( group, path ), fileManager.getStorageReference( group, path + GroupPathHandler.MERGEINFO_SUFFIX ),
                 fileManager.getStorageReference( group, path + GroupPathHandler.SHA_SUFFIX ),
                 fileManager.getStorageReference( group, path + GroupPathHandler.MD5_SUFFIX ) };
 

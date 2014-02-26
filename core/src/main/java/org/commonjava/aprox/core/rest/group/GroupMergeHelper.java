@@ -34,12 +34,13 @@ import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.rest.group.GroupPathHandler;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GroupMergeHelper
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private FileManager fileManager;
@@ -67,8 +68,7 @@ public class GroupMergeHelper
         }
     }
 
-    public final void writeChecksumsAndMergeInfo( final byte[] data, final Set<Transfer> sources, final Group group,
-                                                  final String path )
+    public final void writeChecksumsAndMergeInfo( final byte[] data, final Set<Transfer> sources, final Group group, final String path )
     {
         final Transfer targetSha = fileManager.getStorageReference( group, path + GroupPathHandler.SHA_SUFFIX );
         final Transfer targetMd5 = fileManager.getStorageReference( group, path + GroupPathHandler.MD5_SUFFIX );
@@ -85,8 +85,7 @@ public class GroupMergeHelper
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to write SHA1 checksum for merged metadata information to: %s.\nError: %s", e,
-                          targetSha, e.getMessage() );
+            logger.error( "Failed to write SHA1 checksum for merged metadata information to: {}.\nError: {}", e, targetSha, e.getMessage() );
         }
         finally
         {
@@ -100,8 +99,7 @@ public class GroupMergeHelper
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to write MD5 checksum for merged metadata information to: %s.\nError: %s", e,
-                          targetMd5, e.getMessage() );
+            logger.error( "Failed to write MD5 checksum for merged metadata information to: {}.\nError: {}", e, targetMd5, e.getMessage() );
         }
         finally
         {
@@ -120,8 +118,7 @@ public class GroupMergeHelper
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to write merged metadata information to: %s.\nError: %s", e, targetInfo,
-                          e.getMessage() );
+            logger.error( "Failed to write merged metadata information to: {}.\nError: {}", e, targetInfo, e.getMessage() );
         }
         finally
         {

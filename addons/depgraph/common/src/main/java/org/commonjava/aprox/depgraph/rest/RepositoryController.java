@@ -63,8 +63,9 @@ import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferBatch;
-import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.ser.JsonSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class RepositoryController
@@ -74,7 +75,7 @@ public class RepositoryController
 
     private static final String URLMAP_DATA_FILES = "files";
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private ResolveOps ops;
@@ -143,7 +144,7 @@ public class RepositoryController
                         kl = loc;
                     }
 
-                    logger.info( "Adding %s (keyLocation: %s)", item, kl );
+                    logger.info( "Adding {} (keyLocation: {})", item, kl );
                     files.add( new File( item.getPath() ).getName() );
                 }
 
@@ -155,7 +156,7 @@ public class RepositoryController
         }
         catch ( final MalformedURLException e )
         {
-            throw new AproxWorkflowException( "Failed to generate runtime repository. Reason: %s", e, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to generate runtime repository. Reason: {}", e, e.getMessage() );
         }
 
         return serializer.toString( result );
@@ -191,14 +192,14 @@ public class RepositoryController
                 final Map<ArtifactRef, ConcreteResource> items = contents.get( ref );
                 for ( final ConcreteResource item : items.values() )
                 {
-                    logger.info( "Adding: '%s'", item );
+                    logger.info( "Adding: '{}'", item );
                     downLog.add( formatDownlogEntry( item, dto.getLocalUrls(), baseUri, uriFormatter ) );
                 }
             }
         }
         catch ( final MalformedURLException e )
         {
-            throw new AproxWorkflowException( "Failed to generate runtime repository. Reason: %s", e, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to generate runtime repository. Reason: {}", e, e.getMessage() );
         }
 
         final List<String> sorted = new ArrayList<String>( downLog );
@@ -232,7 +233,7 @@ public class RepositoryController
             final Set<ConcreteResource> entries = new HashSet<ConcreteResource>();
             final Set<String> seenPaths = new HashSet<String>();
 
-            logger.info( "Iterating contents with %d GAVs.", contents.size() );
+            logger.info( "Iterating contents with {} GAVs.", contents.size() );
             for ( final Map<ArtifactRef, ConcreteResource> artifactResources : contents.values() )
             {
                 for ( final Entry<ArtifactRef, ConcreteResource> entry : artifactResources.entrySet() )
@@ -240,27 +241,27 @@ public class RepositoryController
                     final ArtifactRef ref = entry.getKey();
                     final ConcreteResource resource = entry.getValue();
 
-                    //                        logger.info( "Checking %s (%s) for inclusion...", ref, resource );
+                    //                        logger.info( "Checking {} ({}) for inclusion...", ref, resource );
 
                     final String path = resource.getPath();
                     if ( seenPaths.contains( path ) )
                     {
-                        logger.info( "Conflicting path: %s. Skipping %s.", path, ref );
+                        logger.info( "Conflicting path: {}. Skipping {}.", path, ref );
                         continue;
                     }
 
                     seenPaths.add( path );
 
-                    //                        logger.info( "Adding to batch: %s via resource: %s", ref, resource );
+                    //                        logger.info( "Adding to batch: {} via resource: {}", ref, resource );
                     entries.add( resource );
                 }
             }
 
-            logger.info( "Starting batch retrieval of %d artifacts.", entries.size() );
+            logger.info( "Starting batch retrieval of {} artifacts.", entries.size() );
             TransferBatch batch = new TransferBatch( entries );
             batch = transferManager.batchRetrieve( batch );
 
-            logger.info( "Retrieved %d artifacts. Creating zip.", batch.getTransfers()
+            logger.info( "Retrieved {} artifacts. Creating zip.", batch.getTransfers()
                                                                        .size() );
 
             // FIXME: Stream to a temp file, then pass that to the Response.ok() handler...
@@ -280,7 +281,7 @@ public class RepositoryController
 
             for ( final Transfer item : items )
             {
-                //                    logger.info( "Adding: %s", item );
+                //                    logger.info( "Adding: {}", item );
                 final String path = item.getPath();
                 if ( item != null )
                 {
@@ -302,11 +303,11 @@ public class RepositoryController
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( "Failed to generate runtime repository. Reason: %s", e, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to generate runtime repository. Reason: {}", e, e.getMessage() );
         }
         catch ( final TransferException e )
         {
-            throw new AproxWorkflowException( "Failed to generate runtime repository. Reason: %s", e, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to generate runtime repository. Reason: {}", e, e.getMessage() );
         }
         finally
         {
@@ -361,8 +362,8 @@ public class RepositoryController
 
         if ( !dto.isValid() )
         {
-            logger.warn( "Repository archive configuration is invalid: %s", dto );
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Invalid configuration: %s", dto );
+            logger.warn( "Repository archive configuration is invalid: {}", dto );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Invalid configuration: {}", dto );
         }
 
         Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> contents;
@@ -372,8 +373,8 @@ public class RepositoryController
         }
         catch ( final CartoDataException e )
         {
-            logger.error( "Failed to resolve repository contents for: %s. Reason: %s", e, dto, e.getMessage() );
-            throw new AproxWorkflowException( "Failed to resolve repository contents for: %s. Reason: %s", e, dto, e.getMessage() );
+            logger.error( "Failed to resolve repository contents for: {}. Reason: {}", e, dto, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to resolve repository contents for: {}. Reason: {}", e, dto, e.getMessage() );
         }
 
         return contents;

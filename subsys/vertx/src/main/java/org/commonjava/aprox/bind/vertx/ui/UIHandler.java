@@ -17,11 +17,12 @@ import javax.inject.Inject;
 import org.commonjava.aprox.bind.vertx.conf.UIConfiguration;
 import org.commonjava.aprox.bind.vertx.util.PathParam;
 import org.commonjava.aprox.util.ApplicationHeader;
-import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.commonjava.vertx.vabr.types.Method;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.vertx.java.core.http.HttpServerRequest;
 
 @Handles( key = "UIHandler" )
@@ -30,7 +31,7 @@ public class UIHandler
     implements RequestHandler
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private UIConfiguration config;
@@ -47,7 +48,7 @@ public class UIHandler
             case HEAD:
             {
                 final File uiDir = config.getUIDir();
-                logger.info( "UI basedir: '%s'", uiDir );
+                logger.info( "UI basedir: '{}'", uiDir );
 
                 String path = request.params()
                                      .get( PathParam.path.key() );
@@ -60,7 +61,7 @@ public class UIHandler
                 else if ( path.endsWith( "/" ) )
                 {
                     path += "index.html";
-                    logger.info( "directory path. Using %s", path );
+                    logger.info( "directory path. Using {}", path );
                 }
 
                 if ( path.startsWith( "/" ) )
@@ -70,7 +71,7 @@ public class UIHandler
                 }
 
                 final File resource = new File( uiDir, path );
-                logger.info( "Checking for existence of: '%s'", resource );
+                logger.info( "Checking for existence of: '{}'", resource );
                 if ( resource.exists() )
                 {
                     if ( method == GET )
@@ -104,7 +105,7 @@ public class UIHandler
             }
             default:
             {
-                logger.error( "cannot handle request for method: %s", method );
+                logger.error( "cannot handle request for method: {}", method );
                 setStatus( BAD_REQUEST, request );
             }
         }

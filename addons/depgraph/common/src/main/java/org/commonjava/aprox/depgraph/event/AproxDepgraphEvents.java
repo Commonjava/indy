@@ -36,7 +36,8 @@ import org.commonjava.maven.cartographer.event.RelationshipStorageEvent;
 import org.commonjava.maven.galley.event.FileErrorEvent;
 import org.commonjava.maven.galley.event.FileNotFoundEvent;
 import org.commonjava.maven.galley.model.Resource;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 @Default
@@ -45,7 +46,7 @@ public class AproxDepgraphEvents
     implements CartoEventManager
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private CartoEventManagerImpl delegate;
 
@@ -77,7 +78,7 @@ public class AproxDepgraphEvents
         try
         {
             final ArtifactPathInfo info = ArtifactPathInfo.parse( path );
-            //            logger.info( "Unlocking %s due to file download error.", info );
+            //            logger.info( "Unlocking {} due to file download error.", info );
             if ( info != null )
             {
                 final ProjectVersionRef ref = new ProjectVersionRef( info.getGroupId(), info.getArtifactId(), info.getVersion() );
@@ -87,7 +88,7 @@ public class AproxDepgraphEvents
         }
         catch ( final InvalidVersionSpecificationException e )
         {
-            logger.error( "Cannot parse version for path: '%s'. Failed to unlock waiting threads. Reason: %s", e, path, e.getMessage() );
+            logger.error( "Cannot parse version for path: '{}'. Failed to unlock waiting threads. Reason: {}", e, path, e.getMessage() );
         }
     }
 
@@ -98,7 +99,7 @@ public class AproxDepgraphEvents
         try
         {
             final ArtifactPathInfo info = ArtifactPathInfo.parse( path );
-            //            logger.info( "Unlocking %s due to unresolvable POM.", info );
+            //            logger.info( "Unlocking {} due to unresolvable POM.", info );
             if ( info != null )
             {
                 final ProjectVersionRef ref = new ProjectVersionRef( info.getGroupId(), info.getArtifactId(), info.getVersion() );
@@ -108,7 +109,7 @@ public class AproxDepgraphEvents
         }
         catch ( final InvalidVersionSpecificationException e )
         {
-            logger.error( "Cannot parse version for path: '%s'. Failed to unlock waiting threads. Reason: %s", e, path, e.getMessage() );
+            logger.error( "Cannot parse version for path: '{}'. Failed to unlock waiting threads. Reason: {}", e, path, e.getMessage() );
         }
     }
 

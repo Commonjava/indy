@@ -25,7 +25,8 @@ import org.commonjava.maven.cartographer.dto.RepositoryContentRecipe;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.spi.transport.LocationExpander;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class WebOperationConfigDTO
     extends RepositoryContentRecipe
@@ -70,11 +71,11 @@ public class WebOperationConfigDTO
     public void calculateLocations( final LocationExpander locationExpander )
         throws TransferException
     {
-        final Logger logger = new Logger( getClass() );
+        final Logger logger = LoggerFactory.getLogger( getClass() );
         if ( source != null )
         {
             setSourceLocation( LocationUtils.toCacheLocation( source ) );
-            logger.info( "Set sourceLocation to: '%s'", getSourceLocation() );
+            logger.info( "Set sourceLocation to: '{}'", getSourceLocation() );
         }
 
         if ( excludedSources != null )

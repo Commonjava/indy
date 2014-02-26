@@ -35,15 +35,16 @@ import org.commonjava.aprox.core.dto.repl.ReplicationDTO;
 import org.commonjava.aprox.core.rest.ReplicationController;
 import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.ser.JsonSerializer;
 import org.commonjava.web.json.ser.ServletSerializerUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path( "/admin/replicate" )
 public class ReplicationResource
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private ReplicationController controller;
@@ -67,7 +68,7 @@ public class ReplicationResource
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Replication failed: %s", e, e.getMessage() );
+            logger.error( "Replication failed: {}", e, e.getMessage() );
             return AproxExceptionUtils.formatResponse( e );
         }
     }

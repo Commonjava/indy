@@ -36,7 +36,7 @@ public final class UrlUtils
     public static String stringQueryParameter( final Object value )
     {
         final String base = String.valueOf( value );
-        return "%22" + base + "%22";
+        return "{}2" + base + "{}2";
     }
 
     public static String siblingDatabaseUrl( final String dbUrl, final String siblingName )

@@ -16,13 +16,14 @@
  ******************************************************************************/
 package org.commonjava.aprox.util;
 
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @javax.enterprise.context.ApplicationScoped
 public class ChangeSynchronizer
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private int changed = 0;
 
@@ -53,24 +54,24 @@ public class ChangeSynchronizer
 
     public synchronized int waitForChange( final int count, final long totalMillis, final long pollMillis )
     {
-        logger.debug( "Waiting for %d events to occur...%d have already happened.", count, changed );
+        logger.debug( "Waiting for {} events to occur...{} have already happened.", count, changed );
         final long start = System.currentTimeMillis();
         double runningTotal = 0;
 
         while ( changed < count )
         {
             runningTotal = ( System.currentTimeMillis() - start );
-            logger.debug( "Waited (%s ms)...", runningTotal );
+            logger.debug( "Waited ({} ms)...", runningTotal );
 
             if ( runningTotal > ( totalMillis ) )
             {
-                logger.debug( "Wait (%s ms) expired.", totalMillis );
+                logger.debug( "Wait ({} ms) expired.", totalMillis );
                 break;
             }
 
             try
             {
-                logger.debug( "Waiting (%s ms) for changes.", pollMillis );
+                logger.debug( "Waiting ({} ms) for changes.", pollMillis );
                 wait( pollMillis );
             }
             catch ( final InterruptedException e )
