@@ -24,27 +24,21 @@
   
   <fileSets>
     <fileSet>
-      <directory>src/main/resources/bin</directory>
-      <outputDirectory>bin</outputDirectory>
-      <fileMode>0750</fileMode>
-      <directoryMode>770</directoryMode>
-    </fileSet>
-    <fileSet>
-      <directory>src/main/resources/etc</directory>
-      <outputDirectory>etc</outputDirectory>
+      <directory>src/main/resources</directory>
+      <outputDirectory>/</outputDirectory>
       <fileMode>0750</fileMode>
       <directoryMode>770</directoryMode>
       <includes>
-        <include>*.sh</include>
+        <include>**/*.sh</include>
       </includes>
     </fileSet>
     <fileSet>
-      <directory>src/main/resources/etc</directory>
-      <outputDirectory>etc</outputDirectory>
+      <directory>src/main/resources</directory>
+      <outputDirectory>/</outputDirectory>
       <fileMode>0640</fileMode>
       <directoryMode>770</directoryMode>
       <excludes>
-        <exclude>*.sh</exclude>
+        <exclude>**/*.sh</exclude>
       </excludes>
     </fileSet>
   </fileSets>

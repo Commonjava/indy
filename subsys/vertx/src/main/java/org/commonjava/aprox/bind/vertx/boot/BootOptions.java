@@ -1,11 +1,31 @@
 package org.commonjava.aprox.bind.vertx.boot;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.log4j.PropertyConfigurator;
+import org.codehaus.plexus.interpolation.InterpolationException;
+import org.codehaus.plexus.interpolation.PropertiesBasedValueSource;
+import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.kohsuke.args4j.Option;
 
 public class BootOptions
 {
+
+    public static final String BIND_PROP = "bind";
+
+    public static final String PORT_PROP = "port";
+
+    public static final String CONFIG_PROP = "config";
+
+    public static final String WORKERS_PROP = "workers";
 
     @Option( name = "-h", aliases = { "--help" }, usage = "Print this and exit" )
     private boolean help;
@@ -19,9 +39,79 @@ public class BootOptions
     @Option( name = "-c", aliases = { "--config" }, usage = "Use an alternative configuration file (default: /etc/aprox/main.conf)" )
     private String config;
 
+    @Option( name = "-w", aliases = { "--workers" }, usage = "Number of worker threads to serve content (default: 5)" )
+    private int workers = 5;
+
     private Weld weld;
 
     private WeldContainer container;
+
+    private StringSearchInterpolator interp;
+
+    private Properties bootProps;
+
+    private String aproxHome;
+
+    public BootOptions setDefaults( final File bootDefaults, final String aproxHome )
+        throws IOException, InterpolationException
+    {
+        if ( bootDefaults != null && bootDefaults.exists() )
+        {
+            FileInputStream stream = null;
+            try
+            {
+                stream = new FileInputStream( bootDefaults );
+
+                this.aproxHome = aproxHome;
+
+                bootProps = new Properties();
+                bootProps.load( stream );
+
+                bind = resolve( bootProps.getProperty( BIND_PROP, bind ) );
+                port = Integer.parseInt( resolve( bootProps.getProperty( PORT_PROP, Integer.toString( port ) ) ) );
+                workers = Integer.parseInt( resolve( bootProps.getProperty( WORKERS_PROP, Integer.toString( workers ) ) ) );
+
+                config = resolve( bootProps.getProperty( CONFIG_PROP, config ) );
+            }
+            finally
+            {
+                IOUtils.closeQuietly( stream );
+            }
+        }
+
+        return this;
+    }
+
+    public String resolve( final String value )
+        throws InterpolationException
+    {
+        if ( bootProps == null )
+        {
+            if ( aproxHome == null )
+            {
+                return value;
+            }
+            else
+            {
+                bootProps = new Properties();
+            }
+        }
+
+        bootProps.setProperty( "aprox.home", aproxHome );
+
+        if ( interp == null )
+        {
+            interp = new StringSearchInterpolator();
+            interp.addValueSource( new PropertiesBasedValueSource( bootProps ) );
+        }
+
+        return interp.interpolate( value );
+    }
+
+    public int getWorkers()
+    {
+        return workers;
+    }
 
     public boolean isHelp()
     {
@@ -67,10 +157,11 @@ public class BootOptions
         return this;
     }
 
-    public void setWeldComponents( final Weld weld, final WeldContainer container )
+    public BootOptions setWeldComponents( final Weld weld, final WeldContainer container )
     {
         this.weld = weld;
         this.container = container;
+        return this;
     }
 
     public Weld getWeld()
@@ -81,6 +172,29 @@ public class BootOptions
     public WeldContainer getWeldContainer()
     {
         return container;
+    }
+
+    public BootOptions configureLogging( final File logConf )
+        throws IOException, InterpolationException
+    {
+        if ( logConf.exists() )
+        {
+            String logProps = FileUtils.readFileToString( logConf );
+            logProps = resolve( logProps );
+
+            final Properties p = new Properties();
+            p.load( new ByteArrayInputStream( logProps.getBytes() ) );
+
+            PropertyConfigurator.configure( p );
+        }
+
+        return this;
+    }
+
+    public BootOptions setWorkers( final int workers )
+    {
+        this.workers = workers;
+        return this;
     }
 
 }

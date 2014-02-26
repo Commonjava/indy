@@ -16,6 +16,8 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.vertx.boot;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Properties;
 
@@ -27,25 +29,67 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.spi.Configurator;
 import org.apache.log4j.spi.LoggerRepository;
+import org.codehaus.plexus.interpolation.InterpolationException;
 import org.commonjava.aprox.conf.AproxConfigFactory;
 import org.commonjava.util.logging.Log4jUtil;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
+import org.vertx.java.core.http.HttpServer;
 import org.vertx.java.core.impl.DefaultVertx;
 import org.vertx.java.platform.Verticle;
 
 public class Booter
     extends Verticle
 {
+    public static final String APROX_HOME_PROP = "aprox.home";
+
+    public static final String BOOT_DEFAULTS_PROP = "aprox.boot.defaults";
+
+    public static final int CANT_LOAD_BOOT_DEFAULTS = 1;
+
+    public static final int CANT_PARSE_ARGS = 2;
+
+    public static final int CANT_INTERP_BOOT_DEFAULTS = 3;
+
+    public static final String APROX_LOGCONF_PROP = "aprox.logging";
+
     public static void main( final String[] args )
     {
-        // FIXME Make this configurable via BootOptions.
-        //        configureLogging();
-        Log4jUtil.configure( Level.INFO );
+        final String bootDef = System.getProperty( BOOT_DEFAULTS_PROP );
+        File bootDefaults = null;
+        if ( bootDef != null )
+        {
+            bootDefaults = new File( bootDef );
+        }
+
+        final String logconf = System.getProperty( APROX_LOGCONF_PROP );
+        File logConf = null;
+        if ( logconf != null )
+        {
+            logConf = new File( logconf );
+        }
 
         final BootOptions boot = new BootOptions();
+        try
+        {
+            final String aproxHome = System.getProperty( APROX_HOME_PROP, new File( "." ).getCanonicalPath() );
+
+            boot.setDefaults( bootDefaults, aproxHome );
+            boot.configureLogging( logConf );
+        }
+        catch ( final IOException e )
+        {
+            System.out.printf( "ERROR LOADING BOOT DEFAULTS: %s.\nReason: %s\n\n", bootDefaults, e.getMessage() );
+            System.exit( CANT_LOAD_BOOT_DEFAULTS );
+        }
+        catch ( final InterpolationException e )
+        {
+            System.out.printf( "ERROR RESOLVING BOOT DEFAULTS: %s.\nReason: %s\n\n", bootDefaults, e.getMessage() );
+            System.exit( CANT_INTERP_BOOT_DEFAULTS );
+        }
+
         final CmdLineParser parser = new CmdLineParser( boot );
         boolean canStart = true;
         try
@@ -56,6 +100,7 @@ public class Booter
         {
             System.out.printf( "ERROR: %s", e.getMessage() );
             printUsage( parser, e );
+            System.exit( CANT_PARSE_ARGS );
         }
 
         if ( boot.isHelp() )
@@ -70,6 +115,7 @@ public class Booter
         }
     }
 
+    @SuppressWarnings( "unused" )
     private static void configureLogging()
     {
         Log4jUtil.configure( Level.WARN );
@@ -123,6 +169,8 @@ public class Booter
         if ( bootOptions.getConfig() != null )
         {
             final Properties properties = System.getProperties();
+
+            System.out.printf( "\n\nUsing AProx configuration: %s\n", bootOptions.getConfig() );
             properties.setProperty( AproxConfigFactory.CONFIG_PATH_PROP, bootOptions.getConfig() );
             System.setProperties( properties );
         }
@@ -137,11 +185,14 @@ public class Booter
 
         setVertx( new DefaultVertx() );
 
-        vertx.createHttpServer()
-             .requestHandler( router )
-             .listen( bootOptions.getPort(), bootOptions.getBind() );
+        for ( int i = 0; i < bootOptions.getWorkers(); i++ )
+        {
+            final HttpServer server = vertx.createHttpServer();
+            server.requestHandler( router )
+                  .listen( bootOptions.getPort(), bootOptions.getBind() );
+        }
 
-        System.out.printf( "\n\nAProx listening on %s:%d\n\n", bootOptions.getBind(), bootOptions.getPort() );
+        System.out.printf( "AProx: %d workers listening on %s:%d\n\n", bootOptions.getWorkers(), bootOptions.getBind(), bootOptions.getPort() );
 
         synchronized ( this )
         {

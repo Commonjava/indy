@@ -83,7 +83,7 @@ public class RequestAdvisor
         Set<ProjectVersionRef> incomplete;
         if ( ref != null )
         {
-            incomplete = carto.getIncompleteSubgraphsFor( filter, ref );
+            incomplete = carto.getIncompleteSubgraphsFor( filter, null, ref );
 
             if ( incomplete != null )
             {
@@ -118,7 +118,7 @@ public class RequestAdvisor
         }
         if ( getBooleanParamWithDefault( params, "pa", true ) )
         {
-            filters.add( new ParentFilter( false ) );
+            filters.add( ParentFilter.EXCLUDE_TERMINAL_PARENTS );
         }
         if ( getBooleanParamWithDefault( params, "pl", false ) )
         {

@@ -7,6 +7,8 @@ BASEDIR=`dirname ${BASEDIR}`
 
 # echo "basedir: ${BASEDIR}"
 
+APROX_LOGCONF=${APROX_LOGCONF:-${BASEDIR}/etc/aprox/log4j.properties}
+
 CP=""
 for f in $(find $BASEDIR/lib/aprox-cdi-components-*.jar -type f)
 do
@@ -29,6 +31,6 @@ fi
 
 test -f ${BASEDIR}/etc/aprox/env.sh && source ${BASEDIR}/etc/aprox/env.sh
 
-# echo "Command: '${JAVA} -cp ${CP} -Daprox.home=${BASEDIR} ${MAIN_CLASS} -c ${BASEDIR}/etc/main.conf $@'"
-exec "$JAVA" -cp "${CP}" -Daprox.home="${BASEDIR}" ${MAIN_CLASS} -c "${BASEDIR}/etc/aprox/main.conf" "$@"
+# echo "Command: '${JAVA} -cp ${CP} -Daprox.home=${BASEDIR} -Daprox.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS} $@'"
+exec "$JAVA" ${JAVA_OPTS} -cp "${CP}" -Daprox.logging="${APROX_LOGCONF}" -Daprox.home="${BASEDIR}" -Daprox.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS} "$@"
 

@@ -43,7 +43,7 @@ public class MasterRouter
     {
         logger.info( "\n\nCONSTRUCTING WEB ROUTES FOR ALL APPS IN APROX...\n\n" );
 
-        setRawHandlerExecutor( executorService );
+        setHandlerExecutor( executorService );
 
         final Set<AproxRouter> r = new HashSet<>();
         for ( final AproxRouter router : routers )
