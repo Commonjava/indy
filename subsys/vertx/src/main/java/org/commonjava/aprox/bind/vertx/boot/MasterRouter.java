@@ -14,11 +14,14 @@ import org.commonjava.aprox.bind.vertx.AproxRouter;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.vertx.vabr.ApplicationRouter;
 import org.commonjava.vertx.vabr.MultiApplicationRouter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class MasterRouter
     extends MultiApplicationRouter
 {
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public static final String PREFIX = "";
 
