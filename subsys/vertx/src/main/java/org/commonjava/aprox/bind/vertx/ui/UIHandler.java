@@ -76,7 +76,8 @@ public class UIHandler
                     if ( method == GET )
                     {
                         logger.info( "sending file" );
-                        request.response()
+                        request.resume()
+                               .response()
                                .putHeader( ApplicationHeader.last_modified.key(), formatDateHeader( resource.lastModified() ) )
                                .sendFile( resource.getAbsolutePath() );
                     }
@@ -85,7 +86,8 @@ public class UIHandler
                         logger.info( "sending OK" );
                         // TODO: set headers for content info...
                         setStatus( OK, request );
-                        request.response()
+                        request.resume()
+                               .response()
                                .setChunked( true )
                                .putHeader( ApplicationHeader.content_type.key(), typeMap.getContentType( resource ) )
                                .putHeader( ApplicationHeader.content_length.key(), Long.toString( resource.length() ) )
