@@ -172,7 +172,7 @@ public class AproxProjectGraphDiscoverer
         }
         else if ( store == null )
         {
-            throw new CartoDataException( "Cannot discover %s from: %s. No such store.", key );
+            throw new CartoDataException( "Cannot discover depgraphs from: %s. No such store.", key );
         }
         else if ( key.getType() == StoreType.group )
         {
