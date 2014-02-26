@@ -45,7 +45,8 @@ import org.commonjava.maven.cartographer.discover.ProjectRelationshipDiscoverer;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.maven.ArtifactManager;
 import org.commonjava.maven.galley.model.Transfer;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @javax.enterprise.context.ApplicationScoped
 @Production
@@ -54,7 +55,7 @@ public class AproxProjectGraphDiscoverer
     implements ProjectRelationshipDiscoverer
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private AproxModelDiscoverer discoverer;
@@ -95,21 +96,21 @@ public class AproxProjectGraphDiscoverer
                 specific = resolveSpecificVersion( ref, discoveryConfig );
                 if ( specific == null || specific.equals( ref ) )
                 {
-                    logger.warn( "Cannot resolve specific version of: '%s'.", ref );
+                    logger.warn( "Cannot resolve specific version of: '{}'.", ref );
                     return null;
                 }
             }
         }
         catch ( final InvalidVersionSpecificationException e )
         {
-            logger.error( "Invalid version for: %s. Reason: %s", e, ref, e.getMessage() );
+            logger.error( "Invalid version for: {}. Reason: {}", e, ref, e.getMessage() );
             dataManager.addError( new EProjectKey( source, ref ), e );
             specific = null;
         }
 
         if ( specific == null )
         {
-            logger.info( "Specific version NOT resolved. Skipping discovery: %s", ref );
+            logger.info( "Specific version NOT resolved. Skipping discovery: {}", ref );
             return null;
         }
 
@@ -123,7 +124,7 @@ public class AproxProjectGraphDiscoverer
             final List<? extends KeyedLocation> locations = getLocations( key );
             if ( locations == null || locations.isEmpty() )
             {
-                logger.info( "NO LOCATIONS given for resolving: %s", pomRef );
+                logger.info( "NO LOCATIONS given for resolving: {}", pomRef );
                 return null;
             }
 
@@ -135,13 +136,13 @@ public class AproxProjectGraphDiscoverer
             }
             else
             {
-                logger.info( "%s NOT FOUND in:\n  %s", pomRef, join( locations, "\n  " ) );
+                logger.info( "{} NOT FOUND in:\n  {}", pomRef, join( locations, "\n  " ) );
                 return null;
             }
         }
         catch ( final TransferException e )
         {
-            throw new CartoDataException( "Discovery of project-relationships for: '%s' failed. Error: %s", e, ref, e.getMessage() );
+            throw new CartoDataException( "Discovery of project-relationships for: '{}' failed. Error: {}", e, ref, e.getMessage() );
         }
     }
 
@@ -155,7 +156,7 @@ public class AproxProjectGraphDiscoverer
         }
         catch ( final ProxyDataException e )
         {
-            throw new CartoDataException( "Failed to lookup ArtifactStore for key: %s. Reason: %s", e, key, e.getMessage() );
+            throw new CartoDataException( "Failed to lookup ArtifactStore for key: {}. Reason: {}", e, key, e.getMessage() );
         }
 
         List<? extends KeyedLocation> locations;
@@ -167,12 +168,12 @@ public class AproxProjectGraphDiscoverer
             }
             catch ( final ProxyDataException e )
             {
-                throw new CartoDataException( "Cannot retrieve full list of non-group artifact stores. Reason: %s", e, e.getMessage() );
+                throw new CartoDataException( "Cannot retrieve full list of non-group artifact stores. Reason: {}", e, e.getMessage() );
             }
         }
         else if ( store == null )
         {
-            throw new CartoDataException( "Cannot discover depgraphs from: %s. No such store.", key );
+            throw new CartoDataException( "Cannot discover depgraphs from: {}. No such store.", key );
         }
         else if ( key.getType() == StoreType.group )
         {
@@ -183,7 +184,7 @@ public class AproxProjectGraphDiscoverer
             }
             catch ( final ProxyDataException e )
             {
-                throw new CartoDataException( "Failed to lookup ordered list of concrete ArtifactStores for group: %s. Reason: %s", e, key,
+                throw new CartoDataException( "Failed to lookup ordered list of concrete ArtifactStores for group: {}. Reason: {}", e, key,
                                               e.getMessage() );
             }
 
@@ -210,7 +211,7 @@ public class AproxProjectGraphDiscoverer
         }
         catch ( final TransferException e )
         {
-            throw new CartoDataException( "Failed to resolve variable version for: %s. Reason: %s", e, ref, e.getMessage() );
+            throw new CartoDataException( "Failed to resolve variable version for: {}. Reason: {}", e, ref, e.getMessage() );
         }
     }
 

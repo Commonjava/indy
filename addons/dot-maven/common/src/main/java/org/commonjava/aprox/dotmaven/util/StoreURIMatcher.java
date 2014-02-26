@@ -37,7 +37,7 @@ public final class StoreURIMatcher
 
     private static final int STORE_PATH_GRP = 6;
 
-    //    private final Logger logger = new Logger( getClass() );
+    //    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private final Matcher matcher;
 
@@ -60,10 +60,10 @@ public final class StoreURIMatcher
         if ( hasStoreType() )
         {
             final String typePart = matcher.group( STORE_TYPE_GRP );
-            //            logger.info( "Type part of name is: '%s'", typePart );
+            //            logger.info( "Type part of name is: '{}'", typePart );
 
             final StoreType type = StoreType.get( typePart );
-            //            logger.info( "StoreType is: %s", type );
+            //            logger.info( "StoreType is: {}", type );
 
             return type;
         }
@@ -85,10 +85,10 @@ public final class StoreURIMatcher
         }
 
         final String typePart = matcher.group( STORE_TYPE_GRP );
-        //        logger.info( "Type part of name is: '%s'", typePart );
+        //        logger.info( "Type part of name is: '{}'", typePart );
 
         final StoreType type = StoreType.get( typePart );
-        //        logger.info( "StoreType is: %s", type );
+        //        logger.info( "StoreType is: {}", type );
 
         if ( type == null )
         {
@@ -96,7 +96,7 @@ public final class StoreURIMatcher
         }
 
         final String name = matcher.group( STORE_NAME_GRP );
-        //        logger.info( "Store part of name is: '%s'", name );
+        //        logger.info( "Store part of name is: '{}'", name );
 
         return new StoreKey( type, name );
     }
@@ -110,7 +110,7 @@ public final class StoreURIMatcher
         }
 
         final String typePart = matcher.group( STORE_TYPE_GRP );
-        //        logger.info( "Type part of name is: '%s'", typePart );
+        //        logger.info( "Type part of name is: '{}'", typePart );
 
         if ( isEmpty( typePart ) )
         {
@@ -118,7 +118,7 @@ public final class StoreURIMatcher
         }
 
         final StoreType type = StoreType.get( typePart );
-        //        logger.info( "StoreType is: %s", type );
+        //        logger.info( "StoreType is: {}", type );
 
         return type;
     }
@@ -131,7 +131,7 @@ public final class StoreURIMatcher
         }
 
         final String storePath = matcher.group( STORE_PATH_GRP );
-        //        logger.info( "Path is: '%s'", storePath );
+        //        logger.info( "Path is: '{}'", storePath );
         return storePath;
     }
 

@@ -153,7 +153,7 @@ public class ArtifactPathInfo
     @Override
     public String toString()
     {
-        return String.format( "ArtifactPathInfo [groupId=%s, artifactId=%s, version=%s, file=%s]", groupId, artifactId,
+        return String.format( "ArtifactPathInfo [groupId={}, artifactId={}, version={}, file={}]", groupId, artifactId,
                               version, file );
     }
 

@@ -35,7 +35,8 @@ import javax.ws.rs.core.Response;
 import org.commonjava.aprox.bind.jaxrs.util.AproxExceptionUtils;
 import org.commonjava.aprox.depgraph.rest.ResolverController;
 import org.commonjava.aprox.rest.AproxWorkflowException;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path( "/depgraph/resolve/{from: (.+)}" )
 @Produces( MediaType.APPLICATION_JSON )
@@ -43,7 +44,7 @@ import org.commonjava.util.logging.Logger;
 public class ResolverResource
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private ResolverController controller;

@@ -31,15 +31,16 @@ import org.commonjava.aprox.bind.jaxrs.util.JaxRsUriFormatter;
 import org.commonjava.aprox.core.rest.StatsController;
 import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.rest.AproxWorkflowException;
-import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.ser.JsonSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path( "/stats" )
 @javax.enterprise.context.ApplicationScoped
 public class BasicStatsResource
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     @AproxData
@@ -79,7 +80,7 @@ public class BasicStatsResource
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to retrieve endpoint listing: %s", e, AproxExceptionUtils.formatEntity( e ) );
+            logger.error( "Failed to retrieve endpoint listing: {}", e, AproxExceptionUtils.formatEntity( e ) );
             return AproxExceptionUtils.formatResponse( e );
         }
 

@@ -35,7 +35,8 @@ import org.commonjava.aprox.bind.jaxrs.util.AproxExceptionUtils;
 import org.commonjava.aprox.depgraph.rest.MetadataController;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path( "/depgraph/meta" )
 @Consumes( MediaType.APPLICATION_JSON )
@@ -44,7 +45,7 @@ import org.commonjava.util.logging.Logger;
 public class MetadataResource
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private MetadataController controller;
@@ -66,7 +67,7 @@ public class MetadataResource
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to retrieve stream for request body: %s", e, e.getMessage() );
+            logger.error( "Failed to retrieve stream for request body: {}", e, e.getMessage() );
             return AproxExceptionUtils.formatResponse( ApplicationStatus.BAD_REQUEST, e );
         }
     }
@@ -129,7 +130,7 @@ public class MetadataResource
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to retrieve stream for request body: %s", e, e.getMessage() );
+            logger.error( "Failed to retrieve stream for request body: {}", e, e.getMessage() );
             return AproxExceptionUtils.formatResponse( ApplicationStatus.BAD_REQUEST, e );
         }
 
@@ -153,7 +154,7 @@ public class MetadataResource
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to retrieve stream for request body: %s", e, e.getMessage() );
+            logger.error( "Failed to retrieve stream for request body: {}", e, e.getMessage() );
             return AproxExceptionUtils.formatResponse( ApplicationStatus.BAD_REQUEST, e );
         }
 

@@ -45,15 +45,16 @@ import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.rest.AproxWorkflowException;
-import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.model.Listing;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path( "/admin/{type}" )
 @ApplicationScoped
 public class AdminResource
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private AdminController adminController;
@@ -82,7 +83,7 @@ public class AdminResource
         final StoreType st = StoreType.get( type );
         final ArtifactStore store = modelServletUtils.storeFromRequestBody( st, request );
 
-        logger.info( "\n\nGot artifact store: %s\n\n", store );
+        logger.info( "\n\nGot artifact store: {}\n\n", store );
 
         Response response;
         try
@@ -104,7 +105,7 @@ public class AdminResource
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to create artifact store: %s. Reason: %s", e, e.getMessage() );
+            logger.error( "Failed to create artifact store: {}. Reason: {}", e, e.getMessage() );
             response = AproxExceptionUtils.formatResponse( e );
         }
 
@@ -141,7 +142,7 @@ public class AdminResource
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to save proxy: %s. Reason: %s", e, e.getMessage() );
+            logger.error( "Failed to save proxy: {}. Reason: {}", e, e.getMessage() );
             response = AproxExceptionUtils.formatResponse( e );
         }
 
@@ -162,12 +163,12 @@ public class AdminResource
         {
             @SuppressWarnings( "unchecked" )
             final List<ArtifactStore> stores = (List<ArtifactStore>) adminController.getAllOfType( st );
-            logger.info( "Returning listing containing stores:\n\t%s", join( stores, "\n\t" ) );
+            logger.info( "Returning listing containing stores:\n\t{}", join( stores, "\n\t" ) );
 
             final Listing<ArtifactStore> listing = new Listing<ArtifactStore>( stores );
 
             final String json = modelSerializer.storeListingToString( listing );
-            logger.info( "JSON:\n\n%s", json );
+            logger.info( "JSON:\n\n{}", json );
 
             return Response.ok()
                            .entity( json )
@@ -194,7 +195,7 @@ public class AdminResource
         try
         {
             final ArtifactStore store = adminController.get( key );
-            logger.info( "Returning repository: %s", store );
+            logger.info( "Returning repository: {}", store );
 
             if ( store == null )
             {

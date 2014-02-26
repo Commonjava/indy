@@ -28,11 +28,12 @@ import javax.inject.Inject;
 import org.commonjava.aprox.conf.AbstractAproxMapConfig;
 import org.commonjava.aprox.conf.AproxConfigFactory;
 import org.commonjava.aprox.conf.AproxConfigInfo;
-import org.commonjava.util.logging.Logger;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.DefaultConfigurationListener;
 import org.commonjava.web.config.dotconf.DotConfConfigurationReader;
 import org.commonjava.web.config.io.ConfigFileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @javax.enterprise.context.ApplicationScoped
 public class DefaultAproxConfigFactory
@@ -42,7 +43,7 @@ public class DefaultAproxConfigFactory
 
     private static final String CONFIG_PATH = "/etc/aprox/main.conf";
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private Instance<AproxConfigInfo> configSections;
@@ -77,7 +78,7 @@ public class DefaultAproxConfigFactory
             with( section.getSectionName(), section );
         }
 
-        logger.info( "\n\n[CONFIG] Reading configuration from %s", configPath );
+        logger.info( "\n\n[CONFIG] Reading configuration from {}", configPath );
 
         InputStream stream = null;
         try
@@ -87,7 +88,7 @@ public class DefaultAproxConfigFactory
         }
         catch ( final IOException e )
         {
-            throw new ConfigurationException( "Cannot open configuration file: %s. Reason: %s", e, configPath, e.getMessage() );
+            throw new ConfigurationException( "Cannot open configuration file: {}. Reason: {}", e, configPath, e.getMessage() );
         }
         finally
         {

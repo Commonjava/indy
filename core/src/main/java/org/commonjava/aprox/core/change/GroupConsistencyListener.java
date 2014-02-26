@@ -28,13 +28,14 @@ import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.util.ChangeSynchronizer;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @javax.enterprise.context.ApplicationScoped
 public class GroupConsistencyListener
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private StoreDataManager proxyDataManager;
@@ -57,7 +58,7 @@ public class GroupConsistencyListener
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( "Failed to remove group constituent listings for: %s. Error: %s", e, key, e.getMessage() );
+            logger.error( "Failed to remove group constituent listings for: {}. Error: {}", e, key, e.getMessage() );
         }
     }
 
@@ -80,7 +81,7 @@ public class GroupConsistencyListener
 
     public void storeDeleted( @Observes final ProxyManagerDeleteEvent event )
     {
-        //        logger.info( "Processing proxy-manager store deletion: %s", event );
+        //        logger.info( "Processing proxy-manager store deletion: {}", event );
         final StoreType type = event.getType();
         for ( final String name : event )
         {

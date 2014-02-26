@@ -37,8 +37,9 @@ import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.subsys.flatfile.conf.FlatFileConfiguration;
-import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.ser.JsonSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Decorator
 public abstract class FlatFileDataManagerDecorator
@@ -47,7 +48,7 @@ public abstract class FlatFileDataManagerDecorator
 
     private static final String APROX_STORE = "aprox";
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Delegate
     @Any
@@ -105,7 +106,7 @@ public abstract class FlatFileDataManagerDecorator
                 }
                 catch ( final IOException e )
                 {
-                    logger.error( "Failed to load deploy point: %s. Reason: %s", e, f, e.getMessage() );
+                    logger.error( "Failed to load deploy point: {}. Reason: {}", e, f, e.getMessage() );
                 }
             }
         }
@@ -132,7 +133,7 @@ public abstract class FlatFileDataManagerDecorator
                 }
                 catch ( final IOException e )
                 {
-                    logger.error( "Failed to load repository: %s. Reason: %s", e, f, e.getMessage() );
+                    logger.error( "Failed to load repository: {}. Reason: {}", e, f, e.getMessage() );
                 }
             }
         }
@@ -159,7 +160,7 @@ public abstract class FlatFileDataManagerDecorator
                 }
                 catch ( final IOException e )
                 {
-                    logger.error( "Failed to load group: %s. Reason: %s", e, f, e.getMessage() );
+                    logger.error( "Failed to load group: {}. Reason: {}", e, f, e.getMessage() );
                 }
             }
         }
@@ -325,7 +326,7 @@ public abstract class FlatFileDataManagerDecorator
                                                      .name() );
             if ( !dir.isDirectory() && !dir.mkdirs() )
             {
-                throw new ProxyDataException( "Cannot create storage directory: %s for definition: %s", dir, store );
+                throw new ProxyDataException( "Cannot create storage directory: {} for definition: {}", dir, store );
             }
 
             final File f = new File( dir, store.getName() + ".json" );
@@ -340,7 +341,7 @@ public abstract class FlatFileDataManagerDecorator
             }
             catch ( final IOException e )
             {
-                throw new ProxyDataException( "Cannot write definition: %s to: %s. Reason: %s", e, store, f, e.getMessage() );
+                throw new ProxyDataException( "Cannot write definition: {} to: {}. Reason: {}", e, store, f, e.getMessage() );
             }
         }
     }
@@ -421,7 +422,7 @@ public abstract class FlatFileDataManagerDecorator
         }
         catch ( final IOException e )
         {
-            throw new ProxyDataException( "Failed to delete AProx storage files: %s", e, e.getMessage() );
+            throw new ProxyDataException( "Failed to delete AProx storage files: {}", e, e.getMessage() );
         }
     }
 

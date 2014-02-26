@@ -22,7 +22,8 @@ import javax.inject.Inject;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depgraph.discover.AproxModelDiscoverer;
 import org.commonjava.maven.galley.event.FileAccessEvent;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @javax.enterprise.context.ApplicationScoped
 public class DepgraphStorageListener
@@ -38,7 +39,7 @@ public class DepgraphStorageListener
     //    @ExecutorConfig( priority = 8, threads = 2, named = "depgraph-listener" )
     //    private ExecutorService executor;
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public void handleFileAccessEvent( @Observes final FileAccessEvent event )
     {
@@ -50,7 +51,7 @@ public class DepgraphStorageListener
         //            return;
         //        }
         //
-        //        logger.info( "[SUBMIT] DepgraphStorageListenerRunnable for: %s", event );
+        //        logger.info( "[SUBMIT] DepgraphStorageListenerRunnable for: {}", event );
         //
         //        executor.execute( new DepgraphStorageListenerRunnable( discoverer, aprox, event.getTransfer() ) );
     }

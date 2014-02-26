@@ -146,7 +146,7 @@ public abstract class ArtifactStore
     @Override
     public String toString()
     {
-        return String.format( "ArtifactStore [key=%s]", key );
+        return String.format( "ArtifactStore [key={}]", key );
     }
 
 }

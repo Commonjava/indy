@@ -61,7 +61,7 @@ public class GAVWithPresetSer
         final ProjectVersionRef gav = src.getGAV();
         final String preset = src.getPreset();
 
-        return String.format( "%s:%s:%s%s", gav.getGroupId(), gav.getArtifactId(), gav.getVersionString(),
+        return String.format( "{}:{}:{}{}", gav.getGroupId(), gav.getArtifactId(), gav.getVersionString(),
                               ( preset == null ? "" : ":" + preset ) );
     }
 

@@ -31,14 +31,15 @@ import javax.servlet.http.HttpServletRequest;
 import org.commonjava.maven.atlas.graph.workspace.GraphWorkspace;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.data.CartoDataManager;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @WebFilter( { "/api/1.0/depgraph", "/api/1.0/depgraph/*" } )
 public class WorkspaceHandlerFilter
     implements Filter
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private CartoDataManager dataManager;
@@ -62,7 +63,7 @@ public class WorkspaceHandlerFilter
 
             if ( wsid != null )
             {
-                logger.info( "Attempting to load workspace: %s into threadlocal...", wsid );
+                logger.info( "Attempting to load workspace: {} into threadlocal...", wsid );
 
                 try
                 {

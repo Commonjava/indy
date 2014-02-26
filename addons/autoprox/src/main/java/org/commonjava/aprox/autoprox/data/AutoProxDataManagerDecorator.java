@@ -44,7 +44,8 @@ import org.commonjava.aprox.model.Repository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Decorator
 public abstract class AutoProxDataManagerDecorator
@@ -57,7 +58,7 @@ public abstract class AutoProxDataManagerDecorator
 
     private static final String DEPLOY_CONSTITUENT_PLACEHOLDER = "${deploy}";
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Delegate
     @Any
@@ -77,19 +78,19 @@ public abstract class AutoProxDataManagerDecorator
     public Group getGroup( final String name )
         throws ProxyDataException
     {
-        //        logger.info( "DECORATED (getGroup: %s)", name );
+        //        logger.info( "DECORATED (getGroup: {})", name );
         Group g = dataManager.getGroup( name );
 
         if ( !config.isEnabled() )
         {
-            //            logger.info( "AutoProx decorator disabled; returning: %s", g );
+            //            logger.info( "AutoProx decorator disabled; returning: {}", g );
             return g;
         }
 
         //        logger.info( "AutoProx decorator active" );
         if ( g == null )
         {
-            //            logger.info( "AutoProx: creating repository for: %s", name );
+            //            logger.info( "AutoProx: creating repository for: {}", name );
             final Repository proxy = getRepository( name );
             if ( proxy != null )
             {
@@ -125,8 +126,7 @@ public abstract class AutoProxDataManagerDecorator
                 {
                     for ( final StoreKey storeKey : groupTemplate.getConstituents() )
                     {
-                        if ( storeKey.getType() == StoreType.repository
-                            && REPO_CONSTITUENT_PLACEHOLDER.equalsIgnoreCase( storeKey.getName() ) )
+                        if ( storeKey.getType() == StoreType.repository && REPO_CONSTITUENT_PLACEHOLDER.equalsIgnoreCase( storeKey.getName() ) )
                         {
                             g.addConstituent( proxy );
                             rFound = true;
@@ -162,8 +162,7 @@ public abstract class AutoProxDataManagerDecorator
         return g;
     }
 
-    private synchronized boolean checkUrlValidity( final Repository repo, final String proxyUrl,
-                                                   final String validationPath )
+    private synchronized boolean checkUrlValidity( final Repository repo, final String proxyUrl, final String validationPath )
     {
         String url = null;
         try
@@ -172,12 +171,12 @@ public abstract class AutoProxDataManagerDecorator
         }
         catch ( final MalformedURLException e )
         {
-            logger.error( "Failed to construct repository-validation URL from base: %s and path: %s. Reason: %s", e,
-                          proxyUrl, validationPath, e.getMessage() );
+            logger.error( "Failed to construct repository-validation URL from base: {} and path: {}. Reason: {}", e, proxyUrl, validationPath,
+                          e.getMessage() );
             return false;
         }
 
-        //        logger.info( "\n\n\n\n\n[AutoProx] Checking URL: %s from:", new Throwable(), url );
+        //        logger.info( "\n\n\n\n\n[AutoProx] Checking URL: {} from:", new Throwable(), url );
         final HttpHead head = new HttpHead( url );
 
         http.bindRepositoryCredentialsTo( repo, head );
@@ -189,16 +188,16 @@ public abstract class AutoProxDataManagerDecorator
                                               .execute( head );
             final StatusLine statusLine = response.getStatusLine();
             final int status = statusLine.getStatusCode();
-            //            logger.info( "[AutoProx] HTTP Status: %s", statusLine );
+            //            logger.info( "[AutoProx] HTTP Status: {}", statusLine );
             result = status == HttpStatus.SC_OK;
         }
         catch ( final ClientProtocolException e )
         {
-            logger.warn( "[AutoProx] Cannot connect to target repository: '%s'.", url );
+            logger.warn( "[AutoProx] Cannot connect to target repository: '{}'.", url );
         }
         catch ( final IOException e )
         {
-            logger.warn( "[AutoProx] Cannot connect to target repository: '%s'.", url );
+            logger.warn( "[AutoProx] Cannot connect to target repository: '{}'.", url );
         }
         finally
         {
@@ -213,18 +212,18 @@ public abstract class AutoProxDataManagerDecorator
     public Repository getRepository( final String name )
         throws ProxyDataException
     {
-        //        logger.info( "DECORATED (getRepository: %s)", name );
+        //        logger.info( "DECORATED (getRepository: {})", name );
         Repository repo = dataManager.getRepository( name );
         if ( !config.isEnabled() )
         {
-            //            logger.info( "AutoProx decorator disabled; returning: %s", repo );
+            //            logger.info( "AutoProx decorator disabled; returning: {}", repo );
             return repo;
         }
 
         //        logger.info( "AutoProx decorator active" );
         if ( repo == null )
         {
-            //            logger.info( "AutoProx: creating repository for: %s", name );
+            //            logger.info( "AutoProx: creating repository for: {}", name );
 
             final Repository repoTemplate = autoproxModel.getRepo();
             final String validationPath = autoproxModel.getRepoValidationPath();
@@ -252,7 +251,7 @@ public abstract class AutoProxDataManagerDecorator
 
                 if ( !checkUrlValidity( repo, url, validationPath ) )
                 {
-                    logger.warn( "Invalid repository URL: %s", url );
+                    logger.warn( "Invalid repository URL: {}", url );
                     return null;
                 }
 
@@ -272,7 +271,7 @@ public abstract class AutoProxDataManagerDecorator
     public ArtifactStore getArtifactStore( final StoreKey key )
         throws ProxyDataException
     {
-        //        logger.info( "DECORATED (getArtifactStore: %s)", key );
+        //        logger.info( "DECORATED (getArtifactStore: {})", key );
         final StoreType type = key.getType();
         switch ( type )
         {

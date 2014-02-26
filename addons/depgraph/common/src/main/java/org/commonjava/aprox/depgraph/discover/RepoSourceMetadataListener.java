@@ -34,7 +34,8 @@ import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.data.CartoDataManager;
 import org.commonjava.maven.cartographer.event.RelationshipStorageEvent;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class RepoSourceMetadataListener
@@ -42,7 +43,7 @@ public class RepoSourceMetadataListener
 
     private static final String FOUND_IN_METADATA = "found-in-repo";
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private StoreDataManager aprox;
@@ -111,7 +112,7 @@ public class RepoSourceMetadataListener
                         }
                         catch ( final ProxyDataException e )
                         {
-                            logger.error( "Failed to retrieve repository with name: '%s' for %s metadata association in dependency graph. Reason: %s",
+                            logger.error( "Failed to retrieve repository with name: '{}' for {} metadata association in dependency graph. Reason: {}",
                                           e, sub, FOUND_IN_METADATA, e.getMessage() );
                         }
                     }

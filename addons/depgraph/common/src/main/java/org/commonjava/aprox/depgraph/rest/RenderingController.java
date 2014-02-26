@@ -74,12 +74,12 @@ public class RenderingController
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Failed to read list of GAVs from config stream (body): %s", e,
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Failed to read list of GAVs from config stream (body): {}", e,
                                               e.getMessage() );
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to retrieve web for: %s. Reason: %s", e, config, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to retrieve web for: {}. Reason: {}", e, config, e.getMessage() );
         }
     }
 
@@ -99,18 +99,18 @@ public class RenderingController
             }
             else
             {
-                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "Cannot find graph: %s:%s:%s", groupId, artifactId, version );
+                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "Cannot find graph: {}:{}:{}", groupId, artifactId, version );
             }
 
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to retrieve web for: %s:%s:%s. Reason: %s", e, groupId,
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to retrieve web for: {}:{}:{}. Reason: {}", e, groupId,
                                               artifactId, version, e.getMessage() );
         }
         catch ( final InvalidVersionSpecificationException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Invalid version in request: '%s'. Reason: %s", e, version,
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Invalid version in request: '{}'. Reason: {}", e, version,
                                               e.getMessage() );
         }
     }
@@ -136,17 +136,17 @@ public class RenderingController
             }
             else
             {
-                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "Cannot find graph: %s:%s:%s", groupId, artifactId, version );
+                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "Cannot find graph: {}:{}:{}", groupId, artifactId, version );
             }
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to retrieve web for: %s:%s:%s. Reason: %s", e, groupId,
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to retrieve web for: {}:{}:{}. Reason: {}", e, groupId,
                                               artifactId, version, e.getMessage() );
         }
         catch ( final InvalidVersionSpecificationException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Invalid version in request: '%s'. Reason: %s", e, version,
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Invalid version in request: '{}'. Reason: {}", e, version,
                                               e.getMessage() );
         }
     }

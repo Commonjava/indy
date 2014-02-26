@@ -67,7 +67,7 @@ public class DeployPoint
     @Override
     public String toString()
     {
-        return String.format( "DeployPoint [allowSnapshots=%s, allowReleases=%s, getName()=%s, getKey()=%s]",
+        return String.format( "DeployPoint [allowSnapshots={}, allowReleases={}, getName()={}, getKey()={}]",
                               allowSnapshots, allowReleases, getName(), getKey() );
     }
 

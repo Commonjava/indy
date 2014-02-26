@@ -88,7 +88,7 @@ public enum StoreType
 
         for ( final StoreType st : values() )
         {
-            //            logger.info( "Checking '%s' vs name: '%s' and aliases: %s", type, st.name(), join( st.aliases, ", " ) );
+            //            logger.info( "Checking '{}' vs name: '{}' and aliases: {}", type, st.name(), join( st.aliases, ", " ) );
             if ( st.name()
                    .equalsIgnoreCase( type ) || st.aliases.contains( type ) )
             {

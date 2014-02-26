@@ -132,7 +132,7 @@ public class ReplicationDTO
     @Override
     public String toString()
     {
-        return String.format( "ReplicationDTO [overwrite=%s, apiUrl=%s, proxyHost=%s, proxyPort=%s, actions=%s]", overwrite, apiUrl, proxyHost,
+        return String.format( "ReplicationDTO [overwrite={}, apiUrl={}, proxyHost={}, proxyPort={}, actions={}]", overwrite, apiUrl, proxyHost,
                               proxyPort, actions );
     }
 

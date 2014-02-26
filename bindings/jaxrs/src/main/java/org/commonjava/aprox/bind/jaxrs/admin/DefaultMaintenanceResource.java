@@ -29,14 +29,15 @@ import org.commonjava.aprox.core.rest.ContentController;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.rest.AproxWorkflowException;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path( "/admin/maint" )
 @ApplicationScoped
 public class DefaultMaintenanceResource
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private ContentController contentController;
@@ -57,7 +58,7 @@ public class DefaultMaintenanceResource
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to rescan: %s. Reason: %s", e, key, e.getMessage() );
+            logger.error( "Failed to rescan: {}. Reason: {}", e, key, e.getMessage() );
             response = AproxExceptionUtils.formatResponse( e );
         }
 
@@ -76,7 +77,7 @@ public class DefaultMaintenanceResource
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to rescan: ALL. Reason: %s", e, e.getMessage() );
+            logger.error( "Failed to rescan: ALL. Reason: {}", e, e.getMessage() );
             return AproxExceptionUtils.formatResponse( e );
         }
     }
@@ -93,7 +94,7 @@ public class DefaultMaintenanceResource
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to delete: %s in: ALL. Reason: %s", e, e.getMessage() );
+            logger.error( "Failed to delete: {} in: ALL. Reason: {}", e, e.getMessage() );
             return AproxExceptionUtils.formatResponse( e );
         }
     }

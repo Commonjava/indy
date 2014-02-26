@@ -23,7 +23,7 @@ public class AllEventsListener
 
     public void onEvent( /*@Observes @Any*/final Object evt )
     {
-        System.out.printf( "\n\n\n\n[ALL] %s\n\n\n\n", evt );
+        System.out.printf( "\n\n\n\n[ALL] {}\n\n\n\n", evt );
     }
 
 }

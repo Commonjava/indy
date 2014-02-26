@@ -19,7 +19,7 @@ public class AProxSecDataManager
 
     private static final String[] ALL_PERMS = { Permission.ADMIN, Permission.READ, Permission.CREATE };
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private BadgrDataManager userManager;
@@ -47,7 +47,7 @@ public class AProxSecDataManager
         }
         catch ( final BadgrDataException e )
         {
-            logger.error( "Failed to initialize admin user/privilege data. Reason: %s", e, e.getMessage() );
+            logger.error( "Failed to initialize admin user/privilege data. Reason: {}", e, e.getMessage() );
             throw e;
         }
     }
@@ -59,13 +59,13 @@ public class AProxSecDataManager
             final String[] verbs = store.getDoctype()
                                         .isWritable() ? ALL_PERMS : READONLY_PERMS;
 
-            logger.info( "Creating permissions for new store: %s", store );
+            logger.info( "Creating permissions for new store: {}", store );
             userFactory.createPermissions( store.getDoctype()
                                                 .name(), store.getName(), verbs );
         }
         catch ( final BadgrDataException e )
         {
-            logger.error( "Failed to create permissions for store: %s. Error: %s", e, store.getKey(), e.getMessage() );
+            logger.error( "Failed to create permissions for store: {}. Error: {}", e, store.getKey(), e.getMessage() );
         }
     }
 
@@ -73,7 +73,7 @@ public class AProxSecDataManager
     {
         try
         {
-            logger.info( "\n\n\n\nDeleting permissions for store: %s:%s\n\n\n\n", type.name(), name );
+            logger.info( "\n\n\n\nDeleting permissions for store: {}:{}\n\n\n\n", type.name(), name );
             userManager.deletePermission( Permission.name( type.name(), name, Permission.ADMIN ) );
             userManager.deletePermission( Permission.name( type.name(), name, Permission.READ ) );
 
@@ -81,7 +81,7 @@ public class AProxSecDataManager
         }
         catch ( final BadgrDataException e )
         {
-            logger.error( "Failed to remove permissions for deleted store: %s:%s. Error: %s", e, type.name(), name,
+            logger.error( "Failed to remove permissions for deleted store: {}:{}. Error: {}", e, type.name(), name,
                           e.getMessage() );
         }
     }
@@ -90,7 +90,7 @@ public class AProxSecDataManager
     {
         try
         {
-            logger.info( "\n\n\n\nDeleting permissions for group: %s\n\n\n\n", storeId );
+            logger.info( "\n\n\n\nDeleting permissions for group: {}\n\n\n\n", storeId );
             userManager.deletePermission( Permission.name( storeId, Permission.ADMIN ) );
             userManager.deletePermission( Permission.name( storeId, Permission.READ ) );
 
@@ -98,7 +98,7 @@ public class AProxSecDataManager
         }
         catch ( final BadgrDataException e )
         {
-            logger.error( "Failed to remove permissions for deleted store: %s. Error: %s", e, storeId, e.getMessage() );
+            logger.error( "Failed to remove permissions for deleted store: {}. Error: {}", e, storeId, e.getMessage() );
         }
     }
 

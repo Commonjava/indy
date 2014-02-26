@@ -52,16 +52,17 @@ import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
-import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.model.Listing;
 import org.commonjava.web.json.ser.JsonSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.reflect.TypeToken;
 
 @ApplicationScoped
 public class ReplicationController
 {
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private StoreDataManager data;
@@ -101,7 +102,7 @@ public class ReplicationController
                 continue;
             }
 
-            logger.info( "Processing replication action:\n\n  %s\n\nin DTO: %s\n\n", action, dto );
+            logger.info( "Processing replication action:\n\n  {}\n\nin DTO: {}\n\n", action, dto );
             final String include = action.getInclude();
             final String exclude = action.getExclude();
 
@@ -208,11 +209,11 @@ public class ReplicationController
         }
         catch ( final MalformedURLException e )
         {
-            throw new AproxWorkflowException( "Failed to construct store definition-retrieval URL from api-base: %s. Reason: %s", e, apiUrl,
+            throw new AproxWorkflowException( "Failed to construct store definition-retrieval URL from api-base: {}. Reason: {}", e, apiUrl,
                                               e.getMessage() );
         }
 
-        //        logger.info( "\n\n\n\n\n[AutoProx] Checking URL: %s from:", new Throwable(), url );
+        //        logger.info( "\n\n\n\n\n[AutoProx] Checking URL: {} from:", new Throwable(), url );
         final List<ArtifactStore> result = new ArrayList<ArtifactStore>();
 
         HttpGet req = newGet( reposUrl, dto );
@@ -243,16 +244,16 @@ public class ReplicationController
             }
             else
             {
-                throw new AproxWorkflowException( status, "Request: %s failed: %s", reposUrl, statusLine );
+                throw new AproxWorkflowException( status, "Request: {} failed: {}", reposUrl, statusLine );
             }
         }
         catch ( final ClientProtocolException e )
         {
-            throw new AproxWorkflowException( "Failed to retrieve endpoints from: %s. Reason: %s", e, reposUrl, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve endpoints from: {}. Reason: {}", e, reposUrl, e.getMessage() );
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( "Failed to read endpoints from: %s. Reason: %s", e, reposUrl, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to read endpoints from: {}. Reason: {}", e, reposUrl, e.getMessage() );
         }
         finally
         {
@@ -284,16 +285,16 @@ public class ReplicationController
             }
             else
             {
-                throw new AproxWorkflowException( status, "Request: %s failed: %s", groupsUrl, statusLine );
+                throw new AproxWorkflowException( status, "Request: {} failed: {}", groupsUrl, statusLine );
             }
         }
         catch ( final ClientProtocolException e )
         {
-            throw new AproxWorkflowException( "Failed to retrieve endpoints from: %s. Reason: %s", e, groupsUrl, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve endpoints from: {}. Reason: {}", e, groupsUrl, e.getMessage() );
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( "Failed to read endpoints from: %s. Reason: %s", e, groupsUrl, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to read endpoints from: {}. Reason: {}", e, groupsUrl, e.getMessage() );
         }
         finally
         {
@@ -325,16 +326,16 @@ public class ReplicationController
             }
             else
             {
-                throw new AproxWorkflowException( status, "Request: %s failed: %s", deploysUrl, statusLine );
+                throw new AproxWorkflowException( status, "Request: {} failed: {}", deploysUrl, statusLine );
             }
         }
         catch ( final ClientProtocolException e )
         {
-            throw new AproxWorkflowException( "Failed to retrieve endpoints from: %s. Reason: %s", e, deploysUrl, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve endpoints from: {}. Reason: {}", e, deploysUrl, e.getMessage() );
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( "Failed to read endpoints from: %s. Reason: %s", e, deploysUrl, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to read endpoints from: {}. Reason: {}", e, deploysUrl, e.getMessage() );
         }
         finally
         {
@@ -375,10 +376,10 @@ public class ReplicationController
         }
         catch ( final MalformedURLException e )
         {
-            throw new AproxWorkflowException( "Failed to construct endpoint-retrieval URL from api-base: %s. Reason: %s", e, apiUrl, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to construct endpoint-retrieval URL from api-base: {}. Reason: {}", e, apiUrl, e.getMessage() );
         }
 
-        //        logger.info( "\n\n\n\n\n[AutoProx] Checking URL: %s from:", new Throwable(), url );
+        //        logger.info( "\n\n\n\n\n[AutoProx] Checking URL: {} from:", new Throwable(), url );
         final HttpGet req = newGet( url, dto );
 
         try
@@ -396,15 +397,15 @@ public class ReplicationController
                 return listing.getItems();
             }
 
-            throw new AproxWorkflowException( status, "Endpoint request failed: %s", statusLine );
+            throw new AproxWorkflowException( status, "Endpoint request failed: {}", statusLine );
         }
         catch ( final ClientProtocolException e )
         {
-            throw new AproxWorkflowException( "Failed to retrieve endpoints from: %s. Reason: %s", e, url, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve endpoints from: {}. Reason: {}", e, url, e.getMessage() );
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( "Failed to read endpoints from: %s. Reason: %s", e, url, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to read endpoints from: {}. Reason: {}", e, url, e.getMessage() );
         }
         finally
         {

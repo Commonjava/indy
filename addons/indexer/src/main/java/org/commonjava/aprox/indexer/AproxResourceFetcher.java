@@ -29,13 +29,14 @@ import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.maven.galley.model.Transfer;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AproxResourceFetcher
     implements ResourceFetcher
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private final StoreDataManager storeDataManager;
 
@@ -56,18 +57,18 @@ public class AproxResourceFetcher
         try
         {
             final StoreKey key = StoreKey.fromString( id );
-            logger.info( "Looking up store: %s (from original id: %s, url was: %s)", key, id, url );
+            logger.info( "Looking up store: {} (from original id: {}, url was: {})", key, id, url );
             store = storeDataManager.getArtifactStore( key );
 
             if ( store == null )
             {
-                throw new IOException( String.format( "No such repository: %s.", id ) );
+                throw new IOException( String.format( "No such repository: {}.", id ) );
             }
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( "Failed to lookup store: %s. Reason: %s", e, id, e.getMessage() );
-            throw new IOException( String.format( "Failed to lookup store: %s. Reason: %s", id, e.getMessage() ), e );
+            logger.error( "Failed to lookup store: {}. Reason: {}", e, id, e.getMessage() );
+            throw new IOException( String.format( "Failed to lookup store: {}. Reason: {}", id, e.getMessage() ), e );
         }
     }
 
@@ -84,7 +85,7 @@ public class AproxResourceFetcher
         final String path = "/.index/" + name;
         try
         {
-            logger.info( "Retrieving: '%s' from store: %s", path, store.getKey() );
+            logger.info( "Retrieving: '{}' from store: {}", path, store.getKey() );
             final Transfer item = fileManager.retrieve( store, path );
 
             if ( item == null || !item.exists() )
@@ -96,14 +97,14 @@ public class AproxResourceFetcher
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to retrieve: %s from: %s. Reason: %s", e, path, store.getKey(), e );
+            logger.error( "Failed to retrieve: {} from: {}. Reason: {}", e, path, store.getKey(), e );
             if ( e.getStatus() == ApplicationStatus.NOT_FOUND.code() )
             {
                 throw new FileNotFoundException( name );
             }
             else
             {
-                throw new IOException( String.format( "Failed to retrieve: %s from: %s. Reason: %s", path, store.getKey(), e ), e );
+                throw new IOException( String.format( "Failed to retrieve: {} from: {}. Reason: {}", path, store.getKey(), e ), e );
             }
         }
     }

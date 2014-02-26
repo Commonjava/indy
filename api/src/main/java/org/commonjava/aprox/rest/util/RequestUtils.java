@@ -8,12 +8,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class RequestUtils
 {
 
-    private static final Logger logger = new Logger( RequestUtils.class );
+    private static final Logger logger = LoggerFactory.getLogger( RequestUtils.class );
 
     private RequestUtils()
     {
@@ -96,7 +97,7 @@ public final class RequestUtils
             val = Boolean.parseBoolean( values[0] );
         }
 
-        logger.info( "Values of key: %s are: %s. Returning boolean-param-with-default value: %s", key, join( values, ", " ), val );
+        logger.info( "Values of key: {} are: {}. Returning boolean-param-with-default value: {}", key, join( values, ", " ), val );
         return val;
     }
 
@@ -119,7 +120,7 @@ public final class RequestUtils
             val = Long.parseLong( values[0] );
         }
 
-        logger.info( "Values of key: %s are: %s. Returning long-param-with-default value: %s", key, join( values, ", " ), val );
+        logger.info( "Values of key: {} are: {}. Returning long-param-with-default value: {}", key, join( values, ", " ), val );
         return val;
     }
 
@@ -133,7 +134,7 @@ public final class RequestUtils
             val = def;
         }
 
-        logger.info( "Value of key: %s is: %s. Returning string-param-with-default value: %s", key, value, val );
+        logger.info( "Value of key: {} is: {}. Returning string-param-with-default value: {}", key, value, val );
         return val;
     }
 

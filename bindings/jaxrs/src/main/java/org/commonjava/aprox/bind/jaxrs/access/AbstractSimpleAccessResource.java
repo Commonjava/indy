@@ -38,12 +38,13 @@ import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.galley.model.Transfer;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private ContentController contentController;
@@ -68,13 +69,13 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to open stream from request: %s", e, e.getMessage() );
+            logger.error( "Failed to open stream from request: {}", e, e.getMessage() );
             response = Response.serverError()
                                .build();
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to upload: %s to: %s. Reason: %s", e, path, name, e.getMessage() );
+            logger.error( "Failed to upload: {} to: {}. Reason: {}", e, path, name, e.getMessage() );
             response = AproxExceptionUtils.formatResponse( e );
         }
 
@@ -93,7 +94,7 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to delete artifact: %s from: %s. Reason: %s", e, path, name, e.getMessage() );
+            logger.error( "Failed to delete artifact: {} from: {}. Reason: {}", e, path, name, e.getMessage() );
             response = AproxExceptionUtils.formatResponse( e );
         }
 
@@ -118,7 +119,7 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
 
             if ( path.endsWith( "/" ) )
             {
-                logger.info( "Redirecting to index.html under: %s", path );
+                logger.info( "Redirecting to index.html under: {}", path );
                 response =
                     Response.seeOther( new URI( uriFormatter.formatAbsolutePathTo( uriBuilder.path( getClass() )
                                                                                              .build()
@@ -128,7 +129,7 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
             }
             else if ( path.endsWith( "index.html" ) )
             {
-                logger.info( "Getting listing at: %s", path );
+                logger.info( "Getting listing at: {}", path );
                 final String html = contentController.list( getStoreType(), name, path, uriBuilder.path( getClass() )
                                                                                                   .build()
                                                                                                   .toString(), uriFormatter );
@@ -146,18 +147,18 @@ public abstract class AbstractSimpleAccessResource<T extends ArtifactStore>
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to download artifact: %s from: %s. Reason: %s", e, path, name, e.getMessage() );
+            logger.error( "Failed to download artifact: {} from: {}. Reason: {}", e, path, name, e.getMessage() );
             response = AproxExceptionUtils.formatResponse( e );
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to download artifact: %s from: %s. Reason: %s", e, path, name, e.getMessage() );
+            logger.error( "Failed to download artifact: {} from: {}. Reason: {}", e, path, name, e.getMessage() );
             response = Response.serverError()
                                .build();
         }
         catch ( final URISyntaxException e )
         {
-            logger.error( "Failed to format relocation to index.html from: %s from: %s. Reason: %s", e, path, name, e.getMessage() );
+            logger.error( "Failed to format relocation to index.html from: {} from: {}. Reason: {}", e, path, name, e.getMessage() );
             response = Response.serverError()
                                .build();
         }

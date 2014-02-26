@@ -54,14 +54,17 @@ public class ProxyDataException
                 final String original = formattedMessage;
                 try
                 {
-                    formattedMessage = String.format( format, params );
+                    formattedMessage = String.format( format.replaceAll( "\\{\\}", "%s" ), params );
                 }
                 catch ( final Error e )
-                {}
+                {
+                }
                 catch ( final RuntimeException e )
-                {}
+                {
+                }
                 catch ( final Exception e )
-                {}
+                {
+                }
 
                 if ( formattedMessage == null || original == formattedMessage )
                 {

@@ -34,7 +34,7 @@ import org.commonjava.aprox.model.StoreType;
 public class StorageAdvisor
 {
 
-    //    private final Logger logger = new Logger( getClass() );
+    //    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private StoreDataManager dataManager;
@@ -62,7 +62,7 @@ public class StorageAdvisor
                 catch ( final ProxyDataException e )
                 {
                     throw new DotMavenException(
-                                                 "Failed to retrieve constituent ArtifactStores for group: %s. Reason: %s",
+                                                 "Failed to retrieve constituent ArtifactStores for group: {}. Reason: {}",
                                                  e, store.getName(), e.getMessage() );
                 }
 
@@ -80,7 +80,7 @@ public class StorageAdvisor
                         snapshots = dp.isAllowSnapshots();
                         releases = dp.isAllowReleases();
 
-                        //                        logger.info( "\n\n\n\nDeploy point: %s allows releases? %s Releases boolean set to: %s\n\n\n\n",
+                        //                        logger.info( "\n\n\n\nDeploy point: {} allows releases? {} Releases boolean set to: {}\n\n\n\n",
                         //                                     dp.getName(), dp.isAllowReleases(), releases );
 
                         break all;
@@ -97,7 +97,7 @@ public class StorageAdvisor
                 snapshots = dp.isAllowSnapshots();
                 releases = dp.isAllowReleases();
 
-                //                logger.info( "Deploy point: %s allows releases? %s", dp.getName(), dp.isAllowReleases() );
+                //                logger.info( "Deploy point: {} allows releases? {}", dp.getName(), dp.isAllowReleases() );
                 break;
             }
         }

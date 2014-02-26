@@ -37,14 +37,15 @@ import org.commonjava.aprox.depgraph.rest.RenderingController;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.maven.atlas.ident.DependencyScope;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path( "/depgraph/render/graph" )
 @ApplicationScoped
 public class GraphRenderingResource
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private RenderingController controller;
@@ -68,7 +69,7 @@ public class GraphRenderingResource
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to get servlet request input stream: %s", e, e.getMessage() );
+            logger.error( "Failed to get servlet request input stream: {}", e, e.getMessage() );
             return AproxExceptionUtils.formatResponse( ApplicationStatus.BAD_REQUEST, e );
         }
     }

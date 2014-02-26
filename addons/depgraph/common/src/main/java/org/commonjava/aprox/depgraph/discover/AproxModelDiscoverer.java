@@ -40,13 +40,14 @@ import org.commonjava.maven.galley.maven.GalleyMavenException;
 import org.commonjava.maven.galley.maven.model.view.MavenPomView;
 import org.commonjava.maven.galley.maven.parse.MavenPomReader;
 import org.commonjava.maven.galley.model.Transfer;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class AproxModelDiscoverer
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private MavenModelProcessor modelProcessor;
@@ -84,7 +85,7 @@ public class AproxModelDiscoverer
 
         if ( !path.endsWith( ".pom" ) )
         {
-            logger.info( "NOT a POM: %s", path );
+            logger.info( "NOT a POM: {}", path );
             return null;
         }
 
@@ -99,14 +100,14 @@ public class AproxModelDiscoverer
         }
         catch ( final GalleyMavenException e )
         {
-            throw new CartoDataException( "Failed to parse: %s. Reason: %s", e, item, e.getMessage() );
+            throw new CartoDataException( "Failed to parse: {}. Reason: {}", e, item, e.getMessage() );
         }
 
         DiscoveryResult result = modelProcessor.readRelationships( pomView, source );
 
         if ( result != null )
         {
-            logger.info( "Attempting to patch results for: %s", result.getSelectedRef() );
+            logger.info( "Attempting to patch results for: {}", result.getSelectedRef() );
             result = patchers.patch( result, enabledPatchers, locations, pomView, item );
 
             final Map<String, String> metadata = metadataScannerSupport.scan( result.getSelectedRef(), locations, pomView, item );

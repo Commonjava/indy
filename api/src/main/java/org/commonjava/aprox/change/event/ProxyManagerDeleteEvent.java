@@ -62,7 +62,7 @@ public class ProxyManagerDeleteEvent
     @Override
     public String toString()
     {
-        return String.format( "ProxyManagerDeleteEvent [type=%s, names=%s]", type, names );
+        return String.format( "ProxyManagerDeleteEvent [type={}, names={}]", type, names );
     }
 
 }

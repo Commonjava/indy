@@ -52,7 +52,7 @@ public class MemoryStoreDataManager
 
     private final Map<StoreKey, ArtifactStore> stores = new HashMap<StoreKey, ArtifactStore>();
 
-    //    private final Logger logger = new Logger( getClass() );
+    //    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private Event<ArtifactStoreUpdateEvent> storeEvent;

@@ -16,7 +16,6 @@ import org.commonjava.aprox.bind.vertx.util.ResponseUtils;
 import org.commonjava.aprox.dotmaven.inject.DotMavenApp;
 import org.commonjava.aprox.dotmaven.webctl.DotMavenService;
 import org.commonjava.aprox.rest.util.ApplicationStatus;
-import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
@@ -25,6 +24,8 @@ import org.commonjava.vertx.vabr.types.BindingType;
 import org.commonjava.vertx.vabr.types.Method;
 import org.commonjava.web.vertx.impl.VertXWebdavRequest;
 import org.commonjava.web.vertx.impl.VertXWebdavResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.vertx.java.core.http.HttpServerRequest;
 
 @Handles( key = "dotMavenDAV" )
@@ -34,7 +35,7 @@ public class DotMavenHandler
     implements RequestHandler
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private DotMavenService service;
@@ -66,7 +67,7 @@ public class DotMavenHandler
         }
         catch ( WebdavException | IOException e )
         {
-            logger.error( "Failed to service mavdav request: %s", e, e.getMessage() );
+            logger.error( "Failed to service mavdav request: {}", e, e.getMessage() );
             formatResponse( e, request );
         }
         finally

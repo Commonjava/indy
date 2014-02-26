@@ -76,13 +76,14 @@ import org.commonjava.shelflife.match.AndMatcher;
 import org.commonjava.shelflife.match.KeyMatcher;
 import org.commonjava.shelflife.model.Expiration;
 import org.commonjava.shelflife.model.ExpirationKey;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @javax.enterprise.context.ApplicationScoped
 public class TimeoutManager
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private ExpirationManager expirationManager;
@@ -113,12 +114,12 @@ public class TimeoutManager
                 {
                     try
                     {
-                        logger.info( "[EXPIRED; DELETE] %s", toDelete );
+                        logger.info( "[EXPIRED; DELETE] {}", toDelete );
                         toDelete.delete();
                     }
                     catch ( final IOException e )
                     {
-                        logger.error( "Failed to delete expired file: %s. Reason: %s", e, toDelete.getFullPath(), e.getMessage() );
+                        logger.error( "Failed to delete expired file: {}. Reason: {}", e, toDelete.getFullPath(), e.getMessage() );
                     }
 
                     cleanMetadata( key, path );
@@ -198,12 +199,12 @@ public class TimeoutManager
                 final StoreType type = key.getType();
                 if ( type == StoreType.deploy_point )
                 {
-                    //                    logger.info( "[ADJUST TIMEOUTS] Adjusting snapshot expirations in: %s", store.getKey() );
+                    //                    logger.info( "[ADJUST TIMEOUTS] Adjusting snapshot expirations in: {}", store.getKey() );
                     rescheduleSnapshotTimeouts( (DeployPoint) store );
                 }
                 else if ( type == StoreType.repository )
                 {
-                    //                    logger.info( "[ADJUST TIMEOUTS] Adjusting proxied-file expirations in: %s", store.getKey() );
+                    //                    logger.info( "[ADJUST TIMEOUTS] Adjusting proxied-file expirations in: {}", store.getKey() );
                     rescheduleProxyTimeouts( (Repository) store );
                 }
             }
@@ -239,7 +240,7 @@ public class TimeoutManager
                 }
                 catch ( final ExpirationManagerException e )
                 {
-                    logger.error( "Failed to schedule expiration of: %s in %s. Reason: %s", e, path, deploy.getKey(), e.getMessage() );
+                    logger.error( "Failed to schedule expiration of: {} in {}. Reason: {}", e, path, deploy.getKey(), e.getMessage() );
                     break;
                 }
             }
@@ -279,7 +280,7 @@ public class TimeoutManager
                 }
                 catch ( final ExpirationManagerException e )
                 {
-                    logger.error( "Failed to schedule expiration of: %s in %s. Reason: %s", e, path, repo.getKey(), e.getMessage() );
+                    logger.error( "Failed to schedule expiration of: {} in {}. Reason: {}", e, path, repo.getKey(), e.getMessage() );
                     break;
                 }
             }
@@ -339,7 +340,7 @@ public class TimeoutManager
         }
         catch ( final ExpirationManagerException e )
         {
-            logger.error( "Failed to cancel (for purposes of rescheduling) expirations for store: %s. Reason: %s", e, key, e.getMessage() );
+            logger.error( "Failed to cancel (for purposes of rescheduling) expirations for store: {}. Reason: {}", e, key, e.getMessage() );
         }
 
         return null;
@@ -358,17 +359,17 @@ public class TimeoutManager
             {
                 try
                 {
-                    logger.info( "[STORE REMOVED; DELETE] %s", dir.getFullPath() );
+                    logger.info( "[STORE REMOVED; DELETE] {}", dir.getFullPath() );
                     dir.delete();
                     expirationManager.cancelAll( new StoreMatcher( key ) );
                 }
                 catch ( final IOException e )
                 {
-                    logger.error( "Failed to delete storage for deleted artifact store: %s (dir: %s). Error: %s", e, key, dir, e.getMessage() );
+                    logger.error( "Failed to delete storage for deleted artifact store: {} (dir: {}). Error: {}", e, key, dir, e.getMessage() );
                 }
                 catch ( final ExpirationManagerException e )
                 {
-                    logger.error( "Failed to cancel file expirations for deleted artifact store: %s (dir: %s). Error: %s", e, key, dir,
+                    logger.error( "Failed to cancel file expirations for deleted artifact store: {} (dir: {}). Error: {}", e, key, dir,
                                   e.getMessage() );
                 }
             }
@@ -390,7 +391,7 @@ public class TimeoutManager
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( "Failed to retrieve store for: %s. Reason: %s", e, key, e.getMessage() );
+            logger.error( "Failed to retrieve store for: {}. Reason: {}", e, key, e.getMessage() );
         }
 
         if ( repo == null )
@@ -409,7 +410,7 @@ public class TimeoutManager
 
         if ( timeout > 0 )
         {
-            //            logger.info( "[PROXY TIMEOUT SET] %s/%s; %s", repo.getKey(), path, new Date( System.currentTimeMillis()
+            //            logger.info( "[PROXY TIMEOUT SET] {}/{}; {}", repo.getKey(), path, new Date( System.currentTimeMillis()
             //                + timeout ) );
             try
             {
@@ -420,7 +421,7 @@ public class TimeoutManager
             }
             catch ( final ExpirationManagerException e )
             {
-                logger.error( "Failed to schedule expiration of path: %s\n  Store: %s\n  Timeout: %s\n  Error: %s", e, path, repo, timeout,
+                logger.error( "Failed to schedule expiration of path: {}\n  Store: {}\n  Timeout: {}\n  Error: {}", e, path, repo, timeout,
                               e.getMessage() );
             }
         }
@@ -450,7 +451,7 @@ public class TimeoutManager
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( "Failed to retrieve deploy point for: %s. Reason: %s", e, key, e.getMessage() );
+            logger.error( "Failed to retrieve deploy point for: {}. Reason: {}", e, key, e.getMessage() );
         }
 
         if ( deploy == null )
@@ -464,7 +465,7 @@ public class TimeoutManager
         if ( ArtifactPathInfo.isSnapshot( path ) && deploy.getSnapshotTimeoutSeconds() > 0 )
         {
             final long timeout = deploy.getSnapshotTimeoutSeconds() * 1000;
-            //            logger.info( "[SNAPSHOT TIMEOUT SET] %s/%s; %s", deploy.getKey(), path, new Date( timeout ) );
+            //            logger.info( "[SNAPSHOT TIMEOUT SET] {}/{}; {}", deploy.getKey(), path, new Date( timeout ) );
             try
             {
                 final Expiration expiration = createAproxFileExpiration( deploy, path, timeout );
@@ -474,7 +475,7 @@ public class TimeoutManager
             }
             catch ( final ExpirationManagerException e )
             {
-                logger.error( "Failed to schedule expiration of path: %s\n  Store: %s\n  Timeout: %s\n  Error: %s", e, path, deploy, timeout,
+                logger.error( "Failed to schedule expiration of path: {}\n  Store: {}\n  Timeout: {}\n  Error: {}", e, path, deploy, timeout,
                               e.getMessage() );
             }
         }
@@ -526,7 +527,7 @@ public class TimeoutManager
                 final Set<Group> groups = dataManager.getGroupsContaining( key );
                 for ( final Group group : groups )
                 {
-                    //                    logger.info( "[CLEAN] Cleaning metadata path: %s in group: %s", path, group.getName() );
+                    //                    logger.info( "[CLEAN] Cleaning metadata path: {} in group: {}", path, group.getName() );
 
                     cancel( key, path );
 
@@ -539,14 +540,14 @@ public class TimeoutManager
                         }
                         catch ( final IOException e )
                         {
-                            logger.error( "Failed to delete: %s. Error: %s", fileManager.getStorageReference( group, path ), e.getMessage() );
+                            logger.error( "Failed to delete: {}. Error: {}", fileManager.getStorageReference( group, path ), e.getMessage() );
                         }
                     }
                 }
             }
             catch ( final ProxyDataException e )
             {
-                logger.error( "Attempting to update groups for metadata change; Failed to retrieve groups containing store: %s. Error: %s", e, key,
+                logger.error( "Attempting to update groups for metadata change; Failed to retrieve groups containing store: {}. Error: {}", e, key,
                               e.getMessage() );
             }
         }
@@ -561,7 +562,7 @@ public class TimeoutManager
         }
         catch ( final ExpirationManagerException e )
         {
-            logger.error( "Attempting to update groups for metadata change; Failed to expire: %s. Error: %s", e, key, e.getMessage() );
+            logger.error( "Attempting to update groups for metadata change; Failed to expire: {}. Error: {}", e, key, e.getMessage() );
         }
     }
 
@@ -617,7 +618,7 @@ public class TimeoutManager
 
         if ( metadata.exists() )
         {
-            //            logger.info( "[UPDATE VERSIONS] Updating snapshot versions for path: %s in store: %s", path, key.getName() );
+            //            logger.info( "[UPDATE VERSIONS] Updating snapshot versions for path: {} in store: {}", path, key.getName() );
             Reader reader = null;
             Writer writer = null;
             try
@@ -672,12 +673,12 @@ public class TimeoutManager
             }
             catch ( final IOException e )
             {
-                logger.error( "Failed to update metadata after snapshot deletion.\n  Snapshot: %s\n  Metadata: %s\n  Reason: %s", e,
+                logger.error( "Failed to update metadata after snapshot deletion.\n  Snapshot: {}\n  Metadata: {}\n  Reason: {}", e,
                               item.getFullPath(), metadata, e.getMessage() );
             }
             catch ( final XmlPullParserException e )
             {
-                logger.error( "Failed to update metadata after snapshot deletion.\n  Snapshot: %s\n  Metadata: %s\n  Reason: %s", e,
+                logger.error( "Failed to update metadata after snapshot deletion.\n  Snapshot: {}\n  Metadata: {}\n  Reason: {}", e,
                               item.getFullPath(), metadata, e.getMessage() );
             }
             finally

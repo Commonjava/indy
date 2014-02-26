@@ -26,7 +26,7 @@ public class ShiroSetupListener
     extends BadgrShiroSetupListener
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Override
     public void contextInitialized( final ServletContextEvent sce )

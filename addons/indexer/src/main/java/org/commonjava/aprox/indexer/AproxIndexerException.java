@@ -53,7 +53,7 @@ public class AproxIndexerException
         {
             try
             {
-                message = String.format( message, params );
+                message = String.format( message.replaceAll( "\\{\\}", "%s" ), params );
             }
             catch ( final IllegalFormatException ife )
             {

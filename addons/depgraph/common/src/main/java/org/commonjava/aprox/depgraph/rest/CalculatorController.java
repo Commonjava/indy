@@ -82,7 +82,7 @@ public class CalculatorController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to retrieve graph(s): %s", e, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve graph(s): {}", e, e.getMessage() );
         }
     }
 
@@ -125,7 +125,7 @@ public class CalculatorController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to retrieve graph(s): %s", e, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve graph(s): {}", e, e.getMessage() );
         }
     }
 

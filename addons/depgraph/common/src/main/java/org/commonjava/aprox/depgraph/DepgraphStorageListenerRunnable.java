@@ -33,13 +33,14 @@ import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.discover.DiscoveryResult;
 import org.commonjava.maven.galley.model.Transfer;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DepgraphStorageListenerRunnable
     implements Runnable
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private final Transfer item;
 
@@ -79,7 +80,7 @@ public class DepgraphStorageListenerRunnable
         }
         catch ( final ProxyDataException e )
         {
-            error = new CartoDataException( "Failed to retrieve store for: %s. Reason: %s", e, key, e.getMessage() );
+            error = new CartoDataException( "Failed to retrieve store for: {}. Reason: {}", e, key, e.getMessage() );
         }
 
         if ( originatingStore == null )
@@ -87,11 +88,11 @@ public class DepgraphStorageListenerRunnable
             return;
         }
 
-        //        logger.info( "Logging: %s with Tensor relationship-graphing system.", event );
+        //        logger.info( "Logging: {} with Tensor relationship-graphing system.", event );
         final List<ArtifactStore> stores = getRelevantStores( originatingStore );
         if ( stores == null || stores.isEmpty() )
         {
-            error = new CartoDataException( "No stores found for: %s.", key );
+            error = new CartoDataException( "No stores found for: {}.", key );
         }
 
         if ( error != null )
@@ -154,7 +155,7 @@ public class DepgraphStorageListenerRunnable
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( "Cannot lookup full store list for groups containing artifact store: %s. Reason: %s", e, originatingStore.getKey(),
+            logger.error( "Cannot lookup full store list for groups containing artifact store: {}. Reason: {}", e, originatingStore.getKey(),
                           e.getMessage() );
             stores = null;
         }

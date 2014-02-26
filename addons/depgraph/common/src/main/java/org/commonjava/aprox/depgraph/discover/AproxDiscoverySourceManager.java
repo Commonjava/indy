@@ -39,7 +39,8 @@ import org.commonjava.maven.atlas.graph.workspace.GraphWorkspace;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.discover.DiscoverySourceManager;
 import org.commonjava.maven.galley.model.Location;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 @Production
@@ -48,7 +49,7 @@ public class AproxDiscoverySourceManager
     implements DiscoverySourceManager
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private StoreDataManager stores;
@@ -66,19 +67,19 @@ public class AproxDiscoverySourceManager
     public URI createSourceURI( final String source )
     {
         final StoreKey key = StoreKey.fromString( normalize( source ) );
-        logger.info( "Got source-URI store-key: '%s'", key );
+        logger.info( "Got source-URI store-key: '{}'", key );
         final URI result = toDiscoveryURI( key );
-        logger.info( "Resulting source URI: '%s'", result );
+        logger.info( "Resulting source URI: '{}'", result );
         return result;
     }
 
     private String normalize( final String source )
     {
-        logger.info( "Normalizing source URI: '%s'", source );
+        logger.info( "Normalizing source URI: '{}'", source );
         if ( source.startsWith( APROX_URI_PREFIX ) )
         {
             final String result = source.substring( APROX_URI_PREFIX.length() );
-            logger.info( "Normalized source URI: '%s'", result );
+            logger.info( "Normalized source URI: '{}'", result );
             return result;
         }
 
@@ -122,7 +123,7 @@ public class AproxDiscoverySourceManager
                     }
                     catch ( final ProxyDataException e )
                     {
-                        throw new CartoDataException( "Failed to lookup ordered concrete stores for: %s. Reason: %s", e, key, e.getMessage() );
+                        throw new CartoDataException( "Failed to lookup ordered concrete stores for: {}. Reason: {}", e, key, e.getMessage() );
                     }
                 }
                 else

@@ -39,14 +39,15 @@ import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.discover.DefaultDiscoveryConfig;
 import org.commonjava.maven.cartographer.discover.DiscoverySourceManager;
 import org.commonjava.maven.cartographer.ops.ResolveOps;
-import org.commonjava.util.logging.Logger;
 import org.commonjava.web.json.ser.JsonSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class ResolverController
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private ResolveOps ops;
@@ -71,7 +72,7 @@ public class ResolverController
         final URI source = sourceManager.createSourceURI( from );
         if ( source == null )
         {
-            final String message = String.format( "Invalid source format: '%s'. Use the form: '%s' instead.", from, sourceManager.getFormatHint() );
+            final String message = String.format( "Invalid source format: '{}'. Use the form: '{}' instead.", from, sourceManager.getFormatHint() );
             logger.warn( message );
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, message );
         }
@@ -92,7 +93,7 @@ public class ResolverController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to resolve graph: %s from: %s. Reason: %s", e, ref, from, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to resolve graph: {} from: {}. Reason: {}", e, ref, from, e.getMessage() );
         }
     }
 
@@ -103,7 +104,7 @@ public class ResolverController
         final URI source = sourceManager.createSourceURI( from );
         if ( source == null )
         {
-            final String message = String.format( "Invalid source format: '%s'. Use the form: '%s' instead.", from, sourceManager.getFormatHint() );
+            final String message = String.format( "Invalid source format: '{}'. Use the form: '{}' instead.", from, sourceManager.getFormatHint() );
             logger.warn( message );
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, message );
         }
@@ -121,7 +122,7 @@ public class ResolverController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to lookup incomplete subgraphs for: %s from: %s. Reason: %s", e, ref == null ? "all projects"
+            throw new AproxWorkflowException( "Failed to lookup incomplete subgraphs for: {} from: {}. Reason: {}", e, ref == null ? "all projects"
                             : ref, from, e.getMessage() );
         }
     }
@@ -140,7 +141,7 @@ public class ResolverController
         options.setProcessIncompleteSubgraphs( getBooleanParamWithDefault( params, "incomplete", true ) );
         options.setProcessVariableSubgraphs( getBooleanParamWithDefault( params, "variable", true ) );
 
-        logger.info( "AGGREGATOR OPTIONS:\n\n%s\n\n", options );
+        logger.info( "AGGREGATOR OPTIONS:\n\n{}\n\n", options );
 
         return options;
     }

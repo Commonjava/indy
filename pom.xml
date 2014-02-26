@@ -44,17 +44,13 @@
     <jbossas-version>7.1.1.Final</jbossas-version>
     <arquillian-version>1.0.1.Final</arquillian-version>
     <qarqas-version>0.3</qarqas-version>
-    <shelflife-version>0.5.1</shelflife-version>
-    <weftVersion>0.6</weftVersion>
+    <shelflife-version>0.6-SNAPSHOT</shelflife-version>
     <atlasVersion>0.10.0-SNAPSHOT</atlasVersion>
     <galleyVersion>0.4-SNAPSHOT</galleyVersion>
     <cartoVersion>0.4-SNAPSHOT</cartoVersion>
-    <configVersion>0.5</configVersion>
     
     <vertx.version>2.0.0-final</vertx.version>
     <vertx.testtools.version>2.0.0-final</vertx.testtools.version>
-    <vabrVersion>1.4-SNAPSHOT</vabrVersion>
-    <webdav-version>3.0</webdav-version>
   </properties>
   
   <distributionManagement>
@@ -85,7 +81,7 @@
       <dependency>
         <groupId>org.commonjava.boms</groupId>
         <artifactId>web-commons-bom</artifactId>
-        <version>7</version>
+        <version>8-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -232,22 +228,6 @@
       
       
       <dependency>
-        <groupId>org.commonjava.util</groupId>
-        <artifactId>configuration-api</artifactId>
-        <version>${configVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.util</groupId>
-        <artifactId>configuration-dotconf</artifactId>
-        <version>${configVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.cdi.util</groupId>
-        <artifactId>weft</artifactId>
-        <version>${weftVersion}</version>
-      </dependency>
-      
-      <dependency>
         <groupId>org.commonjava.shelflife</groupId>
         <artifactId>shelflife-core</artifactId>
         <version>${shelflife-version}</version>
@@ -366,13 +346,6 @@
       </dependency>
       
       <dependency>
-        <groupId>log4j</groupId>
-        <artifactId>log4j</artifactId>
-        <version>1.2.12</version>
-        <scope>compile</scope>
-      </dependency>
-      
-      <dependency>
         <groupId>org.apache.maven.indexer</groupId>
         <artifactId>indexer-core</artifactId>
         <version>5.1.1</version>
@@ -381,22 +354,6 @@
         <groupId>org.apache.maven.indexer</groupId>
         <artifactId>indexer-artifact</artifactId>
         <version>5.1.1</version>
-      </dependency>
-      
-      <dependency>
-        <groupId>org.commonjava.web</groupId>
-        <artifactId>webdav-handler-common</artifactId>
-        <version>${webdav-version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.web</groupId>
-        <artifactId>webdav-handler-vertx</artifactId>
-        <version>${webdav-version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.web</groupId>
-        <artifactId>webdav-handler-servlet</artifactId>
-        <version>${webdav-version}</version>
       </dependency>
       
       <dependency>
@@ -437,17 +394,6 @@
       </dependency>
       
       <!-- Support for Vert.x bindings -->
-      <dependency>
-        <groupId>org.commonjava.vertx</groupId>
-        <artifactId>vabr-api</artifactId>
-        <version>${vabrVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.vertx</groupId>
-        <artifactId>vabr-processor</artifactId>
-        <version>${vabrVersion}</version>
-        <scope>provided</scope>
-      </dependency>
       <dependency>
         <groupId>io.vertx</groupId>
         <artifactId>vertx-core</artifactId>
@@ -505,27 +451,17 @@
   
   <dependencies>
     <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+    </dependency>
+    <dependency>
       <groupId>javax.enterprise</groupId>
       <artifactId>cdi-api</artifactId>
     </dependency>
-<!--     
-    <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>resteasy-jaxrs</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.spec.javax.servlet</groupId>
-      <artifactId>jboss-servlet-api_3.0_spec</artifactId>
-    </dependency>
- -->    
     <dependency>
       <groupId>com.wordnik</groupId>
       <artifactId>swagger-annotations_2.9.1</artifactId>
     </dependency>
-    <!-- <dependency>
-      <groupId>org.rhq.helpers</groupId>
-      <artifactId>rest-docs-generator</artifactId>
-    </dependency> -->
   </dependencies>
   
   <build>

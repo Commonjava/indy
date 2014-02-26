@@ -28,13 +28,14 @@ import org.commonjava.aprox.core.util.UriFormatter;
 import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.ApplicationContent;
-import org.commonjava.util.logging.Logger;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.commonjava.vertx.vabr.types.Method;
 import org.commonjava.web.json.ser.JsonSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
@@ -43,7 +44,7 @@ public class BasicStatsResource
     implements RequestHandler
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     @AproxData
@@ -75,7 +76,7 @@ public class BasicStatsResource
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to retrieve endpoint listing: %s", e, formatEntity( e ) );
+            logger.error( "Failed to retrieve endpoint listing: {}", e, formatEntity( e ) );
             formatResponse( e, request );
         }
     }

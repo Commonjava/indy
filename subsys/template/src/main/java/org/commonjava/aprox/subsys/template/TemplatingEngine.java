@@ -52,7 +52,7 @@ public class TemplatingEngine
         }
         catch ( final IOException e )
         {
-            throw new RenderingException( "Failed to render template: %s. Reason: %s", e, templateKey, e.getMessage() );
+            throw new RenderingException( "Failed to render template: {}. Reason: {}", e, templateKey, e.getMessage() );
         }
 
         return writer.toString();
@@ -84,22 +84,22 @@ public class TemplatingEngine
 
             if ( template == null )
             {
-                throw new RenderingException( "Failed to locate template: %s", templateKey );
+                throw new RenderingException( "Failed to locate template: {}", templateKey );
             }
 
             return template;
         }
         catch ( final CompilationFailedException e )
         {
-            throw new RenderingException( "Failed to compile template: %s. Reason: %s", e, templateKey, e.getMessage() );
+            throw new RenderingException( "Failed to compile template: {}. Reason: {}", e, templateKey, e.getMessage() );
         }
         catch ( final ClassNotFoundException e )
         {
-            throw new RenderingException( "Failed to compile template: %s. Reason: %s", e, templateKey, e.getMessage() );
+            throw new RenderingException( "Failed to compile template: {}. Reason: {}", e, templateKey, e.getMessage() );
         }
         catch ( final IOException e )
         {
-            throw new RenderingException( "Failed to read template: %s. Reason: %s", e, templateKey, e.getMessage() );
+            throw new RenderingException( "Failed to read template: {}. Reason: {}", e, templateKey, e.getMessage() );
         }
     }
 }

@@ -37,13 +37,14 @@ import net.sf.webdav.exceptions.WebdavException;
 import net.sf.webdav.spi.ITransaction;
 import net.sf.webdav.spi.IWebdavStore;
 
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class DotMavenStore
     implements IWebdavStore
 {
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private Instance<SubStore> injectedSubstores;
@@ -66,28 +67,28 @@ public class DotMavenStore
     @Override
     public ITransaction begin( final Principal principal )
     {
-        //        logger.info( "start txn: %s", principal );
+        //        logger.info( "start txn: {}", principal );
         return new StoreTxn( principal );
     }
 
     @Override
     public void checkAuthentication( final ITransaction transaction )
     {
-        //        logger.info( "check auth: %s", transaction );
+        //        logger.info( "check auth: {}", transaction );
         // TODO
     }
 
     @Override
     public void commit( final ITransaction transaction )
     {
-        //        logger.info( "commit: %s", transaction );
+        //        logger.info( "commit: {}", transaction );
         // TODO
     }
 
     @Override
     public void rollback( final ITransaction transaction )
     {
-        //        logger.info( "rollback: %s", transaction );
+        //        logger.info( "rollback: {}", transaction );
         // TODO
     }
 
@@ -95,7 +96,7 @@ public class DotMavenStore
     public void createFolder( final ITransaction transaction, final String folderUri )
         throws WebdavException
     {
-        logger.info( "create folder: %s, %s", transaction, folderUri );
+        logger.info( "create folder: {}, {}", transaction, folderUri );
         final SubStore store = select( folderUri );
         if ( store != null )
         {
@@ -110,7 +111,7 @@ public class DotMavenStore
             return null;
         }
 
-        logger.info( "Select sub-store: %s", uri );
+        logger.info( "Select sub-store: {}", uri );
         for ( final SubStore sub : substores )
         {
             if ( sub.matchesUri( uri ) )
@@ -126,7 +127,7 @@ public class DotMavenStore
     public void createResource( final ITransaction transaction, final String resourceUri )
         throws WebdavException
     {
-        //        logger.info( "create resource: %s, %s", transaction, resourceUri );
+        //        logger.info( "create resource: {}, {}", transaction, resourceUri );
         final SubStore store = select( resourceUri );
         if ( store != null )
         {
@@ -138,7 +139,7 @@ public class DotMavenStore
     public InputStream getResourceContent( final ITransaction transaction, final String resourceUri )
         throws WebdavException
     {
-        logger.info( "get content: %s, %s", transaction, resourceUri );
+        logger.info( "get content: {}, {}", transaction, resourceUri );
         final SubStore store = select( resourceUri );
         if ( store != null )
         {
@@ -153,7 +154,7 @@ public class DotMavenStore
                                     final String characterEncoding )
         throws WebdavException
     {
-        //        logger.info( "set content: %s, %s", transaction, resourceUri );
+        //        logger.info( "set content: {}, {}", transaction, resourceUri );
         final SubStore store = select( resourceUri );
         if ( store != null )
         {
@@ -167,7 +168,7 @@ public class DotMavenStore
     public String[] getChildrenNames( final ITransaction transaction, final String folderUri )
         throws WebdavException
     {
-        logger.info( "get children names: %s, %s", transaction, folderUri );
+        logger.info( "get children names: {}, {}", transaction, folderUri );
         if ( "/".equals( folderUri ) )
         {
             final Set<String> names = new TreeSet<String>();
@@ -194,7 +195,7 @@ public class DotMavenStore
     public long getResourceLength( final ITransaction transaction, final String path )
         throws WebdavException
     {
-        logger.info( "get length: %s, %s", transaction, path );
+        logger.info( "get length: {}, {}", transaction, path );
         final SubStore store = select( path );
         if ( store != null )
         {
@@ -208,7 +209,7 @@ public class DotMavenStore
     public void removeObject( final ITransaction transaction, final String uri )
         throws WebdavException
     {
-        //        logger.info( "remove: %s, %s", transaction, uri );
+        //        logger.info( "remove: {}, {}", transaction, uri );
         final SubStore store = select( uri );
         if ( store != null )
         {
@@ -224,18 +225,18 @@ public class DotMavenStore
         //                                               .getSession();
         //        if ( session != null )
         //        {
-        //            logger.info( "mount point: %s", session.getAttribute( RequestInfo.MOUNT_POINT ) );
+        //            logger.info( "mount point: {}", session.getAttribute( RequestInfo.MOUNT_POINT ) );
         //        }
         //        else
         //        {
         //            logger.info( "No session available" );
         //        }
 
-        logger.info( "get stored object: %s, %s", transaction, uri );
+        logger.info( "get stored object: {}, {}", transaction, uri );
         final SubStore store = select( uri );
         if ( store != null )
         {
-            logger.info( "Returning stored object from sub-store: %s", store );
+            logger.info( "Returning stored object from sub-store: {}", store );
             return store.getStoredObject( transaction, uri );
         }
 

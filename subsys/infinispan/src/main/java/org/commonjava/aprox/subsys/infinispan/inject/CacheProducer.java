@@ -44,7 +44,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 public class CacheProducer
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private CacheConfiguration config;
@@ -62,11 +62,11 @@ public class CacheProducer
         if ( !f.exists() )
         {
             throw new ProxyDataException(
-                                          "Cannot read infinispan configuration from: %s. Reason: File does not exist.",
+                                          "Cannot read infinispan configuration from: {}. Reason: File does not exist.",
                                           config.getPath() );
         }
 
-        logger.info( "\n\n\n\n[APROX-ISPN] Reading Infinispan configuration from: %s", f.getAbsolutePath() );
+        logger.info( "\n\n\n\n[APROX-ISPN] Reading Infinispan configuration from: {}", f.getAbsolutePath() );
 
         FileInputStream fin = null;
         try
@@ -83,7 +83,7 @@ public class CacheProducer
             {
                 for ( final AproxCacheConfigurator conf : configurators )
                 {
-                    logger.info( "Running cache configurator: %s", conf.getClass()
+                    logger.info( "Running cache configurator: {}", conf.getClass()
                                                                        .getName() );
                     conf.configure( globalConfig, defaultConfig, namedConfigs );
                 }
@@ -100,7 +100,7 @@ public class CacheProducer
         }
         catch ( final IOException e )
         {
-            throw new ProxyDataException( "Cannot read infinispan configuration from: %s. Reason: %s.", e,
+            throw new ProxyDataException( "Cannot read infinispan configuration from: {}. Reason: {}.", e,
                                           config.getPath(), e.getMessage() );
         }
         finally

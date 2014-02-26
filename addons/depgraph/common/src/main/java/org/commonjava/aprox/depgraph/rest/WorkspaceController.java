@@ -58,12 +58,12 @@ public class WorkspaceController
         {
             if ( !ops.delete( id ) )
             {
-                throw new AproxWorkflowException( "Delete failed for workspace: %s", id );
+                throw new AproxWorkflowException( "Delete failed for workspace: {}", id );
             }
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Error deleting workspace: %s. Reason: %s", e, id, e.getMessage() );
+            throw new AproxWorkflowException( "Error deleting workspace: {}. Reason: {}", e, id, e.getMessage() );
         }
     }
 
@@ -81,11 +81,11 @@ public class WorkspaceController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to create new workspace: %s", e, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to create new workspace: {}", e, e.getMessage() );
         }
         catch ( final URISyntaxException e )
         {
-            throw new AproxWorkflowException( "Failed to generate location URI for: %s. Reason: %s", e, id, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to generate location URI for: {}. Reason: {}", e, id, e.getMessage() );
         }
         finally
         {
@@ -111,7 +111,7 @@ public class WorkspaceController
         }
         catch ( final URISyntaxException e )
         {
-            throw new AproxWorkflowException( "Failed to generate location URI for: %s. Reason: %s", e, ws.getId(), e.getMessage() );
+            throw new AproxWorkflowException( "Failed to generate location URI for: {}. Reason: {}", e, ws.getId(), e.getMessage() );
         }
         finally
         {
@@ -151,7 +151,7 @@ public class WorkspaceController
         }
         catch ( final URISyntaxException e )
         {
-            throw new AproxWorkflowException( "Failed to generate location URI for: %s. Reason: %s", e, ws.getId(), e.getMessage() );
+            throw new AproxWorkflowException( "Failed to generate location URI for: {}. Reason: {}", e, ws.getId(), e.getMessage() );
         }
         finally
         {
@@ -173,7 +173,7 @@ public class WorkspaceController
             ws = ops.get( id );
             if ( ws == null )
             {
-                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "Cannot find workspace: %s", id );
+                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "Cannot find workspace: {}", id );
             }
 
             if ( oldVersion == null )
@@ -195,7 +195,7 @@ public class WorkspaceController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to load workspace: %s. Reason: %s", e, id, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to load workspace: {}. Reason: {}", e, id, e.getMessage() );
         }
         finally
         {
@@ -213,7 +213,7 @@ public class WorkspaceController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to load workspace: %s. Reason: %s", e, id, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to load workspace: {}. Reason: {}", e, id, e.getMessage() );
         }
 
         if ( ws != null )
@@ -239,14 +239,14 @@ public class WorkspaceController
             ws = ops.get( id );
             if ( ws == null )
             {
-                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "Cannot find workspace: %s", id );
+                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "Cannot find workspace: {}", id );
             }
 
             return ops.addSource( source, ws );
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to load workspace: %s. Reason: %s", e, id, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to load workspace: {}. Reason: {}", e, id, e.getMessage() );
         }
         finally
         {
@@ -263,14 +263,14 @@ public class WorkspaceController
             ws = ops.get( id );
             if ( ws == null )
             {
-                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "Cannot find workspace: %s", id );
+                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "Cannot find workspace: {}", id );
             }
 
             return ops.addProfile( profile, ws );
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to load workspace: %s. Reason: %s", e, id, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to load workspace: {}. Reason: {}", e, id, e.getMessage() );
         }
         finally
         {

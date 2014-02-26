@@ -18,20 +18,10 @@ package org.commonjava.aprox.bind.vertx.boot;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.Properties;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Layout;
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.spi.Configurator;
-import org.apache.log4j.spi.LoggerRepository;
 import org.codehaus.plexus.interpolation.InterpolationException;
 import org.commonjava.aprox.conf.AproxConfigFactory;
-import org.commonjava.util.logging.Log4jUtil;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.kohsuke.args4j.CmdLineException;
@@ -81,12 +71,12 @@ public class Booter
         }
         catch ( final IOException e )
         {
-            System.out.printf( "ERROR LOADING BOOT DEFAULTS: %s.\nReason: %s\n\n", bootDefaults, e.getMessage() );
+            System.err.printf( "ERROR LOADING BOOT DEFAULTS: %s.\nReason: %s\n\n", bootDefaults, e.getMessage() );
             System.exit( CANT_LOAD_BOOT_DEFAULTS );
         }
         catch ( final InterpolationException e )
         {
-            System.out.printf( "ERROR RESOLVING BOOT DEFAULTS: %s.\nReason: %s\n\n", bootDefaults, e.getMessage() );
+            System.err.printf( "ERROR RESOLVING BOOT DEFAULTS: %s.\nReason: %s\n\n", bootDefaults, e.getMessage() );
             System.exit( CANT_INTERP_BOOT_DEFAULTS );
         }
 
@@ -98,7 +88,7 @@ public class Booter
         }
         catch ( final CmdLineException e )
         {
-            System.out.printf( "ERROR: %s", e.getMessage() );
+            System.err.printf( "ERROR: %s", e.getMessage() );
             printUsage( parser, e );
             System.exit( CANT_PARSE_ARGS );
         }
@@ -113,30 +103,6 @@ public class Booter
         {
             new Booter( boot ).run();
         }
-    }
-
-    @SuppressWarnings( "unused" )
-    private static void configureLogging()
-    {
-        Log4jUtil.configure( Level.WARN );
-
-        final Configurator log4jConfigurator = new Configurator()
-        {
-            @Override
-            public void doConfigure( final URL notUsed, final LoggerRepository repo )
-            {
-                final Layout layout = new PatternLayout( "%d [%t] %-5p %c - %m%n" );
-                final ConsoleAppender cAppender = new ConsoleAppender( layout );
-                cAppender.setThreshold( Level.ALL );
-
-                final Logger logger = repo.getLogger( "org.commonjava" );
-                logger.removeAllAppenders();
-                logger.addAppender( cAppender );
-                logger.setLevel( Level.INFO );
-            }
-        };
-
-        log4jConfigurator.doConfigure( null, LogManager.getLoggerRepository() );
     }
 
     public static void printUsage( final CmdLineParser parser, final CmdLineException error )
@@ -192,7 +158,7 @@ public class Booter
                   .listen( bootOptions.getPort(), bootOptions.getBind() );
         }
 
-        System.out.printf( "AProx: %d workers listening on %s:%d\n\n", bootOptions.getWorkers(), bootOptions.getBind(), bootOptions.getPort() );
+        System.out.printf( "AProx: %s workers listening on %s:%s\n\n", bootOptions.getWorkers(), bootOptions.getBind(), bootOptions.getPort() );
 
         synchronized ( this )
         {

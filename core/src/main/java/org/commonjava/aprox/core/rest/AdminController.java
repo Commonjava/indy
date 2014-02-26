@@ -34,12 +34,13 @@ import org.commonjava.aprox.rest.util.ApplicationStatus;
 import org.commonjava.aprox.stats.AProxVersioning;
 import org.commonjava.shelflife.ExpirationManager;
 import org.commonjava.shelflife.ExpirationManagerException;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class AdminController
 {
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private StoreDataManager storeManager;
@@ -70,7 +71,7 @@ public class AdminController
         }
         catch ( final ProxyDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to store: %s. Reason: %s", e, store.getKey(), e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to store: {}. Reason: {}", e, store.getKey(), e.getMessage() );
         }
     }
 
@@ -83,7 +84,7 @@ public class AdminController
         }
         catch ( final ProxyDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to list: %s. Reason: %s", e, type, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to list: {}. Reason: {}", e, type, e.getMessage() );
         }
     }
 
@@ -96,7 +97,7 @@ public class AdminController
         }
         catch ( final ProxyDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to retrieve: %s. Reason: %s", e, key, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to retrieve: {}. Reason: {}", e, key, e.getMessage() );
         }
     }
 
@@ -109,13 +110,13 @@ public class AdminController
         }
         catch ( final ProxyDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to delete: %s. Reason: %s", e, key, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to delete: {}. Reason: {}", e, key, e.getMessage() );
         }
     }
 
     public void started()
     {
-        logger.info( "\n\n\n\n\n STARTING AProx\n    Version: %s\n    Built-By: %s\n    Commit-ID: %s\n    Built-On: %s\n\n\n\n\n",
+        logger.info( "\n\n\n\n\n STARTING AProx\n    Version: {}\n    Built-By: {}\n    Commit-ID: {}\n    Built-On: {}\n\n\n\n\n",
                      versioning.getVersion(), versioning.getBuilder(), versioning.getCommitId(), versioning.getTimestamp() );
 
         logger.info( "Verfiying that AProx DB + basic data is installed..." );
@@ -168,7 +169,7 @@ public class AdminController
 
     public void stopped()
     {
-        logger.info( "\n\n\n\n\n SHUTTING DOWN AProx\n    Version: %s\n    Built-By: %s\n    Commit-ID: %s\n    Built-On: %s\n\n\n\n\n",
+        logger.info( "\n\n\n\n\n SHUTTING DOWN AProx\n    Version: {}\n    Built-By: {}\n    Commit-ID: {}\n    Built-On: {}\n\n\n\n\n",
                      versioning.getVersion(), versioning.getBuilder(), versioning.getCommitId(), versioning.getTimestamp() );
     }
 

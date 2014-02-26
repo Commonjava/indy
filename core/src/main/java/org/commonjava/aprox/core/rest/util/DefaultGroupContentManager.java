@@ -28,7 +28,8 @@ import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.rest.AproxWorkflowException;
 import org.commonjava.aprox.rest.util.GroupContentManager;
 import org.commonjava.maven.galley.model.Transfer;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @deprecated Use {@link FileManager} directly instead.
@@ -40,7 +41,7 @@ public class DefaultGroupContentManager
     implements GroupContentManager
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private StoreDataManager storeManager;
@@ -70,11 +71,11 @@ public class DefaultGroupContentManager
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( "Failed to retrieve repository-group information: %s. Reason: %s", e, name, e.getMessage() );
-            throw new AproxWorkflowException( "Failed to retrieve repository-group information: %s. Reason: %s", e, name, e.getMessage() );
+            logger.error( "Failed to retrieve repository-group information: {}. Reason: {}", e, name, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve repository-group information: {}. Reason: {}", e, name, e.getMessage() );
         }
 
-        // logger.info( "Download: %s\nFrom: %s", path, stores );
+        // logger.info( "Download: {}\nFrom: {}", path, stores );
         final Transfer item = fileManager.retrieve( group, path );
         if ( item == null || item.isDirectory() )
         {
@@ -103,8 +104,8 @@ public class DefaultGroupContentManager
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( "Failed to retrieve repository-group information: %s. Reason: %s", e, name, e.getMessage() );
-            throw new AproxWorkflowException( "Failed to retrieve repository-group information: %s. Reason: %s", e, name, e.getMessage() );
+            logger.error( "Failed to retrieve repository-group information: {}. Reason: {}", e, name, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve repository-group information: {}. Reason: {}", e, name, e.getMessage() );
         }
 
         return fileManager.store( group, path, stream );
@@ -126,8 +127,8 @@ public class DefaultGroupContentManager
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( "Failed to retrieve repository-group information: %s. Reason: %s", e, name, e.getMessage() );
-            throw new AproxWorkflowException( "Failed to retrieve repository-group information: %s. Reason: %s", e, name, e.getMessage() );
+            logger.error( "Failed to retrieve repository-group information: {}. Reason: {}", e, name, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve repository-group information: {}. Reason: {}", e, name, e.getMessage() );
         }
 
         return fileManager.delete( group, path );

@@ -78,7 +78,7 @@ public class ArchetypeCatalogHandler
                 }
                 catch ( final IOException e )
                 {
-                    throw new AproxWorkflowException( "Failed to write merged archetype catalog to: %s.\nError: %s", e, target, e.getMessage() );
+                    throw new AproxWorkflowException( "Failed to write merged archetype catalog to: {}.\nError: {}", e, target, e.getMessage() );
                 }
                 finally
                 {
@@ -111,7 +111,7 @@ public class ArchetypeCatalogHandler
             }
             catch ( final IOException e )
             {
-                throw new AproxWorkflowException( "Failed to delete generated file (to allow re-generation on demand: %s. Error: %s", e,
+                throw new AproxWorkflowException( "Failed to delete generated file (to allow re-generation on demand: {}. Error: {}", e,
                                                   target.getFullPath(), e.getMessage() );
             }
         }
@@ -138,7 +138,7 @@ public class ArchetypeCatalogHandler
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to delete one or more group files for: %s:%s. Reason: %s", e,
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to delete one or more group files for: {}:{}. Reason: {}", e,
                                               group.getKey(), path, e.getMessage() );
         }
 

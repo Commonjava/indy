@@ -25,24 +25,15 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.apache.log4j.Level;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Repository;
-import org.commonjava.util.logging.Log4jUtil;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 public abstract class RepositoryDataManagerTCK
     extends AbstractProxyDataManagerTCK
 {
-
-    @BeforeClass
-    public static void setupLogging()
-    {
-        Log4jUtil.configure( Level.DEBUG );
-    }
 
     @Test
     public void createAndRetrieveCentralRepoProxy()

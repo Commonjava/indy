@@ -40,14 +40,15 @@ import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Resource;
 import org.commonjava.maven.galley.model.VirtualResource;
 import org.commonjava.maven.galley.spi.transport.LocationExpander;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class AproxLocationExpander
     implements LocationExpander
 {
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private StoreDataManager data;
@@ -80,7 +81,7 @@ public class AproxLocationExpander
                 final GroupLocation gl = (GroupLocation) location;
                 try
                 {
-                    logger.info( "Expanding group: %s", gl.getKey() );
+                    logger.info( "Expanding group: {}", gl.getKey() );
                     final List<ArtifactStore> members = data.getOrderedConcreteStoresInGroup( gl.getKey()
                                                                                                 .getName() );
                     if ( members != null )
@@ -89,16 +90,16 @@ public class AproxLocationExpander
                         {
                             if ( !result.contains( member ) )
                             {
-                                logger.info( "expansion += %s", member.getKey() );
+                                logger.info( "expansion += {}", member.getKey() );
                                 result.add( LocationUtils.toLocation( member ) );
                             }
                         }
-                        logger.info( "Expanded group: %s to:\n  %s", gl.getKey(), join( result, "\n  " ) );
+                        logger.info( "Expanded group: {} to:\n  {}", gl.getKey(), join( result, "\n  " ) );
                     }
                 }
                 catch ( final ProxyDataException e )
                 {
-                    throw new TransferException( "Failed to lookup ordered concrete artifact stores contained in group: %s. Reason: %s", e, gl,
+                    throw new TransferException( "Failed to lookup ordered concrete artifact stores contained in group: {}. Reason: {}", e, gl,
                                                  e.getMessage() );
                 }
             }
@@ -108,17 +109,17 @@ public class AproxLocationExpander
                 try
                 {
                     final ArtifactStore store = data.getArtifactStore( key );
-                    logger.info( "Adding single store: %s for location: %s", store, location );
+                    logger.info( "Adding single store: {} for location: {}", store, location );
                     result.add( LocationUtils.toLocation( store ) );
                 }
                 catch ( final ProxyDataException e )
                 {
-                    throw new TransferException( "Failed to lookup store for key: %s. Reason: %s", e, key, e.getMessage() );
+                    throw new TransferException( "Failed to lookup store for key: {}. Reason: {}", e, key, e.getMessage() );
                 }
             }
             else
             {
-                logger.info( "No expansion available for location: %s", location );
+                logger.info( "No expansion available for location: {}", location );
                 result.add( location );
             }
         }
