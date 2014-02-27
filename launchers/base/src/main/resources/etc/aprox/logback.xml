@@ -9,7 +9,7 @@
   </appender>
   
   <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-      <file>${aprox.home/log/aprox.log</file>
+      <file>${aprox.home}/log/aprox.log</file>
       <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
         <fileNamePattern>aprox.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
 
