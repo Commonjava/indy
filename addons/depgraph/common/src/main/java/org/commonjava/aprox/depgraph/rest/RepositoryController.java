@@ -325,7 +325,7 @@ public class RepositoryController
         {
             final String uri = uriFormatter.formatAbsolutePathTo( baseUri, key.getType()
                                                                               .singularEndpointName(), key.getName() );
-            return String.format( "Downloading: {}", uri );
+            return String.format( "Downloading: %s", uri );
         }
         else
         {

@@ -62,13 +62,13 @@ public class AproxResourceFetcher
 
             if ( store == null )
             {
-                throw new IOException( String.format( "No such repository: {}.", id ) );
+                throw new IOException( String.format( "No such repository: %s.", id ) );
             }
         }
         catch ( final ProxyDataException e )
         {
             logger.error( "Failed to lookup store: {}. Reason: {}", e, id, e.getMessage() );
-            throw new IOException( String.format( "Failed to lookup store: {}. Reason: {}", id, e.getMessage() ), e );
+            throw new IOException( String.format( "Failed to lookup store: %s. Reason: %s", id, e.getMessage() ), e );
         }
     }
 
@@ -104,7 +104,7 @@ public class AproxResourceFetcher
             }
             else
             {
-                throw new IOException( String.format( "Failed to retrieve: {} from: {}. Reason: {}", path, store.getKey(), e ), e );
+                throw new IOException( String.format( "Failed to retrieve: %s from: %s. Reason: %s", path, store.getKey(), e ), e );
             }
         }
     }

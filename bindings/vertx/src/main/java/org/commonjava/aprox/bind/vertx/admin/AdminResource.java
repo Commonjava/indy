@@ -136,7 +136,7 @@ public class AdminResource
 
         if ( !name.equals( store.getName() ) )
         {
-            formatBadRequestResponse( request, String.format( "Store in URL path is: '{}' but in JSON it is: '{}'", name, store.getName() ) );
+            formatBadRequestResponse( request, String.format( "Store in URL path is: '%s' but in JSON it is: '%s'", name, store.getName() ) );
             return;
         }
 

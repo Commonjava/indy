@@ -134,7 +134,7 @@ public class ReplicationAction
     @Override
     public String toString()
     {
-        return String.format( "ReplicationAction [type={}, include={}, exclude={}, proxyHost={}, proxyPort={}, proxyUser={}, proxyPass={}]", type,
+        return String.format( "ReplicationAction [type=%s, include=%s, exclude=%s, proxyHost=%s, proxyPort=%s, proxyUser=%s, proxyPass=%s]", type,
                               include, exclude, proxyHost, proxyPort, proxyUser, proxyPass );
     }
 }

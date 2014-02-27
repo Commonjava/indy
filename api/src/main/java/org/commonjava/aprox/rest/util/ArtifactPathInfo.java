@@ -153,7 +153,7 @@ public class ArtifactPathInfo
     @Override
     public String toString()
     {
-        return String.format( "ArtifactPathInfo [groupId={}, artifactId={}, version={}, file={}]", groupId, artifactId,
+        return String.format( "ArtifactPathInfo [groupId=%s, artifactId=%s, version=%s, file=%s]", groupId, artifactId,
                               version, file );
     }
 
@@ -279,7 +279,7 @@ public class ArtifactPathInfo
 
     public String getProjectId()
     {
-        return String.format( getGroupId(), getArtifactId(), getVersion() );
+        return String.format( "%s:%s:%s", getGroupId(), getArtifactId(), getVersion() );
     }
 
 }

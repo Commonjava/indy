@@ -225,7 +225,7 @@ public class Repository
     @Override
     public String toString()
     {
-        return String.format( "Repository [url={}, timeoutSeconds={}, host={}, port={}, user={}, password={}, getName()={}, getKey()={}]", url,
+        return String.format( "Repository [url=%s, timeoutSeconds=%s, host=%s, port=%s, user=%s, password=%s, getName()=%s, getKey()=%s]", url,
                               timeoutSeconds, host, port, user, password, getName(), getKey() );
     }
 

@@ -72,7 +72,7 @@ public class ResolverController
         final URI source = sourceManager.createSourceURI( from );
         if ( source == null )
         {
-            final String message = String.format( "Invalid source format: '{}'. Use the form: '{}' instead.", from, sourceManager.getFormatHint() );
+            final String message = String.format( "Invalid source format: '%s'. Use the form: '%s' instead.", from, sourceManager.getFormatHint() );
             logger.warn( message );
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, message );
         }
@@ -104,7 +104,7 @@ public class ResolverController
         final URI source = sourceManager.createSourceURI( from );
         if ( source == null )
         {
-            final String message = String.format( "Invalid source format: '{}'. Use the form: '{}' instead.", from, sourceManager.getFormatHint() );
+            final String message = String.format( "Invalid source format: '%s'. Use the form: '%s' instead.", from, sourceManager.getFormatHint() );
             logger.warn( message );
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, message );
         }
