@@ -25,10 +25,9 @@ public class Log4JLogger
 
     private final org.apache.log4j.Logger logger;
 
-    public Log4JLogger( final String key, final int level )
+    public Log4JLogger( final String key )
     {
         logger = org.apache.log4j.Logger.getLogger( key );
-        logger.setLevel( Level.toLevel( level ) );
     }
 
     @Override
@@ -70,8 +69,7 @@ public class Log4JLogger
     @Override
     public Logger getChildLogger( final String name )
     {
-        return new Log4JLogger( logger.getName() + "." + name, logger.getLevel()
-                                                                          .toInt() );
+        return new Log4JLogger( logger.getName() + "." + name );
     }
 
     @Override
@@ -132,7 +130,6 @@ public class Log4JLogger
     @Override
     public void setThreshold( final int level )
     {
-        logger.setLevel( Level.toLevel( level ) );
     }
 
     @Override

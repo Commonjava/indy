@@ -8,13 +8,17 @@ import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.PropertyConfigurator;
 import org.codehaus.plexus.interpolation.InterpolationException;
 import org.codehaus.plexus.interpolation.PropertiesBasedValueSource;
 import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.kohsuke.args4j.Option;
+import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.spi.JoranException;
 
 public class BootOptions
 {
@@ -175,17 +179,18 @@ public class BootOptions
     }
 
     public BootOptions configureLogging( final File logConf )
-        throws IOException, InterpolationException
+        throws IOException, InterpolationException, JoranException
     {
         if ( logConf.exists() )
         {
             String logProps = FileUtils.readFileToString( logConf );
             logProps = resolve( logProps );
 
-            final Properties p = new Properties();
-            p.load( new ByteArrayInputStream( logProps.getBytes() ) );
+            final JoranConfigurator fig = new JoranConfigurator();
+            final LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
 
-            PropertyConfigurator.configure( p );
+            fig.setContext( context );
+            fig.doConfigure( new ByteArrayInputStream( logProps.getBytes() ) );
         }
 
         return this;
