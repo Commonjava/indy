@@ -135,7 +135,7 @@ public class AproxProjectGraphDiscoverer
             }
             else
             {
-                logger.warn( "{} NOT FOUND in:\n  {}", pomRef, new JoinString( "\n  ", locations ) );
+                logger.debug( "{} NOT FOUND in:\n  {}", pomRef, new JoinString( "\n  ", locations ) );
                 return null;
             }
         }
