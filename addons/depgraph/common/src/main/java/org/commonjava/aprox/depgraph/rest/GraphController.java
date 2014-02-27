@@ -100,12 +100,12 @@ public class GraphController
             Map<ProjectVersionRef, Set<String>> errors;
             if ( ref != null )
             {
-                logger.info( "Retrieving project errors in graph: {}", ref );
+                logger.debug( "Retrieving project errors in graph: {}", ref );
                 errors = ops.getErrors( ref );
             }
             else
             {
-                logger.info( "Retrieving ALL project errors" );
+                logger.debug( "Retrieving ALL project errors" );
                 errors = ops.getAllErrors();
             }
 

@@ -16,8 +16,6 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.discover;
 
-import static org.apache.commons.lang.StringUtils.join;
-
 import java.net.URI;
 import java.util.List;
 
@@ -36,6 +34,7 @@ import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.atlas.graph.model.EProjectKey;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.maven.atlas.ident.version.InvalidVersionSpecificationException;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.data.CartoDataManager;
@@ -110,7 +109,7 @@ public class AproxProjectGraphDiscoverer
 
         if ( specific == null )
         {
-            logger.info( "Specific version NOT resolved. Skipping discovery: {}", ref );
+            logger.warn( "Specific version NOT resolved. Skipping discovery: {}", ref );
             return null;
         }
 
@@ -124,7 +123,7 @@ public class AproxProjectGraphDiscoverer
             final List<? extends KeyedLocation> locations = getLocations( key );
             if ( locations == null || locations.isEmpty() )
             {
-                logger.info( "NO LOCATIONS given for resolving: {}", pomRef );
+                logger.warn( "NO LOCATIONS given for resolving: {}", pomRef );
                 return null;
             }
 
@@ -136,7 +135,7 @@ public class AproxProjectGraphDiscoverer
             }
             else
             {
-                logger.info( "{} NOT FOUND in:\n  {}", pomRef, join( locations, "\n  " ) );
+                logger.warn( "{} NOT FOUND in:\n  {}", pomRef, new JoinString( "\n  ", locations ) );
                 return null;
             }
         }

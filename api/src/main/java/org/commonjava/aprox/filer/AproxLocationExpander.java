@@ -16,8 +16,6 @@
  ******************************************************************************/
 package org.commonjava.aprox.filer;
 
-import static org.apache.commons.lang.StringUtils.join;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,6 +32,7 @@ import org.commonjava.aprox.model.galley.CacheOnlyLocation;
 import org.commonjava.aprox.model.galley.GroupLocation;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.util.LocationUtils;
+import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Location;
@@ -81,7 +80,7 @@ public class AproxLocationExpander
                 final GroupLocation gl = (GroupLocation) location;
                 try
                 {
-                    logger.info( "Expanding group: {}", gl.getKey() );
+                    logger.debug( "Expanding group: {}", gl.getKey() );
                     final List<ArtifactStore> members = data.getOrderedConcreteStoresInGroup( gl.getKey()
                                                                                                 .getName() );
                     if ( members != null )
@@ -90,11 +89,11 @@ public class AproxLocationExpander
                         {
                             if ( !result.contains( member ) )
                             {
-                                logger.info( "expansion += {}", member.getKey() );
+                                logger.debug( "expansion += {}", member.getKey() );
                                 result.add( LocationUtils.toLocation( member ) );
                             }
                         }
-                        logger.info( "Expanded group: {} to:\n  {}", gl.getKey(), join( result, "\n  " ) );
+                        logger.debug( "Expanded group: {} to:\n  {}", gl.getKey(), new JoinString( "\n  ", result ) );
                     }
                 }
                 catch ( final ProxyDataException e )
@@ -109,7 +108,7 @@ public class AproxLocationExpander
                 try
                 {
                     final ArtifactStore store = data.getArtifactStore( key );
-                    logger.info( "Adding single store: {} for location: {}", store, location );
+                    logger.debug( "Adding single store: {} for location: {}", store, location );
                     result.add( LocationUtils.toLocation( store ) );
                 }
                 catch ( final ProxyDataException e )
@@ -119,7 +118,7 @@ public class AproxLocationExpander
             }
             else
             {
-                logger.info( "No expansion available for location: {}", location );
+                logger.debug( "No expansion available for location: {}", location );
                 result.add( location );
             }
         }

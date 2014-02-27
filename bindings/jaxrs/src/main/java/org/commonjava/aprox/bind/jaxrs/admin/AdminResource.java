@@ -16,8 +16,6 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.jaxrs.admin;
 
-import static org.apache.commons.lang.StringUtils.join;
-
 import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -45,6 +43,7 @@ import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.rest.AproxWorkflowException;
+import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.web.json.model.Listing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -163,12 +162,12 @@ public class AdminResource
         {
             @SuppressWarnings( "unchecked" )
             final List<ArtifactStore> stores = (List<ArtifactStore>) adminController.getAllOfType( st );
-            logger.info( "Returning listing containing stores:\n\t{}", join( stores, "\n\t" ) );
+            logger.info( "Returning listing containing stores:\n\t{}", new JoinString( "\n\t", stores ) );
 
             final Listing<ArtifactStore> listing = new Listing<ArtifactStore>( stores );
 
             final String json = modelSerializer.storeListingToString( listing );
-            logger.info( "JSON:\n\n{}", json );
+            logger.debug( "JSON:\n\n{}", json );
 
             return Response.ok()
                            .entity( json )

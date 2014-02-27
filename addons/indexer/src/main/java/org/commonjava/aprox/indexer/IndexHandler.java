@@ -16,8 +16,6 @@
  ******************************************************************************/
 package org.commonjava.aprox.indexer;
 
-import static org.apache.commons.lang.StringUtils.join;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
@@ -60,6 +58,7 @@ import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.maven.galley.event.FileStorageEvent;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.shelflife.ExpirationManager;
@@ -222,7 +221,7 @@ public class IndexHandler
             final List<Exception> exceptions = result.getExceptions();
             if ( exceptions != null && !exceptions.isEmpty() )
             {
-                logger.error( "{}. While scanning: {}, encountered errors:\n\n  {}", store.getKey(), join( exceptions, "\n\n  " ) );
+                logger.error( "{}. While scanning: {}, encountered errors:\n\n  {}", store.getKey(), new JoinString( "\n\n  ", exceptions ) );
             }
         }
         finally

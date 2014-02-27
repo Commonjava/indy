@@ -56,7 +56,7 @@ public class RequestInfo
         String baseUrl = request.getRequestURI()
                                 .toString();
 
-        logger.info( "DAV RAW Base-URL: {}", baseUrl );
+        logger.debug( "DAV RAW Base-URL: {}", baseUrl );
 
         final int idx = baseUrl.indexOf( DotMavenService.NAME );
         if ( idx > 0 )
@@ -68,7 +68,7 @@ public class RequestInfo
             baseUrl = null;
         }
 
-        logger.info( "DAV Processed Base-URL: {}", baseUrl );
+        logger.debug( "DAV Processed Base-URL: {}", baseUrl );
 
         return baseUrl;
     }

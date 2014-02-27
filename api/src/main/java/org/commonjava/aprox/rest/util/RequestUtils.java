@@ -1,13 +1,13 @@
 package org.commonjava.aprox.rest.util;
 
 import static org.apache.commons.lang.StringUtils.isEmpty;
-import static org.apache.commons.lang.StringUtils.join;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,7 +97,7 @@ public final class RequestUtils
             val = Boolean.parseBoolean( values[0] );
         }
 
-        logger.info( "Values of key: {} are: {}. Returning boolean-param-with-default value: {}", key, join( values, ", " ), val );
+        logger.debug( "Values of key: {} are: {}. Returning boolean-param-with-default value: {}", key, new JoinString( ", ", values ), val );
         return val;
     }
 
@@ -120,7 +120,7 @@ public final class RequestUtils
             val = Long.parseLong( values[0] );
         }
 
-        logger.info( "Values of key: {} are: {}. Returning long-param-with-default value: {}", key, join( values, ", " ), val );
+        logger.debug( "Values of key: {} are: {}. Returning long-param-with-default value: {}", key, new JoinString( ", ", values ), val );
         return val;
     }
 
@@ -134,7 +134,7 @@ public final class RequestUtils
             val = def;
         }
 
-        logger.info( "Value of key: {} is: {}. Returning string-param-with-default value: {}", key, value, val );
+        logger.debug( "Value of key: {} is: {}. Returning string-param-with-default value: {}", key, value, val );
         return val;
     }
 
