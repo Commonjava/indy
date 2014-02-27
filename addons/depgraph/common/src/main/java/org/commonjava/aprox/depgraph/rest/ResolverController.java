@@ -141,7 +141,7 @@ public class ResolverController
         options.setProcessIncompleteSubgraphs( getBooleanParamWithDefault( params, "incomplete", true ) );
         options.setProcessVariableSubgraphs( getBooleanParamWithDefault( params, "variable", true ) );
 
-        logger.info( "AGGREGATOR OPTIONS:\n\n{}\n\n", options );
+        logger.debug( "AGGREGATOR OPTIONS:\n\n{}\n\n", options );
 
         return options;
     }

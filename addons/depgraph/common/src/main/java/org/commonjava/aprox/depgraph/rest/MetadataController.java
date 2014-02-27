@@ -16,8 +16,6 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.rest;
 
-import static org.apache.commons.lang.StringUtils.join;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
@@ -33,6 +31,7 @@ import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.depgraph.util.ConfigDTOHelper;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.dto.MetadataCollation;
 import org.commonjava.maven.cartographer.ops.MetadataOps;
@@ -96,7 +95,7 @@ public class MetadataController
             final ProjectVersionRef ref = entry.getKey();
             final Map<String, String> metadata = entry.getValue();
 
-            logger.info( "Adding metadata for: {}\n\n  ", ref, join( metadata.entrySet(), "\n  " ) );
+            logger.debug( "Adding metadata for: {}\n\n  ", ref, new JoinString( "\n  ", metadata.entrySet() ) );
             ops.updateMetadata( ref, metadata );
         }
     }
@@ -156,7 +155,7 @@ public class MetadataController
 
         final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
 
-        logger.info( "Adding metadata for: {}\n\n  ", ref, join( metadata.entrySet(), "\n  " ) );
+        logger.debug( "Adding metadata for: {}\n\n  ", ref, new JoinString( "\n  ", metadata.entrySet() ) );
 
         ops.updateMetadata( ref, metadata );
     }

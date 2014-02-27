@@ -85,7 +85,7 @@ public class AproxModelDiscoverer
 
         if ( !path.endsWith( ".pom" ) )
         {
-            logger.info( "NOT a POM: {}", path );
+            logger.debug( "NOT a POM: {}", path );
             return null;
         }
 
@@ -107,7 +107,7 @@ public class AproxModelDiscoverer
 
         if ( result != null )
         {
-            logger.info( "Attempting to patch results for: {}", result.getSelectedRef() );
+            logger.debug( "Attempting to patch results for: {}", result.getSelectedRef() );
             result = patchers.patch( result, enabledPatchers, locations, pomView, item );
 
             final Map<String, String> metadata = metadataScannerSupport.scan( result.getSelectedRef(), locations, pomView, item );

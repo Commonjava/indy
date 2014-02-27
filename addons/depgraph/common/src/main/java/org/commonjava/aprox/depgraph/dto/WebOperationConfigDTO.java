@@ -75,7 +75,7 @@ public class WebOperationConfigDTO
         if ( source != null )
         {
             setSourceLocation( LocationUtils.toCacheLocation( source ) );
-            logger.info( "Set sourceLocation to: '{}'", getSourceLocation() );
+            logger.debug( "Set sourceLocation to: '{}'", getSourceLocation() );
         }
 
         if ( excludedSources != null )

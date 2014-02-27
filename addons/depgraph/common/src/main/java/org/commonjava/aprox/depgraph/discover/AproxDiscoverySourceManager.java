@@ -67,19 +67,19 @@ public class AproxDiscoverySourceManager
     public URI createSourceURI( final String source )
     {
         final StoreKey key = StoreKey.fromString( normalize( source ) );
-        logger.info( "Got source-URI store-key: '{}'", key );
+        logger.debug( "Got source-URI store-key: '{}'", key );
         final URI result = toDiscoveryURI( key );
-        logger.info( "Resulting source URI: '{}'", result );
+        logger.debug( "Resulting source URI: '{}'", result );
         return result;
     }
 
     private String normalize( final String source )
     {
-        logger.info( "Normalizing source URI: '{}'", source );
+        logger.debug( "Normalizing source URI: '{}'", source );
         if ( source.startsWith( APROX_URI_PREFIX ) )
         {
             final String result = source.substring( APROX_URI_PREFIX.length() );
-            logger.info( "Normalized source URI: '{}'", result );
+            logger.debug( "Normalized source URI: '{}'", result );
             return result;
         }
 

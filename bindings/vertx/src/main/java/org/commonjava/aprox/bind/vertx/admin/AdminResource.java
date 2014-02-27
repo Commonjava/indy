@@ -16,7 +16,6 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.vertx.admin;
 
-import static org.apache.commons.lang.StringUtils.join;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatBadRequestResponse;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatCreatedResponse;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithJsonEntity;
@@ -38,6 +37,7 @@ import org.commonjava.aprox.util.ApplicationContent;
 import org.commonjava.aprox.util.ApplicationHeader;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.UriFormatter;
+import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
@@ -178,12 +178,12 @@ public class AdminResource
             @SuppressWarnings( "unchecked" )
             final List<ArtifactStore> stores = (List<ArtifactStore>) adminController.getAllOfType( st );
 
-            logger.info( "Returning listing containing stores:\n\t{}", join( stores, "\n\t" ) );
+            logger.info( "Returning listing containing stores:\n\t{}", new JoinString( "\n\t", stores ) );
 
             final Listing<ArtifactStore> listing = new Listing<ArtifactStore>( stores );
 
             final String json = modelSerializer.storeListingToString( listing );
-            logger.info( "JSON:\n\n{}", json );
+            logger.debug( "JSON:\n\n{}", json );
 
             formatOkResponseWithJsonEntity( request, json );
         }

@@ -48,35 +48,35 @@ public class UIHandler
             case HEAD:
             {
                 final File uiDir = config.getUIDir();
-                logger.info( "UI basedir: '{}'", uiDir );
+                logger.debug( "UI basedir: '{}'", uiDir );
 
                 String path = request.params()
                                      .get( PathParam.path.key() );
 
                 if ( path == null )
                 {
-                    logger.info( "null path. Using /index.html" );
+                    logger.debug( "null path. Using /index.html" );
                     path = "index.html";
                 }
                 else if ( path.endsWith( "/" ) )
                 {
                     path += "index.html";
-                    logger.info( "directory path. Using {}", path );
+                    logger.debug( "directory path. Using {}", path );
                 }
 
                 if ( path.startsWith( "/" ) )
                 {
-                    logger.info( "Trimming leading '/' from path" );
+                    logger.debug( "Trimming leading '/' from path" );
                     path = path.substring( 1 );
                 }
 
                 final File resource = new File( uiDir, path );
-                logger.info( "Checking for existence of: '{}'", resource );
+                logger.debug( "Checking for existence of: '{}'", resource );
                 if ( resource.exists() )
                 {
                     if ( method == GET )
                     {
-                        logger.info( "sending file" );
+                        logger.debug( "sending file" );
                         request.resume()
                                .response()
                                .putHeader( ApplicationHeader.last_modified.key(), formatDateHeader( resource.lastModified() ) )
@@ -84,7 +84,7 @@ public class UIHandler
                     }
                     else
                     {
-                        logger.info( "sending OK" );
+                        logger.debug( "sending OK" );
                         // TODO: set headers for content info...
                         setStatus( OK, request );
                         request.resume()
@@ -98,7 +98,7 @@ public class UIHandler
                 }
                 else
                 {
-                    logger.info( "sending 404" );
+                    logger.debug( "sending 404" );
                     setStatus( NOT_FOUND, request );
                 }
                 break;

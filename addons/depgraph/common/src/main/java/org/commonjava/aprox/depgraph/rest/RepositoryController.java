@@ -246,7 +246,7 @@ public class RepositoryController
                     final String path = resource.getPath();
                     if ( seenPaths.contains( path ) )
                     {
-                        logger.info( "Conflicting path: {}. Skipping {}.", path, ref );
+                        logger.warn( "Conflicting path: {}. Skipping {}.", path, ref );
                         continue;
                     }
 

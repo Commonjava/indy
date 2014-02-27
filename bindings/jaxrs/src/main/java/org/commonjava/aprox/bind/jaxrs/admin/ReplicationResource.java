@@ -16,8 +16,6 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.jaxrs.admin;
 
-import static org.apache.commons.lang.StringUtils.join;
-
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -35,6 +33,7 @@ import org.commonjava.aprox.core.dto.repl.ReplicationDTO;
 import org.commonjava.aprox.core.rest.ReplicationController;
 import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.web.json.ser.JsonSerializer;
 import org.commonjava.web.json.ser.ServletSerializerUtils;
 import org.slf4j.Logger;
@@ -63,7 +62,7 @@ public class ReplicationResource
         {
             final Set<StoreKey> replicated = controller.replicate( dto );
 
-            return Response.ok( replicated.size() + " entries replicated:\n\n  " + join( replicated, "\n  " ) + "\n\n" )
+            return Response.ok( replicated.size() + " entries replicated:\n\n  " + new JoinString( "\n  ", replicated ) + "\n\n" )
                            .build();
         }
         catch ( final AproxWorkflowException e )
