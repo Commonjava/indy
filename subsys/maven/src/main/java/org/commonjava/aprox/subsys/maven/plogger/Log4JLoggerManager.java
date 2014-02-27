@@ -43,7 +43,7 @@ public class Log4JLoggerManager
         Logger logger = activeLoggers.get( role );
         if ( logger == null )
         {
-            logger = new Log4JLogger( role, masterLevel );
+            logger = new Log4JLogger( role );
             activeLoggers.put( role, logger );
         }
 
@@ -57,7 +57,7 @@ public class Log4JLoggerManager
         Logger logger = activeLoggers.get( key );
         if ( logger == null )
         {
-            logger = new Log4JLogger( key, masterLevel );
+            logger = new Log4JLogger( key );
             activeLoggers.put( key, logger );
         }
 

@@ -30,6 +30,8 @@ import org.vertx.java.core.http.HttpServer;
 import org.vertx.java.core.impl.DefaultVertx;
 import org.vertx.java.platform.Verticle;
 
+import ch.qos.logback.core.joran.spi.JoranException;
+
 public class Booter
     extends Verticle
 {
@@ -42,6 +44,8 @@ public class Booter
     public static final int CANT_PARSE_ARGS = 2;
 
     public static final int CANT_INTERP_BOOT_DEFAULTS = 3;
+
+    public static final int CANT_CONFIGURE_LOGGING = 4;
 
     public static final String APROX_LOGCONF_PROP = "aprox.logging";
 
@@ -78,6 +82,11 @@ public class Booter
         {
             System.err.printf( "ERROR RESOLVING BOOT DEFAULTS: %s.\nReason: %s\n\n", bootDefaults, e.getMessage() );
             System.exit( CANT_INTERP_BOOT_DEFAULTS );
+        }
+        catch ( final JoranException e )
+        {
+            System.err.printf( "ERROR CONFIGURING LOGGING FROM: %s.\nReason: %s\n\n", logConf, e.getMessage() );
+            System.exit( CANT_CONFIGURE_LOGGING );
         }
 
         final CmdLineParser parser = new CmdLineParser( boot );
