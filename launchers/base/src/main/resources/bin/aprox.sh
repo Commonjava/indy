@@ -7,7 +7,7 @@ BASEDIR=`dirname ${BASEDIR}`
 
 # echo "basedir: ${BASEDIR}"
 
-APROX_LOGCONF=${APROX_LOGCONF:-${BASEDIR}/etc/aprox/log4j.properties}
+APROX_LOGCONF=${APROX_LOGCONF:-${BASEDIR}/etc/aprox/logback.xml}
 
 CP=""
 for f in $(find $BASEDIR/lib/aprox-cdi-components-*.jar -type f)
