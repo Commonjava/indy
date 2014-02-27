@@ -8,24 +8,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
-import org.apache.log4j.Level;
 import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.subsys.template.ScriptEngine;
-import org.commonjava.util.logging.Log4jUtil;
 import org.commonjava.web.config.ConfigurationException;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class AutoProxConfiguratorTest
 {
 
     private final AutoProxConfigurator configurator = new AutoProxConfigurator( new ScriptEngine() );
-
-    @BeforeClass
-    public static void beforeClass()
-    {
-        Log4jUtil.configure( Level.DEBUG );
-    }
 
     @Test
     public void createFactoryFromGroovyWithRegexNameSplitting()

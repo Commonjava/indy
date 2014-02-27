@@ -8,7 +8,8 @@ import javax.inject.Named;
 import org.commonjava.aprox.action.start.MigrationAction;
 import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Named( "legacy-storage-migration" )
 public class LegacyStorageMigrationAction
@@ -19,7 +20,7 @@ public class LegacyStorageMigrationAction
 
     private static final String LEGACY_REMOTE_REPO_PREFIX = "repository";
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private DefaultStorageProviderConfiguration config;
@@ -61,7 +62,7 @@ public class LegacyStorageMigrationAction
 
             if ( newName != null )
             {
-                logger.info( "Migrating storage: '%s' to '%s'", name, newName );
+                logger.info( "Migrating storage: '{}' to '{}'", name, newName );
 
                 final File newDir = new File( basedir, newName );
                 dir.renameTo( newDir );

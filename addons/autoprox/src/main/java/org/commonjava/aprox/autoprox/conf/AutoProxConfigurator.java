@@ -31,9 +31,10 @@ import org.commonjava.aprox.conf.AbstractAproxMapConfig;
 import org.commonjava.aprox.inject.Production;
 import org.commonjava.aprox.subsys.template.AproxGroovyException;
 import org.commonjava.aprox.subsys.template.ScriptEngine;
-import org.commonjava.util.logging.Logger;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.SectionName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 @Named( AutoProxConfigurator.SECTION )
@@ -53,7 +54,7 @@ public class AutoProxConfigurator
 
     public static final String ENABLED_PARAM = "enabled";
 
-    private final Logger logger = new Logger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private ScriptEngine scriptEngine;
@@ -149,7 +150,7 @@ public class AutoProxConfigurator
                     }
                     catch ( final AproxGroovyException e )
                     {
-                        logger.error( "[AUTOPROX] Cannot load autoprox factory from: %s (matched via: '%s'). Reason: %s", e, script,
+                        logger.error( "[AUTOPROX] Cannot load autoprox factory from: {} (matched via: '{}'). Reason: {}", e, script,
                                       FactoryMapping.DEFAULT_MATCH, e.getMessage() );
                     }
                 }
@@ -164,7 +165,7 @@ public class AutoProxConfigurator
                     final File script = new File( getBasedir(), scriptPath );
                     if ( !script.exists() )
                     {
-                        logger.error( "[AUTOPROX] Cannot load autoprox factory from: %s (matched via: '%s'). File does not exist.", script, match );
+                        logger.error( "[AUTOPROX] Cannot load autoprox factory from: {} (matched via: '{}'). File does not exist.", script, match );
                         continue;
                     }
 
@@ -175,7 +176,7 @@ public class AutoProxConfigurator
                     }
                     catch ( final AproxGroovyException e )
                     {
-                        logger.error( "[AUTOPROX] Cannot load autoprox factory from: %s (matched via: '%s'). Reason: %s", e, script, match,
+                        logger.error( "[AUTOPROX] Cannot load autoprox factory from: {} (matched via: '{}'). Reason: {}", e, script, match,
                                       e.getMessage() );
                     }
                 }
