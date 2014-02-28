@@ -44,10 +44,10 @@
     <jbossas-version>7.1.1.Final</jbossas-version>
     <arquillian-version>1.0.1.Final</arquillian-version>
     <qarqas-version>0.3</qarqas-version>
-    <shelflife-version>0.6-SNAPSHOT</shelflife-version>
-    <atlasVersion>0.10.0-SNAPSHOT</atlasVersion>
-    <galleyVersion>0.4-SNAPSHOT</galleyVersion>
-    <cartoVersion>0.4-SNAPSHOT</cartoVersion>
+    <shelflife-version>0.6</shelflife-version>
+    <atlasVersion>0.10.0</atlasVersion>
+    <galleyVersion>0.4</galleyVersion>
+    <cartoVersion>0.4</cartoVersion>
     
     <vertx.testtools.version>2.0.0-final</vertx.testtools.version>
   </properties>
@@ -80,7 +80,7 @@
       <dependency>
         <groupId>org.commonjava.boms</groupId>
         <artifactId>web-commons-bom</artifactId>
-        <version>8-SNAPSHOT</version>
+        <version>8</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
