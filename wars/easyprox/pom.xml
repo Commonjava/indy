@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.commonjava.aprox.wars</groupId>
     <artifactId>aprox-wars</artifactId>
-    <version>0.11.3-SNAPSHOT</version>
+    <version>0.11.3</version>
   </parent>
   
   <artifactId>aprox-easyprox</artifactId>

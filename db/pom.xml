@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.commonjava.aprox</groupId>
     <artifactId>aprox-parent</artifactId>
-    <version>0.11.3-SNAPSHOT</version>
+    <version>0.11.3</version>
   </parent>
   
   <artifactId>aprox-db</artifactId>
