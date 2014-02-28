@@ -5,7 +5,7 @@ import java.net.MalformedURLException;
 
 import org.commonjava.aprox.model.*;
 
-class ProdFactory implements AutoProxFactory
+class CiFactory implements AutoProxFactory
 {
     RemoteRepository createRemoteRepository( String named )
         throws MalformedURLException
