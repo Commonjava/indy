@@ -24,8 +24,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.web.json.ser.JsonSerializer;

@@ -18,6 +18,7 @@ package org.commonjava.aprox.core.conf;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -41,8 +42,6 @@ public class DefaultAproxConfigFactory
     implements AproxConfigFactory
 {
 
-    private static final String CONFIG_PATH = "/etc/aprox/main.conf";
-
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
@@ -51,7 +50,7 @@ public class DefaultAproxConfigFactory
     @Inject
     private Instance<AbstractAproxMapConfig> mapConfigs;
 
-    private static String configPath = System.getProperty( CONFIG_PATH_PROP, CONFIG_PATH );
+    private static String configPath = System.getProperty( CONFIG_PATH_PROP, DEFAULT_CONFIG_PATH );
 
     public static void setConfigPath( final String path )
     {
@@ -67,6 +66,8 @@ public class DefaultAproxConfigFactory
     protected void load()
         throws ConfigurationException
     {
+        setSystemProperties();
+
         logger.info( "\n\n\n\n[CONFIG] Reading AProx configuration.\n\nAdding configuration section listeners:" );
         for ( final AproxConfigInfo section : configSections )
         {
@@ -96,6 +97,23 @@ public class DefaultAproxConfigFactory
         }
 
         logger.info( "[CONFIG] AProx configuration complete.\n\n\n\n" );
+    }
+
+    private void setSystemProperties()
+    {
+        logger.info( "Verifying AProx system properties are set..." );
+        final String confPath = System.getProperty( AproxConfigFactory.CONFIG_PATH_PROP );
+        if ( confPath == null )
+        {
+            System.setProperty( AproxConfigFactory.CONFIG_DIR_PROP, AproxConfigFactory.DEFAULT_CONFIG_DIR );
+            System.setProperty( AproxConfigFactory.CONFIG_PATH_PROP, AproxConfigFactory.DEFAULT_CONFIG_PATH );
+        }
+        else
+        {
+            final File f = new File( confPath );
+            final String dir = f.getParent();
+            System.setProperty( AproxConfigFactory.CONFIG_DIR_PROP, dir );
+        }
     }
 
 }

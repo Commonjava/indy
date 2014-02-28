@@ -32,6 +32,7 @@ import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.rest.group.GroupPathHandler;
+import org.commonjava.aprox.util.StringFormat;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.slf4j.Logger;
@@ -85,7 +86,7 @@ public class GroupMergeHelper
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to write SHA1 checksum for merged metadata information to: {}.\nError: {}", e, targetSha, e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Failed to write SHA1 checksum for merged metadata information to: {}.\nError: {}", targetSha, e.getMessage() ) );
         }
         finally
         {
@@ -99,7 +100,7 @@ public class GroupMergeHelper
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to write MD5 checksum for merged metadata information to: {}.\nError: {}", e, targetMd5, e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Failed to write MD5 checksum for merged metadata information to: {}.\nError: {}", targetMd5, e.getMessage() ) );
         }
         finally
         {
@@ -118,7 +119,7 @@ public class GroupMergeHelper
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to write merged metadata information to: {}.\nError: {}", e, targetInfo, e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Failed to write merged metadata information to: {}.\nError: {}", targetInfo, e.getMessage() ) );
         }
         finally
         {

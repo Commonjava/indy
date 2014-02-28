@@ -33,6 +33,7 @@ import org.commonjava.aprox.core.dto.repl.ReplicationDTO;
 import org.commonjava.aprox.core.rest.ReplicationController;
 import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.util.StringFormat;
 import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.web.json.ser.JsonSerializer;
 import org.commonjava.web.json.ser.ServletSerializerUtils;
@@ -67,7 +68,7 @@ public class ReplicationResource
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Replication failed: {}", e, e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Replication failed: {}", e.getMessage() ) );
             return AproxExceptionUtils.formatResponse( e );
         }
     }

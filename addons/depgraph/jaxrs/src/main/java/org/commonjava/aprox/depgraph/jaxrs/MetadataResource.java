@@ -35,6 +35,7 @@ import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.util.AproxExceptionUtils;
 import org.commonjava.aprox.depgraph.rest.MetadataController;
 import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.aprox.util.StringFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +68,7 @@ public class MetadataResource
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to retrieve stream for request body: {}", e, e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Failed to retrieve stream for request body: {}", e.getMessage() ) );
             return AproxExceptionUtils.formatResponse( ApplicationStatus.BAD_REQUEST, e );
         }
     }
@@ -130,7 +131,7 @@ public class MetadataResource
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to retrieve stream for request body: {}", e, e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Failed to retrieve stream for request body: {}", e.getMessage() ) );
             return AproxExceptionUtils.formatResponse( ApplicationStatus.BAD_REQUEST, e );
         }
 
@@ -154,7 +155,7 @@ public class MetadataResource
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to retrieve stream for request body: {}", e, e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Failed to retrieve stream for request body: {}", e.getMessage() ) );
             return AproxExceptionUtils.formatResponse( ApplicationStatus.BAD_REQUEST, e );
         }
 

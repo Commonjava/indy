@@ -27,6 +27,7 @@ import org.commonjava.aprox.core.rest.ContentController;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.aprox.util.StringFormat;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
@@ -64,7 +65,7 @@ public class DefaultMaintenanceResource
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to rescan: {}. Reason: {}", e, key, e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Failed to rescan: {}. Reason: {}", key, e.getMessage() ) );
             formatResponse( e, request );
         }
     }
@@ -79,7 +80,7 @@ public class DefaultMaintenanceResource
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to rescan: ALL. Reason: {}", e, e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Failed to rescan: ALL. Reason: {}", e.getMessage() ) );
             formatResponse( e, request );
         }
     }
@@ -102,7 +103,7 @@ public class DefaultMaintenanceResource
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to delete: {} in: ALL. Reason: {}", e, e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Failed to delete: {} in: ALL. Reason: {}", e.getMessage() ) );
             formatResponse( e, request );
         }
     }

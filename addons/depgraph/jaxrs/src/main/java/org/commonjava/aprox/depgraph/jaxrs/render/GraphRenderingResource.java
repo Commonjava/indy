@@ -36,6 +36,7 @@ import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.util.AproxExceptionUtils;
 import org.commonjava.aprox.depgraph.rest.RenderingController;
 import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.aprox.util.StringFormat;
 import org.commonjava.maven.atlas.ident.DependencyScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,7 +70,7 @@ public class GraphRenderingResource
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to get servlet request input stream: {}", e, e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Failed to get servlet request input stream: {}", e.getMessage() ) );
             return AproxExceptionUtils.formatResponse( ApplicationStatus.BAD_REQUEST, e );
         }
     }

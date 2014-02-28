@@ -48,6 +48,7 @@ import org.commonjava.aprox.dotmaven.webctl.RequestInfo;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
+import org.commonjava.aprox.util.StringFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -137,7 +138,7 @@ public class SettingsSubStore
             }
             catch ( final ProxyDataException e )
             {
-                logger.error( "Failed to retrieve list of artifact stores: {}", e, e.getMessage() );
+                logger.error( "{}", e, new StringFormat( "Failed to retrieve list of artifact stores: {}", e.getMessage() ) );
                 throw new WebdavException( "Failed to retrieve list of settings configurations." );
             }
 
@@ -183,7 +184,7 @@ public class SettingsSubStore
             }
             catch ( final ProxyDataException e )
             {
-                logger.error( "Failed to retrieve artifact store: {}. Reason: {}", e, key, e.getMessage() );
+                logger.error( "{}", e, new StringFormat( "Failed to retrieve artifact store: {}. Reason: {}", key, e.getMessage() ) );
                 throw new WebdavException( "Failed to retrieve length for: " + matcher.getURI() );
             }
 
@@ -194,7 +195,7 @@ public class SettingsSubStore
             }
             catch ( final DotMavenException e )
             {
-                logger.error( "Failed to retrieve storage advice for: {}. Reason: {}", e, key, e.getMessage() );
+                logger.error( "{}", e, new StringFormat( "Failed to retrieve storage advice for: {}. Reason: {}", key, e.getMessage() ) );
                 throw new WebdavException( "Failed to retrieve length for: " + matcher.getURI() );
             }
 

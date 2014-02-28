@@ -25,6 +25,7 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.inject.Production;
 import org.commonjava.aprox.util.ArtifactPathInfo;
+import org.commonjava.aprox.util.StringFormat;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.version.InvalidVersionSpecificationException;
 import org.commonjava.maven.cartographer.data.CartoDataException;
@@ -88,7 +89,9 @@ public class AproxDepgraphEvents
         }
         catch ( final InvalidVersionSpecificationException e )
         {
-            logger.error( "Cannot parse version for path: '{}'. Failed to unlock waiting threads. Reason: {}", e, path, e.getMessage() );
+            logger.error( "{}",
+                          e,
+                          new StringFormat( "Cannot parse version for path: '{}'. Failed to unlock waiting threads. Reason: {}", path, e.getMessage() ) );
         }
     }
 
@@ -109,7 +112,9 @@ public class AproxDepgraphEvents
         }
         catch ( final InvalidVersionSpecificationException e )
         {
-            logger.error( "Cannot parse version for path: '{}'. Failed to unlock waiting threads. Reason: {}", e, path, e.getMessage() );
+            logger.error( "{}",
+                          e,
+                          new StringFormat( "Cannot parse version for path: '{}'. Failed to unlock waiting threads. Reason: {}", path, e.getMessage() ) );
         }
     }
 

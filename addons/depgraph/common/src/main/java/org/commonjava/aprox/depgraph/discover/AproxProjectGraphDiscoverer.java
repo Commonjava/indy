@@ -31,6 +31,7 @@ import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.util.LocationUtils;
+import org.commonjava.aprox.util.StringFormat;
 import org.commonjava.maven.atlas.graph.model.EProjectKey;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
@@ -102,7 +103,7 @@ public class AproxProjectGraphDiscoverer
         }
         catch ( final InvalidVersionSpecificationException e )
         {
-            logger.error( "Invalid version for: {}. Reason: {}", e, ref, e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Invalid version for: {}. Reason: {}", ref, e.getMessage() ) );
             dataManager.addError( new EProjectKey( source, ref ), e );
             specific = null;
         }

@@ -29,7 +29,6 @@ import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.dto.CreationDTO;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.UriFormatter;
-import org.commonjava.maven.atlas.graph.spi.GraphDriverException;
 import org.commonjava.maven.atlas.graph.workspace.GraphWorkspace;
 import org.commonjava.maven.atlas.graph.workspace.GraphWorkspaceConfiguration;
 import org.commonjava.maven.atlas.ident.ref.ProjectRef;

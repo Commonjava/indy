@@ -22,6 +22,12 @@ public interface AproxConfigFactory
 {
     String CONFIG_PATH_PROP = "aprox.config";
 
+    String CONFIG_DIR_PROP = CONFIG_PATH_PROP + ".dir";
+
+    String DEFAULT_CONFIG_DIR = "/etc/aprox";
+
+    String DEFAULT_CONFIG_PATH = DEFAULT_CONFIG_DIR + "/main.conf";
+
     <T> T getConfiguration( Class<T> configCls )
         throws ConfigurationException;
 

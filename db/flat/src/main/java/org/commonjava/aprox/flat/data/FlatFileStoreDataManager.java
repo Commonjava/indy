@@ -20,6 +20,7 @@ import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.subsys.flatfile.conf.FlatFileConfiguration;
+import org.commonjava.aprox.util.StringFormat;
 import org.commonjava.web.json.ser.JsonSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,7 +79,7 @@ public class FlatFileStoreDataManager
                 }
                 catch ( final IOException e )
                 {
-                    logger.error( "Failed to load deploy point: {}. Reason: {}", e, f, e.getMessage() );
+                    logger.error( "{}", e, new StringFormat( "Failed to load deploy point: {}. Reason: {}", f, e.getMessage() ) );
                 }
             }
         }
@@ -105,7 +106,7 @@ public class FlatFileStoreDataManager
                 }
                 catch ( final IOException e )
                 {
-                    logger.error( "Failed to load repository: {}. Reason: {}", e, f, e.getMessage() );
+                    logger.error( "{}", e, new StringFormat( "Failed to load repository: {}. Reason: {}", f, e.getMessage() ) );
                 }
             }
         }
@@ -132,7 +133,7 @@ public class FlatFileStoreDataManager
                 }
                 catch ( final IOException e )
                 {
-                    logger.error( "Failed to load group: {}. Reason: {}", e, f, e.getMessage() );
+                    logger.error( "{}", e, new StringFormat( "Failed to load group: {}. Reason: {}", f, e.getMessage() ) );
                 }
             }
         }

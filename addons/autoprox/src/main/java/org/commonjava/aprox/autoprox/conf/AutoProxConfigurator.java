@@ -48,8 +48,6 @@ public class AutoProxConfigurator
 
     public static final File DEFAULT_DIR = new File( APROX_ETC, "autoprox.d" );
 
-    public static final String DEFAULT_FACTORY_SCRIPT = "default.groovy";
-
     public static final String BASEDIR_PARAM = "basedir";
 
     public static final String ENABLED_PARAM = "enabled";
@@ -102,6 +100,7 @@ public class AutoProxConfigurator
     public void parameter( final String name, final String value )
         throws ConfigurationException
     {
+        logger.info( "[AUTOPROX] config: '{}' = '{}'", name, value );
         if ( BASEDIR_PARAM.equals( name ) )
         {
             basedir = new File( value );
@@ -138,9 +137,38 @@ public class AutoProxConfigurator
         {
             factoryMappings = new ArrayList<FactoryMapping>();
 
-            if ( factoryProtoMappings.isEmpty() )
+            for ( final Entry<String, String> entry : factoryProtoMappings.entrySet() )
             {
-                final File script = new File( getBasedir(), DEFAULT_FACTORY_SCRIPT );
+                final String match = entry.getKey();
+                final String scriptPath = entry.getValue();
+
+                final File script = new File( getBasedir(), scriptPath );
+                if ( !script.exists() )
+                {
+                    logger.error( "[AUTOPROX] Cannot load autoprox factory from: {} (matched via: '{}'). File does not exist.", script, match );
+                    continue;
+                }
+
+                try
+                {
+                    final AutoProxFactory factory = scriptEngine.parseScriptInstance( script, AutoProxFactory.class );
+                    factoryMappings.add( new FactoryMapping( match, factory ) );
+                }
+                catch ( final AproxGroovyException e )
+                {
+                    logger.error( "[AUTOPROX] Cannot load autoprox factory from: {} (matched via: '{}'). Reason: {}", e, script, match,
+                                  e.getMessage() );
+                }
+            }
+
+            if ( factoryProtoMappings.isEmpty() || !factoryProtoMappings.containsKey( FactoryMapping.DEFAULT_MATCH ) )
+            {
+                File script = new File( getBasedir(), AutoProxFactory.LEGACY_FACTORY_NAME );
+                if ( !script.exists() )
+                {
+                    script = new File( getBasedir(), AutoProxFactory.DEFAULT_FACTORY_SCRIPT );
+                }
+
                 if ( script.exists() )
                 {
                     try
@@ -152,32 +180,6 @@ public class AutoProxConfigurator
                     {
                         logger.error( "[AUTOPROX] Cannot load autoprox factory from: {} (matched via: '{}'). Reason: {}", e, script,
                                       FactoryMapping.DEFAULT_MATCH, e.getMessage() );
-                    }
-                }
-            }
-            else
-            {
-                for ( final Entry<String, String> entry : factoryProtoMappings.entrySet() )
-                {
-                    final String match = entry.getKey();
-                    final String scriptPath = entry.getValue();
-
-                    final File script = new File( getBasedir(), scriptPath );
-                    if ( !script.exists() )
-                    {
-                        logger.error( "[AUTOPROX] Cannot load autoprox factory from: {} (matched via: '{}'). File does not exist.", script, match );
-                        continue;
-                    }
-
-                    try
-                    {
-                        final AutoProxFactory factory = scriptEngine.parseScriptInstance( script, AutoProxFactory.class );
-                        factoryMappings.add( new FactoryMapping( match, factory ) );
-                    }
-                    catch ( final AproxGroovyException e )
-                    {
-                        logger.error( "[AUTOPROX] Cannot load autoprox factory from: {} (matched via: '{}'). Reason: {}", e, script, match,
-                                      e.getMessage() );
                     }
                 }
             }

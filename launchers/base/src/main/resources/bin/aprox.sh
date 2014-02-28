@@ -31,6 +31,8 @@ fi
 
 test -f ${BASEDIR}/etc/aprox/env.sh && source ${BASEDIR}/etc/aprox/env.sh
 
+export JAVA_DEBUG=server
+
 # echo "Command: '${JAVA} -cp ${CP} -Daprox.home=${BASEDIR} -Daprox.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS} $@'"
 exec "$JAVA" ${JAVA_OPTS} -cp "${CP}" -Daprox.logging="${APROX_LOGCONF}" -Daprox.home="${BASEDIR}" -Daprox.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS} "$@"
 

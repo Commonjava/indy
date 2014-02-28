@@ -40,6 +40,18 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-autoprox</artifactId>
+      <type>tar.gz</type>
+      <classifier>docset</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-autoprox</artifactId>
+      <type>tar.gz</type>
+      <classifier>confset</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-dot-maven-vertx</artifactId>
     </dependency>
     <dependency>

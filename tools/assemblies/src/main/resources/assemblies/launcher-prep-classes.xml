@@ -32,6 +32,7 @@
       <excludes>
         <exclude>org.commonjava.aprox.ui*</exclude>
         <exclude>org.commonjava.aprox.launch:aprox-launcher-base</exclude>
+        <exclude>*tar.gz*</exclude>
       </excludes>
       <outputDirectory>/</outputDirectory>
       <unpack>true</unpack>

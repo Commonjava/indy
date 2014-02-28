@@ -51,6 +51,7 @@ import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.util.LocationUtils;
+import org.commonjava.aprox.util.StringFormat;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.util.PathUtils;
@@ -160,7 +161,7 @@ public class ArtifactStoreSubStore
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to open InputStream for: {} in store: {}. Reason: {}", e, path, key, e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Failed to open InputStream for: {} in store: {}. Reason: {}", path, key, e.getMessage() ) );
             throw new WebdavException( "Failed to get content for: " + resourceUri );
         }
     }
@@ -211,7 +212,7 @@ public class ArtifactStoreSubStore
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( "Failed to lookup ArtifactStore(s) for key: {}. Reason: {}", e, key, e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Failed to lookup ArtifactStore(s) for key: {}. Reason: {}", key, e.getMessage() ) );
             throw new WebdavException( "Failed to get content for: " + resourceUri );
         }
 
@@ -320,7 +321,7 @@ public class ArtifactStoreSubStore
             }
             catch ( final ProxyDataException e )
             {
-                logger.error( "Failed to lookup ArtifactStore(s) for key: {}. Reason: {}", e, key, e.getMessage() );
+                logger.error( "{}", e, new StringFormat( "Failed to lookup ArtifactStore(s) for key: {}. Reason: {}", key, e.getMessage() ) );
                 throw new WebdavException( "Failed to get listing for: " + folderUri );
             }
         }
@@ -334,7 +335,7 @@ public class ArtifactStoreSubStore
             }
             catch ( final ProxyDataException e )
             {
-                logger.error( "Failed to lookup ArtifactStores of type: {}. Reason: {}", e, type, e.getMessage() );
+                logger.error( "{}", e, new StringFormat( "Failed to lookup ArtifactStores of type: {}. Reason: {}", type, e.getMessage() ) );
                 throw new WebdavException( "Failed to get listing for: " + folderUri );
             }
 
@@ -450,7 +451,7 @@ public class ArtifactStoreSubStore
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( "Failed to retrieve artifact store: {} for URI: {}\nReason: {}", e, key, uri, e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Failed to retrieve artifact store: {} for URI: {}\nReason: {}", key, uri, e.getMessage() ) );
             throw new WebdavException( "Cannot create: " + uri );
         }
 
@@ -461,7 +462,7 @@ public class ArtifactStoreSubStore
         }
         catch ( final DotMavenException e )
         {
-            logger.error( "Failed to retrieve storage advice for: {} (URI: {})\nReason: {}", e, key, uri, e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Failed to retrieve storage advice for: {} (URI: {})\nReason: {}", key, uri, e.getMessage() ) );
             throw new WebdavException( "Cannot create: " + uri );
         }
 

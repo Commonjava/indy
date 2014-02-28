@@ -28,6 +28,7 @@ import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.aprox.util.StringFormat;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +68,7 @@ public class AproxResourceFetcher
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( "Failed to lookup store: {}. Reason: {}", e, id, e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Failed to lookup store: {}. Reason: {}", id, e.getMessage() ) );
             throw new IOException( String.format( "Failed to lookup store: %s. Reason: %s", id, e.getMessage() ), e );
         }
     }
@@ -97,7 +98,7 @@ public class AproxResourceFetcher
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to retrieve: {} from: {}. Reason: {}", e, path, store.getKey(), e );
+            logger.error( "{}", e, new StringFormat( "Failed to retrieve: {} from: {}. Reason: {}", path, store.getKey(), e ) );
             if ( e.getStatus() == ApplicationStatus.NOT_FOUND.code() )
             {
                 throw new FileNotFoundException( name );

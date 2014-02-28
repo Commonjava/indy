@@ -25,11 +25,12 @@
   <baseDirectory>${distName}</baseDirectory>
   
   <dependencySets>
+    <!-- this main project artifact -->
     <dependencySet>
       <useProjectArtifact>true</useProjectArtifact>
       <useProjectAttachments>false</useProjectAttachments>
       <includes>
-        <include>${project.groupId}:${project.artifactId}:${project.version}</include>
+        <include>${project.groupId}:${project.artifactId}:jar:${project.version}</include>
       </includes>
       <outputDirectory>/</outputDirectory>
       <unpack>true</unpack>
@@ -39,6 +40,7 @@
         </excludes>
       </unpackOptions>
     </dependencySet>
+    <!-- base launcher configs/scripts -->
     <dependencySet>
       <useProjectArtifact>false</useProjectArtifact>
       <scope>runtime</scope>
@@ -54,6 +56,7 @@
         </excludes>
       </unpackOptions>
     </dependencySet>
+    <!-- user interface -->
     <dependencySet>
       <useProjectArtifact>false</useProjectArtifact>
       <scope>runtime</scope>
@@ -71,6 +74,28 @@
       </unpackOptions>
     </dependencySet>
     
+    <!-- document sets -->
+    <dependencySet>
+      <useProjectArtifact>false</useProjectArtifact>
+      <scope>provided</scope>
+      <includes>
+        <include>*:tar.gz:docset:*</include>
+      </includes>
+      <outputDirectory>docs</outputDirectory>
+      <unpack>true</unpack>
+    </dependencySet>
+    <!-- configuration sets -->
+    <dependencySet>
+      <useProjectArtifact>false</useProjectArtifact>
+      <scope>provided</scope>
+      <includes>
+        <include>*:tar.gz:confset:*</include>
+      </includes>
+      <outputDirectory>etc/aprox</outputDirectory>
+      <unpack>true</unpack>
+    </dependencySet>
+    
+    <!-- aggregated commonjava classes -->
     <dependencySet>
       <useProjectArtifact>true</useProjectArtifact>
       <useProjectAttachments>true</useProjectAttachments>
@@ -81,6 +106,7 @@
       <outputFileNameMapping>aprox-cdi-components-${project.version}.jar</outputFileNameMapping>
     </dependencySet>
     
+    <!-- other runtime dependencies -->
     <dependencySet>
       <useProjectArtifact>false</useProjectArtifact>
       <scope>runtime</scope>

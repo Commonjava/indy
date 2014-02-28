@@ -16,6 +16,7 @@ import org.commonjava.aprox.bind.vertx.util.ResponseUtils;
 import org.commonjava.aprox.dotmaven.inject.DotMavenApp;
 import org.commonjava.aprox.dotmaven.webctl.DotMavenService;
 import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.aprox.util.StringFormat;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
@@ -67,7 +68,7 @@ public class DotMavenHandler
         }
         catch ( WebdavException | IOException e )
         {
-            logger.error( "Failed to service mavdav request: {}", e, e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Failed to service mavdav request: {}", e.getMessage() ) );
             formatResponse( e, request );
         }
         finally

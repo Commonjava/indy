@@ -51,6 +51,7 @@ import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.galley.CacheOnlyLocation;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.aprox.util.StringFormat;
 import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
@@ -373,7 +374,7 @@ public class RepositoryController
         }
         catch ( final CartoDataException e )
         {
-            logger.error( "Failed to resolve repository contents for: {}. Reason: {}", e, dto, e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Failed to resolve repository contents for: {}. Reason: {}", dto, e.getMessage() ) );
             throw new AproxWorkflowException( "Failed to resolve repository contents for: {}. Reason: {}", e, dto, e.getMessage() );
         }
 

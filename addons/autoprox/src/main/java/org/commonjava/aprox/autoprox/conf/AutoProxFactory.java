@@ -9,6 +9,10 @@ import org.commonjava.aprox.model.RemoteRepository;
 public interface AutoProxFactory
 {
 
+    String LEGACY_FACTORY_NAME = "legacy-factory.groovy";
+
+    String DEFAULT_FACTORY_SCRIPT = "default.groovy";
+
     RemoteRepository createRemoteRepository( String named )
         throws MalformedURLException;
 

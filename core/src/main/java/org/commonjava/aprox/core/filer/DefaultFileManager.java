@@ -46,8 +46,8 @@ import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
@@ -57,6 +57,7 @@ import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.ArtifactPathInfo;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.aprox.util.PathUtils;
+import org.commonjava.aprox.util.StringFormat;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferManager;
@@ -383,7 +384,7 @@ public class DefaultFileManager
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to store: {} in deploy store: {}. Reason: {}", e, path, deploy.getName(), e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Failed to store: {} in deploy store: {}. Reason: {}", path, deploy.getName(), e.getMessage() ) );
 
             throw new AproxWorkflowException( "Failed to store: {} in deploy store: {}. Reason: {}", e, path, deploy.getName(), e.getMessage() );
         }

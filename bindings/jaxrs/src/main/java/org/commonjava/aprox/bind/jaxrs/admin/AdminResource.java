@@ -43,6 +43,7 @@ import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.util.AProxModelSerializer;
+import org.commonjava.aprox.util.StringFormat;
 import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.web.json.model.Listing;
 import org.slf4j.Logger;
@@ -104,7 +105,7 @@ public class AdminResource
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to create artifact store: {}. Reason: {}", e, e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Failed to create artifact store: {}. Reason: {}", e.getMessage() ) );
             response = AproxExceptionUtils.formatResponse( e );
         }
 
@@ -141,7 +142,7 @@ public class AdminResource
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "Failed to save proxy: {}. Reason: {}", e, e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Failed to save proxy: {}. Reason: {}", e.getMessage() ) );
             response = AproxExceptionUtils.formatResponse( e );
         }
 

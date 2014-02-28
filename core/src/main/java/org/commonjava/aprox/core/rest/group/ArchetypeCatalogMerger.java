@@ -32,6 +32,7 @@ import org.apache.maven.archetype.catalog.io.xpp3.ArchetypeCatalogXpp3Writer;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.util.StringFormat;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,12 +78,12 @@ public class ArchetypeCatalogMerger
             catch ( final IOException e )
             {
                 final StoreKey key = getKey( src );
-                logger.error( "Cannot read archetype catalog: {} from artifact-store: {}. Reason: {}", e, src.getPath(), key, e.getMessage() );
+                logger.error( "{}", e, new StringFormat( "Cannot read archetype catalog: {} from artifact-store: {}. Reason: {}", src.getPath(), key, e.getMessage() ) );
             }
             catch ( final XmlPullParserException e )
             {
                 final StoreKey key = getKey( src );
-                logger.error( "Cannot parse archetype catalog: {} from artifact-store: {}. Reason: {}", e, src.getPath(), key, e.getMessage() );
+                logger.error( "{}", e, new StringFormat( "Cannot parse archetype catalog: {} from artifact-store: {}. Reason: {}", src.getPath(), key, e.getMessage() ) );
             }
             finally
             {
@@ -101,7 +102,7 @@ public class ArchetypeCatalogMerger
             }
             catch ( final IOException e )
             {
-                logger.error( "Cannot write consolidated archetype catalog: {} to: {}. Reason: {}", e, path, group.getKey(), e.getMessage() );
+                logger.error( "{}", e, new StringFormat( "Cannot write consolidated archetype catalog: {} to: {}. Reason: {}", path, group.getKey(), e.getMessage() ) );
             }
         }
 

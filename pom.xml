@@ -45,9 +45,9 @@
     <arquillian-version>1.0.1.Final</arquillian-version>
     <qarqas-version>0.3</qarqas-version>
     <shelflife-version>0.6</shelflife-version>
-    <atlasVersion>0.10.0</atlasVersion>
-    <galleyVersion>0.4</galleyVersion>
-    <cartoVersion>0.4</cartoVersion>
+    <atlasVersion>0.10.1-SNAPSHOT</atlasVersion>
+    <galleyVersion>0.4.1-SNAPSHOT</galleyVersion>
+    <cartoVersion>0.4.1-SNAPSHOT</cartoVersion>
     
     <vertx.testtools.version>2.0.0-final</vertx.testtools.version>
   </properties>
@@ -80,7 +80,7 @@
       <dependency>
         <groupId>org.commonjava.boms</groupId>
         <artifactId>web-commons-bom</artifactId>
-        <version>8</version>
+        <version>9-SNAPSHOT</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -151,6 +151,22 @@
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-autoprox</artifactId>
         <version>0.12.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-autoprox</artifactId>
+        <version>0.12.0-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>docset</classifier>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-autoprox</artifactId>
+        <version>0.12.0-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>confset</classifier>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>

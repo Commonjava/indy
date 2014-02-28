@@ -124,16 +124,7 @@ public class AdminController
         logger.info( "\n\n\n\n\n STARTING AProx\n    Version: {}\n    Built-By: {}\n    Commit-ID: {}\n    Built-On: {}\n\n\n\n\n",
                      versioning.getVersion(), versioning.getBuilder(), versioning.getCommitId(), versioning.getTimestamp() );
 
-        boolean changed = false;
-        if ( migrationActions != null )
-        {
-            logger.info( "Running startup actions..." );
-            for ( final MigrationAction action : migrationActions )
-            {
-                logger.info( "Running migration action: '%s'", action.getId() );
-                changed = action.execute() || changed;
-            }
-        }
+        runMigrationActions();
 
         try
         {
@@ -181,6 +172,20 @@ public class AdminController
         }
 
         logger.info( "...done." );
+    }
+
+    private void runMigrationActions()
+    {
+        boolean changed = false;
+        if ( migrationActions != null )
+        {
+            logger.info( "Running migration actions..." );
+            for ( final MigrationAction action : migrationActions )
+            {
+                logger.info( "Running migration action: '{}'", action.getId() );
+                changed = action.execute() || changed;
+            }
+        }
     }
 
     public void stopped()

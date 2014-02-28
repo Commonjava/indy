@@ -52,11 +52,12 @@ import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.indexer.inject.IndexCreatorSet;
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.util.LocationUtils;
+import org.commonjava.aprox.util.StringFormat;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.maven.galley.event.FileStorageEvent;
@@ -149,7 +150,7 @@ public class IndexHandler
             }
             catch ( final ProxyDataException e )
             {
-                logger.error( "Failed to retrieve deploy-point for index update: {}. Reason: {}", e, key, e.getMessage() );
+                logger.error( "{}", e, new StringFormat( "Failed to retrieve deploy-point for index update: {}. Reason: {}", key, e.getMessage() ) );
             }
 
             if ( store != null )
@@ -164,7 +165,7 @@ public class IndexHandler
                 }
                 catch ( final ExpirationManagerException e )
                 {
-                    logger.error( "Failed to schedule index update for deploy-point: {}. Reason: {}", e, key, e.getMessage() );
+                    logger.error( "{}", e, new StringFormat( "Failed to schedule index update for deploy-point: {}. Reason: {}", key, e.getMessage() ) );
                 }
             }
         }
@@ -232,7 +233,7 @@ public class IndexHandler
             }
             catch ( final IOException e )
             {
-                logger.error( "Failed to close index for deploy point: {}. Reason: {}", e, store.getKey(), e.getMessage() );
+                logger.error( "{}", e, new StringFormat( "Failed to close index for deploy point: {}. Reason: {}", store.getKey(), e.getMessage() ) );
             }
         }
     }
@@ -257,7 +258,7 @@ public class IndexHandler
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( "Failed to retrieve groups that contain: {}. Reason: {}", e, storeKey, e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Failed to retrieve groups that contain: {}. Reason: {}", storeKey, e.getMessage() ) );
         }
     }
 
@@ -306,7 +307,11 @@ public class IndexHandler
 
                 try
                 {
-                    groupContext.merge( context.getIndexDirectory() );
+                    if ( context.getIndexDirectoryFile()
+                                .exists() )
+                    {
+                        groupContext.merge( context.getIndexDirectory() );
+                    }
                 }
                 catch ( final IOException e )
                 {
@@ -320,7 +325,7 @@ public class IndexHandler
             }
             catch ( final IOException e )
             {
-                logger.error( "Failed to commit index updates for group: {}. Reason: {}", e, group.getKey(), e.getMessage() );
+                logger.error( "{}", e, new StringFormat( "Failed to commit index updates for group: {}. Reason: {}", group.getKey(), e.getMessage() ) );
             }
 
             updated.add( group );
@@ -335,7 +340,8 @@ public class IndexHandler
             }
             catch ( final ExpirationManagerException e )
             {
-                logger.error( "Failed to schedule indexer trigger for group: {}. Reason: {}", e, group.getName(), e.getMessage() );
+                logger.error( "{}", e,
+                              new StringFormat( "Failed to schedule indexer trigger for group: {}. Reason: {}", group.getName(), e.getMessage() ) );
             }
         }
         finally
@@ -348,7 +354,7 @@ public class IndexHandler
                 }
                 catch ( final IOException e )
                 {
-                    logger.error( "Failed to close indexing context: {}", e, e.getMessage() );
+                    logger.error( "{}", e, new StringFormat( "Failed to close indexing context: {}", e.getMessage() ) );
                 }
             }
 
@@ -362,7 +368,7 @@ public class IndexHandler
                     }
                     catch ( final IOException e )
                     {
-                        logger.error( "Failed to close indexing context: {}", e, e.getMessage() );
+                        logger.error( "{}", e, new StringFormat( "Failed to close indexing context: {}", e.getMessage() ) );
                     }
                 }
             }
@@ -429,7 +435,8 @@ public class IndexHandler
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( "Failed to retrieve ordered concrete stores in group: {}. Reason: {}", e, group.getName(), e.getMessage() );
+            logger.error( "{}", e,
+                          new StringFormat( "Failed to retrieve ordered concrete stores in group: {}. Reason: {}", group.getName(), e.getMessage() ) );
         }
 
         return contexts;
@@ -479,15 +486,15 @@ public class IndexHandler
         }
         catch ( final ExistingLuceneIndexMismatchException e )
         {
-            logger.error( "Failed to create indexing context for: {}. Reason: {}", e, store.getKey(), e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Failed to create indexing context for: {}. Reason: {}", store.getKey(), e.getMessage() ) );
         }
         catch ( final IllegalArgumentException e )
         {
-            logger.error( "Failed to create indexing context for: {}. Reason: {}", e, store.getKey(), e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Failed to create indexing context for: {}. Reason: {}", store.getKey(), e.getMessage() ) );
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to create indexing context for: {}. Reason: {}", e, store.getKey(), e.getMessage() );
+            logger.error( "{}", e, new StringFormat( "Failed to create indexing context for: {}. Reason: {}", store.getKey(), e.getMessage() ) );
         }
 
         return null;
@@ -501,8 +508,8 @@ public class IndexHandler
 
     private Expiration expirationForDeployPoint( final String name )
     {
-        return new Expiration( new ExpirationKey( StoreType.hosted.name(), INDEX_KEY_PREFIX, name ),
-                               DEPLOY_POINT_INDEX_TIMEOUT, new StoreKey( StoreType.hosted, name ) );
+        return new Expiration( new ExpirationKey( StoreType.hosted.name(), INDEX_KEY_PREFIX, name ), DEPLOY_POINT_INDEX_TIMEOUT,
+                               new StoreKey( StoreType.hosted, name ) );
     }
 
     public class IndexExpirationRunnable
@@ -528,7 +535,7 @@ public class IndexHandler
             }
             catch ( final ProxyDataException e )
             {
-                logger.error( "Failed to update index for: {}. Reason: {}", e, key, e.getMessage() );
+                logger.error( "{}", e, new StringFormat( "Failed to update index for: {}. Reason: {}", key, e.getMessage() ) );
                 return;
             }
 
@@ -575,7 +582,7 @@ public class IndexHandler
                     }
                     catch ( final ExpirationManagerException e )
                     {
-                        logger.error( "Failed to cancel indexer trigger for group: {}. Reason: {}", e, name, e.getMessage() );
+                        logger.error( "{}", e, new StringFormat( "Failed to cancel indexer trigger for group: {}. Reason: {}", name, e.getMessage() ) );
                     }
                 }
             }

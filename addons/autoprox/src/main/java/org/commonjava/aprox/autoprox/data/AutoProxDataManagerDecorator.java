@@ -36,9 +36,12 @@ import org.commonjava.aprox.autoprox.conf.AutoProxFactory;
 import org.commonjava.aprox.autoprox.conf.FactoryMapping;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.RemoteRepository;
+import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,16 +68,16 @@ public abstract class AutoProxDataManagerDecorator
     public Group getGroup( final String name )
         throws ProxyDataException
     {
-        //        logger.info( "DECORATED (getGroup: {})", name );
+        logger.info( "DECORATED (getGroup: {})", name );
         Group g = dataManager.getGroup( name );
 
         if ( !config.isEnabled() )
         {
-            //            logger.info( "AutoProx decorator disabled; returning: {}", g );
+            logger.info( "AutoProx decorator disabled; returning: {}", g );
             return g;
         }
 
-        //        logger.info( "AutoProx decorator active" );
+        logger.info( "AutoProx decorator active" );
         if ( g == null )
         {
             final AutoProxFactory factory = getFactory( name );
@@ -83,7 +86,7 @@ public abstract class AutoProxDataManagerDecorator
                 return null;
             }
 
-            //            logger.info( "AutoProx: creating repository for: %s", name );
+            logger.info( "AutoProx: creating repository for: {}", name );
             try
             {
                 final RemoteRepository remote = factory.createRemoteRepository( name );
@@ -137,7 +140,7 @@ public abstract class AutoProxDataManagerDecorator
     {
         final String url = buildUrl( proxyUrl, validationPath );
 
-        //        logger.info( "\n\n\n\n\n[AutoProx] Checking URL: %s from:", new Throwable(), url );
+        logger.info( "\n\n\n\n\n[AutoProx] Checking URL: {} from:", new Throwable(), url );
         final HttpHead head = new HttpHead( url );
 
         http.bindRepositoryCredentialsTo( repo, head );
@@ -149,7 +152,7 @@ public abstract class AutoProxDataManagerDecorator
                                               .execute( head );
             final StatusLine statusLine = response.getStatusLine();
             final int status = statusLine.getStatusCode();
-            //            logger.info( "[AutoProx] HTTP Status: {}", statusLine );
+            logger.info( "[AutoProx] HTTP Status: {}", statusLine );
             result = status == HttpStatus.SC_OK;
         }
         catch ( final ClientProtocolException e )
@@ -173,15 +176,15 @@ public abstract class AutoProxDataManagerDecorator
     public RemoteRepository getRemoteRepository( final String name )
         throws ProxyDataException
     {
-        //        logger.info( "DECORATED (getRepository: %s)", name );
+        logger.info( "DECORATED (getRepository: {})", name );
         RemoteRepository repo = dataManager.getRemoteRepository( name );
         if ( !config.isEnabled() )
         {
-            //            logger.info( "AutoProx decorator disabled; returning: {}", repo );
+            logger.info( "AutoProx decorator disabled; returning: {}", repo );
             return repo;
         }
 
-        //        logger.info( "AutoProx decorator active" );
+        logger.info( "AutoProx decorator active" );
         if ( repo == null )
         {
             final AutoProxFactory factory = getFactory( name );
@@ -190,7 +193,7 @@ public abstract class AutoProxDataManagerDecorator
                 return null;
             }
 
-            //            logger.info( "AutoProx: creating repository for: %s", name );
+            logger.info( "AutoProx: creating repository for: {}", name );
 
             try
             {
@@ -214,6 +217,22 @@ public abstract class AutoProxDataManagerDecorator
         }
 
         return repo;
+    }
+
+    @Override
+    public ArtifactStore getArtifactStore( final StoreKey key )
+        throws ProxyDataException
+    {
+        if ( key.getType() == StoreType.group )
+        {
+            return getGroup( key.getName() );
+        }
+        else if ( key.getType() == StoreType.remote )
+        {
+            return getRemoteRepository( key.getName() );
+        }
+
+        return this.dataManager.getArtifactStore( key );
     }
 
 }
