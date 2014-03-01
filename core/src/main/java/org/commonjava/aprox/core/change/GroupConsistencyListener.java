@@ -28,7 +28,6 @@ import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.util.ChangeSynchronizer;
-import org.commonjava.aprox.util.StringFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +58,7 @@ public class GroupConsistencyListener
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( "{}", e, new StringFormat( "Failed to remove group constituent listings for: {}. Error: {}", key, e.getMessage() ) );
+            logger.error( String.format( "Failed to remove group constituent listings for: %s. Error: %s", key, e.getMessage() ), e );
         }
     }
 

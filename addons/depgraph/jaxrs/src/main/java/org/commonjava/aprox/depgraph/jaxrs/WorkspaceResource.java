@@ -42,7 +42,6 @@ import org.commonjava.aprox.bind.jaxrs.util.JaxRsUriFormatter;
 import org.commonjava.aprox.depgraph.rest.WorkspaceController;
 import org.commonjava.aprox.dto.CreationDTO;
 import org.commonjava.aprox.util.ApplicationStatus;
-import org.commonjava.aprox.util.StringFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -148,7 +147,7 @@ public class WorkspaceResource
         }
         catch ( final IOException e )
         {
-            logger.error( "{}", e, new StringFormat( "Failed to retrieve servlet request input stream: {}", e.getMessage() ) );
+            logger.error( String.format( "Failed to retrieve servlet request input stream: %s", e.getMessage() ), e );
             return AproxExceptionUtils.formatResponse( ApplicationStatus.BAD_REQUEST, e );
         }
     }

@@ -33,7 +33,6 @@ import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.rest.group.GroupPathHandler;
-import org.commonjava.aprox.util.StringFormat;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileEvent;
 import org.commonjava.maven.galley.model.Transfer;
@@ -81,7 +80,7 @@ public class MergedFileUploadListener
                     }
                     catch ( final IOException e )
                     {
-                        logger.error( "{}", e, new StringFormat( "Failed to delete: {} from group: {}. Error: {}", path, group, e.getMessage() ) );
+                        logger.error( String.format( "Failed to delete: %s from group: %s. Error: %s", path, group, e.getMessage() ), e );
                     }
                 }
             }

@@ -30,7 +30,6 @@ import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.util.StringFormat;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,12 +64,12 @@ public class MavenMetadataMerger
             catch ( final IOException e )
             {
                 final StoreKey key = getKey( src );
-                logger.error( "{}", e, new StringFormat( "Cannot read metadata: {} from artifact-store: {}. Reason: {}", src.getPath(), key, e.getMessage() ) );
+                logger.error( String.format( "Cannot read metadata: %s from artifact-store: %s. Reason: %s", src.getPath(), key, e.getMessage() ), e );
             }
             catch ( final XmlPullParserException e )
             {
                 final StoreKey key = getKey( src );
-                logger.error( "{}", e, new StringFormat( "Cannot parse metadata: {} from artifact-store: {}. Reason: {}", src.getPath(), key, e.getMessage() ) );
+                logger.error( String.format( "Cannot parse metadata: %s from artifact-store: %s. Reason: %s", src.getPath(), key, e.getMessage() ), e );
             }
             finally
             {
@@ -89,7 +88,7 @@ public class MavenMetadataMerger
             }
             catch ( final IOException e )
             {
-                logger.error( "{}", e, new StringFormat( "Cannot write consolidated metadata: {} to: {}. Reason: {}", path, group.getKey(), e.getMessage() ) );
+                logger.error( String.format( "Cannot write consolidated metadata: %s to: %s. Reason: %s", path, group.getKey(), e.getMessage() ), e );
             }
         }
 

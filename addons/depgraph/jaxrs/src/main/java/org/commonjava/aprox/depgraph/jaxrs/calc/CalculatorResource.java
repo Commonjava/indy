@@ -32,7 +32,6 @@ import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.util.AproxExceptionUtils;
 import org.commonjava.aprox.depgraph.rest.CalculatorController;
 import org.commonjava.aprox.util.ApplicationStatus;
-import org.commonjava.aprox.util.StringFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +64,7 @@ public class CalculatorResource
         }
         catch ( final IOException e )
         {
-            logger.error( "{}", e, new StringFormat( "Failed to retrieve servlet request input stream: {}", e.getMessage() ) );
+            logger.error( String.format( "Failed to retrieve servlet request input stream: %s", e.getMessage() ), e );
             return AproxExceptionUtils.formatResponse( ApplicationStatus.BAD_REQUEST, e );
         }
     }
@@ -88,7 +87,7 @@ public class CalculatorResource
         }
         catch ( final IOException e )
         {
-            logger.error( "{}", e, new StringFormat( "Failed to retrieve servlet request input stream: {}", e.getMessage() ) );
+            logger.error( String.format( "Failed to retrieve servlet request input stream: %s", e.getMessage() ), e );
             return AproxExceptionUtils.formatResponse( ApplicationStatus.BAD_REQUEST, e );
         }
     }

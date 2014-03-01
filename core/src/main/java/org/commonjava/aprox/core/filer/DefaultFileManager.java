@@ -57,7 +57,6 @@ import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.ArtifactPathInfo;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.aprox.util.PathUtils;
-import org.commonjava.aprox.util.StringFormat;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferManager;
@@ -384,7 +383,7 @@ public class DefaultFileManager
         }
         catch ( final IOException e )
         {
-            logger.error( "{}", e, new StringFormat( "Failed to store: {} in deploy store: {}. Reason: {}", path, deploy.getName(), e.getMessage() ) );
+            logger.error( String.format( "Failed to store: %s in deploy store: %s. Reason: %s", path, deploy.getName(), e.getMessage() ), e );
 
             throw new AproxWorkflowException( "Failed to store: {} in deploy store: {}. Reason: {}", e, path, deploy.getName(), e.getMessage() );
         }

@@ -27,7 +27,6 @@ import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.core.rest.StatsController;
 import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.util.ApplicationContent;
-import org.commonjava.aprox.util.StringFormat;
 import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
@@ -77,7 +76,7 @@ public class BasicStatsResource
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "{}", e, new StringFormat( "Failed to retrieve endpoint listing: {}", formatEntity( e ) ) );
+            logger.error( String.format( "Failed to retrieve endpoint listing: %s", formatEntity( e ) ), e );
             formatResponse( e, request );
         }
     }

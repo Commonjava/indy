@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletResponse;
 import net.sf.webdav.exceptions.WebdavException;
 
 import org.commonjava.aprox.dotmaven.webctl.DotMavenService;
-import org.commonjava.aprox.util.StringFormat;
 import org.commonjava.web.dav.servlet.impl.ServletWebdavRequest;
 import org.commonjava.web.dav.servlet.impl.ServletWebdavResponse;
 import org.slf4j.Logger;
@@ -40,7 +39,7 @@ public class DotMavenServlet
         }
         catch ( final WebdavException e )
         {
-            logger.error( "{}", e, new StringFormat( "dot-maven request failed: {}", e.getMessage() ) );
+            logger.error( String.format( "dot-maven request failed: %s", e.getMessage() ), e );
 
             // TODO WebdavException should include a response status code/message.
             resp.sendError( 500, e.getMessage() );

@@ -37,7 +37,6 @@ import org.commonjava.aprox.util.ApplicationContent;
 import org.commonjava.aprox.util.ApplicationHeader;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.LocationUtils;
-import org.commonjava.aprox.util.StringFormat;
 import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.vertx.vabr.util.VertXInputStream;
@@ -87,7 +86,7 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "{}", e, new StringFormat( "Failed to upload: {} to: {}. Reason: {}", path, name, e.getMessage() ) );
+            logger.error( String.format( "Failed to upload: %s to: %s. Reason: %s", path, name, e.getMessage() ), e );
             formatResponse( e, request );
         }
         finally
@@ -120,7 +119,7 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "{}", e, new StringFormat( "Failed to delete artifact: {} from: {}. Reason: {}", path, name, e.getMessage() ) );
+            logger.error( String.format( "Failed to delete artifact: %s from: %s. Reason: %s", path, name, e.getMessage() ), e );
             formatResponse( e, request );
         }
     }
@@ -172,12 +171,12 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "{}", e, new StringFormat( "Failed to download artifact: {} from: {}. Reason: {}", path, name, e.getMessage() ) );
+            logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name, e.getMessage() ), e );
             formatResponse( e, request );
         }
         catch ( final IOException e )
         {
-            logger.error( "{}", e, new StringFormat( "Failed to download artifact: {} from: {}. Reason: {}", path, name, e.getMessage() ) );
+            logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name, e.getMessage() ), e );
             formatResponse( e, request );
         }
     }

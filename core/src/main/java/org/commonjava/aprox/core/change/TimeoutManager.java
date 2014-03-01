@@ -62,7 +62,6 @@ import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.util.ArtifactPathInfo;
 import org.commonjava.aprox.util.ArtifactPathInfo.SnapshotInfo;
-import org.commonjava.aprox.util.StringFormat;
 import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileEvent;
@@ -120,7 +119,7 @@ public class TimeoutManager
                     }
                     catch ( final IOException e )
                     {
-                        logger.error( "{}", e, new StringFormat( "Failed to delete expired file: {}. Reason: {}", toDelete.getFullPath(), e.getMessage() ) );
+                        logger.error( String.format( "Failed to delete expired file: %s. Reason: %s", toDelete.getFullPath(), e.getMessage() ), e );
                     }
 
                     cleanMetadata( key, path );
@@ -241,7 +240,7 @@ public class TimeoutManager
                 }
                 catch ( final ExpirationManagerException e )
                 {
-                    logger.error( "{}", e, new StringFormat( "Failed to schedule expiration of: {} in {}. Reason: {}", path, deploy.getKey(), e.getMessage() ) );
+                    logger.error( String.format( "Failed to schedule expiration of: %s in %s. Reason: %s", path, deploy.getKey(), e.getMessage() ), e );
                     break;
                 }
             }
@@ -281,7 +280,7 @@ public class TimeoutManager
                 }
                 catch ( final ExpirationManagerException e )
                 {
-                    logger.error( "{}", e, new StringFormat( "Failed to schedule expiration of: {} in {}. Reason: {}", path, repo.getKey(), e.getMessage() ) );
+                    logger.error( String.format( "Failed to schedule expiration of: %s in %s. Reason: %s", path, repo.getKey(), e.getMessage() ), e );
                     break;
                 }
             }
@@ -341,7 +340,7 @@ public class TimeoutManager
         }
         catch ( final ExpirationManagerException e )
         {
-            logger.error( "{}", e, new StringFormat( "Failed to cancel (for purposes of rescheduling) expirations for store: {}. Reason: {}", key, e.getMessage() ) );
+            logger.error( String.format( "Failed to cancel (for purposes of rescheduling) expirations for store: %s. Reason: %s", key, e.getMessage() ), e );
         }
 
         return null;
@@ -366,7 +365,7 @@ public class TimeoutManager
                 }
                 catch ( final IOException e )
                 {
-                    logger.error( "{}", e, new StringFormat( "Failed to delete storage for deleted artifact store: {} (dir: {}). Error: {}", key, dir, e.getMessage() ) );
+                    logger.error( String.format( "Failed to delete storage for deleted artifact store: %s (dir: %s). Error: %s", key, dir, e.getMessage() ), e );
                 }
                 catch ( final ExpirationManagerException e )
                 {
@@ -392,7 +391,7 @@ public class TimeoutManager
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( "{}", e, new StringFormat( "Failed to retrieve store for: {}. Reason: {}", key, e.getMessage() ) );
+            logger.error( String.format( "Failed to retrieve store for: %s. Reason: %s", key, e.getMessage() ), e );
         }
 
         if ( repo == null )
@@ -452,7 +451,7 @@ public class TimeoutManager
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( "{}", e, new StringFormat( "Failed to retrieve deploy point for: {}. Reason: {}", key, e.getMessage() ) );
+            logger.error( String.format( "Failed to retrieve deploy point for: %s. Reason: %s", key, e.getMessage() ), e );
         }
 
         if ( deploy == null )
@@ -563,7 +562,7 @@ public class TimeoutManager
         }
         catch ( final ExpirationManagerException e )
         {
-            logger.error( "{}", e, new StringFormat( "Attempting to update groups for metadata change; Failed to expire: {}. Error: {}", key, e.getMessage() ) );
+            logger.error( String.format( "Attempting to update groups for metadata change; Failed to expire: %s. Error: %s", key, e.getMessage() ), e );
         }
     }
 

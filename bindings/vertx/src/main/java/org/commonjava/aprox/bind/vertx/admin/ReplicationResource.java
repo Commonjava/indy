@@ -31,7 +31,6 @@ import org.commonjava.aprox.core.rest.ReplicationController;
 import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.util.ApplicationContent;
-import org.commonjava.aprox.util.StringFormat;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
@@ -74,7 +73,7 @@ public class ReplicationResource
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( "{}", e, new StringFormat( "Replication failed: {}", e.getMessage() ) );
+            logger.error( String.format( "Replication failed: %s", e.getMessage() ), e );
             formatResponse( e, request );
         }
     }
