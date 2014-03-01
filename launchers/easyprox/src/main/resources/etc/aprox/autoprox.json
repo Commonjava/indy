@@ -1,6 +1,6 @@
 {
   "repo": {
-      "url":"http://repository.jboss.org/repositories/${name}/",
+      "url":"http://repository.jboss.org/nexus/content/repositories/${name}/",
       "timeout_seconds":30,
       "host":"repository.jboss.org",
       "port":80,

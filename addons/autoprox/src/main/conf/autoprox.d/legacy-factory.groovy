@@ -47,7 +47,7 @@ class LegacyFactory implements AutoProxFactory
         if ( !remote )
             return null
         
-        RemoteRepository r = new RemoteRepository( remote.name, remote.url.replaceAll( /\$\{name\}/, named ) );
+        RemoteRepository r = new RemoteRepository( named, remote.url.replaceAll( /\$\{name\}/, named ) );
         
         if ( remote.timeout_seconds ) r.setTimeoutSeconds( remote.timeout_seconds )
         if ( remote.user ) r.setUser( remote.user )
@@ -72,7 +72,7 @@ class LegacyFactory implements AutoProxFactory
     {
         if ( !hosted ) return null
         
-        HostedRepository h = new HostedRepository( hosted.name );
+        HostedRepository h = new HostedRepository( named );
         
         h.setAllowSnapshots( hosted.allow_snapshots == true )
         h.setAllowReleases( hosted.allow_releases == true )

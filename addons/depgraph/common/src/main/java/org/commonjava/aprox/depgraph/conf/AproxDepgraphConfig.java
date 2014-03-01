@@ -41,7 +41,7 @@ public class AproxDepgraphConfig
 
     private String dbDir;
 
-    private File databaseDir;
+    private File dataBasedir;
 
     private String defaultWebFilterPreset = DEFAULT_DEF_WEBFILTER_PRESET;
 
@@ -56,14 +56,14 @@ public class AproxDepgraphConfig
         this.discoveryTimeoutMillis = discoveryTimeoutMillis;
     }
 
-    public File getDatabaseDir()
+    public File getDataBasedir()
     {
-        return databaseDir;
+        return dataBasedir;
     }
 
     public AproxDepgraphConfig setDataBasedir( final File basedir )
     {
-        this.databaseDir = new File( basedir, getDbDir() );
+        this.dataBasedir = new File( basedir, getDbDir() );
         return this;
     }
 
