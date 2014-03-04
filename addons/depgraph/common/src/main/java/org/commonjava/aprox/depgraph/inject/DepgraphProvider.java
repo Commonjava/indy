@@ -30,7 +30,6 @@ import org.commonjava.aprox.depgraph.json.DepgraphSerializationAdapter;
 import org.commonjava.aprox.model.io.StoreKeySerializer;
 import org.commonjava.maven.atlas.graph.EGraphManager;
 import org.commonjava.maven.atlas.graph.spi.neo4j.FileNeo4jWorkspaceFactory;
-import org.commonjava.maven.cartographer.data.CartoDataManager;
 import org.commonjava.maven.galley.maven.internal.defaults.StandardMaven304PluginDefaults;
 import org.commonjava.maven.galley.maven.internal.defaults.StandardMavenPluginImplications;
 import org.commonjava.maven.galley.maven.parse.XMLInfrastructure;
@@ -44,9 +43,6 @@ public class DepgraphProvider
 
     @Inject
     private AproxDepgraphConfig config;
-
-    @Inject
-    private CartoDataManager data;
 
     @Inject
     private XMLInfrastructure xml;
@@ -109,7 +105,7 @@ public class DepgraphProvider
     {
         if ( serializer == null )
         {
-            serializer = new JsonSerializer( new StoreKeySerializer(), new DepgraphSerializationAdapter( data ), new PrettyPrintAdapter() );
+            serializer = new JsonSerializer( new StoreKeySerializer(), new DepgraphSerializationAdapter(), new PrettyPrintAdapter() );
         }
 
         return serializer;

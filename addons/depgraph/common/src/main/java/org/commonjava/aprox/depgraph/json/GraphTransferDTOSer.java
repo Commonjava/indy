@@ -7,7 +7,7 @@
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * but WITHOUGraphTransferDTO ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
@@ -16,38 +16,35 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.json;
 
+import static org.commonjava.aprox.depgraph.json.JsonUtils.deserializeCycles;
+import static org.commonjava.aprox.depgraph.json.JsonUtils.deserializeRelationships;
+import static org.commonjava.aprox.depgraph.json.JsonUtils.serializeCycles;
+import static org.commonjava.aprox.depgraph.json.JsonUtils.serializeRelationships;
+
 import java.lang.reflect.Type;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.commonjava.aprox.depgraph.dto.GraphTransferDTO;
 import org.commonjava.maven.atlas.graph.model.EProjectCycle;
-import org.commonjava.maven.atlas.graph.model.EProjectWeb;
 import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.cartographer.data.CartoDataException;
-import org.commonjava.maven.cartographer.data.CartoDataManager;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 
-public class EProjectWebSer
-    extends AbstractProjectNetSer<EProjectWeb>
+public class GraphTransferDTOSer
+    implements JsonSerializer<GraphTransferDTO>, JsonDeserializer<GraphTransferDTO>
 {
 
-    private final CartoDataManager data;
-
-    public EProjectWebSer( final CartoDataManager data )
-    {
-        this.data = data;
-    }
-
     @Override
-    public EProjectWeb deserialize( final JsonElement src, final Type typeInfo, final JsonDeserializationContext ctx )
+    public GraphTransferDTO deserialize( final JsonElement src, final Type typeInfo, final JsonDeserializationContext ctx )
         throws JsonParseException
     {
         final JsonObject obj = src.getAsJsonObject();
@@ -68,30 +65,14 @@ public class EProjectWebSer
             }
         }
 
-        final Collection<ProjectRelationship<?>> rels = deserializeRelationships( obj, ctx );
+        final Set<ProjectRelationship<?>> rels = deserializeRelationships( obj, ctx );
         final Set<EProjectCycle> cycles = deserializeCycles( obj, ctx );
 
-        final EProjectWeb web;
-        try
-        {
-            data.storeRelationships( rels );
-            web = data.getProjectWeb( roots.toArray( new ProjectVersionRef[roots.size()] ) );
-        }
-        catch ( final CartoDataException e )
-        {
-            throw new JsonParseException( "Failed to store relationships or retrieve resulting project web.", e );
-        }
-
-        for ( final EProjectCycle cycle : cycles )
-        {
-            web.addCycle( cycle );
-        }
-
-        return web;
+        return new GraphTransferDTO( roots, rels, cycles );
     }
 
     @Override
-    public JsonElement serialize( final EProjectWeb src, final Type typeInfo, final JsonSerializationContext ctx )
+    public JsonElement serialize( final GraphTransferDTO src, final Type typeInfo, final JsonSerializationContext ctx )
     {
         final JsonObject obj = new JsonObject();
 
@@ -107,8 +88,8 @@ public class EProjectWebSer
             obj.add( SerializationConstants.WEB_ROOTS, rootArry );
         }
 
-        serializeRelationships( src, obj, ctx );
-        serializeCycles( src, obj, ctx );
+        serializeRelationships( src.getRelationships(), obj, ctx );
+        serializeCycles( src.getCycles(), obj, ctx );
 
         return obj;
     }

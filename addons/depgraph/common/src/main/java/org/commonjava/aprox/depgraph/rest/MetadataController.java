@@ -96,7 +96,14 @@ public class MetadataController
             final Map<String, String> metadata = entry.getValue();
 
             logger.debug( "Adding metadata for: {}\n\n  ", ref, new JoinString( "\n  ", metadata.entrySet() ) );
-            ops.updateMetadata( ref, metadata );
+            try
+            {
+                ops.updateMetadata( ref, metadata );
+            }
+            catch ( final CartoDataException e )
+            {
+                throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot update metadata: %s", e, e.getMessage() );
+            }
         }
     }
 
@@ -157,7 +164,15 @@ public class MetadataController
 
         logger.debug( "Adding metadata for: {}\n\n  ", ref, new JoinString( "\n  ", metadata.entrySet() ) );
 
-        ops.updateMetadata( ref, metadata );
+        try
+        {
+            ops.updateMetadata( ref, metadata );
+        }
+        catch ( final CartoDataException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot update metadata for: '%s:%s:%s'. Reason: %s", e, groupId,
+                                              artifactId, version, e.getMessage() );
+        }
     }
 
     public String getCollation( final InputStream configStream, final String encoding )

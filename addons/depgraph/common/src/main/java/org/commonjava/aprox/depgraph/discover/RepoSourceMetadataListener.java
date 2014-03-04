@@ -32,6 +32,7 @@ import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.data.CartoDataManager;
 import org.commonjava.maven.cartographer.event.RelationshipStorageEvent;
 import org.slf4j.Logger;
@@ -143,7 +144,15 @@ public class RepoSourceMetadataListener
 
             if ( sb.length() > 0 )
             {
-                carto.addMetadata( ref, FOUND_IN_METADATA, FOUND_IN_METADATA );
+                try
+                {
+                    carto.addMetadata( ref, FOUND_IN_METADATA, sb.toString() );
+                }
+                catch ( final CartoDataException e )
+                {
+                    logger.error( String.format( "Failed to add metadata: '%s' = '%s' to project: '%s'. Reason: %s", FOUND_IN_METADATA, sb, ref,
+                                                 e.getMessage() ), e );
+                }
             }
         }
     }

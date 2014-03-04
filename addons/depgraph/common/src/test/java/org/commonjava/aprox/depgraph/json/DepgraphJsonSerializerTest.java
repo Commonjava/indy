@@ -52,7 +52,7 @@ public class DepgraphJsonSerializerTest
         graphs = new EGraphManager( new FileNeo4jWorkspaceFactory( temp.newFolder( "db" ), false ) );
         data = new DefaultCartoDataManager( graphs, new GraphWorkspaceHolder(), new NoOpCartoEventManager() );
 
-        serializer = new JsonSerializer( new DepgraphSerializationAdapter( data ) );
+        serializer = new JsonSerializer( new DepgraphSerializationAdapter() );
     }
 
     @After

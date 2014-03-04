@@ -16,11 +16,9 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.json;
 
+import org.commonjava.aprox.depgraph.dto.GraphTransferDTO;
 import org.commonjava.maven.atlas.graph.model.EProjectCycle;
-import org.commonjava.maven.atlas.graph.model.EProjectDirectRelationships;
-import org.commonjava.maven.atlas.graph.model.EProjectGraph;
 import org.commonjava.maven.atlas.graph.model.EProjectKey;
-import org.commonjava.maven.atlas.graph.model.EProjectWeb;
 import org.commonjava.maven.atlas.graph.rel.DependencyRelationship;
 import org.commonjava.maven.atlas.graph.rel.ExtensionRelationship;
 import org.commonjava.maven.atlas.graph.rel.ParentRelationship;
@@ -31,7 +29,6 @@ import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.version.SingleVersion;
-import org.commonjava.maven.cartographer.data.CartoDataManager;
 import org.commonjava.web.json.ser.WebSerializationAdapter;
 
 import com.google.gson.GsonBuilder;
@@ -40,22 +37,13 @@ public class DepgraphSerializationAdapter
     implements WebSerializationAdapter
 {
 
-    private final CartoDataManager data;
-
-    public DepgraphSerializationAdapter( final CartoDataManager data )
-    {
-        this.data = data;
-    }
-
     @Override
     public void register( final GsonBuilder gson )
     {
         gson.registerTypeAdapter( ArtifactRef.class, new ArtifactRefSer() );
-        gson.registerTypeAdapter( EProjectGraph.class, new EProjectGraphSer( data ) );
         gson.registerTypeAdapter( EProjectCycle.class, new EProjectCycleSer() );
         gson.registerTypeAdapter( EProjectKey.class, new EProjectKeySer() );
-        gson.registerTypeAdapter( EProjectDirectRelationships.class, new EProjectRelsSer() );
-        gson.registerTypeAdapter( EProjectWeb.class, new EProjectWebSer( data ) );
+        gson.registerTypeAdapter( GraphTransferDTO.class, new GraphTransferDTOSer() );
         gson.registerTypeAdapter( ProjectRef.class, new ProjectRefSer() );
         gson.registerTypeAdapter( ProjectRelationship.class, new ProjectRelationshipSer() );
         gson.registerTypeAdapter( ParentRelationship.class, new ProjectRelationshipSer() );

@@ -110,8 +110,10 @@ public class IndexHandler
     private FileManager fileManager;
 
     @Inject
-    @ExecutorConfig( daemon = true, priority = 7, threads = 1, named = "aprox-indexer" )
+    @ExecutorConfig( daemon = true, priority = 7, named = "aprox-indexer" )
     private Executor executor;
+
+    private final Set<StoreKey> currentlyUpdating = new HashSet<StoreKey>();
 
     public IndexHandler()
     {
@@ -251,6 +253,7 @@ public class IndexHandler
                         continue;
                     }
 
+                    logger.info( "[CASCADE] Starting merge for: {}", group.getKey() );
                     updateMergedIndex( group, updated, updateRepositoryIndexes );
                 }
             }
@@ -261,8 +264,28 @@ public class IndexHandler
         }
     }
 
-    private synchronized void updateMergedIndex( final Group group, final Set<ArtifactStore> updated, final boolean updateRepositoryIndexes )
+    private void updateMergedIndex( final Group group, final Set<ArtifactStore> updated, final boolean updateRepositoryIndexes )
     {
+        synchronized ( currentlyUpdating )
+        {
+            final StoreKey key = group.getKey();
+            while ( currentlyUpdating.contains( key ) )
+            {
+                try
+                {
+                    currentlyUpdating.wait( 500 );
+                }
+                catch ( final InterruptedException e )
+                {
+                    Thread.currentThread()
+                          .interrupt();
+                    return;
+                }
+            }
+
+            currentlyUpdating.add( key );
+        }
+
         final IndexingContext groupContext = getIndexingContext( group, indexCreators.getCreators() );
         if ( groupContext == null )
         {
@@ -306,8 +329,8 @@ public class IndexHandler
 
                 try
                 {
-                    if ( context.getIndexDirectoryFile()
-                                .exists() )
+                    if ( context.getIndexDirectory() != null && context.getIndexDirectoryFile()
+                                                                       .exists() )
                     {
                         groupContext.merge( context.getIndexDirectory() );
                     }
@@ -370,6 +393,14 @@ public class IndexHandler
                     }
                 }
             }
+        }
+
+        logger.info( "Index updated for: {}", group.getKey() );
+
+        synchronized ( currentlyUpdating )
+        {
+            currentlyUpdating.remove( group.getKey() );
+            currentlyUpdating.notifyAll();
         }
     }
 
@@ -542,6 +573,7 @@ public class IndexHandler
             }
             else if ( type == StoreType.group )
             {
+                logger.info( "[IDX] Starting merge for: {}", store.getKey() );
                 updateMergedIndex( (Group) store, new HashSet<ArtifactStore>(), false );
             }
         }
@@ -611,6 +643,7 @@ public class IndexHandler
                         continue;
                     }
 
+                    logger.info( "[ADD] Starting merge for: {}", group.getKey() );
                     updateMergedIndex( group, updated, true );
                 }
                 else

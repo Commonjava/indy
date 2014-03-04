@@ -18,17 +18,103 @@ package org.commonjava.aprox.depgraph.json;
 
 import static org.apache.commons.lang.StringUtils.join;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+import org.commonjava.maven.atlas.graph.model.EProjectCycle;
+import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonSerializationContext;
 
 public final class JsonUtils
 {
 
     private JsonUtils()
     {
+    }
+
+    public static final Set<ProjectRelationship<?>> deserializeRelationships( final JsonObject obj, final JsonDeserializationContext ctx )
+    {
+        final Set<ProjectRelationship<?>> rels = new LinkedHashSet<ProjectRelationship<?>>();
+        final JsonElement arrElem = obj.get( SerializationConstants.RELATIONSHIPS );
+
+        if ( arrElem != null )
+        {
+            for ( final JsonElement relElem : arrElem.getAsJsonArray() )
+            {
+                rels.add( (ProjectRelationship<?>) ctx.deserialize( relElem, ProjectRelationship.class ) );
+            }
+        }
+
+        return rels;
+    }
+
+    public static final JsonArray serializeRelationships( final Collection<ProjectRelationship<?>> all, final JsonObject obj,
+                                                          final JsonSerializationContext ctx )
+    {
+        JsonArray arr = null;
+        if ( all != null && !all.isEmpty() )
+        {
+            arr = new JsonArray();
+
+            for ( final ProjectRelationship<?> rel : all )
+            {
+                arr.add( ctx.serialize( rel ) );
+            }
+
+            obj.add( SerializationConstants.RELATIONSHIPS, arr );
+        }
+
+        return arr;
+    }
+
+    public static void serializeCycles( final Set<EProjectCycle> cycles, final JsonObject obj, final JsonSerializationContext ctx )
+    {
+        if ( cycles == null )
+        {
+            return;
+        }
+
+        final JsonArray arry = new JsonArray();
+        for ( final EProjectCycle cycle : cycles )
+        {
+            arry.add( ctx.serialize( cycle ) );
+        }
+
+        obj.add( SerializationConstants.CYCLES, arry );
+    }
+
+    public static Set<EProjectCycle> deserializeCycles( final JsonObject obj, final JsonDeserializationContext ctx )
+    {
+        final JsonElement cyclesElem = obj.get( SerializationConstants.CYCLES );
+        if ( cyclesElem == null )
+        {
+            return null;
+        }
+
+        final JsonArray arry = cyclesElem.getAsJsonArray();
+        final Set<EProjectCycle> cycles = new HashSet<EProjectCycle>( arry.size() );
+
+        for ( final JsonElement elem : arry )
+        {
+            final EProjectCycle cycle = ctx.deserialize( elem, EProjectCycle.class );
+            if ( cycle != null )
+            {
+                cycles.add( cycle );
+            }
+        }
+
+        return cycles;
     }
 
     public static ProjectVersionRef parseProjectVersionRef( final String... parts )
