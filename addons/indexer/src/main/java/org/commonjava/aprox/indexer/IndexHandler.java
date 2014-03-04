@@ -200,7 +200,7 @@ public class IndexHandler
         return true;
     }
 
-    private synchronized void scanIndex( final ArtifactStore store )
+    private void scanIndex( final ArtifactStore store )
     {
         final IndexingContext context = getIndexingContext( store, indexCreators.getCreators() );
 
@@ -212,8 +212,21 @@ public class IndexHandler
         scanIndex( store, context );
     }
 
-    private synchronized void scanIndex( final ArtifactStore store, final IndexingContext context )
+    private void scanIndex( final ArtifactStore store, final IndexingContext context )
     {
+        final StoreKey key = store.getKey();
+        synchronized ( currentlyUpdating )
+        {
+            if ( currentlyUpdating.contains( key ) )
+            {
+                logger.info( "Already updating: {}", key );
+                return;
+            }
+
+            logger.info( "Reserving: {}", key );
+            currentlyUpdating.add( key );
+        }
+
         try
         {
             final ArtifactScanningListener listener = new DefaultScannerListener( context, indexerEngine, false, null );
@@ -237,9 +250,16 @@ public class IndexHandler
                 logger.error( String.format( "Failed to close index for deploy point: %s. Reason: %s", store.getKey(), e.getMessage() ), e );
             }
         }
+
+        synchronized ( currentlyUpdating )
+        {
+            logger.info( "Releasing: {}", key );
+            currentlyUpdating.remove( key );
+            currentlyUpdating.notifyAll();
+        }
     }
 
-    private synchronized void updateGroupsFor( final StoreKey storeKey, final Set<ArtifactStore> updated, final boolean updateRepositoryIndexes )
+    private void updateGroupsFor( final StoreKey storeKey, final Set<ArtifactStore> updated, final boolean updateRepositoryIndexes )
     {
         try
         {
@@ -269,20 +289,13 @@ public class IndexHandler
         synchronized ( currentlyUpdating )
         {
             final StoreKey key = group.getKey();
-            while ( currentlyUpdating.contains( key ) )
+            if ( currentlyUpdating.contains( key ) )
             {
-                try
-                {
-                    currentlyUpdating.wait( 500 );
-                }
-                catch ( final InterruptedException e )
-                {
-                    Thread.currentThread()
-                          .interrupt();
-                    return;
-                }
+                logger.info( "Already updating: {}", key );
+                return;
             }
 
+            logger.info( "Reserving: {}", key );
             currentlyUpdating.add( key );
         }
 
@@ -304,6 +317,28 @@ public class IndexHandler
                 }
 
                 final StoreKey key = store.getKey();
+
+                synchronized ( currentlyUpdating )
+                {
+                    while ( currentlyUpdating.contains( key ) )
+                    {
+                        try
+                        {
+                            logger.info( "Waiting for: {}", key );
+                            currentlyUpdating.wait( 500 );
+                        }
+                        catch ( final InterruptedException e )
+                        {
+                            Thread.currentThread()
+                                  .interrupt();
+                            return;
+                        }
+                    }
+
+                    logger.info( "Reserving: {}", key );
+                    currentlyUpdating.add( key );
+                }
+
                 final IndexingContext context = entry.getValue();
 
                 final Transfer item = fileManager.getStorageReference( store, INDEX_PROPERTIES );
@@ -338,6 +373,13 @@ public class IndexHandler
                 catch ( final IOException e )
                 {
                     logger.error( "Failed to merge index from: {} into group index: {}", key, group.getKey() );
+                }
+
+                synchronized ( currentlyUpdating )
+                {
+                    logger.info( "Releasing: {}", key );
+                    currentlyUpdating.remove( key );
+                    currentlyUpdating.notifyAll();
                 }
             }
 
@@ -399,6 +441,7 @@ public class IndexHandler
 
         synchronized ( currentlyUpdating )
         {
+            logger.info( "Releasing: {}", group.getKey() );
             currentlyUpdating.remove( group.getKey() );
             currentlyUpdating.notifyAll();
         }
