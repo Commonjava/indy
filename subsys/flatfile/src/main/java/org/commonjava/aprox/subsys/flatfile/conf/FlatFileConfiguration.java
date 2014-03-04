@@ -18,6 +18,7 @@ package org.commonjava.aprox.subsys.flatfile.conf;
 
 import java.io.File;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
@@ -51,6 +52,7 @@ public class FlatFileConfiguration
 
         @Produces
         @Default
+        @ApplicationScoped
         public FlatFileConfiguration getFlatFileConfig()
             throws ConfigurationException
         {

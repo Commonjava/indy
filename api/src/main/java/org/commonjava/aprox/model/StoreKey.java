@@ -115,7 +115,7 @@ public final class StoreKey
         else
         {
             name = id.substring( idx + 1 );
-            type = StoreType.valueOf( id.substring( 0, idx ) );
+            type = StoreType.get( id.substring( 0, idx ) );
         }
 
         // logger.info( "parsed store-key with type: '{}' and name: '{}'", type, name );

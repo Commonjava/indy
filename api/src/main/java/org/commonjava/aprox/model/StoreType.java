@@ -24,7 +24,7 @@ public enum StoreType
 {
     group( Group.class, false, "group", "groups" ),
     remote( RemoteRepository.class, false, "remote", "remotes", "repository", "repositories" ),
-    hosted( HostedRepository.class, true, "hosted", "hosted", "deploy", "deploys" );
+    hosted( HostedRepository.class, true, "hosted", "hosted", "deploy", "deploys", "deploy_point" );
 
     //    private static final Logger logger = new Logger( StoreType.class );
 

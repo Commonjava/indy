@@ -17,7 +17,7 @@
           <% if @item.constituents and @item.constituents.length > 0: %>
             <% for store in @helper.availableWithSortedConstituents( @item.constituents ): %>
               <% if @item.constituents.indexOf( store.key ) > -1: %>
-                <li name="<%= store.key %>" type="<%= store.type %>">(<%= store.type %>) <%= store.name %></li>
+                <li name="<%= store.key %>" type="<%= store.key.type %>">(<%= store.key.type %>) <%= store.key.name %></li>
               <% end %>
             <% end %>
           <% else if @item.constituents: %>
@@ -33,7 +33,7 @@
           <ul class="available dropzone">
             <% for store in @helper.allAvailable(): %>
               <% if not @item.constituents or @item.constituents.indexOf( store.key ) < 0: %>
-                <li name="<%= store.key %>" type="<%= store.type %>">(<%= store.type %>) <%= store.name %></li>
+                <li name="<%= store.key %>" type="<%= store.key.type %>">(<%= store.key.type %>) <%= store.key.name %></li>
               <% end %>
             <% end %>
           </ul>

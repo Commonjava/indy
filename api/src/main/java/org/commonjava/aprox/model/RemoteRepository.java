@@ -78,19 +78,18 @@ public class RemoteRepository
 
     RemoteRepository()
     {
-        super( StoreType.remote );
     }
 
     public RemoteRepository( final String name, final String remoteUrl )
     {
-        super( StoreType.remote, name );
+        super( name );
         this.url = remoteUrl;
         calculateFields();
     }
 
     RemoteRepository( final String name )
     {
-        super( StoreType.remote, name );
+        super( name );
     }
 
     public String getUrl()
@@ -317,6 +316,12 @@ public class RemoteRepository
     public void setProxyPassword( final String proxyPassword )
     {
         this.proxyPassword = proxyPassword;
+    }
+
+    @Override
+    protected StoreKey initKey( final String name )
+    {
+        return new StoreKey( StoreType.remote, name );
     }
 
 }

@@ -31,4 +31,7 @@ public interface AproxConfigFactory
     <T> T getConfiguration( Class<T> configCls )
         throws ConfigurationException;
 
+    void load( String config )
+        throws ConfigurationException;
+
 }

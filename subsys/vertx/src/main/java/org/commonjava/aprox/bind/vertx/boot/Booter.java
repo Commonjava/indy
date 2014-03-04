@@ -22,18 +22,17 @@ import java.util.Properties;
 
 import org.codehaus.plexus.interpolation.InterpolationException;
 import org.commonjava.aprox.conf.AproxConfigFactory;
+import org.commonjava.web.config.ConfigurationException;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.vertx.java.core.http.HttpServer;
 import org.vertx.java.core.impl.DefaultVertx;
-import org.vertx.java.platform.Verticle;
 
 import ch.qos.logback.core.joran.spi.JoranException;
 
 public class Booter
-    extends Verticle
 {
     public static final String APROX_HOME_PROP = "aprox.home";
 
@@ -48,6 +47,8 @@ public class Booter
     public static final int CANT_CONFIGURE_LOGGING = 4;
 
     public static final String APROX_LOGCONF_PROP = "aprox.logging";
+
+    private static final int CANT_CONFIGURE_APROX = 5;
 
     public static void main( final String[] args )
     {
@@ -110,7 +111,13 @@ public class Booter
 
         if ( canStart )
         {
-            new Booter( boot ).run();
+            final Booter booter = new Booter( boot );
+            System.out.println( "Starting AProx booter: " + booter );
+            final int result = booter.run();
+            if ( result != 0 )
+            {
+                System.exit( result );
+            }
         }
     }
 
@@ -134,13 +141,15 @@ public class Booter
 
     private final BootOptions bootOptions;
 
-    public Booter( final BootOptions bootOptions )
+    private Booter( final BootOptions bootOptions )
     {
         this.bootOptions = bootOptions;
     }
 
-    public void run()
+    private int run()
     {
+        System.out.println( "Booter running: " + this );
+
         if ( bootOptions.getConfig() != null )
         {
             final Properties properties = System.getProperties();
@@ -153,12 +162,27 @@ public class Booter
         final Weld weld = new Weld();
         final WeldContainer container = weld.initialize();
 
+        final AproxConfigFactory configFactory = container.instance()
+                                                          .select( AproxConfigFactory.class )
+                                                          .get();
+        try
+        {
+            System.out.printf( "\n\nLoading AProx configuration factory: %s\n", configFactory );
+            configFactory.load( bootOptions.getConfig() );
+        }
+        catch ( final ConfigurationException e )
+        {
+            System.err.printf( "Failed to configure AProx: %s", e.getMessage() );
+            e.printStackTrace();
+            return CANT_CONFIGURE_APROX;
+        }
+
         final MasterRouter router = container.instance()
                                              .select( MasterRouter.class )
                                              .get();
         //        router.initializeComponents();
 
-        setVertx( new DefaultVertx() );
+        final DefaultVertx vertx = new DefaultVertx();
 
         for ( int i = 0; i < bootOptions.getWorkers(); i++ )
         {
@@ -181,6 +205,8 @@ public class Booter
                 e.printStackTrace();
             }
         }
+
+        return 0;
     }
 
 }

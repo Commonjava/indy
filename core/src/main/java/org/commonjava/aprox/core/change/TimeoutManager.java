@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
@@ -62,6 +63,7 @@ import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.util.ArtifactPathInfo;
 import org.commonjava.aprox.util.ArtifactPathInfo.SnapshotInfo;
+import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileEvent;
@@ -97,118 +99,158 @@ public class TimeoutManager
     @Inject
     private AproxConfiguration config;
 
+    @Inject
+    @ExecutorConfig( daemon = true, priority = 7, named = "aprox-events" )
+    private Executor executor;
+
     public void onExpirationEvent( @Observes final ExpirationEvent event )
     {
-        final ExpirationEventType type = event.getType();
-        if ( type == ExpirationEventType.EXPIRE )
+        executor.execute( new Runnable()
         {
-            if ( isAproxFileExpirationEvent( event ) )
+            @Override
+            public void run()
             {
-                final StoreKey key = getStoreKey( event.getExpiration()
-                                                       .getKey() );
-                final String path = (String) event.getExpiration()
-                                                  .getData();
-
-                final Transfer toDelete = fileManager.getStorageReference( key, path );
-                if ( toDelete.exists() )
+                final ExpirationEventType type = event.getType();
+                if ( type == ExpirationEventType.EXPIRE )
                 {
-                    try
+                    if ( isAproxFileExpirationEvent( event ) )
                     {
-                        logger.info( "[EXPIRED; DELETE] {}", toDelete );
-                        toDelete.delete();
-                    }
-                    catch ( final IOException e )
-                    {
-                        logger.error( String.format( "Failed to delete expired file: %s. Reason: %s", toDelete.getFullPath(), e.getMessage() ), e );
-                    }
+                        final StoreKey key = getStoreKey( event.getExpiration()
+                                                               .getKey() );
+                        final String path = (String) event.getExpiration()
+                                                          .getData();
 
-                    cleanMetadata( key, path );
-                }
+                        final Transfer toDelete = fileManager.getStorageReference( key, path );
+                        if ( toDelete.exists() )
+                        {
+                            try
+                            {
+                                logger.info( "[EXPIRED; DELETE] {}", toDelete );
+                                toDelete.delete();
+                            }
+                            catch ( final IOException e )
+                            {
+                                logger.error( String.format( "Failed to delete expired file: %s. Reason: %s", toDelete.getFullPath(), e.getMessage() ),
+                                              e );
+                            }
 
-                if ( ArtifactPathInfo.isSnapshot( path ) )
-                {
-                    updateSnapshotVersions( key, path );
+                            cleanMetadata( key, path );
+                        }
+
+                        if ( ArtifactPathInfo.isSnapshot( path ) )
+                        {
+                            updateSnapshotVersions( key, path );
+                        }
+                    }
                 }
             }
-        }
+        } );
     }
 
     public void onFileStorageEvent( @Observes final FileStorageEvent event )
     {
-        final TransferOperation type = event.getType();
-
-        switch ( type )
+        executor.execute( new Runnable()
         {
-            case UPLOAD:
+            @Override
+            public void run()
             {
-                cleanMetadata( event );
+                final TransferOperation type = event.getType();
 
-                setSnapshotTimeouts( event );
-                break;
-            }
-            case DOWNLOAD:
-            {
-                cleanMetadata( event );
+                switch ( type )
+                {
+                    case UPLOAD:
+                    {
+                        cleanMetadata( event );
 
-                setProxyTimeouts( event );
-                break;
+                        setSnapshotTimeouts( event );
+                        break;
+                    }
+                    case DOWNLOAD:
+                    {
+                        cleanMetadata( event );
+
+                        setProxyTimeouts( event );
+                        break;
+                    }
+                    default:
+                    {
+                        break;
+                    }
+                }
             }
-            default:
-            {
-                break;
-            }
-        }
+        } );
     }
 
     public void onFileAccessEvent( @Observes final FileAccessEvent event )
     {
-        final StoreKey key = getKey( event );
-        if ( key != null )
+        executor.execute( new Runnable()
         {
-            final StoreType type = key.getType();
+            @Override
+            public void run()
+            {
+                final StoreKey key = getKey( event );
+                if ( key != null )
+                {
+                    final StoreType type = key.getType();
 
-            if ( type == StoreType.hosted )
-            {
-                setSnapshotTimeouts( event );
+                    if ( type == StoreType.hosted )
+                    {
+                        setSnapshotTimeouts( event );
+                    }
+                    else if ( type == StoreType.remote )
+                    {
+                        setProxyTimeouts( event );
+                    }
+                }
             }
-            else if ( type == StoreType.remote )
-            {
-                setProxyTimeouts( event );
-            }
-        }
+        } );
     }
 
     public void onFileDeletionEvent( @Observes final FileDeletionEvent event )
     {
-        final StoreKey key = getKey( event );
-        if ( key != null )
+        executor.execute( new Runnable()
         {
-            cancel( key, event.getTransfer()
-                              .getPath() );
-        }
+            @Override
+            public void run()
+            {
+                final StoreKey key = getKey( event );
+                if ( key != null )
+                {
+                    cancel( key, event.getTransfer()
+                                      .getPath() );
+                }
+            }
+        } );
     }
 
     public void onStoreUpdate( @Observes final ArtifactStoreUpdateEvent event )
     {
-        final ProxyManagerUpdateType eventType = event.getType();
-        if ( eventType == ProxyManagerUpdateType.ADD_OR_UPDATE )
+        executor.execute( new Runnable()
         {
-            for ( final ArtifactStore store : event )
+            @Override
+            public void run()
             {
-                final StoreKey key = store.getKey();
-                final StoreType type = key.getType();
-                if ( type == StoreType.hosted )
+                final ProxyManagerUpdateType eventType = event.getType();
+                if ( eventType == ProxyManagerUpdateType.ADD_OR_UPDATE )
                 {
-                    //                    logger.info( "[ADJUST TIMEOUTS] Adjusting snapshot expirations in: %s", store.getKey() );
-                    rescheduleSnapshotTimeouts( (HostedRepository) store );
-                }
-                else if ( type == StoreType.remote )
-                {
-                    //                    logger.info( "[ADJUST TIMEOUTS] Adjusting proxied-file expirations in: %s", store.getKey() );
-                    rescheduleProxyTimeouts( (RemoteRepository) store );
+                    for ( final ArtifactStore store : event )
+                    {
+                        final StoreKey key = store.getKey();
+                        final StoreType type = key.getType();
+                        if ( type == StoreType.hosted )
+                        {
+                            //                    logger.info( "[ADJUST TIMEOUTS] Adjusting snapshot expirations in: %s", store.getKey() );
+                            rescheduleSnapshotTimeouts( (HostedRepository) store );
+                        }
+                        else if ( type == StoreType.remote )
+                        {
+                            //                    logger.info( "[ADJUST TIMEOUTS] Adjusting proxied-file expirations in: %s", store.getKey() );
+                            rescheduleProxyTimeouts( (RemoteRepository) store );
+                        }
+                    }
                 }
             }
-        }
+        } );
     }
 
     private void rescheduleSnapshotTimeouts( final HostedRepository deploy )
@@ -340,7 +382,8 @@ public class TimeoutManager
         }
         catch ( final ExpirationManagerException e )
         {
-            logger.error( String.format( "Failed to cancel (for purposes of rescheduling) expirations for store: %s. Reason: %s", key, e.getMessage() ), e );
+            logger.error( String.format( "Failed to cancel (for purposes of rescheduling) expirations for store: %s. Reason: %s", key, e.getMessage() ),
+                          e );
         }
 
         return null;
@@ -348,32 +391,40 @@ public class TimeoutManager
 
     public void onStoreDeletion( @Observes final ProxyManagerDeleteEvent event )
     {
-        final StoreType type = event.getType();
-        final Collection<String> names = event.getNames();
-
-        for ( final String name : names )
+        executor.execute( new Runnable()
         {
-            final StoreKey key = new StoreKey( type, name );
-            final Transfer dir = fileManager.getStoreRootDirectory( key );
-            if ( dir.exists() && dir.isDirectory() )
+            @Override
+            public void run()
             {
-                try
+                final StoreType type = event.getType();
+                final Collection<String> names = event.getNames();
+
+                for ( final String name : names )
                 {
-                    logger.info( "[STORE REMOVED; DELETE] {}", dir.getFullPath() );
-                    dir.delete();
-                    expirationManager.cancelAll( new StoreMatcher( key ) );
-                }
-                catch ( final IOException e )
-                {
-                    logger.error( String.format( "Failed to delete storage for deleted artifact store: %s (dir: %s). Error: %s", key, dir, e.getMessage() ), e );
-                }
-                catch ( final ExpirationManagerException e )
-                {
-                    logger.error( "Failed to cancel file expirations for deleted artifact store: {} (dir: {}). Error: {}", e, key, dir,
-                                  e.getMessage() );
+                    final StoreKey key = new StoreKey( type, name );
+                    final Transfer dir = fileManager.getStoreRootDirectory( key );
+                    if ( dir.exists() && dir.isDirectory() )
+                    {
+                        try
+                        {
+                            logger.info( "[STORE REMOVED; DELETE] {}", dir.getFullPath() );
+                            dir.delete();
+                            expirationManager.cancelAll( new StoreMatcher( key ) );
+                        }
+                        catch ( final IOException e )
+                        {
+                            logger.error( String.format( "Failed to delete storage for deleted artifact store: %s (dir: %s). Error: %s", key, dir,
+                                                         e.getMessage() ), e );
+                        }
+                        catch ( final ExpirationManagerException e )
+                        {
+                            logger.error( "Failed to cancel file expirations for deleted artifact store: {} (dir: {}). Error: {}", e, key, dir,
+                                          e.getMessage() );
+                        }
+                    }
                 }
             }
-        }
+        } );
     }
 
     private void setProxyTimeouts( final FileEvent event )
@@ -575,7 +626,7 @@ public class TimeoutManager
         }
         else
         {
-            return new StoreKey( StoreType.valueOf( parts[2] ), parts[3] );
+            return new StoreKey( StoreType.get( parts[2] ), parts[3] );
         }
     }
 

@@ -17,6 +17,8 @@ class Remotes extends ListingController
     
   render: =>
     @items = RemoteRepository.all()
+    @log("Rendering #{item.name}") for item in @items
+    
     @log("Rendering #{@items.length} remotes")
     @html require('views/remotes')(@)
     @postRender

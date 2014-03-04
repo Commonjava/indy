@@ -33,18 +33,17 @@ public class Group
 
     Group()
     {
-        super( StoreType.group );
     }
 
     public Group( final String name, final List<StoreKey> constituents )
     {
-        super( StoreType.group, name );
+        super( name );
         this.constituents = constituents;
     }
 
     public Group( final String name, final StoreKey... constituents )
     {
-        super( StoreType.group, name );
+        super( name );
         this.constituents = new ArrayList<StoreKey>( Arrays.asList( constituents ) );
     }
 
@@ -101,6 +100,12 @@ public class Group
     public String toString()
     {
         return String.format( "Group [constituents=%s, getName()=%s, getKey()=%s]", constituents, getName(), getKey() );
+    }
+
+    @Override
+    protected StoreKey initKey( final String name )
+    {
+        return new StoreKey( StoreType.group, name );
     }
 
 }

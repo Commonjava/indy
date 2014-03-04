@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -88,9 +89,6 @@ public class DefaultFileManager
 
     @Inject
     private AproxFileEventManager fileEventManager;
-
-    //    @Inject
-    //    private NotFoundCache nfc;
 
     // Byte, because it's small, and we really only care about the keys anyway.
     private final Map<StoreKey, Byte> rescansInProgress = new ConcurrentHashMap<StoreKey, Byte>();
@@ -204,7 +202,7 @@ public class DefaultFileManager
             }
         }
 
-        return result;
+        return dedupeListing( result );
     }
 
     @Override
@@ -233,7 +231,7 @@ public class DefaultFileManager
             throw new AproxWorkflowException( "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, stores, e.getMessage() );
         }
 
-        return result;
+        return dedupeListing( result );
     }
 
     @Override
@@ -737,6 +735,34 @@ public class DefaultFileManager
             fileEventManager.fire( new FileAccessEvent( item ) );
         }
 
+    }
+
+    /**
+     * Attempt to remove duplicates, even "fuzzy" ones where a directory is 
+     * listed with trailing '/' in some cases but not others.
+     */
+    private List<ConcreteResource> dedupeListing( final List<ConcreteResource> listing )
+    {
+        final List<ConcreteResource> result = new ArrayList<ConcreteResource>();
+        final Map<String, ConcreteResource> mapping = new LinkedHashMap<String, ConcreteResource>();
+        for ( final ConcreteResource res : listing )
+        {
+            final String path = res.getPath();
+            if ( mapping.containsKey( path ) )
+            {
+                continue;
+            }
+
+            if ( mapping.containsKey( path + "/" ) )
+            {
+                continue;
+            }
+
+            mapping.put( path, res );
+            result.add( res );
+        }
+
+        return result;
     }
 
 }

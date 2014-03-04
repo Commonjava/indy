@@ -26,24 +26,17 @@ public abstract class ArtifactStore
 
     private static final long serialVersionUID = 1L;
 
-    private String name;
-
     private StoreKey key;
-
-    private final StoreType doctype;
 
     private transient Map<String, String> metadata;
 
-    protected ArtifactStore( final StoreType type )
+    protected ArtifactStore()
     {
-        doctype = type;
     }
 
-    protected ArtifactStore( final StoreType doctype, final String name )
+    protected ArtifactStore( final String name )
     {
-        this.doctype = doctype;
-        this.name = name;
-        this.key = new StoreKey( doctype, name );
+        this.key = initKey( name );
     }
 
     /*
@@ -52,37 +45,26 @@ public abstract class ArtifactStore
      */
     public String getName()
     {
-        return name;
+        return key.getName();
     }
 
     protected void setName( final String name )
     {
-        this.name = name;
-        initKey();
+        this.key = initKey( name );
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.commonjava.web.maven.proxy.model.ArtifactStore#getDoctype()
-     */
+    @Deprecated
     public StoreType getDoctype()
     {
-        return doctype;
+        return getKey().getType();
     }
 
     public synchronized StoreKey getKey()
     {
-        initKey();
         return key;
     }
 
-    private void initKey()
-    {
-        if ( key == null )
-        {
-            this.key = new StoreKey( doctype, name );
-        }
-    }
+    protected abstract StoreKey initKey( String name );
 
     @Override
     public int hashCode()

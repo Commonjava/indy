@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
@@ -16,6 +17,7 @@ import org.jboss.weld.environment.se.WeldContainer;
 import org.kohsuke.args4j.Option;
 import org.slf4j.LoggerFactory;
 
+import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
@@ -181,13 +183,22 @@ public class BootOptions
     public BootOptions configureLogging( final File logConf )
         throws IOException, InterpolationException, JoranException
     {
-        if ( logConf.exists() )
+        if ( logConf != null && logConf.exists() )
         {
             String logProps = FileUtils.readFileToString( logConf );
             logProps = resolve( logProps );
 
             final JoranConfigurator fig = new JoranConfigurator();
             final LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+
+            final List<Logger> loggerList = context.getLoggerList();
+            if ( loggerList != null )
+            {
+                for ( final Logger logger : loggerList )
+                {
+                    logger.detachAndStopAllAppenders();
+                }
+            }
 
             fig.setContext( context );
             fig.doConfigure( new ByteArrayInputStream( logProps.getBytes() ) );

@@ -22,10 +22,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
+import org.apache.commons.lang.StringUtils;
 import org.commonjava.aprox.conf.AbstractAproxMapConfig;
 import org.commonjava.aprox.conf.AproxConfigFactory;
 import org.commonjava.aprox.conf.AproxConfigInfo;
@@ -36,7 +37,7 @@ import org.commonjava.web.config.io.ConfigFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@javax.enterprise.context.ApplicationScoped
+@Singleton
 public class DefaultAproxConfigFactory
     extends DefaultConfigurationListener
     implements AproxConfigFactory
@@ -50,25 +51,24 @@ public class DefaultAproxConfigFactory
     @Inject
     private Instance<AbstractAproxMapConfig> mapConfigs;
 
-    private static String configPath = System.getProperty( CONFIG_PATH_PROP, DEFAULT_CONFIG_PATH );
-
-    public static void setConfigPath( final String path )
-    {
-        configPath = path;
-    }
-
-    public DefaultAproxConfigFactory()
-        throws ConfigurationException
-    {
-    }
-
-    @PostConstruct
-    protected void load()
+    //    private static String configPath = System.getProperty( CONFIG_PATH_PROP, DEFAULT_CONFIG_PATH );
+    //
+    //    public static void setConfigPath( final String path )
+    //    {
+    //        configPath = path;
+    //    }
+    //
+    //    @PostConstruct
+    @Override
+    public synchronized void load( final String configPath )
         throws ConfigurationException
     {
         setSystemProperties();
 
-        logger.info( "\n\n\n\n[CONFIG] Reading AProx configuration.\n\nAdding configuration section listeners:" );
+        logger.info( "\n\n\n\n[CONFIG] Reading AProx configuration in: '{}'\n\nfrom:\n\n  {}\n\nAdding configuration section listeners:",
+                     Thread.currentThread()
+                           .getName(), StringUtils.join( new RuntimeException( "Diagnostic trace:" ).getStackTrace(), "\n  " ) );
+
         for ( final AproxConfigInfo section : configSections )
         {
             with( section.getSectionName(), section.getConfigurationClass() );
@@ -79,7 +79,8 @@ public class DefaultAproxConfigFactory
             with( section.getSectionName(), section );
         }
 
-        logger.info( "\n\n[CONFIG] Reading configuration from {}", configPath );
+        logger.info( "\n\n[CONFIG] Reading configuration in: '{}'\n\nfrom {}", Thread.currentThread()
+                                                                                     .getName(), configPath );
 
         InputStream stream = null;
         try
@@ -96,7 +97,8 @@ public class DefaultAproxConfigFactory
             closeQuietly( stream );
         }
 
-        logger.info( "[CONFIG] AProx configuration complete.\n\n\n\n" );
+        logger.info( "[CONFIG] AProx configuration complete for: '{}'.\n\n\n\n", Thread.currentThread()
+                                                                                       .getName() );
     }
 
     private void setSystemProperties()

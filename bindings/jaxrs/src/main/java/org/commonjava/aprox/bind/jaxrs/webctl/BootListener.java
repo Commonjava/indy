@@ -21,7 +21,9 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
+import org.commonjava.aprox.conf.AproxConfigFactory;
 import org.commonjava.aprox.core.rest.AdminController;
+import org.commonjava.web.config.ConfigurationException;
 
 @WebListener
 public class BootListener
@@ -31,9 +33,20 @@ public class BootListener
     @Inject
     private AdminController adminController;
 
+    @Inject
+    private AproxConfigFactory configFactory;
+
     @Override
     public void contextInitialized( final ServletContextEvent sce )
     {
+        try
+        {
+            configFactory.load( System.getProperty( AproxConfigFactory.CONFIG_PATH_PROP, AproxConfigFactory.DEFAULT_CONFIG_PATH ) );
+        }
+        catch ( final ConfigurationException e )
+        {
+            throw new RuntimeException( "Failed to configure AProx: " + e.getMessage(), e );
+        }
         adminController.started();
     }
 

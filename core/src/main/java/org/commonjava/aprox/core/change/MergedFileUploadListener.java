@@ -20,6 +20,7 @@ import static org.commonjava.aprox.util.LocationUtils.getKey;
 
 import java.io.IOException;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
@@ -33,6 +34,7 @@ import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.rest.group.GroupPathHandler;
+import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileEvent;
 import org.commonjava.maven.galley.model.Transfer;
@@ -54,42 +56,53 @@ public class MergedFileUploadListener
     @Inject
     private AproxFileEventManager fileEvent;
 
+    @Inject
+    @ExecutorConfig( daemon = true, priority = 7, named = "aprox-events" )
+    private Executor executor;
+
     public void reMergeUploaded( @Observes final FileEvent event )
     {
-        final String path = event.getTransfer()
-                                 .getPath();
-
-        final StoreKey key = getKey( event );
-
-        if ( !path.endsWith( MavenMetadataMerger.METADATA_NAME ) && !path.endsWith( ArchetypeCatalogMerger.CATALOG_NAME ) )
+        executor.execute( new Runnable()
         {
-            return;
-        }
-
-        try
-        {
-            final Set<? extends Group> groups = dataManager.getGroupsContaining( key );
-
-            if ( groups != null )
+            @Override
+            public void run()
             {
-                for ( final Group group : groups )
+                final String path = event.getTransfer()
+                                         .getPath();
+
+                final StoreKey key = getKey( event );
+
+                if ( !path.endsWith( MavenMetadataMerger.METADATA_NAME ) && !path.endsWith( ArchetypeCatalogMerger.CATALOG_NAME ) )
                 {
-                    try
+                    return;
+                }
+
+                try
+                {
+                    final Set<? extends Group> groups = dataManager.getGroupsContaining( key );
+
+                    if ( groups != null )
                     {
-                        reMerge( group, path );
-                    }
-                    catch ( final IOException e )
-                    {
-                        logger.error( String.format( "Failed to delete: %s from group: %s. Error: %s", path, group, e.getMessage() ), e );
+                        for ( final Group group : groups )
+                        {
+                            try
+                            {
+                                reMerge( group, path );
+                            }
+                            catch ( final IOException e )
+                            {
+                                logger.error( String.format( "Failed to delete: %s from group: %s. Error: %s", path, group, e.getMessage() ), e );
+                            }
+                        }
                     }
                 }
+                catch ( final ProxyDataException e )
+                {
+                    logger.warn( "Failed to regenerate maven-metadata.xml for groups after deployment to: {}"
+                        + "\nCannot retrieve associated groups: {}", e, key, e.getMessage() );
+                }
             }
-        }
-        catch ( final ProxyDataException e )
-        {
-            logger.warn( "Failed to regenerate maven-metadata.xml for groups after deployment to: {}" + "\nCannot retrieve associated groups: {}", e,
-                         key, e.getMessage() );
-        }
+        } );
     }
 
     private void reMerge( final Group group, final String path )

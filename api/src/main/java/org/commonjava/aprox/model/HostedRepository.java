@@ -38,14 +38,13 @@ public class HostedRepository
 
     private int snapshotTimeoutSeconds;
 
-    public HostedRepository()
+    HostedRepository()
     {
-        super( StoreType.hosted );
     }
 
     public HostedRepository( final String name )
     {
-        super( StoreType.hosted, name );
+        super( name );
     }
 
     public boolean isAllowSnapshots()
@@ -93,6 +92,12 @@ public class HostedRepository
     public void setStorage( final File storage )
     {
         this.storage = storage;
+    }
+
+    @Override
+    protected StoreKey initKey( final String name )
+    {
+        return new StoreKey( StoreType.hosted, name );
     }
 
 }
