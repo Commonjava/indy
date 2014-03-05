@@ -47,7 +47,7 @@
     <shelflife-version>0.6</shelflife-version>
     <atlasVersion>0.10.1</atlasVersion>
     <galleyVersion>0.4.1</galleyVersion>
-    <cartoVersion>0.4.1</cartoVersion>
+    <cartoVersion>0.5-SNAPSHOT</cartoVersion>
     <bomVersion>9</bomVersion>
     
     <vertx.testtools.version>2.0.0-final</vertx.testtools.version>
