@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.commonjava.aprox.ui</groupId>
     <artifactId>aprox-uis</artifactId>
-    <version>0.12.0-SNAPSHOT</version>
+    <version>0.12.0</version>
   </parent>
   
   <artifactId>aprox-ui-layover</artifactId>
