@@ -12,7 +12,7 @@
     </div>
     <% for item in @items: %>
     <div class="item hosted-item">
-      <span class="item-key item-field hosted-name" name="<%= item.key.name %>"><%= item.name %></span>
+      <span class="item-key item-field hosted-name" name="<%= item.name %>"><%= item.name %></span>
       <span class="item-field local-url hosted-local-url">
         <a href="<%= window.location.protocol %>//<%= window.location.hostname %><% if window.location.port != 80 && window.location.port != 443: %>:<%= window.location.port %><% end %><%= window.location.pathname %>api/1.0/hosted/<%= item.name %>/" target="_new">
           <%= window.location.protocol %>//<%= window.location.hostname %><% if window.location.port != 80 && window.location.port != 443: %>:<%= window.location.port %><% end %><%= window.location.pathname %>api/1.0/hosted/<%= item.name %>/

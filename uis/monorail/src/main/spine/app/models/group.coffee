@@ -41,12 +41,14 @@ class Group extends Spine.Model
       for obj in data
         if obj
           obj.id = obj.name
+          obj.key = "group:#{obj.name}"
 
       data =
         'items': data
     else
       if data
         data.id = data.name
+        data.key = "group:#{data.name}"
 
     data
   

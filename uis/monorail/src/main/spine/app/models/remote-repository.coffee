@@ -75,6 +75,7 @@ class RemoteRepository extends Spine.Model
             'proxy_port': parseInt obj.proxy_port if obj.proxy_port
             'proxy_user': obj.proxy_user if obj.proxy_user and obj.proxy_user.length > 0
             'proxy_password': obj.proxy_password if obj.proxy_password and obj.proxy_password.length > 0
+            'key': "remote:#{obj.name}"
             
           objs.push(o)
       
@@ -96,6 +97,7 @@ class RemoteRepository extends Spine.Model
           'proxy_port': parseInt data.proxy_port if data.proxy_port
           'proxy_user': data.proxy_user if data.proxy_user and data.proxy_user.length > 0
           'proxy_password': data.proxy_password if data.proxy_password and data.proxy_password.length > 0
+          'key': "remote:#{data.name}"
     
     data
   

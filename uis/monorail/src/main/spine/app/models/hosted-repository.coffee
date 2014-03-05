@@ -47,6 +47,7 @@ class HostedRepository extends Spine.Model
             'allow_releases': if obj.allow_releases is 'on' then true else false
             'allow_snapshots': if obj.allow_snapshots is 'on' then true else false
             'snapshot_timeout_seconds': if obj.allow_snapshots is true then parseInt obj.snapshot_timeout_seconds else -1
+            'key': "hosted:#{obj.name}"
             
           objs.push(o)
       
@@ -60,6 +61,7 @@ class HostedRepository extends Spine.Model
           'allow_releases': if data.allow_releases is 'on' then true else false
           'allow_snapshots': if data.allow_snapshots is 'on' then true else false
           'snapshot_timeout_seconds': if data.allow_snapshots is true then parseInt data.snapshot_timeout_seconds else -1
+          'key': "hosted:#{data.name}"
 
     data
   

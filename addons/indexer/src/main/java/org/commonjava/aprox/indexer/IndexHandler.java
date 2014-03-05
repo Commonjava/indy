@@ -20,9 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +29,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
+import org.apache.lucene.store.LockReleaseFailedException;
 import org.apache.maven.index.ArtifactScanningListener;
 import org.apache.maven.index.DefaultScannerListener;
 import org.apache.maven.index.Indexer;
@@ -238,6 +237,14 @@ public class IndexHandler
             {
                 logger.error( "{}. While scanning: {}, encountered errors:\n\n  {}", store.getKey(), new JoinString( "\n\n  ", exceptions ) );
             }
+            else
+            {
+                context.commit();
+            }
+        }
+        catch ( final IOException e )
+        {
+            logger.error( String.format( "Failed to commit changes to: %s. Reason: %s", store.getKey(), e.getMessage() ), e );
         }
         finally
         {
@@ -247,15 +254,15 @@ public class IndexHandler
             }
             catch ( final IOException e )
             {
-                logger.error( String.format( "Failed to close index for deploy point: %s. Reason: %s", store.getKey(), e.getMessage() ), e );
+                logger.error( String.format( "Failed to close index for: %s. Reason: %s", store.getKey(), e.getMessage() ), e );
             }
-        }
 
-        synchronized ( currentlyUpdating )
-        {
-            logger.info( "Releasing: {}", key );
-            currentlyUpdating.remove( key );
-            currentlyUpdating.notifyAll();
+            synchronized ( currentlyUpdating )
+            {
+                logger.info( "Releasing: {}", key );
+                currentlyUpdating.remove( key );
+                currentlyUpdating.notifyAll();
+            }
         }
     }
 
@@ -286,148 +293,139 @@ public class IndexHandler
 
     private void updateMergedIndex( final Group group, final Set<ArtifactStore> updated, final boolean updateRepositoryIndexes )
     {
+        final StoreKey groupKey = group.getKey();
         synchronized ( currentlyUpdating )
         {
-            final StoreKey key = group.getKey();
-            if ( currentlyUpdating.contains( key ) )
+            if ( currentlyUpdating.contains( groupKey ) )
             {
-                logger.info( "Already updating: {}", key );
+                logger.info( "Already updating: {}", groupKey );
                 return;
             }
 
-            logger.info( "Reserving: {}", key );
-            currentlyUpdating.add( key );
+            logger.info( "Reserving: {}", groupKey );
+            currentlyUpdating.add( groupKey );
         }
 
-        final IndexingContext groupContext = getIndexingContext( group, indexCreators.getCreators() );
-        if ( groupContext == null )
-        {
-            return;
-        }
-
-        final Map<ArtifactStore, IndexingContext> contexts = getContextsFor( group, indexCreators.getCreators() );
         try
         {
-            for ( final Map.Entry<ArtifactStore, IndexingContext> entry : contexts.entrySet() )
+
+            final IndexingContext groupContext = getIndexingContext( group, indexCreators.getCreators() );
+            if ( groupContext == null )
             {
-                final ArtifactStore store = entry.getKey();
-                if ( updated.contains( store ) )
-                {
-                    continue;
-                }
+                return;
+            }
 
-                final StoreKey key = store.getKey();
-
-                synchronized ( currentlyUpdating )
+            try
+            {
+                final List<ArtifactStore> stores = storeDataManager.getOrderedConcreteStoresInGroup( group.getName() );
+                for ( final ArtifactStore store : stores )
                 {
-                    while ( currentlyUpdating.contains( key ) )
+                    if ( updated.contains( store ) )
                     {
+                        continue;
+                    }
+
+                    final StoreKey key = store.getKey();
+
+                    IndexingContext context = getIndexingContext( store, indexCreators.getCreators() );
+                    try
+                    {
+                        if ( context == null )
+                        {
+                            continue;
+                        }
+
+                        final Transfer item = fileManager.getStorageReference( store, INDEX_PROPERTIES );
+                        if ( !item.exists() )
+                        {
+                            if ( updateRepositoryIndexes || key.getType() == StoreType.hosted )
+                            {
+                                scanIndex( store, context );
+                            }
+                        }
+                        else if ( updateRepositoryIndexes && key.getType() == StoreType.remote )
+                        {
+                            doIndexUpdate( context, key );
+                        }
+
+                        updated.add( store );
+
+                        context = getIndexingContext( store, indexCreators.getCreators() );
+
+                        if ( context == null )
+                        {
+                            continue;
+                        }
+
                         try
                         {
-                            logger.info( "Waiting for: {}", key );
-                            currentlyUpdating.wait( 500 );
+                            if ( context.getIndexDirectory() != null && context.getIndexDirectoryFile()
+                                                                               .exists() )
+                            {
+                                groupContext.merge( context.getIndexDirectory() );
+                            }
+
+                            groupContext.commit();
                         }
-                        catch ( final InterruptedException e )
+                        catch ( final IOException e )
                         {
-                            Thread.currentThread()
-                                  .interrupt();
-                            return;
+                            logger.error( String.format( "Failed to merge index from: %s into group index: %s. Reason: %s", key, group.getKey(),
+                                                         e.getMessage() ), e );
                         }
                     }
-
-                    logger.info( "Reserving: {}", key );
-                    currentlyUpdating.add( key );
-                }
-
-                final IndexingContext context = entry.getValue();
-
-                final Transfer item = fileManager.getStorageReference( store, INDEX_PROPERTIES );
-                if ( !item.exists() )
-                {
-                    if ( updateRepositoryIndexes || key.getType() == StoreType.hosted )
+                    finally
                     {
-                        scanIndex( store, context );
+                        if ( context != null )
+                        {
+                            try
+                            {
+                                context.commit();
+                                context.close( false );
+                            }
+                            catch ( final IOException e )
+                            {
+                                logger.error( String.format( "Failed to close context for: %s. Reason: %s", key, e.getMessage() ), e );
+                            }
+                        }
                     }
-                }
-                else if ( updateRepositoryIndexes && key.getType() == StoreType.remote )
-                {
-                    doIndexUpdate( context, key );
-                }
-
-                updated.add( store );
-
-                if ( context == null )
-                {
-                    // TODO: Stand off for a bit?
-                    return;
                 }
 
                 try
                 {
-                    if ( context.getIndexDirectory() != null && context.getIndexDirectoryFile()
-                                                                       .exists() )
-                    {
-                        groupContext.merge( context.getIndexDirectory() );
-                    }
+                    groupContext.commit();
                 }
                 catch ( final IOException e )
                 {
-                    logger.error( "Failed to merge index from: {} into group index: {}", key, group.getKey() );
+                    logger.error( String.format( "Failed to commit index updates for group: %s. Reason: %s", group.getKey(), e.getMessage() ), e );
                 }
 
-                synchronized ( currentlyUpdating )
-                {
-                    logger.info( "Releasing: {}", key );
-                    currentlyUpdating.remove( key );
-                    currentlyUpdating.notifyAll();
-                }
-            }
+                updated.add( group );
 
-            try
-            {
-                groupContext.commit();
-            }
-            catch ( final IOException e )
-            {
-                logger.error( String.format( "Failed to commit index updates for group: %s. Reason: %s", group.getKey(), e.getMessage() ), e );
-            }
-
-            updated.add( group );
-
-            try
-            {
-                final Expiration exp = expirationForGroup( group.getName() );
-
-                expirationManager.schedule( exp );
-
-                logger.info( "Next index update in group: {} scheduled for: {}", group.getName(), new Date( exp.getExpires() ) );
-            }
-            catch ( final ExpirationManagerException e )
-            {
-                logger.error( String.format( "Failed to schedule indexer trigger for group: %s. Reason: %s", group.getName(), e.getMessage() ), e );
-            }
-        }
-        finally
-        {
-            if ( groupContext != null )
-            {
                 try
                 {
-                    groupContext.close( false );
+                    final Expiration exp = expirationForGroup( group.getName() );
+
+                    expirationManager.schedule( exp );
+
+                    logger.info( "Next index update in group: {} scheduled for: {}", group.getName(), new Date( exp.getExpires() ) );
                 }
-                catch ( final IOException e )
+                catch ( final ExpirationManagerException e )
                 {
-                    logger.error( String.format( "Failed to close indexing context: %s", e.getMessage() ), e );
+                    logger.error( String.format( "Failed to schedule indexer trigger for group: %s. Reason: %s", group.getName(), e.getMessage() ), e );
                 }
             }
-
-            if ( contexts != null )
+            catch ( final ProxyDataException e )
             {
-                for ( final IndexingContext ctx : contexts.values() )
+                logger.error( String.format( "Failed to retrieve concrete stores in group: %s. Reason: %s", groupKey, e.getMessage() ), e );
+                return;
+            }
+            finally
+            {
+                if ( groupContext != null )
                 {
                     try
                     {
-                        ctx.close( false );
+                        groupContext.close( false );
                     }
                     catch ( final IOException e )
                     {
@@ -436,81 +434,102 @@ public class IndexHandler
                 }
             }
         }
-
-        logger.info( "Index updated for: {}", group.getKey() );
-
-        synchronized ( currentlyUpdating )
+        finally
         {
-            logger.info( "Releasing: {}", group.getKey() );
-            currentlyUpdating.remove( group.getKey() );
-            currentlyUpdating.notifyAll();
+            synchronized ( currentlyUpdating )
+            {
+                logger.info( "Releasing: {}", groupKey );
+                currentlyUpdating.remove( groupKey );
+                currentlyUpdating.notifyAll();
+            }
         }
+
+        logger.info( "Index updated for: {}", groupKey );
     }
 
     private IndexUpdateResult doIndexUpdate( final IndexingContext mergedContext, final StoreKey key )
     {
-        final ResourceFetcher resourceFetcher = new AproxResourceFetcher( storeDataManager, fileManager );
-
-        final Date centralContextCurrentTimestamp = mergedContext.getTimestamp();
-        final IndexUpdateRequest updateRequest = new IndexUpdateRequest( mergedContext, resourceFetcher );
-        IndexUpdateResult updateResult = null;
-        try
+        synchronized ( currentlyUpdating )
         {
-            updateResult = indexUpdater.fetchAndUpdateIndex( updateRequest );
-        }
-        catch ( final IOException e )
-        {
-            logger.error( "Failed to update index for: {}. Reason: {}", key, e.getMessage() );
-        }
-
-        if ( updateResult == null )
-        {
-            return null;
-        }
-
-        if ( updateResult.isFullUpdate() )
-        {
-            logger.info( "FULL index update completed for: {}", key );
-        }
-        else if ( updateResult.getTimestamp() != null && updateResult.getTimestamp()
-                                                                     .equals( centralContextCurrentTimestamp ) )
-        {
-            logger.info( "NO index update for: {}. Index is up-to-date.", key );
-        }
-        else
-        {
-            logger.info( "INCREMENTAL index update completed for: {} to cover period: {} - {}", key, centralContextCurrentTimestamp,
-                         updateResult.getTimestamp() );
-        }
-
-        return updateResult;
-    }
-
-    private Map<ArtifactStore, IndexingContext> getContextsFor( final Group group, final List<IndexCreator> indexers )
-    {
-        Map<ArtifactStore, IndexingContext> contexts = null;
-        try
-        {
-            final List<ArtifactStore> stores = storeDataManager.getOrderedConcreteStoresInGroup( group.getName() );
-            if ( stores != null && !stores.isEmpty() )
+            while ( currentlyUpdating.contains( key ) )
             {
-                contexts = new LinkedHashMap<ArtifactStore, IndexingContext>( stores.size() );
-                for ( final ArtifactStore store : stores )
+                try
                 {
-                    final IndexingContext ctx = getIndexingContext( store, indexers );
-                    if ( ctx != null )
-                    {
-                        contexts.put( store, ctx );
-                    }
+                    logger.info( "Waiting for: {}", key );
+                    currentlyUpdating.wait( 500 );
+                }
+                catch ( final InterruptedException e )
+                {
+                    Thread.currentThread()
+                          .interrupt();
+                    return null;
                 }
             }
-        }
-        catch ( final ProxyDataException e )
-        {
-            logger.error( String.format( "Failed to retrieve ordered concrete stores in group: %s. Reason: %s", group.getName(), e.getMessage() ), e );
+
+            logger.info( "Reserving: {}", key );
+            currentlyUpdating.add( key );
         }
 
-        return contexts;
+        try
+        {
+            final ResourceFetcher resourceFetcher = new AproxResourceFetcher( storeDataManager, fileManager );
+
+            final Date centralContextCurrentTimestamp = mergedContext.getTimestamp();
+            final IndexUpdateRequest updateRequest = new IndexUpdateRequest( mergedContext, resourceFetcher );
+            IndexUpdateResult updateResult = null;
+            try
+            {
+                updateResult = indexUpdater.fetchAndUpdateIndex( updateRequest );
+                mergedContext.commit();
+            }
+            catch ( final IOException e )
+            {
+                logger.error( String.format( "Failed to update index for: %s. Reason: %s", key, e.getMessage() ), e );
+            }
+
+            if ( updateResult == null )
+            {
+                return null;
+            }
+
+            if ( updateResult.isFullUpdate() )
+            {
+                logger.info( "FULL index update completed for: {}", key );
+            }
+            else if ( updateResult.getTimestamp() != null && updateResult.getTimestamp()
+                                                                         .equals( centralContextCurrentTimestamp ) )
+            {
+                logger.info( "NO index update for: {}. Index is up-to-date.", key );
+            }
+            else
+            {
+                logger.info( "INCREMENTAL index update completed for: {} to cover period: {} - {}", key, centralContextCurrentTimestamp,
+                             updateResult.getTimestamp() );
+            }
+
+            return updateResult;
+        }
+        finally
+        {
+            if ( mergedContext != null )
+            {
+                try
+                {
+                    mergedContext.close( false );
+                }
+                catch ( final IOException e )
+                {
+                    logger.error( String.format( "Failed to close index for: %s. Reason: %s", key, e.getMessage() ), e );
+                }
+            }
+
+            synchronized ( currentlyUpdating )
+            {
+                logger.info( "Releasing: {}", key );
+                currentlyUpdating.remove( key );
+                currentlyUpdating.notifyAll();
+            }
+        }
     }
 
     private IndexingContext getIndexingContext( final ArtifactStore store, final List<IndexCreator> indexers )
@@ -554,6 +573,11 @@ public class IndexHandler
             final IndexingContext context = indexer.createIndexingContext( id, id, rootDir, indexDir, id, null, true, true, indexers );
 
             return context;
+        }
+        catch ( final LockReleaseFailedException e )
+        {
+            //            logger.error( String.format( "Failed to create indexing context for: %s. Reason: %s", store.getKey(), e.getMessage() ), e );
+            logger.error( String.format( "Failed to create indexing context for: %s. Reason: %s", store.getKey(), e.getMessage() ) );
         }
         catch ( final ExistingLuceneIndexMismatchException e )
         {
