@@ -20,6 +20,7 @@ import static org.commonjava.aprox.util.UrlUtils.buildUrl;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 
 import javax.decorator.Decorator;
 import javax.decorator.Delegate;
@@ -108,6 +109,15 @@ public abstract class AutoProxDataManagerDecorator
                             dataManager.storeArtifactStore( hosted );
                         }
 
+                        for ( final StoreKey key : new ArrayList<StoreKey>( g.getConstituents() ) )
+                        {
+                            final ArtifactStore store = getArtifactStore( key );
+                            if ( store == null )
+                            {
+                                g.removeConstituent( key );
+                            }
+                        }
+
                         dataManager.storeArtifactStore( g );
                     }
                 }
@@ -138,9 +148,9 @@ public abstract class AutoProxDataManagerDecorator
     private synchronized boolean checkUrlValidity( final RemoteRepository repo, final String proxyUrl, final String validationPath )
         throws MalformedURLException
     {
-        final String url = buildUrl( proxyUrl, validationPath );
+        final String url = validationPath == null ? proxyUrl : buildUrl( proxyUrl, validationPath );
 
-        logger.info( "\n\n\n\n\n[AutoProx] Checking URL: {} from:", new Throwable(), url );
+        logger.info( "\n\n\n\n\n[AutoProx] Checking URL: {}", url );
         final HttpHead head = new HttpHead( url );
 
         http.bindRepositoryCredentialsTo( repo, head );

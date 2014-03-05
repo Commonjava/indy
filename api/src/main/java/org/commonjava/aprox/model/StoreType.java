@@ -22,9 +22,8 @@ import java.util.Set;
 //@ApiClass( description = "Enumeration of types of artifact storage on the system. This forms half of the 'primary key' for each store (the other half is the store's name).", value = "Type of artifact storage." )
 public enum StoreType
 {
-    group( Group.class, false, "group", "groups" ),
-    remote( RemoteRepository.class, false, "remote", "remotes", "repository", "repositories" ),
-    hosted( HostedRepository.class, true, "hosted", "hosted", "deploy", "deploys", "deploy_point" );
+    group( Group.class, false, "group", "groups", "g" ), remote( RemoteRepository.class, false, "remote", "remotes", "repository", "repositories",
+        "r" ), hosted( HostedRepository.class, true, "hosted", "hosted", "deploy", "deploys", "deploy_point", "h", "d" );
 
     //    private static final Logger logger = new Logger( StoreType.class );
 

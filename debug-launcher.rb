@@ -19,12 +19,16 @@ if ( ARGV.length > 0 && File.exists?("launchers/#{ARGV[0]}") )
 end
 
 clean = true
-if ( ARGV.length > 0 )
-  if ( ARGV[0] == '--existing' )
+launch = true
+ARGV.each{|arg|
+  if ( arg == '--existing' )
     ARGV.shift
     clean = false
+  elsif ( arg == '--nolaunch' )
+    ARGV.shift
+    launch = false
   end
-end
+}
 
 puts "Launching: #{launcher}"
 
@@ -38,5 +42,9 @@ archives = Dir.glob(glob)
 puts "Found matching archives: #{archives}"
 
 do_exec( "tar -zxvf #{archives[0]} -C #{base}" )
-exec( "#{launch_dir}/bin/aprox.sh #{ARGV.join(' ')}" )
+if ( launch )
+  exec( "#{launch_dir}/bin/aprox.sh #{ARGV.join(' ')}" )
+else
+  exec("cd #{launch_dir}")
+end
 

@@ -90,7 +90,7 @@ public final class UrlUtils
         list.add( baseUrl );
         for ( final String part : parts )
         {
-            if ( part == null )
+            if ( part == null || "null".equals( part ) )
             {
                 continue;
             }
