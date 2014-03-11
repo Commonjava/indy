@@ -30,6 +30,7 @@ import org.apache.commons.lang.StringUtils;
 import org.commonjava.aprox.conf.AbstractAproxMapConfig;
 import org.commonjava.aprox.conf.AproxConfigFactory;
 import org.commonjava.aprox.conf.AproxConfigInfo;
+import org.commonjava.aprox.util.PathUtils;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.DefaultConfigurationListener;
 import org.commonjava.web.config.dotconf.DotConfConfigurationReader;
@@ -79,13 +80,15 @@ public class DefaultAproxConfigFactory
             with( section.getSectionName(), section );
         }
 
+        final String config = verifyConfigPath( configPath );
+
         logger.info( "\n\n[CONFIG] Reading configuration in: '{}'\n\nfrom {}", Thread.currentThread()
-                                                                                     .getName(), configPath );
+                                                                                     .getName(), config );
 
         InputStream stream = null;
         try
         {
-            stream = ConfigFileUtils.readFileWithIncludes( configPath );
+            stream = ConfigFileUtils.readFileWithIncludes( config );
             new DotConfConfigurationReader( this ).loadConfiguration( stream );
         }
         catch ( final IOException e )
@@ -99,6 +102,35 @@ public class DefaultAproxConfigFactory
 
         logger.info( "[CONFIG] AProx configuration complete for: '{}'.\n\n\n\n", Thread.currentThread()
                                                                                        .getName() );
+    }
+
+    private String verifyConfigPath( final String configPath )
+    {
+        String config = configPath;
+        if ( config == null )
+        {
+            config = System.getProperty( CONFIG_PATH_PROP );
+        }
+
+        if ( config == null )
+        {
+            final String aproxHome = System.getProperty( "arpox.home" );
+            if ( aproxHome != null )
+            {
+                final String path = PathUtils.join( aproxHome, "etc/aprox/main.conf" );
+                if ( new File( path ).exists() )
+                {
+                    config = path;
+                }
+            }
+        }
+
+        if ( config == null )
+        {
+            config = DEFAULT_CONFIG_PATH;
+        }
+
+        return config;
     }
 
     private void setSystemProperties()
