@@ -5,9 +5,9 @@
       <li><a href="${parentUrl}">..</a></li>
       <% items.each { 
            if ( it.getPath().endsWith("/") ) { %>
-      <li><a href="${storeUrl}/${it.path}index.html">${new java.io.File(it.getPath()).name}/</a></li>
+      <li><a title="${org.commonjava.maven.galley.util.PathUtils.normalize( it.location.uri, it.path )}" href='${org.commonjava.maven.galley.util.PathUtils.normalize( storeUrl, it.path, "index.html")}'>${new java.io.File(it.getPath()).name}/</a></li>
       <%   } else { %>
-      <li><a href="${storeUrl}/${it.path}">${new java.io.File(it.getPath()).name}</a></li>
+      <li><a title="${org.commonjava.maven.galley.util.PathUtils.normalize( it.location.uri, it.path )}" href="${org.commonjava.maven.galley.util.PathUtils.normalize( storeUrl, it.path)}">${new java.io.File(it.getPath()).name}</a></li>
       <%   }
          } %>
     </ul>

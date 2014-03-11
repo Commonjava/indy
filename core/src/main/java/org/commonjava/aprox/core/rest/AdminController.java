@@ -130,34 +130,23 @@ public class AdminController
         {
             logger.info( "Verfiying that AProx DB + basic data is installed..." );
             storeManager.install();
-            RemoteRepository central = storeManager.getRemoteRepository( "central" );
-            if ( central == null )
-            {
-                central = new RemoteRepository( "central", "http://repo.maven.apache.org/maven2/" );
-                central.setCacheTimeoutSeconds( 86400 );
-                storeManager.storeRemoteRepository( central );
-            }
 
-            HostedRepository local = storeManager.getHostedRepository( "local-deployments" );
-            if ( local == null )
-            {
-                local = new HostedRepository( "local-deployments" );
-                local.setAllowReleases( true );
-                local.setAllowSnapshots( true );
-                local.setSnapshotTimeoutSeconds( 86400 );
+            final RemoteRepository central = new RemoteRepository( "central", "http://repo.maven.apache.org/maven2/" );
+            central.setCacheTimeoutSeconds( 86400 );
+            storeManager.storeRemoteRepository( central, true );
 
-                storeManager.storeHostedRepository( local );
-            }
+            final HostedRepository local = new HostedRepository( "local-deployments" );
+            local.setAllowReleases( true );
+            local.setAllowSnapshots( true );
+            local.setSnapshotTimeoutSeconds( 86400 );
 
-            Group pub = storeManager.getGroup( "public" );
-            if ( pub == null )
-            {
-                pub = new Group( "public" );
-                pub.addConstituent( central );
-                pub.addConstituent( local );
+            storeManager.storeHostedRepository( local, true );
 
-                storeManager.storeGroup( pub );
-            }
+            final Group pub = new Group( "public" );
+            pub.addConstituent( central );
+            pub.addConstituent( local );
+
+            storeManager.storeGroup( pub, true );
 
             // make sure the expiration manager is running...
             expirationManager.loadNextExpirations();

@@ -26,12 +26,12 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.depgraph.util.AproxDepgraphUtils;
 import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.data.CartoDataManager;
+import org.commonjava.maven.cartographer.discover.DiscoveryConfig;
 import org.commonjava.maven.cartographer.discover.DiscoveryResult;
 import org.commonjava.maven.cartographer.discover.post.meta.MetadataScannerSupport;
 import org.commonjava.maven.cartographer.discover.post.patch.PatcherSupport;
@@ -39,6 +39,7 @@ import org.commonjava.maven.cartographer.util.MavenModelProcessor;
 import org.commonjava.maven.galley.maven.GalleyMavenException;
 import org.commonjava.maven.galley.maven.model.view.MavenPomView;
 import org.commonjava.maven.galley.maven.parse.MavenPomReader;
+import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,8 +78,7 @@ public class AproxModelDiscoverer
         this.metadataScannerSupport = metadataScannerSupport;
     }
 
-    public DiscoveryResult discoverRelationships( final ProjectVersionRef ref, final Transfer item, final List<? extends KeyedLocation> locations,
-                                                  final Set<String> enabledPatchers, final boolean storeRelationships )
+    public DiscoveryResult discoverRelationships( final ProjectVersionRef ref, final Transfer item, final DiscoveryConfig discoveryConfig )
         throws CartoDataException
     {
         final String path = item.getPath();
@@ -93,6 +93,10 @@ public class AproxModelDiscoverer
 
         final URI source = AproxDepgraphUtils.toDiscoveryURI( key );
 
+        final List<? extends Location> locations = discoveryConfig.getLocations();
+        final Set<String> enabledPatchers = discoveryConfig.getEnabledPatchers();
+        final boolean storeRelationships = discoveryConfig.isStoreRelationships();
+
         MavenPomView pomView;
         try
         {
@@ -103,22 +107,30 @@ public class AproxModelDiscoverer
             throw new CartoDataException( "Failed to parse: {}. Reason: {}", e, item, e.getMessage() );
         }
 
-        DiscoveryResult result = modelProcessor.readRelationships( pomView, source );
+        DiscoveryResult result = modelProcessor.readRelationships( pomView, source, discoveryConfig );
 
         if ( result != null )
         {
-            logger.debug( "Attempting to patch results for: {}", result.getSelectedRef() );
+            logger.info( "Attempting to patch {} results for: {}", result.getAcceptedRelationships()
+                                                                         .size(), result.getSelectedRef() );
             result = patchers.patch( result, enabledPatchers, locations, pomView, item );
+            logger.info( "After patching, {} relationships were discovered.", result.getAcceptedRelationships()
+                                                                                    .size() );
 
             final Map<String, String> metadata = metadataScannerSupport.scan( result.getSelectedRef(), locations, pomView, item );
             result.setMetadata( metadata );
 
             if ( storeRelationships )
             {
+                logger.info( "Storing discovered relationships." );
                 final Set<ProjectRelationship<?>> rejected = dataManager.storeRelationships( result.getAcceptedRelationships() );
                 dataManager.addMetadata( result.getSelectedRef(), metadata );
 
                 result = new DiscoveryResult( result.getSource(), result, rejected );
+            }
+            else
+            {
+                logger.info( "NOT storing discovered relationships." );
             }
         }
 

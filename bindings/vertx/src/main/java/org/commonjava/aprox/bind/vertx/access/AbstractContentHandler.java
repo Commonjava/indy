@@ -164,6 +164,7 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
                 request.response()
                        .putHeader( ApplicationHeader.content_type.key(), contentType );
 
+                item.touch();
                 request.response()
                        .sendFile( item.getDetachedFile()
                                       .getCanonicalPath() );

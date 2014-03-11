@@ -30,8 +30,6 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.vertx.java.core.http.HttpServer;
 import org.vertx.java.core.impl.DefaultVertx;
 
-import ch.qos.logback.core.joran.spi.JoranException;
-
 public class Booter
 {
     public static final String APROX_HOME_PROP = "aprox.home";
@@ -59,12 +57,12 @@ public class Booter
             bootDefaults = new File( bootDef );
         }
 
-        final String logconf = System.getProperty( APROX_LOGCONF_PROP );
-        File logConf = null;
-        if ( logconf != null )
-        {
-            logConf = new File( logconf );
-        }
+        //        final String logconf = System.getProperty( APROX_LOGCONF_PROP );
+        //        File logConf = null;
+        //        if ( logconf != null )
+        //        {
+        //            logConf = new File( logconf );
+        //        }
 
         final BootOptions boot = new BootOptions();
         try
@@ -72,7 +70,7 @@ public class Booter
             final String aproxHome = System.getProperty( APROX_HOME_PROP, new File( "." ).getCanonicalPath() );
 
             boot.setDefaults( bootDefaults, aproxHome );
-            boot.configureLogging( logConf );
+            //            boot.configureLogging( logConf );
         }
         catch ( final IOException e )
         {
@@ -84,11 +82,11 @@ public class Booter
             System.err.printf( "ERROR RESOLVING BOOT DEFAULTS: %s.\nReason: %s\n\n", bootDefaults, e.getMessage() );
             System.exit( CANT_INTERP_BOOT_DEFAULTS );
         }
-        catch ( final JoranException e )
-        {
-            System.err.printf( "ERROR CONFIGURING LOGGING FROM: %s.\nReason: %s\n\n", logConf, e.getMessage() );
-            System.exit( CANT_CONFIGURE_LOGGING );
-        }
+        //        catch ( final JoranException e )
+        //        {
+        //            System.err.printf( "ERROR CONFIGURING LOGGING FROM: %s.\nReason: %s\n\n", logConf, e.getMessage() );
+        //            System.exit( CANT_CONFIGURE_LOGGING );
+        //        }
 
         final CmdLineParser parser = new CmdLineParser( boot );
         boolean canStart = true;

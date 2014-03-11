@@ -10,8 +10,13 @@ class RedHatFactory implements AutoProxFactory
     RemoteRepository createRemoteRepository( String named )
         throws MalformedURLException
     {
-        def match = (named =~ /RH-([^0-9]+)([0-9])(.+)/)[0]
-        new RemoteRepository( name: named, url: "http://maven.repository.redhat.com/techpreview/${match[1] + match[2]}/${match[2] + match[3]}/maven-repository/" )
+        if ( named == "RH-all" ){
+          new RemoteRepository( name: named, url: "http://maven.repository.redhat.com/techpreview/all/" )
+        }
+        else{
+          def match = (named =~ /RH-([^0-9]+)([0-9])(.+)/)[0]
+          new RemoteRepository( name: named, url: "http://maven.repository.redhat.com/techpreview/${match[1] + match[2]}/${match[2] + match[3]}/maven-repository/" )
+        }
     }
 
     HostedRepository createHostedRepository( String named )

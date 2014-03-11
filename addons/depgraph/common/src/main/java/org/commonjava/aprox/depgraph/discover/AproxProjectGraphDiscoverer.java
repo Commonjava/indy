@@ -17,19 +17,14 @@
 package org.commonjava.aprox.depgraph.discover;
 
 import java.net.URI;
-import java.util.List;
+import java.util.Collections;
 
 import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.data.ProxyDataException;
-import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depgraph.util.AproxDepgraphUtils;
 import org.commonjava.aprox.inject.Production;
-import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.model.StoreType;
-import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.atlas.graph.model.EProjectKey;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
@@ -43,6 +38,7 @@ import org.commonjava.maven.cartographer.discover.DiscoveryResult;
 import org.commonjava.maven.cartographer.discover.ProjectRelationshipDiscoverer;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.maven.ArtifactManager;
+import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,24 +61,32 @@ public class AproxProjectGraphDiscoverer
     @Inject
     private CartoDataManager dataManager;
 
-    @Inject
-    private StoreDataManager storeManager;
-
     protected AproxProjectGraphDiscoverer()
     {
     }
 
     public AproxProjectGraphDiscoverer( final AproxModelDiscoverer discoverer, final ArtifactManager artifactManager,
-                                        final CartoDataManager dataManager, final StoreDataManager storeManager )
+                                        final CartoDataManager dataManager )
     {
         this.discoverer = discoverer;
         this.artifactManager = artifactManager;
         this.dataManager = dataManager;
-        this.storeManager = storeManager;
+    }
+
+    /**
+     * @deprecated Use {@link #discoverRelationships(ProjectVersionRef,DiscoveryConfig)} instead
+     */
+    @Deprecated
+    @Override
+    public DiscoveryResult discoverRelationships( final ProjectVersionRef ref, final DiscoveryConfig discoveryConfig, final boolean storeRelationships )
+        throws CartoDataException
+    {
+        discoveryConfig.setStoreRelationships( storeRelationships );
+        return discoverRelationships( ref, discoveryConfig );
     }
 
     @Override
-    public DiscoveryResult discoverRelationships( final ProjectVersionRef ref, final DiscoveryConfig discoveryConfig, final boolean storeRelationships )
+    public DiscoveryResult discoverRelationships( final ProjectVersionRef ref, final DiscoveryConfig discoveryConfig )
         throws CartoDataException
     {
         final URI source = discoveryConfig.getDiscoverySource();
@@ -113,29 +117,23 @@ public class AproxProjectGraphDiscoverer
             return null;
         }
 
-        final StoreKey key = AproxDepgraphUtils.getDiscoveryStore( discoveryConfig.getDiscoverySource() );
+        setLocation( discoveryConfig );
 
         try
         {
             final ArtifactRef pomRef = specific.asPomArtifact();
 
             final Transfer retrieved;
-            final List<? extends KeyedLocation> locations = getLocations( key );
-            if ( locations == null || locations.isEmpty() )
-            {
-                logger.warn( "NO LOCATIONS given for resolving: {}", pomRef );
-                return null;
-            }
 
-            retrieved = artifactManager.retrieveFirst( locations, pomRef );
+            retrieved = artifactManager.retrieveFirst( discoveryConfig.getLocations(), pomRef );
 
             if ( retrieved != null )
             {
-                return discoverer.discoverRelationships( specific, retrieved, locations, discoveryConfig.getEnabledPatchers(), storeRelationships );
+                return discoverer.discoverRelationships( specific, retrieved, discoveryConfig );
             }
             else
             {
-                logger.debug( "{} NOT FOUND in:\n  {}", pomRef, new JoinString( "\n  ", locations ) );
+                logger.debug( "{} NOT FOUND in:\n  {}", pomRef, new JoinString( "\n  ", discoveryConfig.getLocations() ) );
                 return null;
             }
         }
@@ -145,68 +143,28 @@ public class AproxProjectGraphDiscoverer
         }
     }
 
-    private List<? extends KeyedLocation> getLocations( final StoreKey key )
-        throws CartoDataException
+    private void setLocation( final DiscoveryConfig discoveryConfig )
     {
-        ArtifactStore store;
-        try
+        synchronized ( discoveryConfig )
         {
-            store = storeManager.getArtifactStore( key );
-        }
-        catch ( final ProxyDataException e )
-        {
-            throw new CartoDataException( "Failed to lookup ArtifactStore for key: {}. Reason: {}", e, key, e.getMessage() );
-        }
-
-        List<? extends KeyedLocation> locations;
-        if ( key == null )
-        {
-            try
+            if ( discoveryConfig.getLocations() == null )
             {
-                locations = LocationUtils.toLocations( storeManager.getAllConcreteArtifactStores() );
-            }
-            catch ( final ProxyDataException e )
-            {
-                throw new CartoDataException( "Cannot retrieve full list of non-group artifact stores. Reason: {}", e, e.getMessage() );
+                final StoreKey key = AproxDepgraphUtils.getDiscoveryStore( discoveryConfig.getDiscoverySource() );
+                final Location location = LocationUtils.toCacheLocation( key );
+                discoveryConfig.setLocations( Collections.singletonList( location ) );
             }
         }
-        else if ( store == null )
-        {
-            throw new CartoDataException( "Cannot discover depgraphs from: {}. No such store.", key );
-        }
-        else if ( key.getType() == StoreType.group )
-        {
-            List<ArtifactStore> concrete;
-            try
-            {
-                concrete = storeManager.getOrderedConcreteStoresInGroup( key.getName() );
-            }
-            catch ( final ProxyDataException e )
-            {
-                throw new CartoDataException( "Failed to lookup ordered list of concrete ArtifactStores for group: {}. Reason: {}", e, key,
-                                              e.getMessage() );
-            }
-
-            locations = LocationUtils.toLocations( concrete );
-        }
-        else
-        {
-            locations = LocationUtils.toLocations( store );
-        }
-
-        return locations;
     }
 
     @Override
     public ProjectVersionRef resolveSpecificVersion( final ProjectVersionRef ref, final DiscoveryConfig discoveryConfig )
         throws CartoDataException
     {
-        final StoreKey key = AproxDepgraphUtils.getDiscoveryStore( discoveryConfig.getDiscoverySource() );
-        final List<? extends KeyedLocation> locations = getLocations( key );
+        setLocation( discoveryConfig );
 
         try
         {
-            return artifactManager.resolveVariableVersion( locations, ref );
+            return artifactManager.resolveVariableVersion( discoveryConfig.getLocations(), ref );
         }
         catch ( final TransferException e )
         {

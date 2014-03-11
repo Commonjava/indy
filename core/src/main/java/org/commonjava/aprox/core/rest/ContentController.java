@@ -20,6 +20,9 @@ import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +48,16 @@ import org.commonjava.maven.galley.model.Transfer;
 @ApplicationScoped
 public class ContentController
 {
+
+    private static final Comparator<? super ConcreteResource> ITEMS_LISTING_COMPARATOR = new Comparator<ConcreteResource>()
+    {
+        @Override
+        public int compare( final ConcreteResource f, final ConcreteResource s )
+        {
+            return f.getPath()
+                    .compareTo( s.getPath() );
+        }
+    };
 
     @Inject
     private StoreDataManager storeManager;
@@ -173,7 +186,29 @@ public class ContentController
         final StoreKey key = new StoreKey( type, name );
         final ArtifactStore store = getStore( key );
 
-        final List<ConcreteResource> items = fileManager.list( store, path );
+        List<ConcreteResource> items = fileManager.list( store, path );
+        final List<ConcreteResource> deduped = new ArrayList<ConcreteResource>( items.size() );
+        for ( final ConcreteResource res : items )
+        {
+            final String p = res.getPath();
+            if ( !p.matches( ".+\\.[^/]+" ) && !p.endsWith( "/" ) )
+            {
+                final ConcreteResource r = new ConcreteResource( res.getLocation(), p + "/" );
+                if ( deduped.contains( r ) )
+                {
+                    continue;
+                }
+            }
+
+            if ( !deduped.contains( res ) )
+            {
+                deduped.add( res );
+            }
+        }
+
+        items = deduped;
+        Collections.sort( items, ITEMS_LISTING_COMPARATOR );
+
         final String parentPath = normalize( normalize( parentPath( normalize( parentPath( path ) ) ) ), "index.html" );
         final String storeUrl = uriFormatter.formatAbsolutePathTo( serviceUrl, type.singularEndpointName(), name );
         final String parentUrl = uriFormatter.formatAbsolutePathTo( serviceUrl, type.singularEndpointName(), name, parentPath );

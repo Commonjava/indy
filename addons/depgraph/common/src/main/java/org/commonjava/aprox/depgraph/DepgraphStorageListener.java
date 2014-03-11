@@ -16,11 +16,16 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph;
 
+import java.util.concurrent.ExecutorService;
+
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depgraph.discover.AproxModelDiscoverer;
+import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.maven.cartographer.data.CartoDataManager;
+import org.commonjava.maven.cartographer.discover.post.patch.PatcherSupport;
 import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,24 +40,29 @@ public class DepgraphStorageListener
     @Inject
     private StoreDataManager aprox;
 
-    //    @Inject
-    //    @ExecutorConfig( priority = 8, threads = 2, named = "depgraph-listener" )
-    //    private ExecutorService executor;
+    @Inject
+    @ExecutorConfig( priority = 8, threads = 2, named = "depgraph-listener" )
+    private ExecutorService executor;
+
+    @Inject
+    private PatcherSupport patcherSupport;
+
+    @Inject
+    private CartoDataManager carto;
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public void handleFileAccessEvent( @Observes final FileAccessEvent event )
     {
-        //        final String path = event.getTransfer()
-        //                                 .getPath();
-        //
-        //        if ( !path.endsWith( ".pom" ) )
-        //        {
-        //            return;
-        //        }
-        //
-        //        logger.info( "[SUBMIT] DepgraphStorageListenerRunnable for: {}", event );
-        //
-        //        executor.execute( new DepgraphStorageListenerRunnable( discoverer, aprox, event.getTransfer() ) );
+        if ( !event.getTransfer()
+                   .getPath()
+                   .endsWith( ".pom" ) )
+        {
+            return;
+        }
+
+        logger.info( "[SUBMIT] DepgraphStorageListenerRunnable for: {}", event );
+
+        executor.execute( new DepgraphStorageListenerRunnable( discoverer, aprox, carto, patcherSupport, event.getTransfer() ) );
     }
 }

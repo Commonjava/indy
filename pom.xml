@@ -45,10 +45,10 @@
     <arquillian-version>1.0.1.Final</arquillian-version>
     <qarqas-version>0.3</qarqas-version>
     <shelflife-version>0.6</shelflife-version>
-    <atlasVersion>0.10.1</atlasVersion>
-    <galleyVersion>0.4.1</galleyVersion>
+    <atlasVersion>0.10.2-SNAPSHOT</atlasVersion>
+    <galleyVersion>0.4.2-SNAPSHOT</galleyVersion>
     <cartoVersion>0.5-SNAPSHOT</cartoVersion>
-    <bomVersion>9</bomVersion>
+    <bomVersion>10-SNAPSHOT</bomVersion>
     
     <vertx.testtools.version>2.0.0-final</vertx.testtools.version>
   </properties>

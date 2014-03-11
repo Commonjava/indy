@@ -17,15 +17,23 @@ class Group extends Spine.Model
       if objects
         for object in objects
           if object
-            object.id = object.key.name if object.key and object.key.name
-            object.name = object.key.name if object.key and object.key.name
-            object.type = object.key.type if object.key and object.key.type
+            if object.key
+              key = object.key
+              parts = key.split(':')
+              object.name = parts[1] if parts and parts.length > 1
+              object.type = parts[0] if parts and parts.length > 0
+              object.id = object.name
+            
             object.key = "#{object.key.type}:#{object.key.name}" if object.key and object.key.type and object.key.name
     else
       object = objects
-      object.id = object.key.name if object.key and object.key.name
-      object.name = object.key.name if object.key and object.key.name
-      object.type = object.key.type if object.key and object.key.type
+      if object.key
+        key = object.key
+        parts = key.split(':')
+        object.name = parts[1] if parts and parts.length > 1
+        object.type = parts[0] if parts and parts.length > 0
+        object.id = object.name
+        
       object.key = "#{object.key.type}:#{object.key.name}" if object.key and object.key.type and object.key.name
 
     if Spine.isArray(objects)

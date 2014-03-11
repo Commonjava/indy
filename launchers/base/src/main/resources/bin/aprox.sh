@@ -1,4 +1,7 @@
-#!/bin/bash -l
+#!/bin/bash
+
+test -f /etc/profile && source /etc/profile
+test -f $HOME/.bash_profile &&source $HOME/.bash_profile
 
 THIS=$(cd ${0%/*} && echo $PWD/${0##*/})
 # THIS=`realpath ${0}`
@@ -7,9 +10,9 @@ BASEDIR=`dirname ${BASEDIR}`
 
 # echo "basedir: ${BASEDIR}"
 
-APROX_LOGCONF=${APROX_LOGCONF:-${BASEDIR}/etc/aprox/logback.xml}
+APROX_LOGCONF_DIR=${APROX_LOGCONF_DIR:-${BASEDIR}/etc/aprox/logging}
 
-CP=""
+CP="${APROX_LOGCONF_DIR}"
 for f in $(find $BASEDIR/lib/aprox-cdi-components-*.jar -type f)
 do
   CP=${CP}:${f}
@@ -29,8 +32,11 @@ if [ $? != 0 ]; then
   JAVA=${JAVA_HOME}/bin/java
 fi
 
-test -f ${BASEDIR}/etc/aprox/env.sh && source ${BASEDIR}/etc/aprox/env.sh
+APROX_ENV=${APROX_ENV:-${BASEDIR}/etc/aprox/env.sh}
+test -f ${APROX_ENV} && source ${APROX_ENV}
 
 # echo "Command: '${JAVA} -cp ${CP} -Daprox.home=${BASEDIR} -Daprox.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS} $@'"
-exec "$JAVA" ${JAVA_OPTS} -cp "${CP}" -Daprox.logging="${APROX_LOGCONF}" -Daprox.home="${BASEDIR}" -Daprox.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS} "$@"
+# exec "$JAVA" ${JAVA_OPTS} -cp "${CP}" -Daprox.logging="${APROX_LOGCONF}" -Daprox.home="${BASEDIR}" -Daprox.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS} "$@"
+
+exec "$JAVA" ${JAVA_OPTS} -cp "${CP}" -Daprox.home="${BASEDIR}" -Daprox.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS} "$@"
 

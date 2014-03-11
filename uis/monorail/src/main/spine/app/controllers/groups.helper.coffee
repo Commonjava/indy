@@ -42,21 +42,23 @@ class GroupsHelper extends Spine.Controller
 
     stores
     
-  allAvailable:  ->
+  allAvailable: (group) ->
+    constituents = group.constituents
     available = []
 
     remoteRepos = RemoteRepository.all()
-    available.push({'key': "remote:#{store.name}", 'name': store.name, 'type': 'R'}) for store in remoteRepos
+    available.push({'key': "remote:#{store.name}", 'name': store.name, 'type': 'R'}) for store in remoteRepos when constituents.indexOf(store.key) < 0
 
     groups = Group.all()
-    available.push({'key': "group:#{store.name}", 'name': store.name, 'type': 'G'}) for store in groups
+    available.push({'key': "group:#{store.name}", 'name': store.name, 'type': 'G'}) for store in groups when group.name != store.name and constituents.indexOf(store.key) < 0
 
     hostedRepos = HostedRepository.all()
-    available.push({'key': "hostd:#{store.name}", 'name': store.name, 'type': 'H'}) for store in hostedRepos
+    available.push({'key': "hostd:#{store.name}", 'name': store.name, 'type': 'H'}) for store in hostedRepos when constituents.indexOf(store.key) < 0
     
     available
     
-  availableWithSortedConstituents: (constituents) ->
+  availableWithSortedConstituents: (group) ->
+    constituents = group.constituents
     available = []
   
     remoteRepos = RemoteRepository.all()

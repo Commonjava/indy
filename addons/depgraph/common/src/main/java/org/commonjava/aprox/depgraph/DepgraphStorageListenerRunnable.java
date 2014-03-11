@@ -16,8 +16,8 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph;
 
+import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -28,10 +28,14 @@ import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.galley.KeyedLocation;
+import org.commonjava.aprox.util.ArtifactPathInfo;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.data.CartoDataException;
+import org.commonjava.maven.cartographer.data.CartoDataManager;
+import org.commonjava.maven.cartographer.discover.DefaultDiscoveryConfig;
 import org.commonjava.maven.cartographer.discover.DiscoveryResult;
+import org.commonjava.maven.cartographer.discover.post.patch.PatcherSupport;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,18 +52,21 @@ public class DepgraphStorageListenerRunnable
 
     private final AproxModelDiscoverer discoverer;
 
-    private CartoDataException error;
+    private Throwable error;
 
     private final StoreDataManager aprox;
 
-    private final ProjectVersionRef ref;
+    private final CartoDataManager carto;
 
-    public DepgraphStorageListenerRunnable( final AproxModelDiscoverer discoverer, final StoreDataManager aprox, final ProjectVersionRef ref,
-                                            final Transfer item )
+    private final PatcherSupport patcherSupport;
+
+    public DepgraphStorageListenerRunnable( final AproxModelDiscoverer discoverer, final StoreDataManager aprox, final CartoDataManager carto,
+                                            final PatcherSupport patcherSupport, final Transfer item )
     {
         this.discoverer = discoverer;
         this.aprox = aprox;
-        this.ref = ref;
+        this.carto = carto;
+        this.patcherSupport = patcherSupport;
         this.item = item;
     }
 
@@ -71,6 +78,14 @@ public class DepgraphStorageListenerRunnable
     @Override
     public void run()
     {
+        final ArtifactPathInfo info = ArtifactPathInfo.parse( item.getPath() );
+        if ( info == null )
+        {
+            logger.info( "Cannot parse path into GAV: {}", item.getPath() );
+            return;
+        }
+
+        final ProjectVersionRef ref = info.getProjectId();
         final StoreKey key = LocationUtils.getKey( item );
 
         ArtifactStore originatingStore = null;
@@ -88,7 +103,7 @@ public class DepgraphStorageListenerRunnable
             return;
         }
 
-        //        logger.info( "Logging: {} with Tensor relationship-graphing system.", event );
+        //        logger.info( "Logging: {} in project-dependency graph.", event );
         final List<ArtifactStore> stores = getRelevantStores( originatingStore );
         if ( stores == null || stores.isEmpty() )
         {
@@ -104,11 +119,37 @@ public class DepgraphStorageListenerRunnable
 
         try
         {
-            result = discoverer.discoverRelationships( ref, item, locations, Collections.<String> emptySet(), true );
+            final DefaultDiscoveryConfig config = new DefaultDiscoveryConfig( item.getLocation() );
+            config.setLocations( locations );
+            config.setStoreRelationships( true );
+            config.setEnabledPatchers( patcherSupport.getAvailablePatchers() );
+
+            carto.setCurrentWorkspace( key.toString() );
+
+            result = discoverer.discoverRelationships( ref, item, config );
+
+            carto.getCurrentWorkspace()
+                 .getDatabase()
+                 .printStats();
         }
         catch ( final CartoDataException e )
         {
             error = e;
+        }
+        catch ( final URISyntaxException e )
+        {
+            error = e;
+        }
+        finally
+        {
+            try
+            {
+                carto.clearCurrentWorkspace();
+            }
+            catch ( final CartoDataException e )
+            {
+                logger.error( String.format( "Failed to clear workspace for: %s. Reason: %s", key, e.getMessage() ), e );
+            }
         }
     }
 
@@ -117,7 +158,7 @@ public class DepgraphStorageListenerRunnable
         return result;
     }
 
-    public CartoDataException getError()
+    public Throwable getError()
     {
         return error;
     }

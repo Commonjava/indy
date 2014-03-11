@@ -24,11 +24,12 @@ class RemoteRepository extends Spine.Model
           if object
             object.remote_url = object.url if object.url
             
-            key = object.key if object.key
-            parts = key.split(':')
-            object.name = parts[1] if parts and parts.length > 1
-            object.type = parts[0] if parts and parts.length > 0
-            object.id = object.name
+            if object.key
+              key = object.key
+              parts = key.split(':')
+              object.name = parts[1] if parts and parts.length > 1
+              object.type = parts[0] if parts and parts.length > 0
+              object.id = object.name
             
             object.key = "#{object.key.type}:#{object.key.name}" if object.key and object.key.type and object.key.name
             
@@ -37,11 +38,12 @@ class RemoteRepository extends Spine.Model
       object = objects
       object.remote_url = object.url if object.url
       
-      key = object.key if object.key
-      parts = key.split(':')
-      object.name = parts[1] if parts and parts.length > 1
-      object.type = parts[0] if parts and parts.length > 0
-      object.id = object.name
+      if object.key
+        key = object.key
+        parts = key.split(':')
+        object.name = parts[1] if parts and parts.length > 1
+        object.type = parts[0] if parts and parts.length > 0
+        object.id = object.name
       
       object.key = "#{object.key.type}:#{object.key.name}" if object.key and object.key.type and object.key.name
       

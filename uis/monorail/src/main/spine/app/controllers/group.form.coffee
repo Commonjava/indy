@@ -32,18 +32,26 @@ class GroupForm extends DialogController
     @log("ui object: #{ui}")
     store = $(ui.draggable).attr('name')
     
-    @log("Adding #{store}")
-    
     target = $(evt.target).attr('name')
+    
+    idx = if @item.constituents then @item.constituents.indexOf(store) else -1
+    if @item.constituents?.indexOf(store) > -1
+      # if the item already exists, we're moving it, so remove from the old location and prepare to add below...
+      @item.constituents[idx...idx+1] = []
+      
     if not @item.constituents or @item.constituents.indexOf(target) < 0
+      @log("Adding #{store}")
       @item.constituents.push store
-    else
+    else if @item.constituents.indexOf(store) < 0
       idx = @item.constituents.indexOf(target)
 
       cons = []
       if idx > 0
         cons.push i for i in @item.constituents[0..idx - 1]
+      else
+        idx=0
         
+      @log("Adding #{store} at index: #{idx}")
       cons.push store
       cons.push i for i in @item.constituents[idx..]
       

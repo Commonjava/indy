@@ -19,6 +19,8 @@ package org.commonjava.aprox.util;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+
 public class ArtifactPathInfo
 {
 
@@ -79,14 +81,13 @@ public class ArtifactPathInfo
 
     private final boolean isSnapshot;
 
-    public ArtifactPathInfo( final String groupId, final String artifactId, final String version, final String file,
-                             final String fullPath )
+    public ArtifactPathInfo( final String groupId, final String artifactId, final String version, final String file, final String fullPath )
     {
         this( groupId, artifactId, version, null, "jar", file, fullPath );
     }
 
-    public ArtifactPathInfo( final String groupId, final String artifactId, final String version,
-                             final String classifier, final String type, final String file, final String fullPath )
+    public ArtifactPathInfo( final String groupId, final String artifactId, final String version, final String classifier, final String type,
+                             final String file, final String fullPath )
     {
         this.groupId = groupId;
         this.artifactId = artifactId;
@@ -153,8 +154,7 @@ public class ArtifactPathInfo
     @Override
     public String toString()
     {
-        return String.format( "ArtifactPathInfo [groupId=%s, artifactId=%s, version=%s, file=%s]", groupId, artifactId,
-                              version, file );
+        return String.format( "ArtifactPathInfo [groupId=%s, artifactId=%s, version=%s, file=%s]", groupId, artifactId, version, file );
     }
 
     @Override
@@ -232,8 +232,7 @@ public class ArtifactPathInfo
         return true;
     }
 
-    private static final String UNIQUE_SNAPSHOT_PATTERN =
-        ".+-(\\d\\d\\d\\d\\d\\d\\d\\d\\.\\d\\d\\d\\d\\d\\d)-(\\d+)(\\..+)?";
+    private static final String UNIQUE_SNAPSHOT_PATTERN = ".+-(\\d\\d\\d\\d\\d\\d\\d\\d\\.\\d\\d\\d\\d\\d\\d)-(\\d+)(\\..+)?";
 
     private static final String NON_UNIQUE_SNAPSHOT_PATTERN = ".+-SNAPSHOT(\\..+)?";
 
@@ -277,9 +276,9 @@ public class ArtifactPathInfo
         }
     }
 
-    public String getProjectId()
+    public ProjectVersionRef getProjectId()
     {
-        return String.format( "%s:%s:%s", getGroupId(), getArtifactId(), getVersion() );
+        return new ProjectVersionRef( getGroupId(), getArtifactId(), getVersion() );
     }
 
 }

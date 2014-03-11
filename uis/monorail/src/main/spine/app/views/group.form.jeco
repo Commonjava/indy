@@ -15,9 +15,9 @@
         <div class="selected-container scrollable listing dropzone" name="container">
           <ul class="selected dropzone" name="list">
           <% if @item.constituents and @item.constituents.length > 0: %>
-            <% for store in @helper.availableWithSortedConstituents( @item.constituents ): %>
+            <% for store in @helper.availableWithSortedConstituents( @item ): %>
               <% if @item.constituents.indexOf( store.key ) > -1: %>
-                <li name="<%= store.key %>" type="<%= store.key.type %>">(<%= store.key.type %>) <%= store.key.name %></li>
+                <li name="<%= store.key %>" type="<%= store.type %>">(<%= store.type %>) <%= store.name %></li>
               <% end %>
             <% end %>
           <% else if @item.constituents: %>
@@ -31,9 +31,9 @@
         <label class="block-label">Available Stores:</label>
         <div class="scrollable listing">
           <ul class="available dropzone">
-            <% for store in @helper.allAvailable(): %>
+            <% for store in @helper.allAvailable( @item ): %>
               <% if not @item.constituents or @item.constituents.indexOf( store.key ) < 0: %>
-                <li name="<%= store.key %>" type="<%= store.key.type %>">(<%= store.key.type %>) <%= store.key.name %></li>
+                <li name="<%= store.key %>" type="<%= store.type %>">(<%= store.type %>) <%= store.name %></li>
               <% end %>
             <% end %>
           </ul>
