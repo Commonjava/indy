@@ -31,10 +31,6 @@ import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.maven.atlas.graph.workspace.GraphWorkspace;
 import org.commonjava.maven.atlas.graph.workspace.GraphWorkspaceConfiguration;
-import org.commonjava.maven.atlas.ident.ref.ProjectRef;
-import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.atlas.ident.version.SingleVersion;
-import org.commonjava.maven.atlas.ident.version.VersionUtils;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.ops.WorkspaceOps;
 import org.commonjava.web.json.model.Listing;
@@ -152,50 +148,6 @@ public class WorkspaceController
         catch ( final URISyntaxException e )
         {
             throw new AproxWorkflowException( "Failed to generate location URI for: {}. Reason: {}", e, ws.getId(), e.getMessage() );
-        }
-        finally
-        {
-            detach( ws );
-        }
-    }
-
-    public boolean select( final String id, final String groupId, final String artifactId, final String newVersion, final String oldVersion,
-                           final UriFormatter uriFormatter )
-        throws AproxWorkflowException
-    {
-        GraphWorkspace ws = null;
-        boolean modified = false;
-        ProjectRef pr = null;
-        try
-        {
-            final SingleVersion ver = VersionUtils.createSingleVersion( newVersion );
-
-            ws = ops.get( id );
-            if ( ws == null )
-            {
-                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "Cannot find workspace: {}", id );
-            }
-
-            if ( oldVersion == null )
-            {
-                pr = new ProjectRef( groupId, artifactId );
-                ws.selectVersion( pr, new ProjectVersionRef( pr, ver ) );
-                modified = true;
-            }
-            else
-            {
-                final ProjectVersionRef orig = new ProjectVersionRef( groupId, artifactId, oldVersion );
-                final ProjectVersionRef selected = ws.selectVersion( orig, orig.selectVersion( ver ) );
-
-                modified = selected.equals( orig );
-                pr = orig;
-            }
-
-            return modified;
-        }
-        catch ( final CartoDataException e )
-        {
-            throw new AproxWorkflowException( "Failed to load workspace: {}. Reason: {}", e, id, e.getMessage() );
         }
         finally
         {

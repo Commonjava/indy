@@ -29,7 +29,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -149,28 +148,6 @@ public class WorkspaceResource
         {
             logger.error( String.format( "Failed to retrieve servlet request input stream: %s", e.getMessage() ), e );
             return AproxExceptionUtils.formatResponse( ApplicationStatus.BAD_REQUEST, e );
-        }
-    }
-
-    @Path( "/{id}/select/{groupId}/{artifactId}/{newVersion}" )
-    @GET
-    @Produces( MediaType.APPLICATION_JSON )
-    public Response select( @PathParam( "id" ) final String id, @PathParam( "groupId" ) final String groupId,
-                            @PathParam( "artifactId" ) final String artifactId, @PathParam( "newVersion" ) final String newVersion,
-                            @QueryParam( "for" ) final String oldVersion, @Context final UriInfo uriInfo )
-    {
-        try
-        {
-            final UriBuilder uriBuilder = uriInfo.getBaseUriBuilder();
-            final boolean modified = controller.select( id, groupId, artifactId, newVersion, oldVersion, new JaxRsUriFormatter( uriBuilder ) );
-            return modified ? Response.ok()
-                                      .build() : Response.notModified()
-                                                         .build();
-        }
-        catch ( final AproxWorkflowException e )
-        {
-            logger.error( e.getMessage(), e );
-            return AproxExceptionUtils.formatResponse( e );
         }
     }
 
