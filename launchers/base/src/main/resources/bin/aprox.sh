@@ -12,6 +12,8 @@ BASEDIR=`dirname ${BASEDIR}`
 
 APROX_LOGCONF_DIR=${APROX_LOGCONF_DIR:-${BASEDIR}/etc/aprox/logging}
 
+echo "Loading logging config from: ${APROX_LOGCONF_DIR}"
+
 CP="${APROX_LOGCONF_DIR}"
 for f in $(find $BASEDIR/lib/aprox-cdi-components-*.jar -type f)
 do

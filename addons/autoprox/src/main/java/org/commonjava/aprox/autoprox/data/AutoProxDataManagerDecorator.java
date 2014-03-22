@@ -21,6 +21,7 @@ import static org.commonjava.aprox.util.UrlUtils.buildUrl;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.decorator.Decorator;
 import javax.decorator.Delegate;
@@ -69,16 +70,16 @@ public abstract class AutoProxDataManagerDecorator
     public Group getGroup( final String name )
         throws ProxyDataException
     {
-        logger.info( "DECORATED (getGroup: {})", name );
+        logger.debug( "DECORATED (getGroup: {})", name );
         Group g = dataManager.getGroup( name );
 
         if ( !config.isEnabled() )
         {
-            logger.info( "AutoProx decorator disabled; returning: {}", g );
+            logger.debug( "AutoProx decorator disabled; returning: {}", g );
             return g;
         }
 
-        logger.info( "AutoProx decorator active" );
+        logger.debug( "AutoProx decorator active" );
         if ( g == null )
         {
             final AutoProxFactory factory = getFactory( name );
@@ -87,7 +88,7 @@ public abstract class AutoProxDataManagerDecorator
                 return null;
             }
 
-            logger.info( "AutoProx: creating repository for: {}", name );
+            logger.debug( "AutoProx: creating repository for: {}", name );
             try
             {
                 final RemoteRepository remote = factory.createRemoteRepository( name );
@@ -150,7 +151,7 @@ public abstract class AutoProxDataManagerDecorator
     {
         final String url = validationPath == null ? proxyUrl : buildUrl( proxyUrl, validationPath );
 
-        logger.info( "\n\n\n\n\n[AutoProx] Checking URL: {}", url );
+        logger.debug( "\n\n\n\n\n[AutoProx] Checking URL: {}", url );
         final HttpHead head = new HttpHead( url );
 
         http.bindRepositoryCredentialsTo( repo, head );
@@ -162,7 +163,7 @@ public abstract class AutoProxDataManagerDecorator
                                               .execute( head );
             final StatusLine statusLine = response.getStatusLine();
             final int status = statusLine.getStatusCode();
-            logger.info( "[AutoProx] HTTP Status: {}", statusLine );
+            logger.debug( "[AutoProx] HTTP Status: {}", statusLine );
             result = status == HttpStatus.SC_OK;
         }
         catch ( final ClientProtocolException e )
@@ -186,15 +187,15 @@ public abstract class AutoProxDataManagerDecorator
     public RemoteRepository getRemoteRepository( final String name )
         throws ProxyDataException
     {
-        logger.info( "DECORATED (getRepository: {})", name );
+        logger.debug( "DECORATED (getRepository: {})", name );
         RemoteRepository repo = dataManager.getRemoteRepository( name );
         if ( !config.isEnabled() )
         {
-            logger.info( "AutoProx decorator disabled; returning: {}", repo );
+            logger.debug( "AutoProx decorator disabled; returning: {}", repo );
             return repo;
         }
 
-        logger.info( "AutoProx decorator active" );
+        logger.debug( "AutoProx decorator active" );
         if ( repo == null )
         {
             final AutoProxFactory factory = getFactory( name );
@@ -243,6 +244,67 @@ public abstract class AutoProxDataManagerDecorator
         }
 
         return this.dataManager.getArtifactStore( key );
+    }
+
+    @Override
+    public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
+        throws ProxyDataException
+    {
+        getGroup( groupName );
+        return dataManager.getOrderedConcreteStoresInGroup( groupName );
+    }
+
+    @Override
+    public List<ArtifactStore> getOrderedStoresInGroup( final String groupName )
+        throws ProxyDataException
+    {
+        getGroup( groupName );
+        return dataManager.getOrderedStoresInGroup( groupName );
+    }
+
+    @Override
+    public boolean hasRemoteRepository( final String name )
+    {
+        try
+        {
+            return getRemoteRepository( name ) != null;
+        }
+        catch ( final ProxyDataException e )
+        {
+            logger.error( String.format( "Failed to retrieve/create remote: %s. Reason: %s", name, e.getMessage() ), e );
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean hasGroup( final String name )
+    {
+        try
+        {
+            return getGroup( name ) != null;
+        }
+        catch ( final ProxyDataException e )
+        {
+            logger.error( String.format( "Failed to retrieve/create group: %s. Reason: %s", name, e.getMessage() ), e );
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean hasArtifactStore( final StoreKey key )
+    {
+        try
+        {
+            return getArtifactStore( key ) != null;
+        }
+        catch ( final ProxyDataException e )
+        {
+            logger.error( String.format( "Failed to retrieve/create: %s. Reason: %s", key, e.getMessage() ), e );
+        }
+
+        return false;
     }
 
 }
