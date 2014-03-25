@@ -94,15 +94,8 @@ public class ResolverResource
 
         try
         {
-            final String json = controller.resolveIncomplete( f, gid, aid, ver, recurse, parseQueryMap( request.query() ) );
-            if ( json == null )
-            {
-                setStatus( ApplicationStatus.OK, request );
-            }
-            else
-            {
-                formatOkResponseWithJsonEntity( request, json );
-            }
+            controller.resolveIncomplete( f, gid, aid, ver, recurse, parseQueryMap( request.query() ) );
+            setStatus( ApplicationStatus.OK, request );
         }
         catch ( final AproxWorkflowException e )
         {

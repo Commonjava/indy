@@ -21,8 +21,8 @@ import static org.commonjava.aprox.util.RequestUtils.getLongParamWithDefault;
 
 import java.net.URI;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -32,6 +32,7 @@ import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.depgraph.util.PresetParameterParser;
 import org.commonjava.aprox.depgraph.util.RequestAdvisor;
 import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.maven.atlas.graph.model.GraphView;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.agg.AggregationOptions;
 import org.commonjava.maven.cartographer.agg.DefaultAggregatorOptions;
@@ -80,13 +81,14 @@ public class ResolverController
         final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
         final AggregationOptions options = createAggregationOptions( params, source );
 
-        List<ProjectVersionRef> resolved;
+        Set<ProjectVersionRef> resolved;
         try
         {
-            resolved = ops.resolve( from, options, ref );
+            final GraphView view = ops.resolve( from, options, ref );
+            resolved = view.getRoots();
             if ( resolved == null || resolved.isEmpty() )
             {
-                resolved = Collections.singletonList( ref );
+                resolved = Collections.singleton( ref );
             }
 
             return serializer.toString( Collections.singletonMap( "resolvedTopLevelGAVs", resolved ) );
@@ -97,8 +99,8 @@ public class ResolverController
         }
     }
 
-    public String resolveIncomplete( final String from, final String groupId, final String artifactId, final String version, final boolean recurse,
-                                     final Map<String, String[]> params )
+    public void resolveIncomplete( final String from, final String groupId, final String artifactId, final String version, final boolean recurse,
+                                   final Map<String, String[]> params )
         throws AproxWorkflowException
     {
         final URI source = sourceManager.createSourceURI( from );
@@ -116,9 +118,7 @@ public class ResolverController
 
         try
         {
-            final List<ProjectVersionRef> failed = ops.resolve( from, options, ref );
-
-            return serializer.toString( Collections.singletonMap( "failures", failed ) );
+            ops.resolve( from, options, ref );
         }
         catch ( final CartoDataException e )
         {

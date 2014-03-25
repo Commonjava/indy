@@ -79,8 +79,8 @@ public class ResolverResource
     {
         try
         {
-            final String json = controller.resolveIncomplete( from, groupId, artifactId, version, recurse, request.getParameterMap() );
-            return Response.ok( json )
+            controller.resolveIncomplete( from, groupId, artifactId, version, recurse, request.getParameterMap() );
+            return Response.ok()
                            .build();
 
         }
