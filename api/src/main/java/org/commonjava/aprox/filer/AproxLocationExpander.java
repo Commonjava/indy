@@ -81,7 +81,7 @@ public class AproxLocationExpander
                 try
                 {
                     logger.debug( "Expanding group: {}", gl.getKey() );
-                    final List<ArtifactStore> members = data.getOrderedStoresInGroup( gl.getKey()
+                    final List<ArtifactStore> members = data.getOrderedConcreteStoresInGroup( gl.getKey()
                                                                                         .getName() );
                     if ( members != null )
                     {
