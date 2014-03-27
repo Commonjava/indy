@@ -167,7 +167,8 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
                 item.touch();
                 request.response()
                        .sendFile( item.getDetachedFile()
-                                      .getCanonicalPath() );
+                                      .getCanonicalPath() )
+                       .close();
             }
         }
         catch ( final AproxWorkflowException e )
