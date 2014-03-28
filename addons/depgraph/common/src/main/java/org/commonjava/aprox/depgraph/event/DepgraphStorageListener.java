@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package org.commonjava.aprox.depgraph;
+package org.commonjava.aprox.depgraph.event;
 
 import java.util.concurrent.ExecutorService;
 
@@ -22,6 +22,7 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.depgraph.DepgraphStorageListenerRunnable;
 import org.commonjava.aprox.depgraph.discover.AproxModelDiscoverer;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.maven.cartographer.data.CartoDataManager;

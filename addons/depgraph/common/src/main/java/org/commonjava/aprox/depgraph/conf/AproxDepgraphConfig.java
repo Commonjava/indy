@@ -45,6 +45,8 @@ public class AproxDepgraphConfig
 
     private String defaultWebFilterPreset = DEFAULT_DEF_WEBFILTER_PRESET;
 
+    private boolean passiveParsingEnabled = false;
+
     public long getDiscoveryTimeoutMillis()
     {
         return discoveryTimeoutMillis == null ? DEFAULT_TENSOR_DISCOVERY_TIMEOUT_MILLIS : discoveryTimeoutMillis;
@@ -87,6 +89,17 @@ public class AproxDepgraphConfig
     public void setDefaultWebFilterPreset( final String preset )
     {
         this.defaultWebFilterPreset = preset;
+    }
+
+    public boolean isPassiveParsingEnabled()
+    {
+        return passiveParsingEnabled;
+    }
+
+    @ConfigName( "passive.parsing" )
+    public void setPassiveParsingEnabled( final boolean passiveParsingEnabled )
+    {
+        this.passiveParsingEnabled = passiveParsingEnabled;
     }
 
 }

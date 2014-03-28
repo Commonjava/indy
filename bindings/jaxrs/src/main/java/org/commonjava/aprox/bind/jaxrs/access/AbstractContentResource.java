@@ -24,7 +24,6 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.AproxWorkflowException;
@@ -112,27 +111,25 @@ public abstract class AbstractContentResource<T extends ArtifactStore>
 
         Response response = null;
 
-        final UriBuilder uriBuilder = uriInfo.getBaseUriBuilder();
         try
         {
-            final UriFormatter uriFormatter = new JaxRsUriFormatter( uriBuilder );
+            final UriFormatter uriFormatter = new JaxRsUriFormatter( uriInfo );
 
-            if ( path.endsWith( "/" ) )
+            if ( path.equals( "" ) || path.endsWith( "/" ) )
             {
-                logger.info( "Redirecting to index.html under: {}", path );
-                response =
-                    Response.seeOther( new URI( uriFormatter.formatAbsolutePathTo( uriBuilder.path( getClass() )
-                                                                                             .build()
-                                                                                             .toString(), getStoreType().singularEndpointName(),
-                                                                                   name, path, "index.html" ) ) )
-                            .build();
+                final String ref = uriFormatter.formatAbsolutePathTo( getStoreType().singularEndpointName(), name, path, "index.html" );
+
+                logger.info( "Redirecting to index.html under: {}\n  ({})", path, ref );
+                response = Response.seeOther( new URI( ref ) )
+                                   .build();
             }
             else if ( path.endsWith( "index.html" ) )
             {
-                logger.info( "Getting listing at: {}", path );
-                final String html = contentController.list( getStoreType(), name, path, uriBuilder.path( getClass() )
-                                                                                                  .build()
-                                                                                                  .toString(), uriFormatter );
+                final String svcPath = uriInfo.getAbsolutePath()
+                                              .toString();
+
+                logger.info( "Getting listing at: {} (service path: {})", path, svcPath );
+                final String html = contentController.list( getStoreType(), name, path, null, uriFormatter );
 
                 Response.ok( html, MediaType.TEXT_HTML );
             }

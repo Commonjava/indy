@@ -70,10 +70,9 @@ public class BasicStatsResource
         {
             final UriBuilder uriBuilder = uriInfo.getBaseUriBuilder();
 
-            final String json =
-                serializer.toString( statsController.getEndpointsListing( uriBuilder.path( getClass() )
-                                                                                    .build()
-                                                                                    .toString(), new JaxRsUriFormatter( uriBuilder ) ) );
+            final String json = serializer.toString( statsController.getEndpointsListing( uriBuilder.path( getClass() )
+                                                                                                    .build()
+                                                                                                    .toString(), new JaxRsUriFormatter( uriInfo ) ) );
 
             return Response.ok( json )
                            .build();

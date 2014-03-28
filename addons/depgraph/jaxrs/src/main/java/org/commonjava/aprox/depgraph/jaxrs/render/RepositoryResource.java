@@ -26,7 +26,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.AproxWorkflowException;
@@ -53,12 +52,10 @@ public class RepositoryResource
     {
         try
         {
-            final UriBuilder builder = uriInfo.getBaseUriBuilder();
-            final String baseUri = builder.path( getClass() )
-                                          .build()
+            final String baseUri = uriInfo.getAbsolutePath()
                                           .toString();
 
-            final String json = controller.getUrlMap( req.getInputStream(), baseUri, new JaxRsUriFormatter( builder ) );
+            final String json = controller.getUrlMap( req.getInputStream(), baseUri, new JaxRsUriFormatter( uriInfo ) );
             return Response.ok( json )
                            .type( "application/json" )
                            .build();
@@ -82,12 +79,10 @@ public class RepositoryResource
     {
         try
         {
-            final UriBuilder builder = uriInfo.getBaseUriBuilder();
-            final String baseUri = builder.path( getClass() )
-                                          .build()
+            final String baseUri = uriInfo.getAbsolutePath()
                                           .toString();
 
-            final String downlog = controller.getDownloadLog( req.getInputStream(), baseUri, new JaxRsUriFormatter( builder ) );
+            final String downlog = controller.getDownloadLog( req.getInputStream(), baseUri, new JaxRsUriFormatter( uriInfo ) );
             return Response.ok( downlog )
                            .type( "text/plain" )
                            .build();

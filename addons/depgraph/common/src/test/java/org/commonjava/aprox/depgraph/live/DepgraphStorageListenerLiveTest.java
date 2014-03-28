@@ -28,7 +28,7 @@ import java.io.OutputStream;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.depgraph.DepgraphStorageListener;
+import org.commonjava.aprox.depgraph.event.DepgraphStorageListener;
 import org.commonjava.aprox.depgraph.fixture.TestConfigProvider;
 import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.util.LocationUtils;

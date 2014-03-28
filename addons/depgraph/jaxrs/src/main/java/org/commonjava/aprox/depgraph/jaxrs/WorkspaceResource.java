@@ -32,7 +32,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.AproxWorkflowException;
@@ -78,10 +77,10 @@ public class WorkspaceResource
     {
         try
         {
-            final UriBuilder uriBuilder = uriInfo.getBaseUriBuilder();
-            final CreationDTO dto = controller.createNamed( id, uriBuilder.path( getClass() )
-                                                                          .build()
-                                                                          .toString(), new JaxRsUriFormatter( uriBuilder ) );
+            final CreationDTO dto = controller.createNamed( id, uriInfo.getBaseUriBuilder()
+                                                                       .path( getClass() )
+                                                                       .build()
+                                                                       .toString(), new JaxRsUriFormatter( uriInfo ) );
             return dto == null ? Response.notModified()
                                          .build() : Response.ok( dto.getJsonResponse() )
                                                             .type( MediaType.APPLICATION_JSON )
@@ -102,10 +101,10 @@ public class WorkspaceResource
     {
         try
         {
-            final UriBuilder uriBuilder = uriInfo.getBaseUriBuilder();
-            final CreationDTO dto = controller.create( uriBuilder.path( getClass() )
-                                                                 .build()
-                                                                 .toString(), new JaxRsUriFormatter( uriBuilder ) );
+            final CreationDTO dto = controller.create( uriInfo.getBaseUriBuilder()
+                                                              .path( getClass() )
+                                                              .build()
+                                                              .toString(), new JaxRsUriFormatter( uriInfo ) );
             return dto == null ? Response.notModified()
                                          .build() : Response.ok( dto.getJsonResponse() )
                                                             .type( MediaType.APPLICATION_JSON )
@@ -127,12 +126,11 @@ public class WorkspaceResource
     {
         try
         {
-            final UriBuilder uriBuilder = uriInfo.getBaseUriBuilder();
             final CreationDTO dto =
-                controller.createFrom( uriBuilder.path( getClass() )
-                                                 .build()
-                                                 .toString(), new JaxRsUriFormatter( uriBuilder ), request.getInputStream(),
-                                       request.getCharacterEncoding() );
+                controller.createFrom( uriInfo.getBaseUriBuilder()
+                                              .path( getClass() )
+                                              .build()
+                                              .toString(), new JaxRsUriFormatter( uriInfo ), request.getInputStream(), request.getCharacterEncoding() );
             return dto == null ? Response.notModified()
                                          .build() : Response.ok( dto.getJsonResponse() )
                                                             .type( MediaType.APPLICATION_JSON )
@@ -187,8 +185,7 @@ public class WorkspaceResource
     {
         try
         {
-            final UriBuilder uriBuilder = uriInfo.getBaseUriBuilder();
-            final boolean modified = controller.addSource( id, source, new JaxRsUriFormatter( uriBuilder ) );
+            final boolean modified = controller.addSource( id, source, new JaxRsUriFormatter( uriInfo ) );
             return modified ? Response.ok()
                                       .build() : Response.notModified()
                                                          .build();
@@ -207,8 +204,7 @@ public class WorkspaceResource
     {
         try
         {
-            final UriBuilder uriBuilder = uriInfo.getBaseUriBuilder();
-            final boolean modified = controller.addPomLocation( id, profile, new JaxRsUriFormatter( uriBuilder ) );
+            final boolean modified = controller.addPomLocation( id, profile, new JaxRsUriFormatter( uriInfo ) );
             return modified ? Response.ok()
                                       .build() : Response.notModified()
                                                          .build();
