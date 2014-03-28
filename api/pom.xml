@@ -116,6 +116,7 @@
         <executions>
           <execution>
             <id>buildnumbers</id>
+            <phase>initialize</phase>
             <goals>
               <goal>create</goal>
             </goals>
