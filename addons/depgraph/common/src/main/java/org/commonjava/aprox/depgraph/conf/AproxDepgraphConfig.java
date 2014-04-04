@@ -44,7 +44,7 @@ public class AproxDepgraphConfig
     private File dataBasedir;
 
     private String defaultWebFilterPreset = DEFAULT_DEF_WEBFILTER_PRESET;
-
+    
     private boolean passiveParsingEnabled = false;
 
     public long getDiscoveryTimeoutMillis()
@@ -97,7 +97,7 @@ public class AproxDepgraphConfig
     }
 
     @ConfigName( "passive.parsing" )
-    public void setPassiveParsingEnabled( final boolean passiveParsingEnabled )
+    public void setPassiveParsingEnabled( boolean passiveParsingEnabled )
     {
         this.passiveParsingEnabled = passiveParsingEnabled;
     }
