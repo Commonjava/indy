@@ -23,6 +23,7 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depgraph.DepgraphStorageListenerRunnable;
+import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.aprox.depgraph.discover.AproxModelDiscoverer;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.maven.cartographer.data.CartoDataManager;
@@ -51,10 +52,18 @@ public class DepgraphStorageListener
     @Inject
     private CartoDataManager carto;
 
+    @Inject
+    private AproxDepgraphConfig config;
+
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public void handleFileAccessEvent( @Observes final FileAccessEvent event )
     {
+        if ( !config.isPassiveParsingEnabled() )
+        {
+            return;
+        }
+
         if ( !event.getTransfer()
                    .getPath()
                    .endsWith( ".pom" ) )
