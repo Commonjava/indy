@@ -16,30 +16,28 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.jaxrs.util;
 
-import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
-import org.commonjava.aprox.bind.jaxrs.RESTApplication;
 import org.commonjava.aprox.util.UriFormatter;
 
 public class JaxRsUriFormatter
     implements UriFormatter
 {
 
-    private static final ApplicationPath APP_PATH = RESTApplication.class.getAnnotation( ApplicationPath.class );
+    //    private static final ApplicationPath APP_PATH = RESTApplication.class.getAnnotation( ApplicationPath.class );
 
-    private final UriBuilder builder;
+    private final UriInfo info;
 
     public JaxRsUriFormatter( final UriInfo info )
     {
-        this.builder = info.getBaseUriBuilder();
+        this.info = info;
     }
 
     @Override
     public String formatAbsolutePathTo( final String base, final String... parts )
     {
-        UriBuilder b = builder; //.path( APP_PATH.value() );
+        UriBuilder b = info.getBaseUriBuilder(); //.path( APP_PATH.value() );
 
         if ( base != null && base.trim()
                                  .length() > 0 )

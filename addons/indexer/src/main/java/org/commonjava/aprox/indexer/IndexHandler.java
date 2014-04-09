@@ -199,33 +199,59 @@ public class IndexHandler
         return true;
     }
 
-    private void scanIndex( final ArtifactStore store )
+    private boolean lock( final StoreKey key )
     {
-        final IndexingContext context = getIndexingContext( store, indexCreators.getCreators() );
-
-        if ( context == null )
-        {
-            return;
-        }
-
-        scanIndex( store, context );
-    }
-
-    private void scanIndex( final ArtifactStore store, final IndexingContext context )
-    {
-        final StoreKey key = store.getKey();
         synchronized ( currentlyUpdating )
         {
             if ( currentlyUpdating.contains( key ) )
             {
                 logger.info( "Already updating: {}", key );
-                return;
+                return false;
             }
 
             logger.info( "Reserving: {}", key );
             currentlyUpdating.add( key );
         }
+        return true;
+    }
 
+    private void unlock( final StoreKey key )
+    {
+        synchronized ( currentlyUpdating )
+        {
+            logger.info( "Releasing: {}", key );
+            currentlyUpdating.remove( key );
+            currentlyUpdating.notifyAll();
+        }
+    }
+
+    private void scanIndex( final ArtifactStore store )
+    {
+        final StoreKey key = store.getKey();
+        if ( !lock( key ) )
+        {
+            return;
+        }
+
+        try
+        {
+            final IndexingContext context = getIndexingContext( store, indexCreators.getCreators() );
+
+            if ( context == null )
+            {
+                return;
+            }
+
+            scanLockedIndex( store, context );
+        }
+        finally
+        {
+            unlock( key );
+        }
+    }
+
+    private void scanLockedIndex( final ArtifactStore store, final IndexingContext context )
+    {
         try
         {
             final ArtifactScanningListener listener = new DefaultScannerListener( context, indexerEngine, false, null );
@@ -255,13 +281,6 @@ public class IndexHandler
             catch ( final IOException e )
             {
                 logger.error( String.format( "Failed to close index for: %s. Reason: %s", store.getKey(), e.getMessage() ), e );
-            }
-
-            synchronized ( currentlyUpdating )
-            {
-                logger.info( "Releasing: {}", key );
-                currentlyUpdating.remove( key );
-                currentlyUpdating.notifyAll();
             }
         }
     }
@@ -294,16 +313,9 @@ public class IndexHandler
     private void updateMergedIndex( final Group group, final Set<ArtifactStore> updated, final boolean updateRepositoryIndexes )
     {
         final StoreKey groupKey = group.getKey();
-        synchronized ( currentlyUpdating )
+        if ( !lock( groupKey ) )
         {
-            if ( currentlyUpdating.contains( groupKey ) )
-            {
-                logger.info( "Already updating: {}", groupKey );
-                return;
-            }
-
-            logger.info( "Reserving: {}", groupKey );
-            currentlyUpdating.add( groupKey );
+            return;
         }
 
         try
@@ -326,6 +338,10 @@ public class IndexHandler
                     }
 
                     final StoreKey key = store.getKey();
+                    if ( !lock( key ) )
+                    {
+                        continue;
+                    }
 
                     IndexingContext context = getIndexingContext( store, indexCreators.getCreators() );
                     try
@@ -340,7 +356,7 @@ public class IndexHandler
                         {
                             if ( updateRepositoryIndexes || key.getType() == StoreType.hosted )
                             {
-                                scanIndex( store, context );
+                                scanLockedIndex( store, context );
                             }
                         }
                         else if ( updateRepositoryIndexes && key.getType() == StoreType.remote )
@@ -387,6 +403,8 @@ public class IndexHandler
                                 logger.error( String.format( "Failed to close context for: %s. Reason: %s", key, e.getMessage() ), e );
                             }
                         }
+
+                        unlock( key );
                     }
                 }
 
@@ -436,12 +454,7 @@ public class IndexHandler
         }
         finally
         {
-            synchronized ( currentlyUpdating )
-            {
-                logger.info( "Releasing: {}", groupKey );
-                currentlyUpdating.remove( groupKey );
-                currentlyUpdating.notifyAll();
-            }
+            unlock( groupKey );
         }
 
         logger.info( "Index updated for: {}", groupKey );
@@ -449,27 +462,6 @@ public class IndexHandler
 
     private IndexUpdateResult doIndexUpdate( final IndexingContext mergedContext, final StoreKey key )
     {
-        synchronized ( currentlyUpdating )
-        {
-            while ( currentlyUpdating.contains( key ) )
-            {
-                try
-                {
-                    logger.info( "Waiting for: {}", key );
-                    currentlyUpdating.wait( 500 );
-                }
-                catch ( final InterruptedException e )
-                {
-                    Thread.currentThread()
-                          .interrupt();
-                    return null;
-                }
-            }
-
-            logger.info( "Reserving: {}", key );
-            currentlyUpdating.add( key );
-        }
-
         try
         {
             final ResourceFetcher resourceFetcher = new AproxResourceFetcher( storeDataManager, fileManager );
@@ -521,13 +513,6 @@ public class IndexHandler
                 {
                     logger.error( String.format( "Failed to close index for: %s. Reason: %s", key, e.getMessage() ), e );
                 }
-            }
-
-            synchronized ( currentlyUpdating )
-            {
-                logger.info( "Releasing: {}", key );
-                currentlyUpdating.remove( key );
-                currentlyUpdating.notifyAll();
             }
         }
     }

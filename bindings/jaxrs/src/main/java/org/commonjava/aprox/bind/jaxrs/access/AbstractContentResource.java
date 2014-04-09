@@ -16,6 +16,8 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.jaxrs.access;
 
+import static org.commonjava.aprox.core.rest.ContentController.LISTING_FILE;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -117,21 +119,22 @@ public abstract class AbstractContentResource<T extends ArtifactStore>
 
             if ( path.equals( "" ) || path.endsWith( "/" ) )
             {
-                final String ref = uriFormatter.formatAbsolutePathTo( getStoreType().singularEndpointName(), name, path, "index.html" );
+                final String ref = uriFormatter.formatAbsolutePathTo( getStoreType().singularEndpointName(), name, path, LISTING_FILE );
 
                 logger.info( "Redirecting to index.html under: {}\n  ({})", path, ref );
                 response = Response.seeOther( new URI( ref ) )
                                    .build();
             }
-            else if ( path.endsWith( "index.html" ) )
+            else if ( path.endsWith( LISTING_FILE ) )
             {
-                final String svcPath = uriInfo.getAbsolutePath()
+                final String svcPath = uriInfo.getBaseUri()
                                               .toString();
 
                 logger.info( "Getting listing at: {} (service path: {})", path, svcPath );
-                final String html = contentController.list( getStoreType(), name, path, null, uriFormatter );
+                final String html = contentController.list( getStoreType(), name, path, "/", uriFormatter );
 
-                Response.ok( html, MediaType.TEXT_HTML );
+                response = Response.ok( html, MediaType.TEXT_HTML )
+                                   .build();
             }
             else
             {

@@ -22,10 +22,12 @@ import static org.commonjava.maven.galley.util.PathUtils.parentPath;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.enterprise.context.ApplicationScoped;
@@ -49,15 +51,7 @@ import org.commonjava.maven.galley.model.Transfer;
 public class ContentController
 {
 
-    private static final Comparator<? super ConcreteResource> ITEMS_LISTING_COMPARATOR = new Comparator<ConcreteResource>()
-    {
-        @Override
-        public int compare( final ConcreteResource f, final ConcreteResource s )
-        {
-            return f.getPath()
-                    .compareTo( s.getPath() );
-        }
-    };
+    public static final String LISTING_FILE = "index.html";
 
     @Inject
     private StoreDataManager storeManager;
@@ -186,41 +180,80 @@ public class ContentController
         final StoreKey key = new StoreKey( type, name );
         final ArtifactStore store = getStore( key );
 
-        List<ConcreteResource> items = fileManager.list( store, path );
-        final List<ConcreteResource> deduped = new ArrayList<ConcreteResource>( items.size() );
-        for ( final ConcreteResource res : items )
+        final List<ConcreteResource> listed = fileManager.list( store, path );
+        final Map<String, Set<String>> listingUrls = new TreeMap<String, Set<String>>();
+
+        final String storeUrl = uriFormatter.formatAbsolutePathTo( serviceUrl, type.singularEndpointName(), name );
+
+        // first pass, process only obvious directory entries (ending in '/')
+        // second pass, process the remainder.
+        for ( int pass = 0; pass < 2; pass++ )
         {
-            final String p = res.getPath();
-            if ( !p.matches( ".+\\.[^/]+" ) && !p.endsWith( "/" ) )
+            for ( final ConcreteResource res : listed )
             {
-                final ConcreteResource r = new ConcreteResource( res.getLocation(), p + "/" );
-                if ( deduped.contains( r ) )
+                String p = res.getPath();
+                if ( pass == 0 && !p.endsWith( "/" ) )
                 {
                     continue;
                 }
-            }
+                else if ( pass == 1 )
+                {
+                    if ( !p.endsWith( "/" ) )
+                    {
+                        final String dirpath = p + "/";
+                        if ( listingUrls.containsKey( normalize( storeUrl, dirpath ) ) )
+                        {
+                            p = dirpath;
+                        }
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
 
-            if ( !deduped.contains( res ) )
-            {
-                deduped.add( res );
+                final String localUrl = normalize( storeUrl, p );
+                Set<String> sources = listingUrls.get( localUrl );
+                if ( sources == null )
+                {
+                    sources = new HashSet<String>();
+                    listingUrls.put( localUrl, sources );
+                }
+
+                sources.add( normalize( res.getLocationUri(), res.getPath() ) );
             }
         }
 
-        items = deduped;
-        Collections.sort( items, ITEMS_LISTING_COMPARATOR );
+        final List<String> sources = new ArrayList<String>();
+        for ( final ConcreteResource res : listed )
+        {
+            final String uri = normalize( res.getLocation()
+                                             .getUri(), path );
+            if ( !sources.contains( uri ) )
+            {
+                sources.add( uri );
+            }
+        }
 
-        final String parentPath = normalize( normalize( parentPath( normalize( parentPath( path ) ) ) ), "index.html" );
-        final String storeUrl = uriFormatter.formatAbsolutePathTo( serviceUrl, type.singularEndpointName(), name );
-        final String parentUrl = uriFormatter.formatAbsolutePathTo( serviceUrl, type.singularEndpointName(), name, parentPath );
+        Collections.sort( sources );
+
+        String parentPath = normalize( normalize( parentPath( normalize( parentPath( path ) ) ) ), LISTING_FILE );
+        String parentUrl = uriFormatter.formatAbsolutePathTo( serviceUrl, type.singularEndpointName(), name, parentPath );
+        if ( parentPath.equals( LISTING_FILE ) )
+        {
+            parentPath = null;
+            parentUrl = null;
+        }
 
         final Map<String, Object> params = new HashMap<String, Object>();
-        params.put( "items", items );
+        params.put( "items", listingUrls );
         params.put( "parentUrl", parentUrl );
         params.put( "parentPath", parentPath );
         params.put( "path", path );
         params.put( "storeKey", key );
         params.put( "storeUrl", storeUrl );
         params.put( "baseUrl", serviceUrl );
+        params.put( "sources", sources );
 
         // render...
         try

@@ -20,6 +20,7 @@ import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatCreatedRe
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithEntity;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatRedirect;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
+import static org.commonjava.aprox.core.rest.ContentController.LISTING_FILE;
 import static org.commonjava.vertx.vabr.types.BuiltInParam._classContextUrl;
 
 import java.io.IOException;
@@ -146,9 +147,9 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
             if ( path.endsWith( "/" ) )
             {
                 logger.info( "Redirecting to index.html under: {}", path );
-                formatRedirect( request, uriFormatter.formatAbsolutePathTo( baseUri, getStoreType().singularEndpointName(), name, path, "index.html" ) );
+                formatRedirect( request, uriFormatter.formatAbsolutePathTo( baseUri, getStoreType().singularEndpointName(), name, path, LISTING_FILE ) );
             }
-            else if ( path.endsWith( "index.html" ) )
+            else if ( path.endsWith( LISTING_FILE ) )
             {
                 logger.info( "Getting listing at: {}", path );
                 final String html = contentController.list( getStoreType(), name, path, baseUri, uriFormatter );
