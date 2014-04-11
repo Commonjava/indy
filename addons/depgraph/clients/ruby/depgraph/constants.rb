@@ -1,5 +1,5 @@
 module Depgraph
   HOST = 'localhost'
-  PORT = 9080
-  CONTEXT_PATH = '/aprox/'
+  PORT = 8080
+  CONTEXT_PATH = '/'
 end

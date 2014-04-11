@@ -68,7 +68,7 @@ public class DepgraphProvider
     @PostConstruct
     public void setup()
     {
-        this.graphs = new EGraphManager( new FileNeo4jWorkspaceFactory( config.getDataBasedir(), false ) );
+        this.graphs = new EGraphManager( new FileNeo4jWorkspaceFactory( config.getDataBasedir(), true ) );
         pluginDefaults = new StandardMaven304PluginDefaults();
         pluginImplications = new StandardMavenPluginImplications( xml );
     }

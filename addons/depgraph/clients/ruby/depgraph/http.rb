@@ -8,6 +8,8 @@ module Depgraph
     DG_BASEPATH = 'api/1.0/depgraph'
   
     def initialize( host, port, context_path=CONTEXT_PATH )
+      @host = host
+      @port = port
       @http = HTTP.new(host, port)
       @http.read_timeout = 10800
       @context_path = context_path
@@ -43,7 +45,7 @@ module Depgraph
   
     def post(subpath, payload=nil, &block)
       req_path = "#{@context_path}#{DG_BASEPATH}/#{subpath}"
-      puts "Posting: #{req_path}"
+      puts "Posting: http://#{@host}:#{@port}#{req_path}"
 
       if ( payload )
         req = HTTP::Post.new( req_path, initheader = {'Content-Type' =>'application/json'})
