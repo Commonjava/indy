@@ -1,16 +1,16 @@
 /*******************************************************************************
  * Copyright (C) 2014 John Casey.
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
@@ -80,7 +80,7 @@ public class DefaultAproxConfigFactory
             with( section.getSectionName(), section );
         }
 
-        final String config = verifyConfigPath( configPath );
+        final String config = configPath( configPath );
 
         logger.info( "\n\n[CONFIG] Reading configuration in: '{}'\n\nfrom {}", Thread.currentThread()
                                                                                      .getName(), config );
@@ -104,45 +104,41 @@ public class DefaultAproxConfigFactory
                                                                                        .getName() );
     }
 
-    private String verifyConfigPath( final String configPath )
+    private String configPath( final String configPath )
     {
-        String config = configPath;
-        if ( config == null )
+        if ( configPath != null && !configPath.equals(""))
         {
-            config = System.getProperty( CONFIG_PATH_PROP );
+            return configPath;
         }
-
-        if ( config == null )
-        {
-            final String aproxHome = System.getProperty( "arpox.home" );
-            if ( aproxHome != null )
-            {
-                final String path = PathUtils.join( aproxHome, "etc/aprox/main.conf" );
-                if ( new File( path ).exists() )
-                {
-                    config = path;
-                }
-            }
-        }
-
-        if ( config == null )
-        {
-            config = DEFAULT_CONFIG_PATH;
-        }
-
-        return config;
+        return System.getProperty( CONFIG_PATH_PROP );
     }
 
     private void setSystemProperties()
     {
         logger.info( "Verifying AProx system properties are set..." );
-        final String confPath = System.getProperty( AproxConfigFactory.CONFIG_PATH_PROP );
+        /* Set config path */
+        String confPath = System.getProperty( AproxConfigFactory.CONFIG_PATH_PROP );
         if ( confPath == null )
         {
-            System.setProperty( AproxConfigFactory.CONFIG_DIR_PROP, AproxConfigFactory.DEFAULT_CONFIG_DIR );
-            System.setProperty( AproxConfigFactory.CONFIG_PATH_PROP, AproxConfigFactory.DEFAULT_CONFIG_PATH );
+            final String aproxHome = System.getProperty( "aprox.home" );
+            if ( aproxHome != null )
+            {
+                final String path = PathUtils.join( aproxHome, "etc/aprox/main.conf" );
+                if ( new File( path ).exists() )
+                {
+                    confPath = path;
+                }
+            }
         }
-        else
+        if ( confPath == null )
+        {
+            confPath = AproxConfigFactory.DEFAULT_CONFIG_PATH;
+        }
+        System.setProperty( AproxConfigFactory.CONFIG_PATH_PROP, confPath );
+
+        /* Set config dir */
+        String confDir = System.getProperty( AproxConfigFactory.CONFIG_DIR_PROP);
+        if ( confDir == null )
         {
             final File f = new File( confPath );
             final String dir = f.getParent();
