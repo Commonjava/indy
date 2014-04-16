@@ -40,5 +40,8 @@ test -f ${APROX_ENV} && source ${APROX_ENV}
 # echo "Command: '${JAVA} -cp ${CP} -Daprox.home=${BASEDIR} -Daprox.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS} $@'"
 # exec "$JAVA" ${JAVA_OPTS} -cp "${CP}" -Daprox.logging="${APROX_LOGCONF}" -Daprox.home="${BASEDIR}" -Daprox.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS} "$@"
 
+#JAVA_DEBUG_OPTS="-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y"
+JAVA_OPTS="$JAVA_OPTS $JAVA_DEBUG_OPTS"
+
 exec "$JAVA" ${JAVA_OPTS} -cp "${CP}" -Daprox.home="${BASEDIR}" -Daprox.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS} "$@"
 
