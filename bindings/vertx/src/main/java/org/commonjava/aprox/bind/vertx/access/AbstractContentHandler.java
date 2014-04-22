@@ -1,18 +1,12 @@
 /*******************************************************************************
- * Copyright (C) 2014 John Casey.
+ * Copyright (c) 2014 Red Hat, Inc..
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License v3.0
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/gpl.html
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * Contributors:
+ *     Red Hat, Inc. - initial API and implementation
  ******************************************************************************/
 package org.commonjava.aprox.bind.vertx.access;
 
@@ -24,6 +18,7 @@ import static org.commonjava.aprox.core.rest.ContentController.LISTING_FILE;
 import static org.commonjava.vertx.vabr.types.BuiltInParam._classContextUrl;
 
 import java.io.IOException;
+import java.util.Date;
 
 import javax.inject.Inject;
 
@@ -38,6 +33,7 @@ import org.commonjava.aprox.util.ApplicationContent;
 import org.commonjava.aprox.util.ApplicationHeader;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.LocationUtils;
+import org.commonjava.aprox.util.RequestUtils;
 import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.vertx.vabr.util.VertXInputStream;
@@ -126,6 +122,60 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
     }
 
     protected abstract StoreType getStoreType();
+    
+    protected void doHead( final HttpServerRequest request )
+    {
+        // TODO:
+        // directory request (ends with "/") or empty path (directory request for proxy root)
+        // browse via redirect to browser resource...giving client the option to intercept redirection.
+        // Likewise, browse resource should redirect here when accessing concrete files.
+
+        final String name = request.params()
+                                   .get( PathParam.name.key() );
+        final String path = request.params()
+                                   .get( PathParam.path.key() );
+
+        try
+        {
+            final String baseUri = request.params()
+                                          .get( _classContextUrl.key() );
+
+            if ( path.endsWith( "/" ) )
+            {
+                logger.info( "Redirecting to index.html under: {}", path );
+                formatRedirect( request, uriFormatter.formatAbsolutePathTo( baseUri, getStoreType().singularEndpointName(), name, path, LISTING_FILE ) );
+            }
+            else if ( path.endsWith( LISTING_FILE ) )
+            {
+                logger.info( "Getting listing at: {}", path );
+                final String html = contentController.list( getStoreType(), name, path, baseUri, uriFormatter );
+
+                request.response()
+                .putHeader( ApplicationHeader.content_type.key(), ApplicationContent.text_html )
+                .putHeader( ApplicationHeader.content_length.key(), Long.toString( html.length() ))
+                .putHeader( ApplicationHeader.last_modified.key(), RequestUtils.formatDateHeader(new Date() ))
+                .end();
+                request.response().close();
+            }
+            else
+            {
+                final Transfer item = contentController.get( getStoreType(), name, path );
+
+                final String contentType = contentController.getContentType( path );
+
+                request.response()
+                       .putHeader( ApplicationHeader.content_type.key(), contentType )
+                       .putHeader( ApplicationHeader.content_length.key(), Long.toString( item.getDetachedFile().length() ))
+                       .putHeader( ApplicationHeader.last_modified.key(), RequestUtils.formatDateHeader(item.getDetachedFile().lastModified() )).end();
+                request.response().close();
+            }
+        }
+        catch ( final AproxWorkflowException e )
+        {
+            logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name, e.getMessage() ), e );
+            formatResponse( e, request );
+        }
+    }
 
     protected void doGet( final HttpServerRequest request )
     {
