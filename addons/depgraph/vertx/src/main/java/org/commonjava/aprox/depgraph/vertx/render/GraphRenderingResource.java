@@ -16,7 +16,6 @@ import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.setStatus;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_artifactId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_groupId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_version;
-import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.q_scope;
 import static org.commonjava.aprox.util.ApplicationContent.application_xml;
 import static org.commonjava.aprox.util.ApplicationContent.text_plain;
 import static org.commonjava.aprox.util.RequestUtils.parseQueryMap;
@@ -28,7 +27,6 @@ import javax.inject.Inject;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.rest.RenderingController;
 import org.commonjava.aprox.util.ApplicationStatus;
-import org.commonjava.maven.atlas.ident.DependencyScope;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
@@ -106,21 +104,12 @@ public class GraphRenderingResource
         }
     }
 
-    @Route( path = "/tree/:groupId/:artifactId/:version", contentType = text_plain )
-    public void depTree( final HttpServerRequest request )
+    @Route( path = "/tree", method = POST, contentType = text_plain )
+    public void tree( final Buffer body, final HttpServerRequest request )
     {
-        final MultiMap params = request.params();
-        final String gid = params.get( p_groupId.key() );
-        final String aid = params.get( p_artifactId.key() );
-        final String ver = params.get( p_version.key() );
-        final String scope = params.get( q_scope.key() );
-
         try
         {
-            final String out =
-                controller.depTree( gid, aid, ver, scope == null ? DependencyScope.runtime : DependencyScope.getScope( scope ),
-                                    parseQueryMap( request.query() ) );
-
+            String out = controller.tree( body.getString( 0, body.length() ) );
             if ( out == null )
             {
                 setStatus( ApplicationStatus.NOT_FOUND, request );

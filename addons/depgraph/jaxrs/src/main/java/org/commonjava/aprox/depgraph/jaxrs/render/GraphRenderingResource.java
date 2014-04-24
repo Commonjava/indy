@@ -15,13 +15,11 @@ import java.io.IOException;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -30,7 +28,6 @@ import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.util.AproxExceptionUtils;
 import org.commonjava.aprox.depgraph.rest.RenderingController;
 import org.commonjava.aprox.util.ApplicationStatus;
-import org.commonjava.maven.atlas.ident.DependencyScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,17 +84,14 @@ public class GraphRenderingResource
         }
     }
 
-    @Path( "/tree/{g}/{a}/{v}" )
+    @Path( "/tree" )
     @Produces( MediaType.TEXT_PLAIN )
-    @GET
-    public Response depTree( @PathParam( "g" ) final String groupId, @PathParam( "a" ) final String artifactId,
-                             @PathParam( "v" ) final String version, @Context final HttpServletRequest request,
-                             @QueryParam( "s" ) @DefaultValue( "runtime" ) final String scope,
-                             @QueryParam( "c-t" ) @DefaultValue( "true" ) final boolean collapseTransitives )
+    @POST
+    public Response tree( @Context final HttpServletRequest req )
     {
         try
         {
-            final String tree = controller.depTree( groupId, artifactId, version, DependencyScope.getScope( scope ), request.getParameterMap() );
+            final String tree = controller.tree( req.getInputStream() );
             return Response.ok( tree )
                            .build();
         }
@@ -105,6 +99,11 @@ public class GraphRenderingResource
         {
             logger.error( e.getMessage(), e );
             return AproxExceptionUtils.formatResponse( e );
+        }
+        catch ( IOException e )
+        {
+            logger.error( String.format( "Failed to retrieve request input stream: %s", e.getMessage() ), e );
+            return AproxExceptionUtils.formatResponse( ApplicationStatus.BAD_REQUEST, e );
         }
     }
 }

@@ -26,6 +26,7 @@ import org.commonjava.aprox.depgraph.util.RequestAdvisor;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.atlas.graph.filter.ProjectRelationshipFilter;
 import org.commonjava.maven.atlas.graph.model.EProjectGraph;
+import org.commonjava.maven.atlas.graph.mutate.ManagedDependencyMutator;
 import org.commonjava.maven.atlas.graph.traverse.model.BuildOrder;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.version.InvalidVersionSpecificationException;
@@ -207,7 +208,7 @@ public class GraphController
             final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( params, presetParamParser.parse( params ) );
 
             final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
-            final EProjectGraph graph = ops.getProjectGraph( filter, ref );
+            final EProjectGraph graph = ops.getProjectGraph( filter, new ManagedDependencyMutator(), ref );
 
             if ( graph != null )
             {
