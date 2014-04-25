@@ -10,8 +10,11 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.rest;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Map;
@@ -19,11 +22,14 @@ import java.util.Map;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.aprox.depgraph.dto.WebOperationConfigDTO;
+import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.depgraph.util.ConfigDTOHelper;
 import org.commonjava.aprox.depgraph.util.PresetParameterParser;
 import org.commonjava.aprox.depgraph.util.RequestAdvisor;
@@ -41,6 +47,7 @@ import org.commonjava.maven.cartographer.ops.GraphRenderingOps;
 import org.commonjava.maven.cartographer.ops.ResolveOps;
 import org.commonjava.maven.cartographer.preset.CommonPresetParameters;
 import org.commonjava.maven.cartographer.preset.PresetSelector;
+import org.commonjava.web.json.ser.JsonSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,46 +74,69 @@ public class RenderingController
     private PresetParameterParser presetParamParser;
 
     @Inject
+    @DepgraphSpecific
+    private JsonSerializer serializer;
+
+    @Inject
     private ResolveOps resolveOps;
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    public String tree( final InputStream configStream )
+    public File tree( final InputStream configStream )
         throws AproxWorkflowException
     {
         final WebOperationConfigDTO dto = configHelper.readWebOperationDTO( configStream );
         return tree( dto );
     }
 
-    public String tree( final String json )
+    public File tree( final String json )
         throws AproxWorkflowException
     {
         final WebOperationConfigDTO dto = configHelper.readWebOperationDTO( json );
         return tree( dto );
     }
 
-    private String tree( final WebOperationConfigDTO dto )
+    private File tree( final WebOperationConfigDTO dto )
         throws AproxWorkflowException
     {
-        GraphComposition comp = resolve( dto );
+        final File workBasedir = config.getWorkBasedir();
+        final String dtoJson = serializer.toString( dto );
+
+        final File out = new File( workBasedir, DigestUtils.md5Hex( dtoJson ) );
+        workBasedir.mkdirs();
+
+        final GraphComposition comp = resolve( dto );
+        FileWriter w = null;
         try
         {
-            return ops.depTree( comp, false );
+            w = new FileWriter( dtoJson );
+            ops.depTree( comp, false, new PrintWriter( w ) );
         }
-        catch ( CartoDataException e )
+        catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException( "Failed to generate dependency tree. Reason: {}", e, e.getMessage() );
         }
+        catch ( final IOException e )
+        {
+            throw new AproxWorkflowException( "Failed to open work file for caching output: {}. Reason: {}", e, out,
+                                              e.getMessage() );
+        }
+        finally
+        {
+            IOUtils.closeQuietly( w );
+        }
+
+        return out;
     }
 
     @Deprecated
-    public String tree( final String groupId, final String artifactId, final String version,
+    public File tree( final String groupId, final String artifactId, final String version,
                         final DependencyScope scope, final Map<String, String[]> params )
         throws AproxWorkflowException
     {
         final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
 
-        Map<String, Object> parsed = presetParamParser.parse( params );
+        final Map<String, Object> parsed = presetParamParser.parse( params );
         if ( !parsed.containsKey( CommonPresetParameters.SCOPE ) )
         {
             parsed.put( CommonPresetParameters.SCOPE, scope == null ? DependencyScope.runtime : scope );
@@ -114,9 +144,9 @@ public class RenderingController
 
         final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( params, parsed );
 
-        WebOperationConfigDTO dto = new WebOperationConfigDTO();
+        final WebOperationConfigDTO dto = new WebOperationConfigDTO();
 
-        GraphDescription desc = new GraphDescription( filter, ref );
+        final GraphDescription desc = new GraphDescription( filter, ref );
         dto.setGraphComposition( new GraphComposition( Type.ADD, Collections.singletonList( desc ) ) );
 
         return tree( dto );

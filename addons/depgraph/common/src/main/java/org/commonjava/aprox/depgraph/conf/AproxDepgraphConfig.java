@@ -17,6 +17,8 @@ import javax.inject.Named;
 
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SectionName( "depgraph" )
 @Named( "use-factory-instead" )
@@ -28,8 +30,11 @@ public class AproxDepgraphConfig
 
     private static final String DEFAULT_DB_DIRNAME = "depgraph";
 
+    private static final String DEFAULT_WORK_DIRNAME = "depgraph";
+
     // shipping-oriented builds
     private static final String DEFAULT_DEF_WEBFILTER_PRESET = "sob";
+
 
     private Long discoveryTimeoutMillis;
 
@@ -40,6 +45,12 @@ public class AproxDepgraphConfig
     private String defaultWebFilterPreset = DEFAULT_DEF_WEBFILTER_PRESET;
     
     private boolean passiveParsingEnabled = false;
+
+    private String workDir;
+
+    private File workBasedir;
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public long getDiscoveryTimeoutMillis()
     {
@@ -57,9 +68,18 @@ public class AproxDepgraphConfig
         return dataBasedir;
     }
 
-    public AproxDepgraphConfig setDataBasedir( final File basedir )
+    public File getWorkBasedir()
     {
-        this.dataBasedir = new File( basedir, getDbDir() );
+        return workBasedir;
+    }
+
+    public AproxDepgraphConfig setDirectories( final File dataBasedir, final File workBasedir )
+    {
+        logger.info( "Setting depgraph data basedir {}/{}", dataBasedir, getDbDir() );
+        this.dataBasedir = new File( dataBasedir, getDbDir() );
+
+        logger.info( "Setting depgraph work basedir {}/{}", workBasedir, getWorkDir() );
+        this.workBasedir = new File( workBasedir, getWorkDir() );
         return this;
     }
 
@@ -71,6 +91,11 @@ public class AproxDepgraphConfig
     @ConfigName( "database.dirName" )
     public void setDbDir( final String dbDir )
     {
+        if ( dbDir == null || "null".equals( dbDir ) )
+        {
+            return;
+        }
+
         this.dbDir = dbDir;
     }
 
@@ -91,9 +116,25 @@ public class AproxDepgraphConfig
     }
 
     @ConfigName( "passive.parsing" )
-    public void setPassiveParsingEnabled( boolean passiveParsingEnabled )
+    public void setPassiveParsingEnabled( final boolean passiveParsingEnabled )
     {
         this.passiveParsingEnabled = passiveParsingEnabled;
+    }
+
+    public String getWorkDir()
+    {
+        return workDir == null ? DEFAULT_WORK_DIRNAME : workDir;
+    }
+
+    @ConfigName( "work.dirName" )
+    public void setWorkDir( final String workDir )
+    {
+        if ( workDir == null || "null".equals( workDir ) )
+        {
+            return;
+        }
+
+        this.workDir = workDir;
     }
 
 }

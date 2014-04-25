@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.jaxrs.render;
 
+import java.io.File;
 import java.io.IOException;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -31,7 +32,7 @@ import org.commonjava.aprox.util.ApplicationStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Path( "/depgraph/render/graph" )
+@Path( "/depgraph/render" )
 @ApplicationScoped
 public class GraphRenderingResource
 {
@@ -91,8 +92,8 @@ public class GraphRenderingResource
     {
         try
         {
-            final String tree = controller.tree( req.getInputStream() );
-            return Response.ok( tree )
+            final File treeOutput = controller.tree( req.getInputStream() );
+            return Response.ok( treeOutput )
                            .build();
         }
         catch ( final AproxWorkflowException e )
@@ -100,7 +101,7 @@ public class GraphRenderingResource
             logger.error( e.getMessage(), e );
             return AproxExceptionUtils.formatResponse( e );
         }
-        catch ( IOException e )
+        catch ( final IOException e )
         {
             logger.error( String.format( "Failed to retrieve request input stream: %s", e.getMessage() ), e );
             return AproxExceptionUtils.formatResponse( ApplicationStatus.BAD_REQUEST, e );

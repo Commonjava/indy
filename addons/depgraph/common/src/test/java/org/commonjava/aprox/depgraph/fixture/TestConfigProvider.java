@@ -57,7 +57,7 @@ public class TestConfigProvider
     {
         if ( dbConfig == null )
         {
-            dbConfig = new FlatFileConfiguration( dbDir );
+            dbConfig = new FlatFileConfiguration().withDataBasedir( dbDir );
         }
 
         return dbConfig;

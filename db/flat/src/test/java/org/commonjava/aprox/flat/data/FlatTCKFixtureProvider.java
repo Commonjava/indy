@@ -56,7 +56,7 @@ public class FlatTCKFixtureProvider
 
         final JsonSerializer serializer = new JsonSerializer();
 
-        dataManager = new TestFlatFileDataManager( new FlatFileConfiguration( configDir ), serializer );
+        dataManager = new TestFlatFileDataManager( new FlatFileConfiguration().withDataBasedir( configDir ), serializer );
 
         dataManager.install();
         dataManager.clear();

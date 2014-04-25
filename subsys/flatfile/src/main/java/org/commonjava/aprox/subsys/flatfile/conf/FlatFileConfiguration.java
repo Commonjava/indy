@@ -23,7 +23,7 @@ import org.commonjava.aprox.conf.AbstractAproxConfigInfo;
 import org.commonjava.aprox.conf.AbstractAproxFeatureConfig;
 import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.web.config.ConfigurationException;
-import org.commonjava.web.config.annotation.ConfigNames;
+import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 
 @SectionName( "flatfiles" )
@@ -70,28 +70,35 @@ public class FlatFileConfiguration
         }
     }
 
-    public static final File DEFAULT_BASEDIR = new File( "/var/lib/aprox/db" );
+    public static final File DEFAULT_DATA_BASEDIR = new File( System.getProperty( "aprox.home", "/var/lib/aprox" ),
+                                                              "data" );
+
+    private static final File DEFAULT_WORK_BASEDIR = new File( System.getProperty( "aprox.home", "/var/lib/aprox" ),
+                                                               "work" );
 
     private File dataBasedir;
+
+    private File workBasedir;
 
     public FlatFileConfiguration()
     {
     }
 
-    @ConfigNames( "data.dir" )
-    public FlatFileConfiguration( final File dataBasedir )
-    {
-        this.dataBasedir = dataBasedir;
-    }
-
     public File getDataBasedir()
     {
-        return dataBasedir == null ? DEFAULT_BASEDIR : dataBasedir;
+        return dataBasedir == null ? DEFAULT_DATA_BASEDIR : dataBasedir;
     }
 
+    @ConfigName( "data.dir" )
     public void setDataBasedir( final File dataBasedir )
     {
         this.dataBasedir = dataBasedir;
+    }
+
+    public FlatFileConfiguration withDataBasedir( final File dataBasedir )
+    {
+        this.dataBasedir = dataBasedir;
+        return this;
     }
 
     public File getStorageDir( final String name )
@@ -100,6 +107,23 @@ public class FlatFileConfiguration
         d.mkdirs();
 
         return d;
+    }
+
+    public File getWorkBasedir()
+    {
+        return workBasedir == null ? DEFAULT_WORK_BASEDIR : workBasedir;
+    }
+
+    @ConfigName( "work.dir" )
+    public void setWorkBasedir( final File workBasedir )
+    {
+        this.workBasedir = workBasedir;
+    }
+
+    public FlatFileConfiguration withWorkBasedir( final File workBasedir )
+    {
+        this.workBasedir = workBasedir;
+        return this;
     }
 
 }

@@ -21,11 +21,15 @@ import static org.commonjava.aprox.util.ApplicationContent.text_plain;
 import static org.commonjava.aprox.util.RequestUtils.parseQueryMap;
 import static org.commonjava.vertx.vabr.types.Method.POST;
 
+import java.io.File;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.rest.RenderingController;
+import org.commonjava.aprox.util.ApplicationContent;
+import org.commonjava.aprox.util.ApplicationHeader;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
@@ -36,7 +40,7 @@ import org.vertx.java.core.MultiMap;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
-@Handles( prefix = "/depgraph/render/graph" )
+@Handles( prefix = "/depgraph/render" )
 @ApplicationScoped
 public class GraphRenderingResource
     implements RequestHandler
@@ -59,7 +63,8 @@ public class GraphRenderingResource
 
         try
         {
-            final String out = controller.bomFor( gid, aid, ver, parseQueryMap( request.query() ), body.getString( 0, body.length() ) );
+            final String out =
+                controller.bomFor( gid, aid, ver, parseQueryMap( request.query() ), body.getString( 0, body.length() ) );
             if ( out == null )
             {
                 setStatus( ApplicationStatus.NOT_FOUND, request );
@@ -109,14 +114,20 @@ public class GraphRenderingResource
     {
         try
         {
-            String out = controller.tree( body.getString( 0, body.length() ) );
+            final File out = controller.tree( body.getString( 0, body.length() ) );
             if ( out == null )
             {
                 setStatus( ApplicationStatus.NOT_FOUND, request );
             }
             else
             {
-                formatOkResponseWithEntity( request, out, text_plain );
+                request.response()
+                       .putHeader( ApplicationHeader.content_type.key(), ApplicationContent.text_plain );
+
+                request.response()
+                       .sendFile( out.getAbsolutePath() )
+                       .close();
+                //                formatOkResponseWithEntity( request, out, text_plain );
             }
         }
         catch ( final AproxWorkflowException e )

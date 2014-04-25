@@ -50,10 +50,10 @@ public class AproxDepgraphConfigProvider
     @Produces
     @Production
     @Default
-    public AproxDepgraphConfig getTensorConfig()
+    public AproxDepgraphConfig getDepgraphConfig()
         throws ConfigurationException
     {
-        return getConfig().setDataBasedir( ffConfig.getDataBasedir() );
+        return getConfig().setDirectories( ffConfig.getDataBasedir(), ffConfig.getWorkBasedir() );
     }
 
     @Override
