@@ -109,7 +109,7 @@ public class RenderingController
         FileWriter w = null;
         try
         {
-            w = new FileWriter( dtoJson );
+            w = new FileWriter( out );
             ops.depTree( comp, false, new PrintWriter( w ) );
         }
         catch ( final CartoDataException e )
