@@ -11,6 +11,7 @@
 package org.commonjava.aprox.depgraph.discover;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -88,7 +89,7 @@ public class AproxModelDiscoverer
         final URI source = AproxDepgraphUtils.toDiscoveryURI( key );
 
         final List<? extends Location> locations = discoveryConfig.getLocations();
-        final Set<String> enabledPatchers = discoveryConfig.getEnabledPatchers();
+        final Collection<String> enabledPatchers = discoveryConfig.getEnabledPatchers();
         final boolean storeRelationships = discoveryConfig.isStoreRelationships();
 
         MavenPomView pomView;

@@ -12,6 +12,7 @@ package org.commonjava.aprox.depgraph.dto;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.util.LocationUtils;
@@ -28,7 +29,7 @@ public class WebOperationConfigDTO
 
     private StoreKey source;
 
-    private Set<StoreKey> excludedSources;
+    private TreeSet<StoreKey> excludedSources;
 
     private Boolean localUrls;
 
@@ -59,7 +60,7 @@ public class WebOperationConfigDTO
 
     public void setExcludedSources( final Set<StoreKey> excludedSources )
     {
-        this.excludedSources = excludedSources;
+        this.excludedSources = new TreeSet<StoreKey>( excludedSources );
     }
 
     public void calculateLocations( final LocationExpander locationExpander )

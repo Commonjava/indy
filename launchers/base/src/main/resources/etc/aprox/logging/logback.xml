@@ -20,15 +20,15 @@
   
   <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
       <file>${aprox.home}/log/aprox.log</file>
-      <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-        <fileNamePattern>aprox.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+      <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+        <fileNamePattern>${aprox.home}/log/aprox.%i.log</fileNamePattern>
 
-        <maxHistory>10</maxHistory>
-        <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-          <!-- or whenever the file size reaches 100MB -->
-          <maxFileSize>100MB</maxFileSize>
-        </timeBasedFileNamingAndTriggeringPolicy>
+        <maxHistory>20</maxHistory>
       </rollingPolicy>
+
+      <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+          <maxFileSize>100MB</maxFileSize>
+      </triggeringPolicy>
 
       <encoder>
         <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
@@ -36,6 +36,7 @@
     </appender>
 
   <logger name="org.jboss" level="ERROR"/>
+  <logger name="org.commonjava.maven.galley.transport" level="DEBUG" />
 
   <root level="INFO">
     <appender-ref ref="STDOUT" />

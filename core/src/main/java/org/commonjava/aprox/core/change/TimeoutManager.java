@@ -31,7 +31,6 @@ import java.util.concurrent.Executor;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Snapshot;
 import org.apache.maven.artifact.repository.metadata.Versioning;
@@ -626,18 +625,16 @@ public class TimeoutManager
 
     private ExpirationKey createAproxFileExpirationKey( final StoreKey key, final String path )
     {
-        final String pathHash = DigestUtils.md5Hex( path );
         return new ExpirationKey( APROX_EVENT, APROX_FILE_EVENT, key.getType()
-                                                                    .name(), key.getName(), pathHash );
+                                                                    .name(), key.getName(), path );
     }
 
     private Expiration createAproxFileExpiration( final ArtifactStore store, final String path, final long timeout )
     {
-        final String pathHash = DigestUtils.md5Hex( path );
         return new Expiration( new ExpirationKey( APROX_EVENT, APROX_FILE_EVENT, store.getKey()
                                                                                       .getType()
                                                                                       .name(), store.getKey()
-                                                                                                    .getName(), pathHash ),
+                                                                                                    .getName(), path ),
                                System.currentTimeMillis() + timeout, path );
     }
 

@@ -13,7 +13,7 @@ package org.commonjava.aprox.model;
 import java.io.Serializable;
 
 public final class StoreKey
-    implements Serializable
+    implements Serializable, Comparable<StoreKey>
 {
     private static final long serialVersionUID = 1L;
 
@@ -115,5 +115,16 @@ public final class StoreKey
         // logger.info( "parsed store-key with type: '{}' and name: '{}'", type, name );
 
         return new StoreKey( type, name );
+    }
+
+    @Override
+    public int compareTo( final StoreKey o )
+    {
+        int comp = type.compareTo( o.type );
+        if ( comp == 0 )
+        {
+            comp = name.compareTo( o.name );
+        }
+        return comp;
     }
 }
