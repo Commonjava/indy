@@ -20,8 +20,6 @@ module Depgraph
     end
     
     def urlmap()
-      puts "urlmap started #{Time.now}"
-    
       filename = "urlmap-#{@workspace}.json"
       @http.post('repo/urlmap', @config){|response|
         File.open(filename, 'w+'){|f|
@@ -30,13 +28,9 @@ module Depgraph
       
         puts "Wrote urlmap to: #{filename}"
       }
-    
-      puts "urlmap ended #{Time.now}"
     end
     
     def downlog()
-      puts "downlog started #{Time.now}"
-    
       filename = "downlog-#{@workspace}.txt"
       @http.post('repo/downlog', @config){|response|
         File.open(filename, 'w+'){|f|
@@ -45,13 +39,9 @@ module Depgraph
       
         puts "Wrote downlog to: #{filename}"
       }
-    
-      puts "downlog ended #{Time.now}"
     end
     
     def zip()
-      puts "repo.zip started #{Time.now}"
-    
       filename = "repo-#{@workspace}.zip"
       File.open(filename, 'w+'){|f|
         @http.post('repo/zip', @config){|response|
@@ -63,7 +53,6 @@ module Depgraph
       }
     
       puts "Wrote repo.zip to: #{filename}"
-      puts "repo.zip ended #{Time.now}"
     end
     
     def shutdown()
@@ -158,7 +147,16 @@ module Depgraph
     end
   
     def run()
-      puts @repo.send(@options[:verb].to_sym)
+      verb = @options[:verb]
+      puts "#{verb} started #{Time.now}"
+      begin
+        puts @repo.send(verb.to_sym)
+      rescue Exception => e
+        puts e.message
+        puts e.backtrace.inspect
+      ensure
+        puts "#{verb} ended #{Time.now}"
+      end
     end
   end
 end

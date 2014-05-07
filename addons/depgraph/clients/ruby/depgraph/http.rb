@@ -11,7 +11,7 @@ module Depgraph
       @host = host
       @port = port
       @http = HTTP.new(host, port)
-      @http.read_timeout = 10800
+      @http.read_timeout = 21600
       @context_path = context_path
     end
     
