@@ -22,10 +22,11 @@ import javax.inject.Inject;
 import org.commonjava.aprox.depgraph.util.AproxDepgraphUtils;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.util.LocationUtils;
+import org.commonjava.maven.atlas.graph.RelationshipGraph;
+import org.commonjava.maven.atlas.graph.RelationshipGraphException;
 import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.data.CartoDataException;
-import org.commonjava.maven.cartographer.data.CartoDataManager;
 import org.commonjava.maven.cartographer.discover.DiscoveryConfig;
 import org.commonjava.maven.cartographer.discover.DiscoveryResult;
 import org.commonjava.maven.cartographer.discover.post.meta.MetadataScannerSupport;
@@ -46,34 +47,31 @@ public class AproxModelDiscoverer
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private MavenModelProcessor modelProcessor;
+    protected MavenModelProcessor modelProcessor;
 
     @Inject
-    private CartoDataManager dataManager;
+    protected PatcherSupport patchers;
 
     @Inject
-    private PatcherSupport patchers;
+    protected MetadataScannerSupport metadataScannerSupport;
 
     @Inject
-    private MetadataScannerSupport metadataScannerSupport;
-
-    @Inject
-    private MavenPomReader pomReader;
+    protected MavenPomReader pomReader;
 
     protected AproxModelDiscoverer()
     {
     }
 
-    public AproxModelDiscoverer( final MavenModelProcessor modelProcessor, final CartoDataManager dataManager, final PatcherSupport patchers,
+    public AproxModelDiscoverer( final MavenModelProcessor modelProcessor, final PatcherSupport patchers,
                                  final MetadataScannerSupport metadataScannerSupport )
     {
         this.modelProcessor = modelProcessor;
-        this.dataManager = dataManager;
         this.patchers = patchers;
         this.metadataScannerSupport = metadataScannerSupport;
     }
 
-    public DiscoveryResult discoverRelationships( final ProjectVersionRef ref, final Transfer item, final DiscoveryConfig discoveryConfig )
+    public DiscoveryResult discoverRelationships( final ProjectVersionRef ref, final Transfer item,
+                                                  final RelationshipGraph graph, final DiscoveryConfig discoveryConfig )
         throws CartoDataException
     {
         final String path = item.getPath();
@@ -112,16 +110,28 @@ public class AproxModelDiscoverer
             logger.info( "After patching, {} relationships were discovered.", result.getAcceptedRelationships()
                                                                                     .size() );
 
-            final Map<String, String> metadata = metadataScannerSupport.scan( result.getSelectedRef(), locations, pomView, item );
+            final Map<String, String> metadata =
+                metadataScannerSupport.scan( result.getSelectedRef(), locations, pomView, item );
             result.setMetadata( metadata );
 
             if ( storeRelationships )
             {
                 logger.info( "Storing discovered relationships." );
-                final Set<ProjectRelationship<?>> rejected = dataManager.storeRelationships( result.getAcceptedRelationships() );
-                dataManager.addMetadata( result.getSelectedRef(), metadata );
+                try
+                {
+                    final Set<ProjectRelationship<?>> rejected =
+                        graph.storeRelationships( result.getAcceptedRelationships() );
 
-                result = new DiscoveryResult( result.getSource(), result, rejected );
+                    graph.addMetadata( result.getSelectedRef(), metadata );
+
+                    result = new DiscoveryResult( result.getSource(), result, rejected );
+                }
+                catch ( final RelationshipGraphException e )
+                {
+                    throw new CartoDataException(
+                                                  "Failed to store parsed relationships or metadata for: {}. Reason: {}",
+                                                  e, ref, e.getMessage() );
+                }
             }
             else
             {

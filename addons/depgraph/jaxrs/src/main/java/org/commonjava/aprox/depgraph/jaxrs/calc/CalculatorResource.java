@@ -10,9 +10,11 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.jaxrs.calc;
 
+import static org.commonjava.aprox.depgraph.jaxrs.util.DepgraphParamUtils.getWorkspaceId;
+
 import java.io.IOException;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -21,6 +23,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.util.AproxExceptionUtils;
@@ -31,7 +34,7 @@ import org.slf4j.LoggerFactory;
 
 @Path( "/depgraph/calc" )
 @Produces( MediaType.APPLICATION_JSON )
-@ApplicationScoped
+@RequestScoped
 public class CalculatorResource
 {
 
@@ -40,13 +43,17 @@ public class CalculatorResource
     @Inject
     private CalculatorController controller;
 
+    @Context
+    private UriInfo info;
+
     @Path( "/diff" )
     @GET
     public Response difference( @Context final HttpServletRequest request )
     {
         try
         {
-            final String json = controller.difference( request.getInputStream(), request.getCharacterEncoding() );
+            final String json =
+                controller.difference( request.getInputStream(), request.getCharacterEncoding(), getWorkspaceId( info ) );
 
             return Response.ok( json )
                            .build();
@@ -69,7 +76,8 @@ public class CalculatorResource
     {
         try
         {
-            final String json = controller.calculate( request.getInputStream(), request.getCharacterEncoding() );
+            final String json =
+                controller.calculate( request.getInputStream(), request.getCharacterEncoding(), getWorkspaceId( info ) );
 
             return Response.ok( json )
                            .build();

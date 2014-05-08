@@ -26,7 +26,7 @@ import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.depgraph.util.PresetParameterParser;
 import org.commonjava.aprox.depgraph.util.RequestAdvisor;
 import org.commonjava.aprox.util.ApplicationStatus;
-import org.commonjava.maven.atlas.graph.model.GraphView;
+import org.commonjava.maven.atlas.graph.ViewParams;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.agg.AggregationOptions;
 import org.commonjava.maven.cartographer.agg.DefaultAggregatorOptions;
@@ -60,14 +60,16 @@ public class ResolverController
     @Inject
     private PresetParameterParser presetParamParser;
 
-    public String resolveGraph( final String from, final String groupId, final String artifactId, final String version, final boolean recurse,
-                                final Map<String, String[]> params )
+    public String resolveGraph( final String from, final String groupId, final String artifactId, final String version,
+                                final boolean recurse, final String workspaceId, final Map<String, String[]> params )
         throws AproxWorkflowException
     {
         final URI source = sourceManager.createSourceURI( from );
         if ( source == null )
         {
-            final String message = String.format( "Invalid source format: '%s'. Use the form: '%s' instead.", from, sourceManager.getFormatHint() );
+            final String message =
+                String.format( "Invalid source format: '%s'. Use the form: '%s' instead.", from,
+                               sourceManager.getFormatHint() );
             logger.warn( message );
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, message );
         }
@@ -76,10 +78,11 @@ public class ResolverController
         final AggregationOptions options = createAggregationOptions( params, source );
 
         Set<ProjectVersionRef> resolved;
+        ViewParams resolvedParams = null;
         try
         {
-            final GraphView view = ops.resolve( from, options, ref );
-            resolved = view.getRoots();
+            resolvedParams = ops.resolve( workspaceId, options, ref );
+            resolved = resolvedParams.getRoots();
             if ( resolved == null || resolved.isEmpty() )
             {
                 resolved = Collections.singleton( ref );
@@ -89,18 +92,22 @@ public class ResolverController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to resolve graph: {} from: {}. Reason: {}", e, ref, from, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to resolve graph: {} from: {}. Reason: {}", e, ref, from,
+                                              e.getMessage() );
         }
     }
 
-    public void resolveIncomplete( final String from, final String groupId, final String artifactId, final String version, final boolean recurse,
+    public void resolveIncomplete( final String from, final String groupId, final String artifactId,
+                                   final String version, final boolean recurse, final String workspaceId,
                                    final Map<String, String[]> params )
         throws AproxWorkflowException
     {
         final URI source = sourceManager.createSourceURI( from );
         if ( source == null )
         {
-            final String message = String.format( "Invalid source format: '%s'. Use the form: '%s' instead.", from, sourceManager.getFormatHint() );
+            final String message =
+                String.format( "Invalid source format: '%s'. Use the form: '%s' instead.", from,
+                               sourceManager.getFormatHint() );
             logger.warn( message );
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, message );
         }
@@ -112,12 +119,12 @@ public class ResolverController
 
         try
         {
-            ops.resolve( from, options, ref );
+            ops.resolve( workspaceId, options, ref );
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to lookup incomplete subgraphs for: {} from: {}. Reason: {}", e, ref == null ? "all projects"
-                            : ref, from, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to lookup incomplete subgraphs for: {} from: {}. Reason: {}", e,
+                                              ref == null ? "all projects" : ref, from, e.getMessage() );
         }
     }
 

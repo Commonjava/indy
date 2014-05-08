@@ -10,7 +10,9 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.jaxrs;
 
-import javax.enterprise.context.ApplicationScoped;
+import static org.commonjava.aprox.depgraph.jaxrs.util.DepgraphParamUtils.getWorkspaceId;
+
+import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -21,17 +23,19 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.util.AproxExceptionUtils;
 import org.commonjava.aprox.depgraph.rest.ProjectController;
+import org.commonjava.maven.atlas.graph.rel.RelationshipType;
 import org.commonjava.maven.atlas.ident.DependencyScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Path( "/depgraph/project" )
 @Produces( MediaType.APPLICATION_JSON )
-@ApplicationScoped
+@RequestScoped
 public class ProjectResource
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -39,14 +43,18 @@ public class ProjectResource
     @Inject
     private ProjectController controller;
 
+    @Context
+    private UriInfo info;
+
     @Path( "/{g}/{a}/{v}/errors" )
     @GET
-    public Response errors( @PathParam( "g" ) final String groupId, @PathParam( "a" ) final String artifactId, @PathParam( "v" ) final String version )
+    public Response errors( @PathParam( "g" ) final String groupId, @PathParam( "a" ) final String artifactId,
+                            @PathParam( "v" ) final String version )
     {
         String json;
         try
         {
-            json = controller.errors( groupId, artifactId, version );
+            json = controller.errors( groupId, artifactId, version, getWorkspaceId( info ) );
         }
         catch ( final AproxWorkflowException e )
         {
@@ -61,12 +69,13 @@ public class ProjectResource
 
     @Path( "/list" )
     @GET
-    public Response list( @QueryParam( "g" ) final String groupIdPattern, @QueryParam( "a" ) final String artifactIdPattern )
+    public Response list( @QueryParam( "g" ) final String groupIdPattern,
+                          @QueryParam( "a" ) final String artifactIdPattern )
     {
         String json;
         try
         {
-            json = controller.list( groupIdPattern, artifactIdPattern );
+            json = controller.list( groupIdPattern, artifactIdPattern, getWorkspaceId( info ) );
         }
         catch ( final AproxWorkflowException e )
         {
@@ -87,7 +96,7 @@ public class ProjectResource
         String json;
         try
         {
-            json = controller.parentOf( groupId, artifactId, version );
+            json = controller.parentOf( groupId, artifactId, version, getWorkspaceId( info ) );
         }
         catch ( final AproxWorkflowException e )
         {
@@ -103,12 +112,15 @@ public class ProjectResource
     @Path( "/{g}/{a}/{v}/dependencies" )
     @GET
     public Response dependenciesOf( @PathParam( "g" ) final String groupId, @PathParam( "a" ) final String artifactId,
-                                    @PathParam( "v" ) final String version, @QueryParam( "scopes" ) final String scopesStr )
+                                    @PathParam( "v" ) final String version,
+                                    @QueryParam( "scopes" ) final String scopesStr )
     {
         String json;
         try
         {
-            json = controller.dependenciesOf( groupId, artifactId, version, DependencyScope.parseScopes( scopesStr ) );
+            json =
+                controller.dependenciesOf( groupId, artifactId, version, getWorkspaceId( info ),
+                                           DependencyScope.parseScopes( scopesStr ) );
         }
         catch ( final AproxWorkflowException e )
         {
@@ -129,7 +141,9 @@ public class ProjectResource
         String json;
         try
         {
-            json = controller.pluginsOf( groupId, artifactId, version );
+            json =
+                controller.relationshipsDeclaredBy( groupId, artifactId, version, getWorkspaceId( info ),
+                                                    RelationshipType.PLUGIN );
         }
         catch ( final AproxWorkflowException e )
         {
@@ -150,7 +164,9 @@ public class ProjectResource
         String json;
         try
         {
-            json = controller.extensionsOf( groupId, artifactId, version );
+            json =
+                controller.relationshipsDeclaredBy( groupId, artifactId, version, getWorkspaceId( info ),
+                                                    RelationshipType.PLUGIN );
         }
         catch ( final AproxWorkflowException e )
         {
@@ -165,13 +181,17 @@ public class ProjectResource
 
     @Path( "/{g}/{a}/{v}/relationships" )
     @GET
-    public Response relationshipsSpecifiedBy( @PathParam( "g" ) final String groupId, @PathParam( "a" ) final String artifactId,
-                                              @PathParam( "v" ) final String version, @Context final HttpServletRequest request )
+    public Response relationshipsSpecifiedBy( @PathParam( "g" ) final String groupId,
+                                              @PathParam( "a" ) final String artifactId,
+                                              @PathParam( "v" ) final String version,
+                                              @Context final HttpServletRequest request )
     {
         String json;
         try
         {
-            json = controller.relationshipsSpecifiedBy( groupId, artifactId, version, request.getParameterMap() );
+            json =
+                controller.relationshipsTargeting( groupId, artifactId, version, getWorkspaceId( info ),
+                                                   request.getParameterMap() );
         }
         catch ( final AproxWorkflowException e )
         {
@@ -186,13 +206,17 @@ public class ProjectResource
 
     @Path( "/{g}/{a}/{v}/users" )
     @GET
-    public Response relationshipsTargeting( @PathParam( "g" ) final String groupId, @PathParam( "a" ) final String artifactId,
-                                            @PathParam( "v" ) final String version, @Context final HttpServletRequest request )
+    public Response relationshipsTargeting( @PathParam( "g" ) final String groupId,
+                                            @PathParam( "a" ) final String artifactId,
+                                            @PathParam( "v" ) final String version,
+                                            @Context final HttpServletRequest request )
     {
         String json;
         try
         {
-            json = controller.relationshipsTargeting( groupId, artifactId, version, request.getParameterMap() );
+            json =
+                controller.relationshipsTargeting( groupId, artifactId, version, getWorkspaceId( info ),
+                                                   request.getParameterMap() );
         }
         catch ( final AproxWorkflowException e )
         {

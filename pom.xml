@@ -39,9 +39,9 @@
     <arquillian-version>1.0.1.Final</arquillian-version>
     <qarqas-version>0.3</qarqas-version>
     <shelflife-version>0.6.3-SNAPSHOT</shelflife-version>
-    <atlasVersion>0.12.0-SNAPSHOT</atlasVersion>
+    <atlasVersion>0.12.0-EXP-SNAPSHOT</atlasVersion>
     <galleyVersion>0.4.3-SNAPSHOT</galleyVersion>
-    <cartoVersion>0.6-SNAPSHOT</cartoVersion>
+    <cartoVersion>0.6-EXP-SNAPSHOT</cartoVersion>
     <bomVersion>10</bomVersion>
     
     <vertx.testtools.version>2.0.0-final</vertx.testtools.version>

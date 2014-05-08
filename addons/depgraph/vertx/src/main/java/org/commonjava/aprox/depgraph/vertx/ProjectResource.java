@@ -19,6 +19,7 @@ import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_version;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.q_artifactId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.q_groupId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.q_scopes;
+import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParamUtils.getWorkspaceId;
 import static org.commonjava.aprox.util.RequestUtils.parseQueryMap;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -27,6 +28,7 @@ import javax.inject.Inject;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.rest.ProjectController;
 import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.maven.atlas.graph.rel.RelationshipType;
 import org.commonjava.maven.atlas.ident.DependencyScope;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
@@ -57,7 +59,7 @@ public class ProjectResource
         String json = null;
         try
         {
-            json = controller.errors( gid, aid, ver );
+            json = controller.errors( gid, aid, ver, getWorkspaceId( request ) );
         }
         catch ( final AproxWorkflowException e )
         {
@@ -85,7 +87,7 @@ public class ProjectResource
         String json = null;
         try
         {
-            json = controller.list( groupIdPattern, artifactIdPattern );
+            json = controller.list( groupIdPattern, artifactIdPattern, getWorkspaceId( request ) );
         }
         catch ( final AproxWorkflowException e )
         {
@@ -114,7 +116,7 @@ public class ProjectResource
         String json = null;
         try
         {
-            json = controller.parentOf( gid, aid, ver );
+            json = controller.parentOf( gid, aid, ver, getWorkspaceId( request ) );
         }
         catch ( final AproxWorkflowException e )
         {
@@ -144,7 +146,9 @@ public class ProjectResource
         String json = null;
         try
         {
-            json = controller.dependenciesOf( gid, aid, ver, DependencyScope.parseScopes( scopesStr ) );
+            json =
+                controller.dependenciesOf( gid, aid, ver, getWorkspaceId( request ),
+                                           DependencyScope.parseScopes( scopesStr ) );
         }
         catch ( final AproxWorkflowException e )
         {
@@ -173,7 +177,8 @@ public class ProjectResource
         String json = null;
         try
         {
-            json = controller.pluginsOf( gid, aid, ver );
+            json =
+                controller.relationshipsDeclaredBy( gid, aid, ver, getWorkspaceId( request ), RelationshipType.PLUGIN );
         }
         catch ( final AproxWorkflowException e )
         {
@@ -202,7 +207,9 @@ public class ProjectResource
         String json = null;
         try
         {
-            json = controller.extensionsOf( gid, aid, ver );
+            json =
+                controller.relationshipsDeclaredBy( gid, aid, ver, getWorkspaceId( request ),
+                                                    RelationshipType.EXTENSION );
         }
         catch ( final AproxWorkflowException e )
         {
@@ -231,7 +238,9 @@ public class ProjectResource
         String json = null;
         try
         {
-            json = controller.relationshipsSpecifiedBy( gid, aid, ver, parseQueryMap( request.query() ) );
+            json =
+                controller.relationshipsTargeting( gid, aid, ver, getWorkspaceId( request ),
+                                                   parseQueryMap( request.query() ) );
         }
         catch ( final AproxWorkflowException e )
         {
@@ -260,7 +269,9 @@ public class ProjectResource
         String json = null;
         try
         {
-            json = controller.relationshipsTargeting( gid, aid, ver, parseQueryMap( request.query() ) );
+            json =
+                controller.relationshipsTargeting( gid, aid, ver, getWorkspaceId( request ),
+                                                   parseQueryMap( request.query() ) );
         }
         catch ( final AproxWorkflowException e )
         {

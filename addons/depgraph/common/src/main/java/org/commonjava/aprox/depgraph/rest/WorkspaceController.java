@@ -21,12 +21,12 @@ import javax.inject.Inject;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.dto.CreationDTO;
-import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.UriFormatter;
-import org.commonjava.maven.atlas.graph.workspace.GraphWorkspace;
-import org.commonjava.maven.atlas.graph.workspace.GraphWorkspaceConfiguration;
-import org.commonjava.maven.cartographer.data.CartoDataException;
-import org.commonjava.maven.cartographer.ops.WorkspaceOps;
+import org.commonjava.maven.atlas.graph.RelationshipGraph;
+import org.commonjava.maven.atlas.graph.RelationshipGraphException;
+import org.commonjava.maven.atlas.graph.RelationshipGraphFactory;
+import org.commonjava.maven.atlas.graph.ViewParams;
+import org.commonjava.maven.cartographer.data.CartoGraphUtils;
 import org.commonjava.web.json.model.Listing;
 import org.commonjava.web.json.ser.JsonSerializer;
 
@@ -35,7 +35,7 @@ public class WorkspaceController
 {
 
     @Inject
-    private WorkspaceOps ops;
+    private RelationshipGraphFactory graphFactory;
 
     @Inject
     @DepgraphSpecific
@@ -46,12 +46,12 @@ public class WorkspaceController
     {
         try
         {
-            if ( !ops.delete( id ) )
+            if ( !graphFactory.deleteWorkspace( id ) )
             {
                 throw new AproxWorkflowException( "Delete failed for workspace: {}", id );
             }
         }
-        catch ( final CartoDataException e )
+        catch ( final RelationshipGraphException e )
         {
             throw new AproxWorkflowException( "Error deleting workspace: {}. Reason: {}", e, id, e.getMessage() );
         }
@@ -60,175 +60,115 @@ public class WorkspaceController
     public CreationDTO createNamed( final String id, final String serviceUrl, final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
-        GraphWorkspace ws = null;
+        RelationshipGraph graph = null;
         try
         {
-            ws = ops.create( id, new GraphWorkspaceConfiguration() );
+            if ( graphFactory.workspaceExists( id ) )
+            {
+                throw new AproxWorkflowException( "Workspace already exists: {}", id );
+            }
 
-            final String json = serializer.toString( ws );
+            graph = graphFactory.open( new ViewParams( id ), true );
 
-            return new CreationDTO( new URI( uriFormatter.formatAbsolutePathTo( serviceUrl, ws.getId() ) ), json );
+            final String json = serializer.toString( graph );
+
+            return new CreationDTO( new URI( uriFormatter.formatAbsolutePathTo( serviceUrl, graph.getWorkspaceId() ) ),
+                                    json );
         }
-        catch ( final CartoDataException e )
+        catch ( final RelationshipGraphException e )
         {
             throw new AproxWorkflowException( "Failed to create new workspace: {}", e, e.getMessage() );
         }
         catch ( final URISyntaxException e )
         {
-            throw new AproxWorkflowException( "Failed to generate location URI for: {}. Reason: {}", e, id, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to generate location URI for: {}. Reason: {}", e, id,
+                                              e.getMessage() );
         }
         finally
         {
-            detach( ws );
+            CartoGraphUtils.closeGraphQuietly( graph );
         }
     }
 
     public CreationDTO create( final String serviceUrl, final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
-        GraphWorkspace ws = null;
-        try
-        {
-            ws = ops.create( new GraphWorkspaceConfiguration() );
-
-            final String json = serializer.toString( ws );
-
-            return new CreationDTO( new URI( uriFormatter.formatAbsolutePathTo( serviceUrl, ws.getId() ) ), json );
-        }
-        catch ( final CartoDataException e )
-        {
-            throw new AproxWorkflowException( "Failed to create new workspace: ", e, e.getMessage() );
-        }
-        catch ( final URISyntaxException e )
-        {
-            throw new AproxWorkflowException( "Failed to generate location URI for: {}. Reason: {}", e, ws.getId(), e.getMessage() );
-        }
-        finally
-        {
-            detach( ws );
-        }
+        final String id = System.currentTimeMillis() + ".db";
+        return createNamed( id, serviceUrl, uriFormatter );
     }
 
-    public CreationDTO createFrom( final String serviceUrl, final UriFormatter uriFormatter, final InputStream configStream, final String encoding )
+    public CreationDTO createFrom( final String serviceUrl, final UriFormatter uriFormatter,
+                                   final InputStream configStream, final String encoding )
         throws AproxWorkflowException
     {
-        final GraphWorkspaceConfiguration config = serializer.fromStream( configStream, encoding, GraphWorkspaceConfiguration.class );
-        return createFrom( serviceUrl, uriFormatter, config );
+        final ViewParams params = serializer.fromStream( configStream, encoding, ViewParams.class );
+        return createFrom( serviceUrl, uriFormatter, params );
     }
 
     public CreationDTO createFrom( final String serviceUrl, final UriFormatter uriFormatter, final String json )
         throws AproxWorkflowException
     {
-        final GraphWorkspaceConfiguration config = serializer.fromString( json, GraphWorkspaceConfiguration.class );
-        return createFrom( serviceUrl, uriFormatter, config );
+        final ViewParams params = serializer.fromString( json, ViewParams.class );
+        return createFrom( serviceUrl, uriFormatter, params );
     }
 
-    public CreationDTO createFrom( final String serviceUrl, final UriFormatter uriFormatter, final GraphWorkspaceConfiguration config )
+    public CreationDTO createFrom( final String serviceUrl, final UriFormatter uriFormatter, final ViewParams params )
         throws AproxWorkflowException
     {
-        GraphWorkspace ws = null;
+        RelationshipGraph graph = null;
         try
         {
-            ws = ops.create( config );
+            if ( graphFactory.workspaceExists( params.getWorkspaceId() ) )
+            {
+                throw new AproxWorkflowException( "Workspace already exists: {}", params.getWorkspaceId() );
+            }
 
-            final String json = serializer.toString( ws );
+            graph = graphFactory.open( params, true );
 
-            return new CreationDTO( new URI( uriFormatter.formatAbsolutePathTo( serviceUrl, ws.getId() ) ), json );
+            final String json = serializer.toString( graph );
+
+            return new CreationDTO( new URI( uriFormatter.formatAbsolutePathTo( serviceUrl, graph.getWorkspaceId() ) ),
+                                    json );
         }
-        catch ( final CartoDataException e )
+        catch ( final RelationshipGraphException e )
         {
             throw new AproxWorkflowException( "Failed to create new workspace: ", e, e.getMessage() );
         }
         catch ( final URISyntaxException e )
         {
-            throw new AproxWorkflowException( "Failed to generate location URI for: {}. Reason: {}", e, ws.getId(), e.getMessage() );
+            throw new AproxWorkflowException( "Failed to generate location URI for: {}. Reason: {}", e,
+                                              graph.getWorkspaceId(), e.getMessage() );
         }
         finally
         {
-            detach( ws );
+            CartoGraphUtils.closeGraphQuietly( graph );
         }
     }
 
     public String get( final String id )
         throws AproxWorkflowException
     {
-        GraphWorkspace ws;
+        RelationshipGraph graph = null;
         try
         {
-            ws = ops.get( id );
+            graph = graphFactory.open( new ViewParams( id ), false );
+            return graph == null ? null : serializer.toString( graph );
         }
-        catch ( final CartoDataException e )
+        catch ( final RelationshipGraphException e )
         {
             throw new AproxWorkflowException( "Failed to load workspace: {}. Reason: {}", e, id, e.getMessage() );
         }
-
-        if ( ws != null )
+        finally
         {
-            ws.detach();
+            CartoGraphUtils.closeGraphQuietly( graph );
         }
 
-        return ws == null ? null : serializer.toString( ws );
     }
 
     public String list()
     {
-        final Set<GraphWorkspace> ws = ops.list();
-        return ws == null || ws.isEmpty() ? null : serializer.toString( new Listing<GraphWorkspace>( ws ) );
+        final Set<String> graph = graphFactory.listWorkspaces();
+        return graph == null || graph.isEmpty() ? null : serializer.toString( new Listing<String>( graph ) );
     }
 
-    public boolean addSource( final String id, final String source, final UriFormatter uriFormatter )
-        throws AproxWorkflowException
-    {
-        GraphWorkspace ws = null;
-        try
-        {
-            ws = ops.get( id );
-            if ( ws == null )
-            {
-                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "Cannot find workspace: {}", id );
-            }
-
-            return ops.addSource( source, ws );
-        }
-        catch ( final CartoDataException e )
-        {
-            throw new AproxWorkflowException( "Failed to load workspace: {}. Reason: {}", e, id, e.getMessage() );
-        }
-        finally
-        {
-            detach( ws );
-        }
-    }
-
-    public boolean addPomLocation( final String id, final String profile, final UriFormatter uriFormatter )
-        throws AproxWorkflowException
-    {
-        GraphWorkspace ws = null;
-        try
-        {
-            ws = ops.get( id );
-            if ( ws == null )
-            {
-                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "Cannot find workspace: {}", id );
-            }
-
-            return ops.addProfile( profile, ws );
-        }
-        catch ( final CartoDataException e )
-        {
-            throw new AproxWorkflowException( "Failed to load workspace: {}. Reason: {}", e, id, e.getMessage() );
-        }
-        finally
-        {
-            detach( ws );
-        }
-    }
-
-    private void detach( final GraphWorkspace ws )
-    {
-        if ( ws != null )
-        {
-            ws.detach();
-        }
-    }
 }

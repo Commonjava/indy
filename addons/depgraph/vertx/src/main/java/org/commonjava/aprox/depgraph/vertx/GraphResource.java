@@ -17,6 +17,7 @@ import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_artifactI
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_gav;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_groupId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_version;
+import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParamUtils.getWorkspaceId;
 import static org.commonjava.aprox.util.RequestUtils.parseQueryMap;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -50,7 +51,7 @@ public class GraphResource
                                     .get( p_gav.key() );
         try
         {
-            controller.reindex( coord );
+            controller.reindex( coord, getWorkspaceId( request ) );
             setStatus( ApplicationStatus.OK, request );
         }
         catch ( final AproxWorkflowException e )
@@ -67,7 +68,7 @@ public class GraphResource
                                     .get( p_gav.key() );
         try
         {
-            final String json = controller.errors( coord );
+            final String json = controller.errors( coord, getWorkspaceId( request ) );
             if ( json != null )
             {
                 formatOkResponseWithJsonEntity( request, json );
@@ -91,7 +92,8 @@ public class GraphResource
                                     .get( p_gav.key() );
         try
         {
-            final String json = controller.incomplete( coord, parseQueryMap( request.query() ) );
+            final String json =
+                controller.incomplete( coord, getWorkspaceId( request ), parseQueryMap( request.query() ) );
 
             if ( json != null )
             {
@@ -116,7 +118,8 @@ public class GraphResource
                                     .get( p_gav.key() );
         try
         {
-            final String json = controller.variable( coord, parseQueryMap( request.query() ) );
+            final String json =
+                controller.variable( coord, getWorkspaceId( request ), parseQueryMap( request.query() ) );
 
             if ( json != null )
             {
@@ -144,7 +147,7 @@ public class GraphResource
 
         try
         {
-            final String json = controller.ancestryOf( gid, aid, ver );
+            final String json = controller.ancestryOf( gid, aid, ver, getWorkspaceId( request ) );
 
             if ( json != null )
             {
@@ -172,7 +175,8 @@ public class GraphResource
 
         try
         {
-            final String json = controller.buildOrder( gid, aid, ver, parseQueryMap( request.query() ) );
+            final String json =
+                controller.buildOrder( gid, aid, ver, getWorkspaceId( request ), parseQueryMap( request.query() ) );
 
             if ( json != null )
             {
@@ -200,7 +204,8 @@ public class GraphResource
 
         try
         {
-            final String json = controller.projectGraph( gid, aid, ver, parseQueryMap( request.query() ) );
+            final String json =
+                controller.projectGraph( gid, aid, ver, getWorkspaceId( request ), parseQueryMap( request.query() ) );
 
             if ( json != null )
             {

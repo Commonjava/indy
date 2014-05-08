@@ -12,7 +12,6 @@ package org.commonjava.aprox.depgraph.json;
 
 import org.commonjava.aprox.depgraph.dto.GraphTransferDTO;
 import org.commonjava.maven.atlas.graph.model.EProjectCycle;
-import org.commonjava.maven.atlas.graph.model.EProjectKey;
 import org.commonjava.maven.atlas.graph.rel.DependencyRelationship;
 import org.commonjava.maven.atlas.graph.rel.ExtensionRelationship;
 import org.commonjava.maven.atlas.graph.rel.ParentRelationship;
@@ -36,7 +35,6 @@ public class DepgraphSerializationAdapter
     {
         gson.registerTypeAdapter( ArtifactRef.class, new ArtifactRefSer() );
         gson.registerTypeAdapter( EProjectCycle.class, new EProjectCycleSer() );
-        gson.registerTypeAdapter( EProjectKey.class, new EProjectKeySer() );
         gson.registerTypeAdapter( GraphTransferDTO.class, new GraphTransferDTOSer() );
         gson.registerTypeAdapter( ProjectRef.class, new ProjectRefSer() );
         gson.registerTypeAdapter( ProjectRelationship.class, new ProjectRelationshipSer() );

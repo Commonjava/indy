@@ -16,6 +16,7 @@ import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.setStatus;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_artifactId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_groupId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_version;
+import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParamUtils.getWorkspaceId;
 import static org.commonjava.aprox.util.ApplicationContent.application_xml;
 import static org.commonjava.aprox.util.ApplicationContent.text_plain;
 import static org.commonjava.aprox.util.RequestUtils.parseQueryMap;
@@ -64,7 +65,8 @@ public class GraphRenderingResource
         try
         {
             final String out =
-                controller.bomFor( gid, aid, ver, parseQueryMap( request.query() ), body.getString( 0, body.length() ) );
+                controller.bomFor( gid, aid, ver, getWorkspaceId( request ), parseQueryMap( request.query() ),
+                                   body.getString( 0, body.length() ) );
             if ( out == null )
             {
                 setStatus( ApplicationStatus.NOT_FOUND, request );
@@ -92,7 +94,8 @@ public class GraphRenderingResource
 
         try
         {
-            final String out = controller.dotfile( gid, aid, ver, parseQueryMap( request.query() ) );
+            final String out =
+                controller.dotfile( gid, aid, ver, getWorkspaceId( request ), parseQueryMap( request.query() ) );
             if ( out == null )
             {
                 setStatus( ApplicationStatus.NOT_FOUND, request );

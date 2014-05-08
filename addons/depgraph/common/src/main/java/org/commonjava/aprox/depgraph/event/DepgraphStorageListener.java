@@ -20,7 +20,7 @@ import org.commonjava.aprox.depgraph.DepgraphStorageListenerRunnable;
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.aprox.depgraph.discover.AproxModelDiscoverer;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
-import org.commonjava.maven.cartographer.data.CartoDataManager;
+import org.commonjava.maven.atlas.graph.RelationshipGraphFactory;
 import org.commonjava.maven.cartographer.discover.post.patch.PatcherSupport;
 import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.slf4j.Logger;
@@ -44,7 +44,7 @@ public class DepgraphStorageListener
     private PatcherSupport patcherSupport;
 
     @Inject
-    private CartoDataManager carto;
+    private RelationshipGraphFactory graphFactory;
 
     @Inject
     private AproxDepgraphConfig config;
@@ -67,6 +67,7 @@ public class DepgraphStorageListener
 
         logger.info( "[SUBMIT] DepgraphStorageListenerRunnable for: {}", event );
 
-        executor.execute( new DepgraphStorageListenerRunnable( discoverer, aprox, carto, patcherSupport, event.getTransfer() ) );
+        executor.execute( new DepgraphStorageListenerRunnable( discoverer, aprox, graphFactory, patcherSupport,
+                                                               event.getTransfer() ) );
     }
 }

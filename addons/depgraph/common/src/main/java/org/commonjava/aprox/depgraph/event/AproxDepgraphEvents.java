@@ -19,10 +19,10 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.inject.Production;
 import org.commonjava.aprox.util.ArtifactPathInfo;
+import org.commonjava.maven.atlas.graph.RelationshipGraph;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.version.InvalidVersionSpecificationException;
 import org.commonjava.maven.cartographer.data.CartoDataException;
-import org.commonjava.maven.cartographer.data.CartoDataManager;
 import org.commonjava.maven.cartographer.event.CartoEventManager;
 import org.commonjava.maven.cartographer.event.CartoEventManagerImpl;
 import org.commonjava.maven.cartographer.event.ProjectRelationshipsErrorEvent;
@@ -75,15 +75,16 @@ public class AproxDepgraphEvents
             //            logger.info( "Unlocking {} due to file download error.", info );
             if ( info != null )
             {
-                final ProjectVersionRef ref = new ProjectVersionRef( info.getGroupId(), info.getArtifactId(), info.getVersion() );
+                final ProjectVersionRef ref =
+                    new ProjectVersionRef( info.getGroupId(), info.getArtifactId(), info.getVersion() );
 
                 delegate.notifyOfGraph( ref );
             }
         }
         catch ( final InvalidVersionSpecificationException e )
         {
-            logger.error( String.format( "Cannot parse version for path: '%s'. Failed to unlock waiting threads. Reason: %s", path, e.getMessage() ),
-                          e );
+            logger.error( String.format( "Cannot parse version for path: '%s'. Failed to unlock waiting threads. Reason: %s",
+                                         path, e.getMessage() ), e );
         }
     }
 
@@ -97,15 +98,16 @@ public class AproxDepgraphEvents
             //            logger.info( "Unlocking {} due to unresolvable POM.", info );
             if ( info != null )
             {
-                final ProjectVersionRef ref = new ProjectVersionRef( info.getGroupId(), info.getArtifactId(), info.getVersion() );
+                final ProjectVersionRef ref =
+                    new ProjectVersionRef( info.getGroupId(), info.getArtifactId(), info.getVersion() );
 
                 delegate.notifyOfGraph( ref );
             }
         }
         catch ( final InvalidVersionSpecificationException e )
         {
-            logger.error( String.format( "Cannot parse version for path: '%s'. Failed to unlock waiting threads. Reason: %s", path, e.getMessage() ),
-                          e );
+            logger.error( String.format( "Cannot parse version for path: '%s'. Failed to unlock waiting threads. Reason: %s",
+                                         path, e.getMessage() ), e );
         }
     }
 
@@ -130,10 +132,10 @@ public class AproxDepgraphEvents
     }
 
     @Override
-    public void waitForGraph( final ProjectVersionRef ref, final CartoDataManager data, final long timeoutMillis )
+    public void waitForGraph( final ProjectVersionRef ref, final RelationshipGraph graph, final long timeoutMillis )
         throws CartoDataException
     {
-        delegate.waitForGraph( ref, data, timeoutMillis );
+        delegate.waitForGraph( ref, graph, timeoutMillis );
     }
 
 }
