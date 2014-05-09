@@ -20,7 +20,6 @@ import org.commonjava.aprox.depgraph.util.AproxDepgraphUtils;
 import org.commonjava.aprox.inject.Production;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.util.LocationUtils;
-import org.commonjava.maven.atlas.graph.model.EProjectKey;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.util.JoinString;
@@ -101,7 +100,7 @@ public class AproxProjectGraphDiscoverer
         catch ( final InvalidVersionSpecificationException e )
         {
             logger.error( String.format( "Invalid version for: %s. Reason: %s", ref, e.getMessage() ), e );
-            dataManager.addError( new EProjectKey( source, ref ), e );
+            dataManager.addError( ref, e );
             specific = null;
         }
 
