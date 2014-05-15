@@ -29,7 +29,7 @@ public class WebOperationConfigDTO
 
     private StoreKey source;
 
-    private TreeSet<StoreKey> excludedSources;
+    private Set<StoreKey> excludedSources;
 
     private Boolean localUrls;
 

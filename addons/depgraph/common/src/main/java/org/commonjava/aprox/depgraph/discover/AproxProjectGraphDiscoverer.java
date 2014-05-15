@@ -10,7 +10,6 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.discover;
 
-import java.net.URI;
 import java.util.Collections;
 
 import javax.enterprise.inject.Default;
@@ -82,8 +81,6 @@ public class AproxProjectGraphDiscoverer
     public DiscoveryResult discoverRelationships( final ProjectVersionRef ref, final DiscoveryConfig discoveryConfig )
         throws CartoDataException
     {
-        final URI source = discoveryConfig.getDiscoverySource();
-
         ProjectVersionRef specific = ref;
         try
         {
