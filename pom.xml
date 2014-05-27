@@ -38,8 +38,7 @@
     <jbossas-version>7.1.1.Final</jbossas-version>
     <arquillian-version>1.0.1.Final</arquillian-version>
     <qarqas-version>0.3</qarqas-version>
-    <!-- shelflife-version>0.6.3-SNAPSHOT</shelflife-version -->
-    <shelflife-version>0.6.2</shelflife-version>
+    <shelflife-version>0.6.3-SNAPSHOT</shelflife-version>
     <atlasVersion>0.13.0-SNAPSHOT</atlasVersion>
     <galleyVersion>0.5.1-SNAPSHOT</galleyVersion>
     <cartoVersion>0.7.0-SNAPSHOT</cartoVersion>
