@@ -11,6 +11,7 @@
 package org.commonjava.aprox.depgraph.discover;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -24,10 +25,9 @@ import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreType;
+import org.commonjava.maven.atlas.graph.RelationshipGraphException;
 import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.cartographer.data.CartoDataException;
-import org.commonjava.maven.cartographer.data.CartoDataManager;
 import org.commonjava.maven.cartographer.event.RelationshipStorageEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,24 +41,20 @@ public class RepoSourceMetadataListener
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private StoreDataManager aprox;
+    protected StoreDataManager aprox;
 
-    @Inject
-    private CartoDataManager carto;
-
-    public RepoSourceMetadataListener()
+    protected RepoSourceMetadataListener()
     {
     }
 
-    public RepoSourceMetadataListener( final StoreDataManager aprox, final CartoDataManager carto )
+    public RepoSourceMetadataListener( final StoreDataManager aprox )
     {
         this.aprox = aprox;
-        this.carto = carto;
     }
 
     public void addRepoMetadata( @Observes final RelationshipStorageEvent event )
     {
-        final Set<ProjectRelationship<?>> stored = event.getStored();
+        final Collection<? extends ProjectRelationship<?>> stored = event.getStored();
         if ( stored == null )
         {
             return;
@@ -140,12 +136,13 @@ public class RepoSourceMetadataListener
             {
                 try
                 {
-                    carto.addMetadata( ref, FOUND_IN_METADATA, sb.toString() );
+                    event.getGraph()
+                         .addMetadata( ref, FOUND_IN_METADATA, sb.toString() );
                 }
-                catch ( final CartoDataException e )
+                catch ( final RelationshipGraphException e )
                 {
-                    logger.error( String.format( "Failed to add metadata: '%s' = '%s' to project: '%s'. Reason: %s", FOUND_IN_METADATA, sb, ref,
-                                                 e.getMessage() ), e );
+                    logger.error( String.format( "Failed to add metadata: '%s' = '%s' to project: '%s'. Reason: %s",
+                                                 FOUND_IN_METADATA, sb, ref, e.getMessage() ), e );
                 }
             }
         }

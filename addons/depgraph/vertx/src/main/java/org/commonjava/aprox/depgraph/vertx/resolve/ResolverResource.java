@@ -18,6 +18,7 @@ import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_from;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_groupId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_version;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.q_recurse;
+import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParamUtils.getWorkspaceId;
 import static org.commonjava.aprox.util.RequestUtils.parseQueryMap;
 import static org.commonjava.aprox.util.RequestUtils.toBoolean;
 
@@ -58,7 +59,9 @@ public class ResolverResource
 
         try
         {
-            final String json = controller.resolveGraph( f, gid, aid, ver, recurse, parseQueryMap( request.query() ) );
+            final String json =
+                controller.resolveGraph( f, gid, aid, ver, recurse, getWorkspaceId( request ),
+                                         parseQueryMap( request.query() ) );
             if ( json == null )
             {
                 setStatus( ApplicationStatus.OK, request );
@@ -88,7 +91,8 @@ public class ResolverResource
 
         try
         {
-            controller.resolveIncomplete( f, gid, aid, ver, recurse, parseQueryMap( request.query() ) );
+            controller.resolveIncomplete( f, gid, aid, ver, recurse, getWorkspaceId( request ),
+                                          parseQueryMap( request.query() ) );
             setStatus( ApplicationStatus.OK, request );
         }
         catch ( final AproxWorkflowException e )

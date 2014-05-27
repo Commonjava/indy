@@ -12,6 +12,7 @@ package org.commonjava.aprox.depgraph.vertx.calc;
 
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
+import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParamUtils.getWorkspaceId;
 import static org.commonjava.aprox.util.ApplicationContent.application_json;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -44,7 +45,7 @@ public class CalculatorResource
         try
         {
             // FIXME Figure out the character encoding!
-            final String json = controller.difference( body.getString( 0, body.length() ) );
+            final String json = controller.difference( body.getString( 0, body.length() ), getWorkspaceId( request ) );
             formatOkResponseWithJsonEntity( request, json );
         }
         catch ( final AproxWorkflowException e )
@@ -60,7 +61,7 @@ public class CalculatorResource
         try
         {
             // FIXME Figure out the character encoding!
-            final String json = controller.calculate( body.getString( 0, body.length() ) );
+            final String json = controller.calculate( body.getString( 0, body.length() ), getWorkspaceId( request ) );
             formatOkResponseWithJsonEntity( request, json );
         }
         catch ( final AproxWorkflowException e )

@@ -10,9 +10,11 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.jaxrs;
 
+import static org.commonjava.aprox.depgraph.jaxrs.util.DepgraphParamUtils.getWorkspaceId;
+
 import java.io.IOException;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -24,6 +26,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.util.AproxExceptionUtils;
@@ -35,7 +38,7 @@ import org.slf4j.LoggerFactory;
 @Path( "/depgraph/meta" )
 @Consumes( MediaType.APPLICATION_JSON )
 @Produces( MediaType.APPLICATION_JSON )
-@ApplicationScoped
+@RequestScoped
 public class MetadataResource
 {
 
@@ -44,13 +47,16 @@ public class MetadataResource
     @Inject
     private MetadataController controller;
 
+    @Context
+    private UriInfo info;
+
     @Path( "/batch" )
     @POST
     public Response batchUpdate( @Context final HttpServletRequest request )
     {
         try
         {
-            controller.batchUpdate( request.getInputStream(), request.getCharacterEncoding() );
+            controller.batchUpdate( request.getInputStream(), request.getCharacterEncoding(), getWorkspaceId( info ) );
             return Response.ok()
                            .build();
         }
@@ -74,7 +80,7 @@ public class MetadataResource
         String json;
         try
         {
-            json = controller.getMetadata( groupId, artifactId, version );
+            json = controller.getMetadata( groupId, artifactId, version, getWorkspaceId( info ) );
         }
         catch ( final AproxWorkflowException e )
         {
@@ -89,13 +95,14 @@ public class MetadataResource
 
     @Path( "/forkey/{g}/{a}/{v}/{k}" )
     @GET
-    public Response getMetadataValue( @PathParam( "g" ) final String groupId, @PathParam( "a" ) final String artifactId,
+    public Response getMetadataValue( @PathParam( "g" ) final String groupId,
+                                      @PathParam( "a" ) final String artifactId,
                                       @PathParam( "v" ) final String version, @PathParam( "k" ) final String key )
     {
         String json;
         try
         {
-            json = controller.getMetadataValue( groupId, artifactId, version, key );
+            json = controller.getMetadataValue( groupId, artifactId, version, key, getWorkspaceId( info ) );
         }
         catch ( final AproxWorkflowException e )
         {
@@ -115,7 +122,8 @@ public class MetadataResource
     {
         try
         {
-            controller.updateMetadata( groupId, artifactId, version, request.getInputStream(), request.getCharacterEncoding() );
+            controller.updateMetadata( groupId, artifactId, version, request.getInputStream(),
+                                       request.getCharacterEncoding(), getWorkspaceId( info ) );
         }
         catch ( final AproxWorkflowException e )
         {

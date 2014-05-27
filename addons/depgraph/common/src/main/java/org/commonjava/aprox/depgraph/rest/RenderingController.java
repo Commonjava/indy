@@ -34,12 +34,18 @@ import org.commonjava.aprox.depgraph.util.ConfigDTOHelper;
 import org.commonjava.aprox.depgraph.util.PresetParameterParser;
 import org.commonjava.aprox.depgraph.util.RequestAdvisor;
 import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.maven.atlas.graph.RelationshipGraph;
+import org.commonjava.maven.atlas.graph.RelationshipGraphException;
+import org.commonjava.maven.atlas.graph.RelationshipGraphFactory;
+import org.commonjava.maven.atlas.graph.ViewParams;
 import org.commonjava.maven.atlas.graph.filter.ProjectRelationshipFilter;
+import org.commonjava.maven.atlas.graph.mutate.GraphMutator;
+import org.commonjava.maven.atlas.graph.mutate.ManagedDependencyMutator;
 import org.commonjava.maven.atlas.ident.DependencyScope;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.atlas.ident.version.InvalidVersionSpecificationException;
 import org.commonjava.maven.cartographer.agg.AggregatorConfig;
 import org.commonjava.maven.cartographer.data.CartoDataException;
+import org.commonjava.maven.cartographer.data.CartoGraphUtils;
 import org.commonjava.maven.cartographer.dto.GraphCalculation.Type;
 import org.commonjava.maven.cartographer.dto.GraphComposition;
 import org.commonjava.maven.cartographer.dto.GraphDescription;
@@ -52,6 +58,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
+// FIXME: DTO Validations!!
 public class RenderingController
 {
 
@@ -79,6 +86,9 @@ public class RenderingController
 
     @Inject
     private ResolveOps resolveOps;
+
+    @Inject
+    private RelationshipGraphFactory graphFactory;
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -110,7 +120,7 @@ public class RenderingController
         try
         {
             w = new FileWriter( out );
-            ops.depTree( comp, false, new PrintWriter( w ) );
+            ops.depTree( dto.getWorkspaceId(), comp, false, new PrintWriter( w ) );
         }
         catch ( final CartoDataException e )
         {
@@ -130,8 +140,8 @@ public class RenderingController
     }
 
     @Deprecated
-    public File tree( final String groupId, final String artifactId, final String version,
-                        final DependencyScope scope, final Map<String, String[]> params )
+    public File tree( final String groupId, final String artifactId, final String version, final String workspaceId,
+                      final DependencyScope scope, final Map<String, String[]> params )
         throws AproxWorkflowException
     {
         final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
@@ -145,6 +155,7 @@ public class RenderingController
         final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( params, parsed );
 
         final WebOperationConfigDTO dto = new WebOperationConfigDTO();
+        dto.setWorkspaceId( workspaceId );
 
         final GraphDescription desc = new GraphDescription( filter, ref );
         dto.setGraphComposition( new GraphComposition( Type.ADD, Collections.singletonList( desc ) ) );
@@ -153,32 +164,36 @@ public class RenderingController
     }
 
     public String bomFor( final String groupId, final String artifactId, final String version,
-                          final Map<String, String[]> params, final InputStream configStream )
+                          final String workspaceId, final Map<String, String[]> params, final InputStream configStream )
         throws AproxWorkflowException
     {
         final AggregatorConfig config = configHelper.readAggregatorConfig( configStream );
-        return bomFor( groupId, artifactId, version, params, config );
+        return bomFor( groupId, artifactId, version, workspaceId, params, config );
     }
 
     public String bomFor( final String groupId, final String artifactId, final String version,
-                          final Map<String, String[]> params, final String listing )
+                          final String workspaceId, final Map<String, String[]> params, final String configJson )
         throws AproxWorkflowException
     {
-        final AggregatorConfig config = configHelper.readAggregatorConfig( listing );
-        return bomFor( groupId, artifactId, version, params, config );
+        final AggregatorConfig config = configHelper.readAggregatorConfig( configJson );
+        return bomFor( groupId, artifactId, version, workspaceId, params, config );
     }
 
     public String bomFor( final String groupId, final String artifactId, final String version,
-                          final Map<String, String[]> params, final AggregatorConfig config )
+                          final String workspaceId, final Map<String, String[]> params, final AggregatorConfig config )
         throws AproxWorkflowException
     {
+        RelationshipGraph graph = null;
         try
         {
             final ProjectRelationshipFilter filter =
                 requestAdvisor.createRelationshipFilter( params, presetParamParser.parse( params ) );
 
-            final Model model =
-                ops.generateBOM( new ProjectVersionRef( groupId, artifactId, version ), filter, config.getRoots() );
+            final GraphMutator mutator = new ManagedDependencyMutator();
+
+            graph = graphFactory.open( new ViewParams( workspaceId, filter, mutator, config.getRoots() ), true );
+
+            final Model model = ops.generateBOM( new ProjectVersionRef( groupId, artifactId, version ), graph );
 
             final StringWriter writer = new StringWriter();
             new MavenXpp3Writer().write( writer, model );
@@ -187,28 +202,44 @@ public class RenderingController
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST,
-                                              "Failed to read list of GAVs from config stream (body): {}", e,
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Failed to render BOM: {}", e,
+                                              e.getMessage() );
+        }
+        catch ( final RelationshipGraphException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR,
+                                              "Failed to generate BOM for: {} using config: {}. Reason: {}", e, config,
                                               e.getMessage() );
         }
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR,
-                                              "Failed to retrieve web for: {}. Reason: {}", e, config, e.getMessage() );
+                                              "Failed to generate BOM for: {} using config: {}. Reason: {}", e, config,
+                                              e.getMessage() );
+        }
+        finally
+        {
+            CartoGraphUtils.closeGraphQuietly( graph );
         }
     }
 
     public String dotfile( final String groupId, final String artifactId, final String version,
-                           final Map<String, String[]> params )
+                           final String workspaceId, final Map<String, String[]> params )
         throws AproxWorkflowException
     {
         //        final DiscoveryConfig discovery = createDiscoveryConfig( request, null, sourceFactory );
         final ProjectRelationshipFilter filter =
             requestAdvisor.createRelationshipFilter( params, presetParamParser.parse( params ) );
+
+        final GraphMutator mutator = new ManagedDependencyMutator();
+
+        RelationshipGraph graph = null;
         try
         {
             final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
-            final String dotfile = ops.dotfile( ref, filter, ref );
+
+            graph = graphFactory.open( new ViewParams( workspaceId, filter, mutator, ref ), true );
+            final String dotfile = ops.dotfile( ref, graph );
 
             if ( dotfile != null )
             {
@@ -216,22 +247,27 @@ public class RenderingController
             }
             else
             {
-                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "Cannot find graph: {}:{}:{}", groupId,
-                                                  artifactId, version );
+                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND,
+                                                  "Cannot find graph: {}:{}:{} in workspace: {}", groupId, artifactId,
+                                                  version, workspaceId );
             }
 
         }
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR,
-                                              "Failed to retrieve web for: {}:{}:{}. Reason: {}", e, groupId,
-                                              artifactId, version, e.getMessage() );
+                                              "Failed to render DOT file for: {}:{}:{} in workspace: {}. Reason: {}",
+                                              e, groupId, artifactId, version, workspaceId, e.getMessage(), e );
         }
-        catch ( final InvalidVersionSpecificationException e )
+        catch ( final RelationshipGraphException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST,
-                                              "Invalid version in request: '{}'. Reason: {}", e, version,
-                                              e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR,
+                                              "Failed to render DOT file for: {}:{}:{} in workspace: {}. Reason: {}",
+                                              e, groupId, artifactId, version, workspaceId, e.getMessage(), e );
+        }
+        finally
+        {
+            CartoGraphUtils.closeGraphQuietly( graph );
         }
     }
 

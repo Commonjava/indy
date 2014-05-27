@@ -10,7 +10,9 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.jaxrs;
 
-import javax.enterprise.context.ApplicationScoped;
+import static org.commonjava.aprox.depgraph.jaxrs.util.DepgraphParamUtils.getWorkspaceId;
+
+import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -20,6 +22,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.util.AproxExceptionUtils;
@@ -29,7 +32,7 @@ import org.slf4j.LoggerFactory;
 
 @Path( "/depgraph/rel" )
 @Produces( MediaType.APPLICATION_JSON )
-@ApplicationScoped
+@RequestScoped
 public class GraphResource
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -37,13 +40,16 @@ public class GraphResource
     @Inject
     private GraphController controller;
 
+    @Context
+    private UriInfo info;
+
     @Path( "/reindex{gav: ([^/]+/[^/]+/[^/]+)?}" )
     @GET
     public Response reindex( @PathParam( "gav" ) final String gav, @Context final HttpServletRequest request )
     {
         try
         {
-            controller.reindex( gav );
+            controller.reindex( gav, getWorkspaceId( info ) );
             return Response.ok()
                            .build();
         }
@@ -60,7 +66,7 @@ public class GraphResource
     {
         try
         {
-            final String json = controller.errors( gav );
+            final String json = controller.errors( gav, getWorkspaceId( info ) );
             if ( json != null )
             {
                 return Response.ok( json )
@@ -85,7 +91,7 @@ public class GraphResource
     {
         try
         {
-            final String json = controller.incomplete( gav, request.getParameterMap() );
+            final String json = controller.incomplete( gav, getWorkspaceId( info ), request.getParameterMap() );
 
             return json == null ? Response.ok()
                                           .build() : Response.ok( json )
@@ -104,7 +110,7 @@ public class GraphResource
     {
         try
         {
-            final String json = controller.variable( gav, request.getParameterMap() );
+            final String json = controller.variable( gav, getWorkspaceId( info ), request.getParameterMap() );
 
             return json == null ? Response.ok()
                                           .build() : Response.ok( json )
@@ -124,7 +130,7 @@ public class GraphResource
     {
         try
         {
-            final String json = controller.ancestryOf( groupId, artifactId, version );
+            final String json = controller.ancestryOf( groupId, artifactId, version, getWorkspaceId( info ) );
 
             return json == null ? Response.ok()
                                           .build() : Response.ok( json )
@@ -144,7 +150,8 @@ public class GraphResource
     {
         try
         {
-            final String json = controller.buildOrder( groupId, artifactId, version, request.getParameterMap() );
+            final String json =
+                controller.buildOrder( groupId, artifactId, version, getWorkspaceId( info ), request.getParameterMap() );
 
             return json == null ? Response.ok()
                                           .build() : Response.ok( json )
@@ -164,7 +171,9 @@ public class GraphResource
     {
         try
         {
-            final String json = controller.projectGraph( groupId, artifactId, version, request.getParameterMap() );
+            final String json =
+                controller.projectGraph( groupId, artifactId, version, getWorkspaceId( info ),
+                                         request.getParameterMap() );
 
             return json == null ? Response.ok()
                                           .build() : Response.ok( json )

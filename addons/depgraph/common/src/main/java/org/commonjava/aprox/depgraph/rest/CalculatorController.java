@@ -42,21 +42,21 @@ public class CalculatorController
     @Inject
     private ConfigDTOHelper configHelper;
 
-    public String difference( final InputStream configStream, final String encoding )
+    public String difference( final InputStream configStream, final String encoding, final String workspaceId )
         throws AproxWorkflowException
     {
         final GraphComposition dto = configHelper.readGraphComposition( configStream, encoding );
-        return difference( dto );
+        return difference( dto, workspaceId );
     }
 
-    public String difference( final String json )
+    public String difference( final String json, final String workspaceId )
         throws AproxWorkflowException
     {
         final GraphComposition dto = configHelper.readGraphComposition( json );
-        return difference( dto );
+        return difference( dto, workspaceId );
     }
 
-    private String difference( final GraphComposition dto )
+    private String difference( final GraphComposition dto, final String workspaceId )
         throws AproxWorkflowException
     {
         try
@@ -70,7 +70,7 @@ public class CalculatorController
             }
             else
             {
-                final GraphDifference<?> difference = ops.difference( graphs.get( 0 ), graphs.get( 1 ) );
+                final GraphDifference<?> difference = ops.difference( graphs.get( 0 ), graphs.get( 1 ), workspaceId );
                 return serializer.toString( difference );
             }
         }
@@ -80,21 +80,21 @@ public class CalculatorController
         }
     }
 
-    public String calculate( final InputStream configStream, final String encoding )
+    public String calculate( final InputStream configStream, final String encoding, final String workspaceId )
         throws AproxWorkflowException
     {
         final GraphComposition dto = configHelper.readGraphComposition( configStream, encoding );
-        return calculate( dto );
+        return calculate( dto, workspaceId );
     }
 
-    public String calculate( final String json )
+    public String calculate( final String json, final String workspaceId )
         throws AproxWorkflowException
     {
         final GraphComposition dto = configHelper.readGraphComposition( json );
-        return calculate( dto );
+        return calculate( dto, workspaceId );
     }
 
-    public String calculate( final GraphComposition dto )
+    public String calculate( final GraphComposition dto, final String workspaceId )
         throws AproxWorkflowException
     {
         try
@@ -103,7 +103,8 @@ public class CalculatorController
 
             if ( graphs.size() < 2 )
             {
-                throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST,
+                throw new AproxWorkflowException(
+                                                  ApplicationStatus.BAD_REQUEST,
                                                   "You must specify at least two graph descriptions (GAV-set with optional filter preset) in order to perform a calculation." );
             }
             else if ( dto.getCalculation() == null )
@@ -112,7 +113,7 @@ public class CalculatorController
             }
             else
             {
-                final GraphCalculation result = ops.calculate( dto );
+                final GraphCalculation result = ops.calculate( dto, workspaceId );
 
                 return serializer.toString( result );
             }

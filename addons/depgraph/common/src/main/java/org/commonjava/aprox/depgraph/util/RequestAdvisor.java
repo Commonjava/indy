@@ -19,12 +19,10 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.maven.atlas.graph.filter.DependencyFilter;
 import org.commonjava.maven.atlas.graph.filter.ExtensionFilter;
@@ -32,11 +30,7 @@ import org.commonjava.maven.atlas.graph.filter.OrFilter;
 import org.commonjava.maven.atlas.graph.filter.ParentFilter;
 import org.commonjava.maven.atlas.graph.filter.PluginRuntimeFilter;
 import org.commonjava.maven.atlas.graph.filter.ProjectRelationshipFilter;
-import org.commonjava.maven.atlas.graph.model.EProjectGraph;
 import org.commonjava.maven.atlas.ident.DependencyScope;
-import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.cartographer.data.CartoDataException;
-import org.commonjava.maven.cartographer.data.CartoDataManager;
 import org.commonjava.maven.cartographer.discover.DefaultDiscoveryConfig;
 import org.commonjava.maven.cartographer.discover.DiscoveryConfig;
 import org.commonjava.maven.cartographer.discover.DiscoverySourceManager;
@@ -51,55 +45,26 @@ public class RequestAdvisor
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private CartoDataManager carto;
+    protected AproxDepgraphConfig config;
 
     @Inject
-    private AproxDepgraphConfig config;
+    protected PresetSelector presetSelector;
 
-    @Inject
-    private PresetSelector presetSelector;
-
-    public RequestAdvisor()
+    protected RequestAdvisor()
     {
     }
 
-    public RequestAdvisor( final CartoDataManager carto, final PresetSelector presetSelector )
+    public RequestAdvisor( final PresetSelector presetSelector )
     {
-        this.carto = carto;
         this.presetSelector = presetSelector;
     }
 
-    public Set<ProjectVersionRef> getIncomplete( final ProjectVersionRef ref, final Map<String, String[]> params,
-                                                 final Map<String, Object> presetParameters )
-        throws CartoDataException
-    {
-        final ProjectRelationshipFilter filter = createRelationshipFilter( params, presetParameters );
-
-        Set<ProjectVersionRef> incomplete;
-        if ( ref != null )
-        {
-            incomplete = carto.getIncompleteSubgraphsFor( filter, null, ref );
-
-            if ( incomplete != null )
-            {
-                if ( filter != null )
-                {
-                    incomplete = carto.pathFilter( filter, incomplete, ref );
-                }
-            }
-        }
-        else
-        {
-            incomplete = carto.getAllIncompleteSubgraphs();
-        }
-
-        return incomplete;
-    }
-
-    public ProjectRelationshipFilter createRelationshipFilter( final Map<String, String[]> params, final Map<String, Object> presetParameters )
+    public ProjectRelationshipFilter createRelationshipFilter( final Map<String, String[]> params,
+                                                               final Map<String, Object> presetParameters )
     {
         ProjectRelationshipFilter filter =
-            presetSelector.getPresetFilter( getFirstParameterValue( params, "preset" ), config.getDefaultWebFilterPreset(), presetParameters );
+            presetSelector.getPresetFilter( getFirstParameterValue( params, "preset" ),
+                                            config.getDefaultWebFilterPreset(), presetParameters );
 
         if ( filter != null )
         {
@@ -109,7 +74,8 @@ public class RequestAdvisor
         final List<ProjectRelationshipFilter> filters = new ArrayList<ProjectRelationshipFilter>();
         if ( getBooleanParamWithDefault( params, "d", true ) )
         {
-            filters.add( new DependencyFilter( DependencyScope.getScope( getStringParamWithDefault( params, "s", "runtime" ) ) ) );
+            filters.add( new DependencyFilter( DependencyScope.getScope( getStringParamWithDefault( params, "s",
+                                                                                                    "runtime" ) ) ) );
         }
         if ( getBooleanParamWithDefault( params, "pa", true ) )
         {
@@ -130,7 +96,8 @@ public class RequestAdvisor
         return filter;
     }
 
-    public DiscoveryConfig createDiscoveryConfig( final Map<String, String[]> params, final URI source, final DiscoverySourceManager sourceFactory )
+    public DiscoveryConfig createDiscoveryConfig( final Map<String, String[]> params, final URI source,
+                                                  final DiscoverySourceManager sourceFactory )
     {
         DiscoveryConfig result = DiscoveryConfig.DISABLED;
         if ( getBooleanParamWithDefault( params, "discover", false ) )
@@ -149,13 +116,6 @@ public class RequestAdvisor
         }
 
         return result;
-    }
-
-    public void checkForIncompleteOrVariableGraphs( final EProjectGraph graph )
-        throws AproxWorkflowException
-    {
-        // TODO Report to log...
-        // TODO Find a way to advise the client that the response is incomplete.
     }
 
 }

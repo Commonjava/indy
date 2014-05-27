@@ -24,9 +24,12 @@ import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.util.ArtifactPathInfo;
 import org.commonjava.aprox.util.LocationUtils;
+import org.commonjava.maven.atlas.graph.RelationshipGraph;
+import org.commonjava.maven.atlas.graph.RelationshipGraphException;
+import org.commonjava.maven.atlas.graph.RelationshipGraphFactory;
+import org.commonjava.maven.atlas.graph.ViewParams;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.data.CartoDataException;
-import org.commonjava.maven.cartographer.data.CartoDataManager;
 import org.commonjava.maven.cartographer.discover.DefaultDiscoveryConfig;
 import org.commonjava.maven.cartographer.discover.DiscoveryResult;
 import org.commonjava.maven.cartographer.discover.post.patch.PatcherSupport;
@@ -50,16 +53,17 @@ public class DepgraphStorageListenerRunnable
 
     private final StoreDataManager aprox;
 
-    private final CartoDataManager carto;
+    private final RelationshipGraphFactory graphFactory;
 
     private final PatcherSupport patcherSupport;
 
-    public DepgraphStorageListenerRunnable( final AproxModelDiscoverer discoverer, final StoreDataManager aprox, final CartoDataManager carto,
+    public DepgraphStorageListenerRunnable( final AproxModelDiscoverer discoverer, final StoreDataManager aprox,
+                                            final RelationshipGraphFactory graphFactory,
                                             final PatcherSupport patcherSupport, final Transfer item )
     {
         this.discoverer = discoverer;
         this.aprox = aprox;
-        this.carto = carto;
+        this.graphFactory = graphFactory;
         this.patcherSupport = patcherSupport;
         this.item = item;
     }
@@ -111,6 +115,7 @@ public class DepgraphStorageListenerRunnable
 
         final List<? extends KeyedLocation> locations = LocationUtils.toLocations( stores );
 
+        RelationshipGraph graph = null;
         try
         {
             final DefaultDiscoveryConfig config = new DefaultDiscoveryConfig( item.getLocation() );
@@ -118,13 +123,11 @@ public class DepgraphStorageListenerRunnable
             config.setStoreRelationships( true );
             config.setEnabledPatchers( patcherSupport.getAvailablePatchers() );
 
-            carto.setCurrentWorkspace( key.toString() );
+            graph = graphFactory.open( new ViewParams( key.toString() ), true );
 
-            result = discoverer.discoverRelationships( ref, item, config );
+            result = discoverer.discoverRelationships( ref, item, graph, config );
 
-            carto.getCurrentWorkspace()
-                 .getDatabase()
-                 .printStats();
+            graph.printStats();
         }
         catch ( final CartoDataException e )
         {
@@ -134,15 +137,23 @@ public class DepgraphStorageListenerRunnable
         {
             error = e;
         }
+        catch ( final RelationshipGraphException e )
+        {
+            error = e;
+        }
         finally
         {
-            try
+            if ( graph != null )
             {
-                carto.clearCurrentWorkspace();
-            }
-            catch ( final CartoDataException e )
-            {
-                logger.error( String.format( "Failed to clear workspace for: %s. Reason: %s", key, e.getMessage() ), e );
+                try
+                {
+                    graph.close();
+                }
+                catch ( final RelationshipGraphException e )
+                {
+                    logger.error( String.format( "Failed to close relationship graph for: %s. Reason: %s", key,
+                                                 e.getMessage() ), e );
+                }
             }
         }
     }
@@ -172,7 +183,8 @@ public class DepgraphStorageListenerRunnable
                     continue;
                 }
 
-                final List<? extends ArtifactStore> orderedStores = aprox.getOrderedConcreteStoresInGroup( group.getName() );
+                final List<? extends ArtifactStore> orderedStores =
+                    aprox.getOrderedConcreteStoresInGroup( group.getName() );
 
                 if ( orderedStores != null )
                 {
@@ -190,8 +202,8 @@ public class DepgraphStorageListenerRunnable
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( "Cannot lookup full store list for groups containing artifact store: {}. Reason: {}", e, originatingStore.getKey(),
-                          e.getMessage() );
+            logger.error( "Cannot lookup full store list for groups containing artifact store: {}. Reason: {}", e,
+                          originatingStore.getKey(), e.getMessage() );
             stores = null;
         }
 

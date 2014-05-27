@@ -10,8 +10,6 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.inject;
 
-import java.io.IOException;
-
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
@@ -22,8 +20,9 @@ import javax.inject.Inject;
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.aprox.depgraph.json.DepgraphSerializationAdapter;
 import org.commonjava.aprox.model.io.StoreKeySerializer;
-import org.commonjava.maven.atlas.graph.EGraphManager;
-import org.commonjava.maven.atlas.graph.spi.neo4j.FileNeo4jWorkspaceFactory;
+import org.commonjava.maven.atlas.graph.RelationshipGraphException;
+import org.commonjava.maven.atlas.graph.RelationshipGraphFactory;
+import org.commonjava.maven.atlas.graph.spi.neo4j.FileNeo4jConnectionFactory;
 import org.commonjava.maven.galley.maven.internal.defaults.StandardMaven304PluginDefaults;
 import org.commonjava.maven.galley.maven.internal.defaults.StandardMavenPluginImplications;
 import org.commonjava.maven.galley.maven.parse.XMLInfrastructure;
@@ -45,7 +44,7 @@ public class DepgraphProvider
 
     private MavenPluginImplications pluginImplications;
 
-    private EGraphManager graphs;
+    private RelationshipGraphFactory graphFactory;
 
     private JsonSerializer serializer;
 
@@ -62,16 +61,17 @@ public class DepgraphProvider
     @PostConstruct
     public void setup()
     {
-        this.graphs = new EGraphManager( new FileNeo4jWorkspaceFactory( config.getDataBasedir(), true ) );
+        this.graphFactory =
+            new RelationshipGraphFactory( new FileNeo4jConnectionFactory( config.getDataBasedir(), true ) );
         pluginDefaults = new StandardMaven304PluginDefaults();
         pluginImplications = new StandardMavenPluginImplications( xml );
     }
 
     @PreDestroy
     public void shutdown()
-        throws IOException
+        throws RelationshipGraphException
     {
-        this.graphs.close();
+        this.graphFactory.close();
     }
 
     @Produces
@@ -87,9 +87,9 @@ public class DepgraphProvider
     }
 
     @Produces
-    public EGraphManager getGraphs()
+    public RelationshipGraphFactory getGraphFactory()
     {
-        return graphs;
+        return graphFactory;
     }
 
     @Produces
@@ -99,7 +99,9 @@ public class DepgraphProvider
     {
         if ( serializer == null )
         {
-            serializer = new JsonSerializer( new StoreKeySerializer(), new DepgraphSerializationAdapter(), new PrettyPrintAdapter() );
+            serializer =
+                new JsonSerializer( new StoreKeySerializer(), new DepgraphSerializationAdapter(),
+                                    new PrettyPrintAdapter() );
         }
 
         return serializer;

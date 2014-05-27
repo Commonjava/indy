@@ -16,7 +16,9 @@ import static org.commonjava.aprox.depgraph.util.AproxDepgraphUtils.toDiscoveryU
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
@@ -29,7 +31,7 @@ import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.util.LocationUtils;
-import org.commonjava.maven.atlas.graph.workspace.GraphWorkspace;
+import org.commonjava.maven.atlas.graph.ViewParams;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.discover.DiscoverySourceManager;
 import org.commonjava.maven.galley.model.Location;
@@ -87,11 +89,29 @@ public class AproxDiscoverySourceManager
     }
 
     @Override
-    public boolean activateWorkspaceSources( final GraphWorkspace ws, final String... sources )
+    public boolean activateWorkspaceSources( final ViewParams params, final Collection<? extends Location> locations )
+        throws CartoDataException
+    {
+        if ( locations == null || locations.isEmpty() )
+        {
+            return false;
+        }
+
+        final Set<String> sources = new HashSet<String>( locations.size() );
+        for ( final Location loc : locations )
+        {
+            sources.add( loc.getUri() );
+        }
+
+        return activateWorkspaceSources( params, sources.toArray( new String[sources.size()] ) );
+    }
+
+    @Override
+    public boolean activateWorkspaceSources( final ViewParams params, final String... sources )
         throws CartoDataException
     {
         boolean result = false;
-        if ( ws != null )
+        if ( params != null )
         {
             for ( final String src : sources )
             {
@@ -100,35 +120,37 @@ public class AproxDiscoverySourceManager
                 {
                     try
                     {
-                        final List<ArtifactStore> orderedStores = stores.getOrderedConcreteStoresInGroup( key.getName() );
+                        final List<ArtifactStore> orderedStores =
+                            stores.getOrderedConcreteStoresInGroup( key.getName() );
                         for ( final ArtifactStore store : orderedStores )
                         {
                             final URI uri = toDiscoveryURI( store.getKey() );
-                            if ( ws.getActiveSources()
-                                   .contains( uri ) )
+                            if ( params.getActiveSources()
+                                       .contains( uri ) )
                             {
                                 continue;
                             }
 
-                            ws.addActiveSource( uri );
-                            result = result || ws.getActiveSources()
-                                                 .contains( uri );
+                            params.addActiveSource( uri );
+                            result = result || params.getActiveSources()
+                                                     .contains( uri );
                         }
                     }
                     catch ( final ProxyDataException e )
                     {
-                        throw new CartoDataException( "Failed to lookup ordered concrete stores for: {}. Reason: {}", e, key, e.getMessage() );
+                        throw new CartoDataException( "Failed to lookup ordered concrete stores for: {}. Reason: {}",
+                                                      e, key, e.getMessage() );
                     }
                 }
                 else
                 {
                     final URI uri = toDiscoveryURI( key );
-                    if ( !ws.getActiveSources()
-                            .contains( uri ) )
+                    if ( !params.getActiveSources()
+                                .contains( uri ) )
                     {
-                        ws.addActiveSource( uri );
-                        result = result || ws.getActiveSources()
-                                             .contains( uri );
+                        params.addActiveSource( uri );
+                        result = result || params.getActiveSources()
+                                                 .contains( uri );
                     }
                 }
             }

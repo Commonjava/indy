@@ -19,12 +19,13 @@ import org.commonjava.aprox.depgraph.util.AproxDepgraphUtils;
 import org.commonjava.aprox.inject.Production;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.util.LocationUtils;
+import org.commonjava.maven.atlas.graph.RelationshipGraph;
+import org.commonjava.maven.atlas.graph.RelationshipGraphException;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.maven.atlas.ident.version.InvalidVersionSpecificationException;
 import org.commonjava.maven.cartographer.data.CartoDataException;
-import org.commonjava.maven.cartographer.data.CartoDataManager;
 import org.commonjava.maven.cartographer.discover.DiscoveryConfig;
 import org.commonjava.maven.cartographer.discover.DiscoveryResult;
 import org.commonjava.maven.cartographer.discover.ProjectRelationshipDiscoverer;
@@ -45,40 +46,24 @@ public class AproxProjectGraphDiscoverer
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private AproxModelDiscoverer discoverer;
+    protected AproxModelDiscoverer discoverer;
 
     @Inject
-    private ArtifactManager artifactManager;
-
-    @Inject
-    private CartoDataManager dataManager;
+    protected ArtifactManager artifactManager;
 
     protected AproxProjectGraphDiscoverer()
     {
     }
 
-    public AproxProjectGraphDiscoverer( final AproxModelDiscoverer discoverer, final ArtifactManager artifactManager,
-                                        final CartoDataManager dataManager )
+    public AproxProjectGraphDiscoverer( final AproxModelDiscoverer discoverer, final ArtifactManager artifactManager )
     {
         this.discoverer = discoverer;
         this.artifactManager = artifactManager;
-        this.dataManager = dataManager;
-    }
-
-    /**
-     * @deprecated Use {@link #discoverRelationships(ProjectVersionRef,DiscoveryConfig)} instead
-     */
-    @Deprecated
-    @Override
-    public DiscoveryResult discoverRelationships( final ProjectVersionRef ref, final DiscoveryConfig discoveryConfig, final boolean storeRelationships )
-        throws CartoDataException
-    {
-        discoveryConfig.setStoreRelationships( storeRelationships );
-        return discoverRelationships( ref, discoveryConfig );
     }
 
     @Override
-    public DiscoveryResult discoverRelationships( final ProjectVersionRef ref, final DiscoveryConfig discoveryConfig )
+    public DiscoveryResult discoverRelationships( final ProjectVersionRef ref, final RelationshipGraph graph,
+                                                  final DiscoveryConfig discoveryConfig )
         throws CartoDataException
     {
         ProjectVersionRef specific = ref;
@@ -97,7 +82,16 @@ public class AproxProjectGraphDiscoverer
         catch ( final InvalidVersionSpecificationException e )
         {
             logger.error( String.format( "Invalid version for: %s. Reason: %s", ref, e.getMessage() ), e );
-            dataManager.addError( ref, e );
+            try
+            {
+                graph.storeProjectError( ref, e );
+            }
+            catch ( final RelationshipGraphException storeError )
+            {
+                logger.error( String.format( "Failed to store error for project: %s in graph: %s. Reason: %s", ref,
+                                             graph, e.getMessage() ), e );
+            }
+
             specific = null;
         }
 
@@ -119,7 +113,7 @@ public class AproxProjectGraphDiscoverer
 
             if ( retrieved != null )
             {
-                return discoverer.discoverRelationships( specific, retrieved, discoveryConfig );
+                return discoverer.discoverRelationships( specific, retrieved, graph, discoveryConfig );
             }
             else
             {
@@ -129,7 +123,8 @@ public class AproxProjectGraphDiscoverer
         }
         catch ( final TransferException e )
         {
-            throw new CartoDataException( "Discovery of project-relationships for: '{}' failed. Error: {}", e, ref, e.getMessage() );
+            throw new CartoDataException( "Discovery of project-relationships for: '{}' failed. Error: {}", e, ref,
+                                          e.getMessage() );
         }
     }
 
@@ -158,7 +153,8 @@ public class AproxProjectGraphDiscoverer
         }
         catch ( final TransferException e )
         {
-            throw new CartoDataException( "Failed to resolve variable version for: {}. Reason: {}", e, ref, e.getMessage() );
+            throw new CartoDataException( "Failed to resolve variable version for: {}. Reason: {}", e, ref,
+                                          e.getMessage() );
         }
     }
 

@@ -124,7 +124,8 @@ public class WorkspaceResource
                 controller.createFrom( uriInfo.getBaseUriBuilder()
                                               .path( getClass() )
                                               .build()
-                                              .toString(), new JaxRsUriFormatter( uriInfo ), request.getInputStream(), request.getCharacterEncoding() );
+                                              .toString(), new JaxRsUriFormatter( uriInfo ), request.getInputStream(),
+                                       request.getCharacterEncoding() );
             return dto == null ? Response.notModified()
                                          .build() : Response.ok( dto.getJsonResponse() )
                                                             .type( MediaType.APPLICATION_JSON )
@@ -172,41 +173,4 @@ public class WorkspaceResource
                                                          .build();
     }
 
-    @Path( "/{id}/source/{source}" )
-    @PUT
-    @Produces( MediaType.APPLICATION_JSON )
-    public Response addSource( @PathParam( "id" ) final String id, @PathParam( "source" ) final String source, @Context final UriInfo uriInfo )
-    {
-        try
-        {
-            final boolean modified = controller.addSource( id, source, new JaxRsUriFormatter( uriInfo ) );
-            return modified ? Response.ok()
-                                      .build() : Response.notModified()
-                                                         .build();
-        }
-        catch ( final AproxWorkflowException e )
-        {
-            logger.error( e.getMessage(), e );
-            return AproxExceptionUtils.formatResponse( e );
-        }
-    }
-
-    @Path( "/{id}/profile/{profile}" )
-    @PUT
-    @Produces( MediaType.APPLICATION_JSON )
-    public Response addPomLocation( @PathParam( "id" ) final String id, @PathParam( "profile" ) final String profile, @Context final UriInfo uriInfo )
-    {
-        try
-        {
-            final boolean modified = controller.addPomLocation( id, profile, new JaxRsUriFormatter( uriInfo ) );
-            return modified ? Response.ok()
-                                      .build() : Response.notModified()
-                                                         .build();
-        }
-        catch ( final AproxWorkflowException e )
-        {
-            logger.error( e.getMessage(), e );
-            return AproxExceptionUtils.formatResponse( e );
-        }
-    }
 }

@@ -17,6 +17,7 @@ import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_artifactI
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_groupId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_key;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_version;
+import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParamUtils.getWorkspaceId;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -51,7 +52,7 @@ public class MetadataResource
         try
         {
             // FIXME: Figure out character encoding parse.
-            controller.batchUpdate( body.getString( 0, body.length() ) );
+            controller.batchUpdate( body.getString( 0, body.length() ), getWorkspaceId( request ) );
             setStatus( ApplicationStatus.OK, request );
         }
         catch ( final AproxWorkflowException e )
@@ -72,7 +73,7 @@ public class MetadataResource
         String json = null;
         try
         {
-            json = controller.getMetadata( gid, aid, ver );
+            json = controller.getMetadata( gid, aid, ver, getWorkspaceId( request ) );
         }
         catch ( final AproxWorkflowException e )
         {
@@ -102,7 +103,7 @@ public class MetadataResource
         String json = null;
         try
         {
-            json = controller.getMetadataValue( gid, aid, ver, k );
+            json = controller.getMetadataValue( gid, aid, ver, k, getWorkspaceId( request ) );
         }
         catch ( final AproxWorkflowException e )
         {
@@ -131,7 +132,7 @@ public class MetadataResource
         try
         {
             // FIXME: Figure out character encoding parse.
-            controller.updateMetadata( gid, aid, ver, body.getString( 0, body.length() ) );
+            controller.updateMetadata( gid, aid, ver, body.getString( 0, body.length() ), getWorkspaceId( request ) );
         }
         catch ( final AproxWorkflowException e )
         {

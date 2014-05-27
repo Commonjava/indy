@@ -24,6 +24,7 @@ import org.commonjava.aprox.depgraph.dto.MetadataCollationDTO;
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.depgraph.util.ConfigDTOHelper;
 import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.maven.atlas.graph.ViewParams;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.maven.cartographer.data.CartoDataException;
@@ -51,11 +52,11 @@ public class MetadataController
     @Inject
     private ConfigDTOHelper configHelper;
 
-    public void batchUpdate( final InputStream stream, final String encoding )
+    public void batchUpdate( final InputStream stream, final String encoding, final String workspaceId )
         throws AproxWorkflowException
     {
         final String json = readJson( stream, encoding );
-        batchUpdate( json );
+        batchUpdate( json, workspaceId );
     }
 
     private String readJson( final InputStream stream, final String encoding )
@@ -67,16 +68,18 @@ public class MetadataController
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot read metadata mapping JSON from stream: {}", e, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST,
+                                              "Cannot read metadata mapping JSON from stream: {}", e, e.getMessage() );
         }
     }
 
-    public void batchUpdate( final String json )
+    public void batchUpdate( final String json, final String workspaceId )
         throws AproxWorkflowException
     {
-        final TypeToken<Map<ProjectVersionRef, Map<String, String>>> tt = new TypeToken<Map<ProjectVersionRef, Map<String, String>>>()
-        {
-        };
+        final TypeToken<Map<ProjectVersionRef, Map<String, String>>> tt =
+            new TypeToken<Map<ProjectVersionRef, Map<String, String>>>()
+            {
+            };
 
         final Map<ProjectVersionRef, Map<String, String>> batch = serializer.fromString( json, tt );
         if ( batch == null || batch.isEmpty() )
@@ -84,6 +87,7 @@ public class MetadataController
             throw new AproxWorkflowException( ApplicationStatus.NOT_MODIFIED, "No changes found in metadata request." );
         }
 
+        final ViewParams params = new ViewParams( workspaceId );
         for ( final Map.Entry<ProjectVersionRef, Map<String, String>> entry : batch.entrySet() )
         {
             final ProjectVersionRef ref = entry.getKey();
@@ -92,55 +96,62 @@ public class MetadataController
             logger.debug( "Adding metadata for: {}\n\n  ", ref, new JoinString( "\n  ", metadata.entrySet() ) );
             try
             {
-                ops.updateMetadata( ref, metadata );
+                ops.updateMetadata( ref, metadata, params );
             }
             catch ( final CartoDataException e )
             {
-                throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot update metadata: %s", e, e.getMessage() );
+                throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot update metadata: %s", e,
+                                                  e.getMessage() );
             }
         }
     }
 
-    public String getMetadata( final String groupId, final String artifactId, final String version )
+    public String getMetadata( final String groupId, final String artifactId, final String version,
+                               final String workspaceId )
         throws AproxWorkflowException
     {
         final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
         Map<String, String> metadata = null;
         try
         {
-            metadata = ops.getMetadata( ref );
+            metadata = ops.getMetadata( ref, new ViewParams( workspaceId ) );
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to retrieve metadata map for: {}. Reason: {}", e, ref, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve metadata map for: {}. Reason: {}", e, ref,
+                                              e.getMessage() );
         }
 
         return metadata == null ? null : serializer.toString( metadata );
     }
 
-    public String getMetadataValue( final String groupId, final String artifactId, final String version, final String key )
+    public String getMetadataValue( final String groupId, final String artifactId, final String version,
+                                    final String key, final String workspaceId )
         throws AproxWorkflowException
     {
         final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
         try
         {
-            final String value = ops.getMetadataValue( ref, key );
+            final String value = ops.getMetadataValue( ref, key, new ViewParams( workspaceId ) );
             return value == null ? null : serializer.toString( Collections.singletonMap( key, value ) );
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to retrieve metadata map for: {}. Reason: {}", e, ref, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve metadata map for: {}. Reason: {}", e, ref,
+                                              e.getMessage() );
         }
     }
 
-    public void updateMetadata( final String groupId, final String artifactId, final String version, final InputStream stream, final String encoding )
+    public void updateMetadata( final String groupId, final String artifactId, final String version,
+                                final InputStream stream, final String encoding, final String workspaceId )
         throws AproxWorkflowException
     {
         final String json = readJson( stream, encoding );
-        updateMetadata( groupId, artifactId, version, json );
+        updateMetadata( groupId, artifactId, version, json, workspaceId );
     }
 
-    public void updateMetadata( final String groupId, final String artifactId, final String version, final String json )
+    public void updateMetadata( final String groupId, final String artifactId, final String version, final String json,
+                                final String workspaceId )
         throws AproxWorkflowException
     {
         final TypeToken<Map<String, String>> tt = new TypeToken<Map<String, String>>()
@@ -151,7 +162,8 @@ public class MetadataController
 
         if ( metadata == null || metadata.isEmpty() )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "No metadata updates found in request body!" );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST,
+                                              "No metadata updates found in request body!" );
         }
 
         final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
@@ -160,11 +172,12 @@ public class MetadataController
 
         try
         {
-            ops.updateMetadata( ref, metadata );
+            ops.updateMetadata( ref, metadata, new ViewParams( workspaceId ) );
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot update metadata for: '%s:%s:%s'. Reason: %s", e, groupId,
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST,
+                                              "Cannot update metadata for: '%s:%s:%s'. Reason: %s", e, groupId,
                                               artifactId, version, e.getMessage() );
         }
     }
@@ -193,7 +206,9 @@ public class MetadataController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to resolve or collate graph contents by metadata: {}. Reason: {}", e, dto, e.getMessage() );
+            throw new AproxWorkflowException(
+                                              "Failed to resolve or collate graph contents by metadata: {}. Reason: {}",
+                                              e, dto, e.getMessage() );
         }
     }
 

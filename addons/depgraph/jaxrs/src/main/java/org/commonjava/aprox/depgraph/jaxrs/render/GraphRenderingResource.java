@@ -10,10 +10,12 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.jaxrs.render;
 
+import static org.commonjava.aprox.depgraph.jaxrs.util.DepgraphParamUtils.getWorkspaceId;
+
 import java.io.File;
 import java.io.IOException;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -24,6 +26,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.util.AproxExceptionUtils;
@@ -33,7 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Path( "/depgraph/render" )
-@ApplicationScoped
+@RequestScoped
 public class GraphRenderingResource
 {
 
@@ -42,6 +45,9 @@ public class GraphRenderingResource
     @Inject
     private RenderingController controller;
 
+    @Context
+    private UriInfo info;
+
     @Path( "/bom/{g}/{a}/{v}" )
     @POST
     public Response bomFor( @PathParam( "g" ) final String groupId, @PathParam( "a" ) final String artifactId,
@@ -49,7 +55,9 @@ public class GraphRenderingResource
     {
         try
         {
-            final String out = controller.bomFor( groupId, artifactId, version, request.getParameterMap(), request.getInputStream() );
+            final String out =
+                controller.bomFor( groupId, artifactId, version, getWorkspaceId( info ), request.getParameterMap(),
+                                   request.getInputStream() );
             return Response.ok( out )
                            .build();
 
@@ -74,7 +82,8 @@ public class GraphRenderingResource
     {
         try
         {
-            final String dotfile = controller.dotfile( groupId, artifactId, version, request.getParameterMap() );
+            final String dotfile =
+                controller.dotfile( groupId, artifactId, version, getWorkspaceId( info ), request.getParameterMap() );
             return Response.ok( dotfile )
                            .build();
         }
