@@ -169,6 +169,11 @@ li.option{
   margin: 0px;
 }
 
+.cp-debug{
+  display: block;
+  font-style: italic;
+}
+
 .debug{
   margin: 50px;
   background: #eee;
