@@ -29,8 +29,6 @@
 REPOS="atlas galley cartographer aprox"
 UPSTREAM=`git config -l | grep upstream`
 PWD=`pwd`
-APROX_WAR=${APROX_WAR:=$PWD/aprox/wars/savant/target/aprox.war}
-DEPLOY_DIR=${DEPLOY_DIR:=/var/lib/jboss-as/standalone/deployments/}
 WORKSPACE=${WORKSPACE:=$HOME/workspace}
 USER=$USER # Define GitHub username here.
 MAINTAINER=${MAINTAINER:=jdcasey}
@@ -41,8 +39,8 @@ set -x
 # Usage targets
 if [ $# -lt 1 ]
 then
-        echo "Usage : $0 {clone|sync|build|deploy|scratch|info}"
-        exit
+    echo "Usage : $0 {clone|sync|build|scratch|info}"
+    exit
 fi
 
 case "$1" in
@@ -102,29 +100,16 @@ build)  echo  "Building sources"
 		mvn -Dmaven.test.skip=true clean install
 		cd -
 	done
-
-    ;;
-deploy)	 if [ -f "$APROX_WAR $DEPLOY_DIR/aprox.war" ]; then
-              echo "Deploying war"
-	      sudo systemctl stop jboss-as.service
-	      sudo rm -rf $DEPLOY_DIR/aprox*
-              sudo cp -p $APROX_WAR $DEPLOY_DIR
-              sudo systemctl start jboss-as.service
-         else
-                    echo "War not found...See build log"
-         fi
-
     ;;
 scratch) echo  "Deploying from scratch"
-        set -x
+    set -x
 	for repo in $REPOS
 	    do rm -rf $WORKSPACE/$repo
 	done
 
 	rm -rf ~/.m2
 	$0 sync
-        $0 build
-	$0 deploy
+    $0 build
 
    ;;
 info) echo "Retrieving repo info"
@@ -139,7 +124,6 @@ info) echo "Retrieving repo info"
               cd -
         done
   ;; 
-*) echo "Usage : $0 {clone|sync|build|deploy|scratch|info}"
+*) echo "Usage : $0 {clone|sync|build|scratch|info}"
    ;;
 esac
-
