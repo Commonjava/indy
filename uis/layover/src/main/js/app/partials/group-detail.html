@@ -1,7 +1,11 @@
 <div class="container-fluid">
     <div class="control-panel">
       <a href="#/group">Back</a>
-      <a href="{{storeUtils.editHref(store.key)}}">Edit</a>
+        <div class="cp-row">
+          <button name="new-group" class="new-button cp-button">New...</button>
+          <a href="{{storeUtils.editHref(store.key)}}">Edit</a>
+          <button name="del-group" class="del-button cp-button">Delete</button>
+        </div>
       <div class="cp-row cp-debug">
         <input type="checkbox" ng-model="enableDebug" ng-init="checked=false" /> Debug Data
       </div>
