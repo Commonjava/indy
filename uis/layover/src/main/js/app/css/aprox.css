@@ -166,3 +166,10 @@ li.option{
   margin: 0px;
 }
 
+.debug{
+  margin-top: 50px;
+  background: #eee;
+}
+
+pre{
+}
