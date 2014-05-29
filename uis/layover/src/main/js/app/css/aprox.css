@@ -123,7 +123,8 @@ header{
   min-width: 250px;
   padding: 20px;
   padding-top: 5px;
-  margin-left: 20px;
+  /* TODO: Find a better way to stick it on the right side! */
+  margin-left: 80%;
 }
 
 div.sidebyside{

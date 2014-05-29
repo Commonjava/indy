@@ -1,0 +1,29 @@
+<div class="container-fluid">
+    <div class="control-panel">
+      <a href="#/group">Back</a>
+        <a href="{{storeUtils.editHref(store.key)}}">Edit</a>
+    </div>
+    <div class="content-panel">
+      <div class="detail-row">
+        <div class="sidebyside field">
+          <span class="label">Name:</span><span class="detail-value">{{storeUtils.nameFromKey(store.key)}}</span>
+        </div>
+      </div>
+      <div class="detail-row">
+        <div class="field">
+          <span class="label">Local URL:</span><span class="detail-value"><a href="{{storeUtils.storeHref(store.key)}}" target="_new">{{storeUtils.storeHref(store.key)}}</a></span>
+        </div>
+      </div>
+      <div class="detail-row">
+        <div class="field">
+          <span class="label list-label">Constituents:</span>
+          <ol class="detail-value detail-value-list">
+            <li ng-repeat="constituent in store.constituents" class="detail-value-list-item"><a href="{{storeUtils.detailHref(constituent)}}">{{constituent}}</a></li>
+          </ol>
+        </div>
+      </div>
+      <div class="debug">
+        <pre>{{store | json}}</pre>
+      </div>
+    </div>
+</div>

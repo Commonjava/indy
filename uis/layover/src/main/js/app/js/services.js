@@ -51,6 +51,16 @@ aproxServices.factory('StoreUtilSvc', function(){
         return window.location.protocol + "//" + hostAndPort + window.location.pathname + 'api/1.0/' + parts[0] + '/' + parts[1] + '/';
       },
 
+      detailHref: function(key){
+        var parts = key.split(':');
+        return "#/" + parts[0] + "/" + parts[1];
+      },
+
+      editHref: function(key){
+        var parts = key.split(':');
+        return "#/" + parts[0] + "/" + parts[1] + "/edit";
+      },
+
       hostedOptions: function(store){
         var options = [];
 

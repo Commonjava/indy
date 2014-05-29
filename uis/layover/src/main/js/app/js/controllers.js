@@ -15,6 +15,11 @@ aproxControllers.controller('RemoteListCtl', ['$scope', 'RemoteSvc', 'StoreUtilS
     $scope.orderProp = 'key';
   }]);
 
+aproxControllers.controller('RemoteDetailCtl', ['$scope', '$routeParams', 'RemoteSvc', 'StoreUtilSvc', function($scope, $routeParams, RemoteSvc, StoreUtilSvc) {
+    $scope.store = RemoteSvc.get({name: $routeParams.name});
+    $scope.storeUtils = StoreUtilSvc;
+  }]);
+
 aproxControllers.controller('HostedListCtl', ['$scope', 'HostedSvc', 'StoreUtilSvc', function($scope, HostedSvc, StoreUtilSvc) {
     $scope.listing = HostedSvc.query();
     /*{}, function(listing){
@@ -26,10 +31,20 @@ aproxControllers.controller('HostedListCtl', ['$scope', 'HostedSvc', 'StoreUtilS
     $scope.orderProp = 'key';
   }]);
 
+aproxControllers.controller('HostedDetailCtl', ['$scope', '$routeParams', 'HostedSvc', 'StoreUtilSvc', function($scope, $routeParams, HostedSvc, StoreUtilSvc) {
+    $scope.store = HostedSvc.get({name: $routeParams.name});
+    $scope.storeUtils = StoreUtilSvc;
+  }]);
+
 aproxControllers.controller('GroupListCtl', ['$scope', 'GroupSvc', 'StoreUtilSvc', function($scope, GroupSvc, StoreUtilSvc) {
     $scope.listing = GroupSvc.query();
     $scope.storeUtils = StoreUtilSvc;
     $scope.orderProp = 'key';
+  }]);
+
+aproxControllers.controller('GroupDetailCtl', ['$scope', '$routeParams', 'GroupSvc', 'StoreUtilSvc', function($scope, $routeParams, GroupSvc, StoreUtilSvc) {
+    $scope.store = GroupSvc.get({name: $routeParams.name});
+    $scope.storeUtils = StoreUtilSvc;
   }]);
 
 aproxControllers.controller('FooterCtl', ['$scope', '$http', 'FooterSvc', function($scope, $http, FooterSvc){

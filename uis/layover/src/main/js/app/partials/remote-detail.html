@@ -1,0 +1,26 @@
+<div class="container-fluid">
+    <div class="control-panel">
+      <a href="#/remote">Back</a>
+        <a href="{{storeUtils.editHref(store.key)}}">Edit</a>
+    </div>
+    <div class="content-panel">
+      <div class="detail-row">
+        <div class="sidebyside field">
+          <span class="label">Name:</span><span class="detail-value">{{storeUtils.nameFromKey(store.key)}}</span>
+        </div>
+      </div>
+      <div class="detail-row">
+        <div class="sidebyside field">
+          <span class="label">Local URL:</span><span class="detail-value"><a href="{{storeUtils.storeHref(store.key)}}" target="_new">{{storeUtils.storeHref(store.key)}}</a></span>
+        </div>
+      </div>
+      <div class="detail-row">
+        <div class="sidebyside field">
+          <span class="label">Remote URL:</span><span class="detail-value"><a href="{{store.url}}" target="_new">{{store.url}}</a></span>
+        </div>
+      </div>
+      <div class="debug">
+        <pre>{{store | json}}</pre>
+      </div>
+    </div>
+</div>
