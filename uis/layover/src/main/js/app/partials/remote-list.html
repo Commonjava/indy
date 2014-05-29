@@ -1,15 +1,18 @@
 <div class="container-fluid">
     <div class="control-panel">
-        <div class="sidebyside">
+        <div class="cp-row">
           Search: <input ng-model="query">
         </div>
-        <div class="sidebyside">
+        <div class="cp-row">
           Sort by:
           <select ng-model="orderProp">
             <option value="key">Name</option>
             <option value="url">Remote URL</option>
           </select>
         </div>
+      <div class="cp-row">
+        <input type="checkbox" ng-model="enableDebug" ng-init="checked=false" /> Debug Data
+      </div>
     </div>
     <div class="content-panel">
       <table class="store-listing">
@@ -33,5 +36,10 @@
             <!-- -->
         </tr>
       </table>
+    </div>
+
+    <div ng-if="enableDebug" class="debug">
+        JSON:
+        <pre>{{listing | json}}</pre>
     </div>
 </div>

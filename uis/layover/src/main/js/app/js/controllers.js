@@ -18,6 +18,10 @@ aproxControllers.controller('RemoteListCtl', ['$scope', 'RemoteSvc', 'StoreUtilS
 aproxControllers.controller('RemoteDetailCtl', ['$scope', '$routeParams', 'RemoteSvc', 'StoreUtilSvc', function($scope, $routeParams, RemoteSvc, StoreUtilSvc) {
     $scope.store = RemoteSvc.get({name: $routeParams.name});
     $scope.storeUtils = StoreUtilSvc;
+
+    $scope.showCacheTimeout = function(store){
+      return !store.is_passthrough;
+    };
   }]);
 
 aproxControllers.controller('HostedListCtl', ['$scope', 'HostedSvc', 'StoreUtilSvc', function($scope, HostedSvc, StoreUtilSvc) {
@@ -34,6 +38,14 @@ aproxControllers.controller('HostedListCtl', ['$scope', 'HostedSvc', 'StoreUtilS
 aproxControllers.controller('HostedDetailCtl', ['$scope', '$routeParams', 'HostedSvc', 'StoreUtilSvc', function($scope, $routeParams, HostedSvc, StoreUtilSvc) {
     $scope.store = HostedSvc.get({name: $routeParams.name});
     $scope.storeUtils = StoreUtilSvc;
+
+    $scope.allowUploads = function(store){
+      return store.allow_snapshots || store.allow_releases;
+    };
+
+    $scope.showSnapshotTimeout = function(store){
+      return store.allow_snapshots;
+    };
   }]);
 
 aproxControllers.controller('GroupListCtl', ['$scope', 'GroupSvc', 'StoreUtilSvc', function($scope, GroupSvc, StoreUtilSvc) {

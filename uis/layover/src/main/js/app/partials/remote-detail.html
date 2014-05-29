@@ -1,27 +1,45 @@
 <div class="container-fluid">
     <div class="control-panel">
       <a href="#/remote">Back</a>
-        <a href="{{storeUtils.editHref(store.key)}}">Edit</a>
+      <a href="{{storeUtils.editHref(store.key)}}">Edit</a>
+      <input type="checkbox" ng-model="enableDebug" ng-init="checked=false" /> Debug Data
     </div>
     <div class="content-panel">
-      <div class="detail-row">
-        <div class="sidebyside field">
-          <span class="label">Name:</span><span class="detail-value">{{storeUtils.nameFromKey(store.key)}}</span>
-        </div>
-      </div>
-      <div class="detail-row">
-        <div class="sidebyside field">
-          <span class="label">Local URL:</span><span class="detail-value"><a href="{{storeUtils.storeHref(store.key)}}" target="_new">{{storeUtils.storeHref(store.key)}}</a></span>
-        </div>
-      </div>
-      <div class="detail-row">
-        <div class="sidebyside field">
-          <span class="label">Remote URL:</span><span class="detail-value"><a href="{{store.url}}" target="_new">{{store.url}}</a></span>
-        </div>
-      </div>
-      <div class="debug">
-        JSON:
-        <pre>{{store | json}}</pre>
-      </div>
+      <table class="detail-table">
+        <tr class="detail-field">
+          <td class="label">Name:</td>
+          <td class="detail-value">{{storeUtils.nameFromKey(store.key)}}</td>
+        </tr>
+        <tr class="detail-field">
+          <td class="label">Local URL:</td>
+          <td class="detail-value"><a href="{{storeUtils.storeHref(store.key)}}" target="_new">{{storeUtils.storeHref(store.key)}}</a></td>
+        </tr>
+        <tr class="detail-field">
+          <td class="label">Remote URL:</td>
+          <td class="detail-value"><a href="{{store.url}}" target="_new">{{store.url}}</a></td>
+        </tr>
+      </table>
+
+      <table class="detail-table">
+        <tr class="detail-field">
+          <td class="label">Passthrough Only?</td>
+          <td class="detail-value">{{store.is_passthrough | checkmark}}</td>
+        </tr>
+      </table>
+
+      <table class="detail-table">
+        <tr class="detail-field">
+          <td class="label">Request Timeout:</td>
+          <td class="detail-value">{{store.timeout_seconds | duration}}</td>
+        </tr>
+        <tr ng-if="showCacheTimeout(store)" class="detail-field">
+          <td class="label">Content Cache Timeout:</td>
+          <td class="detail-value">{{store.cache_timeout_seconds | duration}}</td>
+        </tr>
+      </table>
+    </div>
+    <div ng-if="enableDebug" class="debug">
+      JSON:
+      <pre>{{store | json}}</pre>
     </div>
 </div>

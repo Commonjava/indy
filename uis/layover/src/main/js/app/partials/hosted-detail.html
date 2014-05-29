@@ -1,22 +1,44 @@
 <div class="container-fluid">
     <div class="control-panel">
       <a href="#/hosted">Back</a>
-        <a href="{{storeUtils.editHref(store.key)}}">Edit</a>
+      <a href="{{storeUtils.editHref(store.key)}}">Edit</a>
+      <input type="checkbox" ng-model="enableDebug" ng-init="checked=false" /> Debug Data
     </div>
     <div class="content-panel">
-      <div class="detail-row">
-        <div class="sidebyside field">
-          <span class="label">Name:</span><span class="detail-value">{{storeUtils.nameFromKey(store.key)}}</span>
-        </div>
-      </div>
-      <div class="detail-row">
-        <div class="sidebyside field">
-          <span class="label">Local URL:</span><span class="detail-value"><a href="{{storeUtils.storeHref(store.key)}}" target="_new">{{storeUtils.storeHref(store.key)}}</a></span>
-        </div>
-      </div>
-      <div class="debug">
-        JSON:
-        <pre>{{store | json}}</pre>
-      </div>
+      <table class="detail-table">
+        <tr class="detail-field">
+          <td class="label">Name:</td>
+          <td class="detail-value">{{storeUtils.nameFromKey(store.key)}}</td>
+        </tr>
+        <tr class="detail-field">
+          <td class="label">Local URL:</td>
+          <td class="detail-value"><a href="{{storeUtils.storeHref(store.key)}}" target="_new">{{storeUtils.storeHref(store.key)}}</a></td>
+        </tr>
+      </table>
+      <table class="detail-table">
+        <tr class="detail-field">
+          <td class="label">Uploads Allowed?</td>
+          <td class="detail-value">{{allowUploads(store) | checkmark}}</td>
+        </tr>
+        <tr ng-if="allowUploads(store)" class="detail-field">
+          <td class="label">Releases Allowed?</td>
+          <td class="detail-value">{{store.allow_releases | checkmark}}</td>
+        </tr>
+        <tr ng-if="allowUploads(store)" class="detail-field">
+          <td class="label">Snapshots Allowed?</td>
+          <td class="detail-value">{{store.allow_snapshots | checkmark}}</td>
+        </tr>
+      </table>
+
+      <table ng-if="showSnapshotTimeout(store)" class="detail-table">
+        <tr class="detail-field">
+          <td class="label">Snapshot Timeout:</td>
+          <td class="detail-value">{{store.snapshotTimeoutSeconds | duration}}</td>
+        </tr>
+      </table>
+    </div>
+    <div ng-if="enableDebug" class="debug">
+      JSON:
+      <pre>{{store | json}}</pre>
     </div>
 </div>

@@ -97,26 +97,29 @@ header{
 }
 
 .store-listing{
-  border: 1px solid #ddd;
   min-width: 90%;
 }
 
-.store-listing th{
+table{
+  border: 1px solid #ddd;
+}
+
+tr:nth-child(odd){
+  background: #ffe;
+}
+tr:nth-child(even){
+  background: #eee;
+}
+
+th{
   border: 1px solid #ddd;
   border-top: none;
   padding: 5px;
   padding-bottom: 2px;
 }
 
-.store-listing-item td{
+td{
   padding: 5px 5px 2px 5px;
-}
-
-.store-listing-item:nth-child(odd){
-  background: #ffe;
-}
-.store-listing-item:nth-child(even){
-  background: #eee;
 }
 
 .control-panel{
@@ -167,9 +170,20 @@ li.option{
 }
 
 .debug{
-  margin-top: 50px;
+  margin: 50px;
   background: #eee;
+  overflow: scroll;
 }
 
 pre{
 }
+
+.detail-table{
+  margin-top: 20px;
+}
+
+.label{
+  font-weight: bold;
+  padding-right: 20px;
+}
+
