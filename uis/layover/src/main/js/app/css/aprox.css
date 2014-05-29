@@ -10,10 +10,10 @@ html, body{
   min-height: 100%;
   height: auto !important;
   height: 100%;
-  margin: 0 auto -5em;
+  margin: 0 auto -4.5em;
 }
 
-.push{
+.footer-push{
   height: 2em;
 }
 
@@ -97,7 +97,8 @@ header{
 }
 
 .store-listing{
-  min-width: 90%;
+  min-width: 80%;
+  margin-right: 50px;
 }
 
 table{
@@ -123,11 +124,16 @@ td{
 }
 
 .control-panel{
+  border-left: 1px solid #333;
+  float: right;
   min-width: 250px;
-  padding: 20px;
-  padding-top: 5px;
-  /* TODO: Find a better way to stick it on the right side! */
-  margin-left: 80%;
+  margin: 20px;
+  margin-top: 0px;
+  padding-left: 10px;
+}
+
+.cp-row{
+  margin-bottom: 10px;
 }
 
 div.sidebyside{
