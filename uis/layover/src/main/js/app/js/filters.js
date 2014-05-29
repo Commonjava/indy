@@ -14,6 +14,10 @@ filterModule
 filterModule
   .filter('duration', function() {
     return function(secs) {
+      if ( secs < 1 ){
+        return 'none';
+      }
+
       var hours = Math.floor(secs / (60 * 60));
 
       var mdiv = secs % (60 * 60);
