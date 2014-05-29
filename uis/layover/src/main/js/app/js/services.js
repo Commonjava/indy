@@ -45,10 +45,12 @@ aproxServices.factory('StoreUtilSvc', function(){
 
         var hostAndPort = window.location.hostname;
         if ( window.location.port != 80 && window.location.port != 443 ){
-          hostAndPort += ':' + window.location.port;
+          hostAndPort += ':';
+          hostAndPort += window.location.port;
         }
 
-        return window.location.protocol + "//" + hostAndPort + window.location.pathname + 'api/1.0/' + parts[0] + '/' + parts[1] + '/';
+        // TODO: In-UI browser that allows simple searching
+        return window.location.protocol + "//" + hostAndPort + window.location.pathname.replace('/app', '') + 'api/1.0/' + parts[0] + '/' + parts[1] + '/';
       },
 
       detailHref: function(key){
