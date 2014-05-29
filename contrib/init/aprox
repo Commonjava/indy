@@ -38,7 +38,7 @@ start() {
 
 stop() {
     echo -n $"Shutting down ($PROG): "
-    kill $PID
+    kill $PID kill $PID > /dev/null 2>&1
     RETVAL=$?
     [ $RETVAL -eq 0 ] && success || failure
     echo
