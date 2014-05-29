@@ -1,0 +1,167 @@
+/* START: sticky footer */
+*{
+  margin: 0;
+}
+html, body{
+  height: 100%;
+}
+
+.content-wrapper{
+  min-height: 100%;
+  height: auto !important;
+  height: 100%;
+  margin: 0 auto -5em;
+}
+
+.push{
+  height: 2em;
+}
+
+footer{
+  height: 2em;
+}
+/* END: sticky footer */
+
+/* brought in from monorail UI */
+body{
+  font-family: sans-serif;
+}
+
+.product-name, .navbar-content, .items-label, .button{
+  font-variant: small-caps;
+}
+
+.product-name{
+  margin-right: 10px;
+  font-size: 32pt;
+  font-family: serif;
+  display: inline;
+}
+
+.menu {
+  list-style: none;
+  border-bottom: 1px solid #333;
+  /*margin-bottom: 2em;*/
+  padding-top: 30px;
+  padding-bottom: 5px;
+}
+
+.menu > li {
+  display: inline;
+  border: 1px solid #333;
+  border-top: none;
+  border-bottom: none;
+  padding: 5px;
+  margin: 0px;
+  margin-left: -6px;
+}
+
+.menu a.button{
+  text-decoration: none;
+  font-size: 1.1em;
+}
+
+.vdiv{
+  border-left: 1px solid black;
+  min-width: 2px;
+  content: " ";
+  display: inline;
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+a.button{
+  padding: 4px;
+  margin-left: 0px;
+  margin-right: 0px;
+  background: white;
+}
+
+a {
+  color: #333;
+}
+
+header{
+  margin-top: 5px;
+  padding: 5px;
+  padding-left: 10px;
+  margin-bottom: 10px;
+}
+
+.left{
+  float: left;
+}
+
+.right{
+  float: right;
+}
+
+.store-listing{
+  border: 1px solid #ddd;
+  min-width: 90%;
+}
+
+.store-listing th{
+  border: 1px solid #ddd;
+  border-top: none;
+  padding: 5px;
+  padding-bottom: 2px;
+}
+
+.store-listing-item td{
+  padding: 5px 5px 2px 5px;
+}
+
+.store-listing-item:nth-child(odd){
+  background: #ffe;
+}
+.store-listing-item:nth-child(even){
+  background: #eee;
+}
+
+.control-panel{
+  min-width: 250px;
+  padding: 20px;
+  padding-top: 5px;
+  margin-left: 20px;
+}
+
+div.sidebyside{
+  display: inline;
+  margin-right: 20px;
+}
+
+.content-panel{
+  display: block;
+  margin-top: 10px;
+  margin-left: 20px;
+}
+
+footer{
+  border-top: 1px solid #ddd;
+  padding: 5px;
+  margin-top: 20px;
+}
+
+.options-field{
+}
+
+.options{
+  list-style: none;
+  display: inline;
+  padding: 0px;
+  margin: -1px;
+  cursor: help;
+}
+
+span.option{
+  font-style: italic;
+  cursor: help;
+}
+
+li.option{
+  display: inline;
+  padding: 0px;
+  margin: 0px;
+}
+

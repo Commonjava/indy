@@ -1,0 +1,38 @@
+<div class="container-fluid">
+    <div class="control-panel">
+        <div class="sidebyside">
+          Search: <input ng-model="query">
+        </div>
+        <!--
+        <div class="sidebyside">
+          Sort by:
+          <select ng-model="orderProp">
+            <option value="key">Name</option>
+          </select>
+        </div>
+        -->
+    </div>
+    <div class="content-panel">
+      <table class="store-listing">
+        <tr>
+            <th>Name</th>
+            <th>Local URL</th>
+            <th>Constituents</th>
+        </tr>
+        <tr ng-repeat="store in listing.items | filter:query | orderBy:orderProp" class="store-listing-item">
+            <!-- {{storeUtils.nameFromKey(store.key)}} -->
+            <!-- -->
+            <td class="key">
+              <a href="#/group/{{storeUtils.nameFromKey(store.key)}}">{{storeUtils.nameFromKey(store.key)}}</a>
+            </td>
+            <td class="field">
+              <a href="{{storeUtils.storeHref(store.key)}}" target="_new">{{storeUtils.storeHref(store.key)}}</a>
+            </td>
+            <td class="options-field">
+              <span class="option" title="{{store.constituents.join('\n')}}">(view)</span>
+            </td>
+            <!-- -->
+        </tr>
+      </table>
+    </div>
+</div>
