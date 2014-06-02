@@ -1,7 +1,7 @@
 <div class="container-fluid">
     <div class="control-panel">
         <div class="cp-row">
-          <button name="new-remote" class="new-button cp-button">New...</button>
+            <a class="new-button cp-button" href="#/remote/new">New...</a>
         </div>
         <div class="cp-row">
           Search: <input ng-model="query">
@@ -28,7 +28,7 @@
             <!-- {{storeUtils.nameFromKey(store.key)}} -->
             <!-- -->
             <td class="key">
-              <a href="#/remote/{{storeUtils.nameFromKey(store.key)}}">{{storeUtils.nameFromKey(store.key)}}</a>
+                <a href="#/remote/view/{{storeUtils.nameFromKey(store.key)}}">{{storeUtils.nameFromKey(store.key)}}</a>
             </td>
             <td class="field">
               <a href="{{storeUtils.storeHref(store.key)}}" target="_new">{{storeUtils.storeHref(store.key)}}</a>

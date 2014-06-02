@@ -18,11 +18,17 @@ aproxControllers.controller('RemoteListCtl', ['$scope', 'RemoteSvc', 'StoreUtilS
 aproxControllers.controller('RemoteDetailCtl', ['$scope', '$routeParams', 'RemoteSvc', 'StoreUtilSvc', function($scope, $routeParams, RemoteSvc, StoreUtilSvc) {
     $scope.store = RemoteSvc.get({name: $routeParams.name});
     $scope.storeUtils = StoreUtilSvc;
-
-    $scope.showCacheTimeout = function(store){
-      return !store.is_passthrough;
-    };
   }]);
+
+aproxControllers.controller('RemoteNewCtl', ['$scope', '$routeParams', 'RemoteSvc', 'StoreUtilSvc', 'StoreControllerSvc',
+                                             function($scope, $routeParams, RemoteSvc, StoreUtilSvc, StoreControllerSvc) {
+  StoreControllerSvc.initRemoteModification( $scope, false, RemoteSvc, StoreUtilSvc, $routeParams );
+}]);
+
+aproxControllers.controller('RemoteEditCtl', ['$scope', '$routeParams', 'RemoteSvc', 'StoreUtilSvc', 'StoreControllerSvc',
+                                              function($scope, $routeParams, RemoteSvc, StoreUtilSvc, StoreControllerSvc) {
+  StoreControllerSvc.initRemoteModification( $scope, true, RemoteSvc, StoreUtilSvc, $routeParams );
+}]);
 
 aproxControllers.controller('HostedListCtl', ['$scope', 'HostedSvc', 'StoreUtilSvc', function($scope, HostedSvc, StoreUtilSvc) {
     $scope.listing = HostedSvc.query();

@@ -10,15 +10,15 @@ html, body{
   min-height: 100%;
   height: auto !important;
   height: 100%;
-  margin: 0 auto -4.5em;
+  margin: 0 auto -4em;
 }
 
 .footer-push{
-  height: 2em;
+  height: 2.75em;
 }
 
 footer{
-  height: 2em;
+  height: 2.75em;
 }
 /* END: sticky footer */
 
@@ -145,6 +145,8 @@ div.sidebyside{
   display: block;
   margin-top: 10px;
   margin-left: 20px;
+  margin-right: 250px;
+  min-width: 80%;
 }
 
 footer{
@@ -198,3 +200,29 @@ pre{
   padding-right: 20px;
 }
 
+.hint{
+  font-style: italic;
+  font-size: 80%;
+}
+
+.cert{
+  min-width: 500px;
+  min-height: 200px;
+}
+
+.fieldset{
+  margin-top: 20px;
+}
+
+.textarea-label{
+  margin-top: 10px;
+}
+
+.left-col,
+.right-col{
+  display: inline-block;
+}
+
+.textarea-label{
+  display: block;
+}

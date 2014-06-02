@@ -3,7 +3,7 @@
       <a href="#/remote">Back</a>
         <div class="cp-row">
           <button name="new-remote" class="new-button cp-button">New...</button>
-          <a href="{{storeUtils.editHref(store.key)}}">Edit</a>
+            <a href="#/remote/edit/{{storeUtils.nameFromKey(store.key)}}">Edit</a>
           <button name="del-remote" class="del-button cp-button">Delete</button>
         </div>
       <div class="cp-row cp-debug">
@@ -38,7 +38,7 @@
           <td class="label">Request Timeout:</td>
           <td class="detail-value">{{store.timeout_seconds | duration}}</td>
         </tr>
-        <tr ng-if="showCacheTimeout(store)" class="detail-field">
+        <tr ng-if="storeUtils.showCacheTimeout(store)" class="detail-field">
           <td class="label">Content Cache Timeout:</td>
           <td class="detail-value">{{store.cache_timeout_seconds | duration}}</td>
         </tr>
