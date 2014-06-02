@@ -53,8 +53,8 @@ aproxServices.factory('StoreControllerSvc', function(){
       else{
         $scope.store = {
           url: '',
-          timeout_seconds: '',
-          cache_timeout_seconds: '',
+          timeout_seconds: 60,
+          cache_timeout_seconds: 86400,
           is_passthrough: false
         };
 
@@ -79,6 +79,37 @@ aproxServices.factory('StoreControllerSvc', function(){
         else{
           $scope.raw.cache_timeout_seconds = '';
         }
+      }, true);
+    },
+
+    initHostedModification: function( $scope, editMode, HostedSvc, StoreUtilSvc, $routeParams ){
+      $scope.editMode = editMode;
+      $scope.storeUtils = StoreUtilSvc;
+
+      $scope.raw = {
+        snapshot_timeout_seconds: '',
+      };
+
+      if ( editMode ){
+        $scope.store = HostedSvc.get({name: $routeParams.name}, function(store){
+          $scope.storeName = $scope.storeUtils.nameFromKey(store.key);
+        });
+      }
+      else{
+        $scope.store = {
+          allow_releases: true,
+          allow_snapshots: true,
+          snapshot_timeout_seconds: 86400,
+        };
+
+        $scope.raw.name = '';
+        $scope.$watch('raw.name', function(name){
+          $scope.store.key = $scope.storeUtils.formatKey('hosted', name);
+        }, true);
+      }
+
+      $scope.$watch('raw.snapshotTimeoutSeconds', function(timeout){
+        $scope.store.snapshotTimeoutSeconds = $scope.storeUtils.durationToSeconds(timeout);
       }, true);
     },
   };

@@ -54,6 +54,32 @@ aproxControllers.controller('HostedDetailCtl', ['$scope', '$routeParams', 'Hoste
     };
   }]);
 
+aproxControllers.controller('HostedNewCtl', ['$scope', '$routeParams', 'HostedSvc', 'StoreUtilSvc', 'StoreControllerSvc',
+                                             function($scope, $routeParams, HostedSvc, StoreUtilSvc, StoreControllerSvc) {
+  StoreControllerSvc.initHostedModification( $scope, false, HostedSvc, StoreUtilSvc, $routeParams );
+
+    $scope.allowUploads = function(store){
+      return store.allow_snapshots || store.allow_releases;
+    };
+
+    $scope.showSnapshotTimeout = function(store){
+      return store.allow_snapshots;
+    };
+}]);
+
+aproxControllers.controller('HostedEditCtl', ['$scope', '$routeParams', 'HostedSvc', 'StoreUtilSvc', 'StoreControllerSvc',
+                                              function($scope, $routeParams, HostedSvc, StoreUtilSvc, StoreControllerSvc) {
+  StoreControllerSvc.initHostedModification( $scope, true, HostedSvc, StoreUtilSvc, $routeParams );
+
+    $scope.allowUploads = function(store){
+      return store.allow_snapshots || store.allow_releases;
+    };
+
+    $scope.showSnapshotTimeout = function(store){
+      return store.allow_snapshots;
+    };
+}]);
+
 aproxControllers.controller('GroupListCtl', ['$scope', 'GroupSvc', 'StoreUtilSvc', function($scope, GroupSvc, StoreUtilSvc) {
     $scope.listing = GroupSvc.query();
     $scope.storeUtils = StoreUtilSvc;

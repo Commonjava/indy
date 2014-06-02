@@ -14,28 +14,32 @@
       <table class="detail-table">
         <tr class="detail-field">
           <td class="label">Name:</td>
-            <td class="detail-value"><input type="text">{{storeUtils.nameFromKey(store.key)}}</input></td>
+          <td class="detail-value">
+            <input type="text" ng-model="raw.name" ng-if="!editMode" />
+              <span ng-if="editMode">{{storeName}}</span>
+          </td>
+        </tr>
+        <tr class="detail-field">
+          <td class="label">Local Path:</td>
+          <td class="detail-value"><input type="text" ng-model="store.storage" size="50"/><span class="hint">(calculated by default)</span></td>
         </tr>
       </table>
       <table class="detail-table">
         <tr class="detail-field">
-          <td class="label">Uploads Allowed?</td>
           <td class="detail-value">{{allowUploads(store) | checkmark}}</td>
+          <td class="label">Uploads Allowed?</td>
         </tr>
-        <tr ng-if="allowUploads(store)" class="detail-field">
-          <td class="label">Releases Allowed?</td>
-          <td class="detail-value">{{store.allow_releases | checkmark}}</td>
-        </tr>
-        <tr ng-if="allowUploads(store)" class="detail-field">
-          <td class="label">Snapshots Allowed?</td>
-          <td class="detail-value">{{store.allow_snapshots | checkmark}}</td>
-        </tr>
-      </table>
-
-      <table ng-if="showSnapshotTimeout(store)" class="detail-table">
         <tr class="detail-field">
+          <td class="detail-value"><input type="checkbox" ng-model="store.allow_releases"/></td>
+          <td class="label">Releases Allowed?</td>
+        </tr>
+        <tr class="detail-field">
+          <td class="detail-value"><input type="checkbox" ng-model="store.allow_snapshots"/></td>
+          <td class="label">Snapshots Allowed?</td>
+        </tr>
+        <tr ng-if="store.allow_snapshots" class="detail-field">
           <td class="label">Snapshot Timeout:</td>
-          <td class="detail-value">{{store.snapshotTimeoutSeconds | duration}}</td>
+          <td class="detail-value"><input type="text" ng-model="raw.snapshotTimeoutSeconds"/><ap-duration-hint></ap-duration-hint></td>
         </tr>
       </table>
     </div>
