@@ -1,0 +1,33 @@
+<div class="container-fluid">
+    <div class="control-panel">
+      <a href="#/group">Back</a>
+        <div class="cp-row">
+          <button name="new-group" class="new-button cp-button">New...</button>
+          <a href="{{storeUtils.editHref(store.key)}}">Edit</a>
+          <button name="del-group" class="del-button cp-button">Delete</button>
+        </div>
+      <div class="cp-row cp-debug">
+        <input type="checkbox" ng-model="enableDebug" ng-init="checked=false" /> Debug Data
+      </div>
+    </div>
+    <div class="content-panel">
+      <table class="detail-table">
+        <tr class="detail-field">
+          <td class="label">Name:</td>
+          <td class="detail-value">{{storeUtils.nameFromKey(store.key)}}</td>
+        </tr>
+        <tr class="detail-field">
+          <td class="label">Local URL:</td>
+          <td class="detail-value"><a href="{{storeUtils.storeHref(store.key)}}" target="_new">{{storeUtils.storeHref(store.key)}}</a></td>
+        </tr>
+      </table>
+      <ol class="detail-value detail-value-list">
+        <lt class="label list-label">Constituents:</lt>
+        <li ng-repeat="constituent in store.constituents" class="detail-value-list-item"><a href="{{storeUtils.detailHref(constituent)}}">{{constituent}}</a></li>
+      </ol>
+    </div>
+    <div ng-if="enableDebug" class="debug">
+      JSON:
+      <pre>{{store | json}}</pre>
+    </div>
+</div>

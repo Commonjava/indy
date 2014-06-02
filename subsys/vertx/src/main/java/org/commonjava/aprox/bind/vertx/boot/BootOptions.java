@@ -85,7 +85,8 @@ public class BootOptions
 
                 bind = resolve( bootProps.getProperty( BIND_PROP, bind ) );
                 port = Integer.parseInt( resolve( bootProps.getProperty( PORT_PROP, Integer.toString( port ) ) ) );
-                workers = Integer.parseInt( resolve( bootProps.getProperty( WORKERS_PROP, Integer.toString( workers ) ) ) );
+                workers =
+                    Integer.parseInt( resolve( bootProps.getProperty( WORKERS_PROP, Integer.toString( workers ) ) ) );
 
                 config = resolve( bootProps.getProperty( CONFIG_PROP, config ) );
             }
@@ -101,6 +102,12 @@ public class BootOptions
     public String resolve( final String value )
         throws InterpolationException
     {
+        if ( value == null || value.trim()
+                                   .length() < 1 )
+        {
+            return null;
+        }
+
         if ( bootProps == null )
         {
             if ( aproxHome == null )

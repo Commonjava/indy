@@ -1,0 +1,46 @@
+<div class="container-fluid">
+    <div class="control-panel">
+      <a href="#/hosted">Back</a>
+        <div class="cp-row">
+          <button name="new-hosted" class="new-button cp-button">New...</button>
+          <a href="{{storeUtils.editHref(store.key)}}">Edit</a>
+          <button name="del-hosted" class="del-button cp-button">Delete</button>
+        </div>
+      <div class="cp-row cp-debug">
+        <input type="checkbox" ng-model="enableDebug" ng-init="checked=false" /> Debug Data
+      </div>
+    </div>
+    <div class="content-panel">
+      <table class="detail-table">
+        <tr class="detail-field">
+          <td class="label">Name:</td>
+            <td class="detail-value"><input type="text">{{storeUtils.nameFromKey(store.key)}}</input></td>
+        </tr>
+      </table>
+      <table class="detail-table">
+        <tr class="detail-field">
+          <td class="label">Uploads Allowed?</td>
+          <td class="detail-value">{{allowUploads(store) | checkmark}}</td>
+        </tr>
+        <tr ng-if="allowUploads(store)" class="detail-field">
+          <td class="label">Releases Allowed?</td>
+          <td class="detail-value">{{store.allow_releases | checkmark}}</td>
+        </tr>
+        <tr ng-if="allowUploads(store)" class="detail-field">
+          <td class="label">Snapshots Allowed?</td>
+          <td class="detail-value">{{store.allow_snapshots | checkmark}}</td>
+        </tr>
+      </table>
+
+      <table ng-if="showSnapshotTimeout(store)" class="detail-table">
+        <tr class="detail-field">
+          <td class="label">Snapshot Timeout:</td>
+          <td class="detail-value">{{store.snapshotTimeoutSeconds | duration}}</td>
+        </tr>
+      </table>
+    </div>
+    <div ng-if="enableDebug" class="debug">
+      JSON:
+      <pre>{{store | json}}</pre>
+    </div>
+</div>
