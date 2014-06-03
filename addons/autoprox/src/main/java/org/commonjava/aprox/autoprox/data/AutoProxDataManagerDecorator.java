@@ -119,7 +119,8 @@ public abstract class AutoProxDataManagerDecorator
             }
             catch ( final MalformedURLException e )
             {
-                throw new ProxyDataException( "[AUTOPROX] Failed to create/validate new remote repository from factory matching: '%s'. Reason: %s",
+                throw new ProxyDataException(
+                                              "[AUTOPROX] Failed to create/validate new remote repository from factory matching: '%s'. Reason: %s",
                                               e, name, e.getMessage() );
             }
         }
@@ -140,7 +141,8 @@ public abstract class AutoProxDataManagerDecorator
         return null;
     }
 
-    private synchronized boolean checkUrlValidity( final RemoteRepository repo, final String proxyUrl, final String validationPath )
+    private synchronized boolean checkUrlValidity( final RemoteRepository repo, final String proxyUrl,
+                                                   final String validationPath )
         throws MalformedURLException
     {
         final String url = validationPath == null ? proxyUrl : buildUrl( proxyUrl, validationPath );
@@ -181,7 +183,7 @@ public abstract class AutoProxDataManagerDecorator
     public RemoteRepository getRemoteRepository( final String name )
         throws ProxyDataException
     {
-        logger.debug( "DECORATED (getRepository: {})", name );
+        logger.debug( "DECORATED (getRemoteRepository: {})", name );
         RemoteRepository repo = dataManager.getRemoteRepository( name );
         if ( !config.isEnabled() )
         {
@@ -216,8 +218,42 @@ public abstract class AutoProxDataManagerDecorator
             }
             catch ( final MalformedURLException e )
             {
-                throw new ProxyDataException( "[AUTOPROX] Failed to create/validate new remote repository from factory matching: '%s'. Reason: %s",
+                throw new ProxyDataException(
+                                              "[AUTOPROX] Failed to create/validate new remote repository from factory matching: '%s'. Reason: %s",
                                               e, name, e.getMessage() );
+            }
+        }
+
+        return repo;
+    }
+
+    @Override
+    public HostedRepository getHostedRepository( final String name )
+        throws ProxyDataException
+    {
+        logger.debug( "DECORATED (getHostedRepository: {})", name );
+        HostedRepository repo = dataManager.getHostedRepository( name );
+        if ( !config.isEnabled() )
+        {
+            logger.debug( "AutoProx decorator disabled; returning: {}", repo );
+            return repo;
+        }
+
+        logger.debug( "AutoProx decorator active" );
+        if ( repo == null )
+        {
+            final AutoProxFactory factory = getFactory( name );
+            if ( factory == null )
+            {
+                return null;
+            }
+
+            logger.info( "AutoProx: creating repository for: {}", name );
+
+            repo = factory.createHostedRepository( name );
+            if ( repo != null )
+            {
+                dataManager.storeHostedRepository( repo );
             }
         }
 
@@ -236,8 +272,10 @@ public abstract class AutoProxDataManagerDecorator
         {
             return getRemoteRepository( key.getName() );
         }
-
-        return this.dataManager.getArtifactStore( key );
+        else
+        {
+            return getHostedRepository( key.getName() );
+        }
     }
 
     @Override
@@ -266,6 +304,21 @@ public abstract class AutoProxDataManagerDecorator
         catch ( final ProxyDataException e )
         {
             logger.error( String.format( "Failed to retrieve/create remote: %s. Reason: %s", name, e.getMessage() ), e );
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean hasHostedRepository( final String name )
+    {
+        try
+        {
+            return getHostedRepository( name ) != null;
+        }
+        catch ( final ProxyDataException e )
+        {
+            logger.error( String.format( "Failed to retrieve/create hosted: %s. Reason: %s", name, e.getMessage() ), e );
         }
 
         return false;
