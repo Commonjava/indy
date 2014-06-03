@@ -3,7 +3,7 @@
       <a href="#/remote">Back</a>
         <div class="cp-row">
           <button name="new-remote" class="new-button cp-button">New...</button>
-            <a href="#/remote/edit/{{storeUtils.nameFromKey(store.key)}}">Edit</a>
+            <a ng-href="{{storeUtils.editHref(store.key)}}">Edit</a>
           <button name="del-remote" class="del-button cp-button">Delete</button>
         </div>
       <div class="cp-row cp-debug">
@@ -18,11 +18,11 @@
         </tr>
         <tr class="detail-field">
           <td class="label">Local URL:</td>
-          <td class="detail-value"><a href="{{storeUtils.storeHref(store.key)}}" target="_new">{{storeUtils.storeHref(store.key)}}</a></td>
+          <td class="detail-value"><a ng-href="{{storeUtils.storeHref(store.key)}}" target="_new">{{storeUtils.storeHref(store.key)}}</a></td>
         </tr>
         <tr class="detail-field">
           <td class="label">Remote URL:</td>
-          <td class="detail-value"><a href="{{store.url}}" target="_new">{{store.url}}</a></td>
+          <td class="detail-value"><a ng-href="{{store.url}}" target="_new">{{store.url}}</a></td>
         </tr>
       </table>
 

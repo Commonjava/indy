@@ -19,12 +19,12 @@ config(['$routeProvider', function($routeProvider) {
 
   $routeProvider.when('/hosted', {templateUrl: 'partials/hosted-list.html', controller: 'HostedListCtl'});
   $routeProvider.when('/hosted/view/:name', {templateUrl: 'partials/hosted-detail.html', controller: 'HostedDetailCtl'});
-  $routeProvider.when('/hosted/new', {templateUrl: 'partials/hosted-edit.html', controller: 'HostedNewCtl'});
+  $routeProvider.when('/hosted/new', {templateUrl: 'partials/hosted-edit.html', controller: 'HostedEditCtl'});
   $routeProvider.when('/hosted/edit/:name', {templateUrl: 'partials/hosted-edit.html', controller: 'HostedEditCtl'});
 
   $routeProvider.when('/group', {templateUrl: 'partials/group-list.html', controller: 'GroupListCtl'});
   $routeProvider.when('/group/view/:name', {templateUrl: 'partials/group-detail.html', controller: 'GroupDetailCtl'});
-  $routeProvider.when('/group/new', {templateUrl: 'partials/group-edit.html', controller: 'GroupNewCtl'});
+  $routeProvider.when('/group/new', {templateUrl: 'partials/group-edit.html', controller: 'GroupEditCtl'});
   $routeProvider.when('/group/edit/:name', {templateUrl: 'partials/group-edit.html', controller: 'GroupEditCtl'});
 
   $routeProvider.otherwise({redirectTo: '/remote'});

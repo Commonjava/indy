@@ -20,14 +20,32 @@ aproxControllers.controller('RemoteDetailCtl', ['$scope', '$routeParams', 'Remot
     $scope.storeUtils = StoreUtilSvc;
   }]);
 
-aproxControllers.controller('RemoteNewCtl', ['$scope', '$routeParams', 'RemoteSvc', 'StoreUtilSvc', 'StoreControllerSvc',
-                                             function($scope, $routeParams, RemoteSvc, StoreUtilSvc, StoreControllerSvc) {
-  StoreControllerSvc.initRemoteModification( $scope, false, RemoteSvc, StoreUtilSvc, $routeParams );
-}]);
+aproxControllers.controller('RemoteEditCtl', ['$scope', '$routeParams', 'RemoteSvc', 'StoreUtilSvc', function($scope, $routeParams, RemoteSvc, StoreUtilSvc) {
+  $scope.editMode = window.location.hash.startsWith( "#/remote/edit" );
+  $scope.storeUtils = StoreUtilSvc;
 
-aproxControllers.controller('RemoteEditCtl', ['$scope', '$routeParams', 'RemoteSvc', 'StoreUtilSvc', 'StoreControllerSvc',
-                                              function($scope, $routeParams, RemoteSvc, StoreUtilSvc, StoreControllerSvc) {
-  StoreControllerSvc.initRemoteModification( $scope, true, RemoteSvc, StoreUtilSvc, $routeParams );
+  $scope.raw = {
+    name: '',
+    timeout_seconds: '',
+    cache_timeout_seconds: '',
+  };
+
+  if ( $scope.editMode ){
+    $scope.store = RemoteSvc.get({name: $routeParams.name}, function(store){
+      $scope.raw.name = StoreUtilSvc.nameFromKey(store.key);
+      $scope.raw.cache_timeout_seconds = StoreUtilSvc.secondsToDuration(store.cache_timeout_seconds);
+      $scope.raw.timeout_seconds = StoreUtilSvc.secondsToDuration(store.timeout_seconds);
+    });
+  }
+  else{
+    $scope.store = {
+      url: '',
+      timeout_seconds: 60,
+      cache_timeout_seconds: 86400,
+      is_passthrough: false
+    };
+  }
+
 }]);
 
 aproxControllers.controller('HostedListCtl', ['$scope', 'HostedSvc', 'StoreUtilSvc', function($scope, HostedSvc, StoreUtilSvc) {
@@ -54,30 +72,32 @@ aproxControllers.controller('HostedDetailCtl', ['$scope', '$routeParams', 'Hoste
     };
   }]);
 
-aproxControllers.controller('HostedNewCtl', ['$scope', '$routeParams', 'HostedSvc', 'StoreUtilSvc', 'StoreControllerSvc',
-                                             function($scope, $routeParams, HostedSvc, StoreUtilSvc, StoreControllerSvc) {
-  StoreControllerSvc.initHostedModification( $scope, false, HostedSvc, StoreUtilSvc, $routeParams );
+aproxControllers.controller('HostedEditCtl', ['$scope', '$routeParams', 'HostedSvc', 'StoreUtilSvc', function($scope, $routeParams, HostedSvc, StoreUtilSvc) {
+  $scope.editMode = window.location.hash.startsWith( "#/hosted/edit" );
+  $scope.storeUtils = StoreUtilSvc;
 
-    $scope.allowUploads = function(store){
-      return store.allow_snapshots || store.allow_releases;
+  $scope.raw = {
+    name: '',
+    snapshot_timeout_seconds: '',
+  };
+
+  if ( $scope.editMode ){
+    $scope.store = HostedSvc.get({name: $routeParams.name}, function(store){
+      $scope.raw.name = $scope.storeUtils.nameFromKey(store.key);
+      $scope.raw.snapshotTimeoutSeconds = StoreUtilSvc.secondsToDuration(store.snapshotTimeoutSeconds);
+    });
+  }
+  else{
+    $scope.store = {
+      allow_releases: true,
+      allow_snapshots: true,
+      snapshotTimeoutSeconds: 86400,
     };
+  }
 
-    $scope.showSnapshotTimeout = function(store){
-      return store.allow_snapshots;
-    };
-}]);
-
-aproxControllers.controller('HostedEditCtl', ['$scope', '$routeParams', 'HostedSvc', 'StoreUtilSvc', 'StoreControllerSvc',
-                                              function($scope, $routeParams, HostedSvc, StoreUtilSvc, StoreControllerSvc) {
-  StoreControllerSvc.initHostedModification( $scope, true, HostedSvc, StoreUtilSvc, $routeParams );
-
-    $scope.allowUploads = function(store){
-      return store.allow_snapshots || store.allow_releases;
-    };
-
-    $scope.showSnapshotTimeout = function(store){
-      return store.allow_snapshots;
-    };
+  $scope.allowUploads = function(store){
+    return store.allow_snapshots || store.allow_releases;
+  };
 }]);
 
 aproxControllers.controller('GroupListCtl', ['$scope', 'GroupSvc', 'StoreUtilSvc', function($scope, GroupSvc, StoreUtilSvc) {

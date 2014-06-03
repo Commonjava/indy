@@ -34,88 +34,6 @@ aproxServices.factory('FooterSvc', ['$resource',
   }]);
 
 
-aproxServices.factory('StoreControllerSvc', function(){
-  return{
-    initRemoteModification: function( $scope, editMode, RemoteSvc, StoreUtilSvc, $routeParams ){
-      $scope.editMode = editMode;
-      $scope.storeUtils = StoreUtilSvc;
-
-      $scope.raw = {
-        timeout_seconds: '',
-        cache_timeout_seconds: '',
-      };
-
-      if ( editMode ){
-        $scope.store = RemoteSvc.get({name: $routeParams.name}, function(store){
-          $scope.storeName = $scope.storeUtils.nameFromKey(store.key);
-        });
-      }
-      else{
-        $scope.store = {
-          url: '',
-          timeout_seconds: 60,
-          cache_timeout_seconds: 86400,
-          is_passthrough: false
-        };
-
-        $scope.raw.name = '';
-        $scope.$watch('raw.name', function(name){
-          $scope.store.key = $scope.storeUtils.formatKey('remote', name);
-        }, true);
-      }
-
-      $scope.$watch('raw.timeout_seconds', function(timeout){
-        $scope.store.timeout_seconds = $scope.storeUtils.durationToSeconds(timeout);
-      }, true);
-
-      $scope.$watch('raw.cache_timeout_seconds', function(timeout){
-        $scope.store.cache_timeout_seconds = $scope.storeUtils.durationToSeconds(timeout);
-      }, true);
-
-      $scope.$watch('store.is_passthrough', function(passthrough){
-        if ( passthrough ){
-          delete $scope.store.cache_timeout_seconds;
-        }
-        else{
-          $scope.raw.cache_timeout_seconds = '';
-        }
-      }, true);
-    },
-
-    initHostedModification: function( $scope, editMode, HostedSvc, StoreUtilSvc, $routeParams ){
-      $scope.editMode = editMode;
-      $scope.storeUtils = StoreUtilSvc;
-
-      $scope.raw = {
-        snapshot_timeout_seconds: '',
-      };
-
-      if ( editMode ){
-        $scope.store = HostedSvc.get({name: $routeParams.name}, function(store){
-          $scope.storeName = $scope.storeUtils.nameFromKey(store.key);
-        });
-      }
-      else{
-        $scope.store = {
-          allow_releases: true,
-          allow_snapshots: true,
-          snapshot_timeout_seconds: 86400,
-        };
-
-        $scope.raw.name = '';
-        $scope.$watch('raw.name', function(name){
-          $scope.store.key = $scope.storeUtils.formatKey('hosted', name);
-        }, true);
-      }
-
-      $scope.$watch('raw.snapshotTimeoutSeconds', function(timeout){
-        $scope.store.snapshotTimeoutSeconds = $scope.storeUtils.durationToSeconds(timeout);
-      }, true);
-    },
-  };
-});
-
-
 aproxServices.factory('StoreUtilSvc', function(){
     return {
       nameFromKey: function(key){
@@ -168,6 +86,10 @@ aproxServices.factory('StoreUtilSvc', function(){
       },
 
       durationToSeconds: function(duration){
+        if ( duration == 'never' ){
+          return 0;
+        }
+
         var re=/((\d+)h\s*)?((\d+)m\s*)?((\d+)s?)?/;
         var arry = re.exec( duration );
 
@@ -186,6 +108,43 @@ aproxServices.factory('StoreUtilSvc', function(){
         }
 
         return secs;
+      },
+
+      secondsToDuration: function(secs){
+        if ( secs == undefined ){
+          return 'never';
+        }
+
+        if ( secs < 1 ){
+          return 'never';
+        }
+
+        var hours = Math.floor(secs / (60 * 60));
+
+        var mdiv = secs % (60 * 60);
+        var minutes = Math.floor(mdiv / 60);
+
+        var sdiv = mdiv % 60;
+        var seconds = Math.ceil(sdiv);
+
+        var out = '';
+        if ( hours > 0 ){
+          out += hours + 'h';
+        }
+
+        if ( minutes > 0 ){
+          if ( out.length > 0 ){ out += ' '; }
+
+          out += minutes + 'm';
+        }
+
+        if ( seconds > 0 ){
+          if ( out.length > 0 ){ out += ' '; }
+
+          out += seconds + 's';
+        }
+
+        return out;
       },
 
       showCacheTimeout: function(store){
