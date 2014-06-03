@@ -26,6 +26,13 @@ aproxServices.factory('GroupSvc', ['$resource',
     });
   }]);
 
+aproxServices.factory('AllEndpointsSvc', ['$resource',
+  function($resource){
+    return $resource('/api/1.0/stats/all-endpoints', {}, {
+      query: {method:'GET', params:{}, isArray:false}
+    });
+  }]);
+
 aproxServices.factory('FooterSvc', ['$resource',
   function($resource){
     return $resource('/api/1.0/stats/version-info', {}, {
@@ -147,9 +154,25 @@ aproxServices.factory('StoreUtilSvc', function(){
         return out;
       },
 
-      showCacheTimeout: function(store){
-        return !store.is_passthrough;
-      },
+      sortEndpoints: function(endpoints){
+        var typeOrder = ['group', 'remote', 'hosted'];
+        return endpoints.sort(function(a, b){
+          var ta = typeOrder.indexOf(a.type);
+          var tb = typeOrder.indexOf(b.type);
 
+          if ( ta != tb ){
+            return ta < tb ? -1 : 1;
+          }
+
+          if ( a.name < b.name ){
+            return -1;
+          }
+          else if ( b.name < a.name ){
+            return 1;
+          }
+
+          return 0;
+        });
+      },
     };
   });

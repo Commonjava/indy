@@ -111,6 +111,30 @@ aproxControllers.controller('GroupDetailCtl', ['$scope', '$routeParams', 'GroupS
     $scope.storeUtils = StoreUtilSvc;
   }]);
 
+aproxControllers.controller('GroupEditCtl', ['$scope', '$routeParams', 'GroupSvc', 'StoreUtilSvc', 'AllEndpointsSvc', function($scope, $routeParams, GroupSvc, StoreUtilSvc, AllEndpointsSvc) {
+  $scope.editMode = window.location.hash.startsWith( "#/group/edit" );
+  $scope.storeUtils = StoreUtilSvc;
+
+  $scope.raw = {
+    name: '',
+    available: [],
+  };
+
+  if ( $scope.editMode ){
+    $scope.store = GroupSvc.get({name: $routeParams.name}, function(store){
+      $scope.raw.name = $scope.storeUtils.nameFromKey(store.key);
+    });
+  }
+  else{
+    $scope.store = {
+    };
+  }
+
+  AllEndpointsSvc.query(function(listing){
+    $scope.raw.available = StoreUtilSvc.sortEndpoints( listing.items );
+  });
+}]);
+
 aproxControllers.controller('FooterCtl', ['$scope', '$http', 'FooterSvc', function($scope, $http, FooterSvc){
     $scope.stats = FooterSvc.query();
   }]);

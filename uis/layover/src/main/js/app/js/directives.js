@@ -8,7 +8,6 @@ var directives = angular.module('aprox.directives', []);
 directives.directive('apDurationHint', function() {
   return {
     restrict: 'E',
-    /*template: '<span class="hint">(eg. 24h 36m 00s)</span>',*/
     link: function(scope, element, attributes){
       var suggestion = element.text();
       if ( suggestion == '' ){
@@ -17,5 +16,21 @@ directives.directive('apDurationHint', function() {
 
       element.html('<span class="hint">(eg. ' + suggestion + ')</span>');
     }
+  };
+});
+
+directives.directive('apAvailableGroup', function() {
+  return {
+    restrict: 'A',
+//     scope:{
+//       available: '=value',
+//     },
+    link: function(scope, element, attributes){
+      var key = scope.available.type + ':' + scope.available.name;
+      var idx = scope.store.constituents.indexOf(key);
+      if ( idx < 0 ){
+        element.hide();
+      }
+    },
   };
 });

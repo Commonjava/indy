@@ -117,7 +117,13 @@
 
     </div>
     <div ng-if="enableDebug" class="debug">
-      JSON:
-      <pre>{{store | json}}</pre>
+        <div class="debug-section">
+            <span class="debug-title">JSON BOUND FOR SERVER:</span>
+          <pre>{{store | json}}</pre>
+        </div>
+        <div class="debug-section">
+            <span class="debug-title">JSON FOR DISPLAY:</span>
+          <pre>{{raw | json}}</pre>
+        </div>
     </div>
 </div>

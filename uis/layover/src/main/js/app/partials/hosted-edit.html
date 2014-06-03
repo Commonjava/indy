@@ -2,13 +2,15 @@
     <div class="control-panel">
       <a href="#/hosted">Back</a>
         <div class="cp-row">
-          <button name="new-hosted" class="new-button cp-button">New...</button>
-          <a href="{{storeUtils.editHref(store.key)}}">Edit</a>
+            <button name="save-hosted" class="cp-button">Save</button>
+            <button name="cancel-hosted" class="cp-button">Cancel</button>
+        </div>
+        <div class="cp-row" ng-if="editMode">
           <button name="del-hosted" class="del-button cp-button">Delete</button>
         </div>
-      <div class="cp-row cp-debug">
-        <input type="checkbox" ng-model="enableDebug" ng-init="checked=false" /> Debug Data
-      </div>
+        <div class="cp-row cp-debug">
+          <input type="checkbox" ng-model="enableDebug" ng-init="checked=false" /> Debug Data
+        </div>
     </div>
     <div class="content-panel">
       <table class="detail-table">
@@ -37,14 +39,22 @@
           <td class="detail-value"><input type="checkbox" ng-model="store.allow_snapshots"/></td>
           <td class="label">Snapshots Allowed?</td>
         </tr>
-        <tr ng-if="store.allow_snapshots" class="detail-field">
+      </table>
+      <table ng-if="store.allow_snapshots" class="detail-table">
+        <tr class="detail-field">
           <td class="label">Snapshot Timeout:</td>
           <td class="detail-value"><input type="text" ng-model="raw.snapshotTimeoutSeconds"/><ap-duration-hint></ap-duration-hint></td>
         </tr>
       </table>
     </div>
     <div ng-if="enableDebug" class="debug">
-      JSON:
-      <pre>{{store | json}}</pre>
+        <div class="debug-section">
+            <span class="debug-title">JSON BOUND FOR SERVER:</span>
+          <pre>{{store | json}}</pre>
+        </div>
+        <div class="debug-section">
+            <span class="debug-title">JSON FOR DISPLAY:</span>
+          <pre>{{raw | json}}</pre>
+        </div>
     </div>
 </div>

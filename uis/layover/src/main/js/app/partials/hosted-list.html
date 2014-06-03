@@ -29,10 +29,10 @@
             <!-- {{storeUtils.nameFromKey(store.key)}} -->
             <!-- -->
             <td class="key">
-                <a href="#/hosted/view/{{storeUtils.nameFromKey(store.key)}}">{{storeUtils.nameFromKey(store.key)}}</a>
+                <a ng-href="{{storeUtils.detailHref(store.key)}}">{{storeUtils.nameFromKey(store.key)}}</a>
             </td>
             <td class="field">
-              <a href="{{storeUtils.storeHref(store.key)}}" target="_new">{{storeUtils.storeHref(store.key)}}</a>
+              <a ng-href="{{storeUtils.storeHref(store.key)}}" target="_new">{{storeUtils.storeHref(store.key)}}</a>
             </td>
             <td class="options-field">
               <ul class="options" ng-repeat="option in storeUtils.hostedOptions(store)">
