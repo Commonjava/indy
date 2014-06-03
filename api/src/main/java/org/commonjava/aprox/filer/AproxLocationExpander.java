@@ -76,7 +76,7 @@ public class AproxLocationExpander
                 {
                     logger.debug( "Expanding group: {}", gl.getKey() );
                     final List<ArtifactStore> members = data.getOrderedConcreteStoresInGroup( gl.getKey()
-                                                                                        .getName() );
+                                                                                                .getName() );
                     if ( members != null )
                     {
                         for ( final ArtifactStore member : members )
@@ -92,8 +92,9 @@ public class AproxLocationExpander
                 }
                 catch ( final ProxyDataException e )
                 {
-                    throw new TransferException( "Failed to lookup ordered concrete artifact stores contained in group: {}. Reason: {}", e, gl,
-                                                 e.getMessage() );
+                    throw new TransferException(
+                                                 "Failed to lookup ordered concrete artifact stores contained in group: {}. Reason: {}",
+                                                 e, gl, e.getMessage() );
                 }
             }
             else if ( location instanceof CacheOnlyLocation && !( (CacheOnlyLocation) location ).hasDeployPoint() )
@@ -107,7 +108,8 @@ public class AproxLocationExpander
                 }
                 catch ( final ProxyDataException e )
                 {
-                    throw new TransferException( "Failed to lookup store for key: {}. Reason: {}", e, key, e.getMessage() );
+                    throw new TransferException( "Failed to lookup store for key: {}. Reason: {}", e, key,
+                                                 e.getMessage() );
                 }
             }
             else
@@ -127,14 +129,26 @@ public class AproxLocationExpander
         List<Location> locations;
         if ( resource instanceof VirtualResource )
         {
-            locations = expand( ( (VirtualResource) resource ).getLocations() );
+            final List<ConcreteResource> concrete = ( (VirtualResource) resource ).toConcreteResources();
+            final List<ConcreteResource> result = new ArrayList<ConcreteResource>();
+            for ( final ConcreteResource cr : concrete )
+            {
+                final List<Location> expanded = expand( cr.getLocation() );
+                for ( final Location location : expanded )
+                {
+                    result.add( new ConcreteResource( location, cr.getPath() ) );
+                }
+            }
+
+            return new VirtualResource( result );
         }
         else
         {
-            locations = expand( ( (ConcreteResource) resource ).getLocation() );
-        }
+            final ConcreteResource cr = (ConcreteResource) resource;
+            locations = expand( cr.getLocation() );
 
-        return new VirtualResource( locations, resource.getPath() );
+            return new VirtualResource( locations, cr.getPath() );
+        }
     }
 
 }

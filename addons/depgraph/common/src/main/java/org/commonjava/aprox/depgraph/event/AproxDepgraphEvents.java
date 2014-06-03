@@ -10,6 +10,11 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.event;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
@@ -29,7 +34,9 @@ import org.commonjava.maven.cartographer.event.ProjectRelationshipsErrorEvent;
 import org.commonjava.maven.cartographer.event.RelationshipStorageEvent;
 import org.commonjava.maven.galley.event.FileErrorEvent;
 import org.commonjava.maven.galley.event.FileNotFoundEvent;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Resource;
+import org.commonjava.maven.galley.model.VirtualResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,24 +98,43 @@ public class AproxDepgraphEvents
     public void unlockOnFileNotFoundEvent( @Observes final FileNotFoundEvent evt )
     {
         final Resource resource = evt.getResource();
-        final String path = resource.getPath();
-        try
-        {
-            final ArtifactPathInfo info = ArtifactPathInfo.parse( path );
-            //            logger.info( "Unlocking {} due to unresolvable POM.", info );
-            if ( info != null )
-            {
-                final ProjectVersionRef ref =
-                    new ProjectVersionRef( info.getGroupId(), info.getArtifactId(), info.getVersion() );
 
-                delegate.notifyOfGraph( ref );
+        List<ConcreteResource> resources;
+        if ( resource instanceof VirtualResource )
+        {
+            resources = ( (VirtualResource) resource ).toConcreteResources();
+        }
+        else
+        {
+            resources = Collections.singletonList( (ConcreteResource) resource );
+        }
+
+        final Set<String> seenPaths = new HashSet<String>();
+        for ( final ConcreteResource cr : resources )
+        {
+            final String path = cr.getPath();
+            if ( seenPaths.add( path ) )
+            {
+                try
+                {
+                    final ArtifactPathInfo info = ArtifactPathInfo.parse( path );
+                    //            logger.info( "Unlocking {} due to unresolvable POM.", info );
+                    if ( info != null )
+                    {
+                        final ProjectVersionRef ref =
+                            new ProjectVersionRef( info.getGroupId(), info.getArtifactId(), info.getVersion() );
+
+                        delegate.notifyOfGraph( ref );
+                    }
+                }
+                catch ( final InvalidVersionSpecificationException e )
+                {
+                    logger.error( String.format( "Cannot parse version for path: '%s'. Failed to unlock waiting threads. Reason: %s",
+                                                 path, e.getMessage() ), e );
+                }
             }
         }
-        catch ( final InvalidVersionSpecificationException e )
-        {
-            logger.error( String.format( "Cannot parse version for path: '%s'. Failed to unlock waiting threads. Reason: %s",
-                                         path, e.getMessage() ), e );
-        }
+
     }
 
     @Override
