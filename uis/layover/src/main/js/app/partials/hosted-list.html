@@ -1,7 +1,7 @@
 <div class="container-fluid">
     <div class="control-panel">
         <div class="cp-row">
-          <button name="new-hosted" class="new-button cp-button">New...</button>
+            <a class="new-button cp-button" href="#/hosted/new">New...</a>
         </div>
         <div class="cp-row">
           Search: <input ng-model="query">
@@ -26,20 +26,17 @@
             <th>Options</th>
         </tr>
         <tr ng-repeat="store in listing.items | filter:query | orderBy:orderProp" class="store-listing-item">
-            <!-- {{storeUtils.nameFromKey(store.key)}} -->
-            <!-- -->
             <td class="key">
-                <a ng-href="{{storeUtils.detailHref(store.key)}}">{{storeUtils.nameFromKey(store.key)}}</a>
+                <a href="{{store.detailHref}}">{{store.name}}</a>
             </td>
             <td class="field">
-              <a ng-href="{{storeUtils.storeHref(store.key)}}" target="_new">{{storeUtils.storeHref(store.key)}}</a>
+              <a href="{{store.storeHref}}" target="_new">{{store.storeHref}}</a>
             </td>
             <td class="options-field">
-              <ul class="options" ng-repeat="option in storeUtils.hostedOptions(store)">
+              <ul class="options" ng-repeat="option in store.hostedOptions">
                 <li class="option"><span title="{{option.title}}">{{option.icon}}</span></li>
               </ul>
             </td>
-            <!-- -->
         </tr>
       </table>
     </div>

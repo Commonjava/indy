@@ -1,10 +1,16 @@
 <div class="container-fluid">
     <div class="control-panel">
-      <a href="#/hosted">Back</a>
         <div class="cp-row">
-          <button name="new-hosted" class="new-button cp-button">New...</button>
-          <a ng-href="{{storeUtils.editHref(store.key)}}">Edit</a>
-          <button name="del-hosted" class="del-button cp-button">Delete</button>
+            <a href="#/hosted">&lt; Back</a>
+        </div>
+        <div class="cp-row">
+            <a class="new-button cp-button" href="#/hosted/new">New...</a>
+        </div>
+        <div class="cp-row">
+          <a ng-href="{{raw.editHref}}">Edit</a>
+        </div>
+        <div class="cp-row">
+          <a href="" name="del" ng-click="delete()" class="del-button cp-button">Delete</a>
         </div>
       <div class="cp-row cp-debug">
         <input type="checkbox" ng-model="enableDebug" ng-init="checked=false" /> Debug Data
@@ -14,11 +20,11 @@
       <table class="detail-table">
         <tr class="detail-field">
           <td class="label">Name:</td>
-          <td class="detail-value">{{storeUtils.nameFromKey(store.key)}}</td>
+          <td class="detail-value">{{raw.name}}</td>
         </tr>
         <tr class="detail-field">
           <td class="label">Local URL:</td>
-          <td class="detail-value"><a ng-href="{{storeUtils.storeHref(store.key)}}" target="_new">{{storeUtils.storeHref(store.key)}}</a></td>
+          <td class="detail-value"><a ng-href="{{raw.storeHref}}" target="_new">{{raw.storeHref}}</a></td>
         </tr>
       </table>
       <table class="detail-table">
@@ -45,7 +51,7 @@
     </div>
     <div ng-if="enableDebug" class="debug">
         <div class="debug-section">
-            <span class="debug-title">JSON BOUND FOR SERVER:</span>
+            <span class="debug-title">JSON FROM SERVER:</span>
           <pre>{{store | json}}</pre>
         </div>
         <div class="debug-section">

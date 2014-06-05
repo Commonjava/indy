@@ -1,0 +1,10 @@
+<div class="constituent">
+    <div class="inline value">{{constituent}}</div>
+    <div class="inline inline-cp">
+        <a href="" title="Remove from constituents" class="inline-cp-action" ng-click="rmConstituent()">&#x2718;</a>
+        <a href="" title="Promote priority" class="inline-cp-action" ng-if="$index > 0" ng-click="promote()">&uarr;</a>
+        <a href="" title="Top priority" class="inline-cp-action" ng-if="$index > 0" ng-click="top()">&#x219f; </a>
+        <a href="" title="Demote priority" class="inline-cp-action" ng-if="$index < store.constituents.length-1" ng-click="demote()">&darr;</a>
+        <a href="" title="Bottom priority" class="inline-cp-action" ng-if="$index < store.constituents.length-1" ng-click="bottom()">&#x21a1;</a>
+    </div>
+</div>

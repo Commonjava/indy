@@ -1,10 +1,16 @@
 <div class="container-fluid">
     <div class="control-panel">
-      <a href="#/remote">Back</a>
         <div class="cp-row">
-          <button name="new-remote" class="new-button cp-button">New...</button>
-            <a ng-href="{{storeUtils.editHref(store.key)}}">Edit</a>
-          <button name="del-remote" class="del-button cp-button">Delete</button>
+            <a href="#/remote">&lt; Back</a>
+        </div>
+        <div class="cp-row">
+            <a class="new-button cp-button" href="#/remote/new">New...</a>
+        </div>
+        <div class="cp-row">
+            <a ng-href="{{raw.editHref}}">Edit</a>
+        </div>
+        <div class="cp-row">
+          <a href="" name="del" ng-click="delete()" class="del-button cp-button">Delete</a>
         </div>
       <div class="cp-row cp-debug">
         <input type="checkbox" ng-model="enableDebug" ng-init="checked=false" /> Debug Data
@@ -14,39 +20,117 @@
       <table class="detail-table">
         <tr class="detail-field">
           <td class="label">Name:</td>
-          <td class="detail-value">{{storeUtils.nameFromKey(store.key)}}</td>
+          <td class="detail-value">{{raw.name}}</td>
         </tr>
         <tr class="detail-field">
           <td class="label">Local URL:</td>
-          <td class="detail-value"><a ng-href="{{storeUtils.storeHref(store.key)}}" target="_new">{{storeUtils.storeHref(store.key)}}</a></td>
+          <td class="detail-value"><a ng-href="{{raw.storeHref}}" target="_new">{{raw.storeHref}}</a></td>
         </tr>
         <tr class="detail-field">
           <td class="label">Remote URL:</td>
           <td class="detail-value"><a ng-href="{{store.url}}" target="_new">{{store.url}}</a></td>
         </tr>
       </table>
-
       <table class="detail-table">
+        <caption>Cache Management</caption>
         <tr class="detail-field">
-          <td class="label">Passthrough Only?</td>
-          <td class="detail-value">{{store.is_passthrough | checkmark}}</td>
+          <td class="detail-value">
+            {{store.is_passthrough | checkmark}}
+            <span class="label trailing-label">Passthrough Only?</span>
+          </td>
+          <td class="detail-hint detail-value">
+            <ap-hint key="passthrough"></ap-hint>
+          </td>
         </tr>
-      </table>
-
-      <table class="detail-table">
-        <tr class="detail-field">
-          <td class="label">Request Timeout:</td>
-          <td class="detail-value">{{store.timeout_seconds | duration}}</td>
-        </tr>
-        <tr ng-if="storeUtils.showCacheTimeout(store)" class="detail-field">
+        <tr ng-if="!store.is_passthrough" class="detail-field">
           <td class="label">Content Cache Timeout:</td>
           <td class="detail-value">{{store.cache_timeout_seconds | duration}}</td>
         </tr>
       </table>
+
+      <table class="detail-table">
+        <caption>Remote Access</caption>
+        <tr class="detail-field">
+          <td class="label">Request Timeout:</td>
+          <td class="detail-value">
+            {{store.timeout_seconds | duration}}
+            <ap-hint key="request_timeout"></ap-hint>
+          </td>
+        </tr>
+
+        <!-- HTTP Proxy -->
+        <tr class="detail-field">
+          <td colspan="2" class="detail-value">
+            {{raw.use_proxy | checkmark}}
+            <span class="label trailing-label">Use Proxy?</span>
+          </td>
+        </tr>
+        <tr class="detail-field" ng-if="raw.use_proxy">
+          <td class="label">Proxy Host:</td>
+          <td class="detail-value">{{store.proxy_host}}</td>
+        </tr>
+        <tr class="detail-field" ng-if="raw.use_proxy">
+          <td class="label">Proxy Port:</td>
+          <td class="detail-value">{{store.proxy_port}}</td>
+        </tr>
+
+        <!-- X.509 / auth -->
+        <tr class="detail-field">
+          <td colspan="2" class="detail-value">
+            {{raw.use_auth | checkmark}}
+            <span class="label trailing-label">Use Authentication?</span>
+          </td>
+        </tr>
+        <tr class="detail-field" ng-if="raw.use_auth && store.user">
+          <td class="label">Username:</td>
+          <td class="detail-value">{{store.user}}</td>
+        </tr>
+        <tr class="detail-field" ng-if="raw.use_auth && store.password">
+          <td class="label">Password:</td>
+          <td class="detail-value"><ap-password-mask></ap-password-mask></td>
+        </tr>
+        <tr class="detail-field" ng-if="raw.use_proxy && raw.use_auth && store.proxy_user">
+          <td class="label">Proxy Username:</td>
+          <td class="detail-value">{{store.proxy_user}}</td>
+        </tr>
+        <tr class="detail-field" ng-if="raw.use_proxy && raw.use_auth && store.proxy_password">
+          <td class="label">Proxy Password:</td>
+          <td class="detail-value"><ap-password-mask></ap-password-mask></td>
+        </tr>
+        <tr class="detail-field">
+          <td colspan="2" class="detail-value">
+            {{raw.use_x509 | checkmark}}
+            <span class="label trailing-label">Use Custom X.509 Configuration?</span>
+          </td>
+        </tr>
+        <tr class="detail-field" ng-if="raw.use_x509 && store.key_password">
+          <td class="label">Client Key Password:</td>
+          <td class="detail-value"><ap-password-mask></ap-password-mask></ap-hint></td>
+        </tr>
+      </table>
+
+      <div ng-if="raw.use_x509" class="fieldset two-col">
+        <div class="left-col" ng-if="store.key_certificate_pem">
+          <div class="textarea-label">
+            <label>Client Key</label><span class="hint">(PEM Format)</span>
+         </div>
+          <!-- 64 columns is the original PEM line-length spec -->
+          <textarea readonly="true" class="cert" ng-model="store.key_certificate_pem"></textarea>
+        </div>
+
+        <div class="right-col" ng-if="store.server_certificate_pem">
+          <div class="textarea-label">
+            <label>Server Certificate</label><span class="hint">(PEM Format)</span>
+          </div>
+          <!-- 64 columns is the original PEM line-length spec -->
+          <textarea readonly="true" class="cert" ng-model="store.server_certificate_pem"></textarea>
+        </div>
+      </div>
+
     </div>
     <div ng-if="enableDebug" class="debug">
         <div class="debug-section">
-            <span class="debug-title">JSON BOUND FOR SERVER:</span>
+            <span class="debug-title">JSON FROM SERVER:</span>
           <pre>{{store | json}}</pre>
         </div>
         <div class="debug-section">

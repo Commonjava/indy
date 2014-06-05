@@ -1,14 +1,16 @@
 <div class="container-fluid">
     <div class="control-panel">
-      <a href="#/group">Back</a>
         <div class="cp-row">
-          <button name="new-group" class="new-button cp-button">New...</button>
-          <a href="{{storeUtils.editHref(store.key)}}">Edit</a>
-          <button name="del-group" class="del-button cp-button">Delete</button>
+          <a href="#/hosted">Back</a>
         </div>
-      <div class="cp-row cp-debug">
-        <input type="checkbox" ng-model="enableDebug" ng-init="checked=false" /> Debug Data
-      </div>
+        <div class="cp-row">
+          <button name="save" ng-click="save()" class="cp-button">Save</button>
+          <button name="cancel" ng-click="cancel()" class="cp-button">Cancel</button>
+          <button name="del" ng-click="delete()" class="del-button cp-button">Delete</button>
+        </div>
+        <div class="cp-row cp-debug">
+          <input type="checkbox" ng-model="enableDebug" ng-init="checked=false" /> Debug Data
+        </div>
     </div>
     <div class="content-panel">
       <table class="detail-table">
@@ -20,13 +22,13 @@
           </td>
         </tr>
       </table>
-      <ol class="detail-value detail-value-list">
-        <lt class="label list-label">Constituents:</lt>
-        <li ng-repeat="constituent in store.constituents" class="detail-value-list-item">{{constituent}}</li>
+      <ol class="left-col detail-value detail-edit-list">
+          <lt><span class="label list-label">Constituents:</span><span class="hint">(hover for controls)</span></lt>
+        <li ng-repeat="constituent in store.constituents" ap-group-constituent class="detail-value-list-item"></li>
       </ol>
-      <ol class="detail-value detail-value-list">
-        <lt class="label list-label">Available:</lt>
-        <li ng-repeat="available in raw.available" ap-available-group value="available" class="detail-value-list-item">{{available.type}}:{{available.name}}</li>
+      <ol class="right-col detail-value detail-edit-list">
+          <lt><span class="label list-label">Available:</span><span class="hint">(click to add to constituents)</span></lt>
+        <li ng-repeat="available in raw.available" ap-group-available class="detail-value-list-item"></li>
       </ol>
     </div>
     <div ng-if="enableDebug" class="debug">

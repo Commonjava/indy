@@ -130,7 +130,9 @@ public class AdminResource
 
         if ( !name.equals( store.getName() ) )
         {
-            formatBadRequestResponse( request, String.format( "Store in URL path is: '%s' but in JSON it is: '%s'", name, store.getName() ) );
+            formatBadRequestResponse( request,
+                                      String.format( "Store in URL path is: '%s' but in JSON it is: '%s'", name,
+                                                     store.getName() ) );
             return;
         }
 
@@ -139,6 +141,8 @@ public class AdminResource
             if ( adminController.store( store, false ) )
             {
                 setStatus( ApplicationStatus.OK, request );
+                request.response()
+                       .end();
             }
             else
             {

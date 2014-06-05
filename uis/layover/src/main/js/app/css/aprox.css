@@ -136,6 +136,43 @@ td{
   margin-bottom: 10px;
 }
 
+.inline{
+  display: inline;
+}
+
+.inline-cp{
+  visibility: hidden;
+  display: inline;
+  font-weight: bold;
+  margin-left: 5px;
+  border-left: 1px solid #333;
+  padding-left: 5px;
+}
+
+.inline-cp-action{
+  padding-left: 5px;
+  text-decoration: none;
+}
+
+.surround-cp-action{
+  text-decoration: none;
+}
+
+.surround-cp-action:hover{
+  text-decoration: underline;
+}
+
+.constituent:hover,
+.available:hover{
+  padding: 2px;
+  border: 1px solid #333;
+}
+
+.constituent:hover > .inline-cp,
+.available:hover > .inline-cp{
+  visibility: visible;
+}
+
 div.sidebyside{
   display: inline;
   margin-right: 20px;
@@ -195,19 +232,45 @@ pre{
   margin-top: 20px;
 }
 
-.label{
+td.detail-value{
+  text-align: left;
+}
+
+ol.detail-edit-list,
+li.detail-edit-list{
+  list-style: none;
+  padding: 1em;
+  border: 1px solid #ddd;
+  min-width: 40%;
+}
+
+label, caption, .label{
   font-weight: bold;
-  padding-right: 20px;
+  text-align: left;
+}
+
+.trailing-label{
+  margin-left: 20px;
+}
+
+.label{
+  padding-right: 5px;
 }
 
 .hint{
   font-style: italic;
   font-size: 80%;
+  color: #333;
+  margin-left: 1.2em;
+  margin-right: 1.2em;
+  text-decoration: none !important;
+  text-align: left;
 }
 
 .cert{
-  min-width: 500px;
-  min-height: 200px;
+  font-family: monospace;
+  height: 31em;
+  width: 40em;
 }
 
 .fieldset{
@@ -218,11 +281,25 @@ pre{
   margin-top: 10px;
 }
 
+.list-label{
+  text-decoration: underline;
+}
+
 .left-col,
 .right-col{
+  vertical-align: top;
+  min-width: 30%;
   display: inline-block;
+}
+
+.left-col{
+  margin-right: 50px;
 }
 
 .textarea-label{
   display: block;
+}
+
+.hidden{
+  display: none;
 }

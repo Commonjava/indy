@@ -17,7 +17,7 @@ import java.util.Set;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.util.ArtifactPathInfo;
+import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 

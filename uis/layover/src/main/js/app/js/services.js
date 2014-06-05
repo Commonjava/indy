@@ -8,35 +8,41 @@ var aproxServices = angular.module('aprox.services', ['ngResource']);
 aproxServices.factory('RemoteSvc', ['$resource',
   function($resource){
     return $resource('/api/1.0/admin/remote/:name', {}, {
-      query: {method:'GET', params:{name:''}, isArray:false}
+      query: {method:'GET', params:{name:''}, isArray:false},
+      update: {method: 'PUT'},
+      create: {method: 'POST'},
     });
   }]);
 
 aproxServices.factory('HostedSvc', ['$resource',
   function($resource){
     return $resource('/api/1.0/admin/hosted/:name', {}, {
-      query: {method:'GET', params:{name:''}, isArray:false}
+      query: {method:'GET', params:{name:''}, isArray:false},
+      update: {method: 'PUT'},
+      create: {method: 'POST'},
     });
   }]);
 
 aproxServices.factory('GroupSvc', ['$resource',
   function($resource){
     return $resource('/api/1.0/admin/group/:name', {}, {
-      query: {method:'GET', params:{name:''}, isArray:false}
+      query: {method:'GET', params:{name:''}, isArray:false},
+      update: {method: 'PUT'},
+      create: {method: 'POST'},
     });
   }]);
 
 aproxServices.factory('AllEndpointsSvc', ['$resource',
   function($resource){
     return $resource('/api/1.0/stats/all-endpoints', {}, {
-      query: {method:'GET', params:{}, isArray:false}
+      query: {method:'GET', params:{}, isArray:false},
     });
   }]);
 
 aproxServices.factory('FooterSvc', ['$resource',
   function($resource){
     return $resource('/api/1.0/stats/version-info', {}, {
-      query: {method:'GET', params:{}, isArray:false}
+      query: {method:'GET', params:{}, isArray:false},
     });
   }]);
 
@@ -51,13 +57,20 @@ aproxServices.factory('StoreUtilSvc', function(){
         var parts = key.split(':');
 
         var hostAndPort = window.location.hostname;
-        if ( window.location.port != 80 && window.location.port != 443 ){
+        if ( window.location.port != '' && window.location.port != 80 && window.location.port != 443 ){
           hostAndPort += ':';
           hostAndPort += window.location.port;
         }
 
+        var basepath = window.location.pathname;
+        basepath = basepath.replace('/app', '');
+        basepath = basepath.replace(/index.html.*/, '');
+
+
+        var proto = window.location.protocol;
+
         // TODO: In-UI browser that allows simple searching
-        return window.location.protocol + "//" + hostAndPort + window.location.pathname.replace('/app', '') + 'api/1.0/' + parts[0] + '/' + parts[1] + '/';
+        return proto + "//" + hostAndPort + basepath + 'api/1.0/' + parts[0] + '/' + parts[1] + '/';
       },
 
       detailHref: function(key){

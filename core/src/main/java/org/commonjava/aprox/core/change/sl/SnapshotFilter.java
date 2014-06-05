@@ -13,7 +13,7 @@ package org.commonjava.aprox.core.change.sl;
 import java.io.File;
 import java.io.FilenameFilter;
 
-import org.commonjava.aprox.util.ArtifactPathInfo;
+import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 
 public class SnapshotFilter
     implements FilenameFilter
@@ -22,7 +22,8 @@ public class SnapshotFilter
     @Override
     public boolean accept( final File dir, final String name )
     {
-        return ArtifactPathInfo.isSnapshot( name );
+        return ArtifactPathInfo.parse( name )
+                               .isSnapshot();
     }
 
 }

@@ -25,18 +25,15 @@
             <th>Remote URL</th>
         </tr>
         <tr ng-repeat="store in listing.items | filter:query | orderBy:orderProp" class="store-listing-item">
-            <!-- {{storeUtils.nameFromKey(store.key)}} -->
-            <!-- -->
             <td class="key">
-                <a href="#/remote/view/{{storeUtils.nameFromKey(store.key)}}">{{storeUtils.nameFromKey(store.key)}}</a>
+                <a ng-href="{{store.detailHref}}">{{store.name}}</a>
             </td>
             <td class="field">
-              <a href="{{storeUtils.storeHref(store.key)}}" target="_new">{{storeUtils.storeHref(store.key)}}</a>
+              <a ng-href="{{store.storeHref}}" target="_new">{{store.storeHref}}</a>
             </td>
             <td class="field">
-              <a href="{{store.url}}" target="_new">{{store.url}}</a>
+              <a ng-href="{{store.url}}" target="_new">{{store.url}}</a>
             </td>
-            <!-- -->
         </tr>
       </table>
     </div>

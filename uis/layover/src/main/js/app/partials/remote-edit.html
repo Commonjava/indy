@@ -1,12 +1,12 @@
 <div class="container-fluid">
     <div class="control-panel">
-      <a href="#/remote">Back</a>
         <div class="cp-row">
-            <button name="save-remote" class="cp-button">Save</button>
-            <button name="cancel-remote" class="cp-button">Cancel</button>
+          <a href="#/hosted">Back</a>
         </div>
-        <div class="cp-row" ng-if="editMode">
-          <button name="del-remote" class="del-button cp-button">Delete</button>
+        <div class="cp-row">
+          <button name="save" ng-click="save()" class="cp-button">Save</button>
+          <button name="cancel" ng-click="cancel()" class="cp-button">Cancel</button>
+          <button name="del" ng-click="delete()" class="del-button cp-button">Delete</button>
         </div>
         <div class="cp-row cp-debug">
           <input type="checkbox" ng-model="enableDebug" ng-init="checked=false" /> Debug Data
@@ -18,21 +18,21 @@
           <td class="label">Name:</td>
           <td class="detail-value">
             <input type="text" ng-model="raw.name" ng-if="!editMode" />
-              <span ng-if="editMode">{{raw.name}}</span>
+            <span ng-if="editMode">{{raw.name}}</span>
           </td>
         </tr>
         <tr class="detail-field">
           <td class="label">Remote URL:</td>
-          <td class="detail-value"><input type="text" ng-model="store.url" size="50"/></td>
+          <td class="detail-value"><input type="text" ng-model="store.url" size="80"/></td>
         </tr>
       </table>
       <table class="detail-table">
         <caption>Cache Management</caption>
         <tr class="detail-field">
-          <td class="label">Passthrough Only?</td>
-          <td class="detail-value">
+          <td colspan="2" class="detail-value">
             <input type="checkbox" ng-model="store.is_passthrough" />
-            <span class="hint">(pass-through implies a 5 minute cache timeout)</span>
+            <span class="label trailing-label">Passthrough Only?</span>
+            <ap-hint key="passthrough"></ap-hint>
           </td>
         </tr>
         <tr ng-if="!store.is_passthrough" class="detail-field">
@@ -50,14 +50,16 @@
           <td class="label">Request Timeout:</td>
           <td class="detail-value">
             <input type="text" ng-model="raw.timeout_seconds"/>
-            <ap-duration-hint>10m</ap-duration-hint>
+            <ap-hint key="request_timeout"></ap-hint>
           </td>
         </tr>
 
         <!-- HTTP Proxy -->
         <tr class="detail-field">
-          <td class="detail-value"><input type="checkbox" ng-model="raw.use_proxy" /></td>
-          <td class="label">Use Proxy?</td>
+          <td colspan="2" class="detail-value">
+            <input type="checkbox" ng-model="raw.use_proxy" />
+            <span class="label trailing-label">Use Proxy?</span>
+          </td>
         </tr>
         <tr class="detail-field" ng-if="raw.use_proxy">
           <td class="label">Proxy Host:</td>
@@ -70,8 +72,10 @@
 
         <!-- X.509 / auth -->
         <tr class="detail-field">
-          <td class="detail-value"><input type="checkbox" ng-model="raw.use_auth" /></td>
-          <td class="label">Use Authentication?</td>
+          <td colspan="2" class="detail-value">
+            <input type="checkbox" ng-model="raw.use_auth" />
+            <span class="label trailing-label">Use Authentication?</span>
+          </td>
         </tr>
         <tr class="detail-field" ng-if="raw.use_auth">
           <td class="label">Username:</td>
@@ -83,35 +87,39 @@
         </tr>
         <tr class="detail-field" ng-if="raw.use_proxy && raw.use_auth">
           <td class="label">Proxy Username:</td>
-          <td class="detail-value"><input type="text" ng-model="store.proxy_ser" size="20"/></td>
+          <td class="detail-value"><input type="text" ng-model="store.proxy_user" size="20"/></td>
         </tr>
         <tr class="detail-field" ng-if="raw.use_proxy && raw.use_auth">
           <td class="label">Proxy Password:</td>
           <td class="detail-value"><input type="password" ng-model="store.proxy_password" size="20"/></td>
         </tr>
-        <tr class="detail-field" ng-if="raw.use_auth">
-          <td class="detail-value"><input type="checkbox" ng-model="raw.use_x509" /></td>
-          <td class="label">Use X.509 Authentication?</td>
+        <tr class="detail-field">
+          <td colspan="2" class="detail-value">
+            <input type="checkbox" ng-model="raw.use_x509" />
+            <span class="label trailing-label">Use Custom X.509 Configuration?</span>
+          </td>
+        </tr>
+        <tr class="detail-field" ng-if="raw.use_auth && raw.use_x509">
+          <td class="label">Client Key Password:</td>
+          <td class="detail-value"><input type="password" ng-model="store.key_password"/><ap-hint key="client_key"></ap-hint></td>
         </tr>
       </table>
 
-      <div ng-if="raw.use_auth && raw.use_x509" class="fieldset two-col">
-        <div class="left-col">
-          <div class="textarea-label">
-            <label>Client Key Password:</label>
-            <input type="password" ng-model="store.key_password"/>
-          </div>
+      <div ng-if="raw.use_x509" class="fieldset two-col">
+        <div class="left-col" ng-if="raw.use_auth">
           <div class="textarea-label">
             <label>Client Key</label><span class="hint">(PEM Format)</span>
          </div>
-          <textarea class="cert" ng-model="store.key_certificate_pem"></textarea>
+          <!-- 64 columns is the original PEM line-length spec -->
+          <textarea class="cert" cols="68" ng-model="store.key_certificate_pem"></textarea>
         </div>
 
         <div class="right-col">
           <div class="textarea-label">
             <label>Server Certificate</label><span class="hint">(PEM Format)</span>
           </div>
-          <textarea class="cert" ng-model="store.server_certificate_pem"></textarea>
+          <!-- 64 columns is the original PEM line-length spec -->
+          <textarea class="cert" cols="68" ng-model="store.server_certificate_pem"></textarea>
         </div>
       </div>
 

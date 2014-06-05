@@ -12,8 +12,8 @@ package org.commonjava.aprox.depgraph.json;
 
 import java.lang.reflect.Type;
 
+import org.commonjava.maven.atlas.ident.util.VersionUtils;
 import org.commonjava.maven.atlas.ident.version.SingleVersion;
-import org.commonjava.maven.atlas.ident.version.VersionUtils;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;

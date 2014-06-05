@@ -1,12 +1,12 @@
 <div class="container-fluid">
     <div class="control-panel">
-      <a href="#/hosted">Back</a>
         <div class="cp-row">
-            <button name="save-hosted" class="cp-button">Save</button>
-            <button name="cancel-hosted" class="cp-button">Cancel</button>
+          <a href="#/hosted">Back</a>
         </div>
-        <div class="cp-row" ng-if="editMode">
-          <button name="del-hosted" class="del-button cp-button">Delete</button>
+        <div class="cp-row">
+          <button name="save" ng-click="save()" class="cp-button">Save</button>
+          <button name="cancel" ng-click="cancel()" class="cp-button">Cancel</button>
+          <button name="del" ng-click="delete()" class="del-button cp-button">Delete</button>
         </div>
         <div class="cp-row cp-debug">
           <input type="checkbox" ng-model="enableDebug" ng-init="checked=false" /> Debug Data

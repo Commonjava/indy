@@ -5,6 +5,38 @@
 
 var directives = angular.module('aprox.directives', []);
 
+directives.directive('apPasswordMask', function(){
+  return {
+    restrict: 'E',
+    template: '<span class="password-mask">********</span>',
+  };
+});
+
+directives.directive('apHint', function(){
+  return {
+    restrict: 'E',
+     scope: {
+       key: '@',
+     },
+    link: function(scope, element, attributes){
+      var hint = 'unknown hint: ' + scope.key;
+      switch(scope.key){
+        case 'passthrough':
+          hint = 'subject to a configured minimum cache timeout for performance reasons';
+          break;
+        case 'request_timeout':
+          hint = 'subject to a configured minimum request timeout for performance reasons';
+          break;
+        case 'client_key':
+          hint = 'required if Client Key is supplied';
+          break;
+      }
+
+      element.html( '<span class="hint">(' + hint + ')</span>' );
+    },
+  };
+});
+
 directives.directive('apDurationHint', function() {
   return {
     restrict: 'E',
@@ -19,17 +51,65 @@ directives.directive('apDurationHint', function() {
   };
 });
 
-directives.directive('apAvailableGroup', function() {
+directives.directive('apGroupConstituent', function() {
   return {
     restrict: 'A',
-//     scope:{
-//       available: '=value',
-//     },
+    templateUrl: 'partials/directives/ap-group-constituent.html',
     link: function(scope, element, attributes){
+      scope.rmConstituent = function(){
+        var idx = scope.store.constituents.indexOf(scope.constituent);
+
+        var parts = scope.constituent.split(':')
+        scope.raw.available.push({type: parts[0], name: parts[1]});
+
+        scope.store.constituents.splice(idx,1);
+
+        scope.storeUtils.sortEndpoints(scope.raw.available);
+      };
+
+      scope.promote = function(){
+        var idx = scope.store.constituents.indexOf(scope.constituent);
+        if ( idx > 0){
+          scope.store.constituents.move(idx, idx-1);
+        }
+      };
+
+      scope.top = function(){
+        var idx = scope.store.constituents.indexOf(scope.constituent);
+        scope.store.constituents.move(idx, 0);
+      };
+
+      scope.demote = function(){
+        var idx = scope.store.constituents.indexOf(scope.constituent);
+        if ( idx < scope.store.constituents.length-1){
+          scope.store.constituents.move(idx, idx+1);
+        }
+      };
+
+      scope.bottom = function(){
+        var idx = scope.store.constituents.indexOf(scope.constituent);
+        scope.store.constituents.move(idx, scope.store.constituents.length-1);
+      };
+
+    },
+  };
+});
+
+directives.directive('apGroupAvailable', function() {
+  return {
+    restrict: 'A',
+    templateUrl: 'partials/directives/ap-group-available.html',
+    link: function(scope, element, attributes){
+      scope.addConstituent = function(){
+        scope.store.constituents.push(scope.available.type + ':' + scope.available.name);
+        element.addClass('hidden');
+      };
+
       var key = scope.available.type + ':' + scope.available.name;
       var idx = scope.store.constituents.indexOf(key);
-      if ( idx < 0 ){
-        element.hide();
+
+      if ( idx > -1 ){
+        element.addClass('hidden');
       }
     },
   };

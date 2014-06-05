@@ -54,9 +54,10 @@ import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.aprox.util.ArtifactPathInfo;
-import org.commonjava.aprox.util.ArtifactPathInfo.SnapshotInfo;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
+import org.commonjava.maven.atlas.ident.util.SnapshotUtils;
+import org.commonjava.maven.atlas.ident.version.part.SnapshotPart;
 import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileEvent;
@@ -123,14 +124,15 @@ public class TimeoutManager
                             }
                             catch ( final IOException e )
                             {
-                                logger.error( String.format( "Failed to delete expired file: %s. Reason: %s", toDelete.getFullPath(), e.getMessage() ),
-                                              e );
+                                logger.error( String.format( "Failed to delete expired file: %s. Reason: %s",
+                                                             toDelete.getFullPath(), e.getMessage() ), e );
                             }
 
                             cleanMetadata( key, path );
                         }
 
-                        if ( ArtifactPathInfo.isSnapshot( path ) )
+                        if ( ArtifactPathInfo.parse( path )
+                                             .isSnapshot() )
                         {
                             updateSnapshotVersions( key, path );
                         }
@@ -275,7 +277,8 @@ public class TimeoutManager
                 }
                 catch ( final ExpirationManagerException e )
                 {
-                    logger.error( String.format( "Failed to schedule expiration of: %s in %s. Reason: %s", path, deploy.getKey(), e.getMessage() ), e );
+                    logger.error( String.format( "Failed to schedule expiration of: %s in %s. Reason: %s", path,
+                                                 deploy.getKey(), e.getMessage() ), e );
                     break;
                 }
             }
@@ -315,7 +318,8 @@ public class TimeoutManager
                 }
                 catch ( final ExpirationManagerException e )
                 {
-                    logger.error( String.format( "Failed to schedule expiration of: %s in %s. Reason: %s", path, repo.getKey(), e.getMessage() ), e );
+                    logger.error( String.format( "Failed to schedule expiration of: %s in %s. Reason: %s", path,
+                                                 repo.getKey(), e.getMessage() ), e );
                     break;
                 }
             }
@@ -336,7 +340,8 @@ public class TimeoutManager
         return paths;
     }
 
-    private void listAll( final Transfer dir, final String parentPath, final Set<String> capturedFiles, final FilenameFilter filter )
+    private void listAll( final Transfer dir, final String parentPath, final Set<String> capturedFiles,
+                          final FilenameFilter filter )
     {
         final String[] files = dir.exists() ? dir.list() : null;
         if ( files != null )
@@ -375,8 +380,8 @@ public class TimeoutManager
         }
         catch ( final ExpirationManagerException e )
         {
-            logger.error( String.format( "Failed to cancel (for purposes of rescheduling) expirations for store: %s. Reason: %s", key, e.getMessage() ),
-                          e );
+            logger.error( String.format( "Failed to cancel (for purposes of rescheduling) expirations for store: %s. Reason: %s",
+                                         key, e.getMessage() ), e );
         }
 
         return null;
@@ -406,13 +411,13 @@ public class TimeoutManager
                         }
                         catch ( final IOException e )
                         {
-                            logger.error( String.format( "Failed to delete storage for deleted artifact store: %s (dir: %s). Error: %s", key, dir,
-                                                         e.getMessage() ), e );
+                            logger.error( String.format( "Failed to delete storage for deleted artifact store: %s (dir: %s). Error: %s",
+                                                         key, dir, e.getMessage() ), e );
                         }
                         catch ( final ExpirationManagerException e )
                         {
-                            logger.error( "Failed to cancel file expirations for deleted artifact store: {} (dir: {}). Error: {}", e, key, dir,
-                                          e.getMessage() );
+                            logger.error( "Failed to cancel file expirations for deleted artifact store: {} (dir: {}). Error: {}",
+                                          e, key, dir, e.getMessage() );
                         }
                     }
                 }
@@ -465,8 +470,8 @@ public class TimeoutManager
             }
             catch ( final ExpirationManagerException e )
             {
-                logger.error( "Failed to schedule expiration of path: {}\n  Store: {}\n  Timeout: {}\n  Error: {}", e, path, repo, timeout,
-                              e.getMessage() );
+                logger.error( "Failed to schedule expiration of path: {}\n  Store: {}\n  Timeout: {}\n  Error: {}", e,
+                              path, repo, timeout, e.getMessage() );
             }
         }
     }
@@ -495,7 +500,8 @@ public class TimeoutManager
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( String.format( "Failed to retrieve deploy point for: %s. Reason: %s", key, e.getMessage() ), e );
+            logger.error( String.format( "Failed to retrieve deploy point for: %s. Reason: %s", key, e.getMessage() ),
+                          e );
         }
 
         if ( deploy == null )
@@ -506,7 +512,8 @@ public class TimeoutManager
         final String path = event.getTransfer()
                                  .getPath();
 
-        if ( ArtifactPathInfo.isSnapshot( path ) && deploy.getSnapshotTimeoutSeconds() > 0 )
+        if ( ArtifactPathInfo.parse( path )
+                             .isSnapshot() && deploy.getSnapshotTimeoutSeconds() > 0 )
         {
             final long timeout = deploy.getSnapshotTimeoutSeconds() * 1000;
             //            logger.info( "[SNAPSHOT TIMEOUT SET] {}/{}; {}", deploy.getKey(), path, new Date( timeout ) );
@@ -519,8 +526,8 @@ public class TimeoutManager
             }
             catch ( final ExpirationManagerException e )
             {
-                logger.error( "Failed to schedule expiration of path: {}\n  Store: {}\n  Timeout: {}\n  Error: {}", e, path, deploy, timeout,
-                              e.getMessage() );
+                logger.error( "Failed to schedule expiration of path: {}\n  Store: {}\n  Timeout: {}\n  Error: {}", e,
+                              path, deploy, timeout, e.getMessage() );
             }
         }
     }
@@ -584,15 +591,16 @@ public class TimeoutManager
                         }
                         catch ( final IOException e )
                         {
-                            logger.error( "Failed to delete: {}. Error: {}", fileManager.getStorageReference( group, path ), e.getMessage() );
+                            logger.error( "Failed to delete: {}. Error: {}",
+                                          fileManager.getStorageReference( group, path ), e.getMessage() );
                         }
                     }
                 }
             }
             catch ( final ProxyDataException e )
             {
-                logger.error( "Attempting to update groups for metadata change; Failed to retrieve groups containing store: {}. Error: {}", e, key,
-                              e.getMessage() );
+                logger.error( "Attempting to update groups for metadata change; Failed to retrieve groups containing store: {}. Error: {}",
+                              e, key, e.getMessage() );
             }
         }
     }
@@ -606,7 +614,8 @@ public class TimeoutManager
         }
         catch ( final ExpirationManagerException e )
         {
-            logger.error( String.format( "Attempting to update groups for metadata change; Failed to expire: %s. Error: %s", key, e.getMessage() ), e );
+            logger.error( String.format( "Attempting to update groups for metadata change; Failed to expire: %s. Error: %s",
+                                         key, e.getMessage() ), e );
         }
     }
 
@@ -685,23 +694,37 @@ public class TimeoutManager
                     versions.remove( idx );
                 }
 
+                if ( version.equals( md.getVersion() ) )
+                {
+                    md.setVersion( replacement );
+                }
+
                 if ( version.equals( versioning.getLatest() ) )
                 {
                     versioning.setLatest( replacement );
                 }
 
-                final SnapshotInfo si = ArtifactPathInfo.parseSnapshotInfo( pathInfo.getVersion() );
+                final SnapshotPart si = pathInfo.getSnapshotInfo();
                 if ( si != null )
                 {
-                    final SnapshotInfo siRepl = ArtifactPathInfo.parseSnapshotInfo( replacement );
+                    final SnapshotPart siRepl = SnapshotUtils.extractSnapshotVersionPart( replacement );
                     final Snapshot snapshot = versioning.getSnapshot();
-                    if ( si.getTimestamp()
-                           .equals( snapshot.getTimestamp() ) && si.getBuildNumber() == snapshot.getBuildNumber() )
+
+                    final String siTstamp = SnapshotUtils.generateSnapshotTimestamp( si.getTimestamp() );
+                    if ( si.isRemoteSnapshot() && siTstamp.equals( snapshot.getTimestamp() )
+                        && si.getBuildNumber() == snapshot.getBuildNumber() )
                     {
                         if ( siRepl != null )
                         {
-                            snapshot.setTimestamp( siRepl.getTimestamp() );
-                            snapshot.setBuildNumber( siRepl.getBuildNumber() );
+                            if ( siRepl.isRemoteSnapshot() )
+                            {
+                                snapshot.setTimestamp( SnapshotUtils.generateSnapshotTimestamp( siRepl.getTimestamp() ) );
+                                snapshot.setBuildNumber( siRepl.getBuildNumber() );
+                            }
+                            else
+                            {
+                                snapshot.setLocalCopy( true );
+                            }
                         }
                         else
                         {
@@ -715,13 +738,13 @@ public class TimeoutManager
             }
             catch ( final IOException e )
             {
-                logger.error( "Failed to update metadata after snapshot deletion.\n  Snapshot: {}\n  Metadata: {}\n  Reason: {}", e,
-                              item.getFullPath(), metadata, e.getMessage() );
+                logger.error( "Failed to update metadata after snapshot deletion.\n  Snapshot: {}\n  Metadata: {}\n  Reason: {}",
+                              e, item.getFullPath(), metadata, e.getMessage() );
             }
             catch ( final XmlPullParserException e )
             {
-                logger.error( "Failed to update metadata after snapshot deletion.\n  Snapshot: {}\n  Metadata: {}\n  Reason: {}", e,
-                              item.getFullPath(), metadata, e.getMessage() );
+                logger.error( "Failed to update metadata after snapshot deletion.\n  Snapshot: {}\n  Metadata: {}\n  Reason: {}",
+                              e, item.getFullPath(), metadata, e.getMessage() );
             }
             finally
             {
