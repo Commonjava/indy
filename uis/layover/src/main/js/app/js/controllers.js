@@ -11,6 +11,7 @@ aproxControllers.controller('RemoteListCtl', ['$scope', 'RemoteSvc', 'StoreUtilS
         item.detailHref = StoreUtilSvc.detailHref(item.key);
         item.storeHref = StoreUtilSvc.storeHref(item.key);
         item.name = StoreUtilSvc.nameFromKey(item.key);
+        item.description = StoreUtilSvc.defaultDescription(item.description);
       }
     });
     $scope.storeUtils = StoreUtilSvc;
@@ -26,6 +27,7 @@ aproxControllers.controller('RemoteDetailCtl', ['$scope', '$routeParams', '$loca
       $scope.raw.name = StoreUtilSvc.nameFromKey(store.key);
       $scope.raw.editHref = StoreUtilSvc.editHref(store.key);
       $scope.raw.storeHref = StoreUtilSvc.storeHref(store.key);
+      $scope.raw.description = StoreUtilSvc.defaultDescription(store.description);
 
       var useX509 = store.server_certificate_pem !== undefined;
       useX509 = store.key_certificate_pem !== undefined || useX509;
@@ -109,13 +111,13 @@ aproxControllers.controller('RemoteEditCtl', ['$scope', '$routeParams', '$locati
 
     if ( $scope.editMode ){
       RemoteSvc.update({name: $scope.raw.name}, $scope.store, function(){
-        $location.path( '/remote' );
+        $location.path( StoreUtilSvc.detailPath($scope.store.key) );
       });
     }
     else{
       $scope.store.key = StoreUtilSvc.formatKey('remote', $scope.raw.name);
       RemoteSvc.create({}, $scope.store, function(){
-        $location.path( '/remote' );
+        $location.path( StoreUtilSvc.detailPath($scope.store.key) );
       });
     }
   };
@@ -133,7 +135,7 @@ aproxControllers.controller('RemoteEditCtl', ['$scope', '$routeParams', '$locati
   };
 
   $scope.cancel = function(){
-    $location.path( '/remote' );
+    $location.path( StoreUtilSvc.detailPath($scope.store.key) );
   };
 
 }]);
@@ -146,6 +148,7 @@ aproxControllers.controller('HostedListCtl', ['$scope', 'HostedSvc', 'StoreUtilS
         item.storeHref = StoreUtilSvc.storeHref(item.key);
         item.name = StoreUtilSvc.nameFromKey(item.key);
         item.hostedOptions = StoreUtilSvc.hostedOptions(item);
+        item.description = StoreUtilSvc.defaultDescription(item.description);
       }
     });
 
@@ -160,6 +163,7 @@ aproxControllers.controller('HostedDetailCtl', ['$scope', '$routeParams', '$loca
     $scope.raw.name = StoreUtilSvc.nameFromKey(store.key);
     $scope.raw.storeHref = StoreUtilSvc.storeHref(store.key);
     $scope.raw.editHref = StoreUtilSvc.editHref(store.key);
+    $scope.raw.description = StoreUtilSvc.defaultDescription(store.description);
   });
   $scope.storeUtils = StoreUtilSvc;
 
@@ -222,13 +226,13 @@ aproxControllers.controller('HostedEditCtl', ['$scope', '$routeParams', '$locati
 
     if ( $scope.editMode ){
       HostedSvc.update({name: $scope.raw.name}, $scope.store, function(){
-        $location.path( '/hosted' );
+        $location.path( StoreUtilSvc.detailPath($scope.store.key) );
       });
     }
     else{
       $scope.store.key = StoreUtilSvc.formatKey('hosted', $scope.raw.name);
       HostedSvc.create({}, $scope.store, function(){
-        $location.path( '/hosted' );
+        $location.path( StoreUtilSvc.detailPath($scope.store.key) );
       });
     }
   };
@@ -246,7 +250,7 @@ aproxControllers.controller('HostedEditCtl', ['$scope', '$routeParams', '$locati
   };
 
   $scope.cancel = function(){
-    $location.path( '/hosted' );
+    $location.path( StoreUtilSvc.detailPath($scope.store.key) );
   };
 
 }]);
@@ -258,6 +262,7 @@ aproxControllers.controller('GroupListCtl', ['$scope', 'GroupSvc', 'StoreUtilSvc
         item.detailHref = StoreUtilSvc.detailHref(item.key);
         item.storeHref = StoreUtilSvc.storeHref(item.key);
         item.name = StoreUtilSvc.nameFromKey(item.key);
+        item.description = StoreUtilSvc.defaultDescription(item.description);
       }
     });
 
@@ -274,6 +279,7 @@ aproxControllers.controller('GroupDetailCtl', ['$scope', '$routeParams', '$locat
     $scope.raw.name = StoreUtilSvc.nameFromKey(store.key);
     $scope.raw.editHref = StoreUtilSvc.editHref(store.key);
     $scope.raw.storeHref = StoreUtilSvc.storeHref(store.key);
+    $scope.raw.description = StoreUtilSvc.defaultDescription(store.description);
 
     for(var i=0; i<store.constituents.length; i++){
       var item = store.constituents[i];
@@ -329,13 +335,13 @@ aproxControllers.controller('GroupEditCtl', ['$scope', '$routeParams', '$locatio
   $scope.save = function(){
     if ( $scope.editMode ){
       GroupSvc.update({name: $scope.raw.name}, $scope.store, function(){
-        $location.path( '/group' );
+        $location.path( StoreUtilSvc.detailPath($scope.store.key) );
       });
     }
     else{
       $scope.store.key = StoreUtilSvc.formatKey('group', $scope.raw.name);
       GroupSvc.create({}, $scope.store, function(){
-        $location.path( '/group' );
+        $location.path( StoreUtilSvc.detailPath($scope.store.key) );
       });
     }
   };
@@ -353,7 +359,7 @@ aproxControllers.controller('GroupEditCtl', ['$scope', '$routeParams', '$locatio
   };
 
   $scope.cancel = function(){
-    $location.path( '/group' );
+    $location.path( StoreUtilSvc.detailPath($scope.store.key) );
   };
 
 }]);

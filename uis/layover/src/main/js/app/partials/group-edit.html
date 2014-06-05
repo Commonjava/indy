@@ -18,10 +18,20 @@
           <td class="label">Name:</td>
           <td class="detail-value">
             <input type="text" ng-model="raw.name" ng-if="!editMode" />
-              <span ng-if="editMode">{{raw.name}}</span>
+              <span ng-if="editMode" class="key">{{raw.name}}</span>
           </td>
         </tr>
       </table>
+
+      <div class="fieldset">
+        <div class="text-field">
+          <div class="textarea-label">
+            <label>Description</label>
+          </div>
+          <textarea class="text-description" ng-model="store.description"></textarea>
+        </div>
+      </div>
+
       <ol class="left-col detail-value detail-edit-list">
           <lt><span class="label list-label">Constituents:</span><span class="hint">(hover for controls)</span></lt>
         <li ng-repeat="constituent in store.constituents" ap-group-constituent class="detail-value-list-item"></li>

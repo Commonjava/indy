@@ -18,7 +18,7 @@
           <td class="label">Name:</td>
           <td class="detail-value">
             <input type="text" ng-model="raw.name" ng-if="!editMode" />
-              <span ng-if="editMode">{{raw.name}}</span>
+              <span ng-if="editMode" class="key">{{raw.name}}</span>
           </td>
         </tr>
         <tr class="detail-field">
@@ -26,6 +26,16 @@
           <td class="detail-value"><input type="text" ng-model="store.storage" size="50"/><span class="hint">(calculated by default)</span></td>
         </tr>
       </table>
+
+      <div class="fieldset">
+        <div class="text-field">
+          <div class="textarea-label">
+            <label>Description</label>
+          </div>
+          <textarea class="text-description" ng-model="store.description"></textarea>
+        </div>
+      </div>
+
       <table class="detail-table">
         <tr class="detail-field">
           <td class="detail-value">{{allowUploads(store) | checkmark}}</td>

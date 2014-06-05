@@ -25,7 +25,7 @@
             <th>Local URL</th>
             <th>Constituents</th>
         </tr>
-        <tr ng-repeat="store in listing.items | filter:query | orderBy:orderProp" class="store-listing-item">
+        <tr ng-repeat-start="store in listing.items | filter:query | orderBy:orderProp" class="store-listing-item listing-item-start">
             <!-- {{storeUtils.nameFromKey(store.key)}} -->
             <!-- -->
             <td class="key">
@@ -38,6 +38,9 @@
               <span class="option" title="{{store.constituents.join('\n')}}">(view)</span>
             </td>
             <!-- -->
+        </tr>
+        <tr ng-repeat-end class="store-listing-item listing-item-end">
+          <td colspan="3"><ap-listing-description></ap-listing-description></td>
         </tr>
       </table>
     </div>

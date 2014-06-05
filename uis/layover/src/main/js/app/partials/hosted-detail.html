@@ -20,13 +20,23 @@
       <table class="detail-table">
         <tr class="detail-field">
           <td class="label">Name:</td>
-          <td class="detail-value">{{raw.name}}</td>
+            <td class="detail-value"><span class="key">{{raw.name}}</span></td>
         </tr>
         <tr class="detail-field">
           <td class="label">Local URL:</td>
           <td class="detail-value"><a ng-href="{{raw.storeHref}}" target="_new">{{raw.storeHref}}</a></td>
         </tr>
       </table>
+
+      <div class="fieldset">
+        <div class="text-field">
+          <div class="textarea-label">
+            <label>Description</label>
+          </div>
+          <textarea readonly="true" class="text-description" ng-model="raw.description"></textarea>
+        </div>
+      </div>
+
       <table class="detail-table">
         <tr class="detail-field">
           <td class="label">Uploads Allowed?</td>

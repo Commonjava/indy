@@ -22,6 +22,8 @@ public abstract class ArtifactStore
 
     private StoreKey key;
 
+    private String description;
+
     private transient Map<String, String> metadata;
 
     protected ArtifactStore()
@@ -123,6 +125,16 @@ public abstract class ArtifactStore
     public String toString()
     {
         return String.format( "ArtifactStore [key=%s]", key );
+    }
+
+    public String getDescription()
+    {
+        return description;
+    }
+
+    public void setDescription( final String description )
+    {
+        this.description = description;
     }
 
 }

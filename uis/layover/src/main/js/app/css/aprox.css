@@ -99,6 +99,11 @@ header{
 .store-listing{
   min-width: 80%;
   margin-right: 50px;
+  border-collapse: separate;
+}
+
+.listing-item-end td{
+  padding-bottom: 10px;
 }
 
 table{
@@ -160,6 +165,12 @@ td{
 
 .surround-cp-action:hover{
   text-decoration: underline;
+}
+
+.key{
+  font-weight: bold;
+  font-size: 1.1em;
+  font-family: sans-serif;
 }
 
 .constituent:hover,
@@ -257,7 +268,7 @@ label, caption, .label{
   padding-right: 5px;
 }
 
-.hint{
+.hint, .description{
   font-style: italic;
   font-size: 80%;
   color: #333;
@@ -298,6 +309,11 @@ label, caption, .label{
 
 .textarea-label{
   display: block;
+}
+
+.text-description{
+  height: 2em;
+  width: 89em;
 }
 
 .hidden{

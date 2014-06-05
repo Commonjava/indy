@@ -25,7 +25,7 @@
             <th>Local URL</th>
             <th>Options</th>
         </tr>
-        <tr ng-repeat="store in listing.items | filter:query | orderBy:orderProp" class="store-listing-item">
+        <tr ng-repeat-start="store in listing.items | filter:query | orderBy:orderProp" class="store-listing-item listing-item-start">
             <td class="key">
                 <a href="{{store.detailHref}}">{{store.name}}</a>
             </td>
@@ -37,6 +37,9 @@
                 <li class="option"><span title="{{option.title}}">{{option.icon}}</span></li>
               </ul>
             </td>
+        </tr>
+        <tr ng-repeat-end class="store-listing-item listing-item-end">
+          <td colspan="3"><ap-listing-description></ap-listing-description></td>
         </tr>
       </table>
     </div>

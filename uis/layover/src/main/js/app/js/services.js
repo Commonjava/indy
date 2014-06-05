@@ -73,6 +73,11 @@ aproxServices.factory('StoreUtilSvc', function(){
         return proto + "//" + hostAndPort + basepath + 'api/1.0/' + parts[0] + '/' + parts[1] + '/';
       },
 
+      detailPath: function(key){
+        var parts = key.split(':');
+        return "/" + parts[0] + "/view/" + parts[1];
+      },
+
       detailHref: function(key){
         var parts = key.split(':');
         return "#/" + parts[0] + "/view/" + parts[1];
@@ -186,6 +191,15 @@ aproxServices.factory('StoreUtilSvc', function(){
 
           return 0;
         });
+      },
+
+      defaultDescription: function(description){
+        var desc = description;
+        if ( !desc || desc.length < 1 ){
+          desc = 'No description provided.';
+        }
+
+        return desc;
       },
     };
   });

@@ -12,6 +12,21 @@ directives.directive('apPasswordMask', function(){
   };
 });
 
+directives.directive('apListingDescription', function(){
+  return {
+    restrict: 'E',
+    link: function(scope, element, attributes){
+      var description = scope.store.description;
+
+      if ( !description || description.length < 1 ){
+        description = 'No description provided.';
+      }
+
+      element.html('<span class="description field">' + description + '</span>');
+    },
+  };
+});
+
 directives.directive('apHint', function(){
   return {
     restrict: 'E',
