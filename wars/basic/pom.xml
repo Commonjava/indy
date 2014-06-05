@@ -40,7 +40,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox.ui</groupId>
-      <artifactId>aprox-ui-monorail</artifactId>
+      <artifactId>aprox-ui-layover</artifactId>
       <!-- <type>war</type> -->
     </dependency>
     <dependency>
