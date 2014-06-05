@@ -21,4 +21,16 @@
   
   <name>AProx :: UIs :: Layover</name>
   
+  <properties>
+    <maven.test.skip>true</maven.test.skip>
+  </properties>
+  
+  <build>
+    <finalName>aprox-ui</finalName>
+    <resources>
+      <resource>
+        <directory>src/main/js/app</directory>
+      </resource>
+    </resources>
+  </build>
 </project>
