@@ -34,6 +34,8 @@ import org.commonjava.web.json.ser.JsonSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.JsonSyntaxException;
+
 @ApplicationScoped
 @Alternative
 public class FlatFileStoreDataManager
@@ -114,6 +116,10 @@ public class FlatFileStoreDataManager
                     }
                 }
                 catch ( final IOException e )
+                {
+                    logger.error( String.format( "Failed to load repository: %s. Reason: %s", f, e.getMessage() ), e );
+                }
+                catch ( final JsonSyntaxException e )
                 {
                     logger.error( String.format( "Failed to load repository: %s. Reason: %s", f, e.getMessage() ), e );
                 }
@@ -323,7 +329,8 @@ public class FlatFileStoreDataManager
             }
             catch ( final IOException e )
             {
-                throw new ProxyDataException( "Cannot write definition: {} to: {}. Reason: {}", e, store, f, e.getMessage() );
+                throw new ProxyDataException( "Cannot write definition: {} to: {}. Reason: {}", e, store, f,
+                                              e.getMessage() );
             }
         }
     }

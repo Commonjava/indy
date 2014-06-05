@@ -135,7 +135,12 @@ aproxControllers.controller('RemoteEditCtl', ['$scope', '$routeParams', '$locati
   };
 
   $scope.cancel = function(){
-    $location.path( StoreUtilSvc.detailPath($scope.store.key) );
+    if ( $scope.editMode ){
+      $location.path( StoreUtilSvc.detailPath($scope.store.key) );
+    }
+    else{
+      $location.path( '/remote' );
+    }
   };
 
 }]);
@@ -250,7 +255,12 @@ aproxControllers.controller('HostedEditCtl', ['$scope', '$routeParams', '$locati
   };
 
   $scope.cancel = function(){
-    $location.path( StoreUtilSvc.detailPath($scope.store.key) );
+    if ( $scope.editMode ){
+      $location.path( StoreUtilSvc.detailPath($scope.store.key) );
+    }
+    else{
+      $location.path( '/hosted' );
+    }
   };
 
 }]);
@@ -359,7 +369,12 @@ aproxControllers.controller('GroupEditCtl', ['$scope', '$routeParams', '$locatio
   };
 
   $scope.cancel = function(){
-    $location.path( StoreUtilSvc.detailPath($scope.store.key) );
+    if ( $scope.editMode ){
+      $location.path( StoreUtilSvc.detailPath($scope.store.key) );
+    }
+    else{
+      $location.path( '/group' );
+    }
   };
 
 }]);

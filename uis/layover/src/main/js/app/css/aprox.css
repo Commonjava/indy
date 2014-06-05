@@ -70,6 +70,22 @@ body{
   margin-right: 5px;
 }
 
+.nav-button:hover{
+  color: white;
+  background-color: #333;
+  font-size: 1.1em;
+}
+
+.button:hover,
+.cp-button:hover,
+.nav-button:hover{
+  font-weight: bold;
+}
+
+.del-button:hover{
+  color: red !important;
+}
+
 a.button{
   padding: 4px;
   margin-left: 0px;
