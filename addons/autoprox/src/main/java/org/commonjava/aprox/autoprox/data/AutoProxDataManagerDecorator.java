@@ -134,9 +134,17 @@ public abstract class AutoProxDataManagerDecorator
         {
             if ( mapping.matchesName( name ) )
             {
-                return mapping.getFactory();
+                final AutoProxFactory factory = mapping.getFactory();
+
+                logger.info( "Using factory {} (script: {}) for new store: '{}'", factory.getClass()
+                                                                                         .getSimpleName(),
+                             mapping.getScriptName(), name );
+
+                return factory;
             }
         }
+
+        logger.info( "No AutoProx factory found for: '{}'", name );
 
         return null;
     }

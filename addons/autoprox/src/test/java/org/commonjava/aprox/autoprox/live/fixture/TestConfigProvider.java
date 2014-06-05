@@ -72,7 +72,11 @@ public class TestConfigProvider
         if ( config == null )
         {
             final AutoProxFactory fac = new TestAutoProxFactory( http );
-            config = new AutoProxConfig( Collections.singletonList( new FactoryMapping( FactoryMapping.DEFAULT_MATCH, fac ) ), true );
+            config =
+                new AutoProxConfig(
+                                    Collections.singletonList( new FactoryMapping( "test.groovy",
+                                                                                   FactoryMapping.DEFAULT_MATCH, fac ) ),
+                                    true );
         }
 
         return config;

@@ -139,19 +139,20 @@ public class AutoProxConfigurator
                 final File script = new File( getBasedir(), scriptPath );
                 if ( !script.exists() )
                 {
-                    logger.error( "[AUTOPROX] Cannot load autoprox factory from: {} (matched via: '{}'). File does not exist.", script, match );
+                    logger.error( "[AUTOPROX] Cannot load autoprox factory from: {} (matched via: '{}'). File does not exist.",
+                                  script, match );
                     continue;
                 }
 
                 try
                 {
                     final AutoProxFactory factory = scriptEngine.parseScriptInstance( script, AutoProxFactory.class );
-                    factoryMappings.add( new FactoryMapping( match, factory ) );
+                    factoryMappings.add( new FactoryMapping( script.getName(), match, factory ) );
                 }
                 catch ( final AproxGroovyException e )
                 {
-                    logger.error( "[AUTOPROX] Cannot load autoprox factory from: {} (matched via: '{}'). Reason: {}", e, script, match,
-                                  e.getMessage() );
+                    logger.error( "[AUTOPROX] Cannot load autoprox factory from: {} (matched via: '{}'). Reason: {}",
+                                  e, script, match, e.getMessage() );
                 }
             }
 
@@ -167,13 +168,15 @@ public class AutoProxConfigurator
                 {
                     try
                     {
-                        final AutoProxFactory factory = scriptEngine.parseScriptInstance( script, AutoProxFactory.class );
-                        factoryMappings.add( new FactoryMapping( FactoryMapping.DEFAULT_MATCH, factory ) );
+                        final AutoProxFactory factory =
+                            scriptEngine.parseScriptInstance( script, AutoProxFactory.class );
+                        factoryMappings.add( new FactoryMapping( script.getName(), FactoryMapping.DEFAULT_MATCH,
+                                                                 factory ) );
                     }
                     catch ( final AproxGroovyException e )
                     {
-                        logger.error( "[AUTOPROX] Cannot load autoprox factory from: {} (matched via: '{}'). Reason: {}", e, script,
-                                      FactoryMapping.DEFAULT_MATCH, e.getMessage() );
+                        logger.error( "[AUTOPROX] Cannot load autoprox factory from: {} (matched via: '{}'). Reason: {}",
+                                      e, script, FactoryMapping.DEFAULT_MATCH, e.getMessage() );
                     }
                 }
             }

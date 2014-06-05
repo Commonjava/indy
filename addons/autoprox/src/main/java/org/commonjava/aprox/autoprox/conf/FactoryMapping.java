@@ -19,10 +19,18 @@ public class FactoryMapping
 
     private final AutoProxFactory factory;
 
-    public FactoryMapping( final String match, final AutoProxFactory factory )
+    private final String scriptName;
+
+    public FactoryMapping( final String scriptName, final String match, final AutoProxFactory factory )
     {
+        this.scriptName = scriptName;
         this.match = match;
         this.factory = factory;
+    }
+
+    public String getScriptName()
+    {
+        return scriptName;
     }
 
     public String getMatch()
