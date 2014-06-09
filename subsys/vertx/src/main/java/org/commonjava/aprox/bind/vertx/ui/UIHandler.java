@@ -52,6 +52,8 @@ public class UIHandler
     public void handleUIRequest( final HttpServerRequest request )
     {
         final Method method = Method.valueOf( request.method() );
+
+        boolean ended = false;
         switch ( method )
         {
             case GET:
@@ -89,8 +91,11 @@ public class UIHandler
                         logger.debug( "sending file" );
                         request.resume()
                                .response()
-                               .putHeader( ApplicationHeader.last_modified.key(), formatDateHeader( resource.lastModified() ) )
+                               .putHeader( ApplicationHeader.last_modified.key(),
+                                           formatDateHeader( resource.lastModified() ) )
                                .sendFile( resource.getAbsolutePath() );
+
+                        ended = true;
                     }
                     else
                     {
@@ -102,8 +107,8 @@ public class UIHandler
                                .setChunked( true )
                                .putHeader( ApplicationHeader.content_type.key(), typeMap.getContentType( resource ) )
                                .putHeader( ApplicationHeader.content_length.key(), Long.toString( resource.length() ) )
-                               .putHeader( ApplicationHeader.last_modified.key(), formatDateHeader( resource.lastModified() ) )
-                               .end();
+                               .putHeader( ApplicationHeader.last_modified.key(),
+                                           formatDateHeader( resource.lastModified() ) );
                     }
                 }
                 else
@@ -118,6 +123,12 @@ public class UIHandler
                 logger.error( "cannot handle request for method: {}", method );
                 setStatus( BAD_REQUEST, request );
             }
+        }
+
+        if ( !ended )
+        {
+            request.response()
+                   .end();
         }
     }
 }
