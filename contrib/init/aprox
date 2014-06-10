@@ -1,0 +1,77 @@
+#!/bin/bash
+#
+# Aprox        Startup script for Aprox
+#
+# chkconfig: - 85 15
+# description: AProx is a simple repository manager and tooling platform.
+#              It is designed for use with Apache Maven and other applications
+#              that use the Maven repository format.
+# processname: aprox
+# config: /etc/sysconfig/aprox
+# pidfile: /var/run/aprox.pid
+### BEGIN INIT INFO
+# Provides: tracd
+# Required-Start: $local_fs $remote_fs $network
+# Required-Stop: $local_fs $remote_fs $network
+# Short-Description: start and stop the aprox daemon
+# Description: AProx is a simple repository manager and tooling platform
+### END INIT INFO
+
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+PROG=aprox
+PID=$(ps -C 'java -jar /opt/aprox-launcher-easyprox/lib/aprox-cdi-components-0.12.2.jar' -o pid h)
+EXEC="/opt/aprox-launcher-easyprox/bin/$PROG"
+LOCKFILE=/var/lock/subsys/$PROG
+EXEC=/opt/aprox-launcher-easyprox/bin/aprox.sh
+RETVAL=0
+
+start() {
+    echo -n $"Starting ($PROG): "
+    $EXEC > /dev/null 2>&1 &
+    [ $RETVAL -eq 0 ] && success || failure
+    echo
+    [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$PROG
+}
+
+stop() {
+    echo -n $"Shutting down ($PROG): "
+    kill $PID kill $PID > /dev/null 2>&1
+    RETVAL=$?
+    [ $RETVAL -eq 0 ] && success || failure
+    echo
+    [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$PROG
+    return $RETVAL
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart)
+    stop
+    start
+    RETVAL=$?
+    ;;
+  condrestart)
+        [ -e /var/lock/subsys/$PROG ] && restart
+    RETVAL=$?
+    ;;
+  status)
+    if [ ! -f /var/lock/subsys/$PROG ];
+        then
+            echo "$PROG is stopped"
+        else
+            echo "$PROG is running"
+        fi
+    ;;
+  *)
+    echo $"Usage: $0 {start|stop|restart|condrestart|status}"
+    RETVAL=0
+esac
+
