@@ -23,6 +23,8 @@ public interface AutoProxFactory
 
     String DEFAULT_FACTORY_SCRIPT = "default.groovy";
 
+    boolean matches( String name );
+
     RemoteRepository createRemoteRepository( String named )
         throws MalformedURLException;
 

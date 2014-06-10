@@ -15,33 +15,46 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
-import java.util.Collections;
+import java.io.File;
 import java.util.List;
 
-import org.commonjava.aprox.autoprox.conf.FactoryMapping;
-import org.commonjava.aprox.autoprox.live.fixture.TestAutoProxFactory;
-import org.commonjava.aprox.autoprox.live.fixture.TestHttpServer;
+import javax.inject.Inject;
+
+import org.commonjava.aprox.autoprox.live.fixture.TargetUrlLiveResponder;
+import org.commonjava.aprox.autoprox.live.fixture.TestConfigProvider;
 import org.commonjava.aprox.autoprox.model.AutoProxCatalog;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
+import org.commonjava.aprox.inject.TestData;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.web.json.test.WebFixture;
+import org.commonjava.web.test.fixture.TestWarArchiveBuilder;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
-public class AutoProxDataManagerDecoratorTest
+@RunWith( Arquillian.class )
+public class AutoProxDataManagerDecoratorWeldTest
 {
 
     public static final String REPO_ROOT_DIR = "repo.root.dir";
 
-    protected StoreDataManager proxyManager = new MemoryStoreDataManager();
+    @Inject
+    protected StoreDataManager proxyManager;
 
-    @Rule
-    public final TestHttpServer server = new TestHttpServer( "server-targets" );
+    @Inject
+    @TestData
+    protected AutoProxCatalog config;
+
+    @Inject
+    protected TargetUrlLiveResponder targetResponder;
 
     @Rule
     public final WebFixture http = new WebFixture();
@@ -52,22 +65,42 @@ public class AutoProxDataManagerDecoratorTest
     {
         proxyManager.install();
         proxyManager.clear();
+
+        RemoteRepository repo = new RemoteRepository( "first", "http://foo.bar/first" );
+        proxyManager.storeRemoteRepository( repo );
+
+        repo = new RemoteRepository( "second", "http://foo.bar/second" );
+        proxyManager.storeRemoteRepository( repo );
+    }
+
+    @After
+    public final void teardown()
+    {
+        targetResponder.clearTargets();
+    }
+
+    @Deployment
+    public static WebArchive createWar()
+    {
+        return new TestWarArchiveBuilder( new File( "target/test-assembly.war" ), AutoProxDataManagerDecoratorWeldTest.class ).withExtraClasses( TestConfigProvider.class,
+                                                                                                                                             TargetUrlLiveResponder.class )
+                                                                                                                          .withLog4jProperties()
+                                                                                                                          .withBeansXml( "beans.live.xml" )
+                                                                                                                          .build();
     }
 
     @Test
     public void repositoryAutoCreated()
         throws Exception
     {
-        final AutoProxCatalog catalog = simpleCatalog();
-
         final String testUrl = http.resourceUrl( "target", "test" );
         http.get( testUrl, 404 );
-        //        targetResponder.approveTargets( "test" );
+        targetResponder.approveTargets( "test" );
         http.get( testUrl, 200 );
 
-        catalog.setEnabled( false );
+        config.setEnabled( false );
         assertThat( proxyManager.getRemoteRepository( "test" ), nullValue() );
-        catalog.setEnabled( true );
+        config.setEnabled( true );
 
         final RemoteRepository repo = proxyManager.getRemoteRepository( "test" );
 
@@ -77,27 +110,18 @@ public class AutoProxDataManagerDecoratorTest
 
     }
 
-    private AutoProxCatalog simpleCatalog()
-    {
-        final TestAutoProxFactory fac = new TestAutoProxFactory( http );
-
-        return new AutoProxCatalog( true, Collections.singletonList( new FactoryMapping( "test.groovy", fac ) ) );
-    }
-
     @Test
     public void groupAutoCreatedWithDeployPointAndTwoRepos()
         throws Exception
     {
-        final AutoProxCatalog catalog = simpleCatalog();
-
         final String testUrl = http.resourceUrl( "target", "test" );
         http.get( testUrl, 404 );
-        //        targetResponder.approveTargets( "test" );
+        targetResponder.approveTargets( "test" );
         http.get( testUrl, 200 );
 
-        catalog.setEnabled( false );
+        config.setEnabled( false );
         assertThat( proxyManager.getGroup( "test" ), nullValue() );
-        catalog.setEnabled( true );
+        config.setEnabled( true );
 
         final Group group = proxyManager.getGroup( "test" );
 
@@ -138,14 +162,12 @@ public class AutoProxDataManagerDecoratorTest
     public void repositoryNotAutoCreatedWhenTargetIsInvalid()
         throws Exception
     {
-        final AutoProxCatalog catalog = simpleCatalog();
-
         final String testUrl = http.resourceUrl( "target", "test" );
         http.get( testUrl, 404 );
 
-        catalog.setEnabled( false );
+        config.setEnabled( false );
         assertThat( proxyManager.getRemoteRepository( "test" ), nullValue() );
-        catalog.setEnabled( true );
+        config.setEnabled( true );
 
         final RemoteRepository repo = proxyManager.getRemoteRepository( "test" );
 
@@ -157,14 +179,12 @@ public class AutoProxDataManagerDecoratorTest
     public void groupNotAutoCreatedWhenTargetIsInvalid()
         throws Exception
     {
-        final AutoProxCatalog catalog = simpleCatalog();
-
         final String testUrl = http.resourceUrl( "target", "test" );
         http.get( testUrl, 404 );
 
-        catalog.setEnabled( false );
+        config.setEnabled( false );
         assertThat( proxyManager.getGroup( "test" ), nullValue() );
-        catalog.setEnabled( true );
+        config.setEnabled( true );
 
         final Group group = proxyManager.getGroup( "test" );
 

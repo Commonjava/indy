@@ -25,7 +25,6 @@ public class ScriptEngine
 
     private final GroovyClassLoader groovyClassloader = new GroovyClassLoader();
 
-    // TODO: Cache parsed classes, though this will hurt hot-reloading...maybe create a debug mode configuration?
     public <T> T parseScriptInstance( final File script, final Class<T> type )
         throws AproxGroovyException
     {
@@ -39,7 +38,8 @@ public class ScriptEngine
         }
         catch ( final CompilationFailedException e )
         {
-            throw new AproxGroovyException( "Failed to compile groovy script: '%s'. Reason: %s", e, script, e.getMessage() );
+            throw new AproxGroovyException( "Failed to compile groovy script: '%s'. Reason: %s", e, script,
+                                            e.getMessage() );
         }
         catch ( final IOException e )
         {
@@ -47,15 +47,18 @@ public class ScriptEngine
         }
         catch ( final InstantiationException e )
         {
-            throw new AproxGroovyException( "Cannot instantiate class parsed from script: '%s'. Reason: %s", e, script, e.getMessage() );
+            throw new AproxGroovyException( "Cannot instantiate class parsed from script: '%s'. Reason: %s", e, script,
+                                            e.getMessage() );
         }
         catch ( final IllegalAccessException e )
         {
-            throw new AproxGroovyException( "Cannot instantiate class parsed from script: '%s'. Reason: %s", e, script, e.getMessage() );
+            throw new AproxGroovyException( "Cannot instantiate class parsed from script: '%s'. Reason: %s", e, script,
+                                            e.getMessage() );
         }
         catch ( final ClassCastException e )
         {
-            throw new AproxGroovyException( "Script: '%s' instance: %s cannot be cast as: %s", e, script, instance, type.getName() );
+            throw new AproxGroovyException( "Script: '%s' instance: %s cannot be cast as: %s", e, script, instance,
+                                            type.getName() );
         }
     }
 
