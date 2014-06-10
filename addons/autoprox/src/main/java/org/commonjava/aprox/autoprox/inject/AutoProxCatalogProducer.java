@@ -47,6 +47,7 @@ public class AutoProxCatalogProducer
     {
         this.ffConfig = ffConfig;
         this.apConfig = apConfig;
+        this.scriptEngine = new ScriptEngine();
         init();
     }
 
