@@ -21,12 +21,12 @@ import javax.ws.rs.core.Response.Status;
 
 @Path( "/target" )
 @javax.enterprise.context.ApplicationScoped
-public class TargetUrlResponder
+public class TargetUrlLiveResponder
 {
 
     private final List<String> approvedTargets = new ArrayList<String>();
 
-    public TargetUrlResponder()
+    public TargetUrlLiveResponder()
     {
         System.out.println( "\n\n\n\n\n\n\nstarting target responder\n\n\n\n\n\n" );
     }

@@ -73,6 +73,11 @@
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-subsys-groovy</artifactId>
     </dependency>
+    <dependency>
+    	<groupId>io.vertx</groupId>
+    	<artifactId>vertx-core</artifactId>
+    	<scope>test</scope>
+    </dependency>
   </dependencies>
   
   <build>

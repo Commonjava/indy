@@ -56,4 +56,10 @@ public class TestAutoProxFactory
         return null;
     }
 
+    @Override
+    public boolean matches( final String name )
+    {
+        return true;
+    }
+
 }

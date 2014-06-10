@@ -29,6 +29,7 @@ public class AutoProxConfiguratorTest
     private final AutoProxConfigurator configurator = new AutoProxConfigurator( new ScriptEngine() );
 
     @Test
+    @Deprecated
     public void createFactoryFromGroovyWithRegexNameSplitting()
         throws ConfigurationException, MalformedURLException
     {

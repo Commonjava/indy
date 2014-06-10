@@ -27,9 +27,8 @@ import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpHead;
-import org.commonjava.aprox.autoprox.conf.AutoProxConfig;
 import org.commonjava.aprox.autoprox.conf.AutoProxFactory;
-import org.commonjava.aprox.autoprox.conf.FactoryMapping;
+import org.commonjava.aprox.autoprox.model.AutoProxCatalog;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
@@ -55,7 +54,7 @@ public abstract class AutoProxDataManagerDecorator
     private StoreDataManager dataManager;
 
     @Inject
-    private AutoProxConfig config;
+    private AutoProxCatalog catalog;
 
     @Inject
     private AproxHttpProvider http;
@@ -67,7 +66,7 @@ public abstract class AutoProxDataManagerDecorator
         logger.debug( "DECORATED (getGroup: {})", name );
         Group g = dataManager.getGroup( name );
 
-        if ( !config.isEnabled() )
+        if ( !catalog.isEnabled() )
         {
             logger.debug( "AutoProx decorator disabled; returning: {}", g );
             return g;
@@ -76,7 +75,7 @@ public abstract class AutoProxDataManagerDecorator
         logger.debug( "AutoProx decorator active" );
         if ( g == null )
         {
-            final AutoProxFactory factory = getFactory( name );
+            final AutoProxFactory factory = catalog.getFactory( name );
             if ( factory == null )
             {
                 return null;
@@ -128,27 +127,6 @@ public abstract class AutoProxDataManagerDecorator
         return g;
     }
 
-    private AutoProxFactory getFactory( final String name )
-    {
-        for ( final FactoryMapping mapping : config.getFactoryMappings() )
-        {
-            if ( mapping.matchesName( name ) )
-            {
-                final AutoProxFactory factory = mapping.getFactory();
-
-                logger.info( "Using factory {} (script: {}) for new store: '{}'", factory.getClass()
-                                                                                         .getSimpleName(),
-                             mapping.getScriptName(), name );
-
-                return factory;
-            }
-        }
-
-        logger.info( "No AutoProx factory found for: '{}'", name );
-
-        return null;
-    }
-
     private synchronized boolean checkUrlValidity( final RemoteRepository repo, final String proxyUrl,
                                                    final String validationPath )
         throws MalformedURLException
@@ -193,7 +171,7 @@ public abstract class AutoProxDataManagerDecorator
     {
         logger.debug( "DECORATED (getRemoteRepository: {})", name );
         RemoteRepository repo = dataManager.getRemoteRepository( name );
-        if ( !config.isEnabled() )
+        if ( !catalog.isEnabled() )
         {
             logger.debug( "AutoProx decorator disabled; returning: {}", repo );
             return repo;
@@ -202,7 +180,7 @@ public abstract class AutoProxDataManagerDecorator
         logger.debug( "AutoProx decorator active" );
         if ( repo == null )
         {
-            final AutoProxFactory factory = getFactory( name );
+            final AutoProxFactory factory = catalog.getFactory( name );
             if ( factory == null )
             {
                 return null;
@@ -241,7 +219,7 @@ public abstract class AutoProxDataManagerDecorator
     {
         logger.debug( "DECORATED (getHostedRepository: {})", name );
         HostedRepository repo = dataManager.getHostedRepository( name );
-        if ( !config.isEnabled() )
+        if ( !catalog.isEnabled() )
         {
             logger.debug( "AutoProx decorator disabled; returning: {}", repo );
             return repo;
@@ -250,7 +228,7 @@ public abstract class AutoProxDataManagerDecorator
         logger.debug( "AutoProx decorator active" );
         if ( repo == null )
         {
-            final AutoProxFactory factory = getFactory( name );
+            final AutoProxFactory factory = catalog.getFactory( name );
             if ( factory == null )
             {
                 return null;

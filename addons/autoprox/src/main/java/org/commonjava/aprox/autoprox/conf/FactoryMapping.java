@@ -28,6 +28,13 @@ public class FactoryMapping
         this.factory = factory;
     }
 
+    public FactoryMapping( final String scriptName, final AutoProxFactory factory )
+    {
+        this.scriptName = scriptName;
+        this.factory = factory;
+        this.match = null;
+    }
+
     public String getScriptName()
     {
         return scriptName;
@@ -45,24 +52,31 @@ public class FactoryMapping
 
     public boolean matchesName( final String name )
     {
-        if ( match.length() > 2 && match.charAt( 0 ) == '/' && match.charAt( match.length() - 1 ) == '/' )
+        if ( match != null )
         {
-            return name.matches( match.substring( 1, match.length() - 1 ) );
-        }
-        else if ( match.endsWith( "*" ) )
-        {
-            if ( match.length() == 1 )
+            if ( match.length() > 2 && match.charAt( 0 ) == '/' && match.charAt( match.length() - 1 ) == '/' )
+            {
+                return name.matches( match.substring( 1, match.length() - 1 ) );
+            }
+            else if ( match.endsWith( "*" ) )
+            {
+                if ( match.length() == 1 )
+                {
+                    return true;
+                }
+                else
+                {
+                    return name.startsWith( match.substring( 0, match.length() - 1 ) );
+                }
+            }
+            else if ( DEFAULT_MATCH.equalsIgnoreCase( match ) )
             {
                 return true;
             }
-            else
-            {
-                return name.startsWith( match.substring( 0, match.length() - 1 ) );
-            }
         }
-        else if ( DEFAULT_MATCH.equalsIgnoreCase( match ) )
+        else
         {
-            return true;
+            return factory.matches( name );
         }
 
         return false;

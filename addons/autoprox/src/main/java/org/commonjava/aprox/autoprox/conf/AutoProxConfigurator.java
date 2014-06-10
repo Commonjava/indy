@@ -38,9 +38,7 @@ public class AutoProxConfigurator
 {
     public static final String SECTION = "autoprox";
 
-    private static final String APROX_ETC = System.getProperty( "aprox.etc", "/etc/aprox" );
-
-    public static final File DEFAULT_DIR = new File( APROX_ETC, "autoprox.d" );
+    public static final String DEFAULT_DIR = "autoprox";
 
     public static final String BASEDIR_PARAM = "basedir";
 
@@ -51,7 +49,7 @@ public class AutoProxConfigurator
     @Inject
     private ScriptEngine scriptEngine;
 
-    private File basedir;
+    private String basedir;
 
     private boolean enabled;
 
@@ -70,12 +68,12 @@ public class AutoProxConfigurator
         this.scriptEngine = scriptEngine;
     }
 
-    public void setBasedir( final File basedir )
+    public void setBasedir( final String basedir )
     {
         this.basedir = basedir;
     }
 
-    public File getBasedir()
+    public String getBasedir()
     {
         return basedir == null ? DEFAULT_DIR : basedir;
     }
@@ -97,7 +95,7 @@ public class AutoProxConfigurator
         logger.info( "[AUTOPROX] config: '{}' = '{}'", name, value );
         if ( BASEDIR_PARAM.equals( name ) )
         {
-            basedir = new File( value );
+            basedir = value;
         }
         else if ( ENABLED_PARAM.equals( name ) )
         {
@@ -106,6 +104,11 @@ public class AutoProxConfigurator
         else
         {
             factoryProtoMappings.put( name, value );
+        }
+
+        if ( !factoryProtoMappings.isEmpty() )
+        {
+            logger.warn( "[DEPRECATION] autoprox.d style configuration is deprecated! You will not be able to edit autoprox rules via the UI for this configuration!" );
         }
     }
 
@@ -122,13 +125,18 @@ public class AutoProxConfigurator
     public AutoProxConfig getConfig()
     {
         buildFactories();
-        return new AutoProxConfig( factoryMappings, isEnabled() );
+        return new AutoProxConfig( getBasedir(), isEnabled(), factoryMappings );
     }
 
     private synchronized void buildFactories()
     {
         if ( factoryMappings == null )
         {
+            if ( factoryProtoMappings.isEmpty() )
+            {
+                return;
+            }
+
             factoryMappings = new ArrayList<FactoryMapping>();
 
             for ( final Entry<String, String> entry : factoryProtoMappings.entrySet() )

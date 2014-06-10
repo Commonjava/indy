@@ -7,6 +7,12 @@ import org.commonjava.aprox.model.*;
 
 class ProdFactory implements AutoProxFactory
 {
+
+    boolean matches( String named )
+    {
+        true;
+    }
+    
     RemoteRepository createRemoteRepository( String named )
         throws MalformedURLException
     {

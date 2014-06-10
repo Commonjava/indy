@@ -17,9 +17,9 @@ import java.util.Collections;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 
-import org.commonjava.aprox.autoprox.conf.AutoProxConfig;
 import org.commonjava.aprox.autoprox.conf.AutoProxFactory;
 import org.commonjava.aprox.autoprox.conf.FactoryMapping;
+import org.commonjava.aprox.autoprox.model.AutoProxCatalog;
 import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
@@ -31,7 +31,7 @@ public class TestConfigProvider
 {
     public static String REPO_ROOT_DIR = "repo.root.dir";
 
-    private AutoProxConfig config;
+    private AutoProxCatalog config;
 
     private AproxConfiguration proxyConfig;
 
@@ -67,16 +67,15 @@ public class TestConfigProvider
     @Produces
     @Default
     @TestData
-    public synchronized AutoProxConfig getAutoProxConfig()
+    public synchronized AutoProxCatalog getAutoProxConfig()
     {
         if ( config == null )
         {
             final AutoProxFactory fac = new TestAutoProxFactory( http );
             config =
-                new AutoProxConfig(
-                                    Collections.singletonList( new FactoryMapping( "test.groovy",
-                                                                                   FactoryMapping.DEFAULT_MATCH, fac ) ),
-                                    true );
+                new AutoProxCatalog( true, Collections.singletonList( new FactoryMapping( "test.groovy",
+                                                                                          FactoryMapping.DEFAULT_MATCH,
+                                                                                          fac ) ) );
         }
 
         return config;

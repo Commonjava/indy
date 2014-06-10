@@ -20,16 +20,44 @@ import javax.inject.Named;
 public class AutoProxConfig
 {
 
-    private final List<FactoryMapping> factoryMappings;
+    private List<FactoryMapping> factoryMappings;
 
     private boolean enabled;
 
-    public AutoProxConfig( final List<FactoryMapping> factoryMappings, final boolean enabled )
+    private String dataDir;
+
+    public AutoProxConfig( final String dataDir, final boolean enabled, final List<FactoryMapping> factoryMappings )
     {
+        this.dataDir = dataDir;
         this.factoryMappings = factoryMappings;
         this.enabled = enabled;
     }
 
+    public String getDataDir()
+    {
+        return dataDir;
+    }
+
+    public void setDataDir( final String dataDir )
+    {
+        this.dataDir = dataDir;
+    }
+
+    public void setFactoryMappings( final List<FactoryMapping> mappings )
+    {
+        this.factoryMappings = mappings;
+    }
+
+    /**
+     * Instead, store factory scripts in <aprox>/data/autoprox with names like:
+     * <ul>
+     *   <li>0001-foo-factory.groovy</li>
+     *   <li>0002-bar-factory.groovy</li>
+     * </ul>
+     * 
+     * Then, use the basedir configuration if you need to relocate these scripts elsewhere.
+     */
+    @Deprecated
     public List<FactoryMapping> getFactoryMappings()
     {
         return factoryMappings;
