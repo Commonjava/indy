@@ -31,6 +31,7 @@ import org.commonjava.aprox.autoprox.conf.AutoProxFactory;
 import org.commonjava.aprox.autoprox.model.AutoProxCatalog;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.HostedRepository;
@@ -58,6 +59,23 @@ public abstract class AutoProxDataManagerDecorator
 
     @Inject
     private AproxHttpProvider http;
+
+    protected AutoProxDataManagerDecorator()
+    {
+    }
+
+    public AutoProxDataManagerDecorator( final MemoryStoreDataManager dataManager, final AutoProxCatalog catalog,
+                                         final AproxHttpProvider http )
+    {
+        this.dataManager = dataManager;
+        this.catalog = catalog;
+        this.http = http;
+    }
+
+    protected final StoreDataManager getDelegate()
+    {
+        return dataManager;
+    }
 
     @Override
     public Group getGroup( final String name )

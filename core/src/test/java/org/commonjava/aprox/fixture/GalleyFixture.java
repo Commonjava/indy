@@ -16,9 +16,11 @@ import java.util.concurrent.Executors;
 
 import org.commonjava.aprox.change.event.AproxFileEventManager;
 import org.commonjava.aprox.filer.KeyBasedPathGenerator;
+import org.commonjava.aprox.subsys.http.AproxHttpConnectionManager;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.TransferManagerImpl;
+import org.commonjava.maven.galley.auth.MemoryPasswordManager;
 import org.commonjava.maven.galley.cache.FileCacheProvider;
 import org.commonjava.maven.galley.internal.xfer.DownloadHandler;
 import org.commonjava.maven.galley.internal.xfer.ExistenceHandler;
@@ -55,7 +57,9 @@ public class GalleyFixture
 
     public GalleyFixture( final File repoRoot )
     {
-        final AproxHttpProvider aproxHttp = new AproxHttpProvider();
+        final AproxHttpProvider aproxHttp =
+            new AproxHttpProvider( new MemoryPasswordManager(), new AproxHttpConnectionManager( true ) );
+
         aproxHttp.setup();
 
         transports = new TransportManagerImpl( new HttpClientTransport( aproxHttp.getHttpComponent() ) );

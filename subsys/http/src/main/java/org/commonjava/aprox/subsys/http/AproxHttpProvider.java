@@ -13,11 +13,14 @@ package org.commonjava.aprox.subsys.http;
 import static org.commonjava.aprox.util.LocationUtils.toLocation;
 
 import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
+import javax.inject.Inject;
 
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.client.HttpClient;
+import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.model.RemoteRepository;
@@ -27,6 +30,7 @@ import org.commonjava.maven.galley.transport.htcli.Http;
 import org.commonjava.maven.galley.transport.htcli.HttpImpl;
 import org.commonjava.maven.galley.transport.htcli.model.HttpLocation;
 
+@ApplicationScoped
 public class AproxHttpProvider
 {
 
@@ -34,11 +38,34 @@ public class AproxHttpProvider
 
     private PasswordManager passwordManager;
 
+    @Inject
+    private ClientConnectionManager connectionManager;
+
+    protected AproxHttpProvider()
+    {
+    }
+
+    public AproxHttpProvider( final PasswordManager passwordManager, final ClientConnectionManager connectionManager )
+    {
+        this.passwordManager = passwordManager;
+        this.connectionManager = connectionManager;
+        setup();
+    }
+
     @PostConstruct
     public void setup()
     {
-        passwordManager = new AttributePasswordManager();
-        http = new HttpImpl( passwordManager );
+        if ( passwordManager == null )
+        {
+            passwordManager = new AttributePasswordManager();
+        }
+
+        if ( connectionManager == null )
+        {
+            connectionManager = new AproxHttpConnectionManager( true );
+        }
+
+        http = new HttpImpl( passwordManager, connectionManager );
     }
 
     @Produces

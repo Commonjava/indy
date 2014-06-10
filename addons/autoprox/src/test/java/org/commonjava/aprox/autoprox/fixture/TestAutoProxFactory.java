@@ -8,9 +8,11 @@
  * Contributors:
  *     Red Hat, Inc. - initial API and implementation
  ******************************************************************************/
-package org.commonjava.aprox.autoprox.live.fixture;
+package org.commonjava.aprox.autoprox.fixture;
 
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.commonjava.aprox.autoprox.conf.AutoProxFactory;
 import org.commonjava.aprox.model.Group;
@@ -18,15 +20,14 @@ import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.web.json.test.WebFixture;
 
 public class TestAutoProxFactory
     implements AutoProxFactory
 {
 
-    private final WebFixture http;
+    private final HttpTestFixture http;
 
-    public TestAutoProxFactory( final WebFixture http )
+    public TestAutoProxFactory( final HttpTestFixture http )
     {
         this.http = http;
     }
@@ -35,19 +36,32 @@ public class TestAutoProxFactory
     public RemoteRepository createRemoteRepository( final String named )
         throws MalformedURLException
     {
-        return new RemoteRepository( "repo", http.resourceUrl( "target/${name}" ) );
+        return new RemoteRepository( named, http.formatUrl( "target", named ) );
     }
 
     @Override
     public HostedRepository createHostedRepository( final String named )
     {
-        return null;
+        return new HostedRepository( named );
     }
 
     @Override
     public Group createGroup( final String named, final RemoteRepository remote, final HostedRepository hosted )
     {
-        return new Group( "group", new StoreKey( StoreType.remote, "first" ), new StoreKey( StoreType.remote, "second" ) );
+        List<StoreKey> constituents = new ArrayList<StoreKey>();
+        if ( hosted != null )
+        {
+            constituents.add( hosted.getKey() );
+        }
+        if ( remote != null )
+        {
+            constituents.add( remote.getKey() );
+        }
+        
+        constituents.add( new StoreKey( StoreType.remote, "first" ) );
+        constituents.add( new StoreKey( StoreType.remote, "second" ) );
+        
+        return new Group( named, constituents );
     }
 
     @Override
