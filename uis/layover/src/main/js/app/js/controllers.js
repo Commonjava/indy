@@ -18,7 +18,6 @@ aproxControllers.controller('NavCtl', ['$scope', function($scope){
 }]);
 
 aproxControllers.controller('RemoteListCtl', ['$scope', 'RemoteSvc', 'StoreUtilSvc', function($scope, RemoteSvc, StoreUtilSvc) {
-    alert( "Got " + addons.items.length + " addons." );
     $scope.listing = RemoteSvc.query({}, function(listing){
       for(var i=0; i<listing.items.length; i++){
         var item = listing.items[i];
