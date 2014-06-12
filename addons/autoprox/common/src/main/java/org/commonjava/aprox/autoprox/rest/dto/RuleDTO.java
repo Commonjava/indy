@@ -7,8 +7,6 @@ public class RuleDTO
 
     private String name;
 
-    private String match;
-
     private String spec;
 
     public RuleDTO()
@@ -18,7 +16,6 @@ public class RuleDTO
     public RuleDTO( final RuleMapping mapping )
     {
         name = mapping.getScriptName();
-        match = mapping.getMatch();
         spec = mapping.getSpecification();
     }
 
@@ -30,16 +27,6 @@ public class RuleDTO
     public void setName( final String name )
     {
         this.name = name;
-    }
-
-    public String getMatch()
-    {
-        return match;
-    }
-
-    public void setMatch( final String match )
-    {
-        this.match = match;
     }
 
     public String getSpec()

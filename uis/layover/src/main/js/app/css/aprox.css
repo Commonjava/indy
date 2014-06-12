@@ -332,6 +332,21 @@ label, caption, .label{
   width: 89em;
 }
 
+.listing-text{
+  height: 47em;
+  width: 90em;
+  white-space: nowrap;
+  overflow: auto;
+}
+
+.listing-panel{
+	display: inline-block;
+}
+
+.listing-content{
+	margin-left: 1%;
+}
+
 .hidden{
   display: none;
 }

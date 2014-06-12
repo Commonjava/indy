@@ -1,8 +1,6 @@
-//alert( "Defining autoprox controllers, services, etc.");
+var aprox = angular.module('aprox');
 
-var aproxServices = angular.module('aprox.services', ['ngResource']);
-
-aproxServices.factory('AutoProxCalculatorSvc', ['$resource',
+aprox.provide.factory('AutoProxCalculatorSvc', ['$resource',
   function($resource){
     return $resource('/api/1.0/autoprox/eval/:type/:name', {}, {
       eval: {
@@ -13,9 +11,7 @@ aproxServices.factory('AutoProxCalculatorSvc', ['$resource',
     });
   }]);
 
-var aproxControllers = angular.module('aprox.controllers', []);
-
-aproxControllers.controller('AutoProxCalculatorCtl', ['$scope', 'AutoProxCalculatorSvc', 'StoreUtilSvc', function($scope, AutoProxCalculatorSvc, StoreUtilSvc) {
+aprox.controllerProvider.register('AutoProxCalculatorCtl', ['$scope', 'AutoProxCalculatorSvc', 'StoreUtilSvc', function($scope, AutoProxCalculatorSvc, StoreUtilSvc) {
   $scope.types = ['remote', 'hosted', 'group'];
   $scope.form = {
     type: 'remote',
@@ -76,7 +72,7 @@ aproxControllers.controller('AutoProxCalculatorCtl', ['$scope', 'AutoProxCalcula
 //	$scope.calculate();
 }]);
 
-aproxControllers.controller('AutoProxCalcConstituentCtl', ['$scope', 'StoreUtilSvc', function( $scope, StoreUtilSvc){
+aprox.controllerProvider.register('AutoProxCalcConstituentCtl', ['$scope', 'StoreUtilSvc', function( $scope, StoreUtilSvc){
   $scope.display = false;
   
   $scope.displayConstituent = function(){
@@ -119,6 +115,33 @@ aproxControllers.controller('AutoProxCalcConstituentCtl', ['$scope', 'StoreUtilS
   };
 }]);
 
-registerDynamic( 'aprox.services', 'AutoProxCalculatorSvc');
-registerDynamic( 'aprox.controllers', 'AutoProxCalculatorCtl');
-registerDynamic( 'aprox.controllers', 'AutoProxCalcConstituentCtl');
+aprox.provide.factory('AutoProxCatalogSvc', ['$resource', function($resource){
+  return $resource('/api/1.0/autoprox/catalog', {}, {
+    query: {method:'GET', params:{}, isArray:false},
+  });
+}]);
+
+aprox.controllerProvider.register( 'AutoProxRulesCtl', ['$scope', 'AutoProxCatalogSvc', function($scope, AutoProxCatalogSvc){
+  AutoProxCatalogSvc.query(function(listing){
+    if ( listing.error !== undefined ){
+      delete $scope.rules;
+      $scope.error = listing.error;
+    }
+    else{
+      delete $scope.error;
+      $scope.rules = listing.rules;
+    }
+  });
+  
+  $scope.showRule = function(){
+    if ( $scope.currentName ){
+      $scope.rules.each(function(rule){
+        if( rule.name == $scope.currentName ){
+          $scope.currentRule = rule;
+          return false;
+        }
+      });
+    }
+  }
+}]);
+

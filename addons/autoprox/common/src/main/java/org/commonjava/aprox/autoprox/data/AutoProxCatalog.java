@@ -37,6 +37,7 @@ public class AutoProxCatalog
     public AutoProxCatalog( final boolean enabled, final List<RuleMapping> ruleMappings )
     {
         this.ruleMappings = ruleMappings;
+        Collections.sort( this.ruleMappings );
         this.enabled = enabled;
     }
 
@@ -59,6 +60,18 @@ public class AutoProxCatalog
     public void setEnabled( final boolean enabled )
     {
         this.enabled = enabled;
+    }
+
+    public void removeRule( final RuleMapping mapping )
+    {
+        ruleMappings.remove( mapping );
+    }
+
+    public void addRule( final RuleMapping mapping )
+    {
+        ruleMappings.remove( mapping );
+        ruleMappings.add( mapping );
+        Collections.sort( ruleMappings );
     }
 
     private AutoProxRule getRule( final String name )

@@ -10,12 +10,13 @@
  ******************************************************************************/
 package org.commonjava.aprox.autoprox.data;
 
-public class RuleMapping
+public final class RuleMapping
+    implements Comparable<RuleMapping>
 {
 
     public static final String DEFAULT_MATCH = "default";
 
-    private final String match;
+    private final String externalMatch;
 
     private final AutoProxRule rule;
 
@@ -26,7 +27,7 @@ public class RuleMapping
     public RuleMapping( final String scriptName, final String match, final String spec, final AutoProxRule factory )
     {
         this.scriptName = scriptName;
-        this.match = match;
+        this.externalMatch = match;
         this.spec = spec;
         this.rule = factory;
     }
@@ -36,13 +37,13 @@ public class RuleMapping
         this.scriptName = scriptName;
         this.spec = spec;
         this.rule = factory;
-        this.match = null;
+        this.externalMatch = null;
     }
 
     public RuleMapping( final String match, final RuleMapping ruleMapping )
     {
         this.scriptName = ruleMapping.getScriptName();
-        this.match = match;
+        this.externalMatch = match;
         this.rule = ruleMapping.getRule();
         this.spec = ruleMapping.getSpecification();
     }
@@ -52,9 +53,9 @@ public class RuleMapping
         return scriptName;
     }
 
-    public String getMatch()
+    public String getExternalMatch()
     {
-        return match;
+        return externalMatch;
     }
 
     public AutoProxRule getRule()
@@ -64,24 +65,25 @@ public class RuleMapping
 
     public boolean matchesName( final String name )
     {
-        if ( match != null )
+        if ( externalMatch != null )
         {
-            if ( match.length() > 2 && match.charAt( 0 ) == '/' && match.charAt( match.length() - 1 ) == '/' )
+            if ( externalMatch.length() > 2 && externalMatch.charAt( 0 ) == '/'
+                && externalMatch.charAt( externalMatch.length() - 1 ) == '/' )
             {
-                return name.matches( match.substring( 1, match.length() - 1 ) );
+                return name.matches( externalMatch.substring( 1, externalMatch.length() - 1 ) );
             }
-            else if ( match.endsWith( "*" ) )
+            else if ( externalMatch.endsWith( "*" ) )
             {
-                if ( match.length() == 1 )
+                if ( externalMatch.length() == 1 )
                 {
                     return true;
                 }
                 else
                 {
-                    return name.startsWith( match.substring( 0, match.length() - 1 ) );
+                    return name.startsWith( externalMatch.substring( 0, externalMatch.length() - 1 ) );
                 }
             }
-            else if ( DEFAULT_MATCH.equalsIgnoreCase( match ) )
+            else if ( DEFAULT_MATCH.equalsIgnoreCase( externalMatch ) )
             {
                 return true;
             }
@@ -97,6 +99,51 @@ public class RuleMapping
     public String getSpecification()
     {
         return spec;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ( ( scriptName == null ) ? 0 : scriptName.hashCode() );
+        return result;
+    }
+
+    @Override
+    public boolean equals( final Object obj )
+    {
+        if ( this == obj )
+        {
+            return true;
+        }
+        if ( obj == null )
+        {
+            return false;
+        }
+        if ( getClass() != obj.getClass() )
+        {
+            return false;
+        }
+        final RuleMapping other = (RuleMapping) obj;
+        if ( scriptName == null )
+        {
+            if ( other.scriptName != null )
+            {
+                return false;
+            }
+        }
+        else if ( !scriptName.equals( other.scriptName ) )
+        {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int compareTo( final RuleMapping other )
+    {
+        return scriptName.compareTo( other.scriptName );
     }
 
 }
