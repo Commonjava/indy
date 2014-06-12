@@ -4,7 +4,21 @@
 
 var aproxControllers = angular.module('aprox.controllers', []);
 
+aproxControllers.controller('NavCtl', ['$scope', function($scope){
+  $scope.addon_navs = [];
+  if ( addons !== undefined ){
+    addons.items.each(function(addon){
+      if ( addon.sections !== undefined ){
+        addon.sections.each(function(section){
+          $scope.addon_navs.push(section);
+        });
+      }
+    });
+  }
+}]);
+
 aproxControllers.controller('RemoteListCtl', ['$scope', 'RemoteSvc', 'StoreUtilSvc', function($scope, RemoteSvc, StoreUtilSvc) {
+    alert( "Got " + addons.items.length + " addons." );
     $scope.listing = RemoteSvc.query({}, function(listing){
       for(var i=0; i<listing.items.length; i++){
         var item = listing.items[i];

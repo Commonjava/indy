@@ -88,6 +88,16 @@
       <outputDirectory>etc/aprox</outputDirectory>
       <unpack>true</unpack>
     </dependencySet>
+    <!-- data sets -->
+    <dependencySet>
+      <useProjectArtifact>false</useProjectArtifact>
+      <scope>provided</scope>
+      <includes>
+        <include>*:tar.gz:dataset:*</include>
+      </includes>
+      <outputDirectory>data</outputDirectory>
+      <unpack>true</unpack>
+    </dependencySet>
     
     <!-- aggregated commonjava classes -->
     <dependencySet>

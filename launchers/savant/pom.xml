@@ -39,19 +39,29 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-autoprox</artifactId>
+      <artifactId>aprox-autoprox-vertx</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-autoprox</artifactId>
+      <artifactId>aprox-autoprox-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-autoprox-common</artifactId>
       <type>tar.gz</type>
       <classifier>docset</classifier>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-autoprox</artifactId>
+      <artifactId>aprox-autoprox-common</artifactId>
       <type>tar.gz</type>
       <classifier>confset</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-autoprox-common</artifactId>
+      <type>tar.gz</type>
+      <classifier>dataset</classifier>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>

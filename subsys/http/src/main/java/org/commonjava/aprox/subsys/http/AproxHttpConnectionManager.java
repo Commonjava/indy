@@ -34,13 +34,13 @@ public class AproxHttpConnectionManager
     {
         logger.info( "RELEASE: {}, keepalive: {}, tunit: {}", conn, keepalive, tunit );
 
-        super.releaseConnection( conn, 1, TimeUnit.MILLISECONDS );
+        super.releaseConnection( conn, 0, TimeUnit.MILLISECONDS );
         if ( closeConnectionsOnRelease )
         {
             try
             {
                 logger.info( "CLOSING: {}", conn );
-                conn.close();
+                conn.abortConnection();
             }
             catch ( final IOException e )
             {

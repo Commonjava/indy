@@ -47,6 +47,24 @@ public class BasicStatsResource
     private UriInfo uriInfo;
 
     @GET
+    @Path( "/addons/active" )
+    @Produces( MediaType.APPLICATION_JSON )
+    public Response getAddonList()
+    {
+        return Response.ok( serializer.toString( statsController.getActiveAddOns() ) )
+                       .build();
+    }
+
+    @GET
+    @Path( "/addons/active.js" )
+    @Produces( MediaType.APPLICATION_JSON )
+    public Response getAddonInjectionJavascript()
+    {
+        return Response.ok( serializer.toString( statsController.getActiveAddOns() ) )
+                       .build();
+    }
+
+    @GET
     @Path( "/version-info" )
     @Produces( MediaType.APPLICATION_JSON )
     public Response getAProxVersion()
@@ -64,16 +82,19 @@ public class BasicStatsResource
         {
             final UriBuilder uriBuilder = uriInfo.getBaseUriBuilder();
 
-            final String json = serializer.toString( statsController.getEndpointsListing( uriBuilder.path( getClass() )
-                                                                                                    .build()
-                                                                                                    .toString(), new JaxRsUriFormatter( uriInfo ) ) );
+            final String json =
+                serializer.toString( statsController.getEndpointsListing( uriBuilder.path( getClass() )
+                                                                                    .build()
+                                                                                    .toString(),
+                                                                          new JaxRsUriFormatter( uriInfo ) ) );
 
             return Response.ok( json )
                            .build();
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( String.format( "Failed to retrieve endpoint listing: %s", AproxExceptionUtils.formatEntity( e ) ), e );
+            logger.error( String.format( "Failed to retrieve endpoint listing: %s",
+                                         AproxExceptionUtils.formatEntity( e ) ), e );
             return AproxExceptionUtils.formatResponse( e );
         }
 

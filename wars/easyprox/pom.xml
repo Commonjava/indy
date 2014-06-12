@@ -42,7 +42,11 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-autoprox</artifactId>
+      <artifactId>aprox-autoprox-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-autoprox-jaxrs</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>

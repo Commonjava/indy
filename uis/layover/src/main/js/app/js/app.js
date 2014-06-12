@@ -12,6 +12,14 @@ Array.prototype.move = function (old_index, new_index) {
     return this; // for testing purposes
 };
 
+Array.prototype.each = function (callback) {
+  for(var i=0; i<this.length; i++){
+    callback(this[i]);
+  }
+  return this;
+};
+
+var providers = {};
 
 // Declare app level module which depends on filters, and services
 angular.module('aprox', [
@@ -20,10 +28,28 @@ angular.module('aprox', [
   'aprox.directives',
   'aprox.services',
   'aprox.controllers'
-]).
+], function($controllerProvider, $compileProvider, $provide){
+  providers = {
+    $controllerProvider: $controllerProvider,
+    $compileProvider: $compileProvider,
+    $provide: $provide,
+  };
+}). // NOTE: NOT THE END OF A STATEMENT
 
 // NOTE: In the routes below, the '#' route prefix is implied.
 config(['$routeProvider', function($routeProvider) {
+  if ( addons !== undefined ){
+    addons.items.each( function(addon){
+      if( addon.sections !== undefined ){
+        addon.sections.each(function(section){
+  //        alert("$routeProvider.when('" + section.route + "', {templateUrl: '/cp/layover/" + section.templateHref + "', controller: '" + section.controller + "'}); // " + section.name );
+
+          $routeProvider.when(section.route, {templateUrl: 'cp/layover/' + section.templateHref, controller: section.controller});
+        });
+      }
+    });
+  }
+
   $routeProvider.when('/remote', {templateUrl: 'partials/remote-list.html', controller: 'RemoteListCtl'});
   $routeProvider.when('/remote/view/:name', {templateUrl: 'partials/remote-detail.html', controller: 'RemoteDetailCtl'});
   $routeProvider.when('/remote/new', {templateUrl: 'partials/remote-edit.html', controller: 'RemoteEditCtl'});
@@ -41,3 +67,4 @@ config(['$routeProvider', function($routeProvider) {
 
   $routeProvider.otherwise({redirectTo: '/remote'});
 }]);
+

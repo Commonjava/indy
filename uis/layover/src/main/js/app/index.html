@@ -1,8 +1,5 @@
 <!DOCTYPE html>
-<!--[if lt IE 7]>      <html lang="en" ng-app="aprox" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html lang="en" ng-app="aprox" class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html lang="en" ng-app="aprox" class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html lang="en" ng-app="aprox" class="no-js"> <!--<![endif]-->
+<html lang="en" ng-app="aprox" class="no-js">
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -17,15 +14,17 @@
   <link rel="stylesheet" href="css/aprox.css"/>
 
   <script src="bower_components/html5-boilerplate/js/vendor/modernizr-2.6.2.min.js"></script>
+  <script src="api/1.0/stats/addons/active.js"></script>
 
 </head>
 <body>
   <div class="content-wrapper">
     <div class="right product-name">AProx</div>
-    <ul class="menu">
+    <ul class="menu" ng-controller="NavCtl">
       <li><a class="button nav-button remotes" href="#/remote">Remote Repositories</a></li>
       <li><a class="button nav-button hosted" href="#/hosted">Hosted Repositories</a></li>
       <li><a class="button nav-button groups" href="#/group">Groups</a></li>
+      <li ng-repeat="addon in addon_navs"><a class="button nav-button addon-button" href="#{{addon.route}}">{{addon.name}}</a></li>
     </ul>
 
     <!--[if lt IE 7]>
@@ -61,5 +60,6 @@
   <script src="js/filters.js"></script>
   <script src="js/services.js"></script>
   <script src="js/controllers.js"></script>
+  <script src="js/boot.js"></script>
 </body>
 </html>

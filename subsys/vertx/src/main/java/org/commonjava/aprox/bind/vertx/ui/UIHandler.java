@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.vertx.ui;
 
+import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.setStatus;
 import static org.commonjava.aprox.util.ApplicationStatus.BAD_REQUEST;
 import static org.commonjava.aprox.util.ApplicationStatus.NOT_FOUND;
@@ -19,11 +20,14 @@ import static org.commonjava.vertx.vabr.types.Method.ANY;
 import static org.commonjava.vertx.vabr.types.Method.GET;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 
 import javax.activation.FileTypeMap;
 import javax.activation.MimetypesFileTypeMap;
 import javax.inject.Inject;
 
+import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.bind.vertx.conf.UIConfiguration;
 import org.commonjava.aprox.bind.vertx.util.PathParam;
 import org.commonjava.aprox.util.ApplicationHeader;
@@ -33,6 +37,7 @@ import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.commonjava.vertx.vabr.types.Method;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
 @Handles( key = "UIHandler" )
@@ -59,9 +64,6 @@ public class UIHandler
             case GET:
             case HEAD:
             {
-                final File uiDir = config.getUIDir();
-                logger.debug( "UI basedir: '{}'", uiDir );
-
                 String path = request.params()
                                      .get( PathParam.path.key() );
 
@@ -82,40 +84,20 @@ public class UIHandler
                     path = path.substring( 1 );
                 }
 
-                final File resource = new File( uiDir, path );
-                logger.debug( "Checking for existence of: '{}'", resource );
-                if ( resource.exists() )
+                if ( path.startsWith( "cp/" ) )
                 {
-                    if ( method == GET )
-                    {
-                        logger.debug( "sending file" );
-                        request.resume()
-                               .response()
-                               .putHeader( ApplicationHeader.last_modified.key(),
-                                           formatDateHeader( resource.lastModified() ) )
-                               .sendFile( resource.getAbsolutePath() );
+                    path = path.substring( 3 );
+                    final URL resource = Thread.currentThread()
+                                               .getContextClassLoader()
+                                               .getResource( path );
+                    ended = sendURL( resource, request, method );
+                }
 
-                        ended = true;
-                    }
-                    else
-                    {
-                        logger.debug( "sending OK" );
-                        // TODO: set headers for content info...
-                        setStatus( OK, request );
-                        request.resume()
-                               .response()
-                               .setChunked( true )
-                               .putHeader( ApplicationHeader.content_type.key(), typeMap.getContentType( resource ) )
-                               .putHeader( ApplicationHeader.content_length.key(), Long.toString( resource.length() ) )
-                               .putHeader( ApplicationHeader.last_modified.key(),
-                                           formatDateHeader( resource.lastModified() ) );
-                    }
-                }
-                else
-                {
-                    logger.debug( "sending 404" );
-                    setStatus( NOT_FOUND, request );
-                }
+                final File uiDir = config.getUIDir();
+                logger.debug( "UI basedir: '{}'", uiDir );
+
+                final File resource = new File( uiDir, path );
+                ended = sendFile( resource, request, method );
                 break;
             }
             default:
@@ -130,5 +112,89 @@ public class UIHandler
             request.response()
                    .end();
         }
+    }
+
+    private boolean sendURL( final URL resource, final HttpServerRequest request, final Method method )
+    {
+        logger.debug( "Checking for existence of: '{}'", resource );
+        if ( resource != null )
+        {
+            byte[] data;
+            try
+            {
+                data = IOUtils.toByteArray( resource );
+            }
+            catch ( final IOException e )
+            {
+                formatResponse( e, request );
+                return true;
+            }
+
+            if ( method == GET )
+            {
+                logger.debug( "sending file" );
+                request.resume()
+                       .response()
+                       .putHeader( ApplicationHeader.content_type.key(),
+                                   typeMap.getContentType( resource.toExternalForm() ) )
+                       .putHeader( ApplicationHeader.content_length.key(), Long.toString( data.length ) )
+                       .write( new Buffer( data ) );
+            }
+            else
+            {
+                logger.debug( "sending OK" );
+                setStatus( OK, request );
+                request.resume()
+                       .response()
+                       .setChunked( true )
+                       .putHeader( ApplicationHeader.content_type.key(),
+                                   typeMap.getContentType( resource.toExternalForm() ) )
+                       .putHeader( ApplicationHeader.content_length.key(), Long.toString( data.length ) );
+            }
+        }
+        else
+        {
+            logger.debug( "sending 404" );
+            setStatus( NOT_FOUND, request );
+        }
+
+        return false;
+    }
+
+    private boolean sendFile( final File resource, final HttpServerRequest request, final Method method )
+    {
+        logger.debug( "Checking for existence of: '{}'", resource );
+        if ( resource.exists() )
+        {
+            if ( method == GET )
+            {
+                logger.debug( "sending file" );
+                request.resume()
+                       .response()
+                       .putHeader( ApplicationHeader.last_modified.key(), formatDateHeader( resource.lastModified() ) )
+                       .sendFile( resource.getAbsolutePath() );
+
+                return true;
+            }
+            else
+            {
+                logger.debug( "sending OK" );
+                // TODO: set headers for content info...
+                setStatus( OK, request );
+                request.resume()
+                       .response()
+                       .setChunked( true )
+                       .putHeader( ApplicationHeader.content_type.key(), typeMap.getContentType( resource ) )
+                       .putHeader( ApplicationHeader.content_length.key(), Long.toString( resource.length() ) )
+                       .putHeader( ApplicationHeader.last_modified.key(), formatDateHeader( resource.lastModified() ) );
+            }
+        }
+        else
+        {
+            logger.debug( "sending 404" );
+            setStatus( NOT_FOUND, request );
+        }
+
+        return false;
     }
 }

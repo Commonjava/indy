@@ -50,6 +50,20 @@ public class BasicStatsResource
     @Inject
     private UriFormatter uriFormatter;
 
+    @Routes( { @Route( path = "/addons/active", method = Method.GET, contentType = ApplicationContent.application_json ) } )
+    public void getAddonList( final Buffer buffer, final HttpServerRequest request )
+    {
+        formatOkResponseWithJsonEntity( request, serializer.toString( statsController.getActiveAddOns() ) );
+    }
+
+    @Routes( { @Route( path = "/addons/active.js", method = Method.GET, contentType = ApplicationContent.application_json ) } )
+    public void getAddonInjectionJavascript( final Buffer buffer, final HttpServerRequest request )
+    {
+        formatOkResponseWithJsonEntity( request,
+                                        "var addons = " + serializer.toString( statsController.getActiveAddOns() )
+                                            + ";" );
+    }
+
     @Routes( { @Route( path = "/version-info", method = Method.GET, contentType = ApplicationContent.application_json ) } )
     public void getAProxVersion( final Buffer buffer, final HttpServerRequest request )
     {
