@@ -16,49 +16,10 @@
         <input type="checkbox" ng-model="enableDebug" ng-init="checked=false" /> Debug Data
       </div>
     </div>
-    <div class="content-panel">
-      <table class="detail-table">
-        <tr class="detail-field">
-          <td class="label">Name:</td>
-            <td class="detail-value"><span class="key">{{raw.name}}</span></td>
-        </tr>
-        <tr class="detail-field">
-          <td class="label">Local URL:</td>
-          <td class="detail-value"><a ng-href="{{raw.storeHref}}" target="_new">{{raw.storeHref}}</a></td>
-        </tr>
-      </table>
-
-      <div class="fieldset">
-        <div class="text-field">
-          <div class="textarea-label">
-            <label>Description</label>
-          </div>
-          <textarea readonly="true" class="text-description" ng-model="raw.description"></textarea>
-        </div>
-      </div>
-
-      <table class="detail-table">
-        <tr class="detail-field">
-          <td class="label">Uploads Allowed?</td>
-          <td class="detail-value">{{allowUploads(store) | checkmark}}</td>
-        </tr>
-        <tr ng-if="allowUploads(store)" class="detail-field">
-          <td class="label">Releases Allowed?</td>
-          <td class="detail-value">{{store.allow_releases | checkmark}}</td>
-        </tr>
-        <tr ng-if="allowUploads(store)" class="detail-field">
-          <td class="label">Snapshots Allowed?</td>
-          <td class="detail-value">{{store.allow_snapshots | checkmark}}</td>
-        </tr>
-      </table>
-
-      <table ng-if="showSnapshotTimeout(store)" class="detail-table">
-        <tr class="detail-field">
-          <td class="label">Snapshot Timeout:</td>
-          <td class="detail-value">{{store.snapshotTimeoutSeconds | duration}}</td>
-        </tr>
-      </table>
+    
+    <div class="content-panel" ng-include="'partials/includes/hosted-view.html'">
     </div>
+    
     <div ng-if="enableDebug" class="debug">
         <div class="debug-section">
             <span class="debug-title">JSON FROM SERVER:</span>

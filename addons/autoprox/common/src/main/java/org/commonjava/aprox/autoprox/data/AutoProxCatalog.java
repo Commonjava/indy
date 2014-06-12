@@ -65,6 +65,7 @@ public class AutoProxCatalog
     {
         for ( final RuleMapping mapping : getRuleMappings() )
         {
+            logger.info( "Checking rule: '{}' for applicability to name: '{}'", mapping.getScriptName(), name );
             if ( mapping.matchesName( name ) )
             {
                 final AutoProxRule rule = mapping.getRule();
@@ -83,35 +84,86 @@ public class AutoProxCatalog
     }
 
     public RemoteRepository createRemoteRepository( final String name )
-        throws MalformedURLException
+        throws AutoProxRuleException
     {
         final AutoProxRule rule = getRule( name );
-        return rule == null ? null : rule.createRemoteRepository( name );
+        try
+        {
+            return rule == null ? null : rule.createRemoteRepository( name );
+        }
+        catch ( final MalformedURLException e )
+        {
+            throw new AutoProxRuleException( "Invalid URL genenerated for: '%s'. Reason: %s", e, name, e.getMessage() );
+        }
+        catch ( final Exception e )
+        {
+            throw new AutoProxRuleException( "Failed to create remote repository for: %s. Reason: %s", e, name,
+                                             e.getMessage() );
+        }
     }
 
     public HostedRepository createHostedRepository( final String name )
+        throws AutoProxRuleException
     {
         final AutoProxRule rule = getRule( name );
-        return rule == null ? null : rule.createHostedRepository( name );
+        try
+        {
+            return rule == null ? null : rule.createHostedRepository( name );
+        }
+        catch ( final Exception e )
+        {
+            throw new AutoProxRuleException( "Failed to create remote repository for: %s. Reason: %s", e, name,
+                                             e.getMessage() );
+        }
     }
 
     public Group createGroup( final String name )
+        throws AutoProxRuleException
     {
         final AutoProxRule rule = getRule( name );
-        return rule == null ? null : rule.createGroup( name );
+        try
+        {
+            return rule == null ? null : rule.createGroup( name );
+        }
+        catch ( final Exception e )
+        {
+            throw new AutoProxRuleException( "Failed to create remote repository for: %s. Reason: %s", e, name,
+                                             e.getMessage() );
+        }
     }
 
     public String getRemoteValidationUrl( final String name )
+        throws AutoProxRuleException
     {
         final AutoProxRule rule = getRule( name );
-        return rule == null ? null : rule.getRemoteValidationPath();
+        try
+        {
+            return rule == null ? null : rule.getRemoteValidationPath();
+        }
+        catch ( final Exception e )
+        {
+            throw new AutoProxRuleException( "Failed to create remote repository for: %s. Reason: %s", e, name,
+                                             e.getMessage() );
+        }
     }
 
     public RemoteRepository createGroupValidationRemote( final String name )
-        throws MalformedURLException
+        throws AutoProxRuleException
     {
         final AutoProxRule rule = getRule( name );
-        return rule == null ? null : rule.createGroupValidationRemote( name );
+        try
+        {
+            return rule == null ? null : rule.createGroupValidationRemote( name );
+        }
+        catch ( final MalformedURLException e )
+        {
+            throw new AutoProxRuleException( "Invalid URL genenerated for: '%s'. Reason: %s", e, name, e.getMessage() );
+        }
+        catch ( final Exception e )
+        {
+            throw new AutoProxRuleException( "Failed to create remote repository for: %s. Reason: %s", e, name,
+                                             e.getMessage() );
+        }
     }
 
 }

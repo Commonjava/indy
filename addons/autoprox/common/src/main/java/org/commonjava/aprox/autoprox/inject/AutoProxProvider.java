@@ -17,10 +17,14 @@ import org.commonjava.aprox.autoprox.data.RuleMapping;
 import org.commonjava.aprox.autoprox.util.ScriptRuleParser;
 import org.commonjava.aprox.inject.Production;
 import org.commonjava.aprox.subsys.flatfile.conf.FlatFileConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class AutoProxProvider
 {
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private FlatFileConfiguration ffConfig;
@@ -80,6 +84,7 @@ public class AutoProxProvider
 
             for ( final File script : scripts )
             {
+                logger.info( "Reading autoprox rule from: {}", script );
                 final RuleMapping rule = ruleParser.parseRule( script );
                 if ( rule != null )
                 {

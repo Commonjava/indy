@@ -59,9 +59,15 @@ public class BasicStatsResource
     @Routes( { @Route( path = "/addons/active.js", method = Method.GET, contentType = ApplicationContent.application_json ) } )
     public void getAddonInjectionJavascript( final Buffer buffer, final HttpServerRequest request )
     {
-        formatOkResponseWithJsonEntity( request,
-                                        "var addons = " + serializer.toString( statsController.getActiveAddOns() )
-                                            + ";" );
+        try
+        {
+            formatOkResponseWithJsonEntity( request, statsController.getActiveAddOnsJavascript() );
+        }
+        catch ( final AproxWorkflowException e )
+        {
+            logger.error( String.format( "Failed to format active-addons javascript: %s", formatEntity( e ) ), e );
+            formatResponse( e, request );
+        }
     }
 
     @Routes( { @Route( path = "/version-info", method = Method.GET, contentType = ApplicationContent.application_json ) } )

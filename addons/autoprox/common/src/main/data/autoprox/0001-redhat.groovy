@@ -23,7 +23,7 @@ class RedHatRule extends AbstractAutoProxRule
         }
     }
 
-    Group createGroup( String named, RemoteRepository remote, HostedRepository hosted )
+    Group createGroup( String named )
     {
         Group g = new Group( named );
         g.addConstituent( new StoreKey( StoreType.remote, named ) )

@@ -11,7 +11,7 @@ class ComplexGroupsRule extends AbstractAutoProxRule
         name =~ /.+\+.+/
     }
 
-    Group createGroup( String named, RemoteRepository remote, HostedRepository hosted )
+    Group createGroup( String named )
     {
         String[] parts = named.split("\\+")
         

@@ -28,7 +28,7 @@ public class AutoProxAddOn
                                   .withUISection( new UISection().withName( "AutoProx Calculator" )
                                                                  .withRoute( "/autoprox/calc" )
                                                                  .withTemplateHref( "autoprox/partials/calc.html" )
-                                                                 .withController( "AutoProxCalculatorCtl" ) );
+                                  /*.withController( "AutoProxCalculatorCtl" )*/);
         }
 
         return autoproxId;

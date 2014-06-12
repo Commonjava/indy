@@ -12,7 +12,7 @@ public abstract class AbstractAutoProxRule
 
     @Override
     public RemoteRepository createRemoteRepository( final String named )
-        throws MalformedURLException
+        throws AutoProxRuleException, MalformedURLException
     {
         return null;
     }
@@ -37,7 +37,7 @@ public abstract class AbstractAutoProxRule
 
     @Override
     public RemoteRepository createGroupValidationRemote( final String name )
-        throws MalformedURLException
+        throws AutoProxRuleException, MalformedURLException
     {
         return createRemoteRepository( name );
     }

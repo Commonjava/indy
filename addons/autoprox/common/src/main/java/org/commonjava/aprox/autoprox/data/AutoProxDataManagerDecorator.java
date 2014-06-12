@@ -90,7 +90,16 @@ public abstract class AutoProxDataManagerDecorator
         if ( g == null )
         {
             logger.debug( "AutoProx: creating repository for: {}", name );
-            g = catalog.createGroup( name );
+            try
+            {
+                g = catalog.createGroup( name );
+            }
+            catch ( final AutoProxRuleException e )
+            {
+                throw new ProxyDataException(
+                                              "[AUTOPROX] Failed to create new group from factory matching: '%s'. Reason: %s",
+                                              e, name, e.getMessage() );
+            }
 
             if ( g != null )
             {
@@ -103,6 +112,12 @@ public abstract class AutoProxDataManagerDecorator
                         logger.warn( "Invalid repository URL: {}", validationRepo.getUrl() );
                         return null;
                     }
+                }
+                catch ( final AutoProxRuleException e )
+                {
+                    throw new ProxyDataException(
+                                                  "[AUTOPROX] Failed to create new group from factory matching: '%s'. Reason: %s",
+                                                  e, name, e.getMessage() );
                 }
                 catch ( final MalformedURLException e )
                 {
@@ -118,6 +133,12 @@ public abstract class AutoProxDataManagerDecorator
                     {
                         g.removeConstituent( key );
                     }
+                }
+
+                if ( g.getConstituents()
+                      .isEmpty() )
+                {
+                    return null;
                 }
 
                 dataManager.storeArtifactStore( g );
@@ -204,6 +225,12 @@ public abstract class AutoProxDataManagerDecorator
                                               "[AUTOPROX] Failed to create/validate new remote repository from factory matching: '%s'. Reason: %s",
                                               e, name, e.getMessage() );
             }
+            catch ( final AutoProxRuleException e )
+            {
+                throw new ProxyDataException(
+                                              "[AUTOPROX] Failed to create new remote repository from factory matching: '%s'. Reason: %s",
+                                              e, name, e.getMessage() );
+            }
         }
 
         return repo;
@@ -226,7 +253,17 @@ public abstract class AutoProxDataManagerDecorator
         {
             logger.info( "AutoProx: creating repository for: {}", name );
 
-            repo = catalog.createHostedRepository( name );
+            try
+            {
+                repo = catalog.createHostedRepository( name );
+            }
+            catch ( final AutoProxRuleException e )
+            {
+                throw new ProxyDataException(
+                                              "[AUTOPROX] Failed to create new hosted repository from factory matching: '%s'. Reason: %s",
+                                              e, name, e.getMessage() );
+            }
+
             if ( repo != null )
             {
                 dataManager.storeHostedRepository( repo );

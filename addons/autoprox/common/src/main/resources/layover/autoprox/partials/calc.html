@@ -1,1 +1,48 @@
-<h1>Here!</h1>
+<div ng-controller="AutoProxCalculatorCtl">
+	<div class="container-fluid">
+	  <div class="control-panel">
+      <div class="cp-col">
+        Test a new:
+	      <select ng-model="form.type" ng-options="type for type in types">
+	      </select>
+	    </div>
+	    <div class="cp-col">
+         named: <input type="text" ng-model="form.name" />
+       </div>
+       <div class="cp-col">
+         <a class="cp-button" href="" ng-click="calculate()">Calculate!</a>
+       </div>
+      <div class="cp-row cp-debug">
+        <input type="checkbox" ng-model="enableDebug" ng-init="checked=false" /> Debug Data
+      </div>
+	  </div>
+    <div class="error" ng-if="error">{{error}}</div>
+	  <div ng-if="!error && raw" class="content-panel" ng-include="'partials/includes/' + raw.type + '-view.html'">
+	  </div>
+	</div>
+  <ol ng-if="!error && supplemental">
+    <div class="section">Also created: <span class="hint">(click for details)</span></div>
+    <li ng-repeat="store in supplemental" ng-controller="AutoProxCalcConstituentCtl">
+      <a ng-if="!display" href="" ng-click="displayConstituent()">{{store.key}}</a>
+      <div class="content-panel item-expanded" ng-if="display">
+        <div class="subsection">{{store.key}} [<a href="" ng-click="hideConstituent()">Hide</a>]</div>
+        <div ng-include="'partials/includes/remote-view.html'"></div>
+      </div>
+    </li>
+  </ol>
+  
+    <div ng-if="enableDebug" class="debug">
+        <div ng-if="store" class="debug-section">
+            <span class="debug-title">STORE FROM SERVER:</span>
+          <pre>{{store | json}}</pre>
+        </div>
+        <div ng-if="supplemental" class="debug-section">
+            <span class="debug-title">SUPPLEMENTAL STORES FROM SERVER:</span>
+          <pre>{{supplemental | json}}</pre>
+        </div>
+        <div ng-if="raw" class="debug-section">
+            <span class="debug-title">JSON FOR DISPLAY:</span>
+          <pre>{{raw | json}}</pre>
+        </div>
+    </div>
+</div>

@@ -60,8 +60,17 @@ public class BasicStatsResource
     @Produces( MediaType.APPLICATION_JSON )
     public Response getAddonInjectionJavascript()
     {
-        return Response.ok( serializer.toString( statsController.getActiveAddOns() ) )
-                       .build();
+        try
+        {
+            return Response.ok( serializer.toString( statsController.getActiveAddOnsJavascript() ) )
+                           .build();
+        }
+        catch ( final AproxWorkflowException e )
+        {
+            logger.error( String.format( "Failed to format active-addons javascript: %s",
+                                         AproxExceptionUtils.formatEntity( e ) ), e );
+            return AproxExceptionUtils.formatResponse( e );
+        }
     }
 
     @GET

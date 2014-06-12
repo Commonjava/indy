@@ -1,0 +1,1 @@
+var addons = ${addonsJson};

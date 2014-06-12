@@ -84,7 +84,7 @@ class LegacyRule extends AbstractAutoProxRule
         h
     }
 
-    Group createGroup( String named, RemoteRepository remote, HostedRepository hosted )
+    Group createGroup( String named )
     {
         if ( !group ) return null
         

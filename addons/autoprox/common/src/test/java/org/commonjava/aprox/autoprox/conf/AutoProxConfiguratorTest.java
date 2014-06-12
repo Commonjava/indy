@@ -14,7 +14,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
@@ -23,7 +22,6 @@ import org.commonjava.aprox.autoprox.data.RuleMapping;
 import org.commonjava.aprox.autoprox.util.ScriptRuleParser;
 import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.subsys.template.ScriptEngine;
-import org.commonjava.web.config.ConfigurationException;
 import org.junit.Test;
 
 public class AutoProxConfiguratorTest
@@ -35,7 +33,7 @@ public class AutoProxConfiguratorTest
     @Test
     @Deprecated
     public void createFactoryFromGroovyWithRegexNameSplitting()
-        throws ConfigurationException, MalformedURLException
+        throws Exception
     {
         configurator.parameter( AutoProxConfigurator.ENABLED_PARAM, "true" );
 

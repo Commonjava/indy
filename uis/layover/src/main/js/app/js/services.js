@@ -53,6 +53,10 @@ aproxServices.factory('StoreUtilSvc', function(){
         return key.substring(key.indexOf(':')+1);
       },
 
+      typeFromKey: function(key){
+          return key.substring(0, key.indexOf(':'));
+        },
+
       storeHref: function(key){
         var parts = key.split(':');
 

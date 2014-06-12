@@ -4,18 +4,20 @@ import org.commonjava.aprox.autoprox.data.*;
 import java.net.MalformedURLException;
 
 import org.commonjava.aprox.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-class SonatypeRule extends AbstractAutoProxRule
+class JBossOrgRule extends AbstractAutoProxRule
 {
     boolean matches( String named ){
-        named.startsWith( "ST-" )
+        named.startsWith( "JB-" )
     }
 
     RemoteRepository createRemoteRepository( String named )
         throws MalformedURLException
     {
-        def match = (named =~ /ST-(.+)/)[0]
-        new RemoteRepository( name: named, url: "http://oss.sonatype.org/content/repositories/${match[1]}/" )
+        def match = (named =~ /JB-(.+)/)[0]
+        return new RemoteRepository( name: named, url: "https://repository.jboss.org/nexus/content/repositories/${match[1]}/" )
     }
 
     HostedRepository createHostedRepository( String named )
@@ -24,12 +26,15 @@ class SonatypeRule extends AbstractAutoProxRule
         null
     }
 
-    Group createGroup( String named, RemoteRepository remote, HostedRepository hosted )
+    Group createGroup( String named )
     {
         Group g = new Group( named );
         g.addConstituent( new StoreKey( StoreType.remote, named ) )
 /*        g.addConstituent( new StoreKey( StoreType.hosted, named ) )*/
         
-        g
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.info( "Created group: {}", g )
+
+        return g
     }
 }

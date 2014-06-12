@@ -42,9 +42,14 @@ config(['$routeProvider', function($routeProvider) {
     addons.items.each( function(addon){
       if( addon.sections !== undefined ){
         addon.sections.each(function(section){
-  //        alert("$routeProvider.when('" + section.route + "', {templateUrl: '/cp/layover/" + section.templateHref + "', controller: '" + section.controller + "'}); // " + section.name );
+          var options = {};
+          options.templateUrl= 'cp/layover/' + section.templateHref;
 
-          $routeProvider.when(section.route, {templateUrl: 'cp/layover/' + section.templateHref, controller: section.controller});
+          if (section.controller !== undefined){
+            options.controller= section.controller;
+          }
+
+          $routeProvider.when(section.route, options);
         });
       }
     });

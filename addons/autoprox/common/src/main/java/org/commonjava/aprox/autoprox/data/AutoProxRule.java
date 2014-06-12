@@ -26,7 +26,7 @@ public interface AutoProxRule
     boolean matches( String name );
 
     RemoteRepository createRemoteRepository( String named )
-        throws MalformedURLException;
+        throws AutoProxRuleException, MalformedURLException;
 
     HostedRepository createHostedRepository( String named );
 
@@ -37,7 +37,7 @@ public interface AutoProxRule
      * Otherwise, this repository should supply any credentials/configuration needed to validate the remote URL.
      */
     RemoteRepository createGroupValidationRemote( String name )
-        throws MalformedURLException;
+        throws AutoProxRuleException, MalformedURLException;
 
     String getRemoteValidationPath();
 

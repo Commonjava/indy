@@ -10,11 +10,11 @@
  ******************************************************************************/
 package org.commonjava.aprox.autoprox.fixture;
 
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.commonjava.aprox.autoprox.data.AutoProxRule;
+import org.commonjava.aprox.autoprox.data.AutoProxRuleException;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.RemoteRepository;
@@ -34,7 +34,7 @@ public class TestAutoProxFactory
 
     @Override
     public RemoteRepository createRemoteRepository( final String named )
-        throws MalformedURLException
+        throws AutoProxRuleException
     {
         return new RemoteRepository( named, http.formatUrl( "target", named ) );
     }
@@ -72,7 +72,7 @@ public class TestAutoProxFactory
 
     @Override
     public RemoteRepository createGroupValidationRemote( final String name )
-        throws MalformedURLException
+        throws AutoProxRuleException
     {
         return createRemoteRepository( name );
     }
