@@ -40,9 +40,9 @@ public final class RuleMapping
         this.externalMatch = null;
     }
 
-    public RuleMapping( final String match, final RuleMapping ruleMapping )
+    public RuleMapping( final String match, final String scriptName, final RuleMapping ruleMapping )
     {
-        this.scriptName = ruleMapping.getScriptName();
+        this.scriptName = scriptName;
         this.externalMatch = match;
         this.rule = ruleMapping.getRule();
         this.spec = ruleMapping.getSpecification();

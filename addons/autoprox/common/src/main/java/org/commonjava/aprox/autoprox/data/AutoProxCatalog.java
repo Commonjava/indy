@@ -74,26 +74,26 @@ public class AutoProxCatalog
         Collections.sort( ruleMappings );
     }
 
-    private AutoProxRule getRule( final String name )
+    public RuleMapping getRuleMappingFor( final String name )
     {
         for ( final RuleMapping mapping : getRuleMappings() )
         {
             logger.info( "Checking rule: '{}' for applicability to name: '{}'", mapping.getScriptName(), name );
             if ( mapping.matchesName( name ) )
             {
-                final AutoProxRule rule = mapping.getRule();
-
-                logger.info( "Using rule {} (script: {}) for new store: '{}'", rule.getClass()
-                                                                                   .getSimpleName(),
-                             mapping.getScriptName(), name );
-
-                return rule;
+                return mapping;
             }
         }
 
         logger.info( "No AutoProx rule found for: '{}'", name );
 
         return null;
+    }
+
+    public AutoProxRule getRule( final String name )
+    {
+        final RuleMapping mapping = getRuleMappingFor( name );
+        return mapping == null ? null : mapping.getRule();
     }
 
     public RemoteRepository createRemoteRepository( final String name )

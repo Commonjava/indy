@@ -1,18 +1,44 @@
 var aprox = angular.module('aprox');
 
-aprox.provide.factory('AutoProxCalculatorSvc', ['$resource',
-  function($resource){
-    return $resource('/api/1.0/autoprox/eval/:type/:name', {}, {
-      eval: {
-        method:'GET', 
-        params:{type: 'remote', name:'foo'}, 
-        isArray:false
-      },
-    });
-  }]);
+aprox.provide.factory('AutoProxUtilsSvc', function(){
+  return {
+    viewRulePath: function(rule){
+      return '/autoprox/rules/view/' + rule;
+    },
+    
+    viewRuleHref: function(rule){
+      return '#/autoprox/rules/view/' + rule;
+    },
+    
+    viewCalcPath: function( form ){
+      return '/autoprox/calc/view/' + form.type + '/' + form.name;
+    },
+    
+    viewCalcHref: function( form ){
+      return '#/autoprox/calc/view/' + form.type + '/' + form.name;
+    },
+  };
+});
 
-aprox.controllerProvider.register('AutoProxCalculatorCtl', ['$scope', '$routeParams', '$location', 'AutoProxCalculatorSvc', 'StoreUtilSvc', 
-                                                            function($scope, $routeParams, $location, AutoProxCalculatorSvc, StoreUtilSvc) {
+aprox.provide.factory('AutoProxCalculatorSvc', ['$resource', function($resource){
+  return $resource('/api/1.0/autoprox/eval/:type/:name', {}, {
+    eval: {
+      method:'GET', 
+      params:{type: 'remote', name:'foo'}, 
+      isArray:false
+    },
+  });
+}]);
+
+aprox.provide.factory('AutoProxCatalogSvc', ['$resource', function($resource){
+  return $resource('/api/1.0/autoprox/catalog', {}, {
+    query: {method:'GET', params:{}, isArray:false},
+  });
+}]);
+
+
+aprox.controllerProvider.register('AutoProxCalculatorCtl', ['$scope', '$routeParams', '$location', 'AutoProxCalculatorSvc', 'AutoProxUtilsSvc', 'StoreUtilSvc', 
+                                                            function($scope, $routeParams, $location, AutoProxCalculatorSvc, AutoProxUtilsSvc, StoreUtilSvc) {
   $scope.types = ['remote', 'hosted', 'group'];
   $scope.form = {
     type: 'remote',
@@ -20,12 +46,11 @@ aprox.controllerProvider.register('AutoProxCalculatorCtl', ['$scope', '$routePar
   };
   
   $scope.change = function(){
-    $location.path('/autoprox/calc/' + $scope.form.type + '/' + $scope.form.name );
+    $location.path(AutoProxUtilsSvc.viewCalcPath($scope.form));
   };
   
   $scope.create = function(){
     var href = StoreUtilSvc.detailPath($scope.store.key);
-    alert( "Going to: " + href );
     $location.path( href );
   };
   
@@ -38,6 +63,8 @@ aprox.controllerProvider.register('AutoProxCalculatorCtl', ['$scope', '$routePar
         delete $scope.raw;
         delete $scope.store;
 				delete $scope.supplemental;
+        delete $scope.rule_name;
+        delete $scope.rule_href;
 			}
 			else{
         delete $scope.raw;
@@ -45,6 +72,8 @@ aprox.controllerProvider.register('AutoProxCalculatorCtl', ['$scope', '$routePar
 			  delete $scope.supplemental;
 			  
 				$scope.store = result.store;
+				$scope.rule_name = result.ruleName;
+				$scope.rule_href = AutoProxUtilsSvc.viewRuleHref(result.ruleName);
 				
 				var store = result.store;
 				var key = result.store.key;
@@ -135,13 +164,11 @@ aprox.controllerProvider.register('AutoProxCalcConstituentCtl', ['$scope', 'Stor
   };
 }]);
 
-aprox.provide.factory('AutoProxCatalogSvc', ['$resource', function($resource){
-  return $resource('/api/1.0/autoprox/catalog', {}, {
-    query: {method:'GET', params:{}, isArray:false},
-  });
-}]);
-
-aprox.controllerProvider.register( 'AutoProxRulesCtl', ['$scope', 'AutoProxCatalogSvc', function($scope, AutoProxCatalogSvc){
+aprox.controllerProvider.register( 'AutoProxRulesCtl', ['$scope', '$routeParams', '$location', 'AutoProxCatalogSvc', 'AutoProxUtilsSvc',
+                                                        function($scope, $routeParams, $location, AutoProxCatalogSvc, AutoProxUtilsSvc){
+  
+  $scope.currentName = $routeParams.name;
+  
   AutoProxCatalogSvc.query(function(listing){
     if ( listing.error !== undefined ){
       delete $scope.rules;
@@ -150,18 +177,21 @@ aprox.controllerProvider.register( 'AutoProxRulesCtl', ['$scope', 'AutoProxCatal
     else{
       delete $scope.error;
       $scope.rules = listing.rules;
+      
+      if ( $scope.currentName ){
+        $scope.rules.each(function(rule){
+          if( rule.name == $scope.currentName ){
+            $scope.currentRule = rule;
+            return false;
+          }
+        });
+      }
     }
   });
   
   $scope.showRule = function(){
-    if ( $scope.currentName ){
-      $scope.rules.each(function(rule){
-        if( rule.name == $scope.currentName ){
-          $scope.currentRule = rule;
-          return false;
-        }
-      });
-    }
-  }
+    $location.path(AutoProxUtilsSvc.viewRulePath($scope.currentName));
+  };
+  
 }]);
 

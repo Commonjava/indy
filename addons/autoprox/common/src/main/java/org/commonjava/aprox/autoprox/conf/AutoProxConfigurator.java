@@ -140,6 +140,8 @@ public class AutoProxConfigurator
 
             ruleMappings = new ArrayList<RuleMapping>();
 
+            int idx = 1;
+
             for ( final Entry<String, String> entry : factoryProtoMappings.entrySet() )
             {
                 final String match = entry.getKey();
@@ -156,8 +158,13 @@ public class AutoProxConfigurator
                 final RuleMapping rule = ruleParser.parseRule( script );
                 if ( rule != null )
                 {
-                    ruleMappings.add( rule );
+                    final String name = String.format( "%04d-%s", idx, rule.getScriptName() );
+                    logger.info( "[WRAP] Wrapping old-style autoprox rule with matcher: '{}' and name: '{}'", match,
+                                 name );
+                    ruleMappings.add( new RuleMapping( match, name, rule ) );
                 }
+
+                idx++;
             }
 
             if ( factoryProtoMappings.isEmpty() || !factoryProtoMappings.containsKey( RuleMapping.DEFAULT_MATCH ) )
@@ -173,7 +180,11 @@ public class AutoProxConfigurator
                     final RuleMapping rule = ruleParser.parseRule( script );
                     if ( rule != null )
                     {
-                        ruleMappings.add( new RuleMapping( RuleMapping.DEFAULT_MATCH, rule ) );
+                        final String name = String.format( "%04d-%s", idx, rule.getScriptName() );
+                        logger.info( "[WRAP] Wrapping old-style autoprox rule with matcher: '{}' and name: '{}'",
+                                     RuleMapping.DEFAULT_MATCH, name );
+
+                        ruleMappings.add( new RuleMapping( RuleMapping.DEFAULT_MATCH, name, rule ) );
                     }
                 }
             }

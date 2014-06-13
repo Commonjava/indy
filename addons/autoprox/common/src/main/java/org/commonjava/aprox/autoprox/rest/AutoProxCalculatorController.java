@@ -9,6 +9,7 @@ import javax.inject.Inject;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.autoprox.data.AutoProxCatalog;
 import org.commonjava.aprox.autoprox.data.AutoProxRuleException;
+import org.commonjava.aprox.autoprox.data.RuleMapping;
 import org.commonjava.aprox.autoprox.rest.dto.AutoProxCalculation;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
@@ -34,13 +35,20 @@ public class AutoProxCalculatorController
         try
         {
             final RemoteRepository store = catalog.createRemoteRepository( name );
-            return store == null ? null : new AutoProxCalculation( store );
+            if ( store != null )
+            {
+                final RuleMapping mapping = catalog.getRuleMappingFor( name );
+
+                return new AutoProxCalculation( store, mapping );
+            }
         }
         catch ( final AutoProxRuleException e )
         {
             throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to evaluate: '{}'. Reason: {}",
                                               e, name, e.getMessage() );
         }
+
+        return null;
     }
 
     public AutoProxCalculation evalHostedRepository( final String name )
@@ -49,13 +57,20 @@ public class AutoProxCalculatorController
         try
         {
             final HostedRepository store = catalog.createHostedRepository( name );
-            return store == null ? null : new AutoProxCalculation( store );
+            if ( store != null )
+            {
+                final RuleMapping mapping = catalog.getRuleMappingFor( name );
+
+                return new AutoProxCalculation( store, mapping );
+            }
         }
         catch ( final AutoProxRuleException e )
         {
             throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to evaluate: '{}'. Reason: {}",
                                               e, name, e.getMessage() );
         }
+
+        return null;
     }
 
     // FIXME: catalog setEnable() use is NOT threadsafe!!!
@@ -72,10 +87,11 @@ public class AutoProxCalculatorController
             }
             else
             {
+                final RuleMapping mapping = catalog.getRuleMappingFor( name );
                 final List<ArtifactStore> supplemental = new ArrayList<ArtifactStore>();
                 evalSupplementalStores( store, supplemental );
 
-                return new AutoProxCalculation( store, supplemental );
+                return new AutoProxCalculation( store, supplemental, mapping );
             }
         }
         catch ( final AutoProxRuleException e )
@@ -129,34 +145,6 @@ public class AutoProxCalculatorController
                     }
                 }
             }
-        }
-    }
-
-    public RemoteRepository evalGroupValidationRepo( final String name )
-        throws AproxWorkflowException
-    {
-        try
-        {
-            return catalog.createGroupValidationRemote( name );
-        }
-        catch ( final AutoProxRuleException e )
-        {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to evaluate: '{}'. Reason: {}",
-                                              e, name, e.getMessage() );
-        }
-    }
-
-    public String evalRepositoryValidationPath( final String name )
-        throws AproxWorkflowException
-    {
-        try
-        {
-            return catalog.getRemoteValidationUrl( name );
-        }
-        catch ( final AutoProxRuleException e )
-        {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to evaluate: '{}'. Reason: {}",
-                                              e, name, e.getMessage() );
         }
     }
 

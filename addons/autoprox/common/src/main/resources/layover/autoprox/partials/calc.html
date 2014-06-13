@@ -22,7 +22,11 @@
       </div>
 	  </div>
     <div class="error" ng-if="error">{{error}}</div>
-	  <div ng-if="!error && raw" class="content-panel" ng-include="'partials/includes/' + raw.type + '-view.html'">
+	  <div ng-if="!error && raw" class="content-panel">
+	    <div class="section">
+	      Created using rule: <a ng-href="{{rule_href}}">{{rule_name}}</a>
+	    </div>
+	    <div class="section" ng-include="'partials/includes/' + raw.type + '-view.html'"></div>
 	  </div>
 	</div>
   <ol ng-if="!error && supplemental">

@@ -18,9 +18,11 @@ public class AutoProxAddOn
 
     private static final String ROUTE_CALC = "/autoprox/calc";
 
-    private static final String ROUTE_CALC_PREFILL = "/autoprox/calc/:type/:name";
+    private static final String ROUTE_CALC_PREFILL = "/autoprox/calc/view/:type/:name";
 
     private static final String ROUTE_RULES = "/autoprox/rules";
+
+    private static final String ROUTE_RULES_PREFILL = "/autoprox/rules/view/:name";
 
     private AproxAddOnID autoproxId;
 
@@ -37,6 +39,8 @@ public class AutoProxAddOn
                                   .withRoute( new UIRoute().withRoute( ROUTE_CALC_PREFILL )
                                                            .withTemplateHref( "autoprox/partials/calc.html" ) )
                                   .withRoute( new UIRoute().withRoute( ROUTE_RULES )
+                                                           .withTemplateHref( "autoprox/partials/rules.html" ) )
+                                  .withRoute( new UIRoute().withRoute( ROUTE_RULES_PREFILL )
                                                            .withTemplateHref( "autoprox/partials/rules.html" ) )
                                   .withSection( new UISection().withName( "AutoProx Calculator" )
                                                                .withRoute( ROUTE_CALC ) )
