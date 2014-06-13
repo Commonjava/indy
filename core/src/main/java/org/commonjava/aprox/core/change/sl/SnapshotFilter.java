@@ -22,8 +22,8 @@ public class SnapshotFilter
     @Override
     public boolean accept( final File dir, final String name )
     {
-        return ArtifactPathInfo.parse( name )
-                               .isSnapshot();
+        final ArtifactPathInfo info = ArtifactPathInfo.parse( name );
+        return info != null && info.isSnapshot();
     }
 
 }

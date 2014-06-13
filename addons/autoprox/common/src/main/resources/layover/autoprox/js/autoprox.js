@@ -11,11 +11,22 @@ aprox.provide.factory('AutoProxCalculatorSvc', ['$resource',
     });
   }]);
 
-aprox.controllerProvider.register('AutoProxCalculatorCtl', ['$scope', 'AutoProxCalculatorSvc', 'StoreUtilSvc', function($scope, AutoProxCalculatorSvc, StoreUtilSvc) {
+aprox.controllerProvider.register('AutoProxCalculatorCtl', ['$scope', '$routeParams', '$location', 'AutoProxCalculatorSvc', 'StoreUtilSvc', 
+                                                            function($scope, $routeParams, $location, AutoProxCalculatorSvc, StoreUtilSvc) {
   $scope.types = ['remote', 'hosted', 'group'];
   $scope.form = {
     type: 'remote',
     name: 'RH-eap6.1.0',
+  };
+  
+  $scope.change = function(){
+    $location.path('/autoprox/calc/' + $scope.form.type + '/' + $scope.form.name );
+  };
+  
+  $scope.create = function(){
+    var href = StoreUtilSvc.detailPath($scope.store.key);
+    alert( "Going to: " + href );
+    $location.path( href );
   };
   
 	$scope.calculate = function(){
@@ -69,7 +80,16 @@ aprox.controllerProvider.register('AutoProxCalculatorCtl', ['$scope', 'AutoProxC
 		});
 	};
 	
-//	$scope.calculate();
+  var routeType = $routeParams.type;
+  var routeName = $routeParams.name;
+  
+  if ( routeType !== undefined && routeName !== undefined ){
+    $scope.form.type = routeType;
+    $scope.form.name = routeName;
+    
+  	$scope.calculate();
+  }
+  
 }]);
 
 aprox.controllerProvider.register('AutoProxCalcConstituentCtl', ['$scope', 'StoreUtilSvc', function( $scope, StoreUtilSvc){

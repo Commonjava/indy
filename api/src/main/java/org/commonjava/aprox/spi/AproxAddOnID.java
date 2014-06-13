@@ -3,6 +3,7 @@ package org.commonjava.aprox.spi;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.commonjava.aprox.dto.UIRoute;
 import org.commonjava.aprox.dto.UISection;
 
 public final class AproxAddOnID
@@ -10,6 +11,8 @@ public final class AproxAddOnID
 {
 
     private String name;
+
+    private List<UIRoute> routes;
 
     private List<UISection> sections;
 
@@ -57,14 +60,36 @@ public final class AproxAddOnID
         this.sections = sections;
     }
 
-    public AproxAddOnID withUISection( final UISection uiSection )
+    public AproxAddOnID withSection( final UISection section )
     {
         if ( sections == null )
         {
             sections = new ArrayList<UISection>();
         }
 
-        sections.add( uiSection );
+        sections.add( section );
+
+        return this;
+    }
+
+    public List<UIRoute> getRoutes()
+    {
+        return routes;
+    }
+
+    public void setRoutes( final List<UIRoute> routes )
+    {
+        this.routes = routes;
+    }
+
+    public AproxAddOnID withRoute( final UIRoute route )
+    {
+        if ( routes == null )
+        {
+            routes = new ArrayList<UIRoute>();
+        }
+
+        routes.add( route );
 
         return this;
     }

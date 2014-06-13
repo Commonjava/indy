@@ -4,9 +4,9 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import org.commonjava.aprox.dto.UIRoute;
 import org.commonjava.aprox.dto.UISection;
 import org.commonjava.web.json.ser.JsonSerializer;
 import org.junit.Test;
@@ -23,15 +23,13 @@ public class AproxAddOnIDTest
     @Test
     public void roundTripSerialize()
     {
-        final AproxAddOnID id = new AproxAddOnID();
-        id.setName( "foo" );
-        id.setInitJavascriptHref( "js/foo.js" );
+        final UIRoute route = new UIRoute( "/foo", "/partials/foo.html" );
+        final UISection section = new UISection( "Foo (Add-On)", route.getRoute() );
 
-        final UISection section = new UISection( "Foo (Add-On)", "/foo", "/partials/foo.html", "FooMasterController" );
-        final List<UISection> sections = new ArrayList<UISection>();
-        sections.add( section );
-
-        id.setSections( sections );
+        final AproxAddOnID id = new AproxAddOnID().withName( "foo" )
+                                                  .withInitJavascriptHref( "js/foo.js" )
+                                                  .withRoute( route )
+                                                  .withSection( section );
 
         final String json = serializer.toString( id );
 
@@ -42,12 +40,19 @@ public class AproxAddOnIDTest
         assertThat( result.getName(), equalTo( id.getName() ) );
         assertThat( result.getInitJavascriptHref(), equalTo( id.getInitJavascriptHref() ) );
 
+        final List<UIRoute> rRoutes = result.getRoutes();
+        assertThat( rRoutes, notNullValue() );
+        assertThat( rRoutes.size(), equalTo( 1 ) );
+
+        final UIRoute rRoute = rRoutes.get( 0 );
+        assertThat( rRoute.getTemplateHref(), equalTo( route.getTemplateHref() ) );
+        assertThat( rRoute.getRoute(), equalTo( route.getRoute() ) );
+
         final List<UISection> rSections = result.getSections();
         assertThat( rSections, notNullValue() );
-        assertThat( rSections.size(), equalTo( sections.size() ) );
+        assertThat( rSections.size(), equalTo( 1 ) );
 
         final UISection rSection = rSections.get( 0 );
-        assertThat( rSection.getController(), equalTo( section.getController() ) );
         assertThat( rSection.getName(), equalTo( section.getName() ) );
         assertThat( rSection.getRoute(), equalTo( section.getRoute() ) );
     }

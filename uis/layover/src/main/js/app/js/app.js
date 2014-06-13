@@ -37,16 +37,12 @@ aprox.config(['$routeProvider', '$controllerProvider', '$compileProvider', '$fil
 
   if ( addons !== undefined ){
     addons.items.each( function(addon){
-      if( addon.sections !== undefined ){
-        addon.sections.each(function(section){
+      if( addon.routes !== undefined ){
+        addon.routes.each(function(route){
           var options = {};
-          options.templateUrl= 'cp/layover/' + section.templateHref;
+          options.templateUrl= 'cp/layover/' + route.templateHref;
 
-          if (section.controller !== undefined){
-            options.controller= section.controller;
-          }
-
-          $routeProvider.when(section.route, options);
+          $routeProvider.when(route.route, options);
         });
       }
     });

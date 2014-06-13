@@ -1,17 +1,22 @@
 <div ng-controller="AutoProxCalculatorCtl">
 	<div class="container-fluid">
 	  <div class="control-panel">
-      <div class="cp-col">
-        Test a new:
-	      <select ng-model="form.type" ng-options="type for type in types">
-	      </select>
+	    <div class="cp-row">
+	      <div class="cp-col">
+	        Test a new:
+		      <select ng-model="form.type" ng-options="type for type in types">
+		      </select>
+		    </div>
+		    <div class="cp-col">
+	         named: <input type="text" ng-model="form.name" />
+	       </div>
+	       <div class="cp-col">
+	         <a class="cp-button" href="" ng-click="change()">Calculate!</a>
+	       </div>
 	    </div>
-	    <div class="cp-col">
-         named: <input type="text" ng-model="form.name" />
-       </div>
-       <div class="cp-col">
-         <a class="cp-button" href="" ng-click="calculate()">Calculate!</a>
-       </div>
+	    <div class="cp-row" ng-if="store">
+         <a class="cp-button" href="" ng-click="create()">Create it!</a>
+	    </div>
       <div class="cp-row cp-debug">
         <input type="checkbox" ng-model="enableDebug" ng-init="checked=false" /> Debug Data
       </div>

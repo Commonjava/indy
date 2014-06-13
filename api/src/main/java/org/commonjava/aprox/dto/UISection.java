@@ -7,20 +7,14 @@ public class UISection
 
     private String route;
 
-    private String templateHref;
-
-    private String controller;
-
     public UISection()
     {
     }
 
-    public UISection( final String name, final String route, final String template, final String controller )
+    public UISection( final String name, final String route )
     {
         this.name = name;
         this.route = route;
-        this.templateHref = template;
-        this.controller = controller;
     }
 
     public String getName()
@@ -52,38 +46,6 @@ public class UISection
     public UISection withRoute( final String route )
     {
         this.route = route;
-        return this;
-    }
-
-    public String getController()
-    {
-        return controller;
-    }
-
-    public void setController( final String controller )
-    {
-        this.controller = controller;
-    }
-
-    public UISection withController( final String controller )
-    {
-        this.controller = controller;
-        return this;
-    }
-
-    public String getTemplateHref()
-    {
-        return templateHref;
-    }
-
-    public void setTemplateHref( final String templateHref )
-    {
-        this.templateHref = templateHref;
-    }
-
-    public UISection withTemplateHref( final String templateHref )
-    {
-        this.templateHref = templateHref;
         return this;
     }
 
