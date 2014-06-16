@@ -35,7 +35,7 @@
       <a ng-if="!display" href="" ng-click="displayConstituent()">{{store.key}}</a>
       <div class="content-panel item-expanded" ng-if="display">
         <div class="subsection">{{store.key}} [<a href="" ng-click="hideConstituent()">Hide</a>]</div>
-        <div ng-include="'partials/includes/remote-view.html'"></div>
+        <div ng-include="'partials/includes/' + store.type + '-view.html'"></div>
       </div>
     </li>
   </ol>

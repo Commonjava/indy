@@ -44,6 +44,7 @@
     <galleyVersion>0.6.1</galleyVersion>
     <cartoVersion>0.7.0</cartoVersion>
     <bomVersion>10</bomVersion>
+    <webdavVersion>3.2-SNAPSHOT</webdavVersion>
     
     <vertx.testtools.version>2.0.0-final</vertx.testtools.version>
   </properties>
@@ -331,6 +332,22 @@
         <artifactId>qarqas-test-harness</artifactId>
         <version>${version.plugin.qarqas}</version>
         <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.commonjava.web</groupId>
+        <artifactId>webdav-handler-common</artifactId>
+        <version>${webdavVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.web</groupId>
+        <artifactId>webdav-handler-vertx</artifactId>
+        <version>${webdavVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.web</groupId>
+        <artifactId>webdav-handler-servlet</artifactId>
+        <version>${webdavVersion}</version>
       </dependency>
       
       <!-- <dependency>

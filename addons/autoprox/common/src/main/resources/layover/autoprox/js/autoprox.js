@@ -103,6 +103,22 @@ aprox.controllerProvider.register('AutoProxCalculatorCtl', ['$scope', '$routePar
 				else if ( $scope.raw.type == 'group' ){
 	        if ( result.supplementalStores ){
 	          $scope.supplemental = result.supplementalStores;
+	          
+	          var suppKeys = [];
+	          $scope.supplemental.each(function(store){
+	            store.type = StoreUtilSvc.typeFromKey( store.key );
+	            suppKeys.push( store.key );
+	          });
+	          
+	          $scope.raw.constituentHrefs= {};
+
+	          store.constituents.each(function(constituent){
+	            if ( suppKeys.indexOf( constituent ) < 0 ){
+	              $scope.raw.constituentHrefs[constituent] = {
+	                detailHref: StoreUtilSvc.detailHref( constituent )
+	              };
+	            }
+	          });
 	        }
 				}
 			}
@@ -118,6 +134,8 @@ aprox.controllerProvider.register('AutoProxCalculatorCtl', ['$scope', '$routePar
     
   	$scope.calculate();
   }
+  
+  $scope.storeUtils = StoreUtilSvc;
   
 }]);
 
@@ -162,10 +180,12 @@ aprox.controllerProvider.register('AutoProxCalcConstituentCtl', ['$scope', 'Stor
   $scope.hideConstituent = function(){
     $scope.display = false;
   };
+  
+  $scope.storeUtils = StoreUtilSvc;
 }]);
 
-aprox.controllerProvider.register( 'AutoProxRulesCtl', ['$scope', '$routeParams', '$location', 'AutoProxCatalogSvc', 'AutoProxUtilsSvc',
-                                                        function($scope, $routeParams, $location, AutoProxCatalogSvc, AutoProxUtilsSvc){
+aprox.controllerProvider.register( 'AutoProxRulesCtl', ['$scope', '$routeParams', '$location', 'AutoProxCatalogSvc', 'AutoProxUtilsSvc', 'StoreUtilSvc',
+                                                        function($scope, $routeParams, $location, AutoProxCatalogSvc, AutoProxUtilsSvc, StoreUtilSvc){
   
   $scope.currentName = $routeParams.name;
   
@@ -193,5 +213,6 @@ aprox.controllerProvider.register( 'AutoProxRulesCtl', ['$scope', '$routeParams'
     $location.path(AutoProxUtilsSvc.viewRulePath($scope.currentName));
   };
   
+  $scope.storeUtils = StoreUtilSvc;
 }]);
 

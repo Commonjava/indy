@@ -25,9 +25,8 @@
 
 <ol class="detail-value detail-value-list">
 	<lt class="label list-label">Constituents:</lt>
-	<li ng-if="raw.constituentHrefs" ng-repeat="constituent in store.constituents"
-		class="detail-value-list-item"><a
-		ng-href="{{raw.constituentHrefs[constituent].detailHref}}">{{constituent}}</a></li>
-    <li ng-if="!raw.constituentHrefs" ng-repeat="constituent in store.constituents"
-        class="detail-value-list-item">{{constituent}}</li>
+	<li ng-if="raw.constituentHrefs" ng-repeat="constituent in store.constituents" class="detail-value-list-item">
+		<a ng-if="raw.constituentHrefs[constituent].detailHref" ng-href="{{raw.constituentHrefs[constituent].detailHref}}">{{constituent}}</a>
+		<span ng-if="!raw.constituentHrefs[constituent].detailHref">{{constituent}}</span>
+  </li>
 </ol>

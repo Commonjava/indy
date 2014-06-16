@@ -25,20 +25,20 @@
 
 <table class="detail-table">
 	<tr class="detail-field">
+    <td class="detail-value">{{(store.allow_releases || store.allow_snapshots) | checkmark}}</td>
 		<td class="label">Uploads Allowed?</td>
-		<td class="detail-value">{{(store.allow_releases || store.allow_snapshots) | checkmark}}</td>
 	</tr>
-	<tr ng-if="allowUploads(store)" class="detail-field">
+	<tr ng-if="(store.allow_releases || store.allow_snapshots)" class="detail-field">
+    <td class="detail-value">{{store.allow_releases | checkmark}}</td>
 		<td class="label">Releases Allowed?</td>
-		<td class="detail-value">{{store.allow_releases | checkmark}}</td>
 	</tr>
-	<tr ng-if="allowUploads(store)" class="detail-field">
+	<tr ng-if="(store.allow_releases || store.allow_snapshots)" class="detail-field">
+    <td class="detail-value">{{store.allow_snapshots | checkmark}}</td>
 		<td class="label">Snapshots Allowed?</td>
-		<td class="detail-value">{{store.allow_snapshots | checkmark}}</td>
 	</tr>
 </table>
 
-<table ng-if="showSnapshotTimeout(store)" class="detail-table">
+<table ng-if="store.allow_snapshots" class="detail-table">
 	<tr class="detail-field">
 		<td class="label">Snapshot Timeout:</td>
 		<td class="detail-value">{{store.snapshotTimeoutSeconds |
