@@ -44,7 +44,7 @@
     <galleyVersion>0.6.1</galleyVersion>
     <cartoVersion>0.7.0</cartoVersion>
     <bomVersion>10</bomVersion>
-    <webdavVersion>3.2-SNAPSHOT</webdavVersion>
+    <webdavVersion>3.1.1</webdavVersion>
     
     <vertx.testtools.version>2.0.0-final</vertx.testtools.version>
   </properties>
