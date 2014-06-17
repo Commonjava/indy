@@ -18,7 +18,7 @@
   
   <fileSets>
     <fileSet>
-      <directory>src/main/resources</directory>
+      <directory>target/classes</directory>
       <outputDirectory>/</outputDirectory>
       <fileMode>0750</fileMode>
       <directoryMode>770</directoryMode>
@@ -27,7 +27,7 @@
       </includes>
     </fileSet>
     <fileSet>
-      <directory>src/main/resources</directory>
+      <directory>target/classes</directory>
       <outputDirectory>/</outputDirectory>
       <fileMode>0640</fileMode>
       <directoryMode>770</directoryMode>
