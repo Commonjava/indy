@@ -39,12 +39,19 @@ case "$1" in
     ;;
   stop)
     echo -n $"Shutting down ($PROG): "
+
+    if [ -z $PID ]; then
+      echo "not running"
+      exit 0
+    fi
+
     kill $PID > /dev/null 2>&1
     RETVAL=$?
     [ $RETVAL -eq 0 ] && success || failure
     echo
     [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$PROG
-    return $RETVAL
+
+    exit $RETVAL
     ;;
   restart)
     stop
