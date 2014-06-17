@@ -16,10 +16,8 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.WeakHashMap;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -61,8 +59,6 @@ public class SettingsSubStore
 
     @Inject
     private RequestInfo requestInfo;
-
-    private transient Map<String, SettingsTemplate> templates = new WeakHashMap<String, SettingsTemplate>();
 
     @Override
     public boolean matchesUri( final String uri )
@@ -166,9 +162,6 @@ public class SettingsSubStore
     private synchronized SettingsTemplate getSettingsTemplate( final URIMatcher matcher )
         throws WebdavException
     {
-        SettingsTemplate template = templates.get( matcher.getURI() );
-        if ( template == null )
-        {
             final StoreKey key = matcher.getStoreKey();
             ArtifactStore store;
             try
@@ -192,11 +185,7 @@ public class SettingsSubStore
                 throw new WebdavException( "Failed to retrieve length for: " + matcher.getURI() );
             }
 
-            template = new SettingsTemplate( key, advice, requestInfo );
-            templates.put( matcher.getURI(), template );
-        }
-
-        return template;
+        return new SettingsTemplate( key, advice, requestInfo );
     }
 
     @Override

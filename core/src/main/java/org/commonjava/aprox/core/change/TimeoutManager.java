@@ -131,8 +131,13 @@ public class TimeoutManager
                             cleanMetadata( key, path );
                         }
 
-                        if ( ArtifactPathInfo.parse( path )
-                                             .isSnapshot() )
+                        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
+                        if ( pathInfo == null )
+                        {
+                            return;
+                        }
+
+                        if ( pathInfo.isSnapshot() )
                         {
                             updateSnapshotVersions( key, path );
                         }
@@ -512,8 +517,13 @@ public class TimeoutManager
         final String path = event.getTransfer()
                                  .getPath();
 
-        if ( ArtifactPathInfo.parse( path )
-                             .isSnapshot() && deploy.getSnapshotTimeoutSeconds() > 0 )
+        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
+        if ( pathInfo == null )
+        {
+            return;
+        }
+
+        if ( pathInfo.isSnapshot() && deploy.getSnapshotTimeoutSeconds() > 0 )
         {
             final long timeout = deploy.getSnapshotTimeoutSeconds() * 1000;
             //            logger.info( "[SNAPSHOT TIMEOUT SET] {}/{}; {}", deploy.getKey(), path, new Date( timeout ) );
@@ -655,6 +665,10 @@ public class TimeoutManager
     private void updateSnapshotVersions( final StoreKey key, final String path )
     {
         final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
+        if ( pathInfo == null )
+        {
+            return;
+        }
 
         final Transfer item = fileManager.getStorageReference( key, path );
         if ( item.getParent() == null || item.getParent()
