@@ -19,7 +19,7 @@
   
   <groupId>org.commonjava.aprox</groupId>
   <artifactId>aprox-parent</artifactId>
-  <version>0.14.2</version>
+  <version>0.14.3-SNAPSHOT</version>
   
   <packaging>pom</packaging>
   
@@ -29,7 +29,7 @@
     <connection>scm:git:http://jdcasey@github.com/jdcasey/aprox.git</connection>
     <developerConnection>scm:git:git@github.com:jdcasey/aprox.git</developerConnection>
     <url>http://github.com/jdcasey/aprox</url>
-    <tag>aprox-parent-0.14.2</tag>
+    <tag>HEAD</tag>
   </scm>
   
   <properties>
@@ -93,14 +93,14 @@
       <dependency>
         <groupId>org.commonjava.aprox.ui</groupId>
         <artifactId>aprox-ui-monorail</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
         <!-- <type>war</type> -->
         <scope>runtime</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox.ui</groupId>
         <artifactId>aprox-ui-layover</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
         <!-- <type>war</type> -->
         <scope>runtime</scope>
       </dependency>
@@ -108,68 +108,68 @@
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-api</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-core</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-db-flat</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-bindings-jaxrs</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-bindings-vertx</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox.launch</groupId>
         <artifactId>aprox-launcher-base</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
         <type>tar.gz</type>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-depgraph-common</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-depgraph-jaxrs</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-depgraph-vertx</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-autoprox-vertx</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-autoprox-jaxrs</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-autoprox-common</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-autoprox-common</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>docset</classifier>
         <scope>provided</scope>
@@ -177,7 +177,7 @@
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-autoprox-common</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -185,7 +185,7 @@
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-autoprox-common</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>dataset</classifier>
         <scope>provided</scope>
@@ -193,69 +193,69 @@
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-dot-maven-common</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-dot-maven-jaxrs</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-dot-maven-vertx</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-indexer</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-db-memory</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-test-db</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-test-utils</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-filer-default</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-subsys-vertx</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-subsys-flatfile</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-subsys-http</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-subsys-maven</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-subsys-groovy</artifactId>
-        <version>0.14.2</version>
+        <version>0.14.3-SNAPSHOT</version>
       </dependency>
       
       

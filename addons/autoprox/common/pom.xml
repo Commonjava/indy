@@ -14,7 +14,7 @@
   <parent>
     <groupId>org.commonjava.aprox</groupId>
     <artifactId>aprox-autoprox</artifactId>
-    <version>0.14.2</version>
+    <version>0.14.3-SNAPSHOT</version>
   </parent>
   <artifactId>aprox-autoprox-common</artifactId>
   <name>AProx :: Add-Ons :: Auto-Proxy :: Common</name>

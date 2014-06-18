@@ -14,7 +14,7 @@
   <parent>
     <groupId>org.commonjava.aprox.wars</groupId>
     <artifactId>aprox-wars</artifactId>
-    <version>0.14.2</version>
+    <version>0.14.3-SNAPSHOT</version>
   </parent>
   
   <artifactId>aprox-savant</artifactId>
