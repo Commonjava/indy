@@ -38,7 +38,7 @@ start() {
 stop() {
     echo -n $"Shutting down ($PROG): "
 
-    if [ -z $PID ]; then
+    if [ "x$PID" == "x" ]; then
       echo "not running"
       RETVAL=0
     else
