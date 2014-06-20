@@ -18,3 +18,17 @@ Array.prototype.each = function (callback) {
   }
   return this;
 };
+
+var appPath = function( path ){
+  var basepath = window.location.pathname;
+  var lastSlash = basepath.lastIndexOf('/');
+  if( lastSlash && lastSlash > -1 ){
+    basepath = basepath.substring(0, lastSlash);
+  }
+  
+  if ( !path.startsWith( '/' ) ){
+    basepath += '/';
+  }
+  
+  return basepath + path
+};

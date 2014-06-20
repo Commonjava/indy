@@ -33,8 +33,6 @@ public class MasterRouter
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    public static final String PREFIX = "";
-
     @Inject
     private Instance<AproxRouter> routers;
 

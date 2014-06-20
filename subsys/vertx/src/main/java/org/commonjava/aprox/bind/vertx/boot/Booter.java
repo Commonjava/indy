@@ -172,6 +172,9 @@ public class Booter
         final MasterRouter router = container.instance()
                                              .select( MasterRouter.class )
                                              .get();
+
+        router.setPrefix( bootOptions.getContextPath() );
+
         //        router.initializeComponents();
 
         final DefaultVertx vertx = new DefaultVertx();

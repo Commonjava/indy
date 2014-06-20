@@ -24,6 +24,7 @@
       <directoryMode>770</directoryMode>
       <includes>
         <include>**/*.sh</include>
+        <include>**/bin/init/*</include>
       </includes>
     </fileSet>
     <fileSet>

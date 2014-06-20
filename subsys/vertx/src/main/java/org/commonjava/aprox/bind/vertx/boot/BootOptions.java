@@ -43,6 +43,8 @@ public class BootOptions
 
     public static final String WORKERS_PROP = "workers";
 
+    public static final String CONTEXT_PATH_PROP = "context-path";
+
     @Option( name = "-h", aliases = { "--help" }, usage = "Print this and exit" )
     private boolean help;
 
@@ -57,6 +59,9 @@ public class BootOptions
 
     @Option( name = "-w", aliases = { "--workers" }, usage = "Number of worker threads to serve content (default: 5)" )
     private int workers = 5;
+
+    @Option( name = "-C", aliases = { "--context-path" }, usage = "Specify a root context path for all of aprox to use" )
+    private String contextPath;
 
     private Weld weld;
 
@@ -89,6 +94,8 @@ public class BootOptions
                     Integer.parseInt( resolve( bootProps.getProperty( WORKERS_PROP, Integer.toString( workers ) ) ) );
 
                 config = resolve( bootProps.getProperty( CONFIG_PROP, config ) );
+
+                contextPath = bootProps.getProperty( CONTEXT_PATH_PROP, contextPath );
             }
             finally
             {
@@ -228,6 +235,26 @@ public class BootOptions
     {
         this.workers = workers;
         return this;
+    }
+
+    public String getContextPath()
+    {
+        if ( contextPath == null )
+        {
+            return null;
+        }
+
+        if ( !contextPath.startsWith( "/" ) )
+        {
+            contextPath = "/" + contextPath;
+        }
+
+        return contextPath;
+    }
+
+    public void setContextPath( final String contextPath )
+    {
+        this.contextPath = contextPath;
     }
 
 }

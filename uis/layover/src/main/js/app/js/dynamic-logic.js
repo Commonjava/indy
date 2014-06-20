@@ -3,7 +3,7 @@ if ( addons !== undefined ){
     if ( addon.initJavascriptHref !== undefined ){
       var fileref=document.createElement('script');
       fileref.setAttribute("type","text/javascript");
-      fileref.setAttribute("src", "/cp/layover/" + addon.initJavascriptHref);
+      fileref.setAttribute("src", appPath( "/cp/layover/" + addon.initJavascriptHref ));
       
       document.getElementsByTagName("body")[0].appendChild(fileref);
     }

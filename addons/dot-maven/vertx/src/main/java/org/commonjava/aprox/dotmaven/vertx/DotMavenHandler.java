@@ -50,6 +50,9 @@ public class DotMavenHandler
     @Inject
     private DotMavenService service;
 
+    @Inject
+    private MasterRouter masterRouter;
+
     // NOTE: /mavdav/ prefix is in the DotMavenRouter.
     @Routes( { @Route( method = Method.ANY, path = ":?path=(.*)", binding = BindingType.raw ) } )
     public void handle( final HttpServerRequest request )
@@ -70,7 +73,13 @@ public class DotMavenHandler
 
         try
         {
-            req = new VertXWebdavRequest( request, MasterRouter.PREFIX, "/mavdav", path, null );
+            String contextPath = masterRouter.getPrefix();
+            if ( contextPath == null )
+            {
+                contextPath = "";
+            }
+
+            req = new VertXWebdavRequest( request, contextPath, "/mavdav", path, null );
 
             service.service( req, response );
 
