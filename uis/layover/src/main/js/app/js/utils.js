@@ -20,15 +20,24 @@ Array.prototype.each = function (callback) {
 };
 
 var appPath = function( path ){
-  var basepath = window.location.pathname;
-  var lastSlash = basepath.lastIndexOf('/');
+  var result = window.location.pathname;
+//  alert( "raw result: '" + result + "'");
+  
+  var lastSlash = result.lastIndexOf('/');
   if( lastSlash && lastSlash > -1 ){
-    basepath = basepath.substring(0, lastSlash);
+    result = result.substring(0, lastSlash + 1);
+//    alert( "trimmed result to: '" + result + "'");
   }
   
-  if ( !path.startsWith( '/' ) ){
-    basepath += '/';
+  if ( !result.endsWith( '/' ) ){
+    result = '/';
   }
   
-  return basepath + path
+  if ( path.length > 0 ){
+    result += path.startsWith( '/' ) ? path.substring(1) : path;
+  }
+  
+//  alert( "constructed path: " + result );
+  
+  return result;
 };
