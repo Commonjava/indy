@@ -14,7 +14,7 @@
   <parent>
     <groupId>org.commonjava.aprox</groupId>
     <artifactId>aprox-dot-maven</artifactId>
-    <version>0.14.3</version>
+    <version>0.14.4-SNAPSHOT</version>
   </parent>
   
   <artifactId>aprox-dot-maven-jaxrs</artifactId>
