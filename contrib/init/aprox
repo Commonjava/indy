@@ -2,50 +2,59 @@
 #
 # Aprox        Startup script for Aprox
 #
-# chkconfig: - 85 15
+# chkconfig: - 86 14
 # description: AProx is a simple repository manager and tooling platform.
 #              It is designed for use with Apache Maven and other applications
 #              that use the Maven repository format.
 # processname: aprox
 # config: /etc/sysconfig/aprox
 # pidfile: /var/run/aprox.pid
+#
 ### BEGIN INIT INFO
-# Provides: tracd
+# Provides: aprox
 # Required-Start: $local_fs $remote_fs $network
 # Required-Stop: $local_fs $remote_fs $network
-# Short-Description: start and stop the aprox daemon
-# Description: AProx is a simple repository manager and tooling platform
+# Short-Description: start and stop AProx Repo Manager
+# Description: AProx is a simple repository manager and tooling platform. 
 ### END INIT INFO
-
 
 # Source function library.
 . /etc/rc.d/init.d/functions
 
 PROG=aprox
-PID=$(ps -C 'java -jar /opt/aprox-launcher-easyprox/lib/aprox-cdi-components-0.12.2.jar' -o pid h)
-EXEC="/opt/aprox-launcher-easyprox/bin/$PROG"
+APROX_HOME=/opt/aprox
+PID=$(ps -C "java -jar $APROX_HOME/lib/aprox-cdi-components-0.14.4.jar" -o pid h)
 LOCKFILE=/var/lock/subsys/$PROG
-EXEC=/opt/aprox-launcher-easyprox/bin/aprox.sh
+EXEC=$APROX_HOME/bin/aprox.sh
 RETVAL=0
 
 start() {
-    echo -n $"Starting ($PROG): "
+    echo -n $"Starting $PROG: "
     $EXEC > /dev/null 2>&1 &
     [ $RETVAL -eq 0 ] && success || failure
     echo
     [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$PROG
 }
-
 stop() {
-    echo -n $"Shutting down ($PROG): "
-    kill $PID kill $PID > /dev/null 2>&1
-    RETVAL=$?
-    [ $RETVAL -eq 0 ] && success || failure
-    echo
-    [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$PROG
-    return $RETVAL
+    echo -n $"Shutting down $PROG: "
+
+    if [ "x$PID" == "x" ]; then
+      echo "not running"
+      RETVAL=0
+    else
+      killproc ${PROG} > /dev/null 2>&1
+      RETVAL=$?
+      [ $RETVAL -eq 0 ] && success || failure
+      echo
+      [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$PROG
+    fi
+}
+restart() {
+    stop
+    start
 }
 
+# See how we're called.
 case "$1" in
   start)
     start
@@ -54,9 +63,7 @@ case "$1" in
     stop
     ;;
   restart)
-    stop
-    start
-    RETVAL=$?
+    restart
     ;;
   condrestart)
         [ -e /var/lock/subsys/$PROG ] && restart
@@ -67,11 +74,13 @@ case "$1" in
         then
             echo "$PROG is stopped"
         else
-            echo "$PROG is running"
+            echo "$PROG (pid  ${PID}) is running..."
         fi
     ;;
   *)
     echo $"Usage: $0 {start|stop|restart|condrestart|status}"
     RETVAL=0
 esac
+
+exit $RETVAL
 
