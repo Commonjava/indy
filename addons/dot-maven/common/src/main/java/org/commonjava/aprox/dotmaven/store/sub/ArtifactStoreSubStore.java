@@ -194,6 +194,11 @@ public class ArtifactStoreSubStore
             else
             {
                 final ArtifactStore store = aprox.getArtifactStore( key );
+                if ( store == null )
+                {
+                    throw new WebdavException( "Cannot find store: " + key );
+                }
+
                 //                logger.info( "Getting Transfer for: {} from: {}", path, store );
                 final Transfer si = fileManager.getStorageReference( store, path );
                 if ( si.exists() )
@@ -300,15 +305,24 @@ public class ArtifactStoreSubStore
                 else
                 {
                     final ArtifactStore store = aprox.getArtifactStore( key );
-                    final Transfer item = fileManager.getStorageReference( store, path );
-                    if ( !item.exists() || !item.isDirectory() )
+
+                    if ( store == null )
                     {
-                        logger.error( "Transfer: {} in {} is not a directory.", path, store.getKey() );
+                        logger.error( "Cannot find ArtifactStore to match key: {}.", key );
                         names = new String[] {};
                     }
                     else
                     {
-                        names = item.list();
+                        final Transfer item = fileManager.getStorageReference( store, path );
+                        if ( !item.exists() || !item.isDirectory() )
+                        {
+                            logger.error( "Transfer: {} in {} is not a directory.", path, store.getKey() );
+                            names = new String[] {};
+                        }
+                        else
+                        {
+                            names = item.list();
+                        }
                     }
                 }
             }
@@ -446,6 +460,11 @@ public class ArtifactStoreSubStore
         {
             logger.error( String.format( "Failed to retrieve artifact store: %s for URI: %s\nReason: %s", key, uri, e.getMessage() ), e );
             throw new WebdavException( "Cannot create: " + uri );
+        }
+
+        if ( store == null )
+        {
+            throw new WebdavException( "Cannot retrieve ArtifactStore: " + key );
         }
 
         StorageAdvice advice;

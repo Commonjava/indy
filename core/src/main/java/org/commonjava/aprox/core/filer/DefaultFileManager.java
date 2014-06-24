@@ -337,13 +337,14 @@ public class DefaultFileManager
      * java.lang.String, java.io.InputStream)
      */
     @Override
-    public Transfer store( final ArtifactStore store, final String path, final InputStream stream )
+    public Transfer store( final ArtifactStore store, final String path, final InputStream stream,
+                           final TransferOperation op )
         throws AproxWorkflowException
     {
         if ( store.getKey()
                   .getType() == StoreType.group )
         {
-            return groupStore( (Group) store, path, stream );
+            return groupStore( (Group) store, path, stream, op );
         }
 
         if ( store.getKey()
@@ -386,7 +387,7 @@ public class DefaultFileManager
         OutputStream out = null;
         try
         {
-            out = target.openOutputStream( TransferOperation.UPLOAD, false );
+            out = target.openOutputStream( op, false );
             copy( stream, out );
         }
         catch ( final IOException e )
@@ -411,7 +412,8 @@ public class DefaultFileManager
      * java.io.InputStream)
      */
     @Override
-    public Transfer store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream )
+    public Transfer store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream,
+                           final TransferOperation op )
         throws AproxWorkflowException
     {
         final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
@@ -454,7 +456,7 @@ public class DefaultFileManager
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "No deployment locations available." );
         }
 
-        store( selected, path, stream );
+        store( selected, path, stream, op );
 
         return getStorageReference( selected.getKey(), path );
     }
@@ -492,20 +494,60 @@ public class DefaultFileManager
 
     @Override
     public Transfer getStoreRootDirectory( final StoreKey key )
+        throws AproxWorkflowException
     {
-        return transfers.getStoreRootDirectory( LocationUtils.toCacheLocation( key ) );
+        ArtifactStore store;
+        try
+        {
+            store = storeManager.getArtifactStore( key );
+        }
+        catch ( final ProxyDataException e )
+        {
+            throw new AproxWorkflowException( "Failed to retrieve ArtifactStore for: %s. Reason: %s", e, key,
+                                              e.getMessage() );
+        }
+
+        if ( store == null )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "Cannot find store: {}", key );
+        }
+
+        return transfers.getStoreRootDirectory( LocationUtils.toLocation( store ) );
+    }
+
+    @Override
+    public Transfer getStoreRootDirectory( final ArtifactStore store )
+    {
+        return transfers.getStoreRootDirectory( LocationUtils.toLocation( store ) );
     }
 
     @Override
     public Transfer getStorageReference( final ArtifactStore store, final String... path )
     {
-        return transfers.getCacheReference( new ConcreteResource( LocationUtils.toCacheLocation( store.getKey() ), path ) );
+        return transfers.getCacheReference( new ConcreteResource( LocationUtils.toLocation( store ), path ) );
     }
 
     @Override
     public Transfer getStorageReference( final StoreKey key, final String... path )
+        throws AproxWorkflowException
     {
-        return transfers.getCacheReference( new ConcreteResource( LocationUtils.toCacheLocation( key ), path ) );
+        ArtifactStore store;
+        try
+        {
+            store = storeManager.getArtifactStore( key );
+        }
+        catch ( final ProxyDataException e )
+        {
+            throw new AproxWorkflowException( "Failed to retrieve ArtifactStore for: %s. Reason: %s", e, key,
+                                              e.getMessage() );
+        }
+
+        if ( store == null )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "Cannot find store: {}", key );
+        }
+
+        return transfers.getCacheReference( new ConcreteResource( LocationUtils.toLocation( store ), path ) );
     }
 
     @Override
@@ -612,7 +654,8 @@ public class DefaultFileManager
         return retrieveFirst( stores, path );
     }
 
-    protected Transfer groupStore( final Group store, final String path, final InputStream stream )
+    protected Transfer groupStore( final Group store, final String path, final InputStream stream,
+                                   final TransferOperation op )
         throws AproxWorkflowException
     {
         List<ArtifactStore> stores;
@@ -638,7 +681,7 @@ public class DefaultFileManager
             }
         }
 
-        return store( stores, path, stream );
+        return store( stores, path, stream, op );
     }
 
     protected boolean groupDelete( final Group store, final String path )

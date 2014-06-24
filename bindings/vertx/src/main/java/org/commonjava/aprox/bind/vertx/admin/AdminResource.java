@@ -125,6 +125,7 @@ public class AdminResource
 
         final StoreType st = StoreType.get( type );
 
+        logger.info( "Got JSON:\n\n{}\n\n", json );
         final ArtifactStore store = modelSerializer.getJsonSerializer()
                                                    .fromString( json, st.getStoreClass() );
 

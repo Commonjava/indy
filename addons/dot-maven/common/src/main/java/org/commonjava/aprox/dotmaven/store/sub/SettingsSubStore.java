@@ -95,8 +95,8 @@ public class SettingsSubStore
     }
 
     @Override
-    public long setResourceContent( final ITransaction transaction, final String resourceUri, final InputStream content, final String contentType,
-                                    final String characterEncoding )
+    public long setResourceContent( final ITransaction transaction, final String resourceUri,
+                                    final InputStream content, final String contentType, final String characterEncoding )
         throws WebdavException
     {
         throw new WebdavException( "Read-only resource." );
@@ -162,28 +162,34 @@ public class SettingsSubStore
     private synchronized SettingsTemplate getSettingsTemplate( final URIMatcher matcher )
         throws WebdavException
     {
-            final StoreKey key = matcher.getStoreKey();
-            ArtifactStore store;
-            try
-            {
-                store = aprox.getArtifactStore( key );
-            }
-            catch ( final ProxyDataException e )
-            {
-                logger.error( String.format( "Failed to retrieve artifact store: %s. Reason: %s", key, e.getMessage() ), e );
-                throw new WebdavException( "Failed to retrieve length for: " + matcher.getURI() );
-            }
+        final StoreKey key = matcher.getStoreKey();
+        ArtifactStore store;
+        try
+        {
+            store = aprox.getArtifactStore( key );
+        }
+        catch ( final ProxyDataException e )
+        {
+            logger.error( String.format( "Failed to retrieve artifact store: %s. Reason: %s", key, e.getMessage() ), e );
+            throw new WebdavException( "Failed to retrieve length for: " + matcher.getURI() );
+        }
 
-            StorageAdvice advice;
-            try
-            {
-                advice = advisor.getStorageAdvice( store );
-            }
-            catch ( final DotMavenException e )
-            {
-                logger.error( String.format( "Failed to retrieve storage advice for: %s. Reason: %s", key, e.getMessage() ), e );
-                throw new WebdavException( "Failed to retrieve length for: " + matcher.getURI() );
-            }
+        if ( store == null )
+        {
+            throw new WebdavException( "Cannot retrieve ArtifactStore: " + key );
+        }
+
+        StorageAdvice advice;
+        try
+        {
+            advice = advisor.getStorageAdvice( store );
+        }
+        catch ( final DotMavenException e )
+        {
+            logger.error( String.format( "Failed to retrieve storage advice for: %s. Reason: %s", key, e.getMessage() ),
+                          e );
+            throw new WebdavException( "Failed to retrieve length for: " + matcher.getURI() );
+        }
 
         return new SettingsTemplate( key, advice, requestInfo );
     }

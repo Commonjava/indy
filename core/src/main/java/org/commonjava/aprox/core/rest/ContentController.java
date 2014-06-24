@@ -40,6 +40,7 @@ import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.model.TransferOperation;
 
 @ApplicationScoped
 public class ContentController
@@ -98,7 +99,7 @@ public class ContentController
         throws AproxWorkflowException
     {
         final ArtifactStore store = getStore( type, name );
-        final Transfer item = fileManager.store( store, path, stream );
+        final Transfer item = fileManager.store( store, path, stream, TransferOperation.UPLOAD );
 
         return item;
     }

@@ -11,7 +11,12 @@
 package org.commonjava.aprox.core.rest.group;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.apache.commons.io.IOUtils.copy;
+import static org.commonjava.maven.galley.util.PathUtils.normalize;
+import static org.commonjava.maven.galley.util.PathUtils.parentPath;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -47,7 +52,9 @@ public class ArchetypeCatalogHandler
     @Override
     public boolean canHandle( final String path )
     {
-        return path.endsWith( ArchetypeCatalogMerger.CATALOG_NAME );
+        return path.endsWith( ArchetypeCatalogMerger.CATALOG_NAME )
+            || path.endsWith( ArchetypeCatalogMerger.CATALOG_SHA_NAME )
+            || path.endsWith( ArchetypeCatalogMerger.CATALOG_MD5_NAME );
     }
 
     @Override
@@ -58,8 +65,14 @@ public class ArchetypeCatalogHandler
 
         if ( !target.exists() )
         {
-            final Set<Transfer> sources = fileManager.retrieveAll( stores, path );
-            final byte[] merged = merger.merge( sources, group, path );
+            String toMergePath = path;
+            if ( !path.endsWith( ArchetypeCatalogMerger.CATALOG_NAME ) )
+            {
+                toMergePath = normalize( normalize( parentPath( toMergePath ) ), ArchetypeCatalogMerger.CATALOG_NAME );
+            }
+
+            final Set<Transfer> sources = fileManager.retrieveAll( stores, toMergePath );
+            final byte[] merged = merger.merge( sources, group, toMergePath );
             if ( merged != null )
             {
                 OutputStream fos = null;
@@ -77,7 +90,7 @@ public class ArchetypeCatalogHandler
                     closeQuietly( fos );
                 }
 
-                helper.writeChecksumsAndMergeInfo( merged, sources, group, path );
+                //                helper.writeChecksumsAndMergeInfo( merged, sources, group, toMergePath );
             }
         }
 
@@ -100,6 +113,7 @@ public class ArchetypeCatalogHandler
             try
             {
                 target.delete();
+                helper.deleteChecksumsAndMergeInfo( group, path );
             }
             catch ( final IOException e )
             {
@@ -108,7 +122,23 @@ public class ArchetypeCatalogHandler
             }
         }
 
-        return fileManager.store( stores, path, stream );
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try
+        {
+            copy( stream, baos );
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxWorkflowException( "Failed to read upload: {}", e, e.getMessage() );
+        }
+
+        final Transfer stored =
+            fileManager.store( stores, path, new ByteArrayInputStream( baos.toByteArray() ), TransferOperation.UPLOAD );
+
+        // This is part of the decorated storage action now.
+        //        helper.writeChecksumsAndMergeInfo( baos.toByteArray(), Collections.singleton( stored ), group, path );
+
+        return stored;
     }
 
     @Override

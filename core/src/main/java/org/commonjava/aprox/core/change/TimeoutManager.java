@@ -37,6 +37,7 @@ import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
 import org.commonjava.aprox.change.event.ProxyManagerDeleteEvent;
 import org.commonjava.aprox.change.event.ProxyManagerUpdateType;
@@ -114,7 +115,19 @@ public class TimeoutManager
                         final String path = (String) event.getExpiration()
                                                           .getData();
 
-                        final Transfer toDelete = fileManager.getStorageReference( key, path );
+                        Transfer toDelete;
+                        try
+                        {
+                            toDelete = fileManager.getStorageReference( key, path );
+                        }
+                        catch ( final AproxWorkflowException e )
+                        {
+                            logger.error( String.format( "Failed to delete expired file for: %s, %s. Reason: %s", key,
+                                                         path, e.getMessage() ), e );
+
+                            return;
+                        }
+
                         if ( toDelete.exists() )
                         {
                             try
@@ -338,7 +351,7 @@ public class TimeoutManager
 
     private Set<String> listAllFiles( final ArtifactStore store, final FilenameFilter filter )
     {
-        final Transfer storeRoot = fileManager.getStoreRootDirectory( store.getKey() );
+        final Transfer storeRoot = fileManager.getStoreRootDirectory( store );
         final Set<String> paths = new HashSet<String>();
         listAll( storeRoot, "", paths, filter );
 
@@ -405,7 +418,18 @@ public class TimeoutManager
                 for ( final String name : names )
                 {
                     final StoreKey key = new StoreKey( type, name );
-                    final Transfer dir = fileManager.getStoreRootDirectory( key );
+                    Transfer dir;
+                    try
+                    {
+                        dir = fileManager.getStoreRootDirectory( key );
+                    }
+                    catch ( final AproxWorkflowException e )
+                    {
+                        logger.error( "Failed to cancel file expirations for deleted artifact store: {}. Error: {}", e,
+                                      key, e.getMessage() );
+                        return;
+                    }
+
                     if ( dir.exists() && dir.isDirectory() )
                     {
                         try
@@ -421,8 +445,8 @@ public class TimeoutManager
                         }
                         catch ( final ExpirationManagerException e )
                         {
-                            logger.error( "Failed to cancel file expirations for deleted artifact store: {} (dir: {}). Error: {}",
-                                          e, key, dir, e.getMessage() );
+                            logger.error( String.format( "Failed to cancel file expirations for deleted artifact store: {} (dir: {}). Error: {}",
+                                                         key, dir, e.getMessage() ), e );
                         }
                     }
                 }
@@ -493,6 +517,11 @@ public class TimeoutManager
         try
         {
             final ArtifactStore store = dataManager.getArtifactStore( key );
+            if ( store == null )
+            {
+                return;
+            }
+
             if ( store instanceof HostedRepository )
             {
                 deploy = (HostedRepository) store;
@@ -609,8 +638,8 @@ public class TimeoutManager
             }
             catch ( final ProxyDataException e )
             {
-                logger.error( "Attempting to update groups for metadata change; Failed to retrieve groups containing store: {}. Error: {}",
-                              e, key, e.getMessage() );
+                logger.error( String.format( "Attempting to update groups for metadata change; Failed to retrieve groups containing store: {}. Error: {}",
+                                             key, e.getMessage() ), e );
             }
         }
     }
@@ -670,14 +699,33 @@ public class TimeoutManager
             return;
         }
 
-        final Transfer item = fileManager.getStorageReference( key, path );
+        final ArtifactStore store;
+        try
+        {
+            store = dataManager.getArtifactStore( key );
+        }
+        catch ( final ProxyDataException e )
+        {
+            logger.error( String.format( "Failed to update metadata after snapshot deletion. Reason: {}",
+                                         e.getMessage() ), e );
+            return;
+        }
+
+        if ( store == null )
+        {
+            logger.error( "Failed to update metadata after snapshot deletion in: {}. Reason: Cannot find corresponding ArtifactStore",
+                          key );
+            return;
+        }
+
+        final Transfer item = fileManager.getStorageReference( store, path );
         if ( item.getParent() == null || item.getParent()
                                              .getParent() == null )
         {
             return;
         }
 
-        final Transfer metadata = fileManager.getStorageReference( key, item.getParent()
+        final Transfer metadata = fileManager.getStorageReference( store, item.getParent()
                                                                             .getParent()
                                                                             .getPath(), "maven-metadata.xml" );
 

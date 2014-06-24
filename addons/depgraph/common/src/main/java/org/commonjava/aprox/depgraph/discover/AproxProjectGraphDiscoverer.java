@@ -15,8 +15,11 @@ import java.util.Collections;
 import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 
+import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depgraph.util.AproxDepgraphUtils;
 import org.commonjava.aprox.inject.Production;
+import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.atlas.graph.RelationshipGraph;
@@ -50,6 +53,9 @@ public class AproxProjectGraphDiscoverer
 
     @Inject
     protected ArtifactManager artifactManager;
+
+    @Inject
+    protected StoreDataManager storeManager;
 
     protected AproxProjectGraphDiscoverer()
     {
@@ -135,8 +141,22 @@ public class AproxProjectGraphDiscoverer
             if ( discoveryConfig.getLocations() == null )
             {
                 final StoreKey key = AproxDepgraphUtils.getDiscoveryStore( discoveryConfig.getDiscoverySource() );
-                final Location location = LocationUtils.toCacheLocation( key );
-                discoveryConfig.setLocations( Collections.singletonList( location ) );
+                ArtifactStore store = null;
+                try
+                {
+                    store = storeManager.getArtifactStore( key );
+                }
+                catch ( final ProxyDataException e )
+                {
+                    logger.error( String.format( "Failed to lookup ArtifactStore for key: {}. Reason: {}", key,
+                                                 e.getMessage() ), e );
+                }
+
+                if ( store != null )
+                {
+                    final Location location = LocationUtils.toLocation( store );
+                    discoveryConfig.setLocations( Collections.singletonList( location ) );
+                }
             }
         }
     }

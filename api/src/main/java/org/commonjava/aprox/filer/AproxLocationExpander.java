@@ -103,6 +103,12 @@ public class AproxLocationExpander
                 try
                 {
                     final ArtifactStore store = data.getArtifactStore( key );
+
+                    if ( store == null )
+                    {
+                        throw new TransferException( "Cannot find ArtifactStore to match key: %s.", key );
+                    }
+
                     logger.debug( "Adding single store: {} for location: {}", store, location );
                     result.add( LocationUtils.toLocation( store ) );
                 }

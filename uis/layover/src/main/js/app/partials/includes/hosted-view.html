@@ -11,6 +11,12 @@
       <span ng-if="raw.demo">{{raw.storeHref}}</span>
     </td>
 	</tr>
+  <tr class="detail-field" ng-if="store.storage">
+    <td class="label">Alternative Storage Directory:</td>
+    <td class="detail-value">
+      <span>{{store.storage}}</span>
+    </td>
+  </tr>
 </table>
 
 <div class="fieldset">

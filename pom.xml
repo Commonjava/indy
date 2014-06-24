@@ -41,10 +41,11 @@
     <qarqas-version>0.3</qarqas-version>
     <shelflife-version>0.6.3</shelflife-version>
     <atlasVersion>0.13.0</atlasVersion>
-    <galleyVersion>0.6.1</galleyVersion>
+    <galleyVersion>0.6.2-SNAPSHOT</galleyVersion>
     <cartoVersion>0.7.0</cartoVersion>
     <bomVersion>12</bomVersion>
     <webdavVersion>3.1.1</webdavVersion>
+    <vabrVersion>1.7-SNAPSHOT</vabrVersion>
     
     <vertx.testtools.version>2.0.0-final</vertx.testtools.version>
   </properties>
@@ -259,6 +260,18 @@
       </dependency>
       
       
+      <dependency>
+        <groupId>org.commonjava.vertx</groupId>
+        <artifactId>vabr-api</artifactId>
+        <version>${vabrVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.vertx</groupId>
+        <artifactId>vabr-processor</artifactId>
+        <version>${vabrVersion}</version>
+        <scope>provided</scope>
+      </dependency>
+
       <dependency>
         <groupId>org.commonjava.shelflife</groupId>
         <artifactId>shelflife-core</artifactId>

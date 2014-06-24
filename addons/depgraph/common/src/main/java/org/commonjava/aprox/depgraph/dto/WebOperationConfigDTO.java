@@ -14,6 +14,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.cartographer.dto.RepositoryContentRecipe;
@@ -63,13 +66,29 @@ public class WebOperationConfigDTO
         this.excludedSources = new TreeSet<StoreKey>( excludedSources );
     }
 
-    public void calculateLocations( final LocationExpander locationExpander )
+    public void calculateLocations( final LocationExpander locationExpander, final StoreDataManager dataManager )
         throws TransferException
     {
         final Logger logger = LoggerFactory.getLogger( getClass() );
         if ( source != null )
         {
-            setSourceLocation( LocationUtils.toCacheLocation( source ) );
+            ArtifactStore store;
+            try
+            {
+                store = dataManager.getArtifactStore( source );
+            }
+            catch ( final ProxyDataException e )
+            {
+                throw new TransferException( "Cannot find ArtifactStore to match source key: %s. Reason: %s", e,
+                                             source, e.getMessage() );
+            }
+
+            if ( store == null )
+            {
+                throw new TransferException( "Cannot find ArtifactStore to match source key: %s.", source );
+            }
+
+            setSourceLocation( LocationUtils.toLocation( store ) );
             logger.debug( "Set sourceLocation to: '{}'", getSourceLocation() );
         }
 
@@ -83,7 +102,24 @@ public class WebOperationConfigDTO
                     continue;
                 }
 
-                final Location loc = LocationUtils.toCacheLocation( key );
+                ArtifactStore store;
+                try
+                {
+                    store = dataManager.getArtifactStore( key );
+                }
+                catch ( final ProxyDataException e )
+                {
+                    throw new TransferException( "Cannot find ArtifactStore to match excluded key: %s. Reason: %s", e,
+                                                 key,
+                                                 e.getMessage() );
+                }
+
+                if ( store == null )
+                {
+                    throw new TransferException( "Cannot find ArtifactStore to match exclude key: %s.", key );
+                }
+
+                final Location loc = LocationUtils.toLocation( store );
                 excluded.add( loc );
                 excluded.addAll( locationExpander.expand( loc ) );
             }

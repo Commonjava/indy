@@ -24,6 +24,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.AproxWorkflowException;
+import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.aprox.depgraph.dto.MetadataCollationDTO;
 import org.commonjava.aprox.depgraph.dto.WebOperationConfigDTO;
@@ -59,6 +60,9 @@ public class ConfigDTOHelper
     @Inject
     private LocationExpander locationExpander;
 
+    @Inject
+    private StoreDataManager dataManager;
+
     public WebOperationConfigDTO readWebOperationDTO( final InputStream configStream )
         throws AproxWorkflowException
     {
@@ -84,7 +88,7 @@ public class ConfigDTOHelper
 
         try
         {
-            dto.calculateLocations( locationExpander );
+            dto.calculateLocations( locationExpander, dataManager );
         }
         catch ( final TransferException e )
         {
@@ -145,7 +149,7 @@ public class ConfigDTOHelper
 
         try
         {
-            dto.calculateLocations( locationExpander );
+            dto.calculateLocations( locationExpander, dataManager );
         }
         catch ( final TransferException e )
         {

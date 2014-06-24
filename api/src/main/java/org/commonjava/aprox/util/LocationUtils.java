@@ -12,7 +12,6 @@ package org.commonjava.aprox.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import org.commonjava.aprox.model.ArtifactStore;
@@ -69,40 +68,40 @@ public final class LocationUtils
         }
     }
 
-    public static CacheOnlyLocation toCacheLocation( final StoreKey key )
-    {
-        if ( key == null )
-        {
-            return null;
-        }
-
-        if ( key.getType() == StoreType.group )
-        {
-            return new GroupLocation( key.getName() );
-        }
-
-        return new CacheOnlyLocation( key );
-    }
-
-    public static List<? extends KeyedLocation> toCacheLocations( final StoreKey... keys )
-    {
-        return toCacheLocations( Arrays.asList( keys ) );
-    }
-
-    public static List<? extends KeyedLocation> toCacheLocations( final Collection<StoreKey> keys )
-    {
-        final List<KeyedLocation> result = new ArrayList<KeyedLocation>();
-        for ( final StoreKey key : keys )
-        {
-            final KeyedLocation loc = toCacheLocation( key );
-            if ( loc != null )
-            {
-                result.add( loc );
-            }
-        }
-
-        return result;
-    }
+    //    public static CacheOnlyLocation toCacheLocation( final StoreKey key )
+    //    {
+    //        if ( key == null )
+    //        {
+    //            return null;
+    //        }
+    //
+    //        if ( key.getType() == StoreType.group )
+    //        {
+    //            return new GroupLocation( key.getName() );
+    //        }
+    //
+    //        return new CacheOnlyLocation( key );
+    //    }
+    //
+    //    public static List<? extends KeyedLocation> toCacheLocations( final StoreKey... keys )
+    //    {
+    //        return toCacheLocations( Arrays.asList( keys ) );
+    //    }
+    //
+    //    public static List<? extends KeyedLocation> toCacheLocations( final Collection<StoreKey> keys )
+    //    {
+    //        final List<KeyedLocation> result = new ArrayList<KeyedLocation>();
+    //        for ( final StoreKey key : keys )
+    //        {
+    //            final KeyedLocation loc = toCacheLocation( key );
+    //            if ( loc != null )
+    //            {
+    //                result.add( loc );
+    //            }
+    //        }
+    //
+    //        return result;
+    //    }
 
     public static List<? extends KeyedLocation> toLocations( final ArtifactStore... stores )
     {

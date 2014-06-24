@@ -613,6 +613,12 @@ public class IndexHandler
                 return;
             }
 
+            if ( store == null )
+            {
+                logger.error( "Failed to update index for: {}. Reason: Cannot find corresponding ArtifactStore", key );
+                return;
+            }
+
             if ( type == StoreType.hosted )
             {
                 scanIndex( store );

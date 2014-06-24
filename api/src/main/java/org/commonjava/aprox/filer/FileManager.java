@@ -20,6 +20,7 @@ import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.model.TransferOperation;
 
 public interface FileManager
 {
@@ -37,15 +38,18 @@ public interface FileManager
     Transfer retrieve( final ArtifactStore store, final String path )
         throws AproxWorkflowException;
 
-    Transfer store( final ArtifactStore store, final String path, final InputStream stream )
+    Transfer store( final ArtifactStore store, final String path, final InputStream stream, TransferOperation op )
         throws AproxWorkflowException;
 
-    Transfer store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream )
+    Transfer store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream,
+                    TransferOperation op )
         throws AproxWorkflowException;
 
-    Transfer getStoreRootDirectory( StoreKey key );
+    Transfer getStoreRootDirectory( StoreKey key )
+        throws AproxWorkflowException;
 
-    Transfer getStorageReference( final StoreKey key, final String... path );
+    Transfer getStorageReference( final StoreKey key, final String... path )
+        throws AproxWorkflowException;
 
     Transfer getStorageReference( final ArtifactStore store, final String... path );
 
@@ -68,5 +72,7 @@ public interface FileManager
 
     List<ConcreteResource> list( List<? extends ArtifactStore> stores, String path )
         throws AproxWorkflowException;
+
+    Transfer getStoreRootDirectory( ArtifactStore store );
 
 }

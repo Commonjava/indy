@@ -15,6 +15,7 @@ import static org.commonjava.aprox.depgraph.util.AproxDepgraphUtils.toDiscoveryU
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -163,31 +164,50 @@ public class AproxDiscoverySourceManager
     public Location createLocation( final Object source )
     {
         final StoreKey key = StoreKey.fromString( normalize( source.toString() ) );
-        return LocationUtils.toCacheLocation( key );
+        ArtifactStore store = null;
+        try
+        {
+            store = stores.getArtifactStore( key );
+        }
+        catch ( final ProxyDataException e )
+        {
+            logger.error( String.format( "Failed to lookup ArtifactStore for key: {}. Reason: {}", key, e.getMessage()  ), e );
+        }
+        
+        return store == null ? null : LocationUtils.toLocation( store );
     }
 
     @Override
     public List<? extends Location> createLocations( final Object... sources )
     {
-        final List<StoreKey> keys = new ArrayList<StoreKey>( sources.length );
-        for ( final Object source : sources )
-        {
-            keys.add( StoreKey.fromString( normalize( source.toString() ) ) );
-        }
-
-        return LocationUtils.toCacheLocations( keys );
+        return createLocations( Arrays.asList( sources ) );
     }
 
     @Override
     public List<? extends Location> createLocations( final Collection<Object> sources )
     {
-        final List<StoreKey> keys = new ArrayList<StoreKey>( sources.size() );
+        final List<ArtifactStore> stores = new ArrayList<ArtifactStore>();
         for ( final Object source : sources )
         {
-            keys.add( StoreKey.fromString( normalize( source.toString() ) ) );
+            final StoreKey key = StoreKey.fromString( normalize( source.toString() ) );
+            
+            ArtifactStore store = null;
+            try
+            {
+                store = this.stores.getArtifactStore( key );
+            }
+            catch ( final ProxyDataException e )
+            {
+                    logger.error( String.format( "Failed to lookup ArtifactStore for key: {}. Reason: {}", key, e.getMessage()  ), e );
+            }
+            
+            if ( store != null )
+            {
+                stores.add( store );
+            }
         }
 
-        return LocationUtils.toCacheLocations( keys );
+        return LocationUtils.toLocations( stores );
     }
 
 }

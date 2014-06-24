@@ -10,6 +10,9 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.dto;
 
+import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.cartographer.dto.MetadataCollationRecipe;
@@ -24,13 +27,29 @@ public class MetadataCollationDTO
 
     private StoreKey source;
 
-    public void calculateLocations( final LocationExpander locationExpander )
+    public void calculateLocations( final LocationExpander locationExpander, final StoreDataManager dataManager )
         throws TransferException
     {
         final Logger logger = LoggerFactory.getLogger( getClass() );
         if ( source != null )
         {
-            setSourceLocation( LocationUtils.toCacheLocation( source ) );
+            ArtifactStore store;
+            try
+            {
+                store = dataManager.getArtifactStore( source );
+            }
+            catch ( final ProxyDataException e )
+            {
+                throw new TransferException( "Cannot find ArtifactStore to match source key: %s. Reason: %s", e,
+                                             source, e.getMessage() );
+            }
+
+            if ( store == null )
+            {
+                throw new TransferException( "Cannot find ArtifactStore to match source key: %s.", source );
+            }
+
+            setSourceLocation( LocationUtils.toLocation( store ) );
             logger.debug( "Set sourceLocation to: '{}'", getSourceLocation() );
         }
 

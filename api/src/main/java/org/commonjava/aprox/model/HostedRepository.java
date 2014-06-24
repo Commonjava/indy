@@ -10,8 +10,6 @@
  ******************************************************************************/
 package org.commonjava.aprox.model;
 
-import java.io.File;
-
 import com.google.gson.annotations.SerializedName;
 import com.wordnik.swagger.annotations.ApiClass;
 
@@ -22,7 +20,7 @@ public class HostedRepository
 
     private static final long serialVersionUID = 1L;
 
-    private File storage;
+    private String storage;
 
     @SerializedName( "allow_snapshots" )
     private boolean allowSnapshots = false;
@@ -64,8 +62,8 @@ public class HostedRepository
     @Override
     public String toString()
     {
-        return String.format( "HostedRepository [allowSnapshots=%s, allowReleases=%s, getName()=%s, getKey()=%s]", allowSnapshots, allowReleases,
-                              getName(), getKey() );
+        return String.format( "HostedRepository [allowSnapshots=%s, allowReleases=%s, key=%s, storage-directory=%s]",
+                              allowSnapshots, allowReleases, getKey(), getStorage() );
     }
 
     public int getSnapshotTimeoutSeconds()
@@ -78,12 +76,12 @@ public class HostedRepository
         this.snapshotTimeoutSeconds = snapshotTimeoutSeconds;
     }
 
-    public File getStorage()
+    public String getStorage()
     {
         return storage;
     }
 
-    public void setStorage( final File storage )
+    public void setStorage( final String storage )
     {
         this.storage = storage;
     }

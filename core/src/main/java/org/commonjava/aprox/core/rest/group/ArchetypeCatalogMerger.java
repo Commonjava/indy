@@ -39,6 +39,10 @@ public class ArchetypeCatalogMerger
 
     public static final String CATALOG_MERGEINFO_SUFFIX = ".info";
 
+    public static final String CATALOG_SHA_NAME = CATALOG_NAME + ".sha1";
+
+    public static final String CATALOG_MD5_NAME = CATALOG_NAME + ".md5";
+
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Override
