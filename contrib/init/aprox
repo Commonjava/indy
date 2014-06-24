@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Aprox        Startup script for Aprox
 #
@@ -83,4 +83,3 @@ case "$1" in
 esac
 
 exit $RETVAL
-
