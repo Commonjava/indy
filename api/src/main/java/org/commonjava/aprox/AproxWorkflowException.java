@@ -17,7 +17,7 @@ import org.commonjava.aprox.util.ApplicationStatus;
 public class AproxWorkflowException
     extends Exception
 {
-    private final Object[] params;
+    private Object[] params;
 
     private transient String formattedMessage;
 
@@ -109,4 +109,19 @@ public class AproxWorkflowException
     {
         return status < 1 ? ApplicationStatus.BAD_REQUEST.code() : status;
     }
+
+    private Object writeReplace()
+    {
+        final Object[] newParams = new Object[params.length];
+        int i = 0;
+        for ( final Object object : params )
+        {
+            newParams[i] = String.valueOf( object );
+            i++;
+        }
+
+        this.params = newParams;
+        return this;
+    }
+
 }

@@ -17,7 +17,7 @@ public class MavenComponentException
 {
     private static final long serialVersionUID = 1L;
 
-    private final Object[] params;
+    private Object[] params;
 
     private String formattedMessage;
 
@@ -86,4 +86,19 @@ public class MavenComponentException
 
         return formattedMessage;
     }
+
+    private Object writeReplace()
+    {
+        final Object[] newParams = new Object[params.length];
+        int i = 0;
+        for ( final Object object : params )
+        {
+            newParams[i] = String.valueOf( object );
+            i++;
+        }
+
+        this.params = newParams;
+        return this;
+    }
+
 }

@@ -17,7 +17,6 @@ import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.depgraph.util.PresetParameterParser;
@@ -59,13 +58,13 @@ public class ProjectController
         final ViewParams params = new ViewParams( workspaceId, ref );
         try
         {
-            final Throwable error = ops.getProjectError( ref, params );
+            final String error = ops.getProjectError( ref, params );
             if ( error == null )
             {
                 return null;
             }
 
-            return serializer.toString( new Listing<String>( ExceptionUtils.getFullStackTrace( error ) ) );
+            return serializer.toString( new Listing<String>( error ) );
         }
         catch ( final CartoDataException e )
         {

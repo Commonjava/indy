@@ -18,7 +18,7 @@ public class AutoProxRuleException
 {
     private static final long serialVersionUID = 1L;
 
-    private final Object[] params;
+    private Object[] params;
 
     public AutoProxRuleException( final String message, final Throwable error, final Object... params )
     {
@@ -62,6 +62,20 @@ public class AutoProxRuleException
         }
 
         return message;
+    }
+
+    private Object writeReplace()
+    {
+        final Object[] newParams = new Object[params.length];
+        int i = 0;
+        for ( final Object object : params )
+        {
+            newParams[i] = String.valueOf( object );
+            i++;
+        }
+
+        this.params = newParams;
+        return this;
     }
 
 }

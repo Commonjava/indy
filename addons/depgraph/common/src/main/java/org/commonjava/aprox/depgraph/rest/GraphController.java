@@ -97,7 +97,7 @@ public class GraphController
                 ref = projectVersion( gav );
             }
 
-            Map<ProjectVersionRef, Throwable> errors;
+            Map<ProjectVersionRef, String> errors;
             if ( ref != null )
             {
                 logger.debug( "Retrieving project errors in graph: {}", ref );
