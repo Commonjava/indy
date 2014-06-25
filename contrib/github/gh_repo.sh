@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # Simple script to manage Github forked repositories
 #
