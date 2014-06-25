@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # Aprox        Startup script for Aprox
 #
@@ -36,13 +36,13 @@ start() {
     [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$PROG
 }
 stop() {
-    echo -n $"Shutting down ($PROG): "
+    echo -n $"Shutting down $PROG: "
 
     if [ "x$PID" == "x" ]; then
       echo "not running"
       RETVAL=0
     else
-      kill $PID > /dev/null 2>&1
+      killproc ${PROG} > /dev/null 2>&1
       RETVAL=$?
       [ $RETVAL -eq 0 ] && success || failure
       echo
@@ -74,7 +74,7 @@ case "$1" in
         then
             echo "$PROG is stopped"
         else
-            echo "$PROG is running"
+            echo "$PROG (pid  ${PID}) is running..."
         fi
     ;;
   *)
@@ -83,4 +83,3 @@ case "$1" in
 esac
 
 exit $RETVAL
-
