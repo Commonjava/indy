@@ -73,7 +73,7 @@ public class DefaultAproxConfiguration
 
     public static final int DEFAULT_PASSTHROUGH_TIMEOUT_SECONDS = 300;
 
-    public static final int DEFAULT_NOT_FOUND_CACHE_TIMEOUT_SECONDS = 3600;
+    public static final int DEFAULT_NOT_FOUND_CACHE_TIMEOUT_SECONDS = 300;
 
     private Integer passthroughTimeoutSeconds;
 
