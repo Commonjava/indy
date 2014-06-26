@@ -191,11 +191,19 @@ public class DefaultFileManager
             }
             else
             {
-                final Transfer transfer = transfers.getCacheReference( res );
-                final String[] files = transfer.list();
-                for ( final String file : files )
+                try
                 {
-                    result.add( new ConcreteResource( loc, dir, file ) );
+                    final ListingResult listing = transfers.list( res );
+                    for ( final String child : listing.getListing() )
+                    {
+                        result.add( new ConcreteResource( loc, child ) );
+                    }
+                }
+                catch ( final TransferException e )
+                {
+                    logger.error( e.getMessage(), e );
+                    throw new AproxWorkflowException( "Failed to list path: {} from: {}. Reason: {}", e, path,
+                                                      store.getKey(), e.getMessage() );
                 }
             }
         }
@@ -580,36 +588,13 @@ public class DefaultFileManager
     private Boolean doDelete( final Transfer item )
         throws AproxWorkflowException
     {
-        if ( !item.exists() )
+        try
         {
-            return false;
+            transfers.delete( item.getResource() );
         }
-
-        if ( item.isDirectory() )
+        catch ( final TransferException e )
         {
-            final String[] listing = item.list();
-            for ( final String sub : listing )
-            {
-                if ( !doDelete( item.getChild( sub ) ) )
-                {
-                    return false;
-                }
-            }
-        }
-        else
-        {
-            try
-            {
-                if ( !item.delete() )
-                {
-                    throw new AproxWorkflowException( "Failed to delete: {}.", item );
-                }
-            }
-            catch ( final IOException e )
-            {
-                throw new AproxWorkflowException( "Failed to delete stored location: {}. Reason: {}", e, item,
-                                                  e.getMessage() );
-            }
+            throw new AproxWorkflowException( "Failed to delete: {}. Reason: {}", e, item, e.getMessage() );
         }
 
         return true;
@@ -724,6 +709,8 @@ public class DefaultFileManager
     private static final class Rescanner
         implements Runnable
     {
+        private final Logger logger = LoggerFactory.getLogger( getClass() );
+
         private static final Byte IN_PROGRESS_FLAG = (byte) 0x1;
 
         private final Map<StoreKey, Byte> rescansInProgress;
@@ -786,10 +773,17 @@ public class DefaultFileManager
 
             if ( item.isDirectory() )
             {
-                final String[] listing = item.list();
-                for ( final String sub : listing )
+                try
                 {
-                    doRescan( item.getChild( sub ) );
+                    final String[] listing = item.list();
+                    for ( final String sub : listing )
+                    {
+                        doRescan( item.getChild( sub ) );
+                    }
+                }
+                catch ( final IOException e )
+                {
+                    logger.error( "Failed to list local contents: {}. Reason: {}", e, item, e.getMessage() );
                 }
             }
 

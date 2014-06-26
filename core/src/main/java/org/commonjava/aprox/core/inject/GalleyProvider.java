@@ -21,9 +21,7 @@ import org.commonjava.maven.galley.io.ChecksummingTransferDecorator;
 import org.commonjava.maven.galley.io.checksum.Md5GeneratorFactory;
 import org.commonjava.maven.galley.io.checksum.Sha1GeneratorFactory;
 import org.commonjava.maven.galley.model.TransferOperation;
-import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
 import org.commonjava.maven.galley.spi.io.TransferDecorator;
-import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 
 @ApplicationScoped
 public class GalleyProvider
@@ -31,40 +29,19 @@ public class GalleyProvider
 
     private TransferDecorator decorator;
 
-    //    private PathGenerator pathgen;
-
-    private NotFoundCache nfc;
-
     @PostConstruct
     public void setup()
     {
         decorator =
             new ChecksummingTransferDecorator( Collections.singleton( TransferOperation.GENERATE ),
                                                new Md5GeneratorFactory(), new Sha1GeneratorFactory() );
-        //        pathgen = new KeyBasedPathGenerator();
-        nfc = new MemoryNotFoundCache();
     }
-
-    //
-    //    @Produces
-    //    @Default
-    //    public PathGenerator getPathGenerator()
-    //    {
-    //        return pathgen;
-    //    }
 
     @Produces
     @Default
     public TransferDecorator getTransferDecorator()
     {
         return decorator;
-    }
-
-    @Produces
-    @Default
-    public NotFoundCache getNotFoundCache()
-    {
-        return nfc;
     }
 
 }

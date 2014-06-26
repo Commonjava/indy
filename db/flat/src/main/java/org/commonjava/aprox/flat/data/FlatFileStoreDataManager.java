@@ -66,7 +66,7 @@ public class FlatFileStoreDataManager
     public void readDefinitions()
         throws ProxyDataException
     {
-        final File basedir = config.getStorageDir( APROX_STORE );
+        final File basedir = config.getDataDir( APROX_STORE );
         final File ddir = new File( basedir, StoreType.hosted.name() );
 
         final String[] dFiles = ddir.list();
@@ -307,7 +307,7 @@ public class FlatFileStoreDataManager
     private void store( final boolean skipIfExists, final ArtifactStore... stores )
         throws ProxyDataException
     {
-        final File basedir = config.getStorageDir( APROX_STORE );
+        final File basedir = config.getDataDir( APROX_STORE );
         for ( final ArtifactStore store : stores )
         {
             final File dir = new File( basedir, store.getDoctype()
@@ -337,7 +337,7 @@ public class FlatFileStoreDataManager
 
     private void delete( final ArtifactStore... stores )
     {
-        final File basedir = config.getStorageDir( APROX_STORE );
+        final File basedir = config.getDataDir( APROX_STORE );
         for ( final ArtifactStore store : stores )
         {
             final File dir = new File( basedir, store.getDoctype()
@@ -354,7 +354,7 @@ public class FlatFileStoreDataManager
 
     private void delete( final StoreType type, final String name )
     {
-        final File basedir = config.getStorageDir( APROX_STORE );
+        final File basedir = config.getDataDir( APROX_STORE );
         final File dir = new File( basedir, type.name() );
 
         final File f = new File( dir, name + ".json" );
@@ -404,7 +404,7 @@ public class FlatFileStoreDataManager
     {
         super.clear();
 
-        final File basedir = config.getStorageDir( APROX_STORE );
+        final File basedir = config.getDataDir( APROX_STORE );
         try
         {
             FileUtils.forceDelete( basedir );
@@ -419,7 +419,7 @@ public class FlatFileStoreDataManager
     public void install()
         throws ProxyDataException
     {
-        if ( !config.getStorageDir( APROX_STORE )
+        if ( !config.getDataDir( APROX_STORE )
                     .isDirectory() )
         {
             storeRemoteRepository( new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" ), true );

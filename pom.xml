@@ -41,11 +41,11 @@
     <qarqas-version>0.3</qarqas-version>
     <shelflife-version>0.6.3</shelflife-version>
     <atlasVersion>0.13.2</atlasVersion>
-    <galleyVersion>0.6.2</galleyVersion>
+    <galleyVersion>0.6.3-SNAPSHOT</galleyVersion>
     <cartoVersion>0.7.1</cartoVersion>
     <bomVersion>12</bomVersion>
     <webdavVersion>3.1.1</webdavVersion>
-    <vabrVersion>1.7</vabrVersion>
+    <vabrVersion>1.8-SNAPSHOT</vabrVersion>
     
     <vertx.testtools.version>2.0.0-final</vertx.testtools.version>
   </properties>
@@ -195,6 +195,14 @@
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-dot-maven-common</artifactId>
         <version>0.14.6-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-dot-maven-common</artifactId>
+        <version>0.14.6-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>dataset</classifier>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>

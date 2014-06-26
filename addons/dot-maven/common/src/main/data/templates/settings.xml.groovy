@@ -46,8 +46,19 @@
         </pluginRepository>
       </pluginRepositories>
     </profile>
+    <% if(deployEnabled){ %>
+    <profile>
+      <id>deploy-settings</id>
+      <properties>
+        <altDeploymentRepository>${name}::default::${url}</altDeploymentRepository>
+      </properties>
+    </profile>
+    <% } %>
   </profiles>
   <activeProfiles>
     <activeProfile>resolve-settings</activeProfile>
+    <%if (deployEnabled){%>
+    <activeProfile>deploy-settings</activeProfile>
+    <% } %>
   </activeProfiles>
 </settings>

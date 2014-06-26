@@ -74,7 +74,7 @@ public abstract class FlatFileDataManagerDecorator
     public void readDefinitions()
         throws ProxyDataException
     {
-        final File basedir = config.getStorageDir( FlatFileStoreDataManager.APROX_STORE );
+        final File basedir = config.getDataDir( FlatFileStoreDataManager.APROX_STORE );
         final File ddir = new File( basedir, StoreType.hosted.name() );
 
         final String[] dFiles = ddir.list();
@@ -311,7 +311,7 @@ public abstract class FlatFileDataManagerDecorator
     private void store( final boolean skipIfExists, final ArtifactStore... stores )
         throws ProxyDataException
     {
-        final File basedir = config.getStorageDir( FlatFileStoreDataManager.APROX_STORE );
+        final File basedir = config.getDataDir( FlatFileStoreDataManager.APROX_STORE );
         for ( final ArtifactStore store : stores )
         {
             final File dir = new File( basedir, store.getDoctype()
@@ -340,7 +340,7 @@ public abstract class FlatFileDataManagerDecorator
 
     private void delete( final ArtifactStore... stores )
     {
-        final File basedir = config.getStorageDir( FlatFileStoreDataManager.APROX_STORE );
+        final File basedir = config.getDataDir( FlatFileStoreDataManager.APROX_STORE );
         for ( final ArtifactStore store : stores )
         {
             final File dir = new File( basedir, store.getDoctype()
@@ -357,7 +357,7 @@ public abstract class FlatFileDataManagerDecorator
 
     private void delete( final StoreType type, final String name )
     {
-        final File basedir = config.getStorageDir( FlatFileStoreDataManager.APROX_STORE );
+        final File basedir = config.getDataDir( FlatFileStoreDataManager.APROX_STORE );
         final File dir = new File( basedir, type.name() );
 
         final File f = new File( dir, name + ".json" );
@@ -407,7 +407,7 @@ public abstract class FlatFileDataManagerDecorator
     {
         dataManager.clear();
 
-        final File basedir = config.getStorageDir( FlatFileStoreDataManager.APROX_STORE );
+        final File basedir = config.getDataDir( FlatFileStoreDataManager.APROX_STORE );
         try
         {
             FileUtils.forceDelete( basedir );
@@ -422,7 +422,7 @@ public abstract class FlatFileDataManagerDecorator
     public void install()
         throws ProxyDataException
     {
-        if ( !config.getStorageDir( FlatFileStoreDataManager.APROX_STORE )
+        if ( !config.getDataDir( FlatFileStoreDataManager.APROX_STORE )
                     .isDirectory() )
         {
             dataManager.storeRemoteRepository( new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" ), true );

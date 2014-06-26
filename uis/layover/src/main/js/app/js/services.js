@@ -7,7 +7,17 @@ var aproxServices = angular.module('aprox.services', ['ngResource']);
 
 aproxServices.factory('StoreUtilSvc', function(){
   return {
+    formatKey: function(type, name){
+      return type + ':' + name;
+    },
+    
+    keyLabel: function(key){
+      var parts = key.split(':');
+      return parts[1] + " (" + parts[0] + ")";
+    },
+
     nameFromKey: function(key){
+//      alert("Parsing name from:\n" + JSON.stringify(key, undefined, 2));
       return key.substring(key.indexOf(':')+1);
     },
 
@@ -66,10 +76,6 @@ aproxServices.factory('StoreUtilSvc', function(){
       }
 
       return options;
-    },
-
-    formatKey: function(type, name){
-      return type + ':' + name;
     },
 
     durationToSeconds: function(duration){
@@ -154,6 +160,30 @@ aproxServices.factory('StoreUtilSvc', function(){
         return 0;
       });
     },
+    
+    sortByEmbeddedKey: function(items){
+      var typeOrder = ['group', 'remote', 'hosted'];
+      return items.sort(function(a, b){
+        var ap = a.key.split(':');
+        var bp = b.key.split(':');
+        
+        var ati = typeOrder.indexOf(ap[0]);
+        var bti = typeOrder.indexOf(bp[0]);
+
+        if ( ati != bti ){
+          return ati < bti ? -1 : 1;
+        }
+
+        if ( ap[1] < bp[1] ){
+          return -1;
+        }
+        else if ( bp[1] < ap[1] ){
+          return 1;
+        }
+
+        return 0;
+      });
+    },
 
     defaultDescription: function(description){
       var desc = description;
@@ -193,6 +223,16 @@ aproxServices.factory('GroupSvc', ['$resource',
       create: {method: 'POST'},
     });
   }]);
+
+aproxServices.factory('NfcSvc', ['$resource',
+  function($resource) {
+    return $resource(appPath('/api/1.0/nfc/:type/:name/:path'), {}, {
+      query : { method : 'GET', params : { type: '', name: '', path: '' }, isArray : false },
+      get : { method : 'GET', params : { path: '' }, isArray : false },
+      deleteAll: {method: 'DELETE', params: {type:'', name:'', path:''}},
+      delete: {method: 'DELETE'},
+    });
+}]);
 
 aproxServices.factory('AllEndpointsSvc', ['$resource',
   function($resource){

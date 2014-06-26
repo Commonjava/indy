@@ -11,6 +11,12 @@ public abstract class AbstractAutoProxRule
 {
 
     @Override
+    public boolean isValidationEnabled()
+    {
+        return true;
+    }
+
+    @Override
     public RemoteRepository createRemoteRepository( final String named )
         throws AutoProxRuleException, MalformedURLException
     {

@@ -31,12 +31,14 @@ public final class ResponseUtils
     {
     }
 
-    public static void setStatus( final ApplicationStatus status, final HttpServerRequest request )
+    public static HttpServerResponse setStatus( final ApplicationStatus status, final HttpServerRequest request )
     {
         request.resume()
                .response()
                .setStatusCode( status.code() )
                .setStatusMessage( status.message() );
+
+        return request.response();
     }
 
     public static void formatRedirect( final HttpServerRequest request, final String url )
@@ -49,7 +51,8 @@ public final class ResponseUtils
                .end();
     }
 
-    public static void formatCreatedResponse( final HttpServerRequest request, final UriFormatter uriFormatter, final String... params )
+    public static HttpServerResponse formatCreatedResponse( final HttpServerRequest request,
+                                                            final UriFormatter uriFormatter, final String... params )
     {
         final String baseUri = request.params()
                                       .get( _classContextUrl.key() );
@@ -61,6 +64,8 @@ public final class ResponseUtils
                .putHeader( ApplicationHeader.location.key(), location )
                .setStatusCode( ApplicationStatus.CREATED.code() )
                .setStatusMessage( ApplicationStatus.CREATED.message() );
+
+        return request.response();
     }
 
     public static void formatCreatedResponse( final HttpServerRequest request, final CreationDTO dto )

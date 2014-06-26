@@ -28,7 +28,7 @@ public class FlatFileShelflifeConfig
     @Default
     public FlatBlockStoreConfiguration getShelflifeConfig()
     {
-        return new FlatBlockStoreConfiguration( config.getStorageDir( "shelflife" ) );
+        return new FlatBlockStoreConfiguration( config.getDataDir( "shelflife" ) );
     }
 
 }

@@ -8,7 +8,7 @@
  * Contributors:
  *     Red Hat, Inc. - initial API and implementation
  ******************************************************************************/
-package org.commonjava.aprox.core.dto.repl;
+package org.commonjava.aprox.core.dto;
 
 import java.net.MalformedURLException;
 import java.net.URL;

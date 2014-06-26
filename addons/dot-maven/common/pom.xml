@@ -60,5 +60,31 @@
       <groupId>org.commonjava.web</groupId>
       <artifactId>webdav-handler-common</artifactId>
     </dependency>
+    <dependency>
+    	<groupId>org.commonjava.aprox</groupId>
+    	<artifactId>aprox-subsys-groovy</artifactId>
+    </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>confset</id>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <descriptorRefs>
+                <descriptorRef>dataset</descriptorRef>
+              </descriptorRefs>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

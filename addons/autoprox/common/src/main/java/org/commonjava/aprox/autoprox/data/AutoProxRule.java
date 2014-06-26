@@ -23,6 +23,8 @@ public interface AutoProxRule
 
     String DEFAULT_FACTORY_SCRIPT = "default.groovy";
 
+    boolean isValidationEnabled();
+
     boolean matches( String name );
 
     RemoteRepository createRemoteRepository( String named )

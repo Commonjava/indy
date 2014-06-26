@@ -21,6 +21,8 @@ public class RepositoryLocation
     implements HttpLocation, KeyedLocation
 {
 
+    public static final String ATTR_NFC_TIMEOUT_SECONDS = "NFC-timeout";
+
     private final RemoteRepository repository;
 
     private final Map<String, Object> attributes = new HashMap<String, Object>();
@@ -28,6 +30,10 @@ public class RepositoryLocation
     public RepositoryLocation( final RemoteRepository repository )
     {
         this.repository = repository;
+        if ( repository.getNfcTimeoutSeconds() > 0 )
+        {
+            attributes.put( ATTR_NFC_TIMEOUT_SECONDS, repository.getNfcTimeoutSeconds() );
+        }
     }
 
     @Override

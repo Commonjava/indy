@@ -77,4 +77,10 @@ public class TestAutoProxFactory
         return createRemoteRepository( name );
     }
 
+    @Override
+    public boolean isValidationEnabled()
+    {
+        return false;
+    }
+
 }

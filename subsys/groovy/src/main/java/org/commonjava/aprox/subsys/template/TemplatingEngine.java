@@ -75,7 +75,7 @@ public class TemplatingEngine
         try
         {
             final String filename = templateKey + ".groovy";
-            final File templateDir = config.getStorageDir( TEMPLATES );
+            final File templateDir = config.getDataDir( TEMPLATES );
 
             final File templateFile = new File( templateDir, filename );
 

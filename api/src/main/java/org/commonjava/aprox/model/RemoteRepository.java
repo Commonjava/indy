@@ -35,6 +35,9 @@ public class RemoteRepository
     @SerializedName( "timeout_seconds" )
     private int timeoutSeconds;
 
+    @SerializedName( "nfc_timeout_seconds" )
+    private int nfcTimeoutSeconds;
+
     private String host;
 
     private int port;
@@ -316,6 +319,16 @@ public class RemoteRepository
     protected StoreKey initKey( final String name )
     {
         return new StoreKey( StoreType.remote, name );
+    }
+
+    public int getNfcTimeoutSeconds()
+    {
+        return nfcTimeoutSeconds;
+    }
+
+    public void setNfcTimeoutSeconds( final int nfcTimeoutSeconds )
+    {
+        this.nfcTimeoutSeconds = nfcTimeoutSeconds;
     }
 
 }

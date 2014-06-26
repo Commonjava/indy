@@ -331,6 +331,11 @@ public class ArtifactStoreSubStore
                 logger.error( String.format( "Failed to lookup ArtifactStore(s) for key: %s. Reason: %s", key, e.getMessage() ), e );
                 throw new WebdavException( "Failed to get listing for: " + folderUri );
             }
+            catch ( final IOException e )
+            {
+                logger.error( String.format( "Failed to list %s in %s. Reason: %s", path, key, e.getMessage() ), e );
+                throw new WebdavException( "Failed to get listing for: " + folderUri );
+            }
         }
         else if ( matcher.hasStoreType() )
         {

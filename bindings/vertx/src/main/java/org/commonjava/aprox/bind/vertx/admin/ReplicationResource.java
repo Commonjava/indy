@@ -20,7 +20,7 @@ import java.util.Set;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.core.dto.repl.ReplicationDTO;
+import org.commonjava.aprox.core.dto.ReplicationDTO;
 import org.commonjava.aprox.core.rest.ReplicationController;
 import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.model.StoreKey;

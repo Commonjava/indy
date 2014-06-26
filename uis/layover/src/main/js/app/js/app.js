@@ -34,6 +34,10 @@ aprox.config(['$routeProvider', '$controllerProvider', '$compileProvider', '$fil
   $routeProvider.when('/group/view/:name', {templateUrl: 'partials/group-detail.html', controller: 'GroupDetailCtl'});
   $routeProvider.when('/group/new', {templateUrl: 'partials/group-edit.html', controller: 'GroupEditCtl'});
   $routeProvider.when('/group/edit/:name', {templateUrl: 'partials/group-edit.html', controller: 'GroupEditCtl'});
+  
+  $routeProvider.when('/nfc', {templateUrl: 'partials/nfc.html', controller: 'NfcController'});
+  $routeProvider.when('/nfc/view/all', {templateUrl: 'partials/nfc.html', controller: 'NfcController'});
+  $routeProvider.when('/nfc/view/:type/:name', {templateUrl: 'partials/nfc.html', controller: 'NfcController'});
 
   if ( addons !== undefined ){
     addons.items.each( function(addon){

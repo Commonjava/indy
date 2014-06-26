@@ -361,27 +361,34 @@ public class TimeoutManager
     private void listAll( final Transfer dir, final String parentPath, final Set<String> capturedFiles,
                           final FilenameFilter filter )
     {
-        final String[] files = dir.exists() ? dir.list() : null;
-        if ( files != null )
+        try
         {
-            for ( final String file : files )
+            final String[] files = dir.exists() ? dir.list() : null;
+            if ( files != null )
             {
-                final File d = dir.getDetachedFile();
-                if ( filter == null || filter.accept( d, file ) )
+                for ( final String file : files )
                 {
-                    final Transfer child = dir.getChild( file );
+                    final File d = dir.getDetachedFile();
+                    if ( filter == null || filter.accept( d, file ) )
+                    {
+                        final Transfer child = dir.getChild( file );
 
-                    final String childPath = new File( parentPath, file ).getPath();
-                    if ( child.isDirectory() )
-                    {
-                        listAll( child, childPath, capturedFiles, filter );
-                    }
-                    else
-                    {
-                        capturedFiles.add( childPath );
+                        final String childPath = new File( parentPath, file ).getPath();
+                        if ( child.isDirectory() )
+                        {
+                            listAll( child, childPath, capturedFiles, filter );
+                        }
+                        else
+                        {
+                            capturedFiles.add( childPath );
+                        }
                     }
                 }
             }
+        }
+        catch ( final IOException e )
+        {
+            logger.error( String.format( "Failed to list local contents of: %s. Reason: %s", dir, e.getMessage() ), e );
         }
     }
 

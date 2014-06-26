@@ -40,6 +40,7 @@ import org.commonjava.aprox.dotmaven.webctl.RequestInfo;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
+import org.commonjava.aprox.subsys.template.TemplatingEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +60,9 @@ public class SettingsSubStore
 
     @Inject
     private RequestInfo requestInfo;
+
+    @Inject
+    private TemplatingEngine templatingEngine;
 
     @Override
     public boolean matchesUri( final String uri )
@@ -188,10 +192,11 @@ public class SettingsSubStore
         {
             logger.error( String.format( "Failed to retrieve storage advice for: %s. Reason: %s", key, e.getMessage() ),
                           e );
+
             throw new WebdavException( "Failed to retrieve length for: " + matcher.getURI() );
         }
 
-        return new SettingsTemplate( key, advice, requestInfo );
+        return new SettingsTemplate( key, advice, requestInfo, templatingEngine );
     }
 
     @Override

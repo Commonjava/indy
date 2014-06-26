@@ -101,7 +101,7 @@ public class FlatFileConfiguration
         return this;
     }
 
-    public File getStorageDir( final String name )
+    public File getDataDir( final String name )
     {
         final File d = new File( getDataBasedir(), name );
         d.mkdirs();

@@ -51,7 +51,7 @@ public class LegacyDataMigrationAction
     @Override
     public boolean execute()
     {
-        final File basedir = config.getStorageDir( FlatFileStoreDataManager.APROX_STORE );
+        final File basedir = config.getDataDir( FlatFileStoreDataManager.APROX_STORE );
         if ( !basedir.exists() )
         {
             return false;

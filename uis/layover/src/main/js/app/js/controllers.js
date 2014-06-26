@@ -392,7 +392,95 @@ aproxControllers.controller('GroupEditCtl', ['$scope', '$routeParams', '$locatio
 
 }]);
 
-aproxControllers.controller('FooterCtl', ['$scope', '$http', 'FooterSvc', function($scope, $http, FooterSvc){
+aproxControllers.controller('NfcController', ['$scope', '$routeParams', '$location', 'NfcSvc', 'StoreUtilSvc', 'AllEndpointsSvc', 
+                                              function($scope, $routeParams, $location, NfcSvc, StoreUtilSvc, AllEndpointsSvc){
+  $scope.raw = {
+    available: [],
+  };
+  
+  $scope.clearAllNFC = function(){
+    NfcSvc.deleteAll();
+    $location.path('/nfc');
+  };
+  
+  $scope.clear = function(){
+    if ( !$scope.currentKey ){return;}
+    
+    var name=StoreUtilSvc.nameFromKey($scope.currentKey);
+    var type = StoreUtilSvc.typeFromKey($scope.currentKey);
+    
+    NfcSvc.deleteAll({name: name, type: type},
+      function(){
+        $scope.message = {type: 'OK', message: 'Cleared NFC for ' + type + ':' + name};
+        alert( "NFC for all stores has been cleared!");
+      }, 
+      function(error){
+        $scope.message = {type: 'ERROR', message: 'Failed to clear NFC for ' + type + ':' + name, detail: error};
+        alert('[ERROR] Failed to clear NFC for ' + type + ':' + name + "\n" + error );
+      }
+    );
+    
+    $location.path('/nfc');
+  };
+  
+  $scope.showAll = function(){
+    if ( !window.location.hash.startsWith( "#/nfc/view/all" ) ){
+      $location.path('/nfc/view/all');
+    }
+  };
+  
+  $scope.show = function(){
+    if ( !$scope.currentKey ){return;}
+    
+    var viewPath = '/nfc/view/' + $scope.currentKey.replace(':', '/');
+    
+    if ( !window.location.hash.startsWith( "#" + viewPath ) ){
+      $location.path(viewPath);
+    }
+  };
+  
+  AllEndpointsSvc.query(function(listing){
+    var available = [];
+    listing.items.each(function(item){
+      item.key = StoreUtilSvc.formatKey(item.type, item.name);
+      item.label = StoreUtilSvc.keyLabel(item.key);
+      available.push(item);
+    });
+    
+    $scope.raw.available = StoreUtilSvc.sortEndpoints( available );
+  });
+  
+  if ( window.location.hash == ( "#/nfc/view/all" ) ){
+    delete $scope.currentKey;
+    
+    NfcSvc.query({}, function(nfc){
+      nfc.sections.each(function(section){
+        section.label = StoreUtilSvc.keyLabel(section.key);
+        section.paths.sort();
+      });
+      
+      $scope.sections = StoreUtilSvc.sortByEmbeddedKey(nfc.sections);
+    });
+  }
+  else{
+    var routeType = $routeParams.type;
+    var routeName = $routeParams.name;
+    
+    if ( routeType !== undefined && routeName !== undefined ){
+      $scope.currentKey = StoreUtilSvc.formatKey(routeType, routeName);
+      NfcSvc.get({type:routeType, name:routeName}, function(nfc){
+        nfc.sections.each(function(section){
+          section.label = StoreUtilSvc.keyLabel(section.key);
+          section.paths.sort();
+        });
+        
+        $scope.sections = StoreUtilSvc.sortByEmbeddedKey(nfc.sections);
+      });
+    }
+  }
+}]);
+
+aproxControllers.controller('FooterCtl', ['$scope', 'FooterSvc', function($scope, FooterSvc){
     $scope.stats = FooterSvc.query();
   }]);
 
