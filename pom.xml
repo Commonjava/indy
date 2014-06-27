@@ -144,6 +144,14 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-depgraph-common</artifactId>
+        <version>0.14.6-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>confset</classifier>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-depgraph-jaxrs</artifactId>
         <version>0.14.6-SNAPSHOT</version>
       </dependency>

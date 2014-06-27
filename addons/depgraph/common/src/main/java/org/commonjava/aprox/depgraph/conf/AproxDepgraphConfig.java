@@ -17,8 +17,6 @@ import javax.inject.Named;
 
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @SectionName( "depgraph" )
 @Named( "use-factory-instead" )
@@ -26,19 +24,7 @@ import org.slf4j.LoggerFactory;
 public class AproxDepgraphConfig
 {
 
-    private static final int DEFAULT_TENSOR_DISCOVERY_TIMEOUT_MILLIS = 30000;
-
-    private static final String DEFAULT_DB_DIRNAME = "depgraph";
-
-    private static final String DEFAULT_WORK_DIRNAME = "depgraph";
-
-    // shipping-oriented builds
-    private static final String DEFAULT_DEF_WEBFILTER_PRESET = "sob";
-
-
-    private Long discoveryTimeoutMillis;
-
-    private String dbDir;
+    private static final String DEFAULT_DEF_WEBFILTER_PRESET = "build-requires";
 
     private File dataBasedir;
 
@@ -46,22 +32,7 @@ public class AproxDepgraphConfig
     
     private boolean passiveParsingEnabled = false;
 
-    private String workDir;
-
     private File workBasedir;
-
-    private final Logger logger = LoggerFactory.getLogger( getClass() );
-
-    public long getDiscoveryTimeoutMillis()
-    {
-        return discoveryTimeoutMillis == null ? DEFAULT_TENSOR_DISCOVERY_TIMEOUT_MILLIS : discoveryTimeoutMillis;
-    }
-
-    @ConfigName( "discoveryTimeoutMillis" )
-    public void setDiscoveryTimeoutMillis( final long discoveryTimeoutMillis )
-    {
-        this.discoveryTimeoutMillis = discoveryTimeoutMillis;
-    }
 
     public File getDataBasedir()
     {
@@ -75,28 +46,9 @@ public class AproxDepgraphConfig
 
     public AproxDepgraphConfig setDirectories( final File dataBasedir, final File workBasedir )
     {
-        logger.info( "Setting depgraph data basedir {}/{}", dataBasedir, getDbDir() );
-        this.dataBasedir = new File( dataBasedir, getDbDir() );
-
-        logger.info( "Setting depgraph work basedir {}/{}", workBasedir, getWorkDir() );
-        this.workBasedir = new File( workBasedir, getWorkDir() );
+        this.dataBasedir = new File( dataBasedir, "depgraph" );
+        this.workBasedir = new File( workBasedir, "depgraph" );
         return this;
-    }
-
-    private String getDbDir()
-    {
-        return dbDir == null ? DEFAULT_DB_DIRNAME : dbDir;
-    }
-
-    @ConfigName( "database.dirName" )
-    public void setDbDir( final String dbDir )
-    {
-        if ( dbDir == null || "null".equals( dbDir ) )
-        {
-            return;
-        }
-
-        this.dbDir = dbDir;
     }
 
     public String getDefaultWebFilterPreset()
@@ -119,22 +71,6 @@ public class AproxDepgraphConfig
     public void setPassiveParsingEnabled( final boolean passiveParsingEnabled )
     {
         this.passiveParsingEnabled = passiveParsingEnabled;
-    }
-
-    public String getWorkDir()
-    {
-        return workDir == null ? DEFAULT_WORK_DIRNAME : workDir;
-    }
-
-    @ConfigName( "work.dirName" )
-    public void setWorkDir( final String workDir )
-    {
-        if ( workDir == null || "null".equals( workDir ) )
-        {
-            return;
-        }
-
-        this.workDir = workDir;
     }
 
 }

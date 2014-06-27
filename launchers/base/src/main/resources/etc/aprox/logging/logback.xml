@@ -19,9 +19,9 @@
   </appender>
   
   <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-      <file>${aprox.home}/log/aprox.log</file>
+      <file>${aprox.home}/var/log/aprox.log</file>
       <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-        <fileNamePattern>${aprox.home}/log/aprox.%i.log</fileNamePattern>
+        <fileNamePattern>${aprox.home}/var/log/aprox.%i.log</fileNamePattern>
 
         <maxHistory>20</maxHistory>
       </rollingPolicy>

@@ -19,8 +19,6 @@ import org.commonjava.aprox.model.RemoteRepository;
 public interface AutoProxRule
 {
 
-    String LEGACY_FACTORY_NAME = "legacy-factory.groovy";
-
     String DEFAULT_FACTORY_SCRIPT = "default.groovy";
 
     boolean isValidationEnabled();

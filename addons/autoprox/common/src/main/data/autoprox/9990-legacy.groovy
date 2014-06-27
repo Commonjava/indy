@@ -14,16 +14,15 @@ class LegacyRule extends AbstractAutoProxRule
     def remote = null
     def group = null
     def hosted = null
+    def enabled = false
     
     LegacyRule()
     {
-        def slurper = new JsonSlurper();
-        
         def jsonFile = new File( System.getProperty("aprox.config.dir"), "autoprox.json" )
         
-        if ( jsonFile )
+        if ( jsonFile && jsonFile.exists() )
         {
-            def json = slurper.parse( jsonFile )
+            def json = new JsonSlurper().parse( jsonFile )
             
             remote = json.remote
             if ( !remote )
@@ -42,7 +41,7 @@ class LegacyRule extends AbstractAutoProxRule
     }
 
     boolean matches( String name ){
-        true
+        enabled
     }
     
     RemoteRepository createRemoteRepository( String named )

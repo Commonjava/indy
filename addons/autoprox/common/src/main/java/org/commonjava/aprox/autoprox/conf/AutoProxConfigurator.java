@@ -169,12 +169,7 @@ public class AutoProxConfigurator
 
             if ( factoryProtoMappings.isEmpty() || !factoryProtoMappings.containsKey( RuleMapping.DEFAULT_MATCH ) )
             {
-                File script = new File( getBasedir(), AutoProxRule.LEGACY_FACTORY_NAME );
-                if ( !script.exists() )
-                {
-                    script = new File( getBasedir(), AutoProxRule.DEFAULT_FACTORY_SCRIPT );
-                }
-
+                final File script = new File( getBasedir(), AutoProxRule.DEFAULT_FACTORY_SCRIPT );
                 if ( script.exists() )
                 {
                     final RuleMapping rule = ruleParser.parseRule( script );
