@@ -19,9 +19,21 @@
   <div class="content-panel">
     <ul>
       <li ng-repeat="section in sections">
-        <div class="label">{{section.label}}</div>
+        <div class="with-inline-cp">
+          <div class="inline label">{{section.label}}</div>
+          <div class="inline inline-cp">
+            <a href="" ng-click="clearSection(section)" class="inline-cp-action">&#x2718;</a>
+          </div>
+        </div>
         <ul>
-          <li ng-repeat="path in section.paths">{{path}}</li>
+          <li ng-repeat="path in section.paths">
+            <div class="with-inline-cp">
+              <div class="inline label">{{path}}</div>
+		          <div class="inline inline-cp">
+		            <a href="" ng-click="clearSectionPath(section, path)" class="inline-cp-action">&#x2718;</a>
+		          </div>
+            </div>
+          </li>
         </ul>
       </li>
     </ul>

@@ -403,24 +403,50 @@ aproxControllers.controller('NfcController', ['$scope', '$routeParams', '$locati
     $location.path('/nfc');
   };
   
-  $scope.clear = function(){
-    if ( !$scope.currentKey ){return;}
+  $scope.clearSection = function(section){
+    var key = section.key;
     
-    var name=StoreUtilSvc.nameFromKey($scope.currentKey);
-    var type = StoreUtilSvc.typeFromKey($scope.currentKey);
+//    alert( "Clear all NFC entries for: " + key );
     
-    NfcSvc.deleteAll({name: name, type: type},
+    var name=StoreUtilSvc.nameFromKey(key);
+    var type = StoreUtilSvc.typeFromKey(key);
+    
+    NfcSvc.delete({name: name, type: type},
       function(){
-        $scope.message = {type: 'OK', message: 'Cleared NFC for ' + type + ':' + name};
-        alert( "NFC for all stores has been cleared!");
+        $scope.message = {type: 'OK', message: 'Cleared NFC for ' + key + "'"};
+//        alert( "NFC for " + key + " has been cleared!");
       }, 
       function(error){
-        $scope.message = {type: 'ERROR', message: 'Failed to clear NFC for ' + type + ':' + name, detail: error};
-        alert('[ERROR] Failed to clear NFC for ' + type + ':' + name + "\n" + error );
+        $scope.message = {type: 'ERROR', message: 'Failed to clear NFC for ' + key + "'", detail: error};
+//        alert('[ERROR] Failed to clear NFC for ' + key + "'\n" + error );
       }
     );
     
-    $location.path('/nfc');
+    section.paths = [];
+  };
+  
+  $scope.clearSectionPath = function(section, path){
+    path = path.substring(1);
+    var key = section.key;
+    
+//    alert( "Clear all NFC entries for: " + key + ", path: " + path );
+    
+    var name=StoreUtilSvc.nameFromKey(key);
+    var type = StoreUtilSvc.typeFromKey(key);
+    
+    NfcSvc.delete({name: name, type: type, path: path},
+      function(){
+        $scope.message = {type: 'OK', message: 'Cleared NFC for ' + key + "', path: " + path};
+//        alert( "NFC for: " + key + ", path: " + path + " has been cleared!" );
+      }, 
+      function(error){
+        $scope.message = {type: 'ERROR', message: 'Failed to clear NFC for ' + key + "'", detail: error};
+//        alert('[ERROR] Failed to clear NFC for ' + key + "', path: " + path + "\n" + error );
+      }
+    );
+    
+    var idx = section.paths.indexOf(path);
+    section.paths.splice(idx,1);
   };
   
   $scope.showAll = function(){
@@ -451,6 +477,7 @@ aproxControllers.controller('NfcController', ['$scope', '$routeParams', '$locati
   });
   
   if ( window.location.hash == ( "#/nfc/view/all" ) ){
+//    alert( "showing all NFC entries");
     delete $scope.currentKey;
     
     NfcSvc.query({}, function(nfc){
@@ -468,6 +495,9 @@ aproxControllers.controller('NfcController', ['$scope', '$routeParams', '$locati
     
     if ( routeType !== undefined && routeName !== undefined ){
       $scope.currentKey = StoreUtilSvc.formatKey(routeType, routeName);
+      
+//      alert( "showing NFC entries for: " + $scope.currentKey);
+      
       NfcSvc.get({type:routeType, name:routeName}, function(nfc){
         nfc.sections.each(function(section){
           section.label = StoreUtilSvc.keyLabel(section.key);

@@ -53,7 +53,11 @@ public class NfcResource
         final StoreType t = StoreType.get( params.get( type.key() ) );
         final StoreKey key = new StoreKey( t, params.get( name.key() ) );
 
-        final String p = params.get( path.key() );
+        String p = params.get( path.key() );
+        if ( p != null && p.startsWith( "//" ) )
+        {
+            p = p.substring( 1 );
+        }
 
         try
         {

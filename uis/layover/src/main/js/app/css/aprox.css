@@ -196,7 +196,8 @@ td{
 }
 
 .constituent:hover > .inline-cp,
-.available:hover > .inline-cp{
+.available:hover > .inline-cp,
+.with-inline-cp:hover > .inline-cp{
   visibility: visible;
 }
 
