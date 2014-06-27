@@ -35,8 +35,7 @@ public class BootOptionsTest
         final File bootProps = temp.newFile( "boot.properties" );
         FileUtils.writeStringToFile( bootProps, "" );
 
-        final BootOptions opts = new BootOptions();
-        opts.setDefaults( bootProps, "/path/to/aprox" );
+        final BootOptions opts = new BootOptions( bootProps, "/path/to/aprox" );
 
         final String val = opts.resolve( "${aprox.home}/etc/aprox/main.conf" );
 
@@ -50,8 +49,7 @@ public class BootOptionsTest
         final File bootProps = temp.newFile( "boot.properties" );
         FileUtils.writeStringToFile( bootProps, "myDir = ${aprox.home}/custom" );
 
-        final BootOptions opts = new BootOptions();
-        opts.setDefaults( bootProps, "/path/to/aprox" );
+        final BootOptions opts = new BootOptions( bootProps, "/path/to/aprox" );
 
         final String val = opts.resolve( "${myDir}/etc/aprox/main.conf" );
 
