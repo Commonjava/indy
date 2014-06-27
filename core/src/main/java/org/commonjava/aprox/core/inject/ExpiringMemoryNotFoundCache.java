@@ -10,8 +10,13 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.inject;
 
+import static org.commonjava.maven.galley.util.PathUtils.normalize;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,6 +30,8 @@ import org.commonjava.aprox.model.galley.RepositoryLocation;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 @Default
@@ -33,7 +40,9 @@ public class ExpiringMemoryNotFoundCache
     implements NotFoundCache
 {
 
-    //    private final Logger logger = LoggerFactory.getLogger( getClass() );
+    private static final String TIMEOUT_FORMAT = "yyyy-MM-dd hh:mm:ss z";
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     protected AproxConfiguration config;
@@ -64,6 +73,23 @@ public class ExpiringMemoryNotFoundCache
         {
             timeout = System.currentTimeMillis() + ( to * 1000 );
         }
+
+        final long tstamp = timeout;
+        logger.info( "[NFC] '{}' will not be checked again until: {}", new Object()
+        {
+            @Override
+            public String toString()
+            {
+                return normalize( resource.getLocationUri(), resource.getPath() );
+            }
+        }, new Object()
+        {
+            @Override
+            public String toString()
+            {
+                return new SimpleDateFormat( TIMEOUT_FORMAT ).format( new Date( tstamp ) );
+            }
+        } );
 
         missingWithTimeout.put( resource, timeout );
     }
@@ -114,6 +140,7 @@ public class ExpiringMemoryNotFoundCache
     @Override
     public Map<Location, Set<String>> getAllMissing()
     {
+        clearAllExpiredMissing();
         final Map<Location, Set<String>> result = new HashMap<Location, Set<String>>();
         for ( final ConcreteResource resource : missingWithTimeout.keySet() )
         {
@@ -134,6 +161,7 @@ public class ExpiringMemoryNotFoundCache
     @Override
     public Set<String> getMissing( final Location location )
     {
+        clearAllExpiredMissing();
         final Set<String> paths = new HashSet<String>();
         for ( final ConcreteResource resource : missingWithTimeout.keySet() )
         {
@@ -145,6 +173,21 @@ public class ExpiringMemoryNotFoundCache
         }
 
         return paths;
+    }
+
+    private void clearAllExpiredMissing()
+    {
+        for ( final Iterator<Map.Entry<ConcreteResource, Long>> it = missingWithTimeout.entrySet()
+                                                                                       .iterator(); it.hasNext(); )
+        {
+            final Map.Entry<ConcreteResource, Long> entry = it.next();
+            final Long timeout = entry.getValue();
+
+            if ( System.currentTimeMillis() >= timeout )
+            {
+                it.remove();
+            }
+        }
     }
 
 }
