@@ -196,7 +196,7 @@ public class DefaultFileManager
                     final ListingResult listing = transfers.list( res );
                     for ( final String child : listing.getListing() )
                     {
-                        result.add( new ConcreteResource( loc, child ) );
+                        result.add( new ConcreteResource( loc, dir, child ) );
                     }
                 }
                 catch ( final TransferException e )
