@@ -54,7 +54,7 @@
     <snapshotRepository>
       <id>local-snapshots</id>
       <name>Local Snapshots</name>
-      <url>http://localhost:9080/aprox/api/1.0/group/public/</url>
+      <url>${repo.snapshots}</url>
     </snapshotRepository>
   </distributionManagement>
   
