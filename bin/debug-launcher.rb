@@ -44,7 +44,7 @@ class Launcher
     puts "Launching: #{launcher}"
 
     target = File.join( BASEDIR, 'launchers', launcher, 'target' )
-    launch_dir = File.join(target, "aprox-launcher-#{launcher}" )
+    launch_dir = File.join(target, "aprox" )
 
     rm_rf( launch_dir ) if config[:clean]
 

@@ -16,7 +16,7 @@
   </formats>
   
   <includeBaseDirectory>true</includeBaseDirectory>
-  <baseDirectory>${distName}</baseDirectory>
+  <baseDirectory>aprox</baseDirectory>
   
   <dependencySets>
     <!-- this main project artifact -->
