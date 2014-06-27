@@ -30,17 +30,15 @@ public class Booter
 
     public static final String BOOT_DEFAULTS_PROP = "aprox.boot.defaults";
 
-    public static final int CANT_LOAD_BOOT_DEFAULTS = 1;
+    public static final int ERR_CANT_LOAD_BOOT_DEFAULTS = 1;
 
-    public static final int CANT_PARSE_ARGS = 2;
+    public static final int ERR_CANT_PARSE_ARGS = 2;
 
-    public static final int CANT_INTERP_BOOT_DEFAULTS = 3;
+    public static final int ERR_CANT_INTERP_BOOT_DEFAULTS = 3;
 
-    public static final int CANT_CONFIGURE_LOGGING = 4;
+    public static final int ERR_CANT_CONFIGURE_LOGGING = 4;
 
-    public static final String APROX_LOGCONF_PROP = "aprox.logging";
-
-    private static final int CANT_CONFIGURE_APROX = 5;
+    private static final int ERR_CANT_CONFIGURE_APROX = 5;
 
     public static void main( final String[] args )
     {
@@ -51,36 +49,25 @@ public class Booter
             bootDefaults = new File( bootDef );
         }
 
-        //        final String logconf = System.getProperty( APROX_LOGCONF_PROP );
-        //        File logConf = null;
-        //        if ( logconf != null )
-        //        {
-        //            logConf = new File( logconf );
-        //        }
-
-        final BootOptions boot = new BootOptions();
+        final BootOptions boot;
         try
         {
             final String aproxHome = System.getProperty( APROX_HOME_PROP, new File( "." ).getCanonicalPath() );
 
-            boot.setDefaults( bootDefaults, aproxHome );
-            //            boot.configureLogging( logConf );
+            boot = new BootOptions( bootDefaults, aproxHome );
         }
         catch ( final IOException e )
         {
             System.err.printf( "ERROR LOADING BOOT DEFAULTS: %s.\nReason: %s\n\n", bootDefaults, e.getMessage() );
-            System.exit( CANT_LOAD_BOOT_DEFAULTS );
+            System.exit( ERR_CANT_LOAD_BOOT_DEFAULTS );
+            return;
         }
         catch ( final InterpolationException e )
         {
             System.err.printf( "ERROR RESOLVING BOOT DEFAULTS: %s.\nReason: %s\n\n", bootDefaults, e.getMessage() );
-            System.exit( CANT_INTERP_BOOT_DEFAULTS );
+            System.exit( ERR_CANT_INTERP_BOOT_DEFAULTS );
+            return;
         }
-        //        catch ( final JoranException e )
-        //        {
-        //            System.err.printf( "ERROR CONFIGURING LOGGING FROM: %s.\nReason: %s\n\n", logConf, e.getMessage() );
-        //            System.exit( CANT_CONFIGURE_LOGGING );
-        //        }
 
         final CmdLineParser parser = new CmdLineParser( boot );
         boolean canStart = true;
@@ -92,7 +79,7 @@ public class Booter
         {
             System.err.printf( "ERROR: %s", e.getMessage() );
             printUsage( parser, e );
-            System.exit( CANT_PARSE_ARGS );
+            System.exit( ERR_CANT_PARSE_ARGS );
         }
 
         if ( boot.isHelp() )
@@ -166,7 +153,7 @@ public class Booter
         {
             System.err.printf( "Failed to configure AProx: %s", e.getMessage() );
             e.printStackTrace();
-            return CANT_CONFIGURE_APROX;
+            return ERR_CANT_CONFIGURE_APROX;
         }
 
         final MasterRouter router = container.instance()

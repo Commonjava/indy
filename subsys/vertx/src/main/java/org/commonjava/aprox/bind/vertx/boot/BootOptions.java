@@ -10,14 +10,11 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.vertx.boot;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.plexus.interpolation.InterpolationException;
 import org.codehaus.plexus.interpolation.PropertiesBasedValueSource;
@@ -25,12 +22,6 @@ import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.kohsuke.args4j.Option;
-import org.slf4j.LoggerFactory;
-
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.joran.JoranConfigurator;
-import ch.qos.logback.core.joran.spi.JoranException;
 
 public class BootOptions
 {
@@ -45,20 +36,26 @@ public class BootOptions
 
     public static final String CONTEXT_PATH_PROP = "context-path";
 
+    public static final String DEFAULT_BIND = "0.0.0.0";
+
+    public static final int DEFAULT_PORT = 8080;
+
+    public static final int DEFAULT_WORKERS_COUNT = 5;
+
     @Option( name = "-h", aliases = { "--help" }, usage = "Print this and exit" )
     private boolean help;
 
     @Option( name = "-i", aliases = { "--interface", "--bind", "--listen" }, usage = "Bind to a particular IP address (default: 0.0.0.0, or all available)" )
-    private String bind = "0.0.0.0";
+    private String bind;
 
     @Option( name = "-p", aliases = { "--port" }, usage = "Use different port (default: 8080)" )
-    private int port = 8080;
+    private Integer port;
 
-    @Option( name = "-c", aliases = { "--config" }, usage = "Use an alternative configuration file (default: /etc/aprox/main.conf)" )
+    @Option( name = "-c", aliases = { "--config" }, usage = "Use an alternative configuration file (default: <aprox-home>/etc/aprox/main.conf)" )
     private String config;
 
     @Option( name = "-w", aliases = { "--workers" }, usage = "Number of worker threads to serve content (default: 5)" )
-    private int workers = 5;
+    private Integer workers;
 
     @Option( name = "-C", aliases = { "--context-path" }, usage = "Specify a root context path for all of aprox to use" )
     private String contextPath;
@@ -71,11 +68,14 @@ public class BootOptions
 
     private Properties bootProps;
 
-    private String aproxHome;
+    private final String aproxHome;
 
-    public BootOptions setDefaults( final File bootDefaults, final String aproxHome )
+    public BootOptions( final File bootDefaults, final String aproxHome )
         throws IOException, InterpolationException
     {
+        this.aproxHome = aproxHome;
+        this.bootProps = new Properties();
+
         if ( bootDefaults != null && bootDefaults.exists() )
         {
             FileInputStream stream = null;
@@ -83,19 +83,7 @@ public class BootOptions
             {
                 stream = new FileInputStream( bootDefaults );
 
-                this.aproxHome = aproxHome;
-
-                bootProps = new Properties();
                 bootProps.load( stream );
-
-                bind = resolve( bootProps.getProperty( BIND_PROP, bind ) );
-                port = Integer.parseInt( resolve( bootProps.getProperty( PORT_PROP, Integer.toString( port ) ) ) );
-                workers =
-                    Integer.parseInt( resolve( bootProps.getProperty( WORKERS_PROP, Integer.toString( workers ) ) ) );
-
-                config = resolve( bootProps.getProperty( CONFIG_PROP, config ) );
-
-                contextPath = bootProps.getProperty( CONTEXT_PATH_PROP, contextPath );
             }
             finally
             {
@@ -103,7 +91,30 @@ public class BootOptions
             }
         }
 
-        return this;
+        if ( bind == null )
+        {
+            bind = resolve( bootProps.getProperty( BIND_PROP, DEFAULT_BIND ) );
+        }
+
+        if ( port == null )
+        {
+            port = Integer.parseInt( resolve( bootProps.getProperty( PORT_PROP, Integer.toString( DEFAULT_PORT ) ) ) );
+        }
+
+        if ( workers == null )
+        {
+            workers =
+                Integer.parseInt( resolve( bootProps.getProperty( WORKERS_PROP,
+                                                                  Integer.toString( DEFAULT_WORKERS_COUNT ) ) ) );
+        }
+
+        if ( config == null )
+        {
+            final String defaultConfigPath = new File( aproxHome, "etc/aprox/main.conf" ).getPath();
+            config = resolve( bootProps.getProperty( CONFIG_PROP, defaultConfigPath ) );
+        }
+
+        contextPath = bootProps.getProperty( CONTEXT_PATH_PROP, contextPath );
     }
 
     public String resolve( final String value )
@@ -202,33 +213,6 @@ public class BootOptions
     public WeldContainer getWeldContainer()
     {
         return container;
-    }
-
-    public BootOptions configureLogging( final File logConf )
-        throws IOException, InterpolationException, JoranException
-    {
-        if ( logConf != null && logConf.exists() )
-        {
-            String logProps = FileUtils.readFileToString( logConf );
-            logProps = resolve( logProps );
-
-            final JoranConfigurator fig = new JoranConfigurator();
-            final LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-
-            final List<Logger> loggerList = context.getLoggerList();
-            if ( loggerList != null )
-            {
-                for ( final Logger logger : loggerList )
-                {
-                    logger.detachAndStopAllAppenders();
-                }
-            }
-
-            fig.setContext( context );
-            fig.doConfigure( new ByteArrayInputStream( logProps.getBytes() ) );
-        }
-
-        return this;
     }
 
     public BootOptions setWorkers( final int workers )
