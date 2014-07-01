@@ -180,6 +180,14 @@
         <artifactId>aprox-autoprox-common</artifactId>
         <version>0.14.7-SNAPSHOT</version>
         <type>tar.gz</type>
+        <classifier>dataset</classifier>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-autoprox-common</artifactId>
+        <version>0.14.7-SNAPSHOT</version>
+        <type>tar.gz</type>
         <classifier>docset</classifier>
         <scope>provided</scope>
       </dependency>
@@ -196,7 +204,7 @@
         <artifactId>aprox-autoprox-common</artifactId>
         <version>0.14.7-SNAPSHOT</version>
         <type>tar.gz</type>
-        <classifier>dataset</classifier>
+        <classifier>uiset</classifier>
         <scope>provided</scope>
       </dependency>
       <dependency>

@@ -44,7 +44,7 @@ aprox.config(['$routeProvider', '$controllerProvider', '$compileProvider', '$fil
       if( addon.routes !== undefined ){
         addon.routes.each(function(route){
           var options = {};
-          options.templateUrl= 'cp/layover/' + route.templateHref;
+          options.templateUrl= 'layover/' + route.templateHref;
 
           $routeProvider.when(route.route, options);
         });

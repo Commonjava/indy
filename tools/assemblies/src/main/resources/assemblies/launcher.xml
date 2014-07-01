@@ -68,6 +68,16 @@
       </unpackOptions>
     </dependencySet>
     
+    <!-- data sets -->
+    <dependencySet>
+      <useProjectArtifact>false</useProjectArtifact>
+      <scope>provided</scope>
+      <includes>
+        <include>*:tar.gz:dataset:*</include>
+      </includes>
+      <outputDirectory>var/lib/aprox/data</outputDirectory>
+      <unpack>true</unpack>
+    </dependencySet>
     <!-- document sets -->
     <dependencySet>
       <useProjectArtifact>false</useProjectArtifact>
@@ -88,14 +98,14 @@
       <outputDirectory>etc/aprox</outputDirectory>
       <unpack>true</unpack>
     </dependencySet>
-    <!-- data sets -->
+    <!-- UI sets -->
     <dependencySet>
       <useProjectArtifact>false</useProjectArtifact>
       <scope>provided</scope>
       <includes>
-        <include>*:tar.gz:dataset:*</include>
+        <include>*:tar.gz:uiset:*</include>
       </includes>
-      <outputDirectory>var/lib/aprox/data</outputDirectory>
+      <outputDirectory>var/lib/aprox/ui</outputDirectory>
       <unpack>true</unpack>
     </dependencySet>
     

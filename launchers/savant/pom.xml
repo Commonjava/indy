@@ -49,6 +49,12 @@
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-autoprox-common</artifactId>
       <type>tar.gz</type>
+      <classifier>dataset</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-autoprox-common</artifactId>
+      <type>tar.gz</type>
       <classifier>docset</classifier>
     </dependency>
     <dependency>
@@ -61,7 +67,7 @@
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-autoprox-common</artifactId>
       <type>tar.gz</type>
-      <classifier>dataset</classifier>
+      <classifier>uiset</classifier>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>

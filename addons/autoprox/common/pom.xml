@@ -70,9 +70,10 @@
             <phase>package</phase>
             <configuration>
               <descriptorRefs>
+                <descriptorRef>dataset</descriptorRef>
                 <descriptorRef>docset</descriptorRef>
                 <descriptorRef>confset</descriptorRef>
-                <descriptorRef>dataset</descriptorRef>
+                <descriptorRef>uiset</descriptorRef>
               </descriptorRefs>
             </configuration>
           </execution>
