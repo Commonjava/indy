@@ -23,6 +23,7 @@
       </includes>
       <excludes>
         <exclude>org.commonjava.aprox.ui*</exclude>
+        <exclude>org.commonjava*:*:tar.gz:*:uiset</exclude>
         <exclude>org.commonjava*:*:war:*</exclude>
       </excludes>
       
@@ -50,6 +51,7 @@
       <scope>runtime</scope>
       <includes>
         <include>org.commonjava.aprox.ui*</include>
+        <include>org.commonjava*:*:tar.gz:*:uiset</include>
       </includes>
       <outputDirectory>/</outputDirectory>
       <unpack>true</unpack>
