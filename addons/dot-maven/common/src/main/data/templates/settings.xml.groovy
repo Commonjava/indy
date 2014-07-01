@@ -10,7 +10,7 @@
       Red Hat, Inc. - initial API and implementation
 -->
 <settings>
-  <localRepository>${user.home}/.m2/repo-${type}-${name}</localRepository>
+  <localRepository>\${user.home}/.m2/repo-${type}-${name}</localRepository>
   <mirrors>
     <mirror>
       <id>${name}</id>

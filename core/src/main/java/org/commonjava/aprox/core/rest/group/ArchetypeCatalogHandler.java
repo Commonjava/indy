@@ -11,12 +11,9 @@
 package org.commonjava.aprox.core.rest.group;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
-import static org.apache.commons.io.IOUtils.copy;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -122,18 +119,7 @@ public class ArchetypeCatalogHandler
             }
         }
 
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try
-        {
-            copy( stream, baos );
-        }
-        catch ( final IOException e )
-        {
-            throw new AproxWorkflowException( "Failed to read upload: {}", e, e.getMessage() );
-        }
-
-        final Transfer stored =
-            fileManager.store( stores, path, new ByteArrayInputStream( baos.toByteArray() ), TransferOperation.UPLOAD );
+        final Transfer stored = fileManager.store( stores, path, stream, TransferOperation.UPLOAD );
 
         // This is part of the decorated storage action now.
         //        helper.writeChecksumsAndMergeInfo( baos.toByteArray(), Collections.singleton( stored ), group, path );

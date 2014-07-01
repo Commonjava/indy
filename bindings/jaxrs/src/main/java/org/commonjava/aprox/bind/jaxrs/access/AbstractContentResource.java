@@ -10,11 +10,9 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.jaxrs.access;
 
-import static org.commonjava.aprox.core.rest.ContentController.LISTING_FILE;
+import static org.commonjava.aprox.core.rest.ContentController.LISTING_HTML_FILE;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -48,7 +46,8 @@ public abstract class AbstractContentResource<T extends ArtifactStore>
     {
     }
 
-    protected Response doCreate( final String name, final String path, final HttpServletRequest request, final UriInfo uriInfo )
+    protected Response doCreate( final String name, final String path, final HttpServletRequest request,
+                                 final UriInfo uriInfo )
     {
         Response response = null;
         try
@@ -89,7 +88,8 @@ public abstract class AbstractContentResource<T extends ArtifactStore>
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( String.format( "Failed to delete artifact: %s from: %s. Reason: %s", path, name, e.getMessage() ), e );
+            logger.error( String.format( "Failed to delete artifact: %s from: %s. Reason: %s", path, name,
+                                         e.getMessage() ), e );
             response = AproxExceptionUtils.formatResponse( e );
         }
 
@@ -111,16 +111,16 @@ public abstract class AbstractContentResource<T extends ArtifactStore>
         {
             final UriFormatter uriFormatter = new JaxRsUriFormatter( uriInfo );
 
-            if ( path.equals( "" ) || path.endsWith( "/" ) )
+            if ( path.equals( "" ) || path.endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )
             {
-                final String ref = uriFormatter.formatAbsolutePathTo( getStoreType().singularEndpointName(), name, path, LISTING_FILE );
-
-                logger.info( "Redirecting to index.html under: {}\n  ({})", path, ref );
-                response = Response.seeOther( new URI( ref ) )
-                                   .build();
-            }
-            else if ( path.endsWith( LISTING_FILE ) )
-            {
+                //                final String ref = uriFormatter.formatAbsolutePathTo( getStoreType().singularEndpointName(), name, path, LISTING_HTML_FILE );
+                //
+                //                logger.info( "Redirecting to index.html under: {}\n  ({})", path, ref );
+                //                response = Response.seeOther( new URI( ref ) )
+                //                                   .build();
+                //            }
+                //            else if ( path.endsWith( LISTING_HTML_FILE ) )
+                //            {
                 final String svcPath = uriInfo.getBaseUri()
                                               .toString();
 
@@ -133,29 +133,50 @@ public abstract class AbstractContentResource<T extends ArtifactStore>
             else
             {
                 final Transfer item = contentController.get( getStoreType(), name, path );
-                final String contentType = contentController.getContentType( path );
+                if ( item.isDirectory()
+                    || ( path.lastIndexOf( '.' ) < path.lastIndexOf( '/' ) && contentController.isHtmlContent( item ) ) )
+                {
+                    item.delete( false );
 
-                response = Response.ok( item.openInputStream(), contentType )
-                                   .build();
+                    final String svcPath = uriInfo.getBaseUri()
+                                                  .toString();
+
+                    logger.info( "Getting listing at: {} (service path: {})", path + "/", svcPath );
+                    final String html = contentController.list( getStoreType(), name, path + "/", "/", uriFormatter );
+
+                    response = Response.ok( html, MediaType.TEXT_HTML )
+                                       .build();
+                }
+                else
+                {
+
+                    final String contentType = contentController.getContentType( path );
+
+                    response = Response.ok( item.openInputStream(), contentType )
+                                       .build();
+                }
             }
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name, e.getMessage() ), e );
+            logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name,
+                                         e.getMessage() ), e );
             response = AproxExceptionUtils.formatResponse( e );
         }
         catch ( final IOException e )
         {
-            logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name, e.getMessage() ), e );
+            logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name,
+                                         e.getMessage() ), e );
             response = Response.serverError()
                                .build();
         }
-        catch ( final URISyntaxException e )
-        {
-            logger.error( String.format( "Failed to format relocation to index.html from: %s from: %s. Reason: %s", path, name, e.getMessage() ), e );
-            response = Response.serverError()
-                               .build();
-        }
+        //        catch ( final URISyntaxException e )
+        //        {
+        //            logger.error( String.format( "Failed to format relocation to index.html from: %s from: %s. Reason: %s",
+        //                                         path, name, e.getMessage() ), e );
+        //            response = Response.serverError()
+        //                               .build();
+        //        }
 
         return response;
     }

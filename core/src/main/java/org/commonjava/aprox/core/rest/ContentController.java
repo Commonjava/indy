@@ -10,10 +10,15 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.rest;
 
+import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,7 +51,13 @@ import org.commonjava.maven.galley.model.TransferOperation;
 public class ContentController
 {
 
-    public static final String LISTING_FILE = "index.html";
+    public static final String LISTING_HTML_FILE = "index.html";
+
+    private static final int MAX_PEEK_COUNT = 100;
+
+    public static final String HTML_TAG_PATTERN = ".*\\<(!DOCTYPE|[-_.a-zA-Z0-9]+).*";
+
+    private static final int MAX_PEEK_BYTES = 16384;
 
     @Inject
     private StoreDataManager storeManager;
@@ -84,7 +95,8 @@ public class ContentController
 
         if ( item == null )
         {
-            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "{}", ( path + ( item == null ? " was not found." : "is a directory" ) ) );
+            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "{}",
+                                              ( path + ( item == null ? " was not found." : "is a directory" ) ) );
         }
 
         return item;
@@ -121,7 +133,8 @@ public class ContentController
         }
         catch ( final ProxyDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to retrieve list of concrete stores. Reason: {}", e,
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR,
+                                              "Failed to retrieve list of concrete stores. Reason: {}", e,
                                               e.getMessage() );
         }
     }
@@ -136,7 +149,8 @@ public class ContentController
         }
         catch ( final ProxyDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to retrieve list of concrete stores. Reason: {}", e,
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR,
+                                              "Failed to retrieve list of concrete stores. Reason: {}", e,
                                               e.getMessage() );
         }
     }
@@ -158,7 +172,8 @@ public class ContentController
         }
         catch ( final ProxyDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Cannot retrieve store: {}. Reason: {}", e, key, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Cannot retrieve store: {}. Reason: {}",
+                                              e, key, e.getMessage() );
         }
 
         if ( store == null )
@@ -169,7 +184,8 @@ public class ContentController
         return store;
     }
 
-    public String list( final StoreType type, final String name, final String path, final String serviceUrl, final UriFormatter uriFormatter )
+    public String list( final StoreType type, final String name, final String path, final String serviceUrl,
+                        final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
         final StoreKey key = new StoreKey( type, name );
@@ -232,9 +248,10 @@ public class ContentController
 
         Collections.sort( sources );
 
-        String parentPath = normalize( normalize( parentPath( normalize( parentPath( path ) ) ) ), LISTING_FILE );
-        String parentUrl = uriFormatter.formatAbsolutePathTo( serviceUrl, type.singularEndpointName(), name, parentPath );
-        if ( parentPath.equals( LISTING_FILE ) )
+        String parentPath = normalize( normalize( parentPath( normalize( parentPath( path ) ) ) ), LISTING_HTML_FILE );
+        String parentUrl =
+            uriFormatter.formatAbsolutePathTo( serviceUrl, type.singularEndpointName(), name, parentPath );
+        if ( parentPath.equals( LISTING_HTML_FILE ) )
         {
             parentPath = null;
             parentUrl = null;
@@ -259,6 +276,45 @@ public class ContentController
         {
             throw new AproxWorkflowException( e.getMessage(), e );
         }
+    }
+
+    public boolean isHtmlContent( final Transfer item )
+        throws AproxWorkflowException
+    {
+        final byte[] head = new byte[MAX_PEEK_BYTES];
+        BufferedReader reader = null;
+        InputStream raw = null;
+        try
+        {
+            raw = item.openInputStream( false );
+            final int read = raw.read( head );
+            if ( read > 0 )
+            {
+                reader = new BufferedReader( new InputStreamReader( new ByteArrayInputStream( head ) ) );
+
+                String line = null;
+                int count = 0;
+                while ( ( line = reader.readLine() ) != null && count < MAX_PEEK_COUNT )
+                {
+                    if ( line.matches( HTML_TAG_PATTERN ) )
+                    {
+                        return true;
+                    }
+                    count++;
+                }
+            }
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxWorkflowException( "Cannot read: %s. Reason: %s", e, item, e.getMessage() );
+        }
+        finally
+        {
+            closeQuietly( raw );
+            closeQuietly( reader );
+        }
+
+        return false;
     }
 
 }

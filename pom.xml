@@ -517,6 +517,12 @@
         <artifactId>plexus-interpolation</artifactId>
         <version>1.19</version>
       </dependency>
+      <dependency>
+      	<groupId>org.commonjava.maven.galley</groupId>
+      	<artifactId>galley-test-harness-core</artifactId>
+      	<version>${galleyVersion}</version>
+      	<scope>test</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   

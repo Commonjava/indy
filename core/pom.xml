@@ -117,6 +117,11 @@
       <groupId>org.commonjava.cdi.util</groupId>
       <artifactId>weft</artifactId>
     </dependency>
+    <dependency>
+    	<groupId>org.commonjava.maven.galley</groupId>
+    	<artifactId>galley-test-harness-core</artifactId>
+    	<scope>test</scope>
+    </dependency>
   </dependencies>
   
   <dependencyManagement>

@@ -14,7 +14,7 @@ import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatCreatedRe
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithEntity;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatRedirect;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
-import static org.commonjava.aprox.core.rest.ContentController.LISTING_FILE;
+import static org.commonjava.aprox.core.rest.ContentController.LISTING_HTML_FILE;
 import static org.commonjava.vertx.vabr.types.BuiltInParam._classContextUrl;
 
 import java.io.IOException;
@@ -73,13 +73,15 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
         final String contentLen = request.headers()
                                          .get( ApplicationHeader.content_length.key() );
         final VertXInputStream stream =
-            contentLen == null ? new VertXInputStream( request ) : new VertXInputStream( request, Long.parseLong( contentLen ) );
+            contentLen == null ? new VertXInputStream( request ) : new VertXInputStream( request,
+                                                                                         Long.parseLong( contentLen ) );
         try
         {
             final Transfer stored = getContentController().store( getStoreType(), name, path, stream );
             final StoreKey storageKey = LocationUtils.getKey( stored );
 
-            formatCreatedResponse( request, uriFormatter, getStoreType().singularEndpointName(), storageKey.getName(), stored.getPath() );
+            formatCreatedResponse( request, uriFormatter, getStoreType().singularEndpointName(), storageKey.getName(),
+                                   stored.getPath() );
         }
         catch ( final AproxWorkflowException e )
         {
@@ -116,13 +118,14 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( String.format( "Failed to delete artifact: %s from: %s. Reason: %s", path, name, e.getMessage() ), e );
+            logger.error( String.format( "Failed to delete artifact: %s from: %s. Reason: %s", path, name,
+                                         e.getMessage() ), e );
             formatResponse( e, request );
         }
     }
 
     protected abstract StoreType getStoreType();
-    
+
     protected void doHead( final HttpServerRequest request )
     {
         // TODO:
@@ -143,19 +146,22 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
             if ( path.endsWith( "/" ) )
             {
                 logger.info( "Redirecting to index.html under: {}", path );
-                formatRedirect( request, uriFormatter.formatAbsolutePathTo( baseUri, getStoreType().singularEndpointName(), name, path, LISTING_FILE ) );
+                formatRedirect( request, uriFormatter.formatAbsolutePathTo( baseUri,
+                                                                            getStoreType().singularEndpointName(),
+                                                                            name, path, LISTING_HTML_FILE ) );
             }
-            else if ( path.endsWith( LISTING_FILE ) )
+            else if ( path.endsWith( LISTING_HTML_FILE ) )
             {
                 logger.info( "Getting listing at: {}", path );
                 final String html = contentController.list( getStoreType(), name, path, baseUri, uriFormatter );
 
                 request.response()
-                .putHeader( ApplicationHeader.content_type.key(), ApplicationContent.text_html )
-                .putHeader( ApplicationHeader.content_length.key(), Long.toString( html.length() ))
-                .putHeader( ApplicationHeader.last_modified.key(), RequestUtils.formatDateHeader(new Date() ))
-                .end();
-                request.response().close();
+                       .putHeader( ApplicationHeader.content_type.key(), ApplicationContent.text_html )
+                       .putHeader( ApplicationHeader.content_length.key(), Long.toString( html.length() ) )
+                       .putHeader( ApplicationHeader.last_modified.key(), RequestUtils.formatDateHeader( new Date() ) )
+                       .end();
+                request.response()
+                       .close();
             }
             else
             {
@@ -165,14 +171,20 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
 
                 request.response()
                        .putHeader( ApplicationHeader.content_type.key(), contentType )
-                       .putHeader( ApplicationHeader.content_length.key(), Long.toString( item.getDetachedFile().length() ))
-                       .putHeader( ApplicationHeader.last_modified.key(), RequestUtils.formatDateHeader(item.getDetachedFile().lastModified() )).end();
-                request.response().close();
+                       .putHeader( ApplicationHeader.content_length.key(), Long.toString( item.getDetachedFile()
+                                                                                              .length() ) )
+                       .putHeader( ApplicationHeader.last_modified.key(),
+                                   RequestUtils.formatDateHeader( item.getDetachedFile()
+                                                                      .lastModified() ) )
+                       .end();
+                request.response()
+                       .close();
             }
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name, e.getMessage() ), e );
+            logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name,
+                                         e.getMessage() ), e );
             formatResponse( e, request );
         }
     }
@@ -194,13 +206,13 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
             final String baseUri = request.params()
                                           .get( _classContextUrl.key() );
 
-            if ( path.endsWith( "/" ) )
+            if ( path.equals( "" ) || path.endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )
             {
-                logger.info( "Redirecting to index.html under: {}", path );
-                formatRedirect( request, uriFormatter.formatAbsolutePathTo( baseUri, getStoreType().singularEndpointName(), name, path, LISTING_FILE ) );
-            }
-            else if ( path.endsWith( LISTING_FILE ) )
-            {
+                //                logger.info( "Redirecting to index.html under: {}", path );
+                //                formatRedirect( request, uriFormatter.formatAbsolutePathTo( baseUri, getStoreType().singularEndpointName(), name, path, LISTING_FILE ) );
+                //            }
+                //            else if ( path.endsWith( LISTING_FILE ) )
+                //            {
                 logger.info( "Getting listing at: {}", path );
                 final String html = contentController.list( getStoreType(), name, path, baseUri, uriFormatter );
 
@@ -209,27 +221,42 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
             else
             {
                 final Transfer item = contentController.get( getStoreType(), name, path );
+                if ( item.isDirectory()
+                    || ( path.lastIndexOf( '.' ) < path.lastIndexOf( '/' ) && contentController.isHtmlContent( item ) ) )
+                {
+                    item.delete( false );
 
-                final String contentType = contentController.getContentType( path );
+                    logger.info( "Getting listing at: {}", path + "/" );
+                    final String html =
+                        contentController.list( getStoreType(), name, path + "/", baseUri, uriFormatter );
 
-                request.response()
-                       .putHeader( ApplicationHeader.content_type.key(), contentType );
+                    formatOkResponseWithEntity( request, html, ApplicationContent.text_html );
+                }
+                else
+                {
+                    final String contentType = contentController.getContentType( path );
 
-                item.touch();
-                request.response()
-                       .sendFile( item.getDetachedFile()
-                                      .getCanonicalPath() )
-                       .close();
+                    request.response()
+                           .putHeader( ApplicationHeader.content_type.key(), contentType );
+
+                    item.touch();
+                    request.response()
+                           .sendFile( item.getDetachedFile()
+                                          .getCanonicalPath() )
+                           .close();
+                }
             }
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name, e.getMessage() ), e );
+            logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name,
+                                         e.getMessage() ), e );
             formatResponse( e, request );
         }
         catch ( final IOException e )
         {
-            logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name, e.getMessage() ), e );
+            logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name,
+                                         e.getMessage() ), e );
             formatResponse( e, request );
         }
     }
