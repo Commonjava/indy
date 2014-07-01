@@ -50,6 +50,12 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-autoprox-common</artifactId>
+      <type>tar.gz</type>
+      <classifier>uiset</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-depgraph-jaxrs</artifactId>
     </dependency>
     <dependency>
