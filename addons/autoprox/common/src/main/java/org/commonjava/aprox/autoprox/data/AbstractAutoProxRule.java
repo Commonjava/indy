@@ -41,8 +41,19 @@ public abstract class AbstractAutoProxRule
         return null;
     }
 
+    /**
+     * Use {@link AutoProxRule#createValidationRemote()} instead.
+     */
     @Override
+    @Deprecated
     public RemoteRepository createGroupValidationRemote( final String name )
+        throws AutoProxRuleException, MalformedURLException
+    {
+        return createRemoteRepository( name );
+    }
+
+    @Override
+    public RemoteRepository createValidationRemote( final String name )
         throws AutoProxRuleException, MalformedURLException
     {
         return createRemoteRepository( name );

@@ -10,8 +10,9 @@
  ******************************************************************************/
 package org.commonjava.aprox.autoprox.data;
 
+import static org.commonjava.maven.galley.util.PathUtils.normalize;
+
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -103,27 +104,9 @@ public abstract class AutoProxDataManagerDecorator
 
             if ( g != null )
             {
-                try
+                if ( !checkValidity( name ) )
                 {
-                    final RemoteRepository validationRepo = catalog.createGroupValidationRemote( name );
-                    if ( validationRepo != null
-                        && !checkUrlValidity( validationRepo, catalog.getRemoteValidationUrl( name ) ) )
-                    {
-                        logger.warn( "Invalid repository URL: {}", validationRepo.getUrl() );
-                        return null;
-                    }
-                }
-                catch ( final AutoProxRuleException e )
-                {
-                    throw new ProxyDataException(
-                                                  "[AUTOPROX] Failed to create new group from factory matching: '%s'. Reason: %s",
-                                                  e, name, e.getMessage() );
-                }
-                catch ( final MalformedURLException e )
-                {
-                    throw new ProxyDataException(
-                                                  "[AUTOPROX] Failed to validate new group from factory matching: '%s'. Reason: %s",
-                                                  e, name, e.getMessage() );
+                    return null;
                 }
 
                 for ( final StoreKey key : new ArrayList<StoreKey>( g.getConstituents() ) )
@@ -148,44 +131,91 @@ public abstract class AutoProxDataManagerDecorator
         return g;
     }
 
-    private synchronized boolean checkUrlValidity( final RemoteRepository repo, String url )
-        throws MalformedURLException
+    /**
+     * Validates the remote connection, produced from rule-set for given name, 
+     * for a remote repo or group containing a remote. If:
+     * 
+     * <ul>
+     *   <li>rule.isValidationEnabled() == false, return true</li>
+     *   <li>rule.getValidationRemote() == null, return true</li>
+     *   <li>
+     *     rule.getRemoteValidationPath() != null, validate remote.getUrl() + validationPath
+     *     <ul>
+     *       <li>if response code is 200 OK, then return true</li>
+     *       <li>otherwise, return false</li>
+     *     </ul>
+     *   </li>
+     * </ul>
+     * @throws ProxyDataException if the selected rule encounters an error while creating the new group/repository instance(s).
+     */
+    private boolean checkValidity( final String name )
+        throws ProxyDataException
     {
-        if ( url == null )
+        if ( catalog.isValidationEnabled( name ) )
         {
-            url = repo.getUrl();
+            try
+            {
+                final RemoteRepository validationRepo = catalog.createValidationRemote( name );
+                if ( validationRepo == null )
+                {
+                    return true;
+                }
+
+                String url = catalog.getRemoteValidationUrl( name );
+                if ( url == null )
+                {
+                    url = validationRepo.getUrl();
+                }
+                else
+                {
+                    url = normalize( validationRepo.getUrl(), url );
+                }
+
+                logger.debug( "\n\n\n\n\n[AutoProx] Checking URL: {}", url );
+                final HttpHead head = new HttpHead( url );
+
+                http.bindRepositoryCredentialsTo( validationRepo, head );
+
+                boolean result = false;
+                try
+                {
+                    final HttpResponse response = http.getClient()
+                                                      .execute( head );
+                    final StatusLine statusLine = response.getStatusLine();
+                    final int status = statusLine.getStatusCode();
+                    logger.debug( "[AutoProx] HTTP Status: {}", statusLine );
+                    result = status == HttpStatus.SC_OK;
+
+                    if ( !result )
+                    {
+                        logger.warn( "Invalid repository URL: {}", validationRepo.getUrl() );
+                    }
+                }
+                catch ( final ClientProtocolException e )
+                {
+                    logger.warn( "[AutoProx] Cannot connect to target repository: '{}'.", url );
+                }
+                catch ( final IOException e )
+                {
+                    logger.warn( "[AutoProx] Cannot connect to target repository: '{}'.", url );
+                }
+                finally
+                {
+                    http.clearRepositoryCredentials();
+                    http.closeConnection();
+                }
+
+                return result;
+            }
+            catch ( final AutoProxRuleException e )
+            {
+                throw new ProxyDataException(
+                                              "[AUTOPROX] Failed to create new group from factory matching: '%s'. Reason: %s",
+                                              e, name, e.getMessage() );
+            }
         }
 
-        logger.debug( "\n\n\n\n\n[AutoProx] Checking URL: {}", url );
-        final HttpHead head = new HttpHead( url );
-
-        http.bindRepositoryCredentialsTo( repo, head );
-
-        boolean result = false;
-        try
-        {
-            final HttpResponse response = http.getClient()
-                                              .execute( head );
-            final StatusLine statusLine = response.getStatusLine();
-            final int status = statusLine.getStatusCode();
-            logger.debug( "[AutoProx] HTTP Status: {}", statusLine );
-            result = status == HttpStatus.SC_OK;
-        }
-        catch ( final ClientProtocolException e )
-        {
-            logger.warn( "[AutoProx] Cannot connect to target repository: '{}'.", url );
-        }
-        catch ( final IOException e )
-        {
-            logger.warn( "[AutoProx] Cannot connect to target repository: '{}'.", url );
-        }
-        finally
-        {
-            http.clearRepositoryCredentials();
-            http.closeConnection();
-        }
-
-        return result;
+        return true;
     }
 
     @Override
@@ -210,20 +240,13 @@ public abstract class AutoProxDataManagerDecorator
                 repo = catalog.createRemoteRepository( name );
                 if ( repo != null )
                 {
-                    if ( !checkUrlValidity( repo, catalog.getRemoteValidationUrl( name ) ) )
+                    if ( !checkValidity( name ) )
                     {
-                        logger.warn( "Invalid repository URL: {}", repo.getUrl() );
                         return null;
                     }
 
                     dataManager.storeRemoteRepository( repo );
                 }
-            }
-            catch ( final MalformedURLException e )
-            {
-                throw new ProxyDataException(
-                                              "[AUTOPROX] Failed to create/validate new remote repository from factory matching: '%s'. Reason: %s",
-                                              e, name, e.getMessage() );
             }
             catch ( final AutoProxRuleException e )
             {

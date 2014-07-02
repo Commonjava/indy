@@ -160,13 +160,13 @@ public class AutoProxCatalog
         }
     }
 
-    public RemoteRepository createGroupValidationRemote( final String name )
+    public RemoteRepository createValidationRemote( final String name )
         throws AutoProxRuleException
     {
         final AutoProxRule rule = getRule( name );
         try
         {
-            return rule == null ? null : rule.createGroupValidationRemote( name );
+            return rule == null || !rule.isValidationEnabled() ? null : rule.createValidationRemote( name );
         }
         catch ( final MalformedURLException e )
         {
@@ -177,6 +177,12 @@ public class AutoProxCatalog
             throw new AutoProxRuleException( "Failed to create remote repository for: %s. Reason: %s", e, name,
                                              e.getMessage() );
         }
+    }
+
+    public boolean isValidationEnabled( final String name )
+    {
+        final AutoProxRule rule = getRule( name );
+        return rule != null && rule.isValidationEnabled();
     }
 
 }

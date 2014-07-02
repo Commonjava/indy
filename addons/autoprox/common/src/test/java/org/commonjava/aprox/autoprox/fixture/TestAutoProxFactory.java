@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.autoprox.fixture;
 
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,7 +81,14 @@ public class TestAutoProxFactory
     @Override
     public boolean isValidationEnabled()
     {
-        return false;
+        return true;
+    }
+
+    @Override
+    public RemoteRepository createValidationRemote( final String name )
+        throws AutoProxRuleException, MalformedURLException
+    {
+        return createRemoteRepository( name );
     }
 
 }
