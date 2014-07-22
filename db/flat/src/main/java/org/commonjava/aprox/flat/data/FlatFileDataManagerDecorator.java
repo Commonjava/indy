@@ -12,7 +12,6 @@ package org.commonjava.aprox.flat.data;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 
 import javax.annotation.PostConstruct;
 import javax.decorator.Decorator;
@@ -159,14 +158,6 @@ public abstract class FlatFileDataManagerDecorator
     }
 
     @Override
-    public void storeHostedRepositories( final Collection<HostedRepository> deploys )
-        throws ProxyDataException
-    {
-        dataManager.storeHostedRepositories( deploys );
-        store( false, deploys.toArray( new ArtifactStore[] {} ) );
-    }
-
-    @Override
     public boolean storeHostedRepository( final HostedRepository deploy )
         throws ProxyDataException
     {
@@ -193,14 +184,6 @@ public abstract class FlatFileDataManagerDecorator
     }
 
     @Override
-    public void storeRemoteRepositories( final Collection<RemoteRepository> repos )
-        throws ProxyDataException
-    {
-        dataManager.storeRemoteRepositories( repos );
-        store( false, repos.toArray( new ArtifactStore[] {} ) );
-    }
-
-    @Override
     public boolean storeRemoteRepository( final RemoteRepository proxy )
         throws ProxyDataException
     {
@@ -224,14 +207,6 @@ public abstract class FlatFileDataManagerDecorator
         }
 
         return result;
-    }
-
-    @Override
-    public void storeGroups( final Collection<Group> groups )
-        throws ProxyDataException
-    {
-        dataManager.storeGroups( groups );
-        store( false, groups.toArray( new ArtifactStore[] {} ) );
     }
 
     @Override

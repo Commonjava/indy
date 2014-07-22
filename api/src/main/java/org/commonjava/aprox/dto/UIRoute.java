@@ -1,5 +1,10 @@
 package org.commonjava.aprox.dto;
 
+/**
+ * Describes a "route" in the UI, mainly useful for add-ons to register UI additions. This specifies a route (path) and template href, which corresponds
+ * to an html fragment, potentially with UI-specific logic, that handles content display for that route. Any UI-side controller init/logic is assumed
+ * to be embedded in the template.
+ */
 public class UIRoute
 {
 

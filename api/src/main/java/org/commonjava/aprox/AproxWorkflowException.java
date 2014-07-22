@@ -10,10 +10,18 @@
  ******************************************************************************/
 package org.commonjava.aprox;
 
+import java.io.NotSerializableException;
+import java.io.Serializable;
 import java.text.MessageFormat;
 
+import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.util.ApplicationStatus;
 
+/**
+ * Signals an error between the REST-resources layer and the next layer down (except for {@link FileManager}, which is normally two layers down thanks 
+ * to binding controllers). Workflow exceptions are intended to carry with them some notion of what response to send to the user (even if it's 
+ * the default: HTTP 500).
+ */
 public class AproxWorkflowException
     extends Exception
 {
@@ -110,6 +118,12 @@ public class AproxWorkflowException
         return status < 1 ? ApplicationStatus.BAD_REQUEST.code() : status;
     }
 
+    /**
+     * Stringify all parameters pre-emptively on serialization, to prevent {@link NotSerializableException}.
+     * Since all parameters are used in {@link String#format} or {@link MessageFormat#format}, flattening them
+     * to strings is an acceptable way to provide this functionality without making the use of {@link Serializable}
+     * viral.
+     */
     private Object writeReplace()
     {
         final Object[] newParams = new Object[params.length];

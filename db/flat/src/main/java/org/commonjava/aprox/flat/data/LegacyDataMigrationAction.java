@@ -93,10 +93,16 @@ public class LegacyDataMigrationAction
             data.reload();
 
             final List<HostedRepository> hosted = data.getAllHostedRepositories();
-            data.storeHostedRepositories( hosted );
+            for ( final HostedRepository repo : hosted )
+            {
+                data.storeHostedRepository( repo );
+            }
 
             final List<RemoteRepository> remotes = data.getAllRemoteRepositories();
-            data.storeRemoteRepositories( remotes );
+            for ( final RemoteRepository repo : remotes )
+            {
+                data.storeRemoteRepository( repo );
+            }
 
             data.reload();
         }

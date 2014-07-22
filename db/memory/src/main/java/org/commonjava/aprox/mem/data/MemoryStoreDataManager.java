@@ -13,7 +13,6 @@ package org.commonjava.aprox.mem.data;
 import static org.commonjava.aprox.model.StoreType.group;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -210,17 +209,6 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void storeHostedRepositories( final Collection<HostedRepository> repos )
-        throws ProxyDataException
-    {
-        for ( final HostedRepository repo : repos )
-        {
-            store( repo, false );
-        }
-        fireStoreEvent( ProxyManagerUpdateType.ADD_OR_UPDATE, repos );
-    }
-
-    @Override
     public boolean storeHostedRepository( final HostedRepository repo )
         throws ProxyDataException
     {
@@ -238,17 +226,6 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void storeRemoteRepositories( final Collection<RemoteRepository> repos )
-        throws ProxyDataException
-    {
-        for ( final RemoteRepository repository : repos )
-        {
-            store( repository, false );
-        }
-        fireStoreEvent( ProxyManagerUpdateType.ADD_OR_UPDATE, repos );
-    }
-
-    @Override
     public boolean storeRemoteRepository( final RemoteRepository repository )
         throws ProxyDataException
     {
@@ -262,17 +239,6 @@ public class MemoryStoreDataManager
         final boolean result = store( repository, skipIfExists );
         fireStoreEvent( skipIfExists ? ProxyManagerUpdateType.ADD : ProxyManagerUpdateType.ADD_OR_UPDATE, repository );
         return result;
-    }
-
-    @Override
-    public void storeGroups( final Collection<Group> groups )
-        throws ProxyDataException
-    {
-        for ( final Group group : groups )
-        {
-            store( group, false );
-        }
-        fireStoreEvent( ProxyManagerUpdateType.ADD_OR_UPDATE, groups );
     }
 
     @Override
@@ -437,15 +403,6 @@ public class MemoryStoreDataManager
         if ( storeEvent != null )
         {
             storeEvent.fire( new ArtifactStoreUpdateEvent( type, repos ) );
-        }
-    }
-
-    @SuppressWarnings( "unchecked" )
-    private void fireStoreEvent( final ProxyManagerUpdateType type, final Collection<? extends ArtifactStore> stores )
-    {
-        if ( storeEvent != null )
-        {
-            storeEvent.fire( new ArtifactStoreUpdateEvent( type, (Collection<ArtifactStore>) stores ) );
         }
     }
 

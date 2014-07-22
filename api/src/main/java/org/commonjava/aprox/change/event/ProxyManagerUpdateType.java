@@ -10,9 +10,17 @@
  ******************************************************************************/
 package org.commonjava.aprox.change.event;
 
+import org.commonjava.aprox.model.ArtifactStore;
+
+/** 
+ * Enumeration of the types of configuration updates that can happen for {@link ArtifactStore}'s.
+ */
 public enum ProxyManagerUpdateType
 {
 
-    ADD, ADD_OR_UPDATE;
+    /** Definite creation of new store. */
+    ADD,
+    /** Could be an update, or could be a creation of a new store. */
+    ADD_OR_UPDATE;
 
 }

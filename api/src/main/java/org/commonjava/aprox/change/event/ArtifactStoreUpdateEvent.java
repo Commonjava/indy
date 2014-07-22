@@ -17,6 +17,10 @@ import java.util.Iterator;
 
 import org.commonjava.aprox.model.ArtifactStore;
 
+/**
+ * Event signaling that one or more specified {@link ArtifactStore} instances' configurations were changed. The {@link ProxyManagerUpdateType}
+ * gives more information about the nature of the update.
+ */
 public class ArtifactStoreUpdateEvent
     implements Iterable<ArtifactStore>, AproxEvent
 {
@@ -37,17 +41,26 @@ public class ArtifactStoreUpdateEvent
         this.type = type;
     }
 
+    /**
+     * Return the type of update that took place.
+     */
     public ProxyManagerUpdateType getType()
     {
         return type;
     }
 
+    /**
+     * Iterate over the changed {@link ArtifactStore}'s specified in this event.
+     */
     @Override
     public Iterator<ArtifactStore> iterator()
     {
         return changes.iterator();
     }
 
+    /**
+     * Return the changed {@link ArtifactStore}'s specified in this event.
+     */
     public Collection<ArtifactStore> getChanges()
     {
         return changes;

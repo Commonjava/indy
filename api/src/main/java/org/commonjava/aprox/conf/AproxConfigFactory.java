@@ -12,6 +12,9 @@ package org.commonjava.aprox.conf;
 
 import org.commonjava.web.config.ConfigurationException;
 
+/**
+ * Describes a facility for loading all the configurations related to AProx, only one of which is {@link AproxConfiguration}.
+ */
 public interface AproxConfigFactory
 {
     String CONFIG_PATH_PROP = "aprox.config";
@@ -22,9 +25,16 @@ public interface AproxConfigFactory
 
     String DEFAULT_CONFIG_PATH = DEFAULT_CONFIG_DIR + "/main.conf";
 
+    /**
+     * Return the configuration instance corresponding to the given class.
+     */
     <T> T getConfiguration( Class<T> configCls )
         throws ConfigurationException;
 
+    /**
+     * Read all configurations and apply them to the different configuration-class instances available.
+     * @param config Most commonly, a path to a configuration file.
+     */
     void load( String config )
         throws ConfigurationException;
 

@@ -10,8 +10,16 @@
  ******************************************************************************/
 package org.commonjava.aprox.data;
 
+import java.io.NotSerializableException;
+import java.io.Serializable;
 import java.text.MessageFormat;
 
+import org.commonjava.aprox.model.ArtifactStore;
+
+/**
+ * Exception that indicates an error occurred while retrieving or managing configuration data about one or more
+ * {@link ArtifactStore} instances.
+ */
 public class ProxyDataException
     extends Exception
 {
@@ -87,6 +95,12 @@ public class ProxyDataException
         return formattedMessage;
     }
 
+    /**
+     * Stringify all parameters pre-emptively on serialization, to prevent {@link NotSerializableException}.
+     * Since all parameters are used in {@link String#format} or {@link MessageFormat#format}, flattening them
+     * to strings is an acceptable way to provide this functionality without making the use of {@link Serializable}
+     * viral.
+     */
     private Object writeReplace()
     {
         final Object[] newParams = new Object[params.length];

@@ -1,6 +1,5 @@
 package org.commonjava.aprox.autoprox.fixture;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -94,13 +93,6 @@ public class TestAutoProxyDataManager
     }
 
     @Override
-    public void storeHostedRepositories( final Collection<HostedRepository> deploys )
-        throws ProxyDataException
-    {
-        delegate.storeHostedRepositories( deploys );
-    }
-
-    @Override
     public boolean storeHostedRepository( final HostedRepository deploy )
         throws ProxyDataException
     {
@@ -115,13 +107,6 @@ public class TestAutoProxyDataManager
     }
 
     @Override
-    public void storeRemoteRepositories( final Collection<RemoteRepository> repos )
-        throws ProxyDataException
-    {
-        delegate.storeRemoteRepositories( repos );
-    }
-
-    @Override
     public boolean storeRemoteRepository( final RemoteRepository proxy )
         throws ProxyDataException
     {
@@ -133,13 +118,6 @@ public class TestAutoProxyDataManager
         throws ProxyDataException
     {
         return delegate.storeRemoteRepository( repository, skipIfExists );
-    }
-
-    @Override
-    public void storeGroups( final Collection<Group> groups )
-        throws ProxyDataException
-    {
-        delegate.storeGroups( groups );
     }
 
     @Override

@@ -12,6 +12,9 @@ package org.commonjava.aprox.dto;
 
 import java.net.URI;
 
+/** DTO encapsulating the result of a POST operation somewhere in the system. These should all have similar features, in the sense of having a 
+ * <code>Location</code> HTTP header pointing to the new resource, and a JSON response that contains the serialized form of new resource itself.
+ */
 public class CreationDTO
 {
 

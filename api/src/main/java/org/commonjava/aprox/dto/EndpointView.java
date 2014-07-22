@@ -11,10 +11,15 @@
 package org.commonjava.aprox.dto;
 
 import org.commonjava.aprox.model.ArtifactStore;
+import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.util.UriFormatter;
 
 import com.google.gson.annotations.SerializedName;
 
+/**
+ * Lightweight view of an {@link ArtifactStore} designed for external use. Each instance includes the name and type of the store, plus a resource-uri
+ * for accessing content on that endpoint.
+ */
 public final class EndpointView
     implements Comparable<EndpointView>
 {
@@ -27,13 +32,14 @@ public final class EndpointView
 
     public EndpointView( final ArtifactStore store, final String baseUri, final UriFormatter uriBuilder )
     {
-        this.name = store.getName();
+        final StoreKey key = store.getKey();
+        this.name = key.getName();
 
-        this.type = store.getDoctype()
-                         .name();
+        this.type = key.getType()
+                       .name();
 
-        this.resourceUri = uriBuilder.formatAbsolutePathTo( baseUri, store.getDoctype()
-                                                                          .singularEndpointName(), store.getName() );
+        this.resourceUri = uriBuilder.formatAbsolutePathTo( baseUri, key.getType()
+                                                                        .singularEndpointName(), key.getName() );
 
     }
 

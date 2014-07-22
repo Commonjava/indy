@@ -10,11 +10,19 @@
  ******************************************************************************/
 package org.commonjava.aprox.action.start;
 
+/**
+ * Converts storage/data formats from older versions of AProx into up-to-date forms.
+ * These are run right after the system boots, but before it listens for requests.
+ */
 public interface MigrationAction
 {
 
+    /** Used mainly for reporting, this is a unique identifier for this migration action. */
     String getId();
 
+    /**
+     * Execute the migration, and return whether anything was changed as a result.
+     */
     boolean execute();
 
 }

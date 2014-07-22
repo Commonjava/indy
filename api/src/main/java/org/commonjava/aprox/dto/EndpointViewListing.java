@@ -18,6 +18,16 @@ import java.util.List;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.util.UriFormatter;
 
+/**
+ * DTO used to wrap a listing of available {@link EndpointView} instances (read: artifact-stores) installed in the system.
+ * 
+ * Wrapper embeds these id's in an "items" list, to work around a known JSON security flaw.
+ * <br/>
+ * See: <a href="http://stackoverflow.com/questions/3503102/what-are-top-level-json-arrays-and-why-are-they-a-security-risk">
+ * http://stackoverflow.com/questions/3503102/what-are-top-level-json-arrays-and-why-are-they-a-security-risk
+ * </a>
+ */
+
 public class EndpointViewListing
 {
 

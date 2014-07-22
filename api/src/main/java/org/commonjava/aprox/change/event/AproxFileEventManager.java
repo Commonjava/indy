@@ -20,6 +20,9 @@ import org.commonjava.maven.galley.event.FileErrorEvent;
 import org.commonjava.maven.galley.event.FileNotFoundEvent;
 import org.commonjava.maven.galley.event.FileStorageEvent;
 
+/**
+ * Helper class to provide simple methods to handle null-checking, etc. around the firing of AProx filesystem events.
+ */
 @ApplicationScoped
 public class AproxFileEventManager
     implements org.commonjava.maven.galley.spi.event.FileEventManager

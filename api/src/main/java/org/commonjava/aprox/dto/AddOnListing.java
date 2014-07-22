@@ -15,6 +15,14 @@ import java.util.List;
 
 import org.commonjava.aprox.spi.AproxAddOnID;
 
+/**
+ * DTO used to wrap a listing of available add-ons installed in the system. Wrapper embeds these id's in an "items" list, to work around a known
+ * JSON security flaw.
+ * <br/>
+ * See: <a href="http://stackoverflow.com/questions/3503102/what-are-top-level-json-arrays-and-why-are-they-a-security-risk">
+ * http://stackoverflow.com/questions/3503102/what-are-top-level-json-arrays-and-why-are-they-a-security-risk
+ * </a>
+ */
 public class AddOnListing
 {
 

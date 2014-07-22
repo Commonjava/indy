@@ -10,11 +10,23 @@
  ******************************************************************************/
 package org.commonjava.aprox.conf;
 
+/**
+ * Registration helper to describe configuration for an add-on or subsystem of AProx. This helps AProx keep configurations local to the
+ * codebases that use them, by allowing them to register enough information to hook into the {@link AproxConfigFactory} and read a subsection
+ * of the overall configuration (file).
+ * 
+ */
 public interface AproxConfigInfo
 {
 
+    /**
+     * The configuration class which will be instantiated with information read by the {@link AproxConfigFactory}.
+     */
     Class<?> getConfigurationClass();
 
+    /**
+     * The name of the configuration file subsection that applies to this configuration.
+     */
     String getSectionName();
 
 }

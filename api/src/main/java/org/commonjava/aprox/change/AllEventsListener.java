@@ -10,11 +10,12 @@
  ******************************************************************************/
 package org.commonjava.aprox.change;
 
-
+/** Debugging event listener to simply spit each event out to the system console. */
 @javax.enterprise.context.ApplicationScoped
 public class AllEventsListener
 {
 
+    /** Print the event to the console */
     public void onEvent( /*@Observes @Any*/final Object evt )
     {
         System.out.printf( "\n\n\n\n[ALL] {}\n\n\n\n", evt );

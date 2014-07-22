@@ -10,9 +10,21 @@
  ******************************************************************************/
 package org.commonjava.aprox.conf;
 
+/**
+ * Describes a CDI-style Provider that @Produces an {@link AproxConfigInfo}, for registration in the configuration reader driven by 
+ * {@link AproxConfigFactory}. The configuration class, implementation of {@link AproxConfigInfo}, and this class form a necessary triple-class 
+ * mechanism necessary to auto-register add-on and subsystem configurations flexibly into a single configuration reader/factory.
+ * 
+ * @author jdcasey
+ *
+ */
 public interface AproxFeatureConfig
 {
 
+    /**
+     * Construct (if necessary) and return an {@link AproxConfigInfo} that can be registered to guide the creation/population of the specific 
+     * configuration class we're interested in.
+     */
     AproxConfigInfo getInfo();
 
 }

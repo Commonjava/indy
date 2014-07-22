@@ -12,6 +12,10 @@ package org.commonjava.aprox.conf;
 
 import org.commonjava.web.config.section.MapSectionListener;
 
+/**
+ * Abstract class designed to make it simpler to create a subsystem or add-on configuration that has no specific set of configuration parameters. 
+ * Instead, it knows how to accommodate a flexible mapping of key=value pairs into a usable configuration.
+ */
 public abstract class AbstractAproxMapConfig
     extends MapSectionListener
 {
@@ -27,6 +31,9 @@ public abstract class AbstractAproxMapConfig
         this.sectionName = sectionName;
     }
 
+    /**
+     * Return the name of the configuration subsection that pertains to this configuration class.
+     */
     public String getSectionName()
     {
         return sectionName;

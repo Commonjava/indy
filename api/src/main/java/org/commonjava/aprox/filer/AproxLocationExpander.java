@@ -21,10 +21,12 @@ import javax.inject.Inject;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.galley.CacheOnlyLocation;
 import org.commonjava.aprox.model.galley.GroupLocation;
 import org.commonjava.aprox.model.galley.KeyedLocation;
+import org.commonjava.aprox.model.galley.RepositoryLocation;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.maven.galley.TransferException;
@@ -36,6 +38,11 @@ import org.commonjava.maven.galley.spi.transport.LocationExpander;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * {@link LocationExpander} implementation geared to work with {@link ArtifactStore} instances. This is responsible for resolving group references
+ * into collections of concrete store references, for the purposes of resolving content. Via its use of {@link LocationUtils}, it also is responsible
+ * for creating {@link Location} instances for remote repositories that contain relevant authentication and SSL attributes.
+ */
 @ApplicationScoped
 public class AproxLocationExpander
     implements LocationExpander
@@ -55,6 +62,9 @@ public class AproxLocationExpander
         this.data = data;
     }
 
+    /**
+     * @see AproxLocationExpander#expand(Collection)
+     */
     @Override
     public List<Location> expand( final Location... locations )
         throws TransferException
@@ -62,6 +72,11 @@ public class AproxLocationExpander
         return expand( Arrays.asList( locations ) );
     }
 
+    /**
+     * For group references, expand into a list of concrete repository locations (hosted or remote). For remote repository references that are 
+     * specified as cache-only locations (see: {@link CacheOnlyLocation}), lookup the corresponding {@link RemoteRepository} and use it to create a
+     * {@link RepositoryLocation} that contains any relevant SSL, authentication, proxy, etc. attbributes.
+     */
     @Override
     public <T extends Location> List<Location> expand( final Collection<T> locations )
         throws TransferException
@@ -128,6 +143,11 @@ public class AproxLocationExpander
         return result;
     }
 
+    /** Using the same basic logic as {@link AproxLocationExpander#expand(Collection)}, convert the specified {@link Resource} into a 
+     * {@link VirtualResource} that contains references to the expanded {@link Location} list.
+     * 
+     * @see AproxLocationExpander#expand(Collection)
+     */
     @Override
     public VirtualResource expand( final Resource resource )
         throws TransferException

@@ -44,9 +44,8 @@ public class GroupConsistencyListener
             for ( final Group group : groups )
             {
                 group.removeConstituent( key );
+                proxyDataManager.storeGroup( group );
             }
-
-            proxyDataManager.storeGroups( groups );
 
             changeSync.setChanged();
         }

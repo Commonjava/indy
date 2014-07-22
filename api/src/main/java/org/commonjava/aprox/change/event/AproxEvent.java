@@ -10,6 +10,9 @@
  ******************************************************************************/
 package org.commonjava.aprox.change.event;
 
+/**
+ * Currently just a marker interface to denote an event that was generated from AProx.
+ */
 public interface AproxEvent
 {
 
