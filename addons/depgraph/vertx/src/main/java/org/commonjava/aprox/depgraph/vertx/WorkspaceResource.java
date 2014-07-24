@@ -50,11 +50,11 @@ public class WorkspaceResource
     public void delete( final HttpServerRequest request )
     {
         final String id = request.params()
-                                 .get( p_wsid.name() );
+                                 .get( p_wsid.key() );
         try
         {
             controller.delete( id );
-            setStatus( ApplicationStatus.OK, request );
+            setStatus( ApplicationStatus.OK, request ).end();
         }
         catch ( final AproxWorkflowException e )
         {
@@ -79,7 +79,7 @@ public class WorkspaceResource
             }
             else
             {
-                setStatus( ApplicationStatus.NOT_MODIFIED, request );
+                setStatus( ApplicationStatus.NOT_MODIFIED, request ).end();
             }
         }
         catch ( final AproxWorkflowException e )
@@ -104,7 +104,7 @@ public class WorkspaceResource
             }
             else
             {
-                setStatus( ApplicationStatus.NOT_MODIFIED, request );
+                setStatus( ApplicationStatus.NOT_MODIFIED, request ).end();
             }
         }
         catch ( final AproxWorkflowException e )
@@ -130,7 +130,7 @@ public class WorkspaceResource
             }
             else
             {
-                setStatus( ApplicationStatus.NOT_MODIFIED, request );
+                setStatus( ApplicationStatus.NOT_MODIFIED, request ).end();
             }
         }
         catch ( final AproxWorkflowException e )
@@ -150,7 +150,7 @@ public class WorkspaceResource
             final String json = controller.get( id );
             if ( json == null )
             {
-                setStatus( ApplicationStatus.NOT_FOUND, request );
+                setStatus( ApplicationStatus.NOT_FOUND, request ).end();
             }
             else
             {
@@ -170,7 +170,7 @@ public class WorkspaceResource
         final String json = controller.list();
         if ( json == null )
         {
-            setStatus( ApplicationStatus.NOT_FOUND, request );
+            setStatus( ApplicationStatus.NOT_FOUND, request ).end();
         }
         else
         {
