@@ -28,6 +28,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
+import org.commonjava.aprox.bind.vertx.util.ResponseUtils;
 import org.commonjava.aprox.depgraph.rest.RenderingController;
 import org.commonjava.aprox.util.ApplicationContent;
 import org.commonjava.aprox.util.ApplicationHeader;
@@ -55,8 +56,11 @@ public class GraphRenderingResource
     private RenderingController controller;
 
     @Route( path = "/bom/:groupId/:artifactId/:version", method = POST, contentType = application_xml )
+    @Deprecated
     public void bomFor( final Buffer body, final HttpServerRequest request )
     {
+        ResponseUtils.markDeprecated( request, "/depgraph/render/bom" );
+
         final MultiMap params = request.params();
         final String gid = params.get( p_groupId.key() );
         final String aid = params.get( p_artifactId.key() );
@@ -67,6 +71,29 @@ public class GraphRenderingResource
             final String out =
                 controller.bomFor( gid, aid, ver, getWorkspaceId( request ), parseQueryMap( request.query() ),
                                    body.getString( 0, body.length() ) );
+            if ( out == null )
+            {
+                setStatus( ApplicationStatus.NOT_FOUND, request );
+            }
+            else
+            {
+                formatOkResponseWithEntity( request, out, application_xml );
+            }
+
+        }
+        catch ( final AproxWorkflowException e )
+        {
+            logger.error( e.getMessage(), e );
+            formatResponse( e, request );
+        }
+    }
+
+    @Route( path = "/bom", method = POST, contentType = application_xml )
+    public void bomForDTO( final Buffer body, final HttpServerRequest request )
+    {
+        try
+        {
+            final String out = controller.bomFor( body.getString( 0, body.length() ) );
             if ( out == null )
             {
                 setStatus( ApplicationStatus.NOT_FOUND, request );

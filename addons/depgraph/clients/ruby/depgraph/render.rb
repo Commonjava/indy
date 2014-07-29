@@ -19,6 +19,25 @@ module Depgraph
       generate_config_file()
     end
     
+    def bom()
+      puts "bom started #{Time.now}"
+    
+      filename = "bom-#{@workspace}.xml"
+      @http.post('render/bom', @config){|response|
+        File.open(filename, 'w+'){|f|
+          f.puts(response.body)
+        }
+      
+        puts "Wrote bom to: #{filename}"
+      }
+    
+      puts "bom ended #{Time.now}"
+    end
+    
+    def shutdown()
+      detach_workspace()
+    end
+    
     def tree()
       puts "tree started #{Time.now}"
     

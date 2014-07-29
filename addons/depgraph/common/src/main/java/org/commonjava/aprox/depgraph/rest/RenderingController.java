@@ -28,6 +28,7 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
+import org.commonjava.aprox.depgraph.dto.WebBomDTO;
 import org.commonjava.aprox.depgraph.dto.WebOperationConfigDTO;
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.depgraph.util.ConfigDTOHelper;
@@ -43,7 +44,6 @@ import org.commonjava.maven.atlas.graph.mutate.GraphMutator;
 import org.commonjava.maven.atlas.graph.mutate.ManagedDependencyMutator;
 import org.commonjava.maven.atlas.ident.DependencyScope;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.cartographer.agg.AggregatorConfig;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.data.CartoGraphUtils;
 import org.commonjava.maven.cartographer.dto.GraphCalculation.Type;
@@ -163,37 +163,54 @@ public class RenderingController
         return tree( dto );
     }
 
+    @Deprecated
     public String bomFor( final String groupId, final String artifactId, final String version,
                           final String workspaceId, final Map<String, String[]> params, final InputStream configStream )
         throws AproxWorkflowException
     {
-        final AggregatorConfig config = configHelper.readAggregatorConfig( configStream );
+        final WebBomDTO config = configHelper.readBomDTO( configStream );
         return bomFor( groupId, artifactId, version, workspaceId, params, config );
     }
 
+    @Deprecated
     public String bomFor( final String groupId, final String artifactId, final String version,
                           final String workspaceId, final Map<String, String[]> params, final String configJson )
         throws AproxWorkflowException
     {
-        final AggregatorConfig config = configHelper.readAggregatorConfig( configJson );
+        final WebBomDTO config = configHelper.readBomDTO( configJson );
         return bomFor( groupId, artifactId, version, workspaceId, params, config );
     }
 
+    @Deprecated
     public String bomFor( final String groupId, final String artifactId, final String version,
-                          final String workspaceId, final Map<String, String[]> params, final AggregatorConfig config )
+                          final String workspaceId, final Map<String, String[]> params, final WebBomDTO config )
         throws AproxWorkflowException
     {
-        RelationshipGraph graph = null;
+        final ProjectVersionRef pvr = new ProjectVersionRef( groupId, artifactId, version );
+        config.setOutput( pvr );
+        return bomFor( config );
+    }
+
+    public String bomFor( final InputStream configStream )
+        throws AproxWorkflowException
+    {
+        final WebBomDTO config = configHelper.readBomDTO( configStream );
+        return bomFor( config );
+    }
+
+    public String bomFor( final String configJson )
+        throws AproxWorkflowException
+    {
+        final WebBomDTO config = configHelper.readBomDTO( configJson );
+        return bomFor( config );
+    }
+
+    public String bomFor( final WebBomDTO config )
+        throws AproxWorkflowException
+    {
         try
         {
-            final ProjectRelationshipFilter filter =
-                requestAdvisor.createRelationshipFilter( params, presetParamParser.parse( params ) );
-
-            final GraphMutator mutator = new ManagedDependencyMutator();
-
-            graph = graphFactory.open( new ViewParams( workspaceId, filter, mutator, config.getRoots() ), true );
-
-            final Model model = ops.generateBOM( new ProjectVersionRef( groupId, artifactId, version ), graph );
+            final Model model = ops.generateBOM( config );
 
             final StringWriter writer = new StringWriter();
             new MavenXpp3Writer().write( writer, model );
@@ -205,21 +222,11 @@ public class RenderingController
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Failed to render BOM: {}", e,
                                               e.getMessage() );
         }
-        catch ( final RelationshipGraphException e )
-        {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR,
-                                              "Failed to generate BOM for: {} using config: {}. Reason: {}", e, config,
-                                              e.getMessage() );
-        }
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR,
                                               "Failed to generate BOM for: {} using config: {}. Reason: {}", e, config,
                                               e.getMessage() );
-        }
-        finally
-        {
-            CartoGraphUtils.closeGraphQuietly( graph );
         }
     }
 

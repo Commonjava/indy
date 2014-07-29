@@ -23,6 +23,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.store.LockReleaseFailedException;
 import org.apache.maven.index.ArtifactScanningListener;
 import org.apache.maven.index.DefaultScannerListener;
@@ -122,6 +123,7 @@ public class IndexHandler
 
     public void onDelete( @Observes final ProxyManagerDeleteEvent event )
     {
+        logger.info( "Updating indexes as a result of ProxyManagerDeleteEvent." );
         executor.execute( new DeletionRunnable( event ) );
     }
 
@@ -167,6 +169,7 @@ public class IndexHandler
 
     public void onExpire( @Observes final ExpirationEvent event )
     {
+        logger.info( "Updating indexes as a result of ExpirationEvent." );
         final Expiration expiration = event.getExpiration();
         final String[] parts = expiration.getKey()
                                          .getParts();
@@ -180,6 +183,7 @@ public class IndexHandler
 
     public void onAdd( @Observes final ArtifactStoreUpdateEvent event )
     {
+        logger.info( "Updating indexes as a result of ArtifactStoreUpdateEvent." );
         executor.execute( new AdditionRunnable( event ) );
     }
 
@@ -290,6 +294,7 @@ public class IndexHandler
                 {
                     if ( updated.contains( group ) )
                     {
+                        logger.info( "Already updated group: {} (contains: {}). Skipping", group, storeKey );
                         continue;
                     }
 
@@ -321,6 +326,9 @@ public class IndexHandler
                 return;
             }
 
+            logger.info( "Marking as updated: {}", group );
+            updated.add( group );
+
             try
             {
                 final List<ArtifactStore> stores = storeDataManager.getOrderedConcreteStoresInGroup( group.getName() );
@@ -328,6 +336,7 @@ public class IndexHandler
                 {
                     if ( updated.contains( store ) )
                     {
+                        logger.info( "Already updated: {}. Skipping", store );
                         continue;
                     }
 
@@ -358,6 +367,7 @@ public class IndexHandler
                             doIndexUpdate( context, key );
                         }
 
+                        logger.info( "Marking as updated: {}", store );
                         updated.add( store );
 
                         context = getIndexingContext( store, indexCreators.getCreators() );
@@ -410,8 +420,6 @@ public class IndexHandler
                 {
                     logger.error( String.format( "Failed to commit index updates for group: %s. Reason: %s", group.getKey(), e.getMessage() ), e );
                 }
-
-                updated.add( group );
 
                 try
                 {
@@ -677,6 +685,8 @@ public class IndexHandler
 
         public AdditionRunnable( final ArtifactStoreUpdateEvent event )
         {
+            logger.info( "Constructed AdditionRunnable from: {}", StringUtils.join( Thread.currentThread()
+                                                                                          .getStackTrace(), "\n" ) );
             this.event = event;
         }
 
@@ -692,6 +702,7 @@ public class IndexHandler
                     final Group group = (Group) store;
                     if ( updated.contains( group ) )
                     {
+                        logger.info( "Already updated group: {}", group );
                         continue;
                     }
 

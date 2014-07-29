@@ -300,6 +300,11 @@ public abstract class AutoProxDataManagerDecorator
     public ArtifactStore getArtifactStore( final StoreKey key )
         throws ProxyDataException
     {
+        if ( key == null )
+        {
+            return null;
+        }
+
         if ( key.getType() == StoreType.group )
         {
             return getGroup( key.getName() );

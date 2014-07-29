@@ -64,7 +64,16 @@ public class ResolverController
                                 final boolean recurse, final String workspaceId, final Map<String, String[]> params )
         throws AproxWorkflowException
     {
-        final URI source = sourceManager.createSourceURI( from );
+        URI source;
+        try
+        {
+            source = sourceManager.createSourceURI( from );
+        }
+        catch ( final CartoDataException e )
+        {
+            throw new AproxWorkflowException( "Invalid source specification: {}. Reason: {}", e, from, e.getMessage() );
+        }
+
         if ( source == null )
         {
             final String message =
@@ -102,7 +111,16 @@ public class ResolverController
                                    final Map<String, String[]> params )
         throws AproxWorkflowException
     {
-        final URI source = sourceManager.createSourceURI( from );
+        URI source;
+        try
+        {
+            source = sourceManager.createSourceURI( from );
+        }
+        catch ( final CartoDataException e )
+        {
+            throw new AproxWorkflowException( "Invalid source specification: {}. Reason: {}", e, from, e.getMessage() );
+        }
+
         if ( source == null )
         {
             final String message =

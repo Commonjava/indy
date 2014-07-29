@@ -125,22 +125,32 @@ public class AdminController
             logger.info( "Verfiying that AProx DB + basic data is installed..." );
             storeManager.install();
 
-            final RemoteRepository central = new RemoteRepository( "central", "http://repo.maven.apache.org/maven2/" );
-            central.setCacheTimeoutSeconds( 86400 );
-            storeManager.storeRemoteRepository( central, true );
+            if ( !storeManager.hasRemoteRepository( "central" ) )
+            {
+                final RemoteRepository central =
+                    new RemoteRepository( "central", "http://repo.maven.apache.org/maven2/" );
+                central.setCacheTimeoutSeconds( 86400 );
+                storeManager.storeRemoteRepository( central, true );
+            }
 
-            final HostedRepository local = new HostedRepository( "local-deployments" );
-            local.setAllowReleases( true );
-            local.setAllowSnapshots( true );
-            local.setSnapshotTimeoutSeconds( 86400 );
+            if ( !storeManager.hasHostedRepository( "local-deployments" ) )
+            {
+                final HostedRepository local = new HostedRepository( "local-deployments" );
+                local.setAllowReleases( true );
+                local.setAllowSnapshots( true );
+                local.setSnapshotTimeoutSeconds( 86400 );
 
-            storeManager.storeHostedRepository( local, true );
+                storeManager.storeHostedRepository( local, true );
+            }
 
-            final Group pub = new Group( "public" );
-            pub.addConstituent( central );
-            pub.addConstituent( local );
+            if ( !storeManager.hasGroup( "public" ) )
+            {
+                final Group pub = new Group( "public" );
+                pub.addConstituent( new StoreKey( StoreType.remote, "central" ) );
+                pub.addConstituent( new StoreKey( StoreType.hosted, "local-deployments" ) );
 
-            storeManager.storeGroup( pub, true );
+                storeManager.storeGroup( pub, true );
+            }
 
             // make sure the expiration manager is running...
             expirationManager.loadNextExpirations();

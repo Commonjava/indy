@@ -195,4 +195,10 @@ public final class ResponseUtils
         return sw.toString();
     }
 
+    public static void markDeprecated( final HttpServerRequest request, final String alt )
+    {
+        request.response()
+               .putHeader( ApplicationHeader.deprecated.key(), alt );
+    }
+
 }

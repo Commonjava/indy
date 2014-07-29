@@ -10,14 +10,8 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.util;
 
-import static org.apache.commons.io.IOUtils.readLines;
-
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -27,12 +21,10 @@ import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.aprox.depgraph.dto.MetadataCollationDTO;
+import org.commonjava.aprox.depgraph.dto.WebBomDTO;
 import org.commonjava.aprox.depgraph.dto.WebOperationConfigDTO;
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
-import org.commonjava.aprox.depgraph.json.JsonUtils;
 import org.commonjava.aprox.util.ApplicationStatus;
-import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.cartographer.agg.AggregatorConfig;
 import org.commonjava.maven.cartographer.dto.GraphComposition;
 import org.commonjava.maven.cartographer.preset.PresetSelector;
 import org.commonjava.maven.galley.TransferException;
@@ -159,51 +151,44 @@ public class ConfigDTOHelper
         return dto;
     }
 
-    public AggregatorConfig readAggregatorConfig( final InputStream stream )
+    public WebBomDTO readBomDTO( final InputStream stream )
         throws AproxWorkflowException
     {
-        List<String> lines;
         try
         {
-            lines = readLines( stream );
+            final String json = IOUtils.toString( stream );
+            return readBomDTO( json );
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Failed to read GAV root listing: {}", e, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST,
+                                              "Cannot read WebBomDTO JSON from stream: {}", e, e.getMessage() );
         }
-
-        return readAggregatorConfig( lines );
     }
 
-    public AggregatorConfig readAggregatorConfig( final String listing )
+    public WebBomDTO readBomDTO( final String json )
         throws AproxWorkflowException
     {
-        final List<String> lines = Arrays.asList( listing.split( "\r?\n" ) );
-        return readAggregatorConfig( lines );
-    }
-
-    public AggregatorConfig readAggregatorConfig( final List<String> lines )
-        throws AproxWorkflowException
-    {
-        final Set<ProjectVersionRef> refs = new HashSet<ProjectVersionRef>();
-
-        for ( final String line : lines )
+        final WebBomDTO dto = serializer.fromString( json, WebBomDTO.class );
+        if ( dto == null )
         {
-            if ( line.trim()
-                     .length() < 1 || line.trim()
-                                          .startsWith( "#" ) )
-            {
-                continue;
-            }
-
-            final ProjectVersionRef ref = JsonUtils.parseProjectVersionRef( line );
-            if ( ref != null )
-            {
-                refs.add( ref );
-            }
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST,
+                                              "No BOM configuration found in request body!" );
         }
 
-        return new AggregatorConfig( refs );
+        dto.resolveFilters( presets, config.getDefaultWebFilterPreset() );
+
+        try
+        {
+            dto.calculateLocations( locationExpander, dataManager );
+        }
+        catch ( final TransferException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "AProx source store %s is invalid: %s", e,
+                                              dto.getSource(), e.getMessage() );
+        }
+
+        return dto;
     }
 
 }

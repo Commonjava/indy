@@ -31,6 +31,7 @@ import org.commonjava.maven.atlas.graph.filter.ParentFilter;
 import org.commonjava.maven.atlas.graph.filter.PluginRuntimeFilter;
 import org.commonjava.maven.atlas.graph.filter.ProjectRelationshipFilter;
 import org.commonjava.maven.atlas.ident.DependencyScope;
+import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.discover.DefaultDiscoveryConfig;
 import org.commonjava.maven.cartographer.discover.DiscoveryConfig;
 import org.commonjava.maven.cartographer.discover.DiscoverySourceManager;
@@ -98,6 +99,7 @@ public class RequestAdvisor
 
     public DiscoveryConfig createDiscoveryConfig( final Map<String, String[]> params, final URI source,
                                                   final DiscoverySourceManager sourceFactory )
+        throws CartoDataException
     {
         DiscoveryConfig result = DiscoveryConfig.DISABLED;
         if ( getBooleanParamWithDefault( params, "discover", false ) )

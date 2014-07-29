@@ -14,6 +14,7 @@ import static org.commonjava.aprox.depgraph.util.AproxDepgraphUtils.APROX_URI_PR
 import static org.commonjava.aprox.depgraph.util.AproxDepgraphUtils.toDiscoveryURI;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,6 +30,7 @@ import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.inject.Production;
 import org.commonjava.aprox.model.ArtifactStore;
+import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.model.galley.KeyedLocation;
@@ -63,12 +65,59 @@ public class AproxDiscoverySourceManager
 
     @Override
     public URI createSourceURI( final String source )
+        throws CartoDataException
     {
-        final StoreKey key = StoreKey.fromString( normalize( source ) );
+        final StoreKey key = getKey( source );
+
+        if ( key == null )
+        {
+            logger.warn( "Cannot find ArtifactStore associated with: '{}'. Assuming this is a naked URI..." );
+            try
+            {
+                return new URI( source );
+            }
+            catch ( final URISyntaxException e )
+            {
+                throw new CartoDataException(
+                                              "%s is not a URI. Already failed to map it to an ArtifactStore. Unknown source specification. (URI error: %s)",
+                                              e, source, e.getMessage() );
+            }
+        }
+
         logger.debug( "Got source-URI store-key: '{}'", key );
         final URI result = toDiscoveryURI( key );
         logger.debug( "Resulting source URI: '{}'", result );
         return result;
+    }
+
+    private StoreKey getKey( final String source )
+        throws CartoDataException
+    {
+        StoreKey key = StoreKey.fromString( normalize( source ) );
+        if ( key == null )
+        {
+            try
+            {
+                final List<RemoteRepository> allRemotes = stores.getAllRemoteRepositories();
+                for ( final RemoteRepository remote : allRemotes )
+                {
+                    if ( remote.getUrl()
+                               .equals( source ) )
+                    {
+                        key = remote.getKey();
+                        break;
+                    }
+                }
+            }
+            catch ( final ProxyDataException e )
+            {
+                throw new CartoDataException(
+                                              "Failed to lookup ArtifactStore instances to search for URL: %s. Reason: %s",
+                                              e, source, e.getMessage() );
+            }
+        }
+
+        return key;
     }
 
     private String normalize( final String source )
@@ -115,45 +164,62 @@ public class AproxDiscoverySourceManager
         boolean result = false;
         if ( params != null )
         {
+            final Set<URI> newSources = new HashSet<URI>();
             for ( final String src : sources )
             {
-                final StoreKey key = StoreKey.fromString( normalize( src ) );
-                if ( key.getType() == StoreType.group )
+                final StoreKey key = getKey( src );
+                if ( key == null )
                 {
+                    logger.warn( "Cannot find ArtifactStore associated with: '{}'. Assuming this is a naked URI..." );
                     try
                     {
-                        final List<ArtifactStore> orderedStores =
-                            stores.getOrderedConcreteStoresInGroup( key.getName() );
-                        for ( final ArtifactStore store : orderedStores )
-                        {
-                            final URI uri = toDiscoveryURI( store.getKey() );
-                            if ( params.getActiveSources()
-                                       .contains( uri ) )
-                            {
-                                continue;
-                            }
-
-                            params.addActiveSource( uri );
-                            result = result || params.getActiveSources()
-                                                     .contains( uri );
-                        }
+                        newSources.add( new URI( src ) );
                     }
-                    catch ( final ProxyDataException e )
+                    catch ( final URISyntaxException e )
                     {
-                        throw new CartoDataException( "Failed to lookup ordered concrete stores for: {}. Reason: {}",
-                                                      e, key, e.getMessage() );
+                        throw new CartoDataException(
+                                                      "%s is not a URI. Already failed to map it to an ArtifactStore. Unknown source specification. (URI error: %s)",
+                                                      e, src, e.getMessage() );
                     }
                 }
                 else
                 {
-                    final URI uri = toDiscoveryURI( key );
-                    if ( !params.getActiveSources()
-                                .contains( uri ) )
+                    if ( key.getType() == StoreType.group )
                     {
-                        params.addActiveSource( uri );
-                        result = result || params.getActiveSources()
-                                                 .contains( uri );
+                        try
+                        {
+                            final List<ArtifactStore> orderedStores =
+                                stores.getOrderedConcreteStoresInGroup( key.getName() );
+
+                            for ( final ArtifactStore store : orderedStores )
+                            {
+                                newSources.add( toDiscoveryURI( store.getKey() ) );
+                            }
+                        }
+                        catch ( final ProxyDataException e )
+                        {
+                            throw new CartoDataException(
+                                                          "Failed to lookup ordered concrete stores for: {}. Reason: {}",
+                                                          e, key, e.getMessage() );
+                        }
                     }
+                    else
+                    {
+                        newSources.add( toDiscoveryURI( key ) );
+                    }
+                }
+
+                for ( final URI uri : newSources )
+                {
+                    if ( params.getActiveSources()
+                               .contains( uri ) )
+                    {
+                        continue;
+                    }
+
+                    params.addActiveSource( uri );
+                    result = result || params.getActiveSources()
+                                             .contains( uri );
                 }
             }
         }
@@ -172,20 +238,23 @@ public class AproxDiscoverySourceManager
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( String.format( "Failed to lookup ArtifactStore for key: {}. Reason: {}", key, e.getMessage()  ), e );
+            logger.error( String.format( "Failed to lookup ArtifactStore for key: {}. Reason: {}", key, e.getMessage() ),
+                          e );
         }
-        
+
         return store == null ? null : LocationUtils.toLocation( store );
     }
 
     @Override
     public List<? extends Location> createLocations( final Object... sources )
+        throws CartoDataException
     {
         return createLocations( Arrays.asList( sources ) );
     }
 
     @Override
     public List<? extends Location> createLocations( final Collection<Object> sources )
+        throws CartoDataException
     {
         final List<Location> results = new ArrayList<Location>();
         for ( final Object source : sources )
@@ -196,7 +265,7 @@ public class AproxDiscoverySourceManager
             }
             else
             {
-                final StoreKey key = StoreKey.fromString( normalize( source.toString() ) );
+                final StoreKey key = getKey( source.toString() );
 
                 ArtifactStore store = null;
                 try
@@ -218,7 +287,7 @@ public class AproxDiscoverySourceManager
                     results.add( LocationUtils.toLocation( store ) );
                 }
             }
-            
+
         }
 
         return results;

@@ -13,7 +13,12 @@ package org.commonjava.aprox.util;
 public enum ApplicationHeader
 {
 
-    content_type( "Content-Type" ), location( "Location" ), uri( "URI" ), content_length( "Content-Length" ), last_modified( "Last-Modified" );
+    content_type( "Content-Type" ),
+    location( "Location" ),
+    uri( "URI" ),
+    content_length( "Content-Length" ),
+    last_modified( "Last-Modified" ),
+    deprecated( "Deprecated-Use-Alt" );
 
     private final String key;
 
