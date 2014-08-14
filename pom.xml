@@ -82,21 +82,7 @@
         <scope>import</scope>
       </dependency>
       
-      <dependency>
-        <groupId>org.jboss.arquillian</groupId>
-        <artifactId>arquillian-bom</artifactId>
-        <version>${arquillian-version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
       
-      <dependency>
-        <groupId>org.commonjava.aprox.ui</groupId>
-        <artifactId>aprox-ui-monorail</artifactId>
-        <version>0.14.8-SNAPSHOT</version>
-        <!-- <type>war</type> -->
-        <scope>runtime</scope>
-      </dependency>
       <dependency>
         <groupId>org.commonjava.aprox.ui</groupId>
         <artifactId>aprox-ui-layover</artifactId>
@@ -118,11 +104,6 @@
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-db-flat</artifactId>
-        <version>0.14.8-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-bindings-jaxrs</artifactId>
         <version>0.14.8-SNAPSHOT</version>
       </dependency>
       <dependency>
@@ -151,22 +132,12 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-depgraph-jaxrs</artifactId>
-        <version>0.14.8-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-depgraph-vertx</artifactId>
         <version>0.14.8-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-autoprox-vertx</artifactId>
-        <version>0.14.8-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-autoprox-jaxrs</artifactId>
         <version>0.14.8-SNAPSHOT</version>
       </dependency>
       <dependency>
@@ -218,11 +189,6 @@
         <type>tar.gz</type>
         <classifier>dataset</classifier>
         <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-dot-maven-jaxrs</artifactId>
-        <version>0.14.8-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
@@ -336,20 +302,6 @@
         <groupId>org.commonjava.maven.cartographer</groupId>
         <artifactId>cartographer</artifactId>
         <version>${cartoVersion}</version>
-        <!-- <exclusions>
-          <exclusion>  
-            <artifactId>xercesImpl</artifactId>  
-            <groupId>xerces</groupId>  
-          </exclusion>  
-          <exclusion>  
-            <artifactId>xalan</artifactId>  
-            <groupId>xalan</groupId>  
-          </exclusion>
-          <exclusion>
-            <groupId>org.codehaus.woodstox</groupId>
-            <artifactId>woodstox-core-asl</artifactId>
-          </exclusion>
-        </exclusions> -->
       </dependency>
       
       <dependency>
@@ -363,12 +315,6 @@
         <version>${atlasVersion}</version>
       </dependency>
       
-      <dependency>
-        <groupId>org.commonjava.qarqas</groupId>
-        <artifactId>qarqas-test-harness</artifactId>
-        <version>${version.plugin.qarqas}</version>
-        <scope>test</scope>
-      </dependency>
 
       <dependency>
         <groupId>org.commonjava.web</groupId>
@@ -380,18 +326,6 @@
         <artifactId>webdav-handler-vertx</artifactId>
         <version>${webdavVersion}</version>
       </dependency>
-      <dependency>
-        <groupId>org.commonjava.web</groupId>
-        <artifactId>webdav-handler-servlet</artifactId>
-        <version>${webdavVersion}</version>
-      </dependency>
-      
-      <!-- <dependency>
-        <groupId>org.jboss.threads</groupId>
-        <artifactId>jboss-threads</artifactId>
-        <version>2.0.0.GA</version>
-        <scope>provided</scope>
-      </dependency> -->
       
       <dependency>
         <groupId>org.apache.maven</groupId>
@@ -415,20 +349,6 @@
     		</exclusions>
     	</dependency>
       
-      
-      <!-- override web-commons-bom to see if this fixes the https self-signed PEM problem -->
-      <!-- <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpclient</artifactId>
-        <version>4.1.1</version>
-        <exclusions>
-          <exclusion>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency> -->
-      
       <dependency>
         <groupId>org.codehaus.groovy</groupId>
         <artifactId>groovy-all</artifactId>
@@ -445,24 +365,6 @@
         <artifactId>indexer-artifact</artifactId>
         <version>5.1.1</version>
       </dependency>
-      
-      <dependency>
-        <groupId>com.wordnik</groupId>
-        <artifactId>swagger-jaxrs_2.9.1</artifactId>
-        <version>1.2.1</version>
-      </dependency>
-      <dependency>
-        <groupId>com.wordnik</groupId>
-        <artifactId>swagger-annotations_2.9.1</artifactId>
-        <version>1.2.3</version>
-        <scope>provided</scope>
-      </dependency>
-      <!-- <dependency>
-        <groupId>org.rhq.helpers</groupId>
-        <artifactId>rest-docs-generator</artifactId>
-        <version>4.6.0</version>
-        <scope>provided</scope>
-      </dependency> -->
       
       <dependency>
         <groupId>org.hamcrest</groupId>
@@ -542,10 +444,6 @@
       <groupId>javax.enterprise</groupId>
       <artifactId>cdi-api</artifactId>
     </dependency>
-    <dependency>
-      <groupId>com.wordnik</groupId>
-      <artifactId>swagger-annotations_2.9.1</artifactId>
-    </dependency>
   </dependencies>
   
   <build>
@@ -616,35 +514,6 @@
       
       <modules>
       </modules>
-    </profile>
-    <profile>
-      <id>its</id>
-      <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <artifactId>maven-assembly-plugin</artifactId>
-              <executions>
-                <execution>
-                  <id>test-war</id>
-                  <goals>
-                    <goal>single</goal>
-                  </goals>
-                  <phase>pre-integration-test</phase>
-                  <configuration>
-                    <descriptorRefs>
-                      <descriptorRef>test-war</descriptorRef>
-                    </descriptorRefs>
-                    <finalName>test-assembly</finalName>
-                    <attach>false</attach>
-                    <appendAssemblyId>false</appendAssemblyId>
-                  </configuration>
-                </execution>
-              </executions>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-      </build>
     </profile>
   </profiles>
   

@@ -139,7 +139,7 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
         final String path = request.params()
                                    .get( PathParam.path.key() );
 
-        final String accept = VertxRequestUtils.getCanonicalAccept( request, ApplicationContent.text_html );
+        final String accept = VertxRequestUtils.getVersionlessAccept( request, ApplicationContent.aprox_html );
 
         try
         {
@@ -205,7 +205,7 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
         final String path = request.params()
                                    .get( PathParam.path.key() );
 
-        final String accept = VertxRequestUtils.getCanonicalAccept( request, ApplicationContent.text_html );
+        final String accept = VertxRequestUtils.getVersionlessAccept( request, ApplicationContent.aprox_html );
 
         try
         {
