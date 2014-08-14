@@ -17,9 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.annotations.SerializedName;
-import com.wordnik.swagger.annotations.ApiClass;
 
-@ApiClass( description = "Representation of a remote repository (proxy) definition.", value = "Remote repository proxy" )
 public class RemoteRepository
     extends ArtifactStore
 {

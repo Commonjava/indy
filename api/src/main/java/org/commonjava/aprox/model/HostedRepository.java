@@ -11,9 +11,7 @@
 package org.commonjava.aprox.model;
 
 import com.google.gson.annotations.SerializedName;
-import com.wordnik.swagger.annotations.ApiClass;
 
-@ApiClass( description = "Representation of an artifact store whose content is hosted locally.", value = "Local repository storage" )
 public class HostedRepository
     extends ArtifactStore
 {

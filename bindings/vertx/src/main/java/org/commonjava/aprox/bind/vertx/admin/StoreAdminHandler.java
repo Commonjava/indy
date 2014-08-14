@@ -44,7 +44,7 @@ import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
 @Handles( prefix = "/admin/:type" )
-public class AdminResource
+public class StoreAdminHandler
     implements RequestHandler
 {
 

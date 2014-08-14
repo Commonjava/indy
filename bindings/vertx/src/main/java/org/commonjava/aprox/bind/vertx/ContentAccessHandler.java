@@ -8,11 +8,10 @@
  * Contributors:
  *     Red Hat, Inc. - initial API and implementation
  ******************************************************************************/
-package org.commonjava.aprox.bind.vertx.access;
+package org.commonjava.aprox.bind.vertx;
 
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatCreatedResponse;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithEntity;
-import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatRedirect;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
 import static org.commonjava.aprox.core.ctl.ContentController.LISTING_HTML_FILE;
 import static org.commonjava.vertx.vabr.types.BuiltInParam._classContextUrl;
@@ -27,7 +26,6 @@ import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.vertx.util.PathParam;
 import org.commonjava.aprox.bind.vertx.util.VertxRequestUtils;
 import org.commonjava.aprox.core.ctl.ContentController;
-import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.util.ApplicationContent;
@@ -37,12 +35,21 @@ import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.aprox.util.RequestUtils;
 import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.vertx.vabr.anno.Handles;
+import org.commonjava.vertx.vabr.anno.Route;
+import org.commonjava.vertx.vabr.anno.Routes;
+import org.commonjava.vertx.vabr.helper.RequestHandler;
+import org.commonjava.vertx.vabr.types.BindingType;
+import org.commonjava.vertx.vabr.types.Method;
+import org.commonjava.vertx.vabr.util.RouteHeader;
 import org.commonjava.vertx.vabr.util.VertXInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.http.HttpServerRequest;
 
-public abstract class AbstractContentHandler<T extends ArtifactStore>
+@Handles
+public class ContentAccessHandler
+    implements RequestHandler
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -53,23 +60,28 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
     @Inject
     private UriFormatter uriFormatter;
 
-    protected AbstractContentHandler()
+    protected ContentAccessHandler()
     {
     }
 
-    protected AbstractContentHandler( final ContentController controller, final UriFormatter uriFormatter )
+    public ContentAccessHandler( final ContentController controller, final UriFormatter uriFormatter )
     {
         this.contentController = controller;
         this.uriFormatter = uriFormatter;
     }
 
-    protected void doCreate( final HttpServerRequest request )
+    @Routes( { @Route( path = "/:type=(hosted|group)/:name/:path=(.+)", method = Method.PUT, binding = BindingType.raw ) } )
+    public void doCreate( final HttpServerRequest request )
     {
         request.pause();
         final String name = request.params()
                                    .get( PathParam.name.key() );
         final String path = request.params()
                                    .get( PathParam.path.key() );
+
+        final String type = request.params()
+                                   .get( PathParam.type.key() );
+        final StoreType st = StoreType.get( type );
 
         final String contentLen = request.headers()
                                          .get( ApplicationHeader.content_length.key() );
@@ -78,10 +90,10 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
                                                                                          Long.parseLong( contentLen ) );
         try
         {
-            final Transfer stored = getContentController().store( getStoreType(), name, path, stream );
+            final Transfer stored = contentController.store( st, name, path, stream );
             final StoreKey storageKey = LocationUtils.getKey( stored );
 
-            formatCreatedResponse( request, uriFormatter, getStoreType().singularEndpointName(), storageKey.getName(),
+            formatCreatedResponse( request, uriFormatter, st.singularEndpointName(), storageKey.getName(),
                                    stored.getPath() );
         }
         catch ( final AproxWorkflowException e )
@@ -103,16 +115,21 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
         }
     }
 
-    protected void doDelete( final HttpServerRequest request )
+    @Routes( { @Route( path = "/:type=(hosted|remote|group)/:name:?path=(/.+)", method = Method.DELETE ) } )
+    public void doDelete( final HttpServerRequest request )
     {
         final String name = request.params()
                                    .get( PathParam.name.key() );
         final String path = request.params()
                                    .get( PathParam.path.key() );
 
+        final String type = request.params()
+                                   .get( PathParam.type.key() );
+        final StoreType st = StoreType.get( type );
+
         try
         {
-            final ApplicationStatus result = contentController.delete( getStoreType(), name, path );
+            final ApplicationStatus result = contentController.delete( st, name, path );
             request.response()
                    .setStatusCode( result.code() )
                    .setStatusMessage( result.message() );
@@ -125,42 +142,39 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
         }
     }
 
-    protected abstract StoreType getStoreType();
-
-    protected void doHead( final HttpServerRequest request )
+    @Routes( { @Route( path = "/:type=(hosted|remote|group)/:name:path=(/.*)", method = Method.HEAD ) } )
+    public void doHead( final HttpServerRequest request )
     {
-        // TODO:
-        // directory request (ends with "/") or empty path (directory request for proxy root)
-        // browse via redirect to browser resource...giving client the option to intercept redirection.
-        // Likewise, browse resource should redirect here when accessing concrete files.
-
         final String name = request.params()
                                    .get( PathParam.name.key() );
         final String path = request.params()
                                    .get( PathParam.path.key() );
 
-        final String accept = VertxRequestUtils.getVersionlessAccept( request, ApplicationContent.aprox_html );
+        final String type = request.params()
+                                   .get( PathParam.type.key() );
+        final StoreType st = StoreType.get( type );
+
+        final String standardAccept = VertxRequestUtils.getStandardAccept( request, ApplicationContent.text_html );
+        String givenAccept = request.headers()
+                                    .get( RouteHeader.accept.header() );
+        if ( givenAccept == null )
+        {
+            givenAccept = standardAccept;
+        }
 
         try
         {
             final String baseUri = request.params()
                                           .get( _classContextUrl.key() );
 
-            if ( path.endsWith( "/" ) )
-            {
-                logger.info( "Redirecting to index.html under: {}", path );
-                formatRedirect( request, uriFormatter.formatAbsolutePathTo( baseUri,
-                                                                            getStoreType().singularEndpointName(),
-                                                                            name, path, LISTING_HTML_FILE ) );
-            }
-            else if ( path.endsWith( LISTING_HTML_FILE ) )
+            if ( path.equals( "" ) || path.endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )
             {
                 logger.info( "Getting listing at: {}", path );
                 final String content =
-                    contentController.renderListing( accept, getStoreType(), name, path, baseUri, uriFormatter );
+                    contentController.renderListing( standardAccept, st, name, path, baseUri, uriFormatter );
 
                 request.response()
-                       .putHeader( ApplicationHeader.content_type.key(), accept )
+                       .putHeader( ApplicationHeader.content_type.key(), givenAccept )
                        .putHeader( ApplicationHeader.content_length.key(), Long.toString( content.length() ) )
                        .putHeader( ApplicationHeader.last_modified.key(), RequestUtils.formatDateHeader( new Date() ) )
                        .end();
@@ -169,7 +183,7 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
             }
             else
             {
-                final Transfer item = contentController.get( getStoreType(), name, path );
+                final Transfer item = contentController.get( st, name, path );
 
                 final String contentType = contentController.getContentType( path );
 
@@ -193,19 +207,25 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
         }
     }
 
-    protected void doGet( final HttpServerRequest request )
+    @Routes( { @Route( path = "/:type=(hosted|remote|group)/:name:path=(/.*)", method = Method.GET ) } )
+    public void doGet( final HttpServerRequest request )
     {
-        // TODO:
-        // directory request (ends with "/") or empty path (directory request for proxy root)
-        // browse via redirect to browser resource...giving client the option to intercept redirection.
-        // Likewise, browse resource should redirect here when accessing concrete files.
-
         final String name = request.params()
                                    .get( PathParam.name.key() );
         final String path = request.params()
                                    .get( PathParam.path.key() );
 
-        final String accept = VertxRequestUtils.getVersionlessAccept( request, ApplicationContent.aprox_html );
+        final String type = request.params()
+                                   .get( PathParam.type.key() );
+        final StoreType st = StoreType.get( type );
+
+        final String standardAccept = VertxRequestUtils.getStandardAccept( request, ApplicationContent.text_html );
+        String givenAccept = request.headers()
+                                    .get( RouteHeader.accept.header() );
+        if ( givenAccept == null )
+        {
+            givenAccept = standardAccept;
+        }
 
         try
         {
@@ -221,13 +241,13 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
                 //            {
                 logger.info( "Getting listing at: {}", path );
                 final String content =
-                    contentController.renderListing( accept, getStoreType(), name, path, baseUri, uriFormatter );
+                    contentController.renderListing( standardAccept, st, name, path, baseUri, uriFormatter );
 
-                formatOkResponseWithEntity( request, content, accept );
+                formatOkResponseWithEntity( request, content, givenAccept );
             }
             else
             {
-                final Transfer item = contentController.get( getStoreType(), name, path );
+                final Transfer item = contentController.get( st, name, path );
                 if ( item.isDirectory()
                     || ( path.lastIndexOf( '.' ) < path.lastIndexOf( '/' ) && contentController.isHtmlContent( item ) ) )
                 {
@@ -235,10 +255,10 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
 
                     logger.info( "Getting listing at: {}", path + "/" );
                     final String content =
-                        contentController.renderListing( accept, getStoreType(), name, path + "/", baseUri,
+                        contentController.renderListing( standardAccept, st, name, path + "/", baseUri,
                                                          uriFormatter );
 
-                    formatOkResponseWithEntity( request, content, accept );
+                    formatOkResponseWithEntity( request, content, givenAccept );
                 }
                 else
                 {
@@ -267,11 +287,6 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
                                          e.getMessage() ), e );
             formatResponse( e, request );
         }
-    }
-
-    protected ContentController getContentController()
-    {
-        return contentController;
     }
 
 }

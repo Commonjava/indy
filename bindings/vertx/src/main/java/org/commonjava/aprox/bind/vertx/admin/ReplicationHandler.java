@@ -37,7 +37,7 @@ import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
 @Handles( prefix = "/admin/replicate" )
-public class ReplicationResource
+public class ReplicationHandler
     implements RequestHandler
 {
 
