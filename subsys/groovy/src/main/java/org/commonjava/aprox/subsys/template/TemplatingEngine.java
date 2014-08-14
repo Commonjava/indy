@@ -51,7 +51,13 @@ public class TemplatingEngine
     public String render( final String templateKey, final Map<String, Object> params )
         throws AproxGroovyException
     {
-        final Template template = getTemplate( templateKey );
+        return render( null, templateKey, params );
+    }
+
+    public String render( final String acceptHeader, final String templateKey, final Map<String, Object> params )
+        throws AproxGroovyException
+    {
+        final Template template = getTemplate( acceptHeader, templateKey );
 
         final Writable output = template.make( params );
 
@@ -62,19 +68,21 @@ public class TemplatingEngine
         }
         catch ( final IOException e )
         {
-            throw new AproxGroovyException( "Failed to render template: %s. Reason: %s", e, templateKey, e.getMessage() );
+            throw new AproxGroovyException( "Failed to render template: %s for accept: %s. Reason: %s", e, templateKey,
+                                            acceptHeader, e.getMessage() );
         }
 
         return writer.toString();
     }
 
     // TODO Cache these...though this will hurt hot-reloading. Perhaps a debug mode configuration?
-    private Template getTemplate( final String templateKey )
+    private Template getTemplate( final String acceptHeader, final String templateKey )
         throws AproxGroovyException
     {
+        final String accept = ( acceptHeader == null ? "" : acceptHeader.replace( '/', '_' ) ) + "/";
         try
         {
-            final String filename = templateKey + ".groovy";
+            final String filename = accept + templateKey + ".groovy";
             final File templateDir = config.getDataDir( TEMPLATES );
 
             final File templateFile = new File( templateDir, filename );
@@ -88,7 +96,7 @@ public class TemplatingEngine
             {
                 final URL u = Thread.currentThread()
                                     .getContextClassLoader()
-                                    .getResource( TEMPLATES + "/" + templateKey + ".groovy" );
+                                    .getResource( TEMPLATES + "/" + accept + templateKey + ".groovy" );
 
                 template = u == null ? null : engine.createTemplate( u );
             }

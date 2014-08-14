@@ -19,7 +19,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
-import org.commonjava.aprox.filer.FileManager;
+import org.commonjava.aprox.content.FileManager;
 import org.commonjava.aprox.live.AbstractAProxLiveTest;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.RemoteRepository;

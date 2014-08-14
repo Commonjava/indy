@@ -12,6 +12,7 @@ package org.commonjava.aprox.bind.vertx;
 
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -24,11 +25,12 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Qualifier;
 
-import org.commonjava.aprox.core.rest.AdminController;
+import org.commonjava.aprox.core.ctl.AdminController;
 import org.commonjava.aprox.inject.RestApp;
-import org.commonjava.vertx.vabr.filter.FilterCollection;
+import org.commonjava.vertx.vabr.ApplicationRouterConfig;
+import org.commonjava.vertx.vabr.bind.filter.FilterCollection;
+import org.commonjava.vertx.vabr.bind.route.RouteCollection;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
-import org.commonjava.vertx.vabr.route.RouteCollection;
 import org.jboss.weld.environment.se.events.ContainerInitialized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,13 +59,16 @@ public class RestRouter
 
     protected RestRouter()
     {
-        super( PREFIX );
+        super( new ApplicationRouterConfig().withPrefix( PREFIX ) );
     }
 
-    public RestRouter( final Set<RequestHandler> handlers, final Set<RouteCollection> routeCollections, final Set<FilterCollection> filterCollections )
+    public RestRouter( final Set<RequestHandler> handlers, final List<RouteCollection> routeCollections,
+                       final List<FilterCollection> filterCollections )
     {
-        super( PREFIX, handlers, routeCollections );
-        bindFilters( handlers, filterCollections );
+        super( new ApplicationRouterConfig().withPrefix( PREFIX )
+                                            .withHandlers( handlers )
+                                            .withRouteCollections( routeCollections )
+                                            .withFilterCollections( filterCollections ) );
     }
 
     public void containerInit( @Observes final Event<ContainerInitialized> evt )
@@ -131,8 +136,9 @@ public class RestRouter
             }
         }
 
-        bindRoutes( handlerInstances, routes );
-        bindFilters( handlerInstances, filters );
+        bindHandlers( handlerInstances );
+        bindRouteCollections( routes );
+        bindFilterCollections( filters );
         logger.info( "\n\n...done.\n\n" );
     }
 

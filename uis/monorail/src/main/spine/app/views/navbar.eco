@@ -1,8 +1,0 @@
-<div class="right product-name">AProx</div>
-<div class="navbar-content ui-corner-top ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header">
-  <a class="button nav-button remotes">Remote Repositories</a>
-  <div class="vdiv" />
-  <a class="button nav-button hosted">Hosted Repositories</a>
-  <div class="vdiv" />
-  <a class="button nav-button groups">Groups</a>
-</div>

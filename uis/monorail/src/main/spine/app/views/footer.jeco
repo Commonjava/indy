@@ -1,7 +1,0 @@
-<div class="footer-section right">
-  <span class="stat-label"><a target="_new" href="http://github.com/jdcasey/aprox">AProx @GitHub</a></span> 
-  | <span class="stat-label"><a target="_new" href="http://github.com/jdcasey/aprox/issues">Issues</a></span> 
-  | <span class="stat-label">Version:</span> <span class="stat-value"><%= @version %></span> 
-  | <span class="stat-label">Commit ID:</span> <span class="stat-value"><a target="_new" href="http://github.com/<%= @built_by %>/aprox/commit/<%= @commit_id %>"><%= @commit_id %></a></span> 
-  | <span class="stat-label">Built</span> <span class="stat-value">on <%= @built_on %> by <a target="_new" href="http://github.com/<%= @built_by %>"><%= @built_by %></a></span>
-</div>

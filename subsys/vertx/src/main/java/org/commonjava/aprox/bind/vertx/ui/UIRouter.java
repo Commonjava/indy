@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.bind.vertx.ui;
 
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -19,9 +20,10 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.commonjava.aprox.bind.vertx.AproxRouter;
-import org.commonjava.vertx.vabr.filter.FilterCollection;
+import org.commonjava.vertx.vabr.ApplicationRouterConfig;
+import org.commonjava.vertx.vabr.bind.filter.FilterCollection;
+import org.commonjava.vertx.vabr.bind.route.RouteCollection;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
-import org.commonjava.vertx.vabr.route.RouteCollection;
 
 @ApplicationScoped
 @Named( "ui" )
@@ -45,13 +47,16 @@ public class UIRouter
 
     protected UIRouter()
     {
-        super( PREFIX );
+        super( new ApplicationRouterConfig().withPrefix( PREFIX ) );
     }
 
-    public UIRouter( final Set<RequestHandler> handlers, final Set<RouteCollection> routeCollections, final Set<FilterCollection> filterCollections )
+    public UIRouter( final Set<RequestHandler> handlers, final List<RouteCollection> routeCollections,
+                     final List<FilterCollection> filterCollections )
     {
-        super( PREFIX, handlers, routeCollections );
-        bindFilters( handlers, filterCollections );
+        super( new ApplicationRouterConfig().withPrefix( PREFIX )
+                                            .withHandlers( handlers )
+                                            .withRouteCollections( routeCollections )
+                                            .withFilterCollections( filterCollections ) );
     }
 
     @PostConstruct
@@ -59,8 +64,9 @@ public class UIRouter
     public void initializeComponents()
     {
         logger.info( "\n\nCONSTRUCTING WEB ROUTES FOR UI app...\n\n" );
-        bindRoutes( handlers, routeCollections );
-        bindFilters( handlers, filterCollections );
+        bindHandlers( handlers );
+        bindRouteCollections( routeCollections );
+        bindFilterCollections( filterCollections );
         logger.info( "\n\n...done.\n\n" );
     }
 

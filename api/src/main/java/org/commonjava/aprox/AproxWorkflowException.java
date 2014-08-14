@@ -14,7 +14,7 @@ import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.text.MessageFormat;
 
-import org.commonjava.aprox.filer.FileManager;
+import org.commonjava.aprox.content.FileManager;
 import org.commonjava.aprox.util.ApplicationStatus;
 
 /**

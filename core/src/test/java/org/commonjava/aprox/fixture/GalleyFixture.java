@@ -15,7 +15,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.commonjava.aprox.change.event.AproxFileEventManager;
-import org.commonjava.aprox.filer.KeyBasedPathGenerator;
+import org.commonjava.aprox.content.KeyBasedPathGenerator;
 import org.commonjava.aprox.subsys.http.AproxHttpConnectionManager;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
 import org.commonjava.maven.galley.TransferManager;

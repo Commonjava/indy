@@ -18,7 +18,7 @@ import static org.commonjava.vertx.vabr.types.BuiltInParam._classContextUrl;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.core.rest.StatsController;
+import org.commonjava.aprox.core.ctl.StatsController;
 import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.util.ApplicationContent;
 import org.commonjava.aprox.util.UriFormatter;

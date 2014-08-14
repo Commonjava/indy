@@ -70,11 +70,17 @@ public class FlatFileConfiguration
         }
     }
 
-    public static final File DEFAULT_DATA_BASEDIR = new File( System.getProperty( "aprox.home", "/var/lib/aprox" ),
-                                                              "data" );
+    public static final String DEFAULT_ROOT_DIR = "/var/lib/aprox";
 
-    private static final File DEFAULT_WORK_BASEDIR = new File( System.getProperty( "aprox.home", "/var/lib/aprox" ),
-                                                               "work" );
+    public static final String DEFAULT_DATA_SUBDIR = "data";
+
+    public static final String DEFAULT_WORK_SUBDIR = "work";
+
+    public static final File DEFAULT_DATA_BASEDIR = new File( System.getProperty( "aprox.home", DEFAULT_ROOT_DIR ),
+                                                              DEFAULT_DATA_SUBDIR );
+
+    private static final File DEFAULT_WORK_BASEDIR = new File( System.getProperty( "aprox.home", DEFAULT_ROOT_DIR ),
+                                                               DEFAULT_WORK_SUBDIR );
 
     private File dataBasedir;
 
@@ -82,6 +88,18 @@ public class FlatFileConfiguration
 
     public FlatFileConfiguration()
     {
+    }
+
+    public FlatFileConfiguration( final File rootDir )
+    {
+        this.dataBasedir = new File( rootDir, DEFAULT_DATA_SUBDIR );
+        this.workBasedir = new File( rootDir, DEFAULT_WORK_SUBDIR );
+    }
+
+    public FlatFileConfiguration( final File dataDir, final File workDir )
+    {
+        this.dataBasedir = dataDir;
+        this.workBasedir = workDir;
     }
 
     public File getDataBasedir()

@@ -24,7 +24,6 @@
   
   <modules>
     <module>common</module>
-    <module>jaxrs</module>
     <module>vertx</module>
   </modules>
 

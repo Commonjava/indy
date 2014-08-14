@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.dotmaven.vertx;
 
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -21,9 +22,10 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.bind.vertx.AproxRouter;
 import org.commonjava.aprox.dotmaven.inject.DotMavenApp;
-import org.commonjava.vertx.vabr.filter.FilterCollection;
+import org.commonjava.vertx.vabr.ApplicationRouterConfig;
+import org.commonjava.vertx.vabr.bind.filter.FilterCollection;
+import org.commonjava.vertx.vabr.bind.route.RouteCollection;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
-import org.commonjava.vertx.vabr.route.RouteCollection;
 import org.jboss.weld.environment.se.events.ContainerInitialized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,14 +53,16 @@ public class DotMavenRouter
 
     protected DotMavenRouter()
     {
-        super( PREFIX );
+        super( new ApplicationRouterConfig().withPrefix( PREFIX ) );
     }
 
-    public DotMavenRouter( final Set<RequestHandler> handlers, final Set<RouteCollection> routeCollections,
-                           final Set<FilterCollection> filterCollections )
+    public DotMavenRouter( final Set<RequestHandler> handlers, final List<RouteCollection> routeCollections,
+                           final List<FilterCollection> filterCollections )
     {
-        super( PREFIX, handlers, routeCollections );
-        bindFilters( handlers, filterCollections );
+        super( new ApplicationRouterConfig().withPrefix( PREFIX )
+                                            .withHandlers( handlers )
+                                            .withRouteCollections( routeCollections )
+                                            .withFilterCollections( filterCollections ) );
     }
 
     public void containerInit( @Observes final Event<ContainerInitialized> evt )
@@ -71,8 +75,9 @@ public class DotMavenRouter
     public void initializeComponents()
     {
         logger.info( "\n\nCONSTRUCTING WEB ROUTES FOR Dot-Maven add-on...\n\n" );
-        bindRoutes( handlerInstances, routeCollectionInstances );
-        bindFilters( handlerInstances, filterCollectionInstances );
+        bindHandlers( handlerInstances );
+        bindRouteCollections( routeCollectionInstances );
+        bindFilterCollections( filterCollectionInstances );
         logger.info( "\n\n...done.\n\n" );
     }
 

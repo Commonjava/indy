@@ -25,7 +25,6 @@
   
   <modules>
     <module>layover</module>
-    <module>monorail</module>
   </modules>
   
 </project>

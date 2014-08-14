@@ -22,7 +22,7 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.vertx.util.PathParam;
-import org.commonjava.aprox.core.rest.AdminController;
+import org.commonjava.aprox.core.ctl.AdminController;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;

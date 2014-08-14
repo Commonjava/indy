@@ -8,24 +8,16 @@
  * Contributors:
  *     Red Hat, Inc. - initial API and implementation
  ******************************************************************************/
-package org.commonjava.aprox.bind.vertx;
+package org.commonjava.aprox.core.content.group;
 
-import org.commonjava.vertx.vabr.ApplicationRouter;
-import org.commonjava.vertx.vabr.ApplicationRouterConfig;
+import java.util.Set;
 
-public abstract class AproxRouter
-    extends ApplicationRouter
+import org.commonjava.aprox.model.Group;
+import org.commonjava.maven.galley.model.Transfer;
+
+public interface MetadataMerger
 {
 
-    protected AproxRouter()
-    {
-        super( new ApplicationRouterConfig() );
-    }
+    byte[] merge( final Set<Transfer> sources, final Group group, final String path );
 
-    protected AproxRouter( final ApplicationRouterConfig config )
-    {
-        super( config );
-    }
-
-    public abstract void initializeComponents();
 }

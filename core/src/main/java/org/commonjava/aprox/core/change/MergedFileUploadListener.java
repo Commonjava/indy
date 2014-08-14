@@ -20,14 +20,14 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.change.event.AproxFileEventManager;
-import org.commonjava.aprox.core.rest.group.ArchetypeCatalogMerger;
-import org.commonjava.aprox.core.rest.group.MavenMetadataMerger;
+import org.commonjava.aprox.content.FileManager;
+import org.commonjava.aprox.content.group.GroupPathHandler;
+import org.commonjava.aprox.core.content.group.ArchetypeCatalogMerger;
+import org.commonjava.aprox.core.content.group.MavenMetadataMerger;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.rest.group.GroupPathHandler;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileEvent;

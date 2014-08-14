@@ -14,7 +14,7 @@ import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatCreatedRe
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithEntity;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatRedirect;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
-import static org.commonjava.aprox.core.rest.ContentController.LISTING_HTML_FILE;
+import static org.commonjava.aprox.core.ctl.ContentController.LISTING_HTML_FILE;
 import static org.commonjava.vertx.vabr.types.BuiltInParam._classContextUrl;
 
 import java.io.IOException;
@@ -25,7 +25,8 @@ import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.vertx.util.PathParam;
-import org.commonjava.aprox.core.rest.ContentController;
+import org.commonjava.aprox.bind.vertx.util.VertxRequestUtils;
+import org.commonjava.aprox.core.ctl.ContentController;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
@@ -138,6 +139,8 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
         final String path = request.params()
                                    .get( PathParam.path.key() );
 
+        final String accept = VertxRequestUtils.getCanonicalAccept( request, ApplicationContent.text_html );
+
         try
         {
             final String baseUri = request.params()
@@ -153,11 +156,12 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
             else if ( path.endsWith( LISTING_HTML_FILE ) )
             {
                 logger.info( "Getting listing at: {}", path );
-                final String html = contentController.list( getStoreType(), name, path, baseUri, uriFormatter );
+                final String content =
+                    contentController.renderListing( accept, getStoreType(), name, path, baseUri, uriFormatter );
 
                 request.response()
-                       .putHeader( ApplicationHeader.content_type.key(), ApplicationContent.text_html )
-                       .putHeader( ApplicationHeader.content_length.key(), Long.toString( html.length() ) )
+                       .putHeader( ApplicationHeader.content_type.key(), accept )
+                       .putHeader( ApplicationHeader.content_length.key(), Long.toString( content.length() ) )
                        .putHeader( ApplicationHeader.last_modified.key(), RequestUtils.formatDateHeader( new Date() ) )
                        .end();
                 request.response()
@@ -201,6 +205,8 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
         final String path = request.params()
                                    .get( PathParam.path.key() );
 
+        final String accept = VertxRequestUtils.getCanonicalAccept( request, ApplicationContent.text_html );
+
         try
         {
             final String baseUri = request.params()
@@ -214,9 +220,10 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
                 //            else if ( path.endsWith( LISTING_FILE ) )
                 //            {
                 logger.info( "Getting listing at: {}", path );
-                final String html = contentController.list( getStoreType(), name, path, baseUri, uriFormatter );
+                final String content =
+                    contentController.renderListing( accept, getStoreType(), name, path, baseUri, uriFormatter );
 
-                formatOkResponseWithEntity( request, html, ApplicationContent.text_html );
+                formatOkResponseWithEntity( request, content, accept );
             }
             else
             {
@@ -227,10 +234,11 @@ public abstract class AbstractContentHandler<T extends ArtifactStore>
                     item.delete( false );
 
                     logger.info( "Getting listing at: {}", path + "/" );
-                    final String html =
-                        contentController.list( getStoreType(), name, path + "/", baseUri, uriFormatter );
+                    final String content =
+                        contentController.renderListing( accept, getStoreType(), name, path + "/", baseUri,
+                                                         uriFormatter );
 
-                    formatOkResponseWithEntity( request, html, ApplicationContent.text_html );
+                    formatOkResponseWithEntity( request, content, accept );
                 }
                 else
                 {

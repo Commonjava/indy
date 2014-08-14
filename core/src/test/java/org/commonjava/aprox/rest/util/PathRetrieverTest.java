@@ -20,14 +20,14 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
-import org.commonjava.aprox.core.filer.DefaultFileManager;
-import org.commonjava.aprox.filer.AproxLocationExpander;
-import org.commonjava.aprox.filer.FileManager;
+import org.commonjava.aprox.content.AproxLocationExpander;
+import org.commonjava.aprox.content.FileManager;
+import org.commonjava.aprox.content.group.GroupPathHandler;
+import org.commonjava.aprox.core.content.DefaultFileManager;
 import org.commonjava.aprox.fixture.GalleyFixture;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.RemoteRepository;
-import org.commonjava.aprox.rest.group.GroupPathHandler;
 import org.commonjava.maven.galley.model.Transfer;
 import org.junit.Before;
 import org.junit.Rule;

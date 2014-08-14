@@ -13,8 +13,8 @@ import static org.commonjava.vertx.vabr.types.Method.GET;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
+import org.commonjava.aprox.core.ctl.NfcController;
 import org.commonjava.aprox.core.dto.NotFoundCacheDTO;
-import org.commonjava.aprox.core.rest.NfcController;
 import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;

@@ -16,9 +16,9 @@ import java.io.InputStream;
 
 import org.apache.maven.index.updater.ResourceFetcher;
 import org.commonjava.aprox.AproxWorkflowException;
+import org.commonjava.aprox.content.FileManager;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.util.ApplicationStatus;

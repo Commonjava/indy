@@ -33,6 +33,7 @@ import net.sf.webdav.StoredObject;
 import net.sf.webdav.exceptions.WebdavException;
 import net.sf.webdav.spi.ITransaction;
 
+import org.commonjava.aprox.content.FileManager;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.dotmaven.DotMavenException;
@@ -40,7 +41,6 @@ import org.commonjava.aprox.dotmaven.data.StorageAdvice;
 import org.commonjava.aprox.dotmaven.data.StorageAdvisor;
 import org.commonjava.aprox.dotmaven.store.SubStore;
 import org.commonjava.aprox.dotmaven.util.StoreURIMatcher;
-import org.commonjava.aprox.filer.FileManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
