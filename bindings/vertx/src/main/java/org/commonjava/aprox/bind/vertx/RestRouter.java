@@ -41,7 +41,9 @@ public class RestRouter
     extends AproxRouter
 {
 
-    public static final String PREFIX = "/api/1.0";
+    public static final String PREFIX = "/api";
+
+    public static final String APROX_ID = "aprox";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -59,13 +61,15 @@ public class RestRouter
 
     protected RestRouter()
     {
-        super( new ApplicationRouterConfig().withPrefix( PREFIX ) );
+        super( new ApplicationRouterConfig().withAppAcceptId( APROX_ID )
+                                            .withPrefix( PREFIX ) );
     }
 
     public RestRouter( final Set<RequestHandler> handlers, final List<RouteCollection> routeCollections,
                        final List<FilterCollection> filterCollections )
     {
-        super( new ApplicationRouterConfig().withPrefix( PREFIX )
+        super( new ApplicationRouterConfig().withAppAcceptId( APROX_ID )
+                                            .withPrefix( PREFIX )
                                             .withHandlers( handlers )
                                             .withRouteCollections( routeCollections )
                                             .withFilterCollections( filterCollections ) );

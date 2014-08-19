@@ -13,12 +13,14 @@ import org.commonjava.aprox.content.group.GroupPathHandler;
 import org.commonjava.aprox.core.content.DefaultFileManager;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
+import org.commonjava.aprox.model.io.StoreKeySerializer;
 import org.commonjava.aprox.subsys.flatfile.conf.FlatFileConfiguration;
 import org.commonjava.aprox.subsys.template.TemplatingEngine;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.SimpleLocation;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.testing.core.CoreFixture;
+import org.commonjava.web.json.ser.JsonSerializer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,7 +49,9 @@ public class ContentControllerTest
                                                                     .newFolder( "aprox-home" ) ) );
 
         content =
-            new ContentController( storeManager, fileManager, templates, Collections.<ContentProducer> emptySet() );
+            new ContentController( storeManager, fileManager, templates,
+                                   new JsonSerializer( new StoreKeySerializer() ),
+                                   Collections.<ContentProducer> emptySet() );
     }
 
     @Test

@@ -39,18 +39,22 @@ import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.content.ContentProducer;
 import org.commonjava.aprox.content.FileManager;
 import org.commonjava.aprox.content.StoreResource;
+import org.commonjava.aprox.core.dto.DirectoryListingDTO;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.subsys.template.AproxGroovyException;
 import org.commonjava.aprox.subsys.template.TemplatingEngine;
+import org.commonjava.aprox.util.ApplicationContent;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
+import org.commonjava.web.json.ser.JsonSerializer;
 
 @ApplicationScoped
 public class ContentController
@@ -78,16 +82,22 @@ public class ContentController
     @Inject
     private TemplatingEngine templates;
 
+    @Inject
+    @AproxData
+    private JsonSerializer serializer;
+
     protected ContentController()
     {
     }
 
     public ContentController( final StoreDataManager storeManager, final FileManager fileManager,
-                              final TemplatingEngine templates, final Set<ContentProducer> contentProducers )
+                              final TemplatingEngine templates, final JsonSerializer serializer,
+                              final Set<ContentProducer> contentProducers )
     {
         this.storeManager = storeManager;
         this.fileManager = fileManager;
         this.templates = templates;
+        this.serializer = serializer;
         this.contentProducers = contentProducers == null ? new HashSet<ContentProducer>() : contentProducers;
     }
 
@@ -248,6 +258,10 @@ public class ContentController
         throws AproxWorkflowException
     {
         final List<StoreResource> listed = getListing( key, path );
+        if ( ApplicationContent.application_json.equals( acceptHeader ) )
+        {
+            return serializer.toString( new DirectoryListingDTO( listed ) );
+        }
 
         final Map<String, Set<String>> listingUrls = new TreeMap<String, Set<String>>();
 

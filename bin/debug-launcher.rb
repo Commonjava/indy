@@ -23,7 +23,7 @@ class Launcher
   def run(args)
 
     config={
-      :debug => true,
+      :debug => 'n',
       :clean => true,
       :launch => true,
       :uidev => false,
@@ -31,7 +31,7 @@ class Launcher
     }
 
     OptionParser.new{|opts|
-      opts.on('-d', '--debug', 'setup java debug port 8000'){config[:debug] = true}
+      opts.on('-d', '--debug=STYLE', 'setup java debug port 8000 (style: "y" or "n" for suspend style)'){|style| config[:debug] = style}
       opts.on('-e', '--existing', 'keep existing unpacked directory if it exists'){config[:clean]=false}
       opts.on('-L', '--nolaunch', 'do not launch!'){config[:launch]=false}
       opts.on('-u', '--uidev', 'Link to the sources for the UI to enable live UI development' ){config[:uidev]=true}
@@ -66,7 +66,7 @@ class Launcher
 
       lines = []
       lines = File.readlines(env_sh) if ( File.exists?(env_sh))
-      debug_line = 'export JAVA_DEBUG_OPTS="-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n"'
+      debug_line = "export JAVA_DEBUG_OPTS=\"-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=#{config[:debug]}\""
 
       found = false
       lines.each{|line|

@@ -49,6 +49,11 @@ public final class ApplicationContent
             put( text_plain, aprox_plain );
             put( application_zip, aprox_zip );
             put( application_xml, aprox_xml );
+            put( aprox_json, aprox_json );
+            put( aprox_html, aprox_html );
+            put( aprox_plain, aprox_plain );
+            put( aprox_zip, aprox_zip );
+            put( aprox_xml, aprox_xml );
         }
 
         private static final long serialVersionUID = 1L;
@@ -63,6 +68,11 @@ public final class ApplicationContent
                 put( aprox_plain, text_plain );
                 put( aprox_zip, application_zip );
                 put( aprox_xml, application_xml );
+                put( application_json, application_json );
+                put( text_html, text_html );
+                put( text_plain, text_plain );
+                put( application_zip, application_zip );
+                put( application_xml, application_xml );
             }
 
             private static final long serialVersionUID = 1L;

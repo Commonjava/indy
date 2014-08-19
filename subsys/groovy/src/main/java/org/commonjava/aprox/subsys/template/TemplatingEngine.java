@@ -25,10 +25,13 @@ import javax.inject.Inject;
 
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.commonjava.aprox.subsys.flatfile.conf.FlatFileConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class TemplatingEngine
 {
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public static final String TEMPLATES = "templates";
 
@@ -79,13 +82,15 @@ public class TemplatingEngine
     private Template getTemplate( final String acceptHeader, final String templateKey )
         throws AproxGroovyException
     {
-        final String accept = ( acceptHeader == null ? "" : acceptHeader.replace( '/', '_' ) ) + "/";
+        final String accept = ( acceptHeader == null ? "" : acceptHeader.replace( '/', '_' ) + "/" );
         try
         {
             final String filename = accept + templateKey + ".groovy";
             final File templateDir = config.getDataDir( TEMPLATES );
 
             final File templateFile = new File( templateDir, filename );
+            logger.info( "Looking for template: {} for ACCEPT header: {} in: {}", templateKey, acceptHeader,
+                         templateFile );
 
             Template template;
             if ( templateFile.exists() && !templateFile.isDirectory() )
@@ -94,16 +99,21 @@ public class TemplatingEngine
             }
             else
             {
+                final String urlpath = TEMPLATES + "/" + accept + templateKey + ".groovy";
+                logger.info( "Looking for template: {} for ACCEPT header: {} in: {}", templateKey, acceptHeader,
+                             urlpath );
+
                 final URL u = Thread.currentThread()
                                     .getContextClassLoader()
-                                    .getResource( TEMPLATES + "/" + accept + templateKey + ".groovy" );
+                                    .getResource( urlpath );
 
                 template = u == null ? null : engine.createTemplate( u );
             }
 
             if ( template == null )
             {
-                throw new AproxGroovyException( "Failed to locate template: %s", templateKey );
+                throw new AproxGroovyException( "Failed to locate template: %s (with ACCEPT header: %s)", templateKey,
+                                                acceptHeader );
             }
 
             return template;

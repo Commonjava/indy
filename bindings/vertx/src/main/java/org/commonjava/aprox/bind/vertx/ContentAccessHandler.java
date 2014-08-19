@@ -47,7 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.http.HttpServerRequest;
 
-@Handles
+@Handles( key = "content" )
 public class ContentAccessHandler
     implements RequestHandler
 {
@@ -155,6 +155,7 @@ public class ContentAccessHandler
         final StoreType st = StoreType.get( type );
 
         final String standardAccept = VertxRequestUtils.getStandardAccept( request, ApplicationContent.text_html );
+
         String givenAccept = request.headers()
                                     .get( RouteHeader.accept.header() );
         if ( givenAccept == null )
@@ -226,6 +227,8 @@ public class ContentAccessHandler
         {
             givenAccept = standardAccept;
         }
+
+        logger.info( "User asked for: {}\nStandard accept header for that is: {}", givenAccept, standardAccept );
 
         try
         {
