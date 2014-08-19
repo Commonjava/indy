@@ -432,6 +432,11 @@
       	<version>${galleyVersion}</version>
       	<scope>test</scope>
       </dependency>
+      <dependency>
+        <groupId>org.commonjava.maven.atlas</groupId>
+        <artifactId>atlas-relationships-api</artifactId>
+        <version>${atlasVersion}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   
