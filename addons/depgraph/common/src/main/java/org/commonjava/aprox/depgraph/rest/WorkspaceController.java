@@ -70,7 +70,7 @@ public class WorkspaceController
 
             graph = graphFactory.open( new ViewParams( id ), true );
 
-            final String json = serializer.toString( graph );
+            final String json = serializer.toString( new GraphWorkspace( graph ) );
 
             return new CreationDTO( new URI( uriFormatter.formatAbsolutePathTo( serviceUrl, graph.getWorkspaceId() ) ),
                                     json );
@@ -171,4 +171,16 @@ public class WorkspaceController
         return graph == null || graph.isEmpty() ? null : serializer.toString( new Listing<String>( graph ) );
     }
 
+
+    private class GraphWorkspace
+    {
+        @SuppressWarnings("unused")
+        private String id;
+
+        private GraphWorkspace( final RelationshipGraph graph )
+        {
+            this.id = graph.getWorkspaceId();
+        }
+    }
+    
 }
