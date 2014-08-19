@@ -19,6 +19,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
+import org.commonjava.aprox.depgraph.dto.GraphWorkspaceDTO;
 import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.dto.CreationDTO;
 import org.commonjava.aprox.util.UriFormatter;
@@ -70,7 +71,7 @@ public class WorkspaceController
 
             graph = graphFactory.open( new ViewParams( id ), true );
 
-            final String json = serializer.toString( new GraphWorkspace( graph ) );
+            final String json = serializer.toString( new GraphWorkspaceDTO( graph ) );
 
             return new CreationDTO( new URI( uriFormatter.formatAbsolutePathTo( serviceUrl, graph.getWorkspaceId() ) ),
                                     json );
@@ -172,15 +173,4 @@ public class WorkspaceController
     }
 
 
-    private class GraphWorkspace
-    {
-        @SuppressWarnings("unused")
-        private String id;
-
-        private GraphWorkspace( final RelationshipGraph graph )
-        {
-            this.id = graph.getWorkspaceId();
-        }
-    }
-    
 }
