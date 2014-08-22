@@ -3,12 +3,10 @@ package org.commonjava.aprox.bind.vertx;
 import org.commonjava.aprox.bind.vertx.util.PathParam;
 import org.commonjava.aprox.util.ApplicationHeader;
 import org.commonjava.aprox.util.ApplicationStatus;
-import org.commonjava.maven.galley.util.PathUtils;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.commonjava.vertx.vabr.types.BindingType;
-import org.commonjava.vertx.vabr.types.BuiltInParam;
 import org.commonjava.vertx.vabr.types.Method;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,16 +19,19 @@ public class DeprecatedApi10Redirector
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    @Route( path = ":path=(/.*)", method = Method.ANY, binding = BindingType.raw )
+    @Route( path = ":path=(.*)", method = Method.ANY, binding = BindingType.raw )
     public void handle( final HttpServerRequest request )
     {
         final String to = request.params()
                                  .get( PathParam.path.key() );
 
-        final String uri = PathUtils.normalize( request.params()
-                                                       .get( BuiltInParam._routeContextUrl.key() ), to );
+        String uri = request.uri()
+                            .toString();
 
-        logger.warn( "[DEPRECATION] Redirecting '{}'\n  to: '{}'", request.absoluteURI(), uri );
+        final int idx = uri.indexOf( "/1.0" );
+        uri = uri.substring( 0, idx ) + uri.substring( idx + 4, uri.length() );
+
+        logger.warn( "[DEPRECATION] Redirecting '{}'\n  to: '{}'", request.uri(), uri );
 
         request.resume()
                .response()
