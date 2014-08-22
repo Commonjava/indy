@@ -19,30 +19,24 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.event.Event;
-import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.change.event.AproxFileEventManager;
 import org.commonjava.aprox.change.event.ArtifactStoreRescanEvent;
-import org.commonjava.aprox.content.FileManager;
+import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.content.StoreResource;
 import org.commonjava.aprox.content.group.GroupPathHandler;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
@@ -66,16 +60,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @javax.enterprise.context.ApplicationScoped
-public class DefaultFileManager
-    implements FileManager
+public class DefaultDownloadManager
+    implements DownloadManager
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
-
-    @Inject
-    private Instance<GroupPathHandler> groupHandlerInstances;
-
-    private Set<GroupPathHandler> groupHandlers;
 
     @Inject
     private Event<ArtifactStoreRescanEvent> rescanEvent;
@@ -99,11 +88,11 @@ public class DefaultFileManager
     @Inject
     private StoreDataManager storeManager;
 
-    protected DefaultFileManager()
+    protected DefaultDownloadManager()
     {
     }
 
-    public DefaultFileManager( final StoreDataManager storeManager, final TransferManager transfers,
+    public DefaultDownloadManager( final StoreDataManager storeManager, final TransferManager transfers,
                                final LocationExpander locationExpander, final Collection<GroupPathHandler> groupHandlers )
     {
         this.storeManager = storeManager;
@@ -111,32 +100,14 @@ public class DefaultFileManager
         this.locationExpander = locationExpander;
         this.fileEventManager = new AproxFileEventManager();
         executor = Executors.newFixedThreadPool( 10 );
-
-        this.groupHandlers = new LinkedHashSet<GroupPathHandler>();
-        if ( groupHandlers != null )
-        {
-            this.groupHandlers.addAll( groupHandlers );
-        }
-    }
-
-    @PostConstruct
-    public void initialize()
-    {
-        groupHandlers = new LinkedHashSet<GroupPathHandler>();
-        if ( groupHandlerInstances != null )
-        {
-            for ( final GroupPathHandler h : groupHandlerInstances )
-            {
-                groupHandlers.add( h );
-            }
-        }
     }
 
     @Override
     public List<StoreResource> list( final ArtifactStore store, final String path )
         throws AproxWorkflowException
     {
-        final String dir = PathUtils.dirname( path );
+        final String dir = path;
+        //        final String dir = PathUtils.dirname( path );
 
         final List<StoreResource> result = new ArrayList<StoreResource>();
         if ( store.getKey()
@@ -264,16 +235,15 @@ public class DefaultFileManager
      * @see org.commonjava.aprox.core.rest.util.FileManager#downloadAll(java.util.List, java.lang.String)
      */
     @Override
-    public Set<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path )
+    public List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path )
         throws AproxWorkflowException
     {
         try
         {
             // FIXME: Needs to be a list?
-            return new HashSet<Transfer>(
-                                          transfers.retrieveAll( locationExpander.expand( new VirtualResource(
-                                                                                                               LocationUtils.toLocations( stores ),
-                                                                                                               path ) ) ) );
+            return transfers.retrieveAll( locationExpander.expand( new VirtualResource(
+                                                                                        LocationUtils.toLocations( stores ),
+                                                                                        path ) ) );
         }
         catch ( final TransferException e )
         {
@@ -301,7 +271,7 @@ public class DefaultFileManager
         if ( store.getKey()
                   .getType() == StoreType.group )
         {
-            return groupRetrieve( (Group) store, path, suppressFailures );
+            return null;
         }
 
         Transfer target = null;
@@ -351,7 +321,7 @@ public class DefaultFileManager
         if ( store.getKey()
                   .getType() == StoreType.group )
         {
-            return groupStore( (Group) store, path, stream, op );
+            return null;
         }
 
         if ( store.getKey()
@@ -469,12 +439,6 @@ public class DefaultFileManager
     }
 
     @Override
-    public ArtifactPathInfo parsePathInfo( final String path )
-    {
-        return ArtifactPathInfo.parse( path );
-    }
-
-    @Override
     public Transfer getStoreRootDirectory( final StoreKey key )
         throws AproxWorkflowException
     {
@@ -552,7 +516,7 @@ public class DefaultFileManager
         if ( store.getKey()
                   .getType() == StoreType.group )
         {
-            return groupDelete( (Group) store, path );
+            return false;
         }
 
         final Transfer item = getStorageReference( store, path == null ? ROOT_PATH : path );
@@ -582,94 +546,6 @@ public class DefaultFileManager
         {
             rescan( store );
         }
-    }
-
-    protected Transfer groupRetrieve( final Group store, final String path, final boolean suppressFailures )
-        throws AproxWorkflowException
-    {
-        List<ArtifactStore> stores;
-        try
-        {
-            stores = storeManager.getOrderedConcreteStoresInGroup( store.getName() );
-        }
-        catch ( final ProxyDataException e )
-        {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR,
-                                              "Failed to lookup membership of group: '{}'. Reason: {}'", e,
-                                              store.getKey(), e.getMessage() );
-        }
-
-        for ( final GroupPathHandler handler : groupHandlers )
-        {
-
-            if ( handler.canHandle( path ) )
-            {
-                //                logger.info( "Retrieving path: {} using GroupPathHandler: {}", path, handler.getClass()
-                //                                                                                            .getName() );
-                return handler.retrieve( store, stores, path );
-            }
-        }
-
-        return retrieveFirst( stores, path );
-    }
-
-    protected Transfer groupStore( final Group store, final String path, final InputStream stream,
-                                   final TransferOperation op )
-        throws AproxWorkflowException
-    {
-        List<ArtifactStore> stores;
-        try
-        {
-            stores = storeManager.getOrderedConcreteStoresInGroup( store.getName() );
-        }
-        catch ( final ProxyDataException e )
-        {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR,
-                                              "Failed to lookup membership of group: '{}'. Reason: {}'", e,
-                                              store.getKey(), e.getMessage() );
-        }
-
-        for ( final GroupPathHandler handler : groupHandlers )
-        {
-
-            if ( handler.canHandle( path ) )
-            {
-                //                logger.info( "Retrieving path: {} using GroupPathHandler: {}", path, handler.getClass()
-                //                                                                                            .getName() );
-                return handler.store( store, stores, path, stream );
-            }
-        }
-
-        return store( stores, path, stream, op );
-    }
-
-    protected boolean groupDelete( final Group store, final String path )
-        throws AproxWorkflowException
-    {
-        List<ArtifactStore> stores;
-        try
-        {
-            stores = storeManager.getOrderedConcreteStoresInGroup( store.getName() );
-        }
-        catch ( final ProxyDataException e )
-        {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR,
-                                              "Failed to lookup membership of group: '{}'. Reason: {}'", e,
-                                              store.getKey(), e.getMessage() );
-        }
-
-        for ( final GroupPathHandler handler : groupHandlers )
-        {
-
-            if ( handler.canHandle( path ) )
-            {
-                //                logger.info( "Retrieving path: {} using GroupPathHandler: {}", path, handler.getClass()
-                //                                                                                            .getName() );
-                return handler.delete( store, stores, path );
-            }
-        }
-
-        return deleteAll( stores, path );
     }
 
     @Override

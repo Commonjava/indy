@@ -10,20 +10,17 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.content.group;
 
-import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
-import static org.apache.commons.codec.digest.DigestUtils.shaHex;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.aprox.util.LocationUtils.getKey;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.Set;
+import java.util.List;
 
 import javax.inject.Inject;
 
-import org.commonjava.aprox.content.FileManager;
-import org.commonjava.aprox.content.group.GroupPathHandler;
+import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.maven.galley.model.Transfer;
@@ -34,17 +31,23 @@ import org.slf4j.LoggerFactory;
 public class GroupMergeHelper
 {
 
+    public static final String MERGEINFO_SUFFIX = ".info";
+
+    public static final String SHA_SUFFIX = ".sha";
+
+    public static final String MD5_SUFFIX = ".md5";
+
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private FileManager fileManager;
+    private DownloadManager fileManager;
 
     public final void deleteChecksumsAndMergeInfo( final Group group, final String path )
         throws IOException
     {
-        final Transfer targetSha = fileManager.getStorageReference( group, path + GroupPathHandler.SHA_SUFFIX );
-        final Transfer targetMd5 = fileManager.getStorageReference( group, path + GroupPathHandler.MD5_SUFFIX );
-        final Transfer targetInfo = fileManager.getStorageReference( group, path + GroupPathHandler.MERGEINFO_SUFFIX );
+        final Transfer targetSha = fileManager.getStorageReference( group, path + SHA_SUFFIX );
+        final Transfer targetMd5 = fileManager.getStorageReference( group, path + MD5_SUFFIX );
+        final Transfer targetInfo = fileManager.getStorageReference( group, path + MERGEINFO_SUFFIX );
 
         if ( targetSha != null )
         {
@@ -62,44 +65,12 @@ public class GroupMergeHelper
         }
     }
 
-    public final void writeChecksumsAndMergeInfo( final byte[] data, final Set<Transfer> sources, final Group group, final String path )
+    public final void writeMergeInfo( final byte[] data, final List<Transfer> sources, final Group group,
+                                      final String path )
     {
-        final Transfer targetSha = fileManager.getStorageReference( group, path + GroupPathHandler.SHA_SUFFIX );
-        final Transfer targetMd5 = fileManager.getStorageReference( group, path + GroupPathHandler.MD5_SUFFIX );
-        final Transfer targetInfo = fileManager.getStorageReference( group, path + GroupPathHandler.MERGEINFO_SUFFIX );
-
-        final String sha = shaHex( data );
-        final String md5 = md5Hex( data );
+        final Transfer targetInfo = fileManager.getStorageReference( group, path + MERGEINFO_SUFFIX );
 
         Writer fw = null;
-        try
-        {
-            fw = new OutputStreamWriter( targetSha.openOutputStream( TransferOperation.GENERATE, true ) );
-            fw.write( sha );
-        }
-        catch ( final IOException e )
-        {
-            logger.error( String.format( "Failed to write SHA1 checksum for merged metadata information to: %s.\nError: %s", targetSha, e.getMessage() ), e );
-        }
-        finally
-        {
-            closeQuietly( fw );
-        }
-
-        try
-        {
-            fw = new OutputStreamWriter( targetMd5.openOutputStream( TransferOperation.GENERATE, true ) );
-            fw.write( md5 );
-        }
-        catch ( final IOException e )
-        {
-            logger.error( String.format( "Failed to write MD5 checksum for merged metadata information to: %s.\nError: %s", targetMd5, e.getMessage() ), e );
-        }
-        finally
-        {
-            closeQuietly( fw );
-        }
-
         try
         {
             fw = new OutputStreamWriter( targetInfo.openOutputStream( TransferOperation.GENERATE ) );

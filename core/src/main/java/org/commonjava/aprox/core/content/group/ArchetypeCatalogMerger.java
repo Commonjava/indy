@@ -16,6 +16,7 @@ import static org.commonjava.aprox.util.LocationUtils.getKey;
 import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -46,7 +47,7 @@ public class ArchetypeCatalogMerger
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Override
-    public byte[] merge( final Set<Transfer> sources, final Group group, final String path )
+    public byte[] merge( final Collection<Transfer> sources, final Group group, final String path )
     {
         final ArchetypeCatalog master = new ArchetypeCatalog();
         final ArchetypeCatalogXpp3Reader reader = new ArchetypeCatalogXpp3Reader();

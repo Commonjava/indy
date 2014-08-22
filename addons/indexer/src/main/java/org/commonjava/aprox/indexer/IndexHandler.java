@@ -41,7 +41,7 @@ import org.apache.maven.index.updater.IndexUpdater;
 import org.apache.maven.index.updater.ResourceFetcher;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
 import org.commonjava.aprox.change.event.ProxyManagerDeleteEvent;
-import org.commonjava.aprox.content.FileManager;
+import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.indexer.inject.IndexCreatorSet;
@@ -101,7 +101,7 @@ public class IndexHandler
     private StoreDataManager storeDataManager;
 
     @Inject
-    private FileManager fileManager;
+    private DownloadManager fileManager;
 
     @Inject
     @ExecutorConfig( daemon = true, priority = 7, named = "aprox-indexer" )
@@ -113,7 +113,7 @@ public class IndexHandler
     {
     }
 
-    public IndexHandler( final ExpirationManager expirationManager, final StoreDataManager storeDataManager, final FileManager fileManager )
+    public IndexHandler( final ExpirationManager expirationManager, final StoreDataManager storeDataManager, final DownloadManager fileManager )
         throws AproxIndexerException
     {
         this.expirationManager = expirationManager;
@@ -525,7 +525,7 @@ public class IndexHandler
                                          .getDetachedFile();
         indexDir.mkdirs();
 
-        final File rootDir = fileManager.getStorageReference( store, FileManager.ROOT_PATH )
+        final File rootDir = fileManager.getStorageReference( store, DownloadManager.ROOT_PATH )
                                         .getDetachedFile();
 
         final String id = store.getKey()

@@ -1,47 +1,23 @@
-/*******************************************************************************
- * Copyright (c) 2014 Red Hat, Inc..
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Public License v3.0
- * which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/gpl.html
- * 
- * Contributors:
- *     Red Hat, Inc. - initial API and implementation
- ******************************************************************************/
 package org.commonjava.aprox.content;
 
 import java.io.InputStream;
 import java.util.List;
-import java.util.Set;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.HostedRepository;
-import org.commonjava.aprox.model.RemoteRepository;
-import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
-import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 
 /**
- * Organizes resolution of content from cached locations, remote locations, and group membership. All content access in the core of AProx flow through
- * implementations of this.
+ * High-level interface for retrieving, storing, etc. content which includes both produced (i.e. generated) content as well as downloaded and stored
+ * content. This is intended to be used by end users, REST API bindings, etc. That's in contrast to {@link DownloadManager}, which is a lower-level 
+ * interface for accessing stored and remote content, and is meant to be used by this interface and its derivatives, along with {@link ContentGenerator}
+ * implementations.
  */
-public interface FileManager
+public interface ContentManager
 {
-
-    /**
-     * Key used to bind {@link RemoteRepository} instances to the HTTP client in order to extract SSL/authentication info.
-     * <b>TODO:</b> Given the attribute methods in the Galley {@link Location} api, this <b>should</b> be obsolete.
-     */
-    String HTTP_PARAM_REPO = "repository";
-
-    /**
-     * Root path used when retrieving the root of a {@link Location}'s cache.
-     */
-    String ROOT_PATH = "/";
 
     /**
      * Retrieve the content at the given path from the first store possible, then return then return the transfer that references the content without 
@@ -53,7 +29,7 @@ public interface FileManager
     /**
      * Retrieve the content at the given path from all stores, then return the set of transfers that reference the content.
      */
-    Set<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path )
+    List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path )
         throws AproxWorkflowException;
 
     /**
@@ -87,18 +63,6 @@ public interface FileManager
                     TransferOperation op )
         throws AproxWorkflowException;
 
-    Transfer getStoreRootDirectory( StoreKey key )
-        throws AproxWorkflowException;
-
-    Transfer getStoreRootDirectory( ArtifactStore store );
-
-    Transfer getStorageReference( final StoreKey key, final String... path )
-        throws AproxWorkflowException;
-
-    Transfer getStorageReference( final ArtifactStore store, final String... path );
-
-    ArtifactPathInfo parsePathInfo( String path );
-
     boolean delete( final ArtifactStore store, String path )
         throws AproxWorkflowException;
 
@@ -116,5 +80,4 @@ public interface FileManager
 
     List<StoreResource> list( List<? extends ArtifactStore> stores, String path )
         throws AproxWorkflowException;
-
 }

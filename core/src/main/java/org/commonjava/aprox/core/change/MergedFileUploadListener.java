@@ -20,9 +20,9 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.change.event.AproxFileEventManager;
-import org.commonjava.aprox.content.FileManager;
-import org.commonjava.aprox.content.group.GroupPathHandler;
+import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.core.content.group.ArchetypeCatalogMerger;
+import org.commonjava.aprox.core.content.group.GroupMergeHelper;
 import org.commonjava.aprox.core.content.group.MavenMetadataMerger;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
@@ -45,7 +45,7 @@ public class MergedFileUploadListener
     private StoreDataManager dataManager;
 
     @Inject
-    private FileManager fileManager;
+    private DownloadManager fileManager;
 
     @Inject
     private AproxFileEventManager fileEvent;
@@ -103,9 +103,10 @@ public class MergedFileUploadListener
         throws IOException
     {
         final Transfer[] toDelete =
-            { fileManager.getStorageReference( group, path ), fileManager.getStorageReference( group, path + GroupPathHandler.MERGEINFO_SUFFIX ),
-                fileManager.getStorageReference( group, path + GroupPathHandler.SHA_SUFFIX ),
-                fileManager.getStorageReference( group, path + GroupPathHandler.MD5_SUFFIX ) };
+            { fileManager.getStorageReference( group, path ),
+                fileManager.getStorageReference( group, path + GroupMergeHelper.MERGEINFO_SUFFIX ),
+                fileManager.getStorageReference( group, path + GroupMergeHelper.SHA_SUFFIX ),
+                fileManager.getStorageReference( group, path + GroupMergeHelper.MD5_SUFFIX ) };
 
         for ( final Transfer item : toDelete )
         {

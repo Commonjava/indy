@@ -33,7 +33,7 @@ import net.sf.webdav.StoredObject;
 import net.sf.webdav.exceptions.WebdavException;
 import net.sf.webdav.spi.ITransaction;
 
-import org.commonjava.aprox.content.FileManager;
+import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.dotmaven.DotMavenException;
@@ -66,7 +66,7 @@ public class ArtifactStoreSubStore
     private StorageAdvisor advisor;
 
     @Inject
-    private FileManager fileManager;
+    private DownloadManager fileManager;
 
     @Override
     public String[] getRootResourceNames()

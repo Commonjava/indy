@@ -42,7 +42,7 @@ import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
 import org.commonjava.aprox.change.event.ProxyManagerDeleteEvent;
 import org.commonjava.aprox.change.event.ProxyManagerUpdateType;
 import org.commonjava.aprox.conf.AproxConfiguration;
-import org.commonjava.aprox.content.FileManager;
+import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.core.change.sl.LoggingMatcher;
 import org.commonjava.aprox.core.change.sl.MaxTimeoutMatcher;
 import org.commonjava.aprox.core.change.sl.SnapshotFilter;
@@ -86,7 +86,7 @@ public class TimeoutManager
     private ExpirationManager expirationManager;
 
     @Inject
-    private FileManager fileManager;
+    private DownloadManager fileManager;
 
     @Inject
     private StoreDataManager dataManager;

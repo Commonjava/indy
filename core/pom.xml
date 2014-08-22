@@ -122,37 +122,9 @@
     	<artifactId>galley-test-harness-core</artifactId>
     	<scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.maven.galley</groupId>
+      <artifactId>galley-maven</artifactId>
+    </dependency>
   </dependencies>
-  
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven</artifactId>
-        <version>3.0.3</version>
-        <scope>import</scope>
-        <type>pom</type>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-  
-  <profiles>
-    <profile>
-      <id>its</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.commonjava.maven.plugins</groupId>
-            <artifactId>qarqas-maven-plugin</artifactId>
-          </plugin>
-          <plugin>
-            <artifactId>maven-assembly-plugin</artifactId>
-          </plugin>
-          <plugin>
-            <artifactId>maven-failsafe-plugin</artifactId>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>

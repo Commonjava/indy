@@ -16,7 +16,7 @@ import java.io.InputStream;
 
 import org.apache.maven.index.updater.ResourceFetcher;
 import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.content.FileManager;
+import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
@@ -34,11 +34,11 @@ public class AproxResourceFetcher
 
     private final StoreDataManager storeDataManager;
 
-    private final FileManager fileManager;
+    private final DownloadManager fileManager;
 
     private ArtifactStore store;
 
-    public AproxResourceFetcher( final StoreDataManager storeDataManager, final FileManager fileManager )
+    public AproxResourceFetcher( final StoreDataManager storeDataManager, final DownloadManager fileManager )
     {
         this.storeDataManager = storeDataManager;
         this.fileManager = fileManager;

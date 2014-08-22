@@ -14,7 +14,7 @@ import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatCreatedRe
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithEntity;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
 import static org.commonjava.aprox.core.ctl.ContentController.LISTING_HTML_FILE;
-import static org.commonjava.vertx.vabr.types.BuiltInParam._classContextUrl;
+import static org.commonjava.vertx.vabr.types.BuiltInParam._routeBase;
 
 import java.io.IOException;
 import java.util.Date;
@@ -166,7 +166,7 @@ public class ContentAccessHandler
         try
         {
             final String baseUri = request.params()
-                                          .get( _classContextUrl.key() );
+                                          .get( _routeBase.key() );
 
             if ( path.equals( "" ) || path.endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )
             {
@@ -222,7 +222,7 @@ public class ContentAccessHandler
 
         final String standardAccept = VertxRequestUtils.getStandardAccept( request, ApplicationContent.text_html );
         String givenAccept = request.headers()
-                                    .get( RouteHeader.accept.header() );
+                                    .get( RouteHeader.recommended_content_type.header() );
         if ( givenAccept == null )
         {
             givenAccept = standardAccept;
@@ -233,7 +233,7 @@ public class ContentAccessHandler
         try
         {
             final String baseUri = request.params()
-                                          .get( _classContextUrl.key() );
+                                          .get( _routeBase.key() );
 
             if ( path.equals( "" ) || path.endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )
             {

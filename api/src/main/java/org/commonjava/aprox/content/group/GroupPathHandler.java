@@ -21,12 +21,6 @@ import org.commonjava.maven.galley.model.Transfer;
 public interface GroupPathHandler
 {
 
-    String MERGEINFO_SUFFIX = ".info";
-
-    String SHA_SUFFIX = ".sha";
-
-    String MD5_SUFFIX = ".md5";
-
     boolean canHandle( String path );
 
     Transfer retrieve( Group group, List<? extends ArtifactStore> stores, String path )

@@ -21,9 +21,9 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.content.AproxLocationExpander;
-import org.commonjava.aprox.content.FileManager;
+import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.content.group.GroupPathHandler;
-import org.commonjava.aprox.core.content.DefaultFileManager;
+import org.commonjava.aprox.core.content.DefaultDownloadManager;
 import org.commonjava.aprox.fixture.GalleyFixture;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
@@ -37,7 +37,7 @@ import org.junit.rules.TemporaryFolder;
 public class PathRetrieverTest
 {
 
-    private FileManager downloader;
+    private DownloadManager downloader;
 
     private File repoRoot;
 
@@ -57,7 +57,7 @@ public class PathRetrieverTest
         data = new MemoryStoreDataManager();
 
         downloader =
-            new DefaultFileManager( data, fixture.getTransfers(), new AproxLocationExpander( data ), Collections.<GroupPathHandler> emptySet() );
+            new DefaultDownloadManager( data, fixture.getTransfers(), new AproxLocationExpander( data ), Collections.<GroupPathHandler> emptySet() );
     }
 
     @Test

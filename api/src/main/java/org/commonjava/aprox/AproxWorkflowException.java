@@ -14,11 +14,11 @@ import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.text.MessageFormat;
 
-import org.commonjava.aprox.content.FileManager;
+import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.util.ApplicationStatus;
 
 /**
- * Signals an error between the REST-resources layer and the next layer down (except for {@link FileManager}, which is normally two layers down thanks 
+ * Signals an error between the REST-resources layer and the next layer down (except for {@link DownloadManager}, which is normally two layers down thanks 
  * to binding controllers). Workflow exceptions are intended to carry with them some notion of what response to send to the user (even if it's 
  * the default: HTTP 500).
  */

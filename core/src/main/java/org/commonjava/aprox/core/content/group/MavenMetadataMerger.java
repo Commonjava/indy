@@ -16,7 +16,7 @@ import static org.commonjava.aprox.util.LocationUtils.getKey;
 import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Set;
+import java.util.Collection;
 
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
@@ -42,7 +42,7 @@ public class MavenMetadataMerger
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Override
-    public byte[] merge( final Set<Transfer> sources, final Group group, final String path )
+    public byte[] merge( final Collection<Transfer> sources, final Group group, final String path )
     {
         final Metadata master = new Metadata();
         final MetadataXpp3Reader reader = new MetadataXpp3Reader();

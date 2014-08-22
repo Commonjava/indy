@@ -7,10 +7,12 @@ import groovy.text.GStringTemplateEngine;
 import java.util.Collections;
 
 import org.apache.commons.io.FileUtils;
-import org.commonjava.aprox.content.ContentProducer;
-import org.commonjava.aprox.content.FileManager;
+import org.commonjava.aprox.content.ContentGenerator;
+import org.commonjava.aprox.content.ContentManager;
+import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.content.group.GroupPathHandler;
-import org.commonjava.aprox.core.content.DefaultFileManager;
+import org.commonjava.aprox.core.content.DefaultContentManager;
+import org.commonjava.aprox.core.content.DefaultDownloadManager;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.io.StoreKeySerializer;
@@ -39,9 +41,12 @@ public class ContentControllerTest
         fixture.initMissingComponents();
 
         final StoreDataManager storeManager = new MemoryStoreDataManager();
-        final FileManager fileManager =
-            new DefaultFileManager( storeManager, fixture.getTransfers(), fixture.getLocations(),
+        final DownloadManager fileManager =
+            new DefaultDownloadManager( storeManager, fixture.getTransfers(), fixture.getLocations(),
                                     Collections.<GroupPathHandler> emptySet() );
+
+        final ContentManager contentManager =
+            new DefaultContentManager( storeManager, fileManager, Collections.<ContentGenerator> emptySet() );
 
         final TemplatingEngine templates =
             new TemplatingEngine( new GStringTemplateEngine(),
@@ -49,9 +54,8 @@ public class ContentControllerTest
                                                                     .newFolder( "aprox-home" ) ) );
 
         content =
-            new ContentController( storeManager, fileManager, templates,
-                                   new JsonSerializer( new StoreKeySerializer() ),
-                                   Collections.<ContentProducer> emptySet() );
+            new ContentController( storeManager, contentManager, templates,
+                                   new JsonSerializer( new StoreKeySerializer() ) );
     }
 
     @Test

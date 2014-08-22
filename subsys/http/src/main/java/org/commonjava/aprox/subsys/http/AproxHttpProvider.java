@@ -22,7 +22,7 @@ import org.apache.http.HttpRequest;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.params.ConnRoutePNames;
-import org.commonjava.aprox.content.FileManager;
+import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.maven.galley.auth.AttributePasswordManager;
 import org.commonjava.maven.galley.spi.auth.PasswordManager;
@@ -111,7 +111,7 @@ public class AproxHttpProvider
         }
 
         request.getParams()
-               .setParameter( FileManager.HTTP_PARAM_REPO, repository );
+               .setParameter( DownloadManager.HTTP_PARAM_REPO, repository );
     }
 
     public void clearRepositoryCredentials()

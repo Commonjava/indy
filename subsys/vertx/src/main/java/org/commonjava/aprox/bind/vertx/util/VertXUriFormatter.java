@@ -20,7 +20,13 @@ public class VertXUriFormatter
     @Override
     public String formatAbsolutePathTo( final String base, final String... parts )
     {
-        return PathUtils.normalize( base, PathUtils.normalize( parts ) );
+        String path = PathUtils.normalize( base, PathUtils.normalize( parts ) );
+        if ( !path.startsWith( "/" ) )
+        {
+            path = "/" + path;
+        }
+
+        return path;
     }
 
 }

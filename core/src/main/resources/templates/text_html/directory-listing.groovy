@@ -23,7 +23,7 @@ def dir=new java.io.File(path).parent
     <% if( parentUrl ) { %><li><a href="${parentUrl}">..</a></li><% } %> 
     <% items.each { key, value -> 
          if ( key.endsWith("/") ) { %>
-      <li><a class="item-link" title='sources:\n${value.join("\n")}' href='${key}index.html'>${new java.io.File(key).name}/</a></li>
+      <li><a class="item-link" title='sources:\n${value.join("\n")}' href='${key}'>${new java.io.File(key).name}/</a></li>
     <%   } else { %>
       <li><a class="item-link" title='sources:\n${value.join("\n")}' href="${key}">${new java.io.File(key).name}</a></li>
     <%   }

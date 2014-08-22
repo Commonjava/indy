@@ -11,7 +11,6 @@
 package org.commonjava.aprox.core.ctl;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
-import static org.commonjava.aprox.util.ContentUtils.dedupeListing;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
 
@@ -30,14 +29,11 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import javax.activation.MimetypesFileTypeMap;
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.content.ContentProducer;
-import org.commonjava.aprox.content.FileManager;
+import org.commonjava.aprox.content.ContentManager;
 import org.commonjava.aprox.content.StoreResource;
 import org.commonjava.aprox.core.dto.DirectoryListingDTO;
 import org.commonjava.aprox.data.ProxyDataException;
@@ -72,12 +68,7 @@ public class ContentController
     private StoreDataManager storeManager;
 
     @Inject
-    private FileManager fileManager;
-
-    @Inject
-    private Instance<ContentProducer> contentProducerInstances;
-
-    private Set<ContentProducer> contentProducers;
+    private ContentManager contentManager;
 
     @Inject
     private TemplatingEngine templates;
@@ -90,28 +81,13 @@ public class ContentController
     {
     }
 
-    public ContentController( final StoreDataManager storeManager, final FileManager fileManager,
-                              final TemplatingEngine templates, final JsonSerializer serializer,
-                              final Set<ContentProducer> contentProducers )
+    public ContentController( final StoreDataManager storeManager, final ContentManager contentManager,
+                              final TemplatingEngine templates, final JsonSerializer serializer )
     {
         this.storeManager = storeManager;
-        this.fileManager = fileManager;
+        this.contentManager = contentManager;
         this.templates = templates;
         this.serializer = serializer;
-        this.contentProducers = contentProducers == null ? new HashSet<ContentProducer>() : contentProducers;
-    }
-
-    @PostConstruct
-    public void initialize()
-    {
-        contentProducers = new HashSet<ContentProducer>();
-        if ( contentProducerInstances != null )
-        {
-            for ( final ContentProducer producer : contentProducerInstances )
-            {
-                contentProducers.add( producer );
-            }
-        }
     }
 
     public ApplicationStatus delete( final StoreType type, final String name, final String path )
@@ -125,7 +101,7 @@ public class ContentController
     {
         final ArtifactStore store = getStore( key );
 
-        final boolean deleted = fileManager.delete( store, path );
+        final boolean deleted = contentManager.delete( store, path );
         return deleted ? ApplicationStatus.OK : ApplicationStatus.NOT_FOUND;
     }
 
@@ -139,19 +115,7 @@ public class ContentController
         throws AproxWorkflowException
     {
         final ArtifactStore store = getStore( key );
-        Transfer item = fileManager.retrieve( store, path );
-
-        if ( item == null )
-        {
-            for ( final ContentProducer producer : contentProducers )
-            {
-                item = producer.produceFileContent( store, path );
-                if ( item != null )
-                {
-                    break;
-                }
-            }
-        }
+        final Transfer item = contentManager.retrieve( store, path );
 
         if ( item == null )
         {
@@ -177,7 +141,7 @@ public class ContentController
         throws AproxWorkflowException
     {
         final ArtifactStore store = getStore( key );
-        final Transfer item = fileManager.store( store, path, stream, TransferOperation.UPLOAD );
+        final Transfer item = contentManager.store( store, path, stream, TransferOperation.UPLOAD );
 
         return item;
     }
@@ -186,7 +150,7 @@ public class ContentController
         throws AproxWorkflowException
     {
         final ArtifactStore artifactStore = getStore( key );
-        fileManager.rescan( artifactStore );
+        contentManager.rescan( artifactStore );
     }
 
     public void rescanAll()
@@ -195,7 +159,7 @@ public class ContentController
         try
         {
             final List<ArtifactStore> stores = storeManager.getAllConcreteArtifactStores();
-            fileManager.rescanAll( stores );
+            contentManager.rescanAll( stores );
         }
         catch ( final ProxyDataException e )
         {
@@ -211,7 +175,7 @@ public class ContentController
         try
         {
             final List<ArtifactStore> stores = storeManager.getAllConcreteArtifactStores();
-            fileManager.deleteAll( stores, path );
+            contentManager.deleteAll( stores, path );
         }
         catch ( final ProxyDataException e )
         {
@@ -252,11 +216,17 @@ public class ContentController
         return renderListing( acceptHeader, key, path, serviceUrl, uriFormatter );
     }
 
-    public String renderListing( final String acceptHeader, final StoreKey key, final String path,
+    public String renderListing( final String acceptHeader, final StoreKey key, final String requestPath,
                                  final String serviceUrl,
                                  final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
+        String path = requestPath;
+        if ( path.endsWith( LISTING_HTML_FILE ) )
+        {
+            path = normalize( parentPath( path ) );
+        }
+
         final List<StoreResource> listed = getListing( key, path );
         if ( ApplicationContent.application_json.equals( acceptHeader ) )
         {
@@ -321,16 +291,25 @@ public class ContentController
 
         Collections.sort( sources );
 
-        String parentPath = normalize( parentPath( normalize( parentPath( path ) ) ) ) + "/";
+        String parentPath = normalize( parentPath( path ) );
+        if ( !parentPath.endsWith( "/" ) )
+        {
+            parentPath += "/";
+        }
 
-        String parentUrl =
-            uriFormatter.formatAbsolutePathTo( serviceUrl, key.getType()
-                                                              .singularEndpointName(), key.getName(), parentPath );
-
-        if ( parentPath.equals( "//" ) || parentPath.equals( "/" ) )
+        final String parentUrl;
+        if ( parentPath.equals( path ) )
         {
             parentPath = null;
             parentUrl = null;
+        }
+        else
+        {
+            parentUrl =
+                uriFormatter.formatAbsolutePathTo( serviceUrl,
+                                                                                     key.getType()
+                                                                                        .singularEndpointName(),
+                                                                                     key.getName(), parentPath );
         }
 
         final Map<String, Object> params = new HashMap<String, Object>();
@@ -364,25 +343,7 @@ public class ContentController
         throws AproxWorkflowException
     {
         final ArtifactStore store = getStore( key );
-
-        List<StoreResource> listed = fileManager.list( store, path );
-        boolean added = false;
-        for ( final ContentProducer producer : contentProducers )
-        {
-            final List<StoreResource> produced = producer.produceDirectoryContent( store, path );
-            if ( produced != null )
-            {
-                listed.addAll( produced );
-                added = true;
-            }
-        }
-
-        if ( added )
-        {
-            listed = dedupeListing( listed );
-        }
-
-        return listed;
+        return contentManager.list( store, path );
     }
 
     public boolean isHtmlContent( final Transfer item )
