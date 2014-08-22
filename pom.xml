@@ -40,12 +40,12 @@
     <arquillian-version>1.0.1.Final</arquillian-version>
     <qarqas-version>0.3</qarqas-version>
     <shelflife-version>0.6.3</shelflife-version>
-    <atlasVersion>0.13.5-SNAPSHOT</atlasVersion>
-    <galleyVersion>0.6.6-SNAPSHOT</galleyVersion>
-    <cartoVersion>0.7.2-SNAPSHOT</cartoVersion>
+    <atlasVersion>0.13.5</atlasVersion>
+    <galleyVersion>0.6.6</galleyVersion>
+    <cartoVersion>0.8</cartoVersion>
     <bomVersion>12</bomVersion>
     <webdavVersion>3.1.1</webdavVersion>
-    <vabrVersion>1.9-SNAPSHOT</vabrVersion>
+    <vabrVersion>1.9</vabrVersion>
     
     <vertx.testtools.version>2.0.0-final</vertx.testtools.version>
   </properties>
