@@ -14,7 +14,7 @@
   <parent>
     <groupId>org.commonjava.aprox</groupId>
     <artifactId>aprox-file-managers</artifactId>
-    <version>0.14.8-SNAPSHOT</version>
+    <version>0.15.0</version>
   </parent>
   
   <artifactId>aprox-filer-default</artifactId>
