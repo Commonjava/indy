@@ -23,11 +23,6 @@ import org.commonjava.aprox.model.io.StoreKeySerializer;
 import org.commonjava.maven.atlas.graph.RelationshipGraphException;
 import org.commonjava.maven.atlas.graph.RelationshipGraphFactory;
 import org.commonjava.maven.atlas.graph.spi.neo4j.FileNeo4jConnectionFactory;
-import org.commonjava.maven.galley.maven.internal.defaults.StandardMaven304PluginDefaults;
-import org.commonjava.maven.galley.maven.internal.defaults.StandardMavenPluginImplications;
-import org.commonjava.maven.galley.maven.parse.XMLInfrastructure;
-import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginDefaults;
-import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginImplications;
 import org.commonjava.web.json.ser.JsonSerializer;
 
 @ApplicationScoped
@@ -36,13 +31,6 @@ public class DepgraphProvider
 
     @Inject
     private AproxDepgraphConfig config;
-
-    @Inject
-    private XMLInfrastructure xml;
-
-    private MavenPluginDefaults pluginDefaults;
-
-    private MavenPluginImplications pluginImplications;
 
     private RelationshipGraphFactory graphFactory;
 
@@ -63,8 +51,6 @@ public class DepgraphProvider
     {
         this.graphFactory =
             new RelationshipGraphFactory( new FileNeo4jConnectionFactory( config.getDataBasedir(), true ) );
-        pluginDefaults = new StandardMaven304PluginDefaults();
-        pluginImplications = new StandardMavenPluginImplications( xml );
     }
 
     @PreDestroy
@@ -72,18 +58,6 @@ public class DepgraphProvider
         throws RelationshipGraphException
     {
         this.graphFactory.close();
-    }
-
-    @Produces
-    public MavenPluginDefaults getPluginDefaults()
-    {
-        return pluginDefaults;
-    }
-
-    @Produces
-    public MavenPluginImplications getPluginImplications()
-    {
-        return pluginImplications;
     }
 
     @Produces
