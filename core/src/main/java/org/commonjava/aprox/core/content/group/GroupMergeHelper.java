@@ -40,14 +40,23 @@ public class GroupMergeHelper
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private DownloadManager fileManager;
+    private DownloadManager downloadManager;
+
+    protected GroupMergeHelper()
+    {
+    }
+
+    public GroupMergeHelper( final DownloadManager downloadManager )
+    {
+        this.downloadManager = downloadManager;
+    }
 
     public final void deleteChecksumsAndMergeInfo( final Group group, final String path )
         throws IOException
     {
-        final Transfer targetSha = fileManager.getStorageReference( group, path + SHA_SUFFIX );
-        final Transfer targetMd5 = fileManager.getStorageReference( group, path + MD5_SUFFIX );
-        final Transfer targetInfo = fileManager.getStorageReference( group, path + MERGEINFO_SUFFIX );
+        final Transfer targetSha = downloadManager.getStorageReference( group, path + SHA_SUFFIX );
+        final Transfer targetMd5 = downloadManager.getStorageReference( group, path + MD5_SUFFIX );
+        final Transfer targetInfo = downloadManager.getStorageReference( group, path + MERGEINFO_SUFFIX );
 
         if ( targetSha != null )
         {
@@ -68,7 +77,7 @@ public class GroupMergeHelper
     public final void writeMergeInfo( final byte[] data, final List<Transfer> sources, final Group group,
                                       final String path )
     {
-        final Transfer targetInfo = fileManager.getStorageReference( group, path + MERGEINFO_SUFFIX );
+        final Transfer targetInfo = downloadManager.getStorageReference( group, path + MERGEINFO_SUFFIX );
 
         Writer fw = null;
         try

@@ -16,13 +16,11 @@ import static org.junit.Assert.assertThat;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.content.AproxLocationExpander;
 import org.commonjava.aprox.content.DownloadManager;
-import org.commonjava.aprox.content.group.GroupPathHandler;
 import org.commonjava.aprox.core.content.DefaultDownloadManager;
 import org.commonjava.aprox.fixture.GalleyFixture;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
@@ -57,7 +55,7 @@ public class PathRetrieverTest
         data = new MemoryStoreDataManager();
 
         downloader =
-            new DefaultDownloadManager( data, fixture.getTransfers(), new AproxLocationExpander( data ), Collections.<GroupPathHandler> emptySet() );
+ new DefaultDownloadManager( data, fixture.getTransfers(), new AproxLocationExpander( data ) );
     }
 
     @Test

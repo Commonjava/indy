@@ -10,7 +10,6 @@ import org.apache.commons.io.FileUtils;
 import org.commonjava.aprox.content.ContentGenerator;
 import org.commonjava.aprox.content.ContentManager;
 import org.commonjava.aprox.content.DownloadManager;
-import org.commonjava.aprox.content.group.GroupPathHandler;
 import org.commonjava.aprox.core.content.DefaultContentManager;
 import org.commonjava.aprox.core.content.DefaultDownloadManager;
 import org.commonjava.aprox.data.StoreDataManager;
@@ -42,8 +41,7 @@ public class ContentControllerTest
 
         final StoreDataManager storeManager = new MemoryStoreDataManager();
         final DownloadManager fileManager =
-            new DefaultDownloadManager( storeManager, fixture.getTransfers(), fixture.getLocations(),
-                                    Collections.<GroupPathHandler> emptySet() );
+            new DefaultDownloadManager( storeManager, fixture.getTransfers(), fixture.getLocations() );
 
         final ContentManager contentManager =
             new DefaultContentManager( storeManager, fileManager, Collections.<ContentGenerator> emptySet() );

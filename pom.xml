@@ -40,8 +40,8 @@
     <arquillian-version>1.0.1.Final</arquillian-version>
     <qarqas-version>0.3</qarqas-version>
     <shelflife-version>0.6.3</shelflife-version>
-    <atlasVersion>0.13.5</atlasVersion>
-    <galleyVersion>0.6.7</galleyVersion>
+    <atlasVersion>0.13.6-SNAPSHOT</atlasVersion>
+    <galleyVersion>0.6.8-SNAPSHOT</galleyVersion>
     <cartoVersion>0.8</cartoVersion>
     <bomVersion>12</bomVersion>
     <webdavVersion>3.1.1</webdavVersion>
@@ -433,6 +433,12 @@
       	<artifactId>galley-test-harness-core</artifactId>
       	<version>${galleyVersion}</version>
       	<scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.maven.galley</groupId>
+        <artifactId>galley-test-harness-maven</artifactId>
+        <version>${galleyVersion}</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.maven.atlas</groupId>

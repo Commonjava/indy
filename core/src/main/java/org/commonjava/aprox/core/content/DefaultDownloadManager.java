@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,7 +32,6 @@ import org.commonjava.aprox.change.event.AproxFileEventManager;
 import org.commonjava.aprox.change.event.ArtifactStoreRescanEvent;
 import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.content.StoreResource;
-import org.commonjava.aprox.content.group.GroupPathHandler;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
@@ -93,7 +91,7 @@ public class DefaultDownloadManager
     }
 
     public DefaultDownloadManager( final StoreDataManager storeManager, final TransferManager transfers,
-                               final LocationExpander locationExpander, final Collection<GroupPathHandler> groupHandlers )
+                                   final LocationExpander locationExpander )
     {
         this.storeManager = storeManager;
         this.transfers = transfers;

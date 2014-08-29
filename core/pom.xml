@@ -124,6 +124,11 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.maven.galley</groupId>
+      <artifactId>galley-test-harness-maven</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.maven.galley</groupId>
       <artifactId>galley-maven</artifactId>
     </dependency>
   </dependencies>

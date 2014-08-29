@@ -8,10 +8,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -51,8 +49,6 @@ public class MavenMetadataGenerator
     extends AbstractContentGenerator
 {
 
-    private static final String LAST_UPDATED_FORMAT = "yyyymmddhhMMss";
-
     private static final String ARTIFACT_ID = "artifactId";
 
     private static final String GROUP_ID = "groupId";
@@ -62,8 +58,6 @@ public class MavenMetadataGenerator
     private static final String LAST_UPDATED = "lastUpdated";
 
     private static final String TIMESTAMP = "timestamp";
-
-    private static final String TIMESTAMP_FORMAT = "yyyymmdd.hhMMss";
 
     private static final String BUILD_NUMBER = "buildNumber";
 
@@ -147,9 +141,11 @@ public class MavenMetadataGenerator
         
         
         // regardless, we will need this first level of listings. What we do with it will depend on the logic below...
-        final List<StoreResource> firstLevel = fileManager.list( store, Paths.get( path )
-                                                                             .getParent()
-                                                                             .toString() );
+        final String parentPath = Paths.get( path )
+                                       .getParent()
+                                       .toString();
+
+        final List<StoreResource> firstLevel = fileManager.list( store, parentPath );
 
         String toGenPath = path;
         if ( !path.endsWith( MavenMetadataMerger.METADATA_NAME ) )
@@ -159,7 +155,7 @@ public class MavenMetadataGenerator
 
         ArtifactPathInfo snapshotPomInfo = null;
         
-        if ( path.endsWith( SnapshotUtils.LOCAL_SNAPSHOT_VERSION_PART ) )
+        if ( parentPath.endsWith( SnapshotUtils.LOCAL_SNAPSHOT_VERSION_PART ) )
         {
             // If we're in a version directory, first-level listing should include a .pom file
             for ( final StoreResource resource : firstLevel )
@@ -428,7 +424,7 @@ public class MavenMetadataGenerator
             coordMap.put( ARTIFACT_ID, samplePomInfo.getArtifactId() );
             coordMap.put( GROUP_ID, samplePomInfo.getGroupId() );
 
-            final String lastUpdated = new SimpleDateFormat( LAST_UPDATED_FORMAT ).format( new Date() );
+            final String lastUpdated = SnapshotUtils.generateUpdateTimestamp( SnapshotUtils.getCurrentTimestamp() );
 
             doc.appendChild( doc.createElementNS( doc.getNamespaceURI(), "metadata" ) );
             xml.createElement( doc.getDocumentElement(), null, coordMap );
@@ -532,9 +528,11 @@ public class MavenMetadataGenerator
             coordMap.put( GROUP_ID, info.getGroupId() );
             coordMap.put( VERSION, info.getVersion() );
 
-            final String lastUpdated = new SimpleDateFormat( LAST_UPDATED_FORMAT ).format( new Date() );
+            final String lastUpdated = SnapshotUtils.generateUpdateTimestamp( SnapshotUtils.getCurrentTimestamp() );
 
-            xml.createElement( doc, "metadata", coordMap );
+            doc.appendChild( doc.createElementNS( doc.getNamespaceURI(), "metadata" ) );
+            xml.createElement( doc.getDocumentElement(), null, coordMap );
+
             xml.createElement( doc, "versioning", Collections.<String, String> singletonMap( LAST_UPDATED, lastUpdated ) );
 
             SnapshotPart snap = snaps.get( snaps.size() - 1 );
@@ -545,7 +543,7 @@ public class MavenMetadataGenerator
             }
             else
             {
-                snapMap.put( TIMESTAMP, new SimpleDateFormat( TIMESTAMP_FORMAT ).format( snap.getTimestamp() ) );
+                snapMap.put( TIMESTAMP, SnapshotUtils.generateSnapshotTimestamp( snap.getTimestamp() ) );
 
                 snapMap.put( BUILD_NUMBER, Integer.toString( snap.getBuildNumber() ) );
             }
