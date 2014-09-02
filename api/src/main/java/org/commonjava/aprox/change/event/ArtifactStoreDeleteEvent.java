@@ -22,7 +22,7 @@ import org.commonjava.aprox.model.StoreType;
  * Event signaling the deletion of one or more {@link ArtifactStore} instances. This event will always contain the same type of store, when there is
  * more than one. Instance names are collected and available via getNames(), while the store type is available separately via the getType() method.
  */
-public class ProxyManagerDeleteEvent
+public class ArtifactStoreDeleteEvent
     implements Iterable<String>, AproxEvent
 {
 
@@ -30,13 +30,13 @@ public class ProxyManagerDeleteEvent
 
     private final Collection<String> names;
 
-    public ProxyManagerDeleteEvent( final StoreType type, final Collection<String> names )
+    public ArtifactStoreDeleteEvent( final StoreType type, final Collection<String> names )
     {
         this.type = type;
         this.names = Collections.unmodifiableCollection( names );
     }
 
-    public ProxyManagerDeleteEvent( final StoreType type, final String... names )
+    public ArtifactStoreDeleteEvent( final StoreType type, final String... names )
     {
         this.names = Collections.unmodifiableCollection( Arrays.asList( names ) );
         this.type = type;

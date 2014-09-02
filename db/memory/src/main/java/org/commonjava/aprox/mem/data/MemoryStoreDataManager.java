@@ -26,8 +26,8 @@ import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
-import org.commonjava.aprox.change.event.ProxyManagerDeleteEvent;
-import org.commonjava.aprox.change.event.ProxyManagerUpdateType;
+import org.commonjava.aprox.change.event.ArtifactStoreDeleteEvent;
+import org.commonjava.aprox.change.event.ArtifactStoreUpdateType;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
@@ -51,7 +51,7 @@ public class MemoryStoreDataManager
     private Event<ArtifactStoreUpdateEvent> storeEvent;
 
     @Inject
-    private Event<ProxyManagerDeleteEvent> delEvent;
+    private Event<ArtifactStoreDeleteEvent> delEvent;
 
     public MemoryStoreDataManager()
     {
@@ -220,7 +220,7 @@ public class MemoryStoreDataManager
         throws ProxyDataException
     {
         final boolean result = store( repo, skipIfExists );
-        fireStoreEvent( ProxyManagerUpdateType.ADD_OR_UPDATE, repo );
+        fireStoreEvent( ArtifactStoreUpdateType.ADD_OR_UPDATE, repo );
 
         return result;
     }
@@ -237,7 +237,7 @@ public class MemoryStoreDataManager
         throws ProxyDataException
     {
         final boolean result = store( repository, skipIfExists );
-        fireStoreEvent( skipIfExists ? ProxyManagerUpdateType.ADD : ProxyManagerUpdateType.ADD_OR_UPDATE, repository );
+        fireStoreEvent( skipIfExists ? ArtifactStoreUpdateType.ADD : ArtifactStoreUpdateType.ADD_OR_UPDATE, repository );
         return result;
     }
 
@@ -253,7 +253,7 @@ public class MemoryStoreDataManager
         throws ProxyDataException
     {
         final boolean result = store( group, skipIfExists );
-        fireStoreEvent( ProxyManagerUpdateType.ADD_OR_UPDATE, group );
+        fireStoreEvent( ArtifactStoreUpdateType.ADD_OR_UPDATE, group );
 
         return result;
     }
@@ -270,7 +270,7 @@ public class MemoryStoreDataManager
         throws ProxyDataException
     {
         final boolean result = store( store, skipIfExists );
-        fireStoreEvent( ProxyManagerUpdateType.ADD_OR_UPDATE, store );
+        fireStoreEvent( ArtifactStoreUpdateType.ADD_OR_UPDATE, store );
 
         return result;
     }
@@ -390,7 +390,7 @@ public class MemoryStoreDataManager
 
     private void fireDeleteEvent( final StoreType type, final String... names )
     {
-        final ProxyManagerDeleteEvent event = new ProxyManagerDeleteEvent( type, names );
+        final ArtifactStoreDeleteEvent event = new ArtifactStoreDeleteEvent( type, names );
 
         if ( delEvent != null )
         {
@@ -398,7 +398,7 @@ public class MemoryStoreDataManager
         }
     }
 
-    private void fireStoreEvent( final ProxyManagerUpdateType type, final RemoteRepository... repos )
+    private void fireStoreEvent( final ArtifactStoreUpdateType type, final RemoteRepository... repos )
     {
         if ( storeEvent != null )
         {
@@ -406,7 +406,7 @@ public class MemoryStoreDataManager
         }
     }
 
-    private void fireStoreEvent( final ProxyManagerUpdateType type, final ArtifactStore... stores )
+    private void fireStoreEvent( final ArtifactStoreUpdateType type, final ArtifactStore... stores )
     {
         if ( storeEvent != null )
         {

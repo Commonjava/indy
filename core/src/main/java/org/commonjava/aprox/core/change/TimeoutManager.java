@@ -39,8 +39,8 @@ import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
-import org.commonjava.aprox.change.event.ProxyManagerDeleteEvent;
-import org.commonjava.aprox.change.event.ProxyManagerUpdateType;
+import org.commonjava.aprox.change.event.ArtifactStoreDeleteEvent;
+import org.commonjava.aprox.change.event.ArtifactStoreUpdateType;
 import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.core.change.sl.LoggingMatcher;
@@ -243,8 +243,8 @@ public class TimeoutManager
             @Override
             public void run()
             {
-                final ProxyManagerUpdateType eventType = event.getType();
-                if ( eventType == ProxyManagerUpdateType.ADD_OR_UPDATE )
+                final ArtifactStoreUpdateType eventType = event.getType();
+                if ( eventType == ArtifactStoreUpdateType.ADD_OR_UPDATE )
                 {
                     for ( final ArtifactStore store : event )
                     {
@@ -412,7 +412,7 @@ public class TimeoutManager
         return null;
     }
 
-    public void onStoreDeletion( @Observes final ProxyManagerDeleteEvent event )
+    public void onStoreDeletion( @Observes final ArtifactStoreDeleteEvent event )
     {
         executor.execute( new Runnable()
         {

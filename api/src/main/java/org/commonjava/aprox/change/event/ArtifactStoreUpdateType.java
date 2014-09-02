@@ -15,7 +15,7 @@ import org.commonjava.aprox.model.ArtifactStore;
 /** 
  * Enumeration of the types of configuration updates that can happen for {@link ArtifactStore}'s.
  */
-public enum ProxyManagerUpdateType
+public enum ArtifactStoreUpdateType
 {
 
     /** Definite creation of new store. */

@@ -15,7 +15,7 @@ import java.util.Set;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.change.event.ProxyManagerDeleteEvent;
+import org.commonjava.aprox.change.event.ArtifactStoreDeleteEvent;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.Group;
@@ -72,7 +72,7 @@ public class GroupConsistencyListener
     // }
     // }
 
-    public void storeDeleted( @Observes final ProxyManagerDeleteEvent event )
+    public void storeDeleted( @Observes final ArtifactStoreDeleteEvent event )
     {
         //        logger.info( "Processing proxy-manager store deletion: {}", event );
         final StoreType type = event.getType();

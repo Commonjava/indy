@@ -40,7 +40,7 @@ import org.apache.maven.index.updater.IndexUpdateResult;
 import org.apache.maven.index.updater.IndexUpdater;
 import org.apache.maven.index.updater.ResourceFetcher;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
-import org.commonjava.aprox.change.event.ProxyManagerDeleteEvent;
+import org.commonjava.aprox.change.event.ArtifactStoreDeleteEvent;
 import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
@@ -121,7 +121,7 @@ public class IndexHandler
         this.fileManager = fileManager;
     }
 
-    public void onDelete( @Observes final ProxyManagerDeleteEvent event )
+    public void onDelete( @Observes final ArtifactStoreDeleteEvent event )
     {
         logger.info( "Updating indexes as a result of ProxyManagerDeleteEvent." );
         executor.execute( new DeletionRunnable( event ) );
@@ -642,9 +642,9 @@ public class IndexHandler
     public class DeletionRunnable
         implements Runnable
     {
-        private final ProxyManagerDeleteEvent event;
+        private final ArtifactStoreDeleteEvent event;
 
-        public DeletionRunnable( final ProxyManagerDeleteEvent event )
+        public DeletionRunnable( final ArtifactStoreDeleteEvent event )
         {
             this.event = event;
         }
