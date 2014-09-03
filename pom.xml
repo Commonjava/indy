@@ -197,6 +197,24 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-revisions-vertx</artifactId>
+        <version>0.15.4-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-revisions-common</artifactId>
+        <version>0.15.4-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-revisions-common</artifactId>
+        <version>0.15.4-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>confset</classifier>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-dot-maven-common</artifactId>
         <version>0.15.4-SNAPSHOT</version>
       </dependency>

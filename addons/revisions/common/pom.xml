@@ -13,11 +13,11 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-setback</artifactId>
+    <artifactId>aprox-revisions</artifactId>
     <version>0.15.4-SNAPSHOT</version>
   </parent>
-  <artifactId>aprox-setback-common</artifactId>
-  <name>AProx :: Add-Ons :: Set-Back :: Common</name>
+  <artifactId>aprox-revisions-common</artifactId>
+  <name>AProx :: Add-Ons :: Revisions :: Common</name>
 
   <dependencies>
     <dependency>
