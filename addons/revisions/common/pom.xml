@@ -38,22 +38,13 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-subsys-http</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-subsys-groovy</artifactId>
-    </dependency>
-    <dependency>
-    	<groupId>io.vertx</groupId>
-    	<artifactId>vertx-core</artifactId>
-    	<scope>test</scope>
-    </dependency>
-    <dependency>
     	<groupId>junit</groupId>
     	<artifactId>junit</artifactId>
     	<scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jgit</groupId>
+      <artifactId>org.eclipse.jgit</artifactId>
     </dependency>
   </dependencies>
   
@@ -70,7 +61,7 @@
             <phase>package</phase>
             <configuration>
               <descriptorRefs>
-                <descriptorRef>dataset</descriptorRef>
+                <descriptorRef>confset</descriptorRef>
               </descriptorRefs>
             </configuration>
           </execution>
