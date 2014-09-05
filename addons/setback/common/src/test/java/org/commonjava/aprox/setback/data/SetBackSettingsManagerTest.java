@@ -1,6 +1,5 @@
 package org.commonjava.aprox.setback.data;
 
-import static org.apache.commons.io.FileUtils.readLines;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -19,7 +18,10 @@ import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.subsys.flatfile.conf.FlatFile;
 import org.commonjava.aprox.subsys.flatfile.conf.FlatFileConfiguration;
+import org.commonjava.aprox.subsys.flatfile.conf.FlatFileEventManager;
+import org.commonjava.aprox.subsys.flatfile.conf.FlatFileManager;
 import org.commonjava.aprox.subsys.template.TemplatingEngine;
 import org.junit.Before;
 import org.junit.Rule;
@@ -49,9 +51,10 @@ public class SetBackSettingsManagerTest
         FileUtils.copyDirectory( dataSrc, data );
 
         final FlatFileConfiguration config = new FlatFileConfiguration( data, temp.newFolder( "work" ) );
+        final FlatFileManager fileManager = new FlatFileManager( config, new FlatFileEventManager() );
 
-        final TemplatingEngine templates = new TemplatingEngine( new GStringTemplateEngine(), config );
-        manager = new SetBackSettingsManager( storeManager, templates, config );
+        final TemplatingEngine templates = new TemplatingEngine( new GStringTemplateEngine(), fileManager );
+        manager = new SetBackSettingsManager( storeManager, templates, fileManager );
     }
 
     @Test
@@ -181,12 +184,12 @@ public class SetBackSettingsManagerTest
     private List<String> readSettings( final StoreKey key, final boolean expectExistence )
         throws Exception
     {
-        final File settings = manager.getSetBackSettings( key );
+        final FlatFile settings = manager.getSetBackSettings( key );
         if ( expectExistence )
         {
             assertThat( "Retrieved settings.xml for: " + key + " does not exist!", settings.exists(), equalTo( true ) );
 
-            final List<String> rawLines = readLines( settings );
+            final List<String> rawLines = settings.readLines();
 
             System.out.println( join( rawLines, "\n" ) );
 
@@ -210,7 +213,7 @@ public class SetBackSettingsManagerTest
     private List<String> generateSettings( final StoreKey key )
         throws Exception
     {
-        final File settings = manager.generateStoreSettings( key );
+        final FlatFile settings = manager.generateStoreSettings( key );
 
         assertThat( "settings.xml returned from generateStoreSettings(..) for: " + key + " does not exist!",
                     settings.exists(), equalTo( true ) );

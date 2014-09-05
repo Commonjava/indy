@@ -1,6 +1,5 @@
 package org.commonjava.aprox.setback.data;
 
-import java.io.File;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -11,6 +10,7 @@ import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreType;
+import org.commonjava.aprox.subsys.flatfile.conf.FlatFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +59,7 @@ public class SetBackSettingsInitializer
                     continue;
                 }
 
-                final File settingsXml = settingsManager.getSetBackSettings( store.getKey() );
+                final FlatFile settingsXml = settingsManager.getSetBackSettings( store.getKey() );
                 if ( settingsXml == null || !settingsXml.exists() )
                 {
                     try

@@ -102,7 +102,7 @@ public class FlatFileConfiguration
         this.workBasedir = workDir;
     }
 
-    public File getDataBasedir()
+    File getDataBasedir()
     {
         return dataBasedir == null ? DEFAULT_DATA_BASEDIR : dataBasedir;
     }
@@ -119,7 +119,7 @@ public class FlatFileConfiguration
         return this;
     }
 
-    public File getDataDir( final String name )
+    File getDataDir( final String name )
     {
         final File d = new File( getDataBasedir(), name );
         d.mkdirs();
@@ -127,7 +127,7 @@ public class FlatFileConfiguration
         return d;
     }
 
-    public File getWorkBasedir()
+    File getWorkBasedir()
     {
         return workBasedir == null ? DEFAULT_WORK_BASEDIR : workBasedir;
     }

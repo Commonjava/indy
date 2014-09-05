@@ -19,7 +19,7 @@ import org.commonjava.aprox.conf.AbstractAproxConfigInfo;
 import org.commonjava.aprox.conf.AbstractAproxFeatureConfig;
 import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.aprox.inject.Production;
-import org.commonjava.aprox.subsys.flatfile.conf.FlatFileConfiguration;
+import org.commonjava.aprox.subsys.flatfile.conf.FlatFileManager;
 import org.commonjava.web.config.ConfigurationException;
 
 @ApplicationScoped
@@ -27,20 +27,20 @@ public class AproxDepgraphConfigProvider
     extends AbstractAproxFeatureConfig<AproxDepgraphConfig, AproxDepgraphConfig>
 {
     @ApplicationScoped
-    public static class AproxTensorConfigInfo
+    public static class AproxDepgraphConfigInfo
         extends AbstractAproxConfigInfo
     {
-        public AproxTensorConfigInfo()
+        public AproxDepgraphConfigInfo()
         {
             super( AproxDepgraphConfig.class );
         }
     }
 
     @Inject
-    private AproxTensorConfigInfo info;
+    private AproxDepgraphConfigInfo info;
 
     @Inject
-    private FlatFileConfiguration ffConfig;
+    private FlatFileManager ffManager;
 
     public AproxDepgraphConfigProvider()
     {
@@ -53,7 +53,7 @@ public class AproxDepgraphConfigProvider
     public AproxDepgraphConfig getDepgraphConfig()
         throws ConfigurationException
     {
-        return getConfig().setDirectories( ffConfig.getDataBasedir(), ffConfig.getWorkBasedir() );
+        return getConfig().setDirectories( ffManager.getDetachedDataBasedir(), ffManager.getDetachedWorkBasedir() );
     }
 
     @Override

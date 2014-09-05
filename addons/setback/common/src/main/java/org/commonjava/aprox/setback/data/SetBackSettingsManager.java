@@ -1,8 +1,6 @@
 package org.commonjava.aprox.setback.data;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -16,7 +14,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
-import org.apache.commons.io.FileUtils;
 import org.commonjava.aprox.change.event.ArtifactStoreDeleteEvent;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
 import org.commonjava.aprox.data.ProxyDataException;
@@ -26,7 +23,8 @@ import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.aprox.subsys.flatfile.conf.FlatFileConfiguration;
+import org.commonjava.aprox.subsys.flatfile.conf.FlatFile;
+import org.commonjava.aprox.subsys.flatfile.conf.FlatFileManager;
 import org.commonjava.aprox.subsys.template.AproxGroovyException;
 import org.commonjava.aprox.subsys.template.TemplatingEngine;
 import org.commonjava.aprox.util.ApplicationContent;
@@ -52,18 +50,18 @@ public class SetBackSettingsManager
     private TemplatingEngine templates;
 
     @Inject
-    private FlatFileConfiguration config;
+    private FlatFileManager manager;
 
     protected SetBackSettingsManager()
     {
     }
 
     public SetBackSettingsManager( final StoreDataManager storeManager, final TemplatingEngine templates,
-                                   final FlatFileConfiguration config )
+                                   final FlatFileManager manager )
     {
         this.storeManager = storeManager;
         this.templates = templates;
-        this.config = config;
+        this.manager = manager;
     }
 
     public void deleteSettingsOnEvent( @Observes final ArtifactStoreDeleteEvent event )
@@ -92,15 +90,13 @@ public class SetBackSettingsManager
             return false;
         }
 
-        final File dataDir = config.getDataDir( DATA_DIR );
-        final File settingsXml = Paths.get( dataDir.getPath(), key.getType()
-                                                                  .singularEndpointName(), key.getName() )
-                                      .toFile();
+        final FlatFile settingsXml = manager.getDataFile( DATA_DIR, key.getType()
+                                                                       .singularEndpointName(), key.getName() );
         if ( settingsXml.exists() )
         {
             try
             {
-                FileUtils.forceDelete( settingsXml );
+                settingsXml.delete();
             }
             catch ( final IOException e )
             {
@@ -131,7 +127,7 @@ public class SetBackSettingsManager
         }
     }
 
-    public File generateStoreSettings( final StoreKey key )
+    public FlatFile generateStoreSettings( final StoreKey key )
         throws SetBackDataException
     {
         if ( StoreType.group == key.getType() )
@@ -146,7 +142,7 @@ public class SetBackSettingsManager
         return null;
     }
 
-    private File updateSettingsRelatedToRemote( final StoreKey key )
+    private FlatFile updateSettingsRelatedToRemote( final StoreKey key )
         throws SetBackDataException
     {
         Set<Group> groups;
@@ -169,7 +165,7 @@ public class SetBackSettingsManager
         return updateSettingsForRemote( key );
     }
 
-    private File updateSettingsForRemote( final StoreKey key )
+    private FlatFile updateSettingsForRemote( final StoreKey key )
         throws SetBackDataException
     {
         RemoteRepository store;
@@ -187,7 +183,7 @@ public class SetBackSettingsManager
                                Collections.<RemoteRepository> singletonList( store ) );
     }
 
-    private File updateSettingsForGroup( final StoreKey key )
+    private FlatFile updateSettingsForGroup( final StoreKey key )
         throws SetBackDataException
     {
         logger.info( "Updating set-back settings.xml for group: {}", key.getName() );
@@ -216,11 +212,11 @@ public class SetBackSettingsManager
         return updateSettings( key, concreteStores, remotes );
     }
 
-    private File updateSettings( final StoreKey key, final List<ArtifactStore> allStores,
+    private FlatFile updateSettings( final StoreKey key, final List<ArtifactStore> allStores,
                                  final List<RemoteRepository> remotes )
         throws SetBackDataException
     {
-        final File settingsXml = getSettingsXml( key );
+        final FlatFile settingsXml = getSettingsXml( key );
 
         final Map<String, Object> params = new HashMap<String, Object>();
         params.put( "key", key );
@@ -240,10 +236,10 @@ public class SetBackSettingsManager
 
         try
         {
-            settingsXml.getParentFile()
+            settingsXml.getParent()
                        .mkdirs();
 
-            FileUtils.write( settingsXml, rendered );
+            settingsXml.writeString( rendered, "UTF-8" );
         }
         catch ( final IOException e )
         {
@@ -254,17 +250,15 @@ public class SetBackSettingsManager
         return settingsXml;
     }
 
-    private File getSettingsXml( final StoreKey key )
+    private FlatFile getSettingsXml( final StoreKey key )
     {
-        final File dataDir = config.getDataDir( DATA_DIR );
-        return Paths.get( dataDir.getPath(), key.getType()
-                                                .singularEndpointName(), key.getName(), SETTINGS_XML_FILENAME )
-                    .toFile();
+        return manager.getDataFile( DATA_DIR, key.getType()
+                                                 .singularEndpointName(), key.getName() );
     }
 
-    public File getSetBackSettings( final StoreKey key )
+    public FlatFile getSetBackSettings( final StoreKey key )
     {
-        final File settingsXml = getSettingsXml( key );
+        final FlatFile settingsXml = getSettingsXml( key );
         return settingsXml == null || !settingsXml.exists() ? null : settingsXml;
     }
 

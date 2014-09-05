@@ -14,7 +14,6 @@ import groovy.lang.Writable;
 import groovy.text.GStringTemplateEngine;
 import groovy.text.Template;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URL;
@@ -24,7 +23,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.codehaus.groovy.control.CompilationFailedException;
-import org.commonjava.aprox.subsys.flatfile.conf.FlatFileConfiguration;
+import org.commonjava.aprox.subsys.flatfile.conf.FlatFile;
+import org.commonjava.aprox.subsys.flatfile.conf.FlatFileManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +36,7 @@ public class TemplatingEngine
     public static final String TEMPLATES = "templates";
 
     @Inject
-    private FlatFileConfiguration config;
+    private FlatFileManager manager;
 
     private final GStringTemplateEngine engine;
 
@@ -45,10 +45,10 @@ public class TemplatingEngine
         engine = new GStringTemplateEngine();
     }
 
-    public TemplatingEngine( final GStringTemplateEngine engine, final FlatFileConfiguration config )
+    public TemplatingEngine( final GStringTemplateEngine engine, final FlatFileManager manager )
     {
         this.engine = engine;
-        this.config = config;
+        this.manager = manager;
     }
 
     public String render( final String templateKey, final Map<String, Object> params )
@@ -86,16 +86,14 @@ public class TemplatingEngine
         try
         {
             final String filename = accept + templateKey + ".groovy";
-            final File templateDir = config.getDataDir( TEMPLATES );
-
-            final File templateFile = new File( templateDir, filename );
+            final FlatFile templateFile = manager.getDataFile( TEMPLATES, filename );
             logger.info( "Looking for template: {} for ACCEPT header: {} in: {}", templateKey, acceptHeader,
                          templateFile );
 
             Template template;
             if ( templateFile.exists() && !templateFile.isDirectory() )
             {
-                template = engine.createTemplate( templateFile );
+                template = engine.createTemplate( templateFile.readString() );
             }
             else
             {

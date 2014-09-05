@@ -16,7 +16,8 @@ import org.commonjava.aprox.autoprox.data.AutoProxCatalog;
 import org.commonjava.aprox.autoprox.data.RuleMapping;
 import org.commonjava.aprox.autoprox.util.ScriptRuleParser;
 import org.commonjava.aprox.inject.Production;
-import org.commonjava.aprox.subsys.flatfile.conf.FlatFileConfiguration;
+import org.commonjava.aprox.subsys.flatfile.conf.FlatFile;
+import org.commonjava.aprox.subsys.flatfile.conf.FlatFileManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +28,7 @@ public class AutoProxProvider
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private FlatFileConfiguration ffConfig;
+    private FlatFileManager ffManager;
 
     @Inject
     private AutoProxConfig apConfig;
@@ -41,10 +42,10 @@ public class AutoProxProvider
     {
     }
 
-    public AutoProxProvider( final FlatFileConfiguration ffConfig, final AutoProxConfig apConfig,
+    public AutoProxProvider( final FlatFileManager ffManager, final AutoProxConfig apConfig,
                              final ScriptRuleParser ruleParser )
     {
-        this.ffConfig = ffConfig;
+        this.ffManager = ffManager;
         this.apConfig = apConfig;
         this.ruleParser = ruleParser;
         init();
@@ -58,8 +59,6 @@ public class AutoProxProvider
             catalog = new AutoProxCatalog( false );
         }
 
-        final File dataBasedir = ffConfig.getDataBasedir();
-        final File dataDir = new File( dataBasedir, apConfig.getDataDir() );
 
         final List<RuleMapping> ruleMappings = new ArrayList<RuleMapping>();
 
@@ -70,9 +69,10 @@ public class AutoProxProvider
             ruleMappings.addAll( deprecatedMappings );
         }
 
+        final FlatFile dataDir = ffManager.getDataFile( apConfig.getDataDir() );
         if ( dataDir.exists() )
         {
-            final File[] scripts = dataDir.listFiles( new FileFilter()
+            final FlatFile[] scripts = dataDir.listFiles( new FileFilter()
             {
                 @Override
                 public boolean accept( final File pathname )
@@ -82,7 +82,7 @@ public class AutoProxProvider
                 }
             } );
 
-            for ( final File script : scripts )
+            for ( final FlatFile script : scripts )
             {
                 logger.info( "Reading autoprox rule from: {}", script );
                 final RuleMapping rule = ruleParser.parseRule( script );

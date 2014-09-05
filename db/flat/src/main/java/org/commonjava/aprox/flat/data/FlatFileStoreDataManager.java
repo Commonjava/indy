@@ -10,7 +10,6 @@
  ******************************************************************************/
 package org.commonjava.aprox.flat.data;
 
-import java.io.File;
 import java.io.IOException;
 
 import javax.annotation.PostConstruct;
@@ -18,7 +17,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 
-import org.apache.commons.io.FileUtils;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
@@ -28,7 +26,8 @@ import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.aprox.subsys.flatfile.conf.FlatFileConfiguration;
+import org.commonjava.aprox.subsys.flatfile.conf.FlatFile;
+import org.commonjava.aprox.subsys.flatfile.conf.FlatFileManager;
 import org.commonjava.web.json.ser.JsonSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +44,7 @@ public class FlatFileStoreDataManager
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private FlatFileConfiguration config;
+    private FlatFileManager manager;
 
     @Inject
     @AproxData
@@ -55,9 +54,9 @@ public class FlatFileStoreDataManager
     {
     }
 
-    protected FlatFileStoreDataManager( final FlatFileConfiguration config, final JsonSerializer serializer )
+    protected FlatFileStoreDataManager( final FlatFileManager manager, final JsonSerializer serializer )
     {
-        this.config = config;
+        this.manager = manager;
         this.serializer = serializer;
     }
 
@@ -65,18 +64,17 @@ public class FlatFileStoreDataManager
     public void readDefinitions()
         throws ProxyDataException
     {
-        final File basedir = config.getDataDir( APROX_STORE );
-        final File ddir = new File( basedir, StoreType.hosted.name() );
+        FlatFile dir = manager.getDataFile( APROX_STORE, StoreType.hosted.singularEndpointName() );
 
-        final String[] dFiles = ddir.list();
-        if ( dFiles != null )
+        String[] files = dir.list();
+        if ( files != null )
         {
-            for ( final String file : dFiles )
+            for ( final String file : files )
             {
-                final File f = new File( ddir, file );
+                final FlatFile f = dir.getChild( file );
                 try
                 {
-                    final String json = FileUtils.readFileToString( f );
+                    final String json = f.readString();
                     final HostedRepository dp = serializer.fromString( json, HostedRepository.class );
                     if ( dp == null )
                     {
@@ -94,16 +92,16 @@ public class FlatFileStoreDataManager
             }
         }
 
-        final File rdir = new File( basedir, StoreType.remote.name() );
-        final String[] rFiles = rdir.list();
-        if ( rFiles != null )
+        dir = manager.getDataFile( APROX_STORE, StoreType.remote.singularEndpointName() );
+        files = dir.list();
+        if ( files != null )
         {
-            for ( final String file : rFiles )
+            for ( final String file : files )
             {
-                final File f = new File( rdir, file );
+                final FlatFile f = dir.getChild( file );
                 try
                 {
-                    final String json = FileUtils.readFileToString( f );
+                    final String json = f.readString();
                     final RemoteRepository r = serializer.fromString( json, RemoteRepository.class );
                     if ( r == null )
                     {
@@ -125,16 +123,16 @@ public class FlatFileStoreDataManager
             }
         }
 
-        final File gdir = new File( basedir, StoreType.group.name() );
-        final String[] gFiles = gdir.list();
-        if ( gFiles != null )
+        dir = manager.getDataFile( APROX_STORE, StoreType.group.singularEndpointName() );
+        files = dir.list();
+        if ( files != null )
         {
-            for ( final String file : gFiles )
+            for ( final String file : files )
             {
-                final File f = new File( gdir, file );
+                final FlatFile f = dir.getChild( file );
                 try
                 {
-                    final String json = FileUtils.readFileToString( f );
+                    final String json = f.readString();
                     final Group g = serializer.fromString( json, Group.class );
                     if ( g == null )
                     {
@@ -282,25 +280,26 @@ public class FlatFileStoreDataManager
     private void store( final boolean skipIfExists, final ArtifactStore... stores )
         throws ProxyDataException
     {
-        final File basedir = config.getDataDir( APROX_STORE );
         for ( final ArtifactStore store : stores )
         {
-            final File dir = new File( basedir, store.getDoctype()
-                                                     .name() );
-            if ( !dir.isDirectory() && !dir.mkdirs() )
-            {
-                throw new ProxyDataException( "Cannot create storage directory: {} for definition: {}", dir, store );
-            }
-
-            final File f = new File( dir, store.getName() + ".json" );
+            final FlatFile f =
+                manager.getDataFile( APROX_STORE, store.getKey()
+                                                       .getType()
+                                                       .singularEndpointName(), store.getName() + ".json" );
             if ( skipIfExists && f.exists() )
             {
                 continue;
             }
 
+            final FlatFile d = f.getParent();
+            if ( !d.mkdirs() )
+            {
+                throw new ProxyDataException( "Cannot create storage directory: {} for definition: {}", d, store );
+            }
+
             try
             {
-                FileUtils.write( f, serializer.toString( store ), "UTF-8" );
+                f.writeString( serializer.toString( store ), "UTF-8" );
             }
             catch ( final IOException e )
             {
@@ -311,31 +310,38 @@ public class FlatFileStoreDataManager
     }
 
     private void delete( final ArtifactStore... stores )
+        throws ProxyDataException
     {
-        final File basedir = config.getDataDir( APROX_STORE );
         for ( final ArtifactStore store : stores )
         {
-            final File dir = new File( basedir, store.getDoctype()
-                                                     .name() );
-
-            final File f = new File( dir, store.getName() + ".json" );
-            if ( f.exists() )
+            final FlatFile f =
+                manager.getDataFile( APROX_STORE, store.getKey()
+                                                       .getType()
+                                                       .singularEndpointName(), store.getName() + ".json" );
+            try
             {
                 f.delete();
             }
-
+            catch ( final IOException e )
+            {
+                throw new ProxyDataException( "Cannot delete store definition: {} in file: {}. Reason: {}", e, store,
+                                              f, e.getMessage() );
+            }
         }
     }
 
     private void delete( final StoreType type, final String name )
+        throws ProxyDataException
     {
-        final File basedir = config.getDataDir( APROX_STORE );
-        final File dir = new File( basedir, type.name() );
-
-        final File f = new File( dir, name + ".json" );
-        if ( f.exists() )
+        final FlatFile f = manager.getDataFile( APROX_STORE, type.singularEndpointName(), name + ".json" );
+        try
         {
             f.delete();
+        }
+        catch ( final IOException e )
+        {
+            throw new ProxyDataException( "Cannot delete store definition: {}:{} in file: {}. Reason: {}", e, type,
+                                          name, f, e.getMessage() );
         }
     }
 
@@ -379,10 +385,10 @@ public class FlatFileStoreDataManager
     {
         super.clear();
 
-        final File basedir = config.getDataDir( APROX_STORE );
+        final FlatFile basedir = manager.getDataFile( APROX_STORE );
         try
         {
-            FileUtils.forceDelete( basedir );
+            basedir.delete();
         }
         catch ( final IOException e )
         {
@@ -394,7 +400,7 @@ public class FlatFileStoreDataManager
     public void install()
         throws ProxyDataException
     {
-        if ( !config.getDataDir( APROX_STORE )
+        if ( !manager.getDataFile( APROX_STORE )
                     .isDirectory() )
         {
             storeRemoteRepository( new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" ), true );

@@ -11,6 +11,7 @@ import org.commonjava.aprox.autoprox.conf.AutoProxFactory;
 import org.commonjava.aprox.autoprox.conf.AutoProxFactoryRuleAdapter;
 import org.commonjava.aprox.autoprox.data.AutoProxRule;
 import org.commonjava.aprox.autoprox.data.RuleMapping;
+import org.commonjava.aprox.subsys.flatfile.conf.FlatFile;
 import org.commonjava.aprox.subsys.template.AproxGroovyException;
 import org.commonjava.aprox.subsys.template.ScriptEngine;
 import org.slf4j.Logger;
@@ -35,6 +36,22 @@ public class ScriptRuleParser
         this.scriptEngine = scriptEngine;
     }
 
+    public RuleMapping parseRule( final FlatFile script )
+    {
+        String spec = null;
+        try
+        {
+            spec = script.readString();
+        }
+        catch ( final IOException e )
+        {
+            logger.error( String.format( "[AUTOPROX] Cannot load autoprox factory from: %s. Reason: %s", script,
+                                         e.getMessage() ), e );
+        }
+
+        return parseRule( spec, script.getName() );
+    }
+
     public RuleMapping parseRule( final File script )
     {
         String spec = null;
@@ -48,6 +65,11 @@ public class ScriptRuleParser
                                          e.getMessage() ), e );
         }
 
+        return parseRule( spec, script.getName() );
+    }
+
+    public RuleMapping parseRule( final String spec, final String scriptName )
+    {
         if ( spec == null )
         {
             return null;
@@ -62,7 +84,7 @@ public class ScriptRuleParser
         catch ( final AproxGroovyException e )
         {
             logger.warn( "[AUTOPROX] Cannot load autoprox factory from: {} as an instance of: {}. Reason: {}\nTrying again with legacy interface: {}",
-                         script, AutoProxRule.class.getSimpleName(), AutoProxFactory.class.getSimpleName(),
+                         scriptName, AutoProxRule.class.getSimpleName(), AutoProxFactory.class.getSimpleName(),
                          e.getMessage() );
 
             try
@@ -74,14 +96,14 @@ public class ScriptRuleParser
             catch ( final AproxGroovyException eInner )
             {
                 logger.warn( String.format( "[AUTOPROX] Cannot load autoprox factory from: %s as an instance of: %s. Reason: %s",
-                                            script, AutoProxFactory.class.getSimpleName(), eInner.getMessage() ),
+                                            scriptName, AutoProxFactory.class.getSimpleName(), eInner.getMessage() ),
                              eInner );
             }
         }
 
         if ( rule != null )
         {
-            return new RuleMapping( script.getName(), spec, rule );
+            return new RuleMapping( scriptName, spec, rule );
         }
 
         return null;

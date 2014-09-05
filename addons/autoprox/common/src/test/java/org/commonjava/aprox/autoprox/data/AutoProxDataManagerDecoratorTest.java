@@ -32,7 +32,8 @@ import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.aprox.subsys.flatfile.conf.FlatFileConfiguration;
+import org.commonjava.aprox.subsys.flatfile.conf.FlatFileEventManager;
+import org.commonjava.aprox.subsys.flatfile.conf.FlatFileManager;
 import org.commonjava.aprox.subsys.template.ScriptEngine;
 import org.junit.Before;
 import org.junit.Rule;
@@ -69,7 +70,6 @@ public class AutoProxDataManagerDecoratorTest
         throws Exception
     {
         final AutoProxConfig apConfig = new AutoProxConfig( "autoprox", true, Collections.<RuleMapping> emptyList() );
-        final FlatFileConfiguration ffConfig = new FlatFileConfiguration();
 
         System.setProperty( "baseUrl", http.getBaseUri() );
 
@@ -80,9 +80,8 @@ public class AutoProxDataManagerDecoratorTest
         f = f.getParentFile()
              .getParentFile();
 
-        ffConfig.setDataBasedir( f );
-
-        final AutoProxCatalog catalog = new AutoProxProvider( ffConfig, apConfig, ruleParser ).getCatalog();
+        final AutoProxCatalog catalog =
+            new AutoProxProvider( new FlatFileManager( f, new FlatFileEventManager() ), apConfig, ruleParser ).getCatalog();
         final StoreDataManager proxyManager = new TestAutoProxyDataManager( catalog, http.getHttp() );
 
         final String testUrl = http.formatUrl( "target", "test" );
@@ -107,7 +106,6 @@ public class AutoProxDataManagerDecoratorTest
         throws Exception
     {
         final AutoProxConfig apConfig = new AutoProxConfig( "autoprox", true, Collections.<RuleMapping> emptyList() );
-        final FlatFileConfiguration ffConfig = new FlatFileConfiguration();
 
         System.setProperty( "baseUrl", http.getBaseUri() );
 
@@ -118,9 +116,8 @@ public class AutoProxDataManagerDecoratorTest
         f = f.getParentFile()
              .getParentFile();
 
-        ffConfig.setDataBasedir( f );
-
-        final AutoProxCatalog catalog = new AutoProxProvider( ffConfig, apConfig, ruleParser ).getCatalog();
+        final AutoProxCatalog catalog =
+            new AutoProxProvider( new FlatFileManager( f, new FlatFileEventManager() ), apConfig, ruleParser ).getCatalog();
         final StoreDataManager proxyManager = new TestAutoProxyDataManager( catalog, http.getHttp() );
 
         final String testUrl = http.formatUrl( "target", "test" );

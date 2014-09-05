@@ -15,7 +15,8 @@ import org.commonjava.aprox.core.content.DefaultDownloadManager;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.io.StoreKeySerializer;
-import org.commonjava.aprox.subsys.flatfile.conf.FlatFileConfiguration;
+import org.commonjava.aprox.subsys.flatfile.conf.FlatFileEventManager;
+import org.commonjava.aprox.subsys.flatfile.conf.FlatFileManager;
 import org.commonjava.aprox.subsys.template.TemplatingEngine;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.SimpleLocation;
@@ -47,9 +48,9 @@ public class ContentControllerTest
             new DefaultContentManager( storeManager, fileManager, Collections.<ContentGenerator> emptySet() );
 
         final TemplatingEngine templates =
-            new TemplatingEngine( new GStringTemplateEngine(),
-                                  new FlatFileConfiguration( fixture.getTemp()
-                                                                    .newFolder( "aprox-home" ) ) );
+            new TemplatingEngine( new GStringTemplateEngine(), new FlatFileManager( fixture.getTemp()
+                                                                                           .newFolder( "aprox-home" ),
+                                                                                    new FlatFileEventManager() ) );
 
         content =
             new ContentController( storeManager, contentManager, templates,

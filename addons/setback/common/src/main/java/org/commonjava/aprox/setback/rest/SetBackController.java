@@ -1,7 +1,5 @@
 package org.commonjava.aprox.setback.rest;
 
-import java.io.File;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -9,6 +7,7 @@ import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.setback.data.SetBackDataException;
 import org.commonjava.aprox.setback.data.SetBackSettingsManager;
+import org.commonjava.aprox.subsys.flatfile.conf.FlatFile;
 
 @ApplicationScoped
 public class SetBackController
@@ -25,7 +24,7 @@ public class SetBackController
         this.manager = manager;
     }
 
-    public File getSetBackSettings( final StoreKey key )
+    public FlatFile getSetBackSettings( final StoreKey key )
         throws AproxWorkflowException
     {
         return manager.getSetBackSettings( key );

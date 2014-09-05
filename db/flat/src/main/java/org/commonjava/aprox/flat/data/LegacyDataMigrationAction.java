@@ -10,7 +10,6 @@
  ******************************************************************************/
 package org.commonjava.aprox.flat.data;
 
-import java.io.File;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -21,7 +20,8 @@ import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.aprox.subsys.flatfile.conf.FlatFileConfiguration;
+import org.commonjava.aprox.subsys.flatfile.conf.FlatFile;
+import org.commonjava.aprox.subsys.flatfile.conf.FlatFileManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +37,7 @@ public class LegacyDataMigrationAction
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private FlatFileConfiguration config;
+    private FlatFileManager fileManager;
 
     @Inject
     private FlatFileStoreDataManager data;
@@ -51,22 +51,22 @@ public class LegacyDataMigrationAction
     @Override
     public boolean execute()
     {
-        final File basedir = config.getDataDir( FlatFileStoreDataManager.APROX_STORE );
+        final FlatFile basedir = fileManager.getDataFile( FlatFileStoreDataManager.APROX_STORE );
         if ( !basedir.exists() )
         {
             return false;
         }
 
-        final File[] dirs = basedir.listFiles();
+        final String[] dirs = basedir.list();
         if ( dirs == null || dirs.length < 1 )
         {
             return false;
         }
 
         boolean changed = false;
-        for ( final File dir : dirs )
+        for ( final String name : dirs )
         {
-            final String name = dir.getName();
+            final FlatFile dir = basedir.getChild( name );
             String newName = null;
             if ( name.startsWith( LEGACY_HOSTED_REPO_PREFIX ) )
             {
@@ -81,7 +81,7 @@ public class LegacyDataMigrationAction
             {
                 logger.info( "Migrating storage: '{}' to '{}'", name, newName );
 
-                final File newDir = new File( basedir, newName );
+                final FlatFile newDir = basedir.getChild( newName );
                 dir.renameTo( newDir );
 
                 changed = true;
