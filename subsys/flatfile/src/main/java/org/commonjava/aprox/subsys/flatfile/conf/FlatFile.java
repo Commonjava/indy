@@ -39,7 +39,7 @@ public final class FlatFile
         return content;
     }
 
-    public void delete()
+    public void delete( final ChangeSummary summary )
         throws IOException
     {
         if ( file.exists() )
@@ -75,7 +75,7 @@ public final class FlatFile
         return file.exists();
     }
 
-    public void writeString( final String content, final String encoding )
+    public void writeString( final String content, final String encoding, final ChangeSummary summary )
         throws IOException
     {
         FileUtils.write( file, content, encoding );
@@ -93,7 +93,7 @@ public final class FlatFile
         return file.isDirectory();
     }
 
-    public void renameTo( final FlatFile target )
+    public void renameTo( final FlatFile target, final ChangeSummary summary )
     {
         file.renameTo( target.file );
     }
