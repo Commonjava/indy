@@ -10,18 +10,20 @@
  ******************************************************************************/
 package org.commonjava.aprox.flat.data;
 
+import java.security.PrivilegedAction;
 import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.commonjava.aprox.action.start.MigrationAction;
+import org.commonjava.aprox.audit.SecuritySystem;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.aprox.subsys.flatfile.conf.FlatFile;
-import org.commonjava.aprox.subsys.flatfile.conf.FlatFileManager;
+import org.commonjava.aprox.subsys.flatfile.conf.DataFile;
+import org.commonjava.aprox.subsys.flatfile.conf.DataFileManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,10 +39,13 @@ public class LegacyDataMigrationAction
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private FlatFileManager fileManager;
+    private DataFileManager fileManager;
 
     @Inject
-    private FlatFileStoreDataManager data;
+    private DataFileStoreDataManager data;
+
+    @Inject
+    private SecuritySystem securitySystem;
 
     @Override
     public String getId()
@@ -51,68 +56,80 @@ public class LegacyDataMigrationAction
     @Override
     public boolean execute()
     {
-        final FlatFile basedir = fileManager.getDataFile( FlatFileStoreDataManager.APROX_STORE );
-        if ( !basedir.exists() )
+        return securitySystem.runAsSystemUser( new PrivilegedAction<Boolean>()
         {
-            return false;
-        }
-
-        final String[] dirs = basedir.list();
-        if ( dirs == null || dirs.length < 1 )
-        {
-            return false;
-        }
-
-        boolean changed = false;
-        for ( final String name : dirs )
-        {
-            final FlatFile dir = basedir.getChild( name );
-            String newName = null;
-            if ( name.startsWith( LEGACY_HOSTED_REPO_PREFIX ) )
+            @Override
+            public Boolean run()
             {
-                newName = StoreType.hosted.singularEndpointName() + name.substring( LEGACY_HOSTED_REPO_PREFIX.length() );
+                final DataFile basedir = fileManager.getDataFile( DataFileStoreDataManager.APROX_STORE );
+                final String summary = "Migrating legacy store definitions.";
+
+                if ( !basedir.exists() )
+                {
+                    return false;
+                }
+
+                final String[] dirs = basedir.list();
+                if ( dirs == null || dirs.length < 1 )
+                {
+                    return false;
+                }
+
+                boolean changed = false;
+                for ( final String name : dirs )
+                {
+                    final DataFile dir = basedir.getChild( name );
+                    String newName = null;
+                    if ( name.startsWith( LEGACY_HOSTED_REPO_PREFIX ) )
+                    {
+                        newName =
+                            StoreType.hosted.singularEndpointName()
+                                + name.substring( LEGACY_HOSTED_REPO_PREFIX.length() );
+                    }
+                    else if ( name.startsWith( LEGACY_REMOTE_REPO_PREFIX ) )
+                    {
+                        newName =
+                            StoreType.remote.singularEndpointName()
+                                + name.substring( LEGACY_REMOTE_REPO_PREFIX.length() );
+                    }
+
+                    if ( newName != null )
+                    {
+                        logger.info( "Migrating storage: '{}' to '{}'", name, newName );
+
+                        final DataFile newDir = basedir.getChild( newName );
+                        dir.renameTo( newDir, summary );
+
+                        changed = true;
+                    }
+                }
+
+                try
+                {
+                    data.reload();
+
+                    final List<HostedRepository> hosted = data.getAllHostedRepositories();
+                    for ( final HostedRepository repo : hosted )
+                    {
+                        data.storeHostedRepository( repo, summary );
+                    }
+
+                    final List<RemoteRepository> remotes = data.getAllRemoteRepositories();
+                    for ( final RemoteRepository repo : remotes )
+                    {
+                        data.storeRemoteRepository( repo, summary );
+                    }
+
+                    data.reload();
+                }
+                catch ( final ProxyDataException e )
+                {
+                    throw new RuntimeException( "Failed to reload artifact-store definitions: " + e.getMessage(), e );
+                }
+
+                return changed;
             }
-            else if ( name.startsWith( LEGACY_REMOTE_REPO_PREFIX ) )
-            {
-                newName = StoreType.remote.singularEndpointName() + name.substring( LEGACY_REMOTE_REPO_PREFIX.length() );
-            }
-
-            if ( newName != null )
-            {
-                logger.info( "Migrating storage: '{}' to '{}'", name, newName );
-
-                final FlatFile newDir = basedir.getChild( newName );
-                dir.renameTo( newDir );
-
-                changed = true;
-            }
-        }
-
-        try
-        {
-            data.reload();
-
-            final List<HostedRepository> hosted = data.getAllHostedRepositories();
-            for ( final HostedRepository repo : hosted )
-            {
-                data.storeHostedRepository( repo );
-            }
-
-            final List<RemoteRepository> remotes = data.getAllRemoteRepositories();
-            for ( final RemoteRepository repo : remotes )
-            {
-                data.storeRemoteRepository( repo );
-            }
-
-            data.reload();
-        }
-        catch ( final ProxyDataException e )
-        {
-            throw new RuntimeException( "Failed to reload artifact-store definitions: " + e.getMessage(), e );
-        }
-
-        return changed;
-
+        } );
     }
 
 }

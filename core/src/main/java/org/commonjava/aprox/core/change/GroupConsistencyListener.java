@@ -10,11 +10,13 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.change;
 
+import java.security.PrivilegedAction;
 import java.util.Set;
 
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
+import org.commonjava.aprox.audit.SecuritySystem;
 import org.commonjava.aprox.change.event.ArtifactStoreDeleteEvent;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
@@ -34,25 +36,39 @@ public class GroupConsistencyListener
     @Inject
     private StoreDataManager proxyDataManager;
 
+    @Inject
+    private SecuritySystem securitySystem;
+
     private final ChangeSynchronizer changeSync = new ChangeSynchronizer();
 
     private void processChanged( final StoreKey key )
     {
-        try
+        securitySystem.runAsSystemUser( new PrivilegedAction<Void>()
         {
-            final Set<Group> groups = proxyDataManager.getGroupsContaining( key );
-            for ( final Group group : groups )
+            @Override
+            public Void run()
             {
-                group.removeConstituent( key );
-                proxyDataManager.storeGroup( group );
-            }
+                try
+                {
+                    final Set<Group> groups = proxyDataManager.getGroupsContaining( key );
+                    for ( final Group group : groups )
+                    {
+                        group.removeConstituent( key );
+                        proxyDataManager.storeGroup( group, "Auto-update groups containing: " + key
+                            + " (to maintain consistency)" );
+                    }
 
-            changeSync.setChanged();
-        }
-        catch ( final ProxyDataException e )
-        {
-            logger.error( String.format( "Failed to remove group constituent listings for: %s. Error: %s", key, e.getMessage() ), e );
-        }
+                    changeSync.setChanged();
+                }
+                catch ( final ProxyDataException e )
+                {
+                    logger.error( String.format( "Failed to remove group constituent listings for: %s. Error: %s", key,
+                                                 e.getMessage() ), e );
+                }
+
+                return null;
+            }
+        } );
     }
 
     // public void storeDeleted( @Observes final CouchChangeJ2EEEvent event )

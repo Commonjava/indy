@@ -16,39 +16,48 @@ import java.nio.file.Paths;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.commonjava.aprox.audit.SecuritySystem;
+
 @ApplicationScoped
-public class FlatFileManager
+public class DataFileManager
 {
 
     @Inject
-    private FlatFileConfiguration config;
+    private DataFileConfiguration config;
 
     @Inject
-    private FlatFileEventManager fileEventManager;
+    private DataFileEventManager fileEventManager;
 
-    protected FlatFileManager()
+    @Inject
+    private SecuritySystem securitySystem;
+
+    protected DataFileManager()
     {
     }
 
-    public FlatFileManager( final File rootDir, final FlatFileEventManager fileEventManager )
+    public DataFileManager( final File rootDir, final DataFileEventManager fileEventManager,
+                            final SecuritySystem securitySystem )
     {
         this.fileEventManager = fileEventManager;
-        this.config = new FlatFileConfiguration( rootDir );
+        this.securitySystem = securitySystem;
+        this.config = new DataFileConfiguration( rootDir );
     }
 
-    public FlatFileManager( final FlatFileConfiguration config, final FlatFileEventManager fileEventManager )
+    public DataFileManager( final DataFileConfiguration config, final DataFileEventManager fileEventManager,
+                            final SecuritySystem securitySystem )
     {
         this.config = config;
         this.fileEventManager = fileEventManager;
+        this.securitySystem = securitySystem;
     }
 
-    public FlatFile getDataFile( final String... pathParts )
+    public DataFile getDataFile( final String... pathParts )
     {
         final File base = config.getDataBasedir();
         final File f = Paths.get( base.getAbsolutePath(), pathParts )
                             .toFile();
 
-        return new FlatFile( f, fileEventManager );
+        return new DataFile( f, fileEventManager, securitySystem );
     }
 
     public File getDetachedDataBasedir()

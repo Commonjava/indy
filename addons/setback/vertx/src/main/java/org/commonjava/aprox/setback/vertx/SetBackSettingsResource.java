@@ -9,7 +9,7 @@ import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.setback.rest.SetBackController;
-import org.commonjava.aprox.subsys.flatfile.conf.FlatFile;
+import org.commonjava.aprox.subsys.flatfile.conf.DataFile;
 import org.commonjava.aprox.util.ApplicationContent;
 import org.commonjava.aprox.util.ApplicationHeader;
 import org.commonjava.aprox.util.ApplicationStatus;
@@ -51,7 +51,7 @@ public class SetBackSettingsResource
         }
 
         final StoreKey key = new StoreKey( type, n );
-        FlatFile settingsXml;
+        DataFile settingsXml;
         try
         {
             settingsXml = controller.getSetBackSettings( key );

@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.ctl;
 
+import java.security.PrivilegedAction;
 import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -18,6 +19,7 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.action.start.MigrationAction;
+import org.commonjava.aprox.audit.SecuritySystem;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
@@ -50,14 +52,19 @@ public class AdminController
     @Inject
     private Instance<MigrationAction> migrationActions;
 
+    @Inject
+    private SecuritySystem securitySystem;
+
     protected AdminController()
     {
     }
 
-    public AdminController( final StoreDataManager storeManager, final ExpirationManager expirationManager, final AProxVersioning versioning )
+    public AdminController( final StoreDataManager storeManager, final ExpirationManager expirationManager,
+                            final SecuritySystem securitySystem, final AProxVersioning versioning )
     {
         this.storeManager = storeManager;
         this.expirationManager = expirationManager;
+        this.securitySystem = securitySystem;
         this.versioning = versioning;
     }
 
@@ -66,7 +73,13 @@ public class AdminController
     {
         try
         {
-            return storeManager.storeArtifactStore( store, skipExisting );
+            String summary = store.getMetadata( ArtifactStore.METADATA_CHANGELOG );
+            if ( summary == null )
+            {
+                summary = "Changelog not provided";
+            }
+
+            return storeManager.storeArtifactStore( store, summary, skipExisting );
         }
         catch ( final ProxyDataException e )
         {
@@ -100,12 +113,12 @@ public class AdminController
         }
     }
 
-    public void delete( final StoreKey key )
+    public void delete( final StoreKey key, final String changeSummary )
         throws AproxWorkflowException
     {
         try
         {
-            storeManager.deleteArtifactStore( key );
+            storeManager.deleteArtifactStore( key, changeSummary );
         }
         catch ( final ProxyDataException e )
         {
@@ -115,56 +128,74 @@ public class AdminController
 
     public void started()
     {
-        logger.info( "\n\n\n\n\n STARTING AProx\n    Version: {}\n    Built-By: {}\n    Commit-ID: {}\n    Built-On: {}\n\n\n\n\n",
-                     versioning.getVersion(), versioning.getBuilder(), versioning.getCommitId(), versioning.getTimestamp() );
-
-        runMigrationActions();
-
-        try
+        final RuntimeException e = securitySystem.runAsSystemUser( new PrivilegedAction<RuntimeException>()
         {
-            logger.info( "Verfiying that AProx DB + basic data is installed..." );
-            storeManager.install();
-
-            if ( !storeManager.hasRemoteRepository( "central" ) )
+            @Override
+            public RuntimeException run()
             {
-                final RemoteRepository central =
-                    new RemoteRepository( "central", "http://repo.maven.apache.org/maven2/" );
-                central.setCacheTimeoutSeconds( 86400 );
-                storeManager.storeRemoteRepository( central, true );
+                logger.info( "\n\n\n\n\n STARTING AProx\n    Version: {}\n    Built-By: {}\n    Commit-ID: {}\n    Built-On: {}\n\n\n\n\n",
+                             versioning.getVersion(), versioning.getBuilder(), versioning.getCommitId(),
+                             versioning.getTimestamp() );
+
+                runMigrationActions();
+
+                final String summary = "Initializing default data.";
+
+                try
+                {
+                    logger.info( "Verfiying that AProx DB + basic data is installed..." );
+                    storeManager.install();
+
+                    if ( !storeManager.hasRemoteRepository( "central" ) )
+                    {
+                        final RemoteRepository central =
+                            new RemoteRepository( "central", "http://repo.maven.apache.org/maven2/" );
+                        central.setCacheTimeoutSeconds( 86400 );
+                        storeManager.storeRemoteRepository( central, summary, true );
+                    }
+
+                    if ( !storeManager.hasHostedRepository( "local-deployments" ) )
+                    {
+                        final HostedRepository local = new HostedRepository( "local-deployments" );
+                        local.setAllowReleases( true );
+                        local.setAllowSnapshots( true );
+                        local.setSnapshotTimeoutSeconds( 86400 );
+
+                        storeManager.storeHostedRepository( local, summary, true );
+                    }
+
+                    if ( !storeManager.hasGroup( "public" ) )
+                    {
+                        final Group pub = new Group( "public" );
+                        pub.addConstituent( new StoreKey( StoreType.remote, "central" ) );
+                        pub.addConstituent( new StoreKey( StoreType.hosted, "local-deployments" ) );
+
+                        storeManager.storeGroup( pub, summary, true );
+                    }
+
+                    // make sure the expiration manager is running...
+                    expirationManager.loadNextExpirations();
+                }
+                catch ( final ExpirationManagerException e )
+                {
+                    return new RuntimeException( "Failed to boot aprox components: " + e.getMessage(), e );
+                }
+                catch ( final ProxyDataException e )
+                {
+                    return new RuntimeException( "Failed to boot aprox components: " + e.getMessage(), e );
+                }
+
+                logger.info( "...done." );
+
+                return null;
             }
 
-            if ( !storeManager.hasHostedRepository( "local-deployments" ) )
-            {
-                final HostedRepository local = new HostedRepository( "local-deployments" );
-                local.setAllowReleases( true );
-                local.setAllowSnapshots( true );
-                local.setSnapshotTimeoutSeconds( 86400 );
+        } );
 
-                storeManager.storeHostedRepository( local, true );
-            }
-
-            if ( !storeManager.hasGroup( "public" ) )
-            {
-                final Group pub = new Group( "public" );
-                pub.addConstituent( new StoreKey( StoreType.remote, "central" ) );
-                pub.addConstituent( new StoreKey( StoreType.hosted, "local-deployments" ) );
-
-                storeManager.storeGroup( pub, true );
-            }
-
-            // make sure the expiration manager is running...
-            expirationManager.loadNextExpirations();
-        }
-        catch ( final ExpirationManagerException e )
+        if ( e != null )
         {
-            throw new RuntimeException( "Failed to boot aprox components: " + e.getMessage(), e );
+            throw e;
         }
-        catch ( final ProxyDataException e )
-        {
-            throw new RuntimeException( "Failed to boot aprox components: " + e.getMessage(), e );
-        }
-
-        logger.info( "...done." );
     }
 
     private void runMigrationActions()

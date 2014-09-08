@@ -248,7 +248,13 @@ public class StoreAdminHandler
         logger.info( "Deleting: {}", key );
         try
         {
-            adminController.delete( key );
+            String summary = buffer.getString( 0, buffer.length() );
+            if ( summary == null )
+            {
+                summary = "Changelog not provided";
+            }
+
+            adminController.delete( key, summary );
 
             setStatus( ApplicationStatus.OK, request );
             request.response()

@@ -18,6 +18,8 @@ public abstract class ArtifactStore
     implements Serializable
 {
 
+    public static final String METADATA_CHANGELOG = "changelog";
+
     private static final long serialVersionUID = 1L;
 
     private StoreKey key;

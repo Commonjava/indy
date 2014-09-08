@@ -18,11 +18,11 @@ import javax.inject.Inject;
 import org.commonjava.shelflife.store.flat.FlatBlockStoreConfiguration;
 
 @ApplicationScoped
-public class FlatFileShelflifeConfig
+public class DataFileShelflifeConfig
 {
 
     @Inject
-    private FlatFileConfiguration config;
+    private DataFileConfiguration config;
 
     @Produces
     @Default

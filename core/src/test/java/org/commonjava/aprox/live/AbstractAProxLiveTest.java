@@ -35,7 +35,7 @@ public class AbstractAProxLiveTest
         throws Exception
     {
         proxyManager.install();
-        proxyManager.clear();
+        proxyManager.clear( "test setup" );
     }
 
     protected static TestWarArchiveBuilder createWar( final Class<?> testClass )

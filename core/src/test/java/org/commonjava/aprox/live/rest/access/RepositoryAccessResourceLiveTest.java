@@ -69,7 +69,8 @@ public class RepositoryAccessResourceLiveTest
     public void setupTest()
         throws ProxyDataException
     {
-        proxyManager.storeRemoteRepository( new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" ) );
+        proxyManager.storeRemoteRepository( new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" ),
+                                            "test setup" );
     }
 
     @Test

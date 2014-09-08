@@ -23,8 +23,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.codehaus.groovy.control.CompilationFailedException;
-import org.commonjava.aprox.subsys.flatfile.conf.FlatFile;
-import org.commonjava.aprox.subsys.flatfile.conf.FlatFileManager;
+import org.commonjava.aprox.subsys.flatfile.conf.DataFile;
+import org.commonjava.aprox.subsys.flatfile.conf.DataFileManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +36,7 @@ public class TemplatingEngine
     public static final String TEMPLATES = "templates";
 
     @Inject
-    private FlatFileManager manager;
+    private DataFileManager manager;
 
     private final GStringTemplateEngine engine;
 
@@ -45,7 +45,7 @@ public class TemplatingEngine
         engine = new GStringTemplateEngine();
     }
 
-    public TemplatingEngine( final GStringTemplateEngine engine, final FlatFileManager manager )
+    public TemplatingEngine( final GStringTemplateEngine engine, final DataFileManager manager )
     {
         this.engine = engine;
         this.manager = manager;
@@ -86,7 +86,7 @@ public class TemplatingEngine
         try
         {
             final String filename = accept + templateKey + ".groovy";
-            final FlatFile templateFile = manager.getDataFile( TEMPLATES, filename );
+            final DataFile templateFile = manager.getDataFile( TEMPLATES, filename );
             logger.info( "Looking for template: {} for ACCEPT header: {} in: {}", templateKey, acceptHeader,
                          templateFile );
 

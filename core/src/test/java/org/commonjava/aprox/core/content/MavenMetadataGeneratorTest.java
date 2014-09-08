@@ -213,7 +213,7 @@ public class MavenMetadataGeneratorTest
         throws Exception
     {
         final RemoteRepository store = new RemoteRepository( "testrepo", "http://foo.bar" );
-        stores.storeArtifactStore( store );
+        stores.storeArtifactStore( store, "test" );
 
         final String path = "org/group/artifact";
 
@@ -243,7 +243,7 @@ public class MavenMetadataGeneratorTest
         throws Exception
     {
         final RemoteRepository store = new RemoteRepository( "testrepo", "http://foo.bar" );
-        stores.storeArtifactStore( store );
+        stores.storeArtifactStore( store, "test" );
 
         final String path = "org/group/artifact/1.0-SNAPSHOT";
 

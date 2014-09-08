@@ -72,11 +72,12 @@ public class GroupAccessResourceLiveTest
     public void setupTest()
         throws ProxyDataException
     {
-        proxyManager.storeRemoteRepository( new RemoteRepository( "dummy", "http://www.nowhere.com/" ) );
-        proxyManager.storeRemoteRepository( new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" ) );
+        proxyManager.storeRemoteRepository( new RemoteRepository( "dummy", "http://www.nowhere.com/" ), "test setup" );
+        proxyManager.storeRemoteRepository( new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" ),
+                                            "test setup" );
 
         proxyManager.storeGroup( new Group( "test", new StoreKey( StoreType.remote, "dummy" ),
-                                            new StoreKey( StoreType.remote, "central" ) ) );
+                                            new StoreKey( StoreType.remote, "central" ) ), "test setup" );
     }
 
     @Test

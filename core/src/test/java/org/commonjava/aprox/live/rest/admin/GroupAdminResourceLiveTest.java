@@ -64,8 +64,10 @@ public class GroupAdminResourceLiveTest
     public void seedRepositoriesForGroupTests()
         throws Exception
     {
-        proxyManager.storeRemoteRepository( new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" ) );
-        proxyManager.storeRemoteRepository( new RemoteRepository( "repo2", "http://repo1.maven.org/maven2/" ) );
+        proxyManager.storeRemoteRepository( new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" ),
+                                            "test setup" );
+        proxyManager.storeRemoteRepository( new RemoteRepository( "repo2", "http://repo1.maven.org/maven2/" ),
+                                            "test setup" );
     }
 
     @Test

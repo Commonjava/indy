@@ -11,7 +11,7 @@ import org.commonjava.aprox.autoprox.conf.AutoProxFactory;
 import org.commonjava.aprox.autoprox.conf.AutoProxFactoryRuleAdapter;
 import org.commonjava.aprox.autoprox.data.AutoProxRule;
 import org.commonjava.aprox.autoprox.data.RuleMapping;
-import org.commonjava.aprox.subsys.flatfile.conf.FlatFile;
+import org.commonjava.aprox.subsys.flatfile.conf.DataFile;
 import org.commonjava.aprox.subsys.template.AproxGroovyException;
 import org.commonjava.aprox.subsys.template.ScriptEngine;
 import org.slf4j.Logger;
@@ -36,7 +36,7 @@ public class ScriptRuleParser
         this.scriptEngine = scriptEngine;
     }
 
-    public RuleMapping parseRule( final FlatFile script )
+    public RuleMapping parseRule( final DataFile script )
     {
         String spec = null;
         try

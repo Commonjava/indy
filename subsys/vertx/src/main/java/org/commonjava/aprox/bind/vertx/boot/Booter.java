@@ -21,8 +21,8 @@ import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.HttpServer;
-import org.vertx.java.core.impl.DefaultVertx;
 
 public class Booter
 {
@@ -162,9 +162,9 @@ public class Booter
 
         router.setPrefix( bootOptions.getContextPath() );
 
-        //        router.initializeComponents();
-
-        final DefaultVertx vertx = new DefaultVertx();
+        final Vertx vertx = container.instance()
+                                     .select( Vertx.class )
+                                     .get();
 
         for ( int i = 0; i < bootOptions.getWorkers(); i++ )
         {

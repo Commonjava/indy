@@ -15,28 +15,61 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
+import java.security.Principal;
+import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.apache.http.auth.BasicUserPrincipal;
+import org.commonjava.aprox.audit.SecuritySystem;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.RemoteRepository;
+import org.junit.Before;
 import org.junit.Test;
 
 public abstract class RepositoryDataManagerTCK
     extends AbstractProxyDataManagerTCK
 {
 
+    private Principal principal;
+
+    private StoreDataManager manager;
+
+    private SecuritySystem security;
+
+    @Before
+    public void setup()
+        throws Exception
+    {
+        doSetup();
+        seedRepositoriesForGroupTests();
+    }
+
+    protected void doSetup()
+        throws Exception
+    {
+    }
+
+    protected void seedRepositoriesForGroupTests()
+        throws Exception
+    {
+        principal = new BasicUserPrincipal( "test-user" );
+
+        manager = getFixtureProvider().getDataManager();
+        security = getFixtureProvider().getSecuritySystem();
+    }
+
     @Test
     public void createAndRetrieveCentralRepoProxy()
-        throws ProxyDataException
+        throws Exception
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
 
         final RemoteRepository repo = new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" );
-        manager.storeRemoteRepository( repo, false );
+        storeRemoteRepository( repo, false );
 
         final RemoteRepository result = manager.getRemoteRepository( repo.getName() );
 
@@ -48,14 +81,14 @@ public abstract class RepositoryDataManagerTCK
 
     @Test
     public void createCentralRepoProxyTwiceAndRetrieveOne()
-        throws ProxyDataException
+        throws Exception
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
 
         final RemoteRepository repo = new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" );
-        manager.storeRemoteRepository( repo, true );
+        storeRemoteRepository( repo, true );
 
-        manager.storeRemoteRepository( repo, true );
+        storeRemoteRepository( repo, true );
 
         final List<? extends RemoteRepository> result = manager.getAllRemoteRepositories();
 
@@ -65,14 +98,35 @@ public abstract class RepositoryDataManagerTCK
 
     @Test
     public void createAndDeleteCentralRepoProxy_ByName()
-        throws ProxyDataException
+        throws Exception
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
 
         final RemoteRepository repo = new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" );
-        manager.storeRemoteRepository( repo, false );
+        storeRemoteRepository( repo, false );
 
-        manager.deleteRemoteRepository( repo.getName() );
+        final ProxyDataException e = security.runAs( principal, new PrivilegedAction<ProxyDataException>()
+        {
+            @Override
+            public ProxyDataException run()
+            {
+                try
+                {
+                    manager.deleteRemoteRepository( repo.getName(), "test" );
+                }
+                catch ( final ProxyDataException e )
+                {
+                    return e;
+                }
+
+                return null;
+            }
+        } );
+
+        if ( e != null )
+        {
+            throw e;
+        }
 
         final ArtifactStore result = manager.getRemoteRepository( repo.getName() );
 
@@ -81,14 +135,35 @@ public abstract class RepositoryDataManagerTCK
 
     @Test
     public void createAndDeleteCentralRepoProxy_ByObject()
-        throws ProxyDataException
+        throws Exception
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
 
         final RemoteRepository repo = new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" );
-        manager.storeRemoteRepository( repo, false );
+        storeRemoteRepository( repo, false );
 
-        manager.deleteRemoteRepository( repo );
+        final ProxyDataException e = security.runAs( principal, new PrivilegedAction<ProxyDataException>()
+        {
+            @Override
+            public ProxyDataException run()
+            {
+                try
+                {
+                    manager.deleteRemoteRepository( repo, "test" );
+                }
+                catch ( final ProxyDataException e )
+                {
+                    return e;
+                }
+
+                return null;
+            }
+        } );
+
+        if ( e != null )
+        {
+            throw e;
+        }
 
         final ArtifactStore result = manager.getRemoteRepository( repo.getName() );
 
@@ -97,15 +172,15 @@ public abstract class RepositoryDataManagerTCK
 
     @Test
     public void createTwoReposAndRetrieveAll()
-        throws ProxyDataException
+        throws Exception
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
 
         final RemoteRepository repo = new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" );
-        manager.storeRemoteRepository( repo );
+        storeRemoteRepository( repo );
 
         final RemoteRepository repo2 = new RemoteRepository( "test", "http://www.google.com" );
-        manager.storeRemoteRepository( repo2 );
+        storeRemoteRepository( repo2 );
 
         final List<? extends RemoteRepository> repositories = manager.getAllRemoteRepositories();
 
@@ -128,6 +203,62 @@ public abstract class RepositoryDataManagerTCK
 
         r = repositories.get( 1 );
         assertThat( r.getName(), equalTo( repo2.getName() ) );
+    }
+
+    private void storeRemoteRepository( final RemoteRepository repo )
+        throws Exception
+    {
+        final ProxyDataException e = security.runAs( principal, new PrivilegedAction<ProxyDataException>()
+        {
+
+            @Override
+            public ProxyDataException run()
+            {
+                try
+                {
+                    manager.storeArtifactStore( repo, "test" );
+                }
+                catch ( final ProxyDataException e )
+                {
+                    return e;
+                }
+
+                return null;
+            }
+        } );
+
+        if ( e != null )
+        {
+            throw e;
+        }
+    }
+
+    private void storeRemoteRepository( final RemoteRepository repo, final boolean skipIfExists )
+        throws Exception
+    {
+        final ProxyDataException e = security.runAs( principal, new PrivilegedAction<ProxyDataException>()
+        {
+
+            @Override
+            public ProxyDataException run()
+            {
+                try
+                {
+                    manager.storeArtifactStore( repo, "test", skipIfExists );
+                }
+                catch ( final ProxyDataException e )
+                {
+                    return e;
+                }
+
+                return null;
+            }
+        } );
+
+        if ( e != null )
+        {
+            throw e;
+        }
     }
 
 }

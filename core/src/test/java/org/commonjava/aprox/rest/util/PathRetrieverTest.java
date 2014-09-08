@@ -54,8 +54,7 @@ public class PathRetrieverTest
         fixture = new GalleyFixture( repoRoot );
         data = new MemoryStoreDataManager();
 
-        downloader =
- new DefaultDownloadManager( data, fixture.getTransfers(), new AproxLocationExpander( data ) );
+        downloader = new DefaultDownloadManager( data, fixture.getTransfers(), new AproxLocationExpander( data ) );
     }
 
     @Test
@@ -63,7 +62,7 @@ public class PathRetrieverTest
         throws Exception
     {
         final RemoteRepository repo = new RemoteRepository( "central", "http://repo.maven.apache.org/maven2/" );
-        data.storeRemoteRepository( repo );
+        data.storeRemoteRepository( repo, "test" );
 
         final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
 
@@ -80,8 +79,8 @@ public class PathRetrieverTest
         final RemoteRepository repo = new RemoteRepository( "dummy", "http://www.nowhere.com/" );
         final RemoteRepository repo2 = new RemoteRepository( "central", "http://repo.maven.apache.org/maven2/" );
 
-        data.storeRemoteRepository( repo );
-        data.storeRemoteRepository( repo2 );
+        data.storeRemoteRepository( repo, "test" );
+        data.storeRemoteRepository( repo2, "test" );
 
         final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
 

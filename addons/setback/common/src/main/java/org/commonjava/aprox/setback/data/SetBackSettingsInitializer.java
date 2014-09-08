@@ -10,7 +10,7 @@ import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.aprox.subsys.flatfile.conf.FlatFile;
+import org.commonjava.aprox.subsys.flatfile.conf.DataFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +59,7 @@ public class SetBackSettingsInitializer
                     continue;
                 }
 
-                final FlatFile settingsXml = settingsManager.getSetBackSettings( store.getKey() );
+                final DataFile settingsXml = settingsManager.getSetBackSettings( store.getKey() );
                 if ( settingsXml == null || !settingsXml.exists() )
                 {
                     try

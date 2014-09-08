@@ -45,7 +45,7 @@
     <cartoVersion>0.8</cartoVersion>
     <bomVersion>12</bomVersion>
     <webdavVersion>3.1.1</webdavVersion>
-    <vabrVersion>1.9</vabrVersion>
+    <vabrVersion>1.10-SNAPSHOT</vabrVersion>
     
     <vertx.testtools.version>2.0.0-final</vertx.testtools.version>
   </properties>

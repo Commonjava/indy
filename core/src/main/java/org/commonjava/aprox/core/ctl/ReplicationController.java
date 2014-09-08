@@ -31,9 +31,13 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.commonjava.aprox.AproxWorkflowException;
+import org.commonjava.aprox.audit.SecurityAction;
+import org.commonjava.aprox.audit.SecuritySystem;
+import org.commonjava.aprox.audit.SecuritySystemException;
+import org.commonjava.aprox.audit.SimpleSecurityAction;
 import org.commonjava.aprox.core.dto.ReplicationAction;
-import org.commonjava.aprox.core.dto.ReplicationDTO;
 import org.commonjava.aprox.core.dto.ReplicationAction.ActionType;
+import org.commonjava.aprox.core.dto.ReplicationDTO;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.dto.EndpointView;
@@ -68,96 +72,143 @@ public class ReplicationController
     @Inject
     private AproxHttpProvider http;
 
+    @Inject
+    private SecuritySystem securitySystem;
+
     protected ReplicationController()
     {
     }
 
-    public ReplicationController( final StoreDataManager data, final AproxHttpProvider http, final JsonSerializer serializer )
+    public ReplicationController( final StoreDataManager data, final AproxHttpProvider http,
+                                  final JsonSerializer serializer, final SecuritySystem securitySystem )
     {
         this.data = data;
         this.http = http;
         this.serializer = serializer;
+        this.securitySystem = securitySystem;
     }
 
     public Set<StoreKey> replicate( final ReplicationDTO dto )
         throws AproxWorkflowException
     {
-        dto.validate();
-
-        List<? extends ArtifactStore> remoteStores = null;
-        List<EndpointView> remoteEndpoints = null;
-
-        final boolean overwrite = dto.isOverwrite();
-        final Set<StoreKey> replicated = new HashSet<StoreKey>();
-        for ( final ReplicationAction action : dto )
-        {
-            if ( action == null )
+        final SecurityAction<Set<StoreKey>, AproxWorkflowException> action =
+            new SimpleSecurityAction<Set<StoreKey>, AproxWorkflowException>()
             {
-                continue;
-            }
-
-            logger.info( "Processing replication action:\n\n  {}\n\nin DTO: {}\n\n", action, dto );
-            final String include = action.getInclude();
-            final String exclude = action.getExclude();
-
-            try
-            {
-                if ( action.getType() == ActionType.PROXY )
+                @Override
+                public Set<StoreKey> run()
                 {
-                    if ( remoteEndpoints == null )
+                    final Set<StoreKey> replicated = new HashSet<StoreKey>();
+                    try
                     {
-                        remoteEndpoints = getEndpoints( dto );
+                        dto.validate();
+                    }
+                    catch ( final AproxWorkflowException e )
+                    {
+                        setError( e );
+                        return replicated;
                     }
 
-                    for ( final EndpointView view : remoteEndpoints )
-                    {
-                        final String key = "remote-" + view.getType() + "_" + view.getName();
-                        if ( ( include == null || key.matches( include ) ) && ( exclude == null || !key.matches( exclude ) ) )
-                        {
-                            final StoreKey sk = new StoreKey( StoreType.remote, key );
-                            if ( overwrite || !data.hasArtifactStore( sk ) )
-                            {
-                                final RemoteRepository repo = new RemoteRepository( key, view.getResourceURI() );
-                                setProxyAttributes( repo, action );
+                    List<? extends ArtifactStore> remoteStores = null;
+                    List<EndpointView> remoteEndpoints = null;
 
-                                data.storeRemoteRepository( repo );
-                                replicated.add( repo.getKey() );
-                            }
+                    final boolean overwrite = dto.isOverwrite();
+                    for ( final ReplicationAction action : dto )
+                    {
+                        if ( action == null )
+                        {
+                            continue;
                         }
-                    }
-                }
-                else if ( action.getType() == ActionType.MIRROR )
-                {
-                    if ( remoteStores == null )
-                    {
-                        remoteStores = getRemoteStores( dto );
-                    }
 
-                    for ( final ArtifactStore store : remoteStores )
-                    {
-                        final String key = store.getKey()
-                                                .toString();
-                        if ( ( include == null || key.matches( include ) ) && ( exclude == null || !key.matches( exclude ) ) )
+                        logger.info( "Processing replication action:\n\n  {}\n\nin DTO: {}\n\n", action, dto );
+                        final String include = action.getInclude();
+                        final String exclude = action.getExclude();
+
+                        try
                         {
-                            if ( overwrite || !data.hasArtifactStore( store.getKey() ) )
+                            if ( action.getType() == ActionType.PROXY )
                             {
-                                if ( store instanceof RemoteRepository )
+                                if ( remoteEndpoints == null )
                                 {
-                                    setProxyAttributes( ( (RemoteRepository) store ), action );
+                                    remoteEndpoints = getEndpoints( dto );
                                 }
 
-                                data.storeArtifactStore( store );
-                                replicated.add( store.getKey() );
+                                for ( final EndpointView view : remoteEndpoints )
+                                {
+                                    final String key = "remote-" + view.getType() + "_" + view.getName();
+                                    if ( ( include == null || key.matches( include ) ) && ( exclude == null || !key.matches( exclude ) ) )
+                                    {
+                                        final StoreKey sk = new StoreKey( StoreType.remote, key );
+                                        if ( overwrite || !data.hasArtifactStore( sk ) )
+                                        {
+                                            final RemoteRepository repo = new RemoteRepository( key, view.getResourceURI() );
+                                            setProxyAttributes( repo, action );
+
+                                            data.storeRemoteRepository( repo,
+                                                                        "REPLICATION: Proxying remote aprox repository: "
+                                                                            + view.getResourceURI() );
+                                            replicated.add( repo.getKey() );
+                                        }
+                                    }
+                                }
+                            }
+                            else if ( action.getType() == ActionType.MIRROR )
+                            {
+                                if ( remoteStores == null )
+                                {
+                                    remoteStores = getRemoteStores( dto );
+                                }
+
+                                for ( final ArtifactStore store : remoteStores )
+                                {
+                                    final String key = store.getKey()
+                                                            .toString();
+                                    if ( ( include == null || key.matches( include ) ) && ( exclude == null || !key.matches( exclude ) ) )
+                                    {
+                                        if ( overwrite || !data.hasArtifactStore( store.getKey() ) )
+                                        {
+                                            if ( store instanceof RemoteRepository )
+                                            {
+                                                setProxyAttributes( ( (RemoteRepository) store ), action );
+                                            }
+
+                                            data.storeArtifactStore( store,
+                                                                     "REPLICATION: Mirroring remote aprox store: "
+                                                                         + store.getKey() );
+                                            replicated.add( store.getKey() );
+                                        }
+                                    }
+                                }
                             }
                         }
+                        catch ( final ProxyDataException e )
+                        {
+                            logger.error( e.getMessage(), e );
+                            setError( new AproxWorkflowException( e.getMessage(), e ) );
+                        }
+                        catch ( final AproxWorkflowException e )
+                        {
+                            setError( e );
+                        }
                     }
+                    
+                    return replicated;
                 }
-            }
-            catch ( final ProxyDataException e )
-            {
-                logger.error( e.getMessage(), e );
-                throw new AproxWorkflowException( e.getMessage(), e );
-            }
+            };
+
+        Set<StoreKey> replicated;
+        try
+        {
+            replicated = securitySystem.runAsCurrentPrincipal( action );
+        }
+        catch ( final SecuritySystemException e )
+        {
+            throw new AproxWorkflowException( "Replication failed.", e.getSecurityException() );
+        }
+
+        final AproxWorkflowException e = action.getError();
+        if ( e != null )
+        {
+            throw e;
         }
 
         return replicated;
@@ -203,8 +254,9 @@ public class ReplicationController
         }
         catch ( final MalformedURLException e )
         {
-            throw new AproxWorkflowException( "Failed to construct store definition-retrieval URL from api-base: {}. Reason: {}", e, apiUrl,
-                                              e.getMessage() );
+            throw new AproxWorkflowException(
+                                              "Failed to construct store definition-retrieval URL from api-base: {}. Reason: {}",
+                                              e, apiUrl, e.getMessage() );
         }
 
         //        logger.info( "\n\n\n\n\n[AutoProx] Checking URL: {} from:", new Throwable(), url );
@@ -224,9 +276,10 @@ public class ReplicationController
                 final String json = IOUtils.toString( response.getEntity()
                                                               .getContent() );
 
-                final Listing<RemoteRepository> listing = serializer.fromString( json, new TypeToken<Listing<RemoteRepository>>()
-                {
-                }.getType() );
+                final Listing<RemoteRepository> listing =
+                    serializer.fromString( json, new TypeToken<Listing<RemoteRepository>>()
+                    {
+                    }.getType() );
 
                 if ( listing != null )
                 {
@@ -243,11 +296,13 @@ public class ReplicationController
         }
         catch ( final ClientProtocolException e )
         {
-            throw new AproxWorkflowException( "Failed to retrieve endpoints from: %s. Reason: %s", e, remotesUrl, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve endpoints from: %s. Reason: %s", e, remotesUrl,
+                                              e.getMessage() );
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( "Failed to read endpoints from: %s. Reason: %s", e, remotesUrl, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to read endpoints from: %s. Reason: %s", e, remotesUrl,
+                                              e.getMessage() );
         }
         finally
         {
@@ -284,11 +339,13 @@ public class ReplicationController
         }
         catch ( final ClientProtocolException e )
         {
-            throw new AproxWorkflowException( "Failed to retrieve endpoints from: {}. Reason: {}", e, groupsUrl, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve endpoints from: {}. Reason: {}", e, groupsUrl,
+                                              e.getMessage() );
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( "Failed to read endpoints from: {}. Reason: {}", e, groupsUrl, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to read endpoints from: {}. Reason: {}", e, groupsUrl,
+                                              e.getMessage() );
         }
         finally
         {
@@ -309,9 +366,10 @@ public class ReplicationController
                 final String json = IOUtils.toString( response.getEntity()
                                                               .getContent() );
 
-                final Listing<HostedRepository> listing = serializer.fromString( json, new TypeToken<Listing<HostedRepository>>()
-                {
-                }.getType() );
+                final Listing<HostedRepository> listing =
+                    serializer.fromString( json, new TypeToken<Listing<HostedRepository>>()
+                    {
+                    }.getType() );
 
                 for ( final HostedRepository store : listing.getItems() )
                 {
@@ -325,11 +383,13 @@ public class ReplicationController
         }
         catch ( final ClientProtocolException e )
         {
-            throw new AproxWorkflowException( "Failed to retrieve endpoints from: %s. Reason: %s", e, hostedUrl, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve endpoints from: %s. Reason: %s", e, hostedUrl,
+                                              e.getMessage() );
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( "Failed to read endpoints from: %s. Reason: %s", e, hostedUrl, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to read endpoints from: %s. Reason: %s", e, hostedUrl,
+                                              e.getMessage() );
         }
         finally
         {
@@ -370,7 +430,9 @@ public class ReplicationController
         }
         catch ( final MalformedURLException e )
         {
-            throw new AproxWorkflowException( "Failed to construct endpoint-retrieval URL from api-base: {}. Reason: {}", e, apiUrl, e.getMessage() );
+            throw new AproxWorkflowException(
+                                              "Failed to construct endpoint-retrieval URL from api-base: {}. Reason: {}",
+                                              e, apiUrl, e.getMessage() );
         }
 
         //        logger.info( "\n\n\n\n\n[AutoProx] Checking URL: {} from:", new Throwable(), url );
@@ -385,8 +447,9 @@ public class ReplicationController
             final int status = statusLine.getStatusCode();
             if ( status == HttpStatus.SC_OK )
             {
-                final EndpointViewListing listing = serializer.fromStream( response.getEntity()
-                                                                                   .getContent(), "UTF-8", EndpointViewListing.class );
+                final EndpointViewListing listing =
+                    serializer.fromStream( response.getEntity()
+                                                   .getContent(), "UTF-8", EndpointViewListing.class );
 
                 return listing.getItems();
             }
@@ -395,7 +458,8 @@ public class ReplicationController
         }
         catch ( final ClientProtocolException e )
         {
-            throw new AproxWorkflowException( "Failed to retrieve endpoints from: {}. Reason: {}", e, url, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to retrieve endpoints from: {}. Reason: {}", e, url,
+                                              e.getMessage() );
         }
         catch ( final IOException e )
         {

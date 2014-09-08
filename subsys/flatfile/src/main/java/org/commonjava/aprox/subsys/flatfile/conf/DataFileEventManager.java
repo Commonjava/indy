@@ -24,7 +24,7 @@ import org.commonjava.maven.galley.event.FileStorageEvent;
  * Helper class to provide simple methods to handle null-checking, etc. around the firing of AProx filesystem events.
  */
 @ApplicationScoped
-public class FlatFileEventManager
+public class DataFileEventManager
     implements org.commonjava.maven.galley.spi.event.FileEventManager
 {
 

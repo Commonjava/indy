@@ -6,18 +6,22 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.commonjava.aprox.audit.SecuritySystem;
 
-public final class FlatFile
+public final class DataFile
 {
 
     private final File file;
 
-    private final FlatFileEventManager events;
+    private final SecuritySystem security;
 
-    FlatFile( final File file, final FlatFileEventManager events )
+    private final DataFileEventManager events;
+
+    DataFile( final File file, final DataFileEventManager events, final SecuritySystem security )
     {
         this.file = file;
         this.events = events;
+        this.security = security;
     }
 
     public String[] list()
@@ -25,9 +29,9 @@ public final class FlatFile
         return file.list();
     }
 
-    public FlatFile getChild( final String named )
+    public DataFile getChild( final String named )
     {
-        return new FlatFile( new File( file, named ), events );
+        return new DataFile( new File( file, named ), events, security );
     }
 
     public String readString()
@@ -39,21 +43,23 @@ public final class FlatFile
         return content;
     }
 
-    public void delete( final ChangeSummary summary )
+    public void delete( final String summary )
         throws IOException
     {
         if ( file.exists() )
         {
+            security.getCurrentPrincipal();
+
             FileUtils.forceDelete( file );
         }
 
         // TODO: events!
     }
 
-    public FlatFile getParent()
+    public DataFile getParent()
     {
         final File parent = file.getParentFile();
-        return parent == null ? null : new FlatFile( parent, events );
+        return parent == null ? null : new DataFile( parent, events, security );
     }
 
     public boolean mkdirs()
@@ -62,6 +68,8 @@ public final class FlatFile
         {
             return true;
         }
+
+        security.getCurrentPrincipal();
 
         final boolean result = file.mkdirs();
 
@@ -75,9 +83,11 @@ public final class FlatFile
         return file.exists();
     }
 
-    public void writeString( final String content, final String encoding, final ChangeSummary summary )
+    public void writeString( final String content, final String encoding, final String summary )
         throws IOException
     {
+        security.getCurrentPrincipal();
+
         FileUtils.write( file, content, encoding );
         // TODO: events!
     }
@@ -93,8 +103,10 @@ public final class FlatFile
         return file.isDirectory();
     }
 
-    public void renameTo( final FlatFile target, final ChangeSummary summary )
+    public void renameTo( final DataFile target, final String summary )
     {
+        security.getCurrentPrincipal();
+
         file.renameTo( target.file );
     }
 
@@ -112,7 +124,7 @@ public final class FlatFile
         return file.getPath();
     }
 
-    public FlatFile[] listFiles( final FileFilter fileFilter )
+    public DataFile[] listFiles( final FileFilter fileFilter )
     {
         final File[] files = file.listFiles( fileFilter );
         if ( files == null )
@@ -120,10 +132,10 @@ public final class FlatFile
             return null;
         }
 
-        final FlatFile[] ffiles = new FlatFile[files.length];
+        final DataFile[] ffiles = new DataFile[files.length];
         for ( int i = 0; i < files.length; i++ )
         {
-            ffiles[i] = new FlatFile( files[i], events );
+            ffiles[i] = new DataFile( files[i], events, security );
         }
 
         return ffiles;

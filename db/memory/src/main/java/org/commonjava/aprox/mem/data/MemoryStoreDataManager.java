@@ -25,8 +25,8 @@ import javax.enterprise.event.Event;
 import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
 import org.commonjava.aprox.change.event.ArtifactStoreDeleteEvent;
+import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateType;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
@@ -209,73 +209,76 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public boolean storeHostedRepository( final HostedRepository repo )
+    public boolean storeHostedRepository( final HostedRepository repo, final String summary )
         throws ProxyDataException
     {
-        return store( repo, false );
+        return store( repo, summary, false );
     }
 
     @Override
-    public boolean storeHostedRepository( final HostedRepository repo, final boolean skipIfExists )
+    public boolean storeHostedRepository( final HostedRepository repo, final String summary,
+                                          final boolean skipIfExists )
         throws ProxyDataException
     {
-        final boolean result = store( repo, skipIfExists );
+        final boolean result = store( repo, summary, skipIfExists );
         fireStoreEvent( ArtifactStoreUpdateType.ADD_OR_UPDATE, repo );
 
         return result;
     }
 
     @Override
-    public boolean storeRemoteRepository( final RemoteRepository repository )
+    public boolean storeRemoteRepository( final RemoteRepository repository, final String summary )
         throws ProxyDataException
     {
-        return store( repository, false );
+        return store( repository, summary, false );
     }
 
     @Override
-    public boolean storeRemoteRepository( final RemoteRepository repository, final boolean skipIfExists )
+    public boolean storeRemoteRepository( final RemoteRepository repository, final String summary,
+                                          final boolean skipIfExists )
         throws ProxyDataException
     {
-        final boolean result = store( repository, skipIfExists );
+        final boolean result = store( repository, summary, skipIfExists );
         fireStoreEvent( skipIfExists ? ArtifactStoreUpdateType.ADD : ArtifactStoreUpdateType.ADD_OR_UPDATE, repository );
         return result;
     }
 
     @Override
-    public boolean storeGroup( final Group group )
+    public boolean storeGroup( final Group group, final String summary )
         throws ProxyDataException
     {
-        return store( group, false );
+        return store( group, summary, false );
     }
 
     @Override
-    public boolean storeGroup( final Group group, final boolean skipIfExists )
+    public boolean storeGroup( final Group group, final String summary, final boolean skipIfExists )
         throws ProxyDataException
     {
-        final boolean result = store( group, skipIfExists );
+        final boolean result = store( group, summary, skipIfExists );
         fireStoreEvent( ArtifactStoreUpdateType.ADD_OR_UPDATE, group );
 
         return result;
     }
 
     @Override
-    public boolean storeArtifactStore( final ArtifactStore store )
+    public boolean storeArtifactStore( final ArtifactStore store, final String summary )
         throws ProxyDataException
     {
-        return store( store, false );
+        return store( store, summary, false );
     }
 
     @Override
-    public boolean storeArtifactStore( final ArtifactStore store, final boolean skipIfExists )
+    public boolean storeArtifactStore( final ArtifactStore store, final String summary,
+                                       final boolean skipIfExists )
         throws ProxyDataException
     {
-        final boolean result = store( store, skipIfExists );
+        final boolean result = store( store, summary, skipIfExists );
         fireStoreEvent( ArtifactStoreUpdateType.ADD_OR_UPDATE, store );
 
         return result;
     }
 
-    private boolean store( final ArtifactStore store, final boolean skipIfExists )
+    private boolean store( final ArtifactStore store, final String summary, final boolean skipIfExists )
     {
         if ( !skipIfExists || !stores.containsKey( store.getKey() ) )
         {
@@ -287,7 +290,7 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void deleteHostedRepository( final HostedRepository repo )
+    public void deleteHostedRepository( final HostedRepository repo, final String summary )
         throws ProxyDataException
     {
         stores.remove( repo.getKey() );
@@ -295,7 +298,7 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void deleteHostedRepository( final String name )
+    public void deleteHostedRepository( final String name, final String summary )
         throws ProxyDataException
     {
         stores.remove( new StoreKey( StoreType.hosted, name ) );
@@ -303,7 +306,7 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void deleteRemoteRepository( final RemoteRepository repo )
+    public void deleteRemoteRepository( final RemoteRepository repo, final String summary )
         throws ProxyDataException
     {
         stores.remove( repo.getKey() );
@@ -311,7 +314,7 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void deleteRemoteRepository( final String name )
+    public void deleteRemoteRepository( final String name, final String summary )
         throws ProxyDataException
     {
         stores.remove( new StoreKey( StoreType.remote, name ) );
@@ -319,7 +322,7 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void deleteGroup( final Group group )
+    public void deleteGroup( final Group group, final String summary )
         throws ProxyDataException
     {
         stores.remove( group.getKey() );
@@ -327,7 +330,7 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void deleteGroup( final String name )
+    public void deleteGroup( final String name, final String summary )
         throws ProxyDataException
     {
         stores.remove( new StoreKey( StoreType.group, name ) );
@@ -335,7 +338,7 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void deleteArtifactStore( final StoreKey key )
+    public void deleteArtifactStore( final StoreKey key, final String summary )
         throws ProxyDataException
     {
         stores.remove( key );
@@ -349,7 +352,7 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void clear()
+    public void clear( final String summary )
         throws ProxyDataException
     {
         stores.clear();

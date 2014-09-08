@@ -45,10 +45,10 @@ public class GroupConsistencyListenerLiveTest
         throws Exception
     {
         final RemoteRepository repo = new RemoteRepository( "test", "http://repo1.maven.apache.org/maven2/" );
-        proxyManager.storeRemoteRepository( repo );
+        proxyManager.storeRemoteRepository( repo, "test" );
 
         final Group group = new Group( "testGroup", repo.getKey() );
-        proxyManager.storeGroup( group );
+        proxyManager.storeGroup( group, "test" );
 
         assertThat( group.getConstituents(), notNullValue() );
         assertThat( group.getConstituents()
@@ -66,7 +66,7 @@ public class GroupConsistencyListenerLiveTest
                          .iterator()
                          .next(), equalTo( repo.getKey() ) );
 
-        proxyManager.deleteRemoteRepository( repo.getName() );
+        proxyManager.deleteRemoteRepository( repo.getName(), "test" );
 
         System.out.println( "Waiting up to 20s for deletions to propagate..." );
         final long start = System.currentTimeMillis();

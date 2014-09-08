@@ -22,7 +22,7 @@ import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
 import org.commonjava.aprox.inject.TestData;
-import org.commonjava.aprox.subsys.flatfile.conf.FlatFileConfiguration;
+import org.commonjava.aprox.subsys.flatfile.conf.DataFileConfiguration;
 
 @javax.enterprise.context.ApplicationScoped
 public class TestConfigProvider
@@ -36,7 +36,7 @@ public class TestConfigProvider
 
     private AproxDepgraphConfig config;
 
-    private FlatFileConfiguration dbConfig;
+    private DataFileConfiguration dbConfig;
 
     private File dbDir;
 
@@ -52,12 +52,12 @@ public class TestConfigProvider
     @Produces
     @Default
     @TestData
-    public synchronized FlatFileConfiguration getFlatFileConfig()
+    public synchronized DataFileConfiguration getFlatFileConfig()
         throws IOException
     {
         if ( dbConfig == null )
         {
-            dbConfig = new FlatFileConfiguration().withDataBasedir( dbDir );
+            dbConfig = new DataFileConfiguration().withDataBasedir( dbDir );
         }
 
         return dbConfig;

@@ -29,25 +29,25 @@ import org.commonjava.web.config.annotation.SectionName;
 @SectionName( "flatfiles" )
 @Alternative
 @Named( "unused" )
-public class FlatFileConfiguration
+public class DataFileConfiguration
 {
 
     @javax.enterprise.context.ApplicationScoped
     public static class FlatFileFeatureConfig
-        extends AbstractAproxFeatureConfig<FlatFileConfiguration, FlatFileConfiguration>
+        extends AbstractAproxFeatureConfig<DataFileConfiguration, DataFileConfiguration>
     {
         @Inject
         private FlatFileConfigInfo info;
 
         public FlatFileFeatureConfig()
         {
-            super( FlatFileConfiguration.class );
+            super( DataFileConfiguration.class );
         }
 
         @Produces
         @Default
         @ApplicationScoped
-        public FlatFileConfiguration getFlatFileConfig()
+        public DataFileConfiguration getFlatFileConfig()
             throws ConfigurationException
         {
             return getConfig();
@@ -66,7 +66,7 @@ public class FlatFileConfiguration
     {
         public FlatFileConfigInfo()
         {
-            super( FlatFileConfiguration.class );
+            super( DataFileConfiguration.class );
         }
     }
 
@@ -86,17 +86,17 @@ public class FlatFileConfiguration
 
     private File workBasedir;
 
-    public FlatFileConfiguration()
+    public DataFileConfiguration()
     {
     }
 
-    public FlatFileConfiguration( final File rootDir )
+    public DataFileConfiguration( final File rootDir )
     {
         this.dataBasedir = new File( rootDir, DEFAULT_DATA_SUBDIR );
         this.workBasedir = new File( rootDir, DEFAULT_WORK_SUBDIR );
     }
 
-    public FlatFileConfiguration( final File dataDir, final File workDir )
+    public DataFileConfiguration( final File dataDir, final File workDir )
     {
         this.dataBasedir = dataDir;
         this.workBasedir = workDir;
@@ -113,7 +113,7 @@ public class FlatFileConfiguration
         this.dataBasedir = dataBasedir;
     }
 
-    public FlatFileConfiguration withDataBasedir( final File dataBasedir )
+    public DataFileConfiguration withDataBasedir( final File dataBasedir )
     {
         this.dataBasedir = dataBasedir;
         return this;
@@ -138,7 +138,7 @@ public class FlatFileConfiguration
         this.workBasedir = workBasedir;
     }
 
-    public FlatFileConfiguration withWorkBasedir( final File workBasedir )
+    public DataFileConfiguration withWorkBasedir( final File workBasedir )
     {
         this.workBasedir = workBasedir;
         return this;

@@ -3,6 +3,7 @@ package org.commonjava.aprox.autoprox.fixture;
 import java.util.List;
 import java.util.Set;
 
+import org.commonjava.aprox.audit.SecuritySystem;
 import org.commonjava.aprox.autoprox.data.AutoProxCatalog;
 import org.commonjava.aprox.autoprox.data.AutoProxDataManagerDecorator;
 import org.commonjava.aprox.data.ProxyDataException;
@@ -23,9 +24,10 @@ public class TestAutoProxyDataManager
 
     private final StoreDataManager delegate;
 
-    public TestAutoProxyDataManager( final AutoProxCatalog catalog, final AproxHttpProvider http )
+    public TestAutoProxyDataManager( final AutoProxCatalog catalog, final AproxHttpProvider http,
+                                     final SecuritySystem security )
     {
-        super( new MemoryStoreDataManager(), catalog, http );
+        super( new MemoryStoreDataManager(), catalog, http, security );
         delegate = getDelegate();
     }
 
@@ -93,118 +95,6 @@ public class TestAutoProxyDataManager
     }
 
     @Override
-    public boolean storeHostedRepository( final HostedRepository deploy )
-        throws ProxyDataException
-    {
-        return delegate.storeHostedRepository( deploy );
-    }
-
-    @Override
-    public boolean storeHostedRepository( final HostedRepository deploy, final boolean skipIfExists )
-        throws ProxyDataException
-    {
-        return delegate.storeHostedRepository( deploy, skipIfExists );
-    }
-
-    @Override
-    public boolean storeRemoteRepository( final RemoteRepository proxy )
-        throws ProxyDataException
-    {
-        return delegate.storeRemoteRepository( proxy );
-    }
-
-    @Override
-    public boolean storeRemoteRepository( final RemoteRepository repository, final boolean skipIfExists )
-        throws ProxyDataException
-    {
-        return delegate.storeRemoteRepository( repository, skipIfExists );
-    }
-
-    @Override
-    public boolean storeGroup( final Group group )
-        throws ProxyDataException
-    {
-        return delegate.storeGroup( group );
-    }
-
-    @Override
-    public boolean storeGroup( final Group group, final boolean skipIfExists )
-        throws ProxyDataException
-    {
-        return delegate.storeGroup( group, skipIfExists );
-    }
-
-    @Override
-    public boolean storeArtifactStore( final ArtifactStore key )
-        throws ProxyDataException
-    {
-        return delegate.storeArtifactStore( key );
-    }
-
-    @Override
-    public boolean storeArtifactStore( final ArtifactStore key, final boolean skipIfExists )
-        throws ProxyDataException
-    {
-        return delegate.storeArtifactStore( key, skipIfExists );
-    }
-
-    @Override
-    public void deleteHostedRepository( final HostedRepository deploy )
-        throws ProxyDataException
-    {
-        delegate.deleteHostedRepository( deploy );
-    }
-
-    @Override
-    public void deleteHostedRepository( final String name )
-        throws ProxyDataException
-    {
-        delegate.deleteHostedRepository( name );
-    }
-
-    @Override
-    public void deleteRemoteRepository( final RemoteRepository repo )
-        throws ProxyDataException
-    {
-        delegate.deleteRemoteRepository( repo );
-    }
-
-    @Override
-    public void deleteRemoteRepository( final String name )
-        throws ProxyDataException
-    {
-        delegate.deleteRemoteRepository( name );
-    }
-
-    @Override
-    public void deleteGroup( final Group group )
-        throws ProxyDataException
-    {
-        delegate.deleteGroup( group );
-    }
-
-    @Override
-    public void deleteGroup( final String name )
-        throws ProxyDataException
-    {
-        delegate.deleteGroup( name );
-    }
-
-    @Override
-    public void deleteArtifactStore( final StoreKey key )
-        throws ProxyDataException
-    {
-        delegate.deleteArtifactStore( key );
-    }
-
-    @Override
-    public void clear()
-        throws ProxyDataException
-    {
-        delegate.clear();
-    }
-
-    @Override
     public void install()
         throws ProxyDataException
     {
@@ -216,6 +106,144 @@ public class TestAutoProxyDataManager
         throws ProxyDataException
     {
         delegate.reload();
+    }
+
+    @Override
+    public boolean storeHostedRepository( final HostedRepository deploy, final String summary )
+        throws ProxyDataException
+    {
+        return delegate.storeHostedRepository( deploy, summary );
+    }
+
+    @Override
+    public boolean storeHostedRepository( final HostedRepository deploy, final String summary,
+                                          final boolean skipIfExists )
+        throws ProxyDataException
+    {
+        return delegate.storeHostedRepository( deploy, summary, skipIfExists );
+    }
+
+    @Override
+    public boolean storeRemoteRepository( final RemoteRepository proxy, final String summary )
+        throws ProxyDataException
+    {
+        return delegate.storeRemoteRepository( proxy, summary );
+    }
+
+    @Override
+    public boolean storeRemoteRepository( final RemoteRepository repository, final String summary,
+                                          final boolean skipIfExists )
+        throws ProxyDataException
+    {
+        return delegate.storeRemoteRepository( repository, summary, skipIfExists );
+    }
+
+    @Override
+    public boolean storeGroup( final Group group, final String summary )
+        throws ProxyDataException
+    {
+        return delegate.storeGroup( group, summary );
+    }
+
+    @Override
+    public boolean storeGroup( final Group group, final String summary, final boolean skipIfExists )
+        throws ProxyDataException
+    {
+        return delegate.storeGroup( group, summary, skipIfExists );
+    }
+
+    @Override
+    public boolean storeArtifactStore( final ArtifactStore key, final String summary )
+        throws ProxyDataException
+    {
+        return delegate.storeArtifactStore( key, summary );
+    }
+
+    @Override
+    public boolean storeArtifactStore( final ArtifactStore key, final String summary, final boolean skipIfExists )
+        throws ProxyDataException
+    {
+        return delegate.storeArtifactStore( key, summary, skipIfExists );
+    }
+
+    @Override
+    public void deleteHostedRepository( final HostedRepository deploy, final String summary )
+        throws ProxyDataException
+    {
+        delegate.deleteHostedRepository( deploy, summary );
+    }
+
+    @Override
+    public void deleteHostedRepository( final String name, final String summary )
+        throws ProxyDataException
+    {
+        delegate.deleteHostedRepository( name, summary );
+    }
+
+    @Override
+    public void deleteRemoteRepository( final RemoteRepository repo, final String summary )
+        throws ProxyDataException
+    {
+        delegate.deleteRemoteRepository( repo, summary );
+    }
+
+    @Override
+    public void deleteRemoteRepository( final String name, final String summary )
+        throws ProxyDataException
+    {
+        delegate.deleteRemoteRepository( name, summary );
+    }
+
+    @Override
+    public void deleteGroup( final Group group, final String summary )
+        throws ProxyDataException
+    {
+        delegate.deleteGroup( group, summary );
+    }
+
+    @Override
+    public void deleteGroup( final String name, final String summary )
+        throws ProxyDataException
+    {
+        delegate.deleteGroup( name, summary );
+    }
+
+    @Override
+    public void deleteArtifactStore( final StoreKey key, final String summary )
+        throws ProxyDataException
+    {
+        delegate.deleteArtifactStore( key, summary );
+    }
+
+    @Override
+    public void clear( final String summary )
+        throws ProxyDataException
+    {
+        delegate.clear( summary );
+    }
+
+    @Override
+    public boolean hasRemoteRepository( final String name )
+    {
+        return delegate.hasRemoteRepository( name );
+    }
+
+    @Override
+    public boolean hasGroup( final String name )
+    {
+        return delegate.hasGroup( name );
+    }
+
+    @Override
+    public boolean hasHostedRepository( final String name )
+    {
+        return delegate.hasHostedRepository( name );
+    }
+
+    @Override
+    public boolean hasArtifactStore( final StoreKey key )
+    {
+        return delegate.hasArtifactStore( key );
     }
 
 }

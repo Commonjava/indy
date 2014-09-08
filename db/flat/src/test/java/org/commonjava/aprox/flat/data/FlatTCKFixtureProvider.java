@@ -11,12 +11,16 @@
 package org.commonjava.aprox.flat.data;
 
 import java.io.File;
+import java.security.PrivilegedAction;
 
+import org.commonjava.aprox.audit.BasicSecuritySystem;
+import org.commonjava.aprox.audit.SecuritySystem;
 import org.commonjava.aprox.core.data.TCKFixtureProvider;
+import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.subsys.flatfile.conf.FlatFileConfiguration;
-import org.commonjava.aprox.subsys.flatfile.conf.FlatFileEventManager;
-import org.commonjava.aprox.subsys.flatfile.conf.FlatFileManager;
+import org.commonjava.aprox.subsys.flatfile.conf.DataFileConfiguration;
+import org.commonjava.aprox.subsys.flatfile.conf.DataFileEventManager;
+import org.commonjava.aprox.subsys.flatfile.conf.DataFileManager;
 import org.commonjava.web.json.ser.JsonSerializer;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -32,10 +36,18 @@ public class FlatTCKFixtureProvider
 
     private File configDir;
 
+    private SecuritySystem securitySystem;
+
     @Override
     public StoreDataManager getDataManager()
     {
         return dataManager;
+    }
+
+    @Override
+    public SecuritySystem getSecuritySystem()
+    {
+        return securitySystem;
     }
 
     @Override
@@ -48,19 +60,46 @@ public class FlatTCKFixtureProvider
 
         final JsonSerializer serializer = new JsonSerializer();
 
-        dataManager = new TestFlatFileDataManager( new FlatFileConfiguration().withDataBasedir( configDir ), serializer );
+        securitySystem = new BasicSecuritySystem();
 
-        dataManager.install();
-        dataManager.clear();
+        dataManager =
+            new TestFlatFileDataManager( new DataFileConfiguration().withDataBasedir( configDir ), serializer,
+                                         securitySystem );
+
+        final ProxyDataException error = securitySystem.runAsSystemUser( new PrivilegedAction<ProxyDataException>()
+        {
+            @Override
+            public ProxyDataException run()
+            {
+                try
+                {
+                    dataManager.install();
+                    dataManager.clear( "Setting up test" );
+                }
+                catch ( final ProxyDataException e )
+                {
+                    return e;
+                }
+
+                return null;
+            }
+        } );
+
+        if ( error != null )
+        {
+            throw error;
+        }
     }
 
     private static final class TestFlatFileDataManager
-        extends FlatFileStoreDataManager
+        extends DataFileStoreDataManager
     {
 
-        public TestFlatFileDataManager( final FlatFileConfiguration config, final JsonSerializer serializer )
+        public TestFlatFileDataManager( final DataFileConfiguration config, final JsonSerializer serializer,
+                                        final SecuritySystem securitySystem )
         {
-            super( new FlatFileManager( config, new FlatFileEventManager() ), serializer );
+            super( new DataFileManager( config, new DataFileEventManager(), securitySystem ), serializer,
+                   securitySystem );
         }
 
         //        @Override

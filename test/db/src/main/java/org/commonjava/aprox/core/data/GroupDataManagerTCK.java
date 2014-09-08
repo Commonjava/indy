@@ -16,10 +16,14 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
+import java.security.Principal;
+import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.apache.http.auth.BasicUserPrincipal;
+import org.commonjava.aprox.audit.SecuritySystem;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
@@ -36,6 +40,12 @@ public abstract class GroupDataManagerTCK
     extends AbstractProxyDataManagerTCK
 {
 
+    private Principal principal;
+
+    private StoreDataManager manager;
+
+    private SecuritySystem security;
+
     @Before
     public void setup()
         throws Exception
@@ -50,24 +60,49 @@ public abstract class GroupDataManagerTCK
     }
 
     protected void seedRepositoriesForGroupTests()
-        throws ProxyDataException
+        throws Exception
     {
-        final StoreDataManager manager = getFixtureProvider().getDataManager();
+        principal = new BasicUserPrincipal( "test-user" );
 
-        manager.storeRemoteRepository( new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" ) );
-        manager.storeRemoteRepository( new RemoteRepository( "repo2", "http://repo1.maven.org/maven2/" ) );
+        manager = getFixtureProvider().getDataManager();
+        security = getFixtureProvider().getSecuritySystem();
+
+        final ProxyDataException error = security.runAsSystemUser( new PrivilegedAction<ProxyDataException>()
+        {
+            @Override
+            public ProxyDataException run()
+            {
+                try
+                {
+                    manager.storeRemoteRepository( new RemoteRepository( "central",
+                                                                         "http://repo1.maven.apache.org/maven2/" ),
+                                                   "test setup" );
+                    manager.storeRemoteRepository( new RemoteRepository( "repo2", "http://repo1.maven.org/maven2/" ),
+                                                   "test setup" );
+                }
+                catch ( final ProxyDataException e )
+                {
+                    return e;
+                }
+
+                return null;
+            }
+        } );
+
+        if ( error != null )
+        {
+            throw error;
+        }
     }
 
     @Test
     @SuppressWarnings( { "unchecked", "rawtypes" } )
     public void createAndRetrieveEmptyGroup()
-        throws ProxyDataException
+        throws Exception
     {
-        final StoreDataManager manager = getFixtureProvider().getDataManager();
-
         final Group grp = new Group( "test" );
 
-        manager.storeGroup( grp );
+        store( grp );
 
         final Group result = manager.getGroup( grp.getName() );
 
@@ -89,17 +124,67 @@ public abstract class GroupDataManagerTCK
         } ) );
     }
 
+    private void store( final Group... groups )
+        throws Exception
+    {
+        final ProxyDataException e = security.runAs( principal, new PrivilegedAction<ProxyDataException>()
+        {
+            @Override
+            public ProxyDataException run()
+            {
+                for ( final Group group : groups )
+                {
+                    try
+                    {
+                        manager.storeGroup( group, "test" );
+                    }
+                    catch ( final ProxyDataException e )
+                    {
+                        return e;
+                    }
+                }
+
+                return null;
+            }
+        } );
+
+        if ( e != null )
+        {
+            throw e;
+        }
+    }
+
     @Test
     public void createAndDeleteGroup_ByName()
-        throws ProxyDataException
+        throws Exception
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
 
         final Group grp = new Group( "test" );
+        store( grp );
 
-        manager.storeGroup( grp );
+        final ProxyDataException e = security.runAs( principal, new PrivilegedAction<ProxyDataException>()
+        {
+            @Override
+            public ProxyDataException run()
+            {
+                try
+                {
+                    manager.deleteGroup( grp.getName(), "test" );
+                }
+                catch ( final ProxyDataException e )
+                {
+                    return e;
+                }
 
-        manager.deleteGroup( grp.getName() );
+                return null;
+            }
+        } );
+
+        if ( e != null )
+        {
+            throw e;
+        }
 
         final Group result = manager.getGroup( grp.getName() );
 
@@ -108,15 +193,36 @@ public abstract class GroupDataManagerTCK
 
     @Test
     public void createAndDeleteGroup_ByObject()
-        throws ProxyDataException
+        throws Exception
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
 
         final Group grp = new Group( "test" );
 
-        manager.storeGroup( grp );
+        store( grp );
 
-        manager.deleteGroup( grp );
+        final ProxyDataException e = security.runAs( principal, new PrivilegedAction<ProxyDataException>()
+        {
+            @Override
+            public ProxyDataException run()
+            {
+                try
+                {
+                    manager.deleteGroup( grp, "test" );
+                }
+                catch ( final ProxyDataException e )
+                {
+                    return e;
+                }
+
+                return null;
+            }
+        } );
+
+        if ( e != null )
+        {
+            throw e;
+        }
 
         final Group result = manager.getGroup( grp.getName() );
 
@@ -125,15 +231,14 @@ public abstract class GroupDataManagerTCK
 
     @Test
     public void createAndRetrieveGroupWithTwoConstituents()
-        throws ProxyDataException
+        throws Exception
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
 
         final Group grp =
-            new Group( "test", new StoreKey( StoreType.remote, "central" ), new StoreKey( StoreType.remote,
-                                                                                              "repo2" ) );
+            new Group( "test", new StoreKey( StoreType.remote, "central" ), new StoreKey( StoreType.remote, "repo2" ) );
 
-        manager.storeGroup( grp );
+        store( grp );
 
         final Group result = manager.getGroup( grp.getName() );
 
@@ -150,15 +255,14 @@ public abstract class GroupDataManagerTCK
 
     @Test
     public void createGroupAndRetrieveReposForThatGroupInOrder()
-        throws ProxyDataException
+        throws Exception
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
 
         final Group grp =
-            new Group( "test", new StoreKey( StoreType.remote, "repo2" ), new StoreKey( StoreType.remote,
-                                                                                            "central" ) );
+            new Group( "test", new StoreKey( StoreType.remote, "repo2" ), new StoreKey( StoreType.remote, "central" ) );
 
-        manager.storeGroup( grp );
+        store( grp );
 
         final List<? extends ArtifactStore> repos = manager.getOrderedConcreteStoresInGroup( grp.getName() );
 
@@ -173,15 +277,14 @@ public abstract class GroupDataManagerTCK
 
     @Test
     public void createGroupAndRetrieveRepositoryConstituents()
-        throws ProxyDataException
+        throws Exception
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
 
         final Group grp =
-            new Group( "test", new StoreKey( StoreType.remote, "central" ), new StoreKey( StoreType.remote,
-                                                                                              "repo2" ) );
+            new Group( "test", new StoreKey( StoreType.remote, "central" ), new StoreKey( StoreType.remote, "repo2" ) );
 
-        manager.storeGroup( grp );
+        store( grp );
 
         final List<? extends ArtifactStore> result = manager.getOrderedConcreteStoresInGroup( grp.getName() );
 
@@ -199,14 +302,13 @@ public abstract class GroupDataManagerTCK
 
     @Test
     public void createSameGroupTwiceAndRetrieveOne()
-        throws ProxyDataException
+        throws Exception
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
 
         final Group grp = new Group( "test" );
 
-        manager.storeGroup( grp, true );
-        manager.storeGroup( grp, true );
+        store( grp, grp );
 
         final List<? extends Group> result = manager.getAllGroups();
 
@@ -216,15 +318,14 @@ public abstract class GroupDataManagerTCK
 
     @Test
     public void createTwoGroupsAndRetrieveBoth()
-        throws ProxyDataException
+        throws Exception
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
 
         final Group grp = new Group( "test" );
         final Group grp2 = new Group( "test2" );
 
-        manager.storeGroup( grp );
-        manager.storeGroup( grp2 );
+        store( grp, grp2 );
 
         final List<? extends Group> result = manager.getAllGroups();
 
