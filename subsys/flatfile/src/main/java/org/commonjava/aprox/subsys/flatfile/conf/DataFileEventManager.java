@@ -14,63 +14,39 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
-import org.commonjava.maven.galley.event.FileAccessEvent;
-import org.commonjava.maven.galley.event.FileDeletionEvent;
-import org.commonjava.maven.galley.event.FileErrorEvent;
-import org.commonjava.maven.galley.event.FileNotFoundEvent;
-import org.commonjava.maven.galley.event.FileStorageEvent;
+import org.commonjava.aprox.subsys.flatfile.conf.change.DataFileAccessEvent;
+import org.commonjava.aprox.subsys.flatfile.conf.change.DataFileDeletionEvent;
+import org.commonjava.aprox.subsys.flatfile.conf.change.DataFileStorageEvent;
 
 /**
  * Helper class to provide simple methods to handle null-checking, etc. around the firing of AProx filesystem events.
  */
 @ApplicationScoped
 public class DataFileEventManager
-    implements org.commonjava.maven.galley.spi.event.FileEventManager
 {
 
     @Inject
-    private Event<FileStorageEvent> storageEvent;
+    private Event<DataFileStorageEvent> storageEvent;
 
     @Inject
-    private Event<FileAccessEvent> accessEvent;
+    private Event<DataFileAccessEvent> accessEvent;
 
     @Inject
-    private Event<FileDeletionEvent> deleteEvent;
+    private Event<DataFileDeletionEvent> deleteEvent;
 
-    @Inject
-    private Event<FileErrorEvent> errorEvent;
-
-    @Inject
-    private Event<FileNotFoundEvent> notFoundEvent;
-
-    @Override
-    public void fire( final FileNotFoundEvent evt )
-    {
-        doFire( notFoundEvent, evt );
-    }
-
-    @Override
-    public void fire( final FileStorageEvent evt )
+    public void fire( final DataFileStorageEvent evt )
     {
         doFire( storageEvent, evt );
     }
 
-    @Override
-    public void fire( final FileAccessEvent evt )
+    public void fire( final DataFileAccessEvent evt )
     {
         doFire( accessEvent, evt );
     }
 
-    @Override
-    public void fire( final FileDeletionEvent evt )
+    public void fire( final DataFileDeletionEvent evt )
     {
         doFire( deleteEvent, evt );
-    }
-
-    @Override
-    public void fire( final FileErrorEvent evt )
-    {
-        doFire( errorEvent, evt );
     }
 
     private <T> void doFire( final Event<T> eventQ, final T evt )
