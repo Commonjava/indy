@@ -7,7 +7,6 @@ import groovy.text.GStringTemplateEngine;
 import java.util.Collections;
 
 import org.apache.commons.io.FileUtils;
-import org.commonjava.aprox.audit.BasicSecuritySystem;
 import org.commonjava.aprox.content.ContentGenerator;
 import org.commonjava.aprox.content.ContentManager;
 import org.commonjava.aprox.content.DownloadManager;
@@ -16,8 +15,8 @@ import org.commonjava.aprox.core.content.DefaultDownloadManager;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.io.StoreKeySerializer;
-import org.commonjava.aprox.subsys.flatfile.conf.DataFileEventManager;
-import org.commonjava.aprox.subsys.flatfile.conf.DataFileManager;
+import org.commonjava.aprox.subsys.datafile.DataFileManager;
+import org.commonjava.aprox.subsys.datafile.change.DataFileEventManager;
 import org.commonjava.aprox.subsys.template.TemplatingEngine;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.SimpleLocation;
@@ -51,8 +50,7 @@ public class ContentControllerTest
         final TemplatingEngine templates =
             new TemplatingEngine( new GStringTemplateEngine(), new DataFileManager( fixture.getTemp()
                                                                                            .newFolder( "aprox-home" ),
-                                                                                    new DataFileEventManager(),
-                                                                                    new BasicSecuritySystem() ) );
+                                                                                    new DataFileEventManager() ) );
 
         content =
             new ContentController( storeManager, contentManager, templates,

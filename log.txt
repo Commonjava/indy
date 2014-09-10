@@ -1,0 +1,1127 @@
+Launching: savant
+Looking for launcher archives: '/home/jdcasey/code/stacks/aprox/aprox/launchers/savant/target/aprox-launcher-savant-*-launcher.tar.gz
+Found matching archives: ["/home/jdcasey/code/stacks/aprox/aprox/launchers/savant/target/aprox-launcher-savant-0.15.4-SNAPSHOT-launcher.tar.gz"]
+Running: 'tar -zxvf /home/jdcasey/code/stacks/aprox/aprox/launchers/savant/target/aprox-launcher-savant-0.15.4-SNAPSHOT-launcher.tar.gz -C /home/jdcasey/code/stacks/aprox/aprox/launchers/savant/target'...
+aprox/etc/
+aprox/etc/aprox/
+aprox/etc/aprox/conf.d/
+aprox/etc/aprox/conf.d/README.txt
+aprox/etc/aprox/aprox-release
+aprox/bin/init/aprox
+aprox/bin/aprox.sh
+aprox/etc/aprox/env.sh
+aprox/bin/
+aprox/bin/init/
+aprox/etc/aprox/logging/
+aprox/var/
+aprox/var/lib/
+aprox/var/lib/aprox/
+aprox/var/lib/aprox/data/
+aprox/var/lib/aprox/data/templates/
+aprox/etc/aprox/logging/logback.xml
+aprox/etc/aprox/main.conf
+aprox/var/lib/aprox/data/templates/README.txt
+aprox/var/lib/aprox/ui/bower_components/
+aprox/var/lib/aprox/ui/bower_components/angular/
+aprox/var/lib/aprox/ui/bower_components/angular-loader/
+aprox/var/lib/aprox/ui/bower_components/angular-mocks/
+aprox/var/lib/aprox/ui/bower_components/angular-resource/
+aprox/var/lib/aprox/ui/bower_components/angular-route/
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/css/
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/doc/
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/img/
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/js/
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/js/vendor/
+aprox/var/lib/aprox/ui/css/
+aprox/var/lib/aprox/ui/img/
+aprox/var/lib/aprox/ui/js/
+aprox/var/lib/aprox/ui/partials/
+aprox/var/lib/aprox/ui/partials/directives/
+aprox/var/lib/aprox/ui/partials/includes/
+aprox/var/lib/aprox/ui/bower_components/angular/.bower.json
+aprox/var/lib/aprox/ui/bower_components/angular/README.md
+aprox/var/lib/aprox/ui/bower_components/angular/angular-csp.css
+aprox/var/lib/aprox/ui/bower_components/angular/angular.js
+aprox/var/lib/aprox/ui/bower_components/angular/angular.min.js
+aprox/var/lib/aprox/ui/bower_components/angular/angular.min.js.gzip
+aprox/var/lib/aprox/ui/bower_components/angular/angular.min.js.map
+aprox/var/lib/aprox/ui/bower_components/angular/bower.json
+aprox/var/lib/aprox/ui/bower_components/angular-loader/.bower.json
+aprox/var/lib/aprox/ui/bower_components/angular-loader/README.md
+aprox/var/lib/aprox/ui/bower_components/angular-loader/angular-loader.js
+aprox/var/lib/aprox/ui/bower_components/angular-loader/angular-loader.min.js
+aprox/var/lib/aprox/ui/bower_components/angular-loader/angular-loader.min.js.map
+aprox/var/lib/aprox/ui/bower_components/angular-loader/bower.json
+aprox/var/lib/aprox/ui/bower_components/angular-mocks/.bower.json
+aprox/var/lib/aprox/ui/bower_components/angular-mocks/README.md
+aprox/var/lib/aprox/ui/bower_components/angular-mocks/angular-mocks.js
+aprox/var/lib/aprox/ui/bower_components/angular-mocks/bower.json
+aprox/var/lib/aprox/ui/bower_components/angular-resource/.bower.json
+aprox/var/lib/aprox/ui/bower_components/angular-resource/README.md
+aprox/var/lib/aprox/ui/bower_components/angular-resource/angular-resource.js
+aprox/var/lib/aprox/ui/bower_components/angular-resource/angular-resource.min.js
+aprox/var/lib/aprox/ui/bower_components/angular-resource/angular-resource.min.js.map
+aprox/var/lib/aprox/ui/bower_components/angular-resource/bower.json
+aprox/var/lib/aprox/ui/bower_components/angular-route/.bower.json
+aprox/var/lib/aprox/ui/bower_components/angular-route/README.md
+aprox/var/lib/aprox/ui/bower_components/angular-route/angular-route.js
+aprox/var/lib/aprox/ui/bower_components/angular-route/angular-route.min.js
+aprox/var/lib/aprox/ui/bower_components/angular-route/angular-route.min.js.map
+aprox/var/lib/aprox/ui/bower_components/angular-route/bower.json
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/css/main.css
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/css/normalize.css
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/doc/TOC.md
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/doc/crossdomain.md
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/doc/css.md
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/doc/extend.md
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/doc/faq.md
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/doc/html.md
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/doc/js.md
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/doc/misc.md
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/doc/usage.md
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/img/.gitignore
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/js/vendor/jquery-1.10.2.min.js
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/js/vendor/modernizr-2.6.2.min.js
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/js/main.js
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/js/plugins.js
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/.bower.json
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/.gitattributes
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/.gitignore
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/.htaccess
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/404.html
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/CHANGELOG.md
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/CONTRIBUTING.md
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/LICENSE.md
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/README.md
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/apple-touch-icon-precomposed.png
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/crossdomain.xml
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/favicon.ico
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/humans.txt
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/index.html
+aprox/var/lib/aprox/ui/bower_components/html5-boilerplate/robots.txt
+aprox/var/lib/aprox/ui/css/.gitkeep
+aprox/var/lib/aprox/ui/css/aprox.css
+aprox/var/lib/aprox/ui/img/.gitkeep
+aprox/var/lib/aprox/ui/js/app.js
+aprox/var/lib/aprox/ui/js/controllers.js
+aprox/var/lib/aprox/ui/js/directives.js
+aprox/var/lib/aprox/ui/js/dynamic-logic.js
+aprox/var/lib/aprox/ui/js/filters.js
+aprox/var/lib/aprox/ui/js/services.js
+aprox/var/lib/aprox/ui/js/utils.js
+aprox/var/lib/aprox/ui/partials/directives/ap-group-available.html
+aprox/var/lib/aprox/ui/partials/directives/ap-group-constituent.html
+aprox/var/lib/aprox/ui/partials/includes/group-view.html
+aprox/var/lib/aprox/ui/partials/includes/hosted-view.html
+aprox/var/lib/aprox/ui/partials/includes/remote-view.html
+aprox/var/lib/aprox/ui/partials/.gitkeep
+aprox/var/lib/aprox/ui/partials/group-detail.html
+aprox/var/lib/aprox/ui/partials/group-edit.html
+aprox/var/lib/aprox/ui/partials/group-list.html
+aprox/var/lib/aprox/ui/partials/hosted-detail.html
+aprox/var/lib/aprox/ui/partials/hosted-edit.html
+aprox/var/lib/aprox/ui/partials/hosted-list.html
+aprox/var/lib/aprox/ui/partials/nfc.html
+aprox/var/lib/aprox/ui/partials/remote-detail.html
+aprox/var/lib/aprox/ui/partials/remote-edit.html
+aprox/var/lib/aprox/ui/partials/remote-list.html
+aprox/var/lib/aprox/ui/index-async.html
+aprox/var/lib/aprox/ui/index.html
+aprox/var/lib/aprox/data/autoprox/
+aprox/var/lib/aprox/data/autoprox/0010-redhat.groovy
+aprox/var/lib/aprox/data/autoprox/0020-jbossorg.groovy
+aprox/var/lib/aprox/data/autoprox/0030-sonatype.groovy
+aprox/var/lib/aprox/data/autoprox/9980-autocompose.groovy
+aprox/var/lib/aprox/data/autoprox/9990-legacy.groovy
+aprox/var/lib/aprox/data/templates/settings.xml.groovy
+aprox/var/lib/aprox/data/templates/application_xml/
+aprox/var/lib/aprox/data/templates/application_xml/setback-settings.xml.groovy
+aprox/usr/share/doc/aprox/autoprox/
+aprox/usr/share/doc/aprox/autoprox/examples/
+aprox/usr/share/doc/aprox/autoprox/examples/minimal/
+aprox/usr/share/doc/aprox/autoprox/examples/minimal/etc/
+aprox/usr/share/doc/aprox/autoprox/examples/minimal/etc/aprox/
+aprox/usr/share/doc/aprox/autoprox/examples/minimal/etc/aprox/autoprox.d/
+aprox/usr/share/doc/aprox/autoprox/examples/minimal/etc/aprox/conf.d/
+aprox/usr/share/doc/aprox/autoprox/examples/multiple/
+aprox/usr/share/doc/aprox/autoprox/examples/multiple/etc/
+aprox/usr/share/doc/aprox/autoprox/examples/multiple/etc/aprox/
+aprox/usr/share/doc/aprox/autoprox/examples/multiple/etc/aprox/autoprox.d/
+aprox/usr/share/doc/aprox/autoprox/examples/multiple/etc/aprox/conf.d/
+aprox/usr/share/doc/aprox/autoprox/examples/single/
+aprox/usr/share/doc/aprox/autoprox/examples/single/etc/
+aprox/usr/share/doc/aprox/autoprox/examples/single/etc/aprox/
+aprox/usr/share/doc/aprox/autoprox/examples/single/etc/aprox/autoprox.d/
+aprox/usr/share/doc/aprox/autoprox/examples/single/etc/aprox/conf.d/
+aprox/usr/share/doc/aprox/autoprox/examples/minimal/etc/aprox/autoprox.d/default.groovy
+aprox/usr/share/doc/aprox/autoprox/examples/minimal/etc/aprox/conf.d/autoprox.conf
+aprox/usr/share/doc/aprox/autoprox/examples/multiple/etc/aprox/autoprox.d/ci-factory.groovy
+aprox/usr/share/doc/aprox/autoprox/examples/multiple/etc/aprox/autoprox.d/prod-factory.groovy
+aprox/usr/share/doc/aprox/autoprox/examples/multiple/etc/aprox/conf.d/autoprox.conf
+aprox/usr/share/doc/aprox/autoprox/examples/single/etc/aprox/autoprox.d/factory.groovy
+aprox/usr/share/doc/aprox/autoprox/examples/single/etc/aprox/conf.d/autoprox.conf
+aprox/etc/aprox/autoprox.d/
+aprox/etc/aprox/conf.d/autoprox.conf
+aprox/etc/aprox/conf.d/depgraph.conf
+aprox/var/lib/aprox/ui/layover/
+aprox/var/lib/aprox/ui/layover/autoprox/
+aprox/var/lib/aprox/ui/layover/autoprox/js/
+aprox/var/lib/aprox/ui/layover/autoprox/partials/
+aprox/var/lib/aprox/ui/layover/autoprox/js/autoprox.js
+aprox/var/lib/aprox/ui/layover/autoprox/partials/calc.html
+aprox/var/lib/aprox/ui/layover/autoprox/partials/rules.html
+aprox/lib/aprox-cdi-components-0.15.4-SNAPSHOT.jar
+aprox/lib/thirdparty/guava-12.0.jar
+aprox/lib/thirdparty/jsr305-1.3.9.jar
+aprox/lib/thirdparty/vertx-core-2.0.0-final.jar
+aprox/lib/thirdparty/slf4j-api-1.7.4.jar
+aprox/lib/thirdparty/jackson-databind-2.2.2.jar
+aprox/lib/thirdparty/jackson-annotations-2.2.2.jar
+aprox/lib/thirdparty/jackson-core-2.2.2.jar
+aprox/lib/thirdparty/hazelcast-2.6.jar
+aprox/lib/thirdparty/netty-all-4.0.2.Final.jar
+aprox/lib/thirdparty/commons-io-2.4.jar
+aprox/lib/thirdparty/commons-lang-2.6.jar
+aprox/lib/thirdparty/log4j-over-slf4j-1.7.4.jar
+aprox/lib/thirdparty/logback-classic-1.0.12.jar
+aprox/lib/thirdparty/logback-core-1.0.12.jar
+aprox/lib/thirdparty/vertx-platform-2.0.0-final.jar
+aprox/lib/thirdparty/args4j-2.0.12.jar
+aprox/lib/thirdparty/xbean-reflect-3.16.jar
+aprox/lib/thirdparty/plexus-interpolation-1.19.jar
+aprox/lib/thirdparty/gson-2.2.2.jar
+aprox/lib/thirdparty/httpclient-4.2.5.jar
+aprox/lib/thirdparty/httpcore-4.2.4.jar
+aprox/lib/thirdparty/commons-codec-1.6.jar
+aprox/lib/thirdparty/jsoup-1.7.2.jar
+aprox/lib/thirdparty/jcl-over-slf4j-1.7.4.jar
+aprox/lib/thirdparty/groovy-all-2.2.1.jar
+aprox/lib/thirdparty/archetype-catalog-2.2.jar
+aprox/lib/thirdparty/plexus-utils-2.0.6.jar
+aprox/lib/thirdparty/slf4j-ext-1.7.4.jar
+aprox/lib/thirdparty/cal10n-api-0.7.4.jar
+aprox/lib/thirdparty/jul-to-slf4j-1.7.4.jar
+aprox/lib/thirdparty/maven-repository-metadata-3.0.3.jar
+aprox/lib/thirdparty/commons-jxpath-1.3.jar
+aprox/lib/thirdparty/weld-se-2.1.1.Final.jar
+aprox/lib/thirdparty/maven-model-builder-3.0.3.jar
+aprox/lib/thirdparty/plexus-component-annotations-1.5.5.jar
+aprox/lib/thirdparty/maven-model-3.0.3.jar
+aprox/lib/thirdparty/mae-booter-1.0-alpha-1.jar
+aprox/lib/thirdparty/sisu-inject-plexus-2.1.1.jar
+aprox/lib/thirdparty/plexus-classworlds-2.4.jar
+aprox/lib/thirdparty/sisu-inject-bean-2.1.1.jar
+aprox/lib/thirdparty/sisu-guice-2.9.4-no_aop.jar
+aprox/lib/thirdparty/mae-api-1.0-alpha-1.jar
+aprox/lib/thirdparty/maven-embedder-3.0.3.jar
+aprox/lib/thirdparty/maven-settings-3.0.3.jar
+aprox/lib/thirdparty/maven-core-3.0.3.jar
+aprox/lib/thirdparty/maven-settings-builder-3.0.3.jar
+aprox/lib/thirdparty/plexus-sec-dispatcher-1.3.jar
+aprox/lib/thirdparty/plexus-cipher-1.4.jar
+aprox/lib/thirdparty/maven-artifact-3.0.3.jar
+aprox/lib/thirdparty/maven-plugin-api-3.0.3.jar
+aprox/lib/thirdparty/maven-aether-provider-3.0.3.jar
+aprox/lib/thirdparty/aether-api-1.11.jar
+aprox/lib/thirdparty/aether-spi-1.11.jar
+aprox/lib/thirdparty/aether-util-1.11.jar
+aprox/lib/thirdparty/aether-impl-1.11.jar
+aprox/lib/thirdparty/maven-compat-3.0.3.jar
+aprox/lib/thirdparty/wagon-provider-api-1.0-beta-7.jar
+aprox/lib/thirdparty/commons-cli-1.2.jar
+aprox/lib/thirdparty/mae-container-1.0-alpha-1.jar
+aprox/lib/thirdparty/neo4j-1.9.6.jar
+aprox/lib/thirdparty/neo4j-kernel-1.9.6.jar
+aprox/lib/thirdparty/geronimo-jta_1.1_spec-1.1.1.jar
+aprox/lib/thirdparty/neo4j-lucene-index-1.9.6.jar
+aprox/lib/thirdparty/lucene-core-3.6.2.jar
+aprox/lib/thirdparty/neo4j-graph-algo-1.9.6.jar
+aprox/lib/thirdparty/neo4j-udc-1.9.6.jar
+aprox/lib/thirdparty/neo4j-graph-matching-1.9.6.jar
+aprox/lib/thirdparty/neo4j-cypher-1.9.6.jar
+aprox/lib/thirdparty/scala-library-2.10.0.jar
+aprox/lib/thirdparty/concurrentlinkedhashmap-lru-1.3.1.jar
+aprox/lib/thirdparty/neo4j-jmx-1.9.6.jar
+aprox/lib/thirdparty/indexer-core-5.1.1.jar
+aprox/lib/thirdparty/indexer-artifact-5.1.1.jar
+aprox/lib/thirdparty/lucene-highlighter-3.6.2.jar
+aprox/lib/thirdparty/lucene-memory-3.6.2.jar
+aprox/lib/thirdparty/lucene-queries-3.6.2.jar
+aprox/lib/thirdparty/jakarta-regexp-1.4.jar
+Loading logging config from: /home/jdcasey/code/stacks/aprox/aprox/launchers/savant/target/aprox/etc/aprox/logging
+java version "1.7.0_65"
+OpenJDK Runtime Environment (fedora-2.5.1.3.fc20-x86_64 u65-b17)
+OpenJDK 64-Bit Server VM (build 24.65-b04, mixed mode)
+Listening for transport dt_socket at address: 8000
+Starting AProx booter: org.commonjava.aprox.bind.vertx.boot.Booter@247aa859
+Booter running: org.commonjava.aprox.bind.vertx.boot.Booter@247aa859
+
+
+Using AProx configuration: /home/jdcasey/code/stacks/aprox/aprox/launchers/savant/target/aprox/etc/aprox/main.conf
+14:28:01,208 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback.groovy]
+14:28:01,208 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback-test.xml]
+14:28:01,208 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Found resource [logback.xml] at [file:/home/jdcasey/code/stacks/aprox/aprox/launchers/savant/target/aprox/etc/aprox/logging/logback.xml]
+14:28:01,256 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - debug attribute not set
+14:28:01,261 |-INFO in ch.qos.logback.core.joran.action.AppenderAction - About to instantiate appender of type [ch.qos.logback.core.ConsoleAppender]
+14:28:01,267 |-INFO in ch.qos.logback.core.joran.action.AppenderAction - Naming appender as [STDOUT]
+14:28:01,285 |-INFO in ch.qos.logback.core.joran.action.NestedComplexPropertyIA - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+14:28:01,320 |-INFO in ch.qos.logback.core.joran.action.AppenderAction - About to instantiate appender of type [ch.qos.logback.core.rolling.RollingFileAppender]
+14:28:01,322 |-INFO in ch.qos.logback.core.joran.action.AppenderAction - Naming appender as [FILE]
+14:28:01,333 |-ERROR in ch.qos.logback.core.joran.spi.Interpreter@26:21 - no applicable action for [maxHistory], current pattern is [[configuration][appender][rollingPolicy][maxHistory]]
+14:28:01,336 |-INFO in ch.qos.logback.core.rolling.FixedWindowRollingPolicy@4e7d6ca2 - No compression will be used
+14:28:01,342 |-INFO in ch.qos.logback.core.joran.action.NestedComplexPropertyIA - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+14:28:01,355 |-INFO in ch.qos.logback.core.rolling.RollingFileAppender[FILE] - Active log file name: /home/jdcasey/code/stacks/aprox/aprox/launchers/savant/target/aprox/var/log/aprox/aprox.log
+14:28:01,355 |-INFO in ch.qos.logback.core.rolling.RollingFileAppender[FILE] - File property is set to [/home/jdcasey/code/stacks/aprox/aprox/launchers/savant/target/aprox/var/log/aprox/aprox.log]
+14:28:01,356 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [org.jboss] to ERROR
+14:28:01,356 |-INFO in ch.qos.logback.classic.joran.action.LoggerAction - Setting level of logger [org.commonjava.maven.galley.transport] to DEBUG
+14:28:01,356 |-INFO in ch.qos.logback.classic.joran.action.RootLoggerAction - Setting level of ROOT logger to INFO
+14:28:01,357 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [STDOUT] to Logger[ROOT]
+14:28:01,357 |-INFO in ch.qos.logback.core.joran.action.AppenderRefAction - Attaching appender named [FILE] to Logger[ROOT]
+14:28:01,357 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - End of configuration.
+14:28:01,358 |-INFO in ch.qos.logback.classic.joran.JoranConfigurator@c6727f0 - Registering current configuration as safe fallback point
+
+
+
+Loading AProx configuration factory: org.commonjava.aprox.core.conf.DefaultAproxConfigFactory@53670068
+[main] INFO  o.c.a.c.c.DefaultAproxConfigFactory - Verifying AProx system properties are set...
+[main] INFO  o.c.a.c.c.DefaultAproxConfigFactory - 
+
+
+
+[CONFIG] Reading AProx configuration in: 'main'
+
+from:
+
+  org.commonjava.aprox.core.conf.DefaultAproxConfigFactory.load(DefaultAproxConfigFactory.java:63)
+  org.commonjava.aprox.bind.vertx.boot.Booter.run(Booter.java:150)
+  org.commonjava.aprox.bind.vertx.boot.Booter.main(Booter.java:95)
+
+Adding configuration section listeners:
+[main] INFO  o.c.a.c.c.DefaultAproxConfigFactory - +section (class): storage-default (org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration)
+[main] INFO  o.c.a.c.c.DefaultAproxConfigFactory - +section (class): depgraph (org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig)
+[main] INFO  o.c.a.c.c.DefaultAproxConfigFactory - +section (class): flatfiles (org.commonjava.aprox.subsys.flatfile.conf.DataFileConfiguration)
+[main] INFO  o.c.a.c.c.DefaultAproxConfigFactory - +section (class): ui (org.commonjava.aprox.bind.vertx.conf.UIConfiguration)
+[main] INFO  o.c.a.c.c.DefaultAproxConfigFactory - +section (class): default (org.commonjava.aprox.core.conf.DefaultAproxConfiguration)
+[main] INFO  o.c.a.c.c.DefaultAproxConfigFactory - +section (listener): threadpools (org.commonjava.aprox.core.conf.AproxWeftConfig@41fc6fe7)
+[main] INFO  o.c.a.c.c.DefaultAproxConfigFactory - +section (listener): autoprox (org.commonjava.aprox.autoprox.conf.AutoProxConfigurator@608db0fd)
+[main] INFO  o.c.a.c.c.DefaultAproxConfigFactory - 
+
+[CONFIG] Reading configuration in: 'main'
+
+from /home/jdcasey/code/stacks/aprox/aprox/launchers/savant/target/aprox/etc/aprox/main.conf
+[main] INFO  o.c.a.a.conf.AutoProxConfigurator - [AUTOPROX] config: 'enabled' = 'true'
+[main] INFO  o.c.a.c.c.DefaultAproxConfigFactory - [CONFIG] AProx configuration complete for: 'main'.
+
+
+
+
+[main] INFO  o.c.a.bind.vertx.boot.MasterRouter - 
+
+CONSTRUCTING WEB ROUTES FOR ALL APPS IN APROX...
+
+
+[main] INFO  o.c.a.bind.vertx.boot.MasterRouter - org.commonjava.aprox.bind.vertx.RestRouter$Proxy$_$$_WeldClientProxy
+[main] INFO  o.c.a.bind.vertx.boot.MasterRouter - org.commonjava.aprox.dotmaven.vertx.DotMavenRouter$Proxy$_$$_WeldClientProxy
+[main] INFO  o.c.a.bind.vertx.boot.MasterRouter - org.commonjava.aprox.bind.vertx.ui.UIRouter$Proxy$_$$_WeldClientProxy
+[main] INFO  o.c.a.dotmaven.vertx.DotMavenRouter - 
+
+CONSTRUCTING WEB ROUTES FOR Dot-Maven add-on...
+
+
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.dotmaven.vertx.DotMavenHandler$Proxy$_$$_WeldClientProxy for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.dotmaven.vertx.DotMavenHandler for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Got: dotMavenDAV
+[main] INFO  o.c.a.dotmaven.vertx.DotMavenRouter - Handlers += dotMavenDAV (org.commonjava.aprox.dotmaven.vertx.DotMavenHandler$Proxy$_$$_WeldClientProxy)
+[main] INFO  o.c.a.dotmaven.vertx.DotMavenRouter - Binding routes in collection: org.commonjava.aprox.dotmaven.vertx.DotMavenAppRoutes
+[main] INFO  o.c.a.dotmaven.vertx.DotMavenRouter - Routes += :?path=(.*) (ANY)
+[main] INFO  o.c.a.dotmaven.vertx.DotMavenRouter - Using appId: api and default version: v1
+[main] INFO  o.c.a.dotmaven.vertx.DotMavenRouter - ADD: BindingKey [method=GET, version=v1], Pattern: :?path=(.*), Route: Route [ANY :?path=(.*)] => dotMavenDAV
+
+[main] INFO  o.c.a.dotmaven.vertx.DotMavenRouter - ADD: BindingKey [method=PUT, version=v1], Pattern: :?path=(.*), Route: Route [ANY :?path=(.*)] => dotMavenDAV
+
+[main] INFO  o.c.a.dotmaven.vertx.DotMavenRouter - ADD: BindingKey [method=CONNECT, version=v1], Pattern: :?path=(.*), Route: Route [ANY :?path=(.*)] => dotMavenDAV
+
+[main] INFO  o.c.a.dotmaven.vertx.DotMavenRouter - ADD: BindingKey [method=PROPPATCH, version=v1], Pattern: :?path=(.*), Route: Route [ANY :?path=(.*)] => dotMavenDAV
+
+[main] INFO  o.c.a.dotmaven.vertx.DotMavenRouter - ADD: BindingKey [method=UNLOCK, version=v1], Pattern: :?path=(.*), Route: Route [ANY :?path=(.*)] => dotMavenDAV
+
+[main] INFO  o.c.a.dotmaven.vertx.DotMavenRouter - ADD: BindingKey [method=MOVE, version=v1], Pattern: :?path=(.*), Route: Route [ANY :?path=(.*)] => dotMavenDAV
+
+[main] INFO  o.c.a.dotmaven.vertx.DotMavenRouter - ADD: BindingKey [method=USERINFO, version=v1], Pattern: :?path=(.*), Route: Route [ANY :?path=(.*)] => dotMavenDAV
+
+[main] INFO  o.c.a.dotmaven.vertx.DotMavenRouter - ADD: BindingKey [method=LOCK, version=v1], Pattern: :?path=(.*), Route: Route [ANY :?path=(.*)] => dotMavenDAV
+
+[main] INFO  o.c.a.dotmaven.vertx.DotMavenRouter - ADD: BindingKey [method=POST, version=v1], Pattern: :?path=(.*), Route: Route [ANY :?path=(.*)] => dotMavenDAV
+
+[main] INFO  o.c.a.dotmaven.vertx.DotMavenRouter - ADD: BindingKey [method=PATCH, version=v1], Pattern: :?path=(.*), Route: Route [ANY :?path=(.*)] => dotMavenDAV
+
+[main] INFO  o.c.a.dotmaven.vertx.DotMavenRouter - ADD: BindingKey [method=OPTIONS, version=v1], Pattern: :?path=(.*), Route: Route [ANY :?path=(.*)] => dotMavenDAV
+
+[main] INFO  o.c.a.dotmaven.vertx.DotMavenRouter - ADD: BindingKey [method=HEAD, version=v1], Pattern: :?path=(.*), Route: Route [ANY :?path=(.*)] => dotMavenDAV
+
+[main] INFO  o.c.a.dotmaven.vertx.DotMavenRouter - ADD: BindingKey [method=COPY, version=v1], Pattern: :?path=(.*), Route: Route [ANY :?path=(.*)] => dotMavenDAV
+
+[main] INFO  o.c.a.dotmaven.vertx.DotMavenRouter - ADD: BindingKey [method=DELETE, version=v1], Pattern: :?path=(.*), Route: Route [ANY :?path=(.*)] => dotMavenDAV
+
+[main] INFO  o.c.a.dotmaven.vertx.DotMavenRouter - ADD: BindingKey [method=TRACE, version=v1], Pattern: :?path=(.*), Route: Route [ANY :?path=(.*)] => dotMavenDAV
+
+[main] INFO  o.c.a.dotmaven.vertx.DotMavenRouter - ADD: BindingKey [method=ANY, version=v1], Pattern: :?path=(.*), Route: Route [ANY :?path=(.*)] => dotMavenDAV
+
+[main] INFO  o.c.a.dotmaven.vertx.DotMavenRouter - ADD: BindingKey [method=PROPFIND, version=v1], Pattern: :?path=(.*), Route: Route [ANY :?path=(.*)] => dotMavenDAV
+
+[main] INFO  o.c.a.dotmaven.vertx.DotMavenRouter - 
+
+...done.
+
+
+[main] INFO  o.c.aprox.bind.vertx.ui.UIRouter - 
+
+CONSTRUCTING WEB ROUTES FOR UI app...
+
+
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.bind.vertx.ui.UIHandler for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Got: UIHandler
+[main] INFO  o.c.aprox.bind.vertx.ui.UIRouter - Handlers += UIHandler (org.commonjava.aprox.bind.vertx.ui.UIHandler)
+[main] INFO  o.c.aprox.bind.vertx.ui.UIRouter - Binding routes in collection: org.commonjava.aprox.bind.vertx.UIAppRoutes
+[main] INFO  o.c.aprox.bind.vertx.ui.UIRouter - Routes += :?path=(.+) (ANY)
+[main] INFO  o.c.aprox.bind.vertx.ui.UIRouter - Using appId: api and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.ui.UIRouter - ADD: BindingKey [method=GET, version=v1], Pattern: :?path=(.+), Route: Route [ANY :?path=(.+)] => UIHandler
+
+[main] INFO  o.c.aprox.bind.vertx.ui.UIRouter - ADD: BindingKey [method=PUT, version=v1], Pattern: :?path=(.+), Route: Route [ANY :?path=(.+)] => UIHandler
+
+[main] INFO  o.c.aprox.bind.vertx.ui.UIRouter - ADD: BindingKey [method=CONNECT, version=v1], Pattern: :?path=(.+), Route: Route [ANY :?path=(.+)] => UIHandler
+
+[main] INFO  o.c.aprox.bind.vertx.ui.UIRouter - ADD: BindingKey [method=PROPPATCH, version=v1], Pattern: :?path=(.+), Route: Route [ANY :?path=(.+)] => UIHandler
+
+[main] INFO  o.c.aprox.bind.vertx.ui.UIRouter - ADD: BindingKey [method=UNLOCK, version=v1], Pattern: :?path=(.+), Route: Route [ANY :?path=(.+)] => UIHandler
+
+[main] INFO  o.c.aprox.bind.vertx.ui.UIRouter - ADD: BindingKey [method=MOVE, version=v1], Pattern: :?path=(.+), Route: Route [ANY :?path=(.+)] => UIHandler
+
+[main] INFO  o.c.aprox.bind.vertx.ui.UIRouter - ADD: BindingKey [method=USERINFO, version=v1], Pattern: :?path=(.+), Route: Route [ANY :?path=(.+)] => UIHandler
+
+[main] INFO  o.c.aprox.bind.vertx.ui.UIRouter - ADD: BindingKey [method=LOCK, version=v1], Pattern: :?path=(.+), Route: Route [ANY :?path=(.+)] => UIHandler
+
+[main] INFO  o.c.aprox.bind.vertx.ui.UIRouter - ADD: BindingKey [method=POST, version=v1], Pattern: :?path=(.+), Route: Route [ANY :?path=(.+)] => UIHandler
+
+[main] INFO  o.c.aprox.bind.vertx.ui.UIRouter - ADD: BindingKey [method=PATCH, version=v1], Pattern: :?path=(.+), Route: Route [ANY :?path=(.+)] => UIHandler
+
+[main] INFO  o.c.aprox.bind.vertx.ui.UIRouter - ADD: BindingKey [method=OPTIONS, version=v1], Pattern: :?path=(.+), Route: Route [ANY :?path=(.+)] => UIHandler
+
+[main] INFO  o.c.aprox.bind.vertx.ui.UIRouter - ADD: BindingKey [method=HEAD, version=v1], Pattern: :?path=(.+), Route: Route [ANY :?path=(.+)] => UIHandler
+
+[main] INFO  o.c.aprox.bind.vertx.ui.UIRouter - ADD: BindingKey [method=COPY, version=v1], Pattern: :?path=(.+), Route: Route [ANY :?path=(.+)] => UIHandler
+
+[main] INFO  o.c.aprox.bind.vertx.ui.UIRouter - ADD: BindingKey [method=DELETE, version=v1], Pattern: :?path=(.+), Route: Route [ANY :?path=(.+)] => UIHandler
+
+[main] INFO  o.c.aprox.bind.vertx.ui.UIRouter - ADD: BindingKey [method=TRACE, version=v1], Pattern: :?path=(.+), Route: Route [ANY :?path=(.+)] => UIHandler
+
+[main] INFO  o.c.aprox.bind.vertx.ui.UIRouter - ADD: BindingKey [method=ANY, version=v1], Pattern: :?path=(.+), Route: Route [ANY :?path=(.+)] => UIHandler
+
+[main] INFO  o.c.aprox.bind.vertx.ui.UIRouter - ADD: BindingKey [method=PROPFIND, version=v1], Pattern: :?path=(.+), Route: Route [ANY :?path=(.+)] => UIHandler
+
+[main] INFO  o.c.aprox.bind.vertx.ui.UIRouter - 
+
+...done.
+
+
+[main] INFO  o.c.aprox.core.ctl.AdminController - 
+
+
+
+
+ STARTING AProx
+    Version: 0.15.4-SNAPSHOT
+    Built-By: jdcasey
+    Commit-ID: 7e4546c
+    Built-On: 2014-09-10 14:23 -0500
+
+
+
+
+
+[main] INFO  o.c.aprox.core.ctl.AdminController - Running migration actions...
+[main] INFO  o.c.aprox.core.ctl.AdminController - Running migration action: 'Set-Back settings.xml initializer'
+[main] INFO  o.c.a.a.inject.AutoProxProvider - Reading autoprox rule from: /home/jdcasey/code/stacks/aprox/aprox/launchers/savant/target/aprox/var/lib/aprox/data/autoprox/0010-redhat.groovy
+[main] INFO  o.c.a.a.inject.AutoProxProvider - Reading autoprox rule from: /home/jdcasey/code/stacks/aprox/aprox/launchers/savant/target/aprox/var/lib/aprox/data/autoprox/0020-jbossorg.groovy
+[main] INFO  o.c.a.a.inject.AutoProxProvider - Reading autoprox rule from: /home/jdcasey/code/stacks/aprox/aprox/launchers/savant/target/aprox/var/lib/aprox/data/autoprox/0030-sonatype.groovy
+[main] INFO  o.c.a.a.inject.AutoProxProvider - Reading autoprox rule from: /home/jdcasey/code/stacks/aprox/aprox/launchers/savant/target/aprox/var/lib/aprox/data/autoprox/9980-autocompose.groovy
+[main] INFO  o.c.a.a.inject.AutoProxProvider - Reading autoprox rule from: /home/jdcasey/code/stacks/aprox/aprox/launchers/savant/target/aprox/var/lib/aprox/data/autoprox/9990-legacy.groovy
+[main] INFO  o.c.aprox.core.ctl.AdminController - Running migration action: 'Legacy storage-location migrator'
+[main] INFO  o.c.aprox.core.ctl.AdminController - Running migration action: 'Legacy storage-location migrator'
+[main] INFO  o.c.aprox.core.ctl.AdminController - Verfiying that AProx DB + basic data is installed...
+[main] INFO  o.c.aprox.indexer.IndexHandler - Updating indexes as a result of ArtifactStoreUpdateEvent.
+[main] INFO  o.c.aprox.indexer.IndexHandler - Constructed AdditionRunnable from: java.lang.Thread.getStackTrace(Thread.java:1589)
+org.commonjava.aprox.indexer.IndexHandler$AdditionRunnable.<init>(IndexHandler.java:688)
+org.commonjava.aprox.indexer.IndexHandler.onAdd(IndexHandler.java:187)
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.lang.reflect.Method.invoke(Method.java:606)
+org.jboss.weld.injection.MethodInjectionPoint.invokeOnInstanceWithSpecialValue(MethodInjectionPoint.java:93)
+org.jboss.weld.event.ObserverMethodImpl.sendEvent(ObserverMethodImpl.java:266)
+org.jboss.weld.event.ObserverMethodImpl.sendEvent(ObserverMethodImpl.java:253)
+org.jboss.weld.event.ObserverMethodImpl.notify(ObserverMethodImpl.java:232)
+org.jboss.weld.event.ObserverNotifier.notifyObserver(ObserverNotifier.java:169)
+org.jboss.weld.event.ObserverNotifier.notifyObserver(ObserverNotifier.java:165)
+org.jboss.weld.event.ObserverNotifier.notifyObservers(ObserverNotifier.java:119)
+org.jboss.weld.event.ObserverNotifier.fireEvent(ObserverNotifier.java:112)
+org.jboss.weld.event.EventImpl.fire(EventImpl.java:83)
+org.commonjava.aprox.mem.data.MemoryStoreDataManager.fireStoreEvent(MemoryStoreDataManager.java:409)
+org.commonjava.aprox.mem.data.MemoryStoreDataManager.storeRemoteRepository(MemoryStoreDataManager.java:243)
+org.commonjava.aprox.flat.data.DataFileStoreDataManager.storeRemoteRepository(DataFileStoreDataManager.java:203)
+org.commonjava.aprox.flat.data.DataFileStoreDataManager$Proxy$_$$_WeldSubclass.storeRemoteRepository(Unknown Source)
+org.commonjava.aprox.flat.data.DataFileStoreDataManager.install(DataFileStoreDataManager.java:415)
+org.commonjava.aprox.flat.data.DataFileStoreDataManager$Proxy$_$$_WeldSubclass.install(Unknown Source)
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.lang.reflect.Method.invoke(Method.java:606)
+org.jboss.weld.util.reflection.Reflections.invokeAndUnwrap(Reflections.java:401)
+org.jboss.weld.bean.proxy.DecoratorProxyMethodHandler.doInvoke(DecoratorProxyMethodHandler.java:89)
+org.jboss.weld.bean.proxy.DecoratorProxyMethodHandler.doInvoke(DecoratorProxyMethodHandler.java:69)
+org.jboss.weld.interceptor.util.proxy.TargetInstanceProxyMethodHandler.invoke(TargetInstanceProxyMethodHandler.java:33)
+org.jboss.weld.bean.proxy.TargetBeanInstance.invoke(TargetBeanInstance.java:88)
+org.jboss.weld.bean.proxy.ProxyMethodHandler.invoke(ProxyMethodHandler.java:100)
+org.commonjava.aprox.flat.data.DataFileStoreDataManager$Proxy$_$$_Weld$Proxy$.install(Unknown Source)
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.lang.reflect.Method.invoke(Method.java:606)
+org.jboss.weld.util.reflection.Reflections.invokeAndUnwrap(Reflections.java:401)
+org.jboss.weld.bean.proxy.CombinedInterceptorAndDecoratorStackMethodHandler.invoke(CombinedInterceptorAndDecoratorStackMethodHandler.java:62)
+org.commonjava.aprox.flat.data.DataFileStoreDataManager$Proxy$_$$_WeldSubclass.install(Unknown Source)
+org.commonjava.aprox.flat.data.DataFileStoreDataManager$Proxy$_$$_WeldClientProxy.install(Unknown Source)
+org.commonjava.aprox.core.ctl.AdminController.started(AdminController.java:139)
+org.commonjava.aprox.core.ctl.AdminController$Proxy$_$$_WeldClientProxy.started(Unknown Source)
+org.commonjava.aprox.bind.vertx.RestRouter.initializeComponents(RestRouter.java:87)
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.lang.reflect.Method.invoke(Method.java:606)
+org.jboss.weld.injection.producer.DefaultLifecycleCallbackInvoker.invokeMethods(DefaultLifecycleCallbackInvoker.java:89)
+org.jboss.weld.injection.producer.DefaultLifecycleCallbackInvoker.postConstruct(DefaultLifecycleCallbackInvoker.java:72)
+org.jboss.weld.injection.producer.BasicInjectionTarget.postConstruct(BasicInjectionTarget.java:95)
+org.jboss.weld.injection.producer.BeanInjectionTarget.postConstruct(BeanInjectionTarget.java:63)
+org.jboss.weld.bean.ManagedBean.create(ManagedBean.java:153)
+org.jboss.weld.context.AbstractContext.get(AbstractContext.java:94)
+org.jboss.weld.bean.proxy.ContextBeanInstance.getInstance(ContextBeanInstance.java:98)
+org.jboss.weld.bean.proxy.ProxyMethodHandler.invoke(ProxyMethodHandler.java:78)
+org.commonjava.aprox.bind.vertx.RestRouter$Proxy$_$$_WeldClientProxy.setHandlerExecutor(Unknown Source)
+org.commonjava.vertx.vabr.MultiApplicationRouter.bindRouters(MultiApplicationRouter.java:118)
+org.commonjava.aprox.bind.vertx.boot.MasterRouter.initializeComponents(MasterRouter.java:68)
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.lang.reflect.Method.invoke(Method.java:606)
+org.jboss.weld.injection.producer.DefaultLifecycleCallbackInvoker.invokeMethods(DefaultLifecycleCallbackInvoker.java:89)
+org.jboss.weld.injection.producer.DefaultLifecycleCallbackInvoker.postConstruct(DefaultLifecycleCallbackInvoker.java:72)
+org.jboss.weld.injection.producer.BasicInjectionTarget.postConstruct(BasicInjectionTarget.java:95)
+org.jboss.weld.injection.producer.BeanInjectionTarget.postConstruct(BeanInjectionTarget.java:63)
+org.jboss.weld.bean.ManagedBean.create(ManagedBean.java:162)
+org.jboss.weld.context.AbstractContext.get(AbstractContext.java:94)
+org.jboss.weld.bean.proxy.ContextBeanInstance.getInstance(ContextBeanInstance.java:98)
+org.jboss.weld.bean.proxy.ProxyMethodHandler.invoke(ProxyMethodHandler.java:78)
+org.commonjava.aprox.bind.vertx.boot.MasterRouter$Proxy$_$$_WeldClientProxy.setPrefix(Unknown Source)
+org.commonjava.aprox.bind.vertx.boot.Booter.run(Booter.java:163)
+org.commonjava.aprox.bind.vertx.boot.Booter.main(Booter.java:95)
+[main] INFO  o.c.a.s.template.TemplatingEngine - Looking for template: setback-settings.xml for ACCEPT header: application/xml in: /home/jdcasey/code/stacks/aprox/aprox/launchers/savant/target/aprox/var/lib/aprox/data/templates/application_xml/setback-settings.xml.groovy
+[main] INFO  o.c.aprox.indexer.IndexHandler - Updating indexes as a result of ArtifactStoreUpdateEvent.
+[main] INFO  o.c.aprox.indexer.IndexHandler - Constructed AdditionRunnable from: java.lang.Thread.getStackTrace(Thread.java:1589)
+org.commonjava.aprox.indexer.IndexHandler$AdditionRunnable.<init>(IndexHandler.java:688)
+org.commonjava.aprox.indexer.IndexHandler.onAdd(IndexHandler.java:187)
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.lang.reflect.Method.invoke(Method.java:606)
+org.jboss.weld.injection.MethodInjectionPoint.invokeOnInstanceWithSpecialValue(MethodInjectionPoint.java:93)
+org.jboss.weld.event.ObserverMethodImpl.sendEvent(ObserverMethodImpl.java:266)
+org.jboss.weld.event.ObserverMethodImpl.sendEvent(ObserverMethodImpl.java:253)
+org.jboss.weld.event.ObserverMethodImpl.notify(ObserverMethodImpl.java:232)
+org.jboss.weld.event.ObserverNotifier.notifyObserver(ObserverNotifier.java:169)
+org.jboss.weld.event.ObserverNotifier.notifyObserver(ObserverNotifier.java:165)
+org.jboss.weld.event.ObserverNotifier.notifyObservers(ObserverNotifier.java:119)
+org.jboss.weld.event.ObserverNotifier.fireEvent(ObserverNotifier.java:112)
+org.jboss.weld.event.EventImpl.fire(EventImpl.java:83)
+org.commonjava.aprox.mem.data.MemoryStoreDataManager.fireStoreEvent(MemoryStoreDataManager.java:417)
+org.commonjava.aprox.mem.data.MemoryStoreDataManager.storeGroup(MemoryStoreDataManager.java:259)
+org.commonjava.aprox.flat.data.DataFileStoreDataManager.storeGroup(DataFileStoreDataManager.java:229)
+org.commonjava.aprox.flat.data.DataFileStoreDataManager$Proxy$_$$_WeldSubclass.storeGroup(Unknown Source)
+org.commonjava.aprox.flat.data.DataFileStoreDataManager.install(DataFileStoreDataManager.java:418)
+org.commonjava.aprox.flat.data.DataFileStoreDataManager$Proxy$_$$_WeldSubclass.install(Unknown Source)
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.lang.reflect.Method.invoke(Method.java:606)
+org.jboss.weld.util.reflection.Reflections.invokeAndUnwrap(Reflections.java:401)
+org.jboss.weld.bean.proxy.DecoratorProxyMethodHandler.doInvoke(DecoratorProxyMethodHandler.java:89)
+org.jboss.weld.bean.proxy.DecoratorProxyMethodHandler.doInvoke(DecoratorProxyMethodHandler.java:69)
+org.jboss.weld.interceptor.util.proxy.TargetInstanceProxyMethodHandler.invoke(TargetInstanceProxyMethodHandler.java:33)
+org.jboss.weld.bean.proxy.TargetBeanInstance.invoke(TargetBeanInstance.java:88)
+org.jboss.weld.bean.proxy.ProxyMethodHandler.invoke(ProxyMethodHandler.java:100)
+org.commonjava.aprox.flat.data.DataFileStoreDataManager$Proxy$_$$_Weld$Proxy$.install(Unknown Source)
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.lang.reflect.Method.invoke(Method.java:606)
+org.jboss.weld.util.reflection.Reflections.invokeAndUnwrap(Reflections.java:401)
+org.jboss.weld.bean.proxy.CombinedInterceptorAndDecoratorStackMethodHandler.invoke(CombinedInterceptorAndDecoratorStackMethodHandler.java:62)
+org.commonjava.aprox.flat.data.DataFileStoreDataManager$Proxy$_$$_WeldSubclass.install(Unknown Source)
+org.commonjava.aprox.flat.data.DataFileStoreDataManager$Proxy$_$$_WeldClientProxy.install(Unknown Source)
+org.commonjava.aprox.core.ctl.AdminController.started(AdminController.java:139)
+org.commonjava.aprox.core.ctl.AdminController$Proxy$_$$_WeldClientProxy.started(Unknown Source)
+org.commonjava.aprox.bind.vertx.RestRouter.initializeComponents(RestRouter.java:87)
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.lang.reflect.Method.invoke(Method.java:606)
+org.jboss.weld.injection.producer.DefaultLifecycleCallbackInvoker.invokeMethods(DefaultLifecycleCallbackInvoker.java:89)
+org.jboss.weld.injection.producer.DefaultLifecycleCallbackInvoker.postConstruct(DefaultLifecycleCallbackInvoker.java:72)
+org.jboss.weld.injection.producer.BasicInjectionTarget.postConstruct(BasicInjectionTarget.java:95)
+org.jboss.weld.injection.producer.BeanInjectionTarget.postConstruct(BeanInjectionTarget.java:63)
+org.jboss.weld.bean.ManagedBean.create(ManagedBean.java:153)
+org.jboss.weld.context.AbstractContext.get(AbstractContext.java:94)
+org.jboss.weld.bean.proxy.ContextBeanInstance.getInstance(ContextBeanInstance.java:98)
+org.jboss.weld.bean.proxy.ProxyMethodHandler.invoke(ProxyMethodHandler.java:78)
+org.commonjava.aprox.bind.vertx.RestRouter$Proxy$_$$_WeldClientProxy.setHandlerExecutor(Unknown Source)
+org.commonjava.vertx.vabr.MultiApplicationRouter.bindRouters(MultiApplicationRouter.java:118)
+org.commonjava.aprox.bind.vertx.boot.MasterRouter.initializeComponents(MasterRouter.java:68)
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.lang.reflect.Method.invoke(Method.java:606)
+org.jboss.weld.injection.producer.DefaultLifecycleCallbackInvoker.invokeMethods(DefaultLifecycleCallbackInvoker.java:89)
+org.jboss.weld.injection.producer.DefaultLifecycleCallbackInvoker.postConstruct(DefaultLifecycleCallbackInvoker.java:72)
+org.jboss.weld.injection.producer.BasicInjectionTarget.postConstruct(BasicInjectionTarget.java:95)
+org.jboss.weld.injection.producer.BeanInjectionTarget.postConstruct(BeanInjectionTarget.java:63)
+org.jboss.weld.bean.ManagedBean.create(ManagedBean.java:162)
+org.jboss.weld.context.AbstractContext.get(AbstractContext.java:94)
+org.jboss.weld.bean.proxy.ContextBeanInstance.getInstance(ContextBeanInstance.java:98)
+org.jboss.weld.bean.proxy.ProxyMethodHandler.invoke(ProxyMethodHandler.java:78)
+org.commonjava.aprox.bind.vertx.boot.MasterRouter$Proxy$_$$_WeldClientProxy.setPrefix(Unknown Source)
+org.commonjava.aprox.bind.vertx.boot.Booter.run(Booter.java:163)
+org.commonjava.aprox.bind.vertx.boot.Booter.main(Booter.java:95)
+[aprox-indexer-0] INFO  o.c.aprox.indexer.IndexHandler - [ADD] Starting merge for: group:public
+[main] INFO  o.c.a.s.data.SetBackSettingsManager - Updating set-back settings.xml for group: public
+[aprox-indexer-0] INFO  o.c.aprox.indexer.IndexHandler - Reserving: group:public
+[main] INFO  o.c.a.s.template.TemplatingEngine - Looking for template: setback-settings.xml for ACCEPT header: application/xml in: /home/jdcasey/code/stacks/aprox/aprox/launchers/savant/target/aprox/var/lib/aprox/data/templates/application_xml/setback-settings.xml.groovy
+[main] INFO  o.c.a.a.d.1609678045$Proxy$_$$_WeldDecoratorProxy - AutoProx: creating repository for: local-deployments
+[main] INFO  o.c.a.autoprox.data.AutoProxCatalog - Checking rule: '0010-redhat.groovy' for applicability to name: 'local-deployments'
+[main] INFO  o.c.a.autoprox.data.AutoProxCatalog - Checking rule: '0020-jbossorg.groovy' for applicability to name: 'local-deployments'
+[main] INFO  o.c.a.autoprox.data.AutoProxCatalog - Checking rule: '0030-sonatype.groovy' for applicability to name: 'local-deployments'
+[main] INFO  o.c.a.autoprox.data.AutoProxCatalog - Checking rule: '9980-autocompose.groovy' for applicability to name: 'local-deployments'
+[main] INFO  o.c.a.autoprox.data.AutoProxCatalog - Checking rule: '9990-legacy.groovy' for applicability to name: 'local-deployments'
+[main] INFO  o.c.a.autoprox.data.AutoProxCatalog - No AutoProx rule found for: 'local-deployments'
+[main] INFO  o.c.aprox.indexer.IndexHandler - Updating indexes as a result of ArtifactStoreUpdateEvent.
+[main] INFO  o.c.aprox.indexer.IndexHandler - Constructed AdditionRunnable from: java.lang.Thread.getStackTrace(Thread.java:1589)
+org.commonjava.aprox.indexer.IndexHandler$AdditionRunnable.<init>(IndexHandler.java:688)
+org.commonjava.aprox.indexer.IndexHandler.onAdd(IndexHandler.java:187)
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.lang.reflect.Method.invoke(Method.java:606)
+org.jboss.weld.injection.MethodInjectionPoint.invokeOnInstanceWithSpecialValue(MethodInjectionPoint.java:93)
+org.jboss.weld.event.ObserverMethodImpl.sendEvent(ObserverMethodImpl.java:266)
+org.jboss.weld.event.ObserverMethodImpl.sendEvent(ObserverMethodImpl.java:253)
+org.jboss.weld.event.ObserverMethodImpl.notify(ObserverMethodImpl.java:232)
+org.jboss.weld.event.ObserverNotifier.notifyObserver(ObserverNotifier.java:169)
+org.jboss.weld.event.ObserverNotifier.notifyObserver(ObserverNotifier.java:165)
+org.jboss.weld.event.ObserverNotifier.notifyObservers(ObserverNotifier.java:119)
+org.jboss.weld.event.ObserverNotifier.fireEvent(ObserverNotifier.java:112)
+org.jboss.weld.event.EventImpl.fire(EventImpl.java:83)
+org.commonjava.aprox.mem.data.MemoryStoreDataManager.fireStoreEvent(MemoryStoreDataManager.java:417)
+org.commonjava.aprox.mem.data.MemoryStoreDataManager.storeHostedRepository(MemoryStoreDataManager.java:225)
+org.commonjava.aprox.flat.data.DataFileStoreDataManager.storeHostedRepository(DataFileStoreDataManager.java:176)
+org.commonjava.aprox.flat.data.DataFileStoreDataManager$Proxy$_$$_WeldSubclass.storeHostedRepository(Unknown Source)
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.lang.reflect.Method.invoke(Method.java:606)
+org.jboss.weld.util.reflection.Reflections.invokeAndUnwrap(Reflections.java:401)
+org.jboss.weld.bean.proxy.DecoratorProxyMethodHandler.doInvoke(DecoratorProxyMethodHandler.java:89)
+org.jboss.weld.bean.proxy.DecoratorProxyMethodHandler.doInvoke(DecoratorProxyMethodHandler.java:69)
+org.jboss.weld.interceptor.util.proxy.TargetInstanceProxyMethodHandler.invoke(TargetInstanceProxyMethodHandler.java:33)
+org.jboss.weld.bean.proxy.TargetBeanInstance.invoke(TargetBeanInstance.java:88)
+org.jboss.weld.bean.proxy.ProxyMethodHandler.invoke(ProxyMethodHandler.java:100)
+org.commonjava.aprox.flat.data.DataFileStoreDataManager$Proxy$_$$_Weld$Proxy$.storeHostedRepository(Unknown Source)
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.lang.reflect.Method.invoke(Method.java:606)
+org.jboss.weld.util.reflection.Reflections.invokeAndUnwrap(Reflections.java:401)
+org.jboss.weld.bean.proxy.CombinedInterceptorAndDecoratorStackMethodHandler.invoke(CombinedInterceptorAndDecoratorStackMethodHandler.java:62)
+org.commonjava.aprox.flat.data.DataFileStoreDataManager$Proxy$_$$_WeldSubclass.storeHostedRepository(Unknown Source)
+org.commonjava.aprox.flat.data.DataFileStoreDataManager$Proxy$_$$_WeldClientProxy.storeHostedRepository(Unknown Source)
+org.commonjava.aprox.core.ctl.AdminController.started(AdminController.java:156)
+org.commonjava.aprox.core.ctl.AdminController$Proxy$_$$_WeldClientProxy.started(Unknown Source)
+org.commonjava.aprox.bind.vertx.RestRouter.initializeComponents(RestRouter.java:87)
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.lang.reflect.Method.invoke(Method.java:606)
+org.jboss.weld.injection.producer.DefaultLifecycleCallbackInvoker.invokeMethods(DefaultLifecycleCallbackInvoker.java:89)
+org.jboss.weld.injection.producer.DefaultLifecycleCallbackInvoker.postConstruct(DefaultLifecycleCallbackInvoker.java:72)
+org.jboss.weld.injection.producer.BasicInjectionTarget.postConstruct(BasicInjectionTarget.java:95)
+org.jboss.weld.injection.producer.BeanInjectionTarget.postConstruct(BeanInjectionTarget.java:63)
+org.jboss.weld.bean.ManagedBean.create(ManagedBean.java:153)
+org.jboss.weld.context.AbstractContext.get(AbstractContext.java:94)
+org.jboss.weld.bean.proxy.ContextBeanInstance.getInstance(ContextBeanInstance.java:98)
+org.jboss.weld.bean.proxy.ProxyMethodHandler.invoke(ProxyMethodHandler.java:78)
+org.commonjava.aprox.bind.vertx.RestRouter$Proxy$_$$_WeldClientProxy.setHandlerExecutor(Unknown Source)
+org.commonjava.vertx.vabr.MultiApplicationRouter.bindRouters(MultiApplicationRouter.java:118)
+org.commonjava.aprox.bind.vertx.boot.MasterRouter.initializeComponents(MasterRouter.java:68)
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+java.lang.reflect.Method.invoke(Method.java:606)
+org.jboss.weld.injection.producer.DefaultLifecycleCallbackInvoker.invokeMethods(DefaultLifecycleCallbackInvoker.java:89)
+org.jboss.weld.injection.producer.DefaultLifecycleCallbackInvoker.postConstruct(DefaultLifecycleCallbackInvoker.java:72)
+org.jboss.weld.injection.producer.BasicInjectionTarget.postConstruct(BasicInjectionTarget.java:95)
+org.jboss.weld.injection.producer.BeanInjectionTarget.postConstruct(BeanInjectionTarget.java:63)
+org.jboss.weld.bean.ManagedBean.create(ManagedBean.java:162)
+org.jboss.weld.context.AbstractContext.get(AbstractContext.java:94)
+org.jboss.weld.bean.proxy.ContextBeanInstance.getInstance(ContextBeanInstance.java:98)
+org.jboss.weld.bean.proxy.ProxyMethodHandler.invoke(ProxyMethodHandler.java:78)
+org.commonjava.aprox.bind.vertx.boot.MasterRouter$Proxy$_$$_WeldClientProxy.setPrefix(Unknown Source)
+org.commonjava.aprox.bind.vertx.boot.Booter.run(Booter.java:163)
+org.commonjava.aprox.bind.vertx.boot.Booter.main(Booter.java:95)
+[aprox-indexer-1] INFO  o.c.aprox.indexer.IndexHandler - Reserving: hosted:local-deployments
+[aprox-events-0] INFO  o.c.s.DefaultExpirationManager - Starting expiration manager with clock: ThreadedClockSource [period=300000]
+[aprox-events-0] INFO  o.c.s.clock.ThreadedClockSource - Starting clock for manager: DefaultExpirationManager@779937522 [
+  Event Manager: org.commonjava.shelflife.event.JEEEventManager@1a1850e5
+  Clock Source: ThreadedClockSource [period=300000]
+  Block Store: org.commonjava.shelflife.store.flat.FlatBlockStore@614c05d
+], period: 300000
+[main] INFO  o.c.aprox.core.ctl.AdminController - ...done.
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - 
+
+CONSTRUCTING WEB ROUTES FOR APROX...
+
+
+[aprox-indexer-0] INFO  o.c.aprox.indexer.IndexHandler - Marking as updated: Group [constituents=[remote:central], getName()=public, getKey()=group:public]
+[aprox-indexer-0] INFO  o.c.aprox.indexer.IndexHandler - Reserving: remote:central
+[aprox-indexer-1] INFO  o.c.aprox.indexer.IndexHandler - Releasing: hosted:local-deployments
+[aprox-indexer-0] INFO  o.c.aprox.indexer.IndexHandler - Marking as updated: Repository [url=http://repo1.maven.apache.org/maven2/, timeoutSeconds=0, host=repo1.maven.apache.org, port=80, user=null, password=null, getName()=central, getKey()=remote:central]
+[aprox-indexer-0] INFO  o.c.aprox.indexer.IndexHandler - Releasing: remote:central
+[aprox-indexer-0] INFO  o.c.aprox.indexer.IndexHandler - Updating indexes as a result of ExpirationEvent.
+[aprox-indexer-0] INFO  o.c.aprox.indexer.IndexHandler - Next index update in group: public scheduled for: Thu Sep 11 14:28:05 CDT 2014
+[aprox-indexer-0] INFO  o.c.aprox.indexer.IndexHandler - Releasing: group:public
+[aprox-indexer-0] INFO  o.c.aprox.indexer.IndexHandler - Index updated for: group:public
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.bind.vertx.admin.ReplicationHandler for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Got: /admin/replicate
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Handlers += /admin/replicate (org.commonjava.aprox.bind.vertx.admin.ReplicationHandler)
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.autoprox.vertx.AutoProxCatalogResource for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Got: /autoprox/catalog
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Handlers += /autoprox/catalog (org.commonjava.aprox.autoprox.vertx.AutoProxCatalogResource)
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.depgraph.vertx.MetadataResource$Proxy$_$$_WeldClientProxy for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.depgraph.vertx.MetadataResource for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Got: /depgraph/meta
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Handlers += /depgraph/meta (org.commonjava.aprox.depgraph.vertx.MetadataResource$Proxy$_$$_WeldClientProxy)
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.autoprox.vertx.AutoProxCalculatorResource for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Got: /autoprox/eval
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Handlers += /autoprox/eval (org.commonjava.aprox.autoprox.vertx.AutoProxCalculatorResource)
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.bind.vertx.RootResource for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Got: apiRootRedirector
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Handlers += apiRootRedirector (org.commonjava.aprox.bind.vertx.RootResource)
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.bind.vertx.admin.MaintenanceHandler for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Got: /admin/maint
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Handlers += /admin/maint (org.commonjava.aprox.bind.vertx.admin.MaintenanceHandler)
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.bind.vertx.admin.StoreAdminHandler for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Got: /admin/:type
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Handlers += /admin/:type (org.commonjava.aprox.bind.vertx.admin.StoreAdminHandler)
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.depgraph.vertx.ProjectResource$Proxy$_$$_WeldClientProxy for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.depgraph.vertx.ProjectResource for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Got: /depgraph/project
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Handlers += /depgraph/project (org.commonjava.aprox.depgraph.vertx.ProjectResource$Proxy$_$$_WeldClientProxy)
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.bind.vertx.DeprecatedApi10Redirector for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Got: /1.0
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Handlers += /1.0 (org.commonjava.aprox.bind.vertx.DeprecatedApi10Redirector)
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.bind.vertx.SecurityResource$Proxy$_$$_WeldClientProxy for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.bind.vertx.SecurityResource for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Got: security
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Handlers += security (org.commonjava.aprox.bind.vertx.SecurityResource$Proxy$_$$_WeldClientProxy)
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.bind.vertx.stats.StatsHandler for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Got: /stats
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Handlers += /stats (org.commonjava.aprox.bind.vertx.stats.StatsHandler)
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.setback.vertx.SetBackSettingsResource for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Got: /setback
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Handlers += /setback (org.commonjava.aprox.setback.vertx.SetBackSettingsResource)
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.depgraph.vertx.calc.CalculatorResource$Proxy$_$$_WeldClientProxy for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.depgraph.vertx.calc.CalculatorResource for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Got: /depgraph/calc
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Handlers += /depgraph/calc (org.commonjava.aprox.depgraph.vertx.calc.CalculatorResource$Proxy$_$$_WeldClientProxy)
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.bind.vertx.ContentAccessHandler for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Got: content
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Handlers += content (org.commonjava.aprox.bind.vertx.ContentAccessHandler)
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.depgraph.vertx.resolve.ResolverResource$Proxy$_$$_WeldClientProxy for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.depgraph.vertx.resolve.ResolverResource for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Got: /depgraph/resolve/:from=(.+)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Handlers += /depgraph/resolve/:from=(.+) (org.commonjava.aprox.depgraph.vertx.resolve.ResolverResource$Proxy$_$$_WeldClientProxy)
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.depgraph.vertx.render.RepositoryResource for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Got: /depgraph/repo
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Handlers += /depgraph/repo (org.commonjava.aprox.depgraph.vertx.render.RepositoryResource)
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.bind.vertx.NfcResource for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Got: /nfc
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Handlers += /nfc (org.commonjava.aprox.bind.vertx.NfcResource)
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.depgraph.vertx.GraphResource$Proxy$_$$_WeldClientProxy for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.depgraph.vertx.GraphResource for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Got: /depgraph/rel
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Handlers += /depgraph/rel (org.commonjava.aprox.depgraph.vertx.GraphResource$Proxy$_$$_WeldClientProxy)
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.depgraph.vertx.WorkspaceResource$Proxy$_$$_WeldClientProxy for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.depgraph.vertx.WorkspaceResource for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Got: /depgraph/ws
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Handlers += /depgraph/ws (org.commonjava.aprox.depgraph.vertx.WorkspaceResource$Proxy$_$$_WeldClientProxy)
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.depgraph.vertx.render.GraphRenderingResource$Proxy$_$$_WeldClientProxy for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Searching org.commonjava.aprox.depgraph.vertx.render.GraphRenderingResource for @Handles annotation...
+[main] INFO  o.c.vertx.vabr.util.AnnotationUtils - Got: /depgraph/render
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Handlers += /depgraph/render (org.commonjava.aprox.depgraph.vertx.render.GraphRenderingResource$Proxy$_$$_WeldClientProxy)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Binding routes in collection: org.commonjava.aprox.bind.vertx.Routes
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /admin/:type/:name (PUT)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=PUT, version=v1], Pattern: /admin/:type/:name, Route: Route [PUT /admin/:type/:name] => /admin/:type
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /admin/maint/rescan/:type/:name (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /admin/maint/rescan/:type/:name, Route: Route [GET /admin/maint/rescan/:type/:name] => /admin/maint
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /:type=(hosted|group)/:name/:path=(.+) (PUT)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=PUT, version=v1], Pattern: /:type=(hosted|group)/:name/:path=(.+), Route: Route [PUT /:type=(hosted|group)/:name/:path=(.+)] => content
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /admin/:type (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /admin/:type, Route: Route [GET /admin/:type] => /admin/:type
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /nfc/:type/:name:?path=(/.+) (DELETE)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=DELETE, version=v1], Pattern: /nfc/:type/:name:?path=(/.+), Route: Route [DELETE /nfc/:type/:name:?path=(/.+)] => /nfc
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /admin/maint/content/all:?path=(/.+) (DELETE)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=DELETE, version=v1], Pattern: /admin/maint/content/all:?path=(/.+), Route: Route [DELETE /admin/maint/content/all:?path=(/.+)] => /admin/maint
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /admin/maint/rescan/all (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /admin/maint/rescan/all, Route: Route [GET /admin/maint/rescan/all] => /admin/maint
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /stats/all-endpoints (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /stats/all-endpoints, Route: Route [GET /stats/all-endpoints] => /stats
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /stats/addons/active.js (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /stats/addons/active.js, Route: Route [GET /stats/addons/active.js] => /stats
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += / (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /, Route: Route [GET /] => apiRootRedirector
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /nfc (DELETE)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=DELETE, version=v1], Pattern: /nfc, Route: Route [DELETE /nfc] => /nfc
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /nfc/:type/:name (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /nfc/:type/:name, Route: Route [GET /nfc/:type/:name] => /nfc
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /admin/replicate (POST)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=POST, version=v1], Pattern: /admin/replicate, Route: Route [POST /admin/replicate] => /admin/replicate
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /stats/addons/active (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /stats/addons/active, Route: Route [GET /stats/addons/active] => /stats
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /nfc (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /nfc, Route: Route [GET /nfc] => /nfc
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /:type=(hosted|remote|group)/:name:path=(/.*) (HEAD)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=HEAD, version=v1], Pattern: /:type=(hosted|remote|group)/:name:path=(/.*), Route: Route [HEAD /:type=(hosted|remote|group)/:name:path=(/.*)] => content
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /admin/:type/:name (DELETE)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=DELETE, version=v1], Pattern: /admin/:type/:name, Route: Route [DELETE /admin/:type/:name] => /admin/:type
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /1.0:path=(.*) (ANY)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /1.0:path=(.*), Route: Route [ANY /1.0:path=(.*)] => /1.0
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=PUT, version=v1], Pattern: /1.0:path=(.*), Route: Route [ANY /1.0:path=(.*)] => /1.0
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=CONNECT, version=v1], Pattern: /1.0:path=(.*), Route: Route [ANY /1.0:path=(.*)] => /1.0
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=PROPPATCH, version=v1], Pattern: /1.0:path=(.*), Route: Route [ANY /1.0:path=(.*)] => /1.0
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=UNLOCK, version=v1], Pattern: /1.0:path=(.*), Route: Route [ANY /1.0:path=(.*)] => /1.0
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=MOVE, version=v1], Pattern: /1.0:path=(.*), Route: Route [ANY /1.0:path=(.*)] => /1.0
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=USERINFO, version=v1], Pattern: /1.0:path=(.*), Route: Route [ANY /1.0:path=(.*)] => /1.0
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=LOCK, version=v1], Pattern: /1.0:path=(.*), Route: Route [ANY /1.0:path=(.*)] => /1.0
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=POST, version=v1], Pattern: /1.0:path=(.*), Route: Route [ANY /1.0:path=(.*)] => /1.0
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=PATCH, version=v1], Pattern: /1.0:path=(.*), Route: Route [ANY /1.0:path=(.*)] => /1.0
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=OPTIONS, version=v1], Pattern: /1.0:path=(.*), Route: Route [ANY /1.0:path=(.*)] => /1.0
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=HEAD, version=v1], Pattern: /1.0:path=(.*), Route: Route [ANY /1.0:path=(.*)] => /1.0
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=COPY, version=v1], Pattern: /1.0:path=(.*), Route: Route [ANY /1.0:path=(.*)] => /1.0
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=DELETE, version=v1], Pattern: /1.0:path=(.*), Route: Route [ANY /1.0:path=(.*)] => /1.0
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=TRACE, version=v1], Pattern: /1.0:path=(.*), Route: Route [ANY /1.0:path=(.*)] => /1.0
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=ANY, version=v1], Pattern: /1.0:path=(.*), Route: Route [ANY /1.0:path=(.*)] => /1.0
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=PROPFIND, version=v1], Pattern: /1.0:path=(.*), Route: Route [ANY /1.0:path=(.*)] => /1.0
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /admin/maint/delete/all:?path=(/.+) (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /admin/maint/delete/all:?path=(/.+), Route: Route [GET /admin/maint/delete/all:?path=(/.+)] => /admin/maint
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /stats/version-info (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /stats/version-info, Route: Route [GET /stats/version-info] => /stats
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /admin/:type (POST)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=POST, version=v1], Pattern: /admin/:type, Route: Route [POST /admin/:type] => /admin/:type
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /:type=(hosted|remote|group)/:name:?path=(/.+) (DELETE)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=DELETE, version=v1], Pattern: /:type=(hosted|remote|group)/:name:?path=(/.+), Route: Route [DELETE /:type=(hosted|remote|group)/:name:?path=(/.+)] => content
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /admin/:type/:name (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /admin/:type/:name, Route: Route [GET /admin/:type/:name] => /admin/:type
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /:type=(hosted|remote|group)/:name:path=(/.*) (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /:type=(hosted|remote|group)/:name:path=(/.*), Route: Route [GET /:type=(hosted|remote|group)/:name:path=(/.*)] => content
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Binding routes in collection: org.commonjava.aprox.autoprox.vertx.Routes
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /autoprox/eval/remote/:name (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /autoprox/eval/remote/:name, Route: Route [GET /autoprox/eval/remote/:name] => /autoprox/eval
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /autoprox/eval/hosted/:name (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /autoprox/eval/hosted/:name, Route: Route [GET /autoprox/eval/hosted/:name] => /autoprox/eval
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /autoprox/catalog (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /autoprox/catalog, Route: Route [GET /autoprox/catalog] => /autoprox/catalog
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /autoprox/eval/group/:name (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /autoprox/eval/group/:name, Route: Route [GET /autoprox/eval/group/:name] => /autoprox/eval
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Binding routes in collection: org.commonjava.aprox.depgraph.vertx.Routes
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/rel/project/:groupId/:artifactId/:version (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /depgraph/rel/project/:groupId/:artifactId/:version, Route: Route [GET /depgraph/rel/project/:groupId/:artifactId/:version] => /depgraph/rel
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/project/:groupId/:artifactId/:version/parent (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /depgraph/project/:groupId/:artifactId/:version/parent, Route: Route [GET /depgraph/project/:groupId/:artifactId/:version/parent] => /depgraph/project
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/meta/batch (POST)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=POST, version=v1], Pattern: /depgraph/meta/batch, Route: Route [POST /depgraph/meta/batch] => /depgraph/meta
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/render/dotfile/:groupId/:artifactId/:version (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /depgraph/render/dotfile/:groupId/:artifactId/:version, Route: Route [GET /depgraph/render/dotfile/:groupId/:artifactId/:version] => /depgraph/render
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/rel/reindex:?gav=([^/]+/[^/]+/[^/]+) (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /depgraph/rel/reindex:?gav=([^/]+/[^/]+/[^/]+), Route: Route [GET /depgraph/rel/reindex:?gav=([^/]+/[^/]+/[^/]+)] => /depgraph/rel
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/ws/:wsid (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /depgraph/ws/:wsid, Route: Route [GET /depgraph/ws/:wsid] => /depgraph/ws
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/project/:groupId/:artifactId/:version/errors (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /depgraph/project/:groupId/:artifactId/:version/errors, Route: Route [GET /depgraph/project/:groupId/:artifactId/:version/errors] => /depgraph/project
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/ws/new (POST)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=POST, version=v1], Pattern: /depgraph/ws/new, Route: Route [POST /depgraph/ws/new] => /depgraph/ws
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/render/tree (POST)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=POST, version=v1], Pattern: /depgraph/render/tree, Route: Route [POST /depgraph/render/tree] => /depgraph/render
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/repo/urlmap (POST)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=POST, version=v1], Pattern: /depgraph/repo/urlmap, Route: Route [POST /depgraph/repo/urlmap] => /depgraph/repo
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/resolve/:from=(.+)/:groupId/:artifactId/:version (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /depgraph/resolve/:from=(.+)/:groupId/:artifactId/:version, Route: Route [GET /depgraph/resolve/:from=(.+)/:groupId/:artifactId/:version] => /depgraph/resolve/:from=(.+)
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/calc (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /depgraph/calc, Route: Route [GET /depgraph/calc] => /depgraph/calc
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/project/:groupId/:artifactId/:version/relationships (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /depgraph/project/:groupId/:artifactId/:version/relationships, Route: Route [GET /depgraph/project/:groupId/:artifactId/:version/relationships] => /depgraph/project
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/rel/ancestry/:groupId/:artifactId/:version (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /depgraph/rel/ancestry/:groupId/:artifactId/:version, Route: Route [GET /depgraph/rel/ancestry/:groupId/:artifactId/:version] => /depgraph/rel
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/repo/zip (POST)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=POST, version=v1], Pattern: /depgraph/repo/zip, Route: Route [POST /depgraph/repo/zip] => /depgraph/repo
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/rel/build-order/:groupId/:artifactId/:version (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /depgraph/rel/build-order/:groupId/:artifactId/:version, Route: Route [GET /depgraph/rel/build-order/:groupId/:artifactId/:version] => /depgraph/rel
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/meta/collate (POST)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=POST, version=v1], Pattern: /depgraph/meta/collate, Route: Route [POST /depgraph/meta/collate] => /depgraph/meta
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/render/bom (POST)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=POST, version=v1], Pattern: /depgraph/render/bom, Route: Route [POST /depgraph/render/bom] => /depgraph/render
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/rel/variable:?gav=([^/]+/[^/]+/[^/]+) (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /depgraph/rel/variable:?gav=([^/]+/[^/]+/[^/]+), Route: Route [GET /depgraph/rel/variable:?gav=([^/]+/[^/]+/[^/]+)] => /depgraph/rel
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/ws/:wsid (PUT)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=PUT, version=v1], Pattern: /depgraph/ws/:wsid, Route: Route [PUT /depgraph/ws/:wsid] => /depgraph/ws
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/meta/for/:groupId/:artifactId/:version (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /depgraph/meta/for/:groupId/:artifactId/:version, Route: Route [GET /depgraph/meta/for/:groupId/:artifactId/:version] => /depgraph/meta
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/resolve/:from=(.+)/:groupId/:artifactId/:version/incomplete (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /depgraph/resolve/:from=(.+)/:groupId/:artifactId/:version/incomplete, Route: Route [GET /depgraph/resolve/:from=(.+)/:groupId/:artifactId/:version/incomplete] => /depgraph/resolve/:from=(.+)
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/calc/diff (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /depgraph/calc/diff, Route: Route [GET /depgraph/calc/diff] => /depgraph/calc
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/meta/:groupId/:artifactId/:version (POST)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=POST, version=v1], Pattern: /depgraph/meta/:groupId/:artifactId/:version, Route: Route [POST /depgraph/meta/:groupId/:artifactId/:version] => /depgraph/meta
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/meta/forkey/:groupId/:artifactId/:version/:key (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /depgraph/meta/forkey/:groupId/:artifactId/:version/:key, Route: Route [GET /depgraph/meta/forkey/:groupId/:artifactId/:version/:key] => /depgraph/meta
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/ws (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /depgraph/ws, Route: Route [GET /depgraph/ws] => /depgraph/ws
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/project/:groupId/:artifactId/:version/dependencies (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /depgraph/project/:groupId/:artifactId/:version/dependencies, Route: Route [GET /depgraph/project/:groupId/:artifactId/:version/dependencies] => /depgraph/project
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/project/:groupId/:artifactId/:version/users (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /depgraph/project/:groupId/:artifactId/:version/users, Route: Route [GET /depgraph/project/:groupId/:artifactId/:version/users] => /depgraph/project
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/render/bom/:groupId/:artifactId/:version (POST)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=POST, version=v1], Pattern: /depgraph/render/bom/:groupId/:artifactId/:version, Route: Route [POST /depgraph/render/bom/:groupId/:artifactId/:version] => /depgraph/render
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/project/:groupId/:artifactId/:version/extensions (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /depgraph/project/:groupId/:artifactId/:version/extensions, Route: Route [GET /depgraph/project/:groupId/:artifactId/:version/extensions] => /depgraph/project
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/ws/new/from (POST)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=POST, version=v1], Pattern: /depgraph/ws/new/from, Route: Route [POST /depgraph/ws/new/from] => /depgraph/ws
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/rel/errors:?gav=([^/]+/[^/]+/[^/]+) (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /depgraph/rel/errors:?gav=([^/]+/[^/]+/[^/]+), Route: Route [GET /depgraph/rel/errors:?gav=([^/]+/[^/]+/[^/]+)] => /depgraph/rel
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/rel/incomplete:?gav=([^/]+/[^/]+/[^/]+) (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /depgraph/rel/incomplete:?gav=([^/]+/[^/]+/[^/]+), Route: Route [GET /depgraph/rel/incomplete:?gav=([^/]+/[^/]+/[^/]+)] => /depgraph/rel
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/ws/:wsid (DELETE)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=DELETE, version=v1], Pattern: /depgraph/ws/:wsid, Route: Route [DELETE /depgraph/ws/:wsid] => /depgraph/ws
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/project/:groupId/:artifactId/:version/plugins (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /depgraph/project/:groupId/:artifactId/:version/plugins, Route: Route [GET /depgraph/project/:groupId/:artifactId/:version/plugins] => /depgraph/project
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/repo/downlog (POST)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=POST, version=v1], Pattern: /depgraph/repo/downlog, Route: Route [POST /depgraph/repo/downlog] => /depgraph/repo
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /depgraph/project/list (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /depgraph/project/list, Route: Route [GET /depgraph/project/list] => /depgraph/project
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Binding routes in collection: org.commonjava.aprox.setback.vertx.Routes
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /setback/:type=(remote|group)/:name (DELETE)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=DELETE, version=v1], Pattern: /setback/:type=(remote|group)/:name, Route: Route [DELETE /setback/:type=(remote|group)/:name] => /setback
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Routes += /setback/:type=(remote|group)/:name (GET)
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /setback/:type=(remote|group)/:name, Route: Route [GET /setback/:type=(remote|group)/:name] => /setback
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Binding filters in collection: org.commonjava.aprox.bind.vertx.Filters
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - Using appId: aprox and default version: v1
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=GET, version=v1], Pattern: /(?!.*(login|logout)).*, Filter: Filter [ANY /(?!.*(login|logout)).*] => security
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=PUT, version=v1], Pattern: /(?!.*(login|logout)).*, Filter: Filter [ANY /(?!.*(login|logout)).*] => security
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=CONNECT, version=v1], Pattern: /(?!.*(login|logout)).*, Filter: Filter [ANY /(?!.*(login|logout)).*] => security
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=PROPPATCH, version=v1], Pattern: /(?!.*(login|logout)).*, Filter: Filter [ANY /(?!.*(login|logout)).*] => security
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=UNLOCK, version=v1], Pattern: /(?!.*(login|logout)).*, Filter: Filter [ANY /(?!.*(login|logout)).*] => security
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=MOVE, version=v1], Pattern: /(?!.*(login|logout)).*, Filter: Filter [ANY /(?!.*(login|logout)).*] => security
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=USERINFO, version=v1], Pattern: /(?!.*(login|logout)).*, Filter: Filter [ANY /(?!.*(login|logout)).*] => security
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=LOCK, version=v1], Pattern: /(?!.*(login|logout)).*, Filter: Filter [ANY /(?!.*(login|logout)).*] => security
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=POST, version=v1], Pattern: /(?!.*(login|logout)).*, Filter: Filter [ANY /(?!.*(login|logout)).*] => security
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=PATCH, version=v1], Pattern: /(?!.*(login|logout)).*, Filter: Filter [ANY /(?!.*(login|logout)).*] => security
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=OPTIONS, version=v1], Pattern: /(?!.*(login|logout)).*, Filter: Filter [ANY /(?!.*(login|logout)).*] => security
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=HEAD, version=v1], Pattern: /(?!.*(login|logout)).*, Filter: Filter [ANY /(?!.*(login|logout)).*] => security
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=COPY, version=v1], Pattern: /(?!.*(login|logout)).*, Filter: Filter [ANY /(?!.*(login|logout)).*] => security
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=DELETE, version=v1], Pattern: /(?!.*(login|logout)).*, Filter: Filter [ANY /(?!.*(login|logout)).*] => security
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=TRACE, version=v1], Pattern: /(?!.*(login|logout)).*, Filter: Filter [ANY /(?!.*(login|logout)).*] => security
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=ANY, version=v1], Pattern: /(?!.*(login|logout)).*, Filter: Filter [ANY /(?!.*(login|logout)).*] => security
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - ADD: BindingKey [method=PROPFIND, version=v1], Pattern: /(?!.*(login|logout)).*, Filter: Filter [ANY /(?!.*(login|logout)).*] => security
+
+[main] INFO  o.c.aprox.bind.vertx.RestRouter - 
+
+...done.
+
+
+[main] INFO  o.c.a.bind.vertx.boot.MasterRouter - ...done
+AProx: 5 workers listening on 0.0.0.0:8080
+
+Listening for transport dt_socket at address: 8000
+[shelflife-flushcache-0] INFO  o.c.s.store.flat.FlatBlockStore - Writing expiration block to: /home/jdcasey/code/stacks/aprox/aprox/launchers/savant/target/aprox/var/lib/aprox/data/shelflife/expiration-block-2014.09.11.14-05.json

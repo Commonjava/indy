@@ -19,7 +19,7 @@ import org.commonjava.aprox.conf.AbstractAproxConfigInfo;
 import org.commonjava.aprox.conf.AbstractAproxFeatureConfig;
 import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.aprox.inject.Production;
-import org.commonjava.aprox.subsys.flatfile.conf.DataFileManager;
+import org.commonjava.aprox.subsys.datafile.DataFileManager;
 import org.commonjava.web.config.ConfigurationException;
 
 @ApplicationScoped

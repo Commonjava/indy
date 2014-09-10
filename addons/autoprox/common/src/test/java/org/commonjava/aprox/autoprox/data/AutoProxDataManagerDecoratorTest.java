@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.commonjava.aprox.audit.BasicSecuritySystem;
+import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.autoprox.conf.AutoProxConfig;
 import org.commonjava.aprox.autoprox.fixture.HttpTestFixture;
 import org.commonjava.aprox.autoprox.fixture.TestAutoProxFactory;
@@ -33,8 +33,8 @@ import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.aprox.subsys.flatfile.conf.DataFileEventManager;
-import org.commonjava.aprox.subsys.flatfile.conf.DataFileManager;
+import org.commonjava.aprox.subsys.datafile.DataFileManager;
+import org.commonjava.aprox.subsys.datafile.change.DataFileEventManager;
 import org.commonjava.aprox.subsys.template.ScriptEngine;
 import org.junit.Before;
 import org.junit.Rule;
@@ -54,19 +54,18 @@ public class AutoProxDataManagerDecoratorTest
 
     private final AutoProxCatalog catalog = new AutoProxCatalog( true, new ArrayList<RuleMapping>() );
 
-    private final BasicSecuritySystem security = new BasicSecuritySystem();
-
-    private final StoreDataManager proxyManager = new TestAutoProxyDataManager( catalog, http.getHttp(), security );
+    private final StoreDataManager proxyManager = new TestAutoProxyDataManager( catalog, http.getHttp() );
 
     private final ScriptRuleParser ruleParser = new ScriptRuleParser( new ScriptEngine() );
 
+    private final ChangeSummary summary = new ChangeSummary( "test-user", "test" );
 
     @Before
     public final void setup()
         throws Exception
     {
         proxyManager.install();
-        proxyManager.clear( "test setup" );
+        proxyManager.clear( summary );
     }
 
     @Test
@@ -86,8 +85,8 @@ public class AutoProxDataManagerDecoratorTest
              .getParentFile();
 
         final AutoProxCatalog catalog =
-            new AutoProxProvider( new DataFileManager( f, new DataFileEventManager(), security ), apConfig, ruleParser ).getCatalog();
-        final StoreDataManager proxyManager = new TestAutoProxyDataManager( catalog, http.getHttp(), security );
+            new AutoProxProvider( new DataFileManager( f, new DataFileEventManager() ), apConfig, ruleParser ).getCatalog();
+        final StoreDataManager proxyManager = new TestAutoProxyDataManager( catalog, http.getHttp() );
 
         final String testUrl = http.formatUrl( "target", "test" );
         http.get( testUrl, 404 );
@@ -123,8 +122,8 @@ public class AutoProxDataManagerDecoratorTest
              .getParentFile();
 
         final AutoProxCatalog catalog =
-            new AutoProxProvider( new DataFileManager( f, new DataFileEventManager(), security ), apConfig, ruleParser ).getCatalog();
-        final StoreDataManager proxyManager = new TestAutoProxyDataManager( catalog, http.getHttp(), security );
+            new AutoProxProvider( new DataFileManager( f, new DataFileEventManager() ), apConfig, ruleParser ).getCatalog();
+        final StoreDataManager proxyManager = new TestAutoProxyDataManager( catalog, http.getHttp() );
 
         final String testUrl = http.formatUrl( "target", "test" );
         http.get( testUrl, 404 );

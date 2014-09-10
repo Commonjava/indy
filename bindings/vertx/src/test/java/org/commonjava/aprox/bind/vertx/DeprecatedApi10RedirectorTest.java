@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.commonjava.aprox.bind.vertx.testutil.PortFinder;
 import org.commonjava.aprox.bind.vertx.testutil.WaitHandler;
+import org.commonjava.aprox.core.bind.vertx.DeprecatedApi10Redirector;
 import org.commonjava.aprox.util.ApplicationHeader;
 import org.commonjava.vertx.vabr.ApplicationRouter;
 import org.commonjava.vertx.vabr.ApplicationRouterConfig;

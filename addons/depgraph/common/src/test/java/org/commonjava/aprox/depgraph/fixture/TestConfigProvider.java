@@ -22,7 +22,7 @@ import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
 import org.commonjava.aprox.inject.TestData;
-import org.commonjava.aprox.subsys.flatfile.conf.DataFileConfiguration;
+import org.commonjava.aprox.subsys.datafile.conf.DataFileConfiguration;
 
 @javax.enterprise.context.ApplicationScoped
 public class TestConfigProvider

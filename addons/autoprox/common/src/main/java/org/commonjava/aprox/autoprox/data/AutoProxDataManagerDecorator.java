@@ -13,7 +13,6 @@ package org.commonjava.aprox.autoprox.data;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 
 import java.io.IOException;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +26,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpHead;
-import org.commonjava.aprox.audit.SecuritySystem;
+import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
@@ -59,20 +58,16 @@ public abstract class AutoProxDataManagerDecorator
     @Inject
     private AproxHttpProvider http;
 
-    @Inject
-    private SecuritySystem securitySystem;
-
     protected AutoProxDataManagerDecorator()
     {
     }
 
     public AutoProxDataManagerDecorator( final MemoryStoreDataManager dataManager, final AutoProxCatalog catalog,
-                                         final AproxHttpProvider http, final SecuritySystem securitySystem )
+                                         final AproxHttpProvider http )
     {
         this.dataManager = dataManager;
         this.catalog = catalog;
         this.http = http;
-        this.securitySystem = securitySystem;
     }
 
     protected final StoreDataManager getDelegate()
@@ -131,30 +126,9 @@ public abstract class AutoProxDataManagerDecorator
                 }
 
                 final Group group = g;
-                final ProxyDataException error =
-                    securitySystem.runAsSystemUser( new PrivilegedAction<ProxyDataException>()
-                    {
-
-                        @Override
-                        public ProxyDataException run()
-                        {
-                            try
-                            {
-                                dataManager.storeArtifactStore( group, "AUTOPROX: Creating group for: '" + name + "'" );
-                            }
-                            catch ( final ProxyDataException e )
-                            {
-                                return e;
-                            }
-
-                            return null;
-                        }
-                    } );
-
-                if ( error != null )
-                {
-                    throw error;
-                }
+                dataManager.storeArtifactStore( group, new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                          "AUTOPROX: Creating group for: '" + name
+                                                                              + "'" ) );
             }
         }
 
@@ -276,32 +250,9 @@ public abstract class AutoProxDataManagerDecorator
                     }
 
                     final RemoteRepository remote = repo;
-                    final ProxyDataException error =
-                        securitySystem.runAsSystemUser( new PrivilegedAction<ProxyDataException>()
-                        {
-
-                            @Override
-                            public ProxyDataException run()
-                            {
-                                try
-                                {
-                                    dataManager.storeRemoteRepository( remote,
-                                                                       "AUTOPROX: Creating remote repository for: '"
-                                                                           + name + "'" );
-                                }
-                                catch ( final ProxyDataException e )
-                                {
-                                    return e;
-                                }
-
-                                return null;
-                            }
-                        } );
-
-                    if ( error != null )
-                    {
-                        throw error;
-                    }
+                    dataManager.storeRemoteRepository( remote, new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                                  "AUTOPROX: Creating remote repository for: '"
+                                                                                      + name + "'" ) );
                 }
             }
             catch ( final AutoProxRuleException e )
@@ -346,32 +297,9 @@ public abstract class AutoProxDataManagerDecorator
             if ( repo != null )
             {
                 final HostedRepository hosted = repo;
-                final ProxyDataException error =
-                    securitySystem.runAsSystemUser( new PrivilegedAction<ProxyDataException>()
-                    {
-
-                        @Override
-                        public ProxyDataException run()
-                        {
-                            try
-                            {
-                                dataManager.storeHostedRepository( hosted,
-                                                                   "AUTOPROX: Creating remote repository for: '" + name
-                                                                       + "'" );
-                            }
-                            catch ( final ProxyDataException e )
-                            {
-                                return e;
-                            }
-
-                            return null;
-                        }
-                    } );
-
-                if ( error != null )
-                {
-                    throw error;
-                }
+                dataManager.storeHostedRepository( hosted, new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                              "AUTOPROX: Creating remote repository for: '"
+                                                                                  + name + "'" ) );
             }
         }
 

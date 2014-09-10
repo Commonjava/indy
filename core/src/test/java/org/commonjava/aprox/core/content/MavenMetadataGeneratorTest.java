@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.content.AproxLocationExpander;
 import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.content.StoreResource;
@@ -53,6 +54,8 @@ public class MavenMetadataGeneratorTest
     private MemoryStoreDataManager stores;
 
     private MavenMetadataReader metadataReader;
+
+    private final ChangeSummary summary = new ChangeSummary( "test-user", "test" );
 
     @Before
     public void setup()
@@ -213,7 +216,7 @@ public class MavenMetadataGeneratorTest
         throws Exception
     {
         final RemoteRepository store = new RemoteRepository( "testrepo", "http://foo.bar" );
-        stores.storeArtifactStore( store, "test" );
+        stores.storeArtifactStore( store, summary );
 
         final String path = "org/group/artifact";
 
@@ -243,7 +246,7 @@ public class MavenMetadataGeneratorTest
         throws Exception
     {
         final RemoteRepository store = new RemoteRepository( "testrepo", "http://foo.bar" );
-        stores.storeArtifactStore( store, "test" );
+        stores.storeArtifactStore( store, summary );
 
         final String path = "org/group/artifact/1.0-SNAPSHOT";
 

@@ -23,8 +23,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.codehaus.groovy.control.CompilationFailedException;
-import org.commonjava.aprox.subsys.flatfile.conf.DataFile;
-import org.commonjava.aprox.subsys.flatfile.conf.DataFileManager;
+import org.commonjava.aprox.subsys.datafile.DataFile;
+import org.commonjava.aprox.subsys.datafile.DataFileManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

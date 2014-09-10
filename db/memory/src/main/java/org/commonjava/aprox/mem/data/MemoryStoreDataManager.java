@@ -25,6 +25,7 @@ import javax.enterprise.event.Event;
 import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 
+import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.change.event.ArtifactStoreDeleteEvent;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateType;
@@ -209,14 +210,14 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public boolean storeHostedRepository( final HostedRepository repo, final String summary )
+    public boolean storeHostedRepository( final HostedRepository repo, final ChangeSummary summary )
         throws ProxyDataException
     {
         return store( repo, summary, false );
     }
 
     @Override
-    public boolean storeHostedRepository( final HostedRepository repo, final String summary,
+    public boolean storeHostedRepository( final HostedRepository repo, final ChangeSummary summary,
                                           final boolean skipIfExists )
         throws ProxyDataException
     {
@@ -227,14 +228,14 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public boolean storeRemoteRepository( final RemoteRepository repository, final String summary )
+    public boolean storeRemoteRepository( final RemoteRepository repository, final ChangeSummary summary )
         throws ProxyDataException
     {
         return store( repository, summary, false );
     }
 
     @Override
-    public boolean storeRemoteRepository( final RemoteRepository repository, final String summary,
+    public boolean storeRemoteRepository( final RemoteRepository repository, final ChangeSummary summary,
                                           final boolean skipIfExists )
         throws ProxyDataException
     {
@@ -244,14 +245,14 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public boolean storeGroup( final Group group, final String summary )
+    public boolean storeGroup( final Group group, final ChangeSummary summary )
         throws ProxyDataException
     {
         return store( group, summary, false );
     }
 
     @Override
-    public boolean storeGroup( final Group group, final String summary, final boolean skipIfExists )
+    public boolean storeGroup( final Group group, final ChangeSummary summary, final boolean skipIfExists )
         throws ProxyDataException
     {
         final boolean result = store( group, summary, skipIfExists );
@@ -261,14 +262,14 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public boolean storeArtifactStore( final ArtifactStore store, final String summary )
+    public boolean storeArtifactStore( final ArtifactStore store, final ChangeSummary summary )
         throws ProxyDataException
     {
         return store( store, summary, false );
     }
 
     @Override
-    public boolean storeArtifactStore( final ArtifactStore store, final String summary,
+    public boolean storeArtifactStore( final ArtifactStore store, final ChangeSummary summary,
                                        final boolean skipIfExists )
         throws ProxyDataException
     {
@@ -278,7 +279,7 @@ public class MemoryStoreDataManager
         return result;
     }
 
-    private boolean store( final ArtifactStore store, final String summary, final boolean skipIfExists )
+    private boolean store( final ArtifactStore store, final ChangeSummary summary, final boolean skipIfExists )
     {
         if ( !skipIfExists || !stores.containsKey( store.getKey() ) )
         {
@@ -290,7 +291,7 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void deleteHostedRepository( final HostedRepository repo, final String summary )
+    public void deleteHostedRepository( final HostedRepository repo, final ChangeSummary summary )
         throws ProxyDataException
     {
         stores.remove( repo.getKey() );
@@ -298,7 +299,7 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void deleteHostedRepository( final String name, final String summary )
+    public void deleteHostedRepository( final String name, final ChangeSummary summary )
         throws ProxyDataException
     {
         stores.remove( new StoreKey( StoreType.hosted, name ) );
@@ -306,7 +307,7 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void deleteRemoteRepository( final RemoteRepository repo, final String summary )
+    public void deleteRemoteRepository( final RemoteRepository repo, final ChangeSummary summary )
         throws ProxyDataException
     {
         stores.remove( repo.getKey() );
@@ -314,7 +315,7 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void deleteRemoteRepository( final String name, final String summary )
+    public void deleteRemoteRepository( final String name, final ChangeSummary summary )
         throws ProxyDataException
     {
         stores.remove( new StoreKey( StoreType.remote, name ) );
@@ -322,7 +323,7 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void deleteGroup( final Group group, final String summary )
+    public void deleteGroup( final Group group, final ChangeSummary summary )
         throws ProxyDataException
     {
         stores.remove( group.getKey() );
@@ -330,7 +331,7 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void deleteGroup( final String name, final String summary )
+    public void deleteGroup( final String name, final ChangeSummary summary )
         throws ProxyDataException
     {
         stores.remove( new StoreKey( StoreType.group, name ) );
@@ -338,7 +339,7 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void deleteArtifactStore( final StoreKey key, final String summary )
+    public void deleteArtifactStore( final StoreKey key, final ChangeSummary summary )
         throws ProxyDataException
     {
         stores.remove( key );
@@ -352,7 +353,7 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void clear( final String summary )
+    public void clear( final ChangeSummary summary )
         throws ProxyDataException
     {
         stores.clear();

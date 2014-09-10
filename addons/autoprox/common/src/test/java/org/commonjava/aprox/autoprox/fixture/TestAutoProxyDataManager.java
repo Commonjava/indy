@@ -3,7 +3,7 @@ package org.commonjava.aprox.autoprox.fixture;
 import java.util.List;
 import java.util.Set;
 
-import org.commonjava.aprox.audit.SecuritySystem;
+import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.autoprox.data.AutoProxCatalog;
 import org.commonjava.aprox.autoprox.data.AutoProxDataManagerDecorator;
 import org.commonjava.aprox.data.ProxyDataException;
@@ -24,10 +24,9 @@ public class TestAutoProxyDataManager
 
     private final StoreDataManager delegate;
 
-    public TestAutoProxyDataManager( final AutoProxCatalog catalog, final AproxHttpProvider http,
-                                     final SecuritySystem security )
+    public TestAutoProxyDataManager( final AutoProxCatalog catalog, final AproxHttpProvider http )
     {
-        super( new MemoryStoreDataManager(), catalog, http, security );
+        super( new MemoryStoreDataManager(), catalog, http );
         delegate = getDelegate();
     }
 
@@ -109,14 +108,14 @@ public class TestAutoProxyDataManager
     }
 
     @Override
-    public boolean storeHostedRepository( final HostedRepository deploy, final String summary )
+    public boolean storeHostedRepository( final HostedRepository deploy, final ChangeSummary summary )
         throws ProxyDataException
     {
         return delegate.storeHostedRepository( deploy, summary );
     }
 
     @Override
-    public boolean storeHostedRepository( final HostedRepository deploy, final String summary,
+    public boolean storeHostedRepository( final HostedRepository deploy, final ChangeSummary summary,
                                           final boolean skipIfExists )
         throws ProxyDataException
     {
@@ -124,14 +123,14 @@ public class TestAutoProxyDataManager
     }
 
     @Override
-    public boolean storeRemoteRepository( final RemoteRepository proxy, final String summary )
+    public boolean storeRemoteRepository( final RemoteRepository proxy, final ChangeSummary summary )
         throws ProxyDataException
     {
         return delegate.storeRemoteRepository( proxy, summary );
     }
 
     @Override
-    public boolean storeRemoteRepository( final RemoteRepository repository, final String summary,
+    public boolean storeRemoteRepository( final RemoteRepository repository, final ChangeSummary summary,
                                           final boolean skipIfExists )
         throws ProxyDataException
     {
@@ -139,84 +138,84 @@ public class TestAutoProxyDataManager
     }
 
     @Override
-    public boolean storeGroup( final Group group, final String summary )
+    public boolean storeGroup( final Group group, final ChangeSummary summary )
         throws ProxyDataException
     {
         return delegate.storeGroup( group, summary );
     }
 
     @Override
-    public boolean storeGroup( final Group group, final String summary, final boolean skipIfExists )
+    public boolean storeGroup( final Group group, final ChangeSummary summary, final boolean skipIfExists )
         throws ProxyDataException
     {
         return delegate.storeGroup( group, summary, skipIfExists );
     }
 
     @Override
-    public boolean storeArtifactStore( final ArtifactStore key, final String summary )
+    public boolean storeArtifactStore( final ArtifactStore key, final ChangeSummary summary )
         throws ProxyDataException
     {
         return delegate.storeArtifactStore( key, summary );
     }
 
     @Override
-    public boolean storeArtifactStore( final ArtifactStore key, final String summary, final boolean skipIfExists )
+    public boolean storeArtifactStore( final ArtifactStore key, final ChangeSummary summary, final boolean skipIfExists )
         throws ProxyDataException
     {
         return delegate.storeArtifactStore( key, summary, skipIfExists );
     }
 
     @Override
-    public void deleteHostedRepository( final HostedRepository deploy, final String summary )
+    public void deleteHostedRepository( final HostedRepository deploy, final ChangeSummary summary )
         throws ProxyDataException
     {
         delegate.deleteHostedRepository( deploy, summary );
     }
 
     @Override
-    public void deleteHostedRepository( final String name, final String summary )
+    public void deleteHostedRepository( final String name, final ChangeSummary summary )
         throws ProxyDataException
     {
         delegate.deleteHostedRepository( name, summary );
     }
 
     @Override
-    public void deleteRemoteRepository( final RemoteRepository repo, final String summary )
+    public void deleteRemoteRepository( final RemoteRepository repo, final ChangeSummary summary )
         throws ProxyDataException
     {
         delegate.deleteRemoteRepository( repo, summary );
     }
 
     @Override
-    public void deleteRemoteRepository( final String name, final String summary )
+    public void deleteRemoteRepository( final String name, final ChangeSummary summary )
         throws ProxyDataException
     {
         delegate.deleteRemoteRepository( name, summary );
     }
 
     @Override
-    public void deleteGroup( final Group group, final String summary )
+    public void deleteGroup( final Group group, final ChangeSummary summary )
         throws ProxyDataException
     {
         delegate.deleteGroup( group, summary );
     }
 
     @Override
-    public void deleteGroup( final String name, final String summary )
+    public void deleteGroup( final String name, final ChangeSummary summary )
         throws ProxyDataException
     {
         delegate.deleteGroup( name, summary );
     }
 
     @Override
-    public void deleteArtifactStore( final StoreKey key, final String summary )
+    public void deleteArtifactStore( final StoreKey key, final ChangeSummary summary )
         throws ProxyDataException
     {
         delegate.deleteArtifactStore( key, summary );
     }
 
     @Override
-    public void clear( final String summary )
+    public void clear( final ChangeSummary summary )
         throws ProxyDataException
     {
         delegate.clear( summary );

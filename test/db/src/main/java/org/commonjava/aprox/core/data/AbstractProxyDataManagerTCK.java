@@ -10,8 +10,12 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.data;
 
+import org.commonjava.aprox.audit.ChangeSummary;
+
 public abstract class AbstractProxyDataManagerTCK
 {
+
+    protected ChangeSummary summary = new ChangeSummary( "test-user", "test" );
 
     protected abstract TCKFixtureProvider getFixtureProvider();
 

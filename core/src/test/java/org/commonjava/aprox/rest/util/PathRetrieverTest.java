@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.content.AproxLocationExpander;
 import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.core.content.DefaultDownloadManager;
@@ -46,6 +47,8 @@ public class PathRetrieverTest
 
     private MemoryStoreDataManager data;
 
+    private final ChangeSummary summary = new ChangeSummary( "test-user", "test" );
+
     @Before
     public void setupTest()
         throws IOException
@@ -62,7 +65,7 @@ public class PathRetrieverTest
         throws Exception
     {
         final RemoteRepository repo = new RemoteRepository( "central", "http://repo.maven.apache.org/maven2/" );
-        data.storeRemoteRepository( repo, "test" );
+        data.storeRemoteRepository( repo, summary );
 
         final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
 
@@ -79,8 +82,8 @@ public class PathRetrieverTest
         final RemoteRepository repo = new RemoteRepository( "dummy", "http://www.nowhere.com/" );
         final RemoteRepository repo2 = new RemoteRepository( "central", "http://repo.maven.apache.org/maven2/" );
 
-        data.storeRemoteRepository( repo, "test" );
-        data.storeRemoteRepository( repo2, "test" );
+        data.storeRemoteRepository( repo, summary );
+        data.storeRemoteRepository( repo2, summary );
 
         final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
 

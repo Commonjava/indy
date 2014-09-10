@@ -13,6 +13,7 @@ package org.commonjava.aprox.data;
 import java.util.List;
 import java.util.Set;
 
+import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.HostedRepository;
@@ -120,14 +121,14 @@ public interface StoreDataManager
      * Store a modified or new {@link HostedRepository} instance. This is equivalent to 
      * {@link StoreDataManager#storeHostedRepository(HostedRepository, boolean)} with skip flag <code>false</code>
      */
-    boolean storeHostedRepository( final HostedRepository deploy, final String summary )
+    boolean storeHostedRepository( final HostedRepository deploy, final ChangeSummary summary )
         throws ProxyDataException;
 
     /**
      * Store a modified or new {@link HostedRepository} instance. If the store already exists, and <code>skipIfExists</code> is true, abort the
      * operation.
      */
-    boolean storeHostedRepository( final HostedRepository deploy, final String summary,
+    boolean storeHostedRepository( final HostedRepository deploy, final ChangeSummary summary,
                                    final boolean skipIfExists )
         throws ProxyDataException;
 
@@ -135,14 +136,14 @@ public interface StoreDataManager
      * Store a modified or new {@link RemoteRepository} instance. This is equivalent to 
      * {@link StoreDataManager#storeRemoteRepository(RemoteRepository, boolean)} with skip flag <code>false</code>
      */
-    boolean storeRemoteRepository( final RemoteRepository proxy, final String summary )
+    boolean storeRemoteRepository( final RemoteRepository proxy, final ChangeSummary summary )
         throws ProxyDataException;
 
     /**
      * Store a modified or new {@link RemoteRepository} instance. If the store already exists, and <code>skipIfExists</code> is true, abort the
      * operation.
      */
-    boolean storeRemoteRepository( final RemoteRepository repository, final String summary,
+    boolean storeRemoteRepository( final RemoteRepository repository, final ChangeSummary summary,
                                    final boolean skipIfExists )
         throws ProxyDataException;
 
@@ -150,76 +151,76 @@ public interface StoreDataManager
      * Store a modified or new {@link Group} instance. This is equivalent to 
      * {@link StoreDataManager#storeGroup(Group, boolean)} with skip flag <code>false</code>
      */
-    boolean storeGroup( final Group group, final String summary )
+    boolean storeGroup( final Group group, final ChangeSummary summary )
         throws ProxyDataException;
 
     /**
      * Store a modified or new {@link Group} instance. If the store already exists, and <code>skipIfExists</code> is true, abort the
      * operation.
      */
-    boolean storeGroup( final Group group, final String summary, final boolean skipIfExists )
+    boolean storeGroup( final Group group, final ChangeSummary summary, final boolean skipIfExists )
         throws ProxyDataException;
 
     /**
      * Store a modified or new {@link ArtifactStore} instance. This is equivalent to 
      * {@link StoreDataManager#storeArtifactStore(ArtifactStore, boolean)} with skip flag <code>false</code>
      */
-    boolean storeArtifactStore( ArtifactStore key, final String summary )
+    boolean storeArtifactStore( ArtifactStore key, final ChangeSummary summary )
         throws ProxyDataException;
 
     /**
      * Store a modified or new {@link ArtifactStore} instance. If the store already exists, and <code>skipIfExists</code> is true, abort the
      * operation.
      */
-    boolean storeArtifactStore( ArtifactStore key, final String summary, boolean skipIfExists )
+    boolean storeArtifactStore( ArtifactStore key, final ChangeSummary summary, boolean skipIfExists )
         throws ProxyDataException;
 
     /**
      * Delete the given {@link HostedRepository}.
      */
-    void deleteHostedRepository( final HostedRepository deploy, final String summary )
+    void deleteHostedRepository( final HostedRepository deploy, final ChangeSummary summary )
         throws ProxyDataException;
 
     /**
      * Delete the {@link HostedRepository} corresponding to the given name.
      */
-    void deleteHostedRepository( final String name, final String summary )
+    void deleteHostedRepository( final String name, final ChangeSummary summary )
         throws ProxyDataException;
 
     /**
      * Delete the given {@link RemoteRepository}.
      */
-    void deleteRemoteRepository( final RemoteRepository repo, final String summary )
+    void deleteRemoteRepository( final RemoteRepository repo, final ChangeSummary summary )
         throws ProxyDataException;
 
     /**
      * Delete the {@link RemoteRepository} corresponding to the given name.
      */
-    void deleteRemoteRepository( final String name, final String summary )
+    void deleteRemoteRepository( final String name, final ChangeSummary summary )
         throws ProxyDataException;
 
     /**
      * Delete the given {@link Group}.
      */
-    void deleteGroup( final Group group, final String summary )
+    void deleteGroup( final Group group, final ChangeSummary summary )
         throws ProxyDataException;
 
     /**
      * Delete the {@link Group} corresponding to the given name.
      */
-    void deleteGroup( final String name, final String summary )
+    void deleteGroup( final String name, final ChangeSummary summary )
         throws ProxyDataException;
 
     /**
      * Delete the {@link ArtifactStore} corresponding to the given {@link StoreKey}. If the store doesn't exist, simply return (don't fail).
      */
-    void deleteArtifactStore( StoreKey key, final String summary )
+    void deleteArtifactStore( StoreKey key, final ChangeSummary summary )
         throws ProxyDataException;
 
     /**
      * Delete all {@link ArtifactStore} instances currently in the system.
      */
-    void clear( final String summary )
+    void clear( final ChangeSummary summary )
         throws ProxyDataException;
 
     /**

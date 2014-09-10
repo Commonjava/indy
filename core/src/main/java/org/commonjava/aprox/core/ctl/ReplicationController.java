@@ -31,10 +31,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.audit.SecurityAction;
-import org.commonjava.aprox.audit.SecuritySystem;
-import org.commonjava.aprox.audit.SecuritySystemException;
-import org.commonjava.aprox.audit.SimpleSecurityAction;
+import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.core.dto.ReplicationAction;
 import org.commonjava.aprox.core.dto.ReplicationAction.ActionType;
 import org.commonjava.aprox.core.dto.ReplicationDTO;
@@ -72,146 +69,107 @@ public class ReplicationController
     @Inject
     private AproxHttpProvider http;
 
-    @Inject
-    private SecuritySystem securitySystem;
-
     protected ReplicationController()
     {
     }
 
     public ReplicationController( final StoreDataManager data, final AproxHttpProvider http,
-                                  final JsonSerializer serializer, final SecuritySystem securitySystem )
+                                  final JsonSerializer serializer )
     {
         this.data = data;
         this.http = http;
         this.serializer = serializer;
-        this.securitySystem = securitySystem;
     }
 
-    public Set<StoreKey> replicate( final ReplicationDTO dto )
+    public Set<StoreKey> replicate( final ReplicationDTO dto, final String user )
         throws AproxWorkflowException
     {
-        final SecurityAction<Set<StoreKey>, AproxWorkflowException> action =
-            new SimpleSecurityAction<Set<StoreKey>, AproxWorkflowException>()
+        dto.validate();
+
+        List<? extends ArtifactStore> remoteStores = null;
+        List<EndpointView> remoteEndpoints = null;
+
+        final boolean overwrite = dto.isOverwrite();
+        final Set<StoreKey> replicated = new HashSet<StoreKey>();
+        for ( final ReplicationAction action : dto )
             {
-                @Override
-                public Set<StoreKey> run()
+            if ( action == null )
                 {
-                    final Set<StoreKey> replicated = new HashSet<StoreKey>();
-                    try
-                    {
-                        dto.validate();
-                    }
-                    catch ( final AproxWorkflowException e )
-                    {
-                        setError( e );
-                        return replicated;
-                    }
+                continue;
+            }
 
-                    List<? extends ArtifactStore> remoteStores = null;
-                    List<EndpointView> remoteEndpoints = null;
+            logger.info( "Processing replication action:\n\n  {}\n\nin DTO: {}\n\n", action, dto );
+            final String include = action.getInclude();
+            final String exclude = action.getExclude();
 
-                    final boolean overwrite = dto.isOverwrite();
-                    for ( final ReplicationAction action : dto )
+            try
+            {
+                if ( action.getType() == ActionType.PROXY )
                     {
-                        if ( action == null )
+                    if ( remoteEndpoints == null )
                         {
-                            continue;
+                        remoteEndpoints = getEndpoints( dto );
                         }
 
-                        logger.info( "Processing replication action:\n\n  {}\n\nin DTO: {}\n\n", action, dto );
-                        final String include = action.getInclude();
-                        final String exclude = action.getExclude();
-
-                        try
+                    for ( final EndpointView view : remoteEndpoints )
                         {
-                            if ( action.getType() == ActionType.PROXY )
+                        final String key = "remote-" + view.getType() + "_" + view.getName();
+                        if ( ( include == null || key.matches( include ) )
+                            && ( exclude == null || !key.matches( exclude ) ) )
                             {
-                                if ( remoteEndpoints == null )
+                            final StoreKey sk = new StoreKey( StoreType.remote, key );
+                            if ( overwrite || !data.hasArtifactStore( sk ) )
                                 {
-                                    remoteEndpoints = getEndpoints( dto );
-                                }
+                                final RemoteRepository repo = new RemoteRepository( key, view.getResourceURI() );
+                                setProxyAttributes( repo, action );
 
-                                for ( final EndpointView view : remoteEndpoints )
-                                {
-                                    final String key = "remote-" + view.getType() + "_" + view.getName();
-                                    if ( ( include == null || key.matches( include ) ) && ( exclude == null || !key.matches( exclude ) ) )
-                                    {
-                                        final StoreKey sk = new StoreKey( StoreType.remote, key );
-                                        if ( overwrite || !data.hasArtifactStore( sk ) )
-                                        {
-                                            final RemoteRepository repo = new RemoteRepository( key, view.getResourceURI() );
-                                            setProxyAttributes( repo, action );
-
-                                            data.storeRemoteRepository( repo,
-                                                                        "REPLICATION: Proxying remote aprox repository: "
-                                                                            + view.getResourceURI() );
-                                            replicated.add( repo.getKey() );
-                                        }
-                                    }
+                                data.storeRemoteRepository( repo, new ChangeSummary( user,
+                                                                                     "REPLICATION: Proxying remote aprox repository: "
+                                                                                         + view.getResourceURI() ) );
+                                replicated.add( repo.getKey() );
                                 }
                             }
-                            else if ( action.getType() == ActionType.MIRROR )
-                            {
-                                if ( remoteStores == null )
-                                {
-                                    remoteStores = getRemoteStores( dto );
-                                }
-
-                                for ( final ArtifactStore store : remoteStores )
-                                {
-                                    final String key = store.getKey()
-                                                            .toString();
-                                    if ( ( include == null || key.matches( include ) ) && ( exclude == null || !key.matches( exclude ) ) )
-                                    {
-                                        if ( overwrite || !data.hasArtifactStore( store.getKey() ) )
-                                        {
-                                            if ( store instanceof RemoteRepository )
-                                            {
-                                                setProxyAttributes( ( (RemoteRepository) store ), action );
-                                            }
-
-                                            data.storeArtifactStore( store,
-                                                                     "REPLICATION: Mirroring remote aprox store: "
-                                                                         + store.getKey() );
-                                            replicated.add( store.getKey() );
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        catch ( final ProxyDataException e )
-                        {
-                            logger.error( e.getMessage(), e );
-                            setError( new AproxWorkflowException( e.getMessage(), e ) );
-                        }
-                        catch ( final AproxWorkflowException e )
-                        {
-                            setError( e );
-                        }
                     }
-                    
-                    return replicated;
                 }
-            };
+                else if ( action.getType() == ActionType.MIRROR )
+                {
+                    if ( remoteStores == null )
+                    {
+                        remoteStores = getRemoteStores( dto );
+                    }
 
-        Set<StoreKey> replicated;
-        try
-        {
-            replicated = securitySystem.runAsCurrentPrincipal( action );
-        }
-        catch ( final SecuritySystemException e )
-        {
-            throw new AproxWorkflowException( "Replication failed.", e.getSecurityException() );
-        }
+                    for ( final ArtifactStore store : remoteStores )
+                    {
+                        final String key = store.getKey()
+                                                .toString();
+                        if ( ( include == null || key.matches( include ) )
+                            && ( exclude == null || !key.matches( exclude ) ) )
+                            {
+                            if ( overwrite || !data.hasArtifactStore( store.getKey() ) )
+                                {
+                                if ( store instanceof RemoteRepository )
+                                    {
+                                    setProxyAttributes( ( (RemoteRepository) store ), action );
+                                }
 
-        final AproxWorkflowException e = action.getError();
-        if ( e != null )
-        {
-            throw e;
+                                data.storeArtifactStore( store, new ChangeSummary( user,
+                                                                                   "REPLICATION: Mirroring remote aprox store: "
+                                                                                       + store.getKey() ) );
+                                replicated.add( store.getKey() );
+                                }
+                            }
+                        }
+                    }
+                }
+            catch ( final ProxyDataException e )
+            {
+                logger.error( e.getMessage(), e );
+                throw new AproxWorkflowException( e.getMessage(), e );
+            }
         }
 
         return replicated;
+
     }
 
     private void setProxyAttributes( final RemoteRepository repo, final ReplicationAction action )

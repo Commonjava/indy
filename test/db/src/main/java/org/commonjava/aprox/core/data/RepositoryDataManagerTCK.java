@@ -15,15 +15,10 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
-import java.security.Principal;
-import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.apache.http.auth.BasicUserPrincipal;
-import org.commonjava.aprox.audit.SecuritySystem;
-import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.RemoteRepository;
@@ -34,11 +29,7 @@ public abstract class RepositoryDataManagerTCK
     extends AbstractProxyDataManagerTCK
 {
 
-    private Principal principal;
-
     private StoreDataManager manager;
-
-    private SecuritySystem security;
 
     @Before
     public void setup()
@@ -56,10 +47,7 @@ public abstract class RepositoryDataManagerTCK
     protected void seedRepositoriesForGroupTests()
         throws Exception
     {
-        principal = new BasicUserPrincipal( "test-user" );
-
         manager = getFixtureProvider().getDataManager();
-        security = getFixtureProvider().getSecuritySystem();
     }
 
     @Test
@@ -105,28 +93,7 @@ public abstract class RepositoryDataManagerTCK
         final RemoteRepository repo = new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" );
         storeRemoteRepository( repo, false );
 
-        final ProxyDataException e = security.runAs( principal, new PrivilegedAction<ProxyDataException>()
-        {
-            @Override
-            public ProxyDataException run()
-            {
-                try
-                {
-                    manager.deleteRemoteRepository( repo.getName(), "test" );
-                }
-                catch ( final ProxyDataException e )
-                {
-                    return e;
-                }
-
-                return null;
-            }
-        } );
-
-        if ( e != null )
-        {
-            throw e;
-        }
+        manager.deleteRemoteRepository( repo.getName(), summary );
 
         final ArtifactStore result = manager.getRemoteRepository( repo.getName() );
 
@@ -142,28 +109,7 @@ public abstract class RepositoryDataManagerTCK
         final RemoteRepository repo = new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" );
         storeRemoteRepository( repo, false );
 
-        final ProxyDataException e = security.runAs( principal, new PrivilegedAction<ProxyDataException>()
-        {
-            @Override
-            public ProxyDataException run()
-            {
-                try
-                {
-                    manager.deleteRemoteRepository( repo, "test" );
-                }
-                catch ( final ProxyDataException e )
-                {
-                    return e;
-                }
-
-                return null;
-            }
-        } );
-
-        if ( e != null )
-        {
-            throw e;
-        }
+        manager.deleteRemoteRepository( repo, summary );
 
         final ArtifactStore result = manager.getRemoteRepository( repo.getName() );
 
@@ -208,57 +154,13 @@ public abstract class RepositoryDataManagerTCK
     private void storeRemoteRepository( final RemoteRepository repo )
         throws Exception
     {
-        final ProxyDataException e = security.runAs( principal, new PrivilegedAction<ProxyDataException>()
-        {
-
-            @Override
-            public ProxyDataException run()
-            {
-                try
-                {
-                    manager.storeArtifactStore( repo, "test" );
-                }
-                catch ( final ProxyDataException e )
-                {
-                    return e;
-                }
-
-                return null;
-            }
-        } );
-
-        if ( e != null )
-        {
-            throw e;
-        }
+        manager.storeArtifactStore( repo, summary );
     }
 
     private void storeRemoteRepository( final RemoteRepository repo, final boolean skipIfExists )
         throws Exception
     {
-        final ProxyDataException e = security.runAs( principal, new PrivilegedAction<ProxyDataException>()
-        {
-
-            @Override
-            public ProxyDataException run()
-            {
-                try
-                {
-                    manager.storeArtifactStore( repo, "test", skipIfExists );
-                }
-                catch ( final ProxyDataException e )
-                {
-                    return e;
-                }
-
-                return null;
-            }
-        } );
-
-        if ( e != null )
-        {
-            throw e;
-        }
+        manager.storeArtifactStore( repo, summary, skipIfExists );
     }
 
 }

@@ -10,8 +10,6 @@
  ******************************************************************************/
 package org.commonjava.aprox.mem.data;
 
-import org.commonjava.aprox.audit.BasicSecuritySystem;
-import org.commonjava.aprox.audit.SecuritySystem;
 import org.commonjava.aprox.core.data.TCKFixtureProvider;
 import org.commonjava.aprox.data.StoreDataManager;
 
@@ -21,18 +19,10 @@ public class MemoryTCKFixtureProvider
 
     private final MemoryStoreDataManager dataManager = new MemoryStoreDataManager();
 
-    private final SecuritySystem securitySystem = new BasicSecuritySystem();
-
     @Override
     public StoreDataManager getDataManager()
     {
         return dataManager;
-    }
-
-    @Override
-    public SecuritySystem getSecuritySystem()
-    {
-        return securitySystem;
     }
 
 }

@@ -8,17 +8,11 @@ import static org.junit.Assert.assertThat;
 import groovy.text.GStringTemplateEngine;
 
 import java.io.File;
-import java.security.Principal;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.http.auth.BasicUserPrincipal;
-import org.commonjava.aprox.audit.BasicSecuritySystem;
-import org.commonjava.aprox.audit.SecurityAction;
-import org.commonjava.aprox.audit.SimpleSecurityAction;
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
@@ -26,10 +20,10 @@ import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.subsys.flatfile.conf.DataFile;
-import org.commonjava.aprox.subsys.flatfile.conf.DataFileConfiguration;
-import org.commonjava.aprox.subsys.flatfile.conf.DataFileEventManager;
-import org.commonjava.aprox.subsys.flatfile.conf.DataFileManager;
+import org.commonjava.aprox.subsys.datafile.DataFile;
+import org.commonjava.aprox.subsys.datafile.DataFileManager;
+import org.commonjava.aprox.subsys.datafile.change.DataFileEventManager;
+import org.commonjava.aprox.subsys.datafile.conf.DataFileConfiguration;
 import org.commonjava.aprox.subsys.template.TemplatingEngine;
 import org.junit.Before;
 import org.junit.Rule;
@@ -48,9 +42,7 @@ public class SetBackSettingsManagerTest
     @Rule
     public TemporaryFolder temp = new TemporaryFolder();
 
-    private Principal principal;
-
-    private BasicSecuritySystem security;
+    private final ChangeSummary summary = new ChangeSummary( "test-user", "test" );
 
     @Before
     public void setup()
@@ -62,15 +54,11 @@ public class SetBackSettingsManagerTest
         final File data = temp.newFolder( "data" );
         FileUtils.copyDirectory( dataSrc, data );
 
-        security = new BasicSecuritySystem();
-
         final DataFileConfiguration config = new DataFileConfiguration( data, temp.newFolder( "work" ) );
-        final DataFileManager fileManager = new DataFileManager( config, new DataFileEventManager(), security );
+        final DataFileManager fileManager = new DataFileManager( config, new DataFileEventManager() );
 
         final TemplatingEngine templates = new TemplatingEngine( new GStringTemplateEngine(), fileManager );
         manager = new SetBackSettingsManager( storeManager, templates, fileManager );
-
-        principal = new BasicUserPrincipal( "test-user" );
     }
 
     @Test
@@ -104,29 +92,7 @@ public class SetBackSettingsManagerTest
         assertThat( "No repository with id: " + remote.getName() + " found in settings.xml",
                     lines.contains( "<id>" + remote.getName() + "</id>" ), equalTo( true ) );
 
-        final PrivilegedAction<Exception> action = new PrivilegedAction<Exception>()
-        {
-            @Override
-            public Exception run()
-            {
-                try
-                {
-                    manager.deleteStoreSettings( key );
-                }
-                catch ( final SetBackDataException e )
-                {
-                    return e;
-                }
-
-                return null;
-            }
-        };
-
-        final Exception error = security.runAs( principal, action );
-        if ( error != null )
-        {
-            throw error;
-        }
+        manager.deleteStoreSettings( key );
 
         assertThat( "Settings.xml for: " + key + " should have been deleted!", manager.getSetBackSettings( key ),
                     nullValue() );
@@ -222,28 +188,7 @@ public class SetBackSettingsManagerTest
     private void store( final ArtifactStore store )
         throws Exception
     {
-        final ProxyDataException error = security.runAs( principal, new PrivilegedAction<ProxyDataException>()
-        {
-            @Override
-            public ProxyDataException run()
-            {
-                try
-                {
-                    storeManager.storeArtifactStore( store, "test" );
-                }
-                catch ( final ProxyDataException e )
-                {
-                    return e;
-                }
-
-                return null;
-            }
-        } );
-
-        if ( error != null )
-        {
-            throw error;
-        }
+        storeManager.storeArtifactStore( store, summary );
     }
 
     private List<String> readSettings( final StoreKey key, final boolean expectExistence )
@@ -277,55 +222,18 @@ public class SetBackSettingsManagerTest
     private List<String> generateSettings( final StoreKey key )
         throws Exception
     {
-        final SecurityAction<List<String>, Exception> action = new SimpleSecurityAction<List<String>, Exception>()
-        {
-            @Override
-            public List<String> run()
-            {
-                DataFile settings;
-                try
-                {
-                    settings = manager.generateStoreSettings( key );
-                }
-                catch ( final SetBackDataException e )
-                {
-                    setError( e );
-                    return null;
-                }
+        final DataFile settings = manager.generateStoreSettings( key );
+        assertThat( "settings.xml returned from generateStoreSettings(..) for: " + key + " does not exist!",
+                    settings.exists(), equalTo( true ) );
 
-                assertThat( "settings.xml returned from generateStoreSettings(..) for: " + key + " does not exist!",
-                            settings.exists(), equalTo( true ) );
+        final List<String> lines = readSettings( key, true );
 
-                List<String> lines;
-                try
-                {
-                    lines = readSettings( key, true );
-                }
-                catch ( final Exception e )
-                {
-                    setError( e );
-                    return null;
-                }
+        final String localRepoLine =
+            String.format( "<localRepository>%s</localRepository>",
+                           normalize( USER_HOME, ".m2/repository-" + key.getType()
+                                                                        .singularEndpointName() + "-" + key.getName() ) );
 
-                final String localRepoLine =
-                    String.format( "<localRepository>%s</localRepository>",
-                                   normalize( USER_HOME,
-                                              ".m2/repository-" + key.getType()
-                                                                     .singularEndpointName() + "-" + key.getName() ) );
-
-                assertThat( "Local repository for: " + key + " not configured", lines.contains( localRepoLine ),
-                            equalTo( true ) );
-
-                return lines;
-            }
-        };
-
-        final List<String> lines = security.runAs( principal, action );
-        final Exception error = action.getError();
-        if ( error != null )
-        {
-            throw error;
-        }
+        assertThat( "Local repository for: " + key + " not configured", lines.contains( localRepoLine ), equalTo( true ) );
 
         return lines;
     }

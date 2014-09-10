@@ -10,7 +10,7 @@ import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.aprox.subsys.flatfile.conf.DataFile;
+import org.commonjava.aprox.subsys.datafile.DataFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,7 +1,6 @@
 package org.commonjava.aprox.setback.data;
 
 import java.io.IOException;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -15,7 +14,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.audit.SecuritySystem;
+import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.change.event.ArtifactStoreDeleteEvent;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
 import org.commonjava.aprox.data.ProxyDataException;
@@ -25,8 +24,8 @@ import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.aprox.subsys.flatfile.conf.DataFile;
-import org.commonjava.aprox.subsys.flatfile.conf.DataFileManager;
+import org.commonjava.aprox.subsys.datafile.DataFile;
+import org.commonjava.aprox.subsys.datafile.DataFileManager;
 import org.commonjava.aprox.subsys.template.AproxGroovyException;
 import org.commonjava.aprox.subsys.template.TemplatingEngine;
 import org.commonjava.aprox.util.ApplicationContent;
@@ -52,9 +51,6 @@ public class SetBackSettingsManager
     @Inject
     private DataFileManager manager;
 
-    @Inject
-    private SecuritySystem securitySystem;
-
     protected SetBackSettingsManager()
     {
     }
@@ -69,29 +65,20 @@ public class SetBackSettingsManager
 
     public void deleteSettingsOnEvent( @Observes final ArtifactStoreDeleteEvent event )
     {
-        securitySystem.runAsSystemUser( new PrivilegedAction<Void>()
+        final StoreType type = event.getType();
+        final Set<String> names = new HashSet<String>( event.getNames() );
+        for ( final String name : names )
         {
-            @Override
-            public Void run()
+            final StoreKey key = new StoreKey( type, name );
+            try
             {
-                final StoreType type = event.getType();
-                final Set<String> names = new HashSet<String>( event.getNames() );
-                for ( final String name : names )
-                {
-                    final StoreKey key = new StoreKey( type, name );
-                    try
-                    {
-                        deleteStoreSettings( key );
-                    }
-                    catch ( final SetBackDataException e )
-                    {
-                        logger.error( "SetBack deletion failed.", e );
-                    }
-                }
-
-                return null;
+                deleteStoreSettings( key );
             }
-        } );
+            catch ( final SetBackDataException e )
+            {
+                logger.error( "SetBack deletion failed.", e );
+            }
+        }
     }
 
     public boolean deleteStoreSettings( final StoreKey key )
@@ -108,7 +95,8 @@ public class SetBackSettingsManager
         {
             try
             {
-                settingsXml.delete( "Deleting generated SetBack settings.xml for: " + key );
+                settingsXml.delete( new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                       "SETBACK: Deleting generated SetBack settings.xml for: " + key ) );
             }
             catch ( final IOException e )
             {
@@ -125,27 +113,18 @@ public class SetBackSettingsManager
 
     public void updateSettingsOnEvent( @Observes final ArtifactStoreUpdateEvent event )
     {
-        securitySystem.runAsSystemUser( new PrivilegedAction<Void>()
+        final Collection<ArtifactStore> stores = event.getChanges();
+        for ( final ArtifactStore store : stores )
         {
-            @Override
-            public Void run()
+            try
             {
-                final Collection<ArtifactStore> stores = event.getChanges();
-                for ( final ArtifactStore store : stores )
-                {
-                    try
-                    {
-                        generateStoreSettings( store.getKey() );
-                    }
-                    catch ( final SetBackDataException e )
-                    {
-                        logger.error( "SetBack generation failed.", e );
-                    }
-                }
-
-                return null;
+                generateStoreSettings( store.getKey() );
             }
-        } );
+            catch ( final SetBackDataException e )
+            {
+                logger.error( "SetBack generation failed.", e );
+            }
+        }
     }
 
     public DataFile generateStoreSettings( final StoreKey key )
@@ -173,8 +152,8 @@ public class SetBackSettingsManager
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( String.format( "Failed to retrieve groups containing: {}. Reason: {}", key,
-                                         e.getMessage() ), e );
+            logger.error( String.format( "Failed to retrieve groups containing: {}. Reason: {}", key, e.getMessage() ),
+                          e );
             return null;
         }
 
@@ -234,7 +213,7 @@ public class SetBackSettingsManager
     }
 
     private DataFile updateSettings( final StoreKey key, final List<ArtifactStore> allStores,
-                                 final List<RemoteRepository> remotes )
+                                     final List<RemoteRepository> remotes )
         throws SetBackDataException
     {
         final DataFile settingsXml = getSettingsXml( key );
@@ -260,7 +239,9 @@ public class SetBackSettingsManager
             settingsXml.getParent()
                        .mkdirs();
 
-            settingsXml.writeString( rendered, "UTF-8", "Updating generated SetBack settings.xml for: " + key );
+            settingsXml.writeString( rendered, "UTF-8", new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                           "SETBACK: Updating generated SetBack settings.xml for: "
+                                                                               + key ) );
         }
         catch ( final IOException e )
         {

@@ -14,6 +14,7 @@ import java.io.File;
 
 import javax.inject.Inject;
 
+import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.live.fixture.ProxyConfigProvider;
 import org.commonjava.web.json.test.WebFixture;
@@ -30,12 +31,14 @@ public class AbstractAProxLiveTest
     @Rule
     public WebFixture webFixture = new WebFixture();
 
+    protected ChangeSummary summary = new ChangeSummary( "test-user", "test" );
+
     @Before
     public final void setupAProxLiveTest()
         throws Exception
     {
         proxyManager.install();
-        proxyManager.clear( "test setup" );
+        proxyManager.clear( summary );
     }
 
     protected static TestWarArchiveBuilder createWar( final Class<?> testClass )

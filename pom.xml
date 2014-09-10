@@ -280,6 +280,11 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-subsys-git</artifactId>
+        <version>0.15.4-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-subsys-groovy</artifactId>
         <version>0.15.4-SNAPSHOT</version>
       </dependency>
@@ -367,6 +372,12 @@
         <groupId>org.commonjava.web</groupId>
         <artifactId>webdav-handler-vertx</artifactId>
         <version>${webdavVersion}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.eclipse.jgit</groupId>
+        <artifactId>org.eclipse.jgit</artifactId>
+        <version>3.4.1.201406201815-r</version>
       </dependency>
       
       <dependency>

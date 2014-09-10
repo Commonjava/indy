@@ -16,15 +16,11 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
-import java.security.Principal;
-import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.apache.http.auth.BasicUserPrincipal;
-import org.commonjava.aprox.audit.SecuritySystem;
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Group;
@@ -40,11 +36,9 @@ public abstract class GroupDataManagerTCK
     extends AbstractProxyDataManagerTCK
 {
 
-    private Principal principal;
-
     private StoreDataManager manager;
 
-    private SecuritySystem security;
+    private final ChangeSummary summary = new ChangeSummary( "test-user", "test" );
 
     @Before
     public void setup()
@@ -62,37 +56,11 @@ public abstract class GroupDataManagerTCK
     protected void seedRepositoriesForGroupTests()
         throws Exception
     {
-        principal = new BasicUserPrincipal( "test-user" );
-
         manager = getFixtureProvider().getDataManager();
-        security = getFixtureProvider().getSecuritySystem();
 
-        final ProxyDataException error = security.runAsSystemUser( new PrivilegedAction<ProxyDataException>()
-        {
-            @Override
-            public ProxyDataException run()
-            {
-                try
-                {
-                    manager.storeRemoteRepository( new RemoteRepository( "central",
-                                                                         "http://repo1.maven.apache.org/maven2/" ),
-                                                   "test setup" );
-                    manager.storeRemoteRepository( new RemoteRepository( "repo2", "http://repo1.maven.org/maven2/" ),
-                                                   "test setup" );
-                }
-                catch ( final ProxyDataException e )
-                {
-                    return e;
-                }
-
-                return null;
-            }
-        } );
-
-        if ( error != null )
-        {
-            throw error;
-        }
+        manager.storeRemoteRepository( new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" ),
+                                       summary );
+        manager.storeRemoteRepository( new RemoteRepository( "repo2", "http://repo1.maven.org/maven2/" ), summary );
     }
 
     @Test
@@ -127,30 +95,9 @@ public abstract class GroupDataManagerTCK
     private void store( final Group... groups )
         throws Exception
     {
-        final ProxyDataException e = security.runAs( principal, new PrivilegedAction<ProxyDataException>()
+        for ( final Group group : groups )
         {
-            @Override
-            public ProxyDataException run()
-            {
-                for ( final Group group : groups )
-                {
-                    try
-                    {
-                        manager.storeGroup( group, "test" );
-                    }
-                    catch ( final ProxyDataException e )
-                    {
-                        return e;
-                    }
-                }
-
-                return null;
-            }
-        } );
-
-        if ( e != null )
-        {
-            throw e;
+            manager.storeGroup( group, summary );
         }
     }
 
@@ -163,28 +110,7 @@ public abstract class GroupDataManagerTCK
         final Group grp = new Group( "test" );
         store( grp );
 
-        final ProxyDataException e = security.runAs( principal, new PrivilegedAction<ProxyDataException>()
-        {
-            @Override
-            public ProxyDataException run()
-            {
-                try
-                {
-                    manager.deleteGroup( grp.getName(), "test" );
-                }
-                catch ( final ProxyDataException e )
-                {
-                    return e;
-                }
-
-                return null;
-            }
-        } );
-
-        if ( e != null )
-        {
-            throw e;
-        }
+        manager.deleteGroup( grp.getName(), summary );
 
         final Group result = manager.getGroup( grp.getName() );
 
@@ -201,28 +127,7 @@ public abstract class GroupDataManagerTCK
 
         store( grp );
 
-        final ProxyDataException e = security.runAs( principal, new PrivilegedAction<ProxyDataException>()
-        {
-            @Override
-            public ProxyDataException run()
-            {
-                try
-                {
-                    manager.deleteGroup( grp, "test" );
-                }
-                catch ( final ProxyDataException e )
-                {
-                    return e;
-                }
-
-                return null;
-            }
-        } );
-
-        if ( e != null )
-        {
-            throw e;
-        }
+        manager.deleteGroup( grp, summary );
 
         final Group result = manager.getGroup( grp.getName() );
 

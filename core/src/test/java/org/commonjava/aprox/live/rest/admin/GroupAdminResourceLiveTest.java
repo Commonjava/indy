@@ -65,9 +65,9 @@ public class GroupAdminResourceLiveTest
         throws Exception
     {
         proxyManager.storeRemoteRepository( new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" ),
-                                            "test setup" );
+                                            summary );
         proxyManager.storeRemoteRepository( new RemoteRepository( "repo2", "http://repo1.maven.org/maven2/" ),
-                                            "test setup" );
+ summary );
     }
 
     @Test

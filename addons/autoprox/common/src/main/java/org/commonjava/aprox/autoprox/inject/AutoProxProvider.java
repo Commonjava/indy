@@ -16,8 +16,8 @@ import org.commonjava.aprox.autoprox.data.AutoProxCatalog;
 import org.commonjava.aprox.autoprox.data.RuleMapping;
 import org.commonjava.aprox.autoprox.util.ScriptRuleParser;
 import org.commonjava.aprox.inject.Production;
-import org.commonjava.aprox.subsys.flatfile.conf.DataFile;
-import org.commonjava.aprox.subsys.flatfile.conf.DataFileManager;
+import org.commonjava.aprox.subsys.datafile.DataFile;
+import org.commonjava.aprox.subsys.datafile.DataFileManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
