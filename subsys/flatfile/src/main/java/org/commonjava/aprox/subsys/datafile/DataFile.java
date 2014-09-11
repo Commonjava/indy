@@ -137,4 +137,9 @@ public final class DataFile
     {
         return file.getName();
     }
+
+    public File getDetachedFile()
+    {
+        return file;
+    }
 }

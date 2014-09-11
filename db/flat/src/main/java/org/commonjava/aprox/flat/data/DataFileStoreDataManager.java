@@ -428,4 +428,10 @@ public class DataFileStoreDataManager
         readDefinitions();
     }
 
+    public DataFile getDataFile( final StoreKey key )
+    {
+        return manager.getDataFile( APROX_STORE, key.getType()
+                                                    .singularEndpointName(), key.getName() + ".json" );
+    }
+
 }

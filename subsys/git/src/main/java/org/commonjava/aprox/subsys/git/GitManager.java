@@ -283,6 +283,11 @@ public class GitManager
     public List<ChangeSummary> getChangelog( final File f, final int start, final int length )
         throws GitSubsystemException
     {
+        if ( length == 0 )
+        {
+            return Collections.emptyList();
+        }
+
         try
         {
             final ObjectId oid = repo.resolve( "HEAD" );
@@ -304,7 +309,16 @@ public class GitManager
                 return Collections.emptyList();
             }
 
-            int to = start + length - 1;
+            int to;
+            if ( length < 0 )
+            {
+                to = cl.size();
+            }
+            else
+            {
+                to = start + length - 1;
+            }
+
             if ( cl.size() < to )
             {
                 to = cl.size() - 1;

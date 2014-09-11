@@ -4,6 +4,7 @@ import static org.apache.commons.lang.StringUtils.join;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -101,6 +102,18 @@ public class RevisionsManager
         throws GitSubsystemException
     {
         dataFileGit.pullUpdates( revisionsConfig.getConflictStrategy() );
+    }
+
+    public void pushDateUpdates()
+        throws GitSubsystemException
+    {
+        dataFileGit.pushUpdates();
+    }
+
+    public List<ChangeSummary> getDataChangeLog( final File f, final int start, final int length )
+        throws GitSubsystemException
+    {
+        return dataFileGit.getChangelog( f, start, length );
     }
 
 }

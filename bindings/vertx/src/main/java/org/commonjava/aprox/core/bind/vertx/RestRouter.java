@@ -11,8 +11,11 @@
 package org.commonjava.aprox.core.bind.vertx;
 
 import java.lang.annotation.Annotation;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -42,6 +45,15 @@ public class RestRouter
     extends AproxRouter
 {
 
+    private static final Map<String, String> ROUTE_ALIASES = Collections.unmodifiableMap( new HashMap<String, String>()
+    {
+        {
+            put( "/1.0/", "/" );
+        }
+
+        private static final long serialVersionUID = 1L;
+    } );
+
     public static final String PREFIX = "/api";
 
     public static final String APROX_ID = "aprox";
@@ -60,10 +72,11 @@ public class RestRouter
     @Inject
     private AdminController adminController;
 
-    protected RestRouter()
+    public RestRouter()
     {
         super( new ApplicationRouterConfig().withAppAcceptId( APROX_ID )
-                                            .withPrefix( PREFIX ) );
+                                            .withPrefix( PREFIX )
+                                            .withRouteAliases( ROUTE_ALIASES ) );
     }
 
     public RestRouter( final Set<RequestHandler> handlers, final List<RouteCollection> routeCollections,
@@ -73,7 +86,8 @@ public class RestRouter
                                             .withPrefix( PREFIX )
                                             .withHandlers( handlers )
                                             .withRouteCollections( routeCollections )
-                                            .withFilterCollections( filterCollections ) );
+                                            .withFilterCollections( filterCollections )
+                                            .withRouteAliases( ROUTE_ALIASES ) );
     }
 
     public void containerInit( @Observes final Event<ContainerInitialized> evt )

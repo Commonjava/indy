@@ -6,20 +6,22 @@ import static org.junit.Assert.assertThat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.commonjava.aprox.bind.vertx.testutil.PortFinder;
 import org.commonjava.aprox.bind.vertx.testutil.WaitHandler;
-import org.commonjava.aprox.core.bind.vertx.DeprecatedApi10Redirector;
-import org.commonjava.aprox.util.ApplicationHeader;
+import org.commonjava.aprox.core.bind.vertx.RestRouter;
 import org.commonjava.vertx.vabr.ApplicationRouter;
-import org.commonjava.vertx.vabr.ApplicationRouterConfig;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
+import org.commonjava.vertx.vabr.bind.filter.FilterCollection;
 import org.commonjava.vertx.vabr.bind.route.RouteBinding;
 import org.commonjava.vertx.vabr.bind.route.RouteCollection;
+import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.commonjava.vertx.vabr.types.Method;
+import org.commonjava.vertx.vabr.util.Respond;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +33,7 @@ import org.vertx.java.core.http.HttpServer;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.impl.DefaultVertx;
 
-public class DeprecatedApi10RedirectorTest
+public class Api10AliasingTest
 {
 
     private HttpServer server;
@@ -79,29 +81,28 @@ public class DeprecatedApi10RedirectorTest
     public void test()
         throws Exception
     {
-        final MultiMap headers = getResponseHeaders( "/api/1.0/status/addons/active.js" );
-        final String location = headers.get( ApplicationHeader.location.key() );
+        testRequest( "/api/1.0/test/handle" );
+        assertThat( clientHandler.statusCode(), equalTo( 200 ) );
 
-        for ( final Map.Entry<String, String> entry : headers )
+        final MultiMap headers = clientHandler.responseHeaders();
+        for ( final Map.Entry<String, String> header : headers )
         {
-            System.out.printf( "%s = %s\n", entry.getKey(), entry.getValue() );
+            System.out.printf( "%s = %s\n", header.getKey(), header.getValue() );
         }
-
-        assertThat( location, equalTo( "/api/status/addons/active.js" ) );
     }
 
-    private MultiMap getResponseHeaders( final String requestPath )
+    private void testRequest( final String requestPath )
         throws Exception
     {
-        final DeprecatedApi10Redirector redirector = new DeprecatedApi10Redirector();
+        final TestHandler handler = new TestHandler();
+        final Set<RequestHandler> handlers = Collections.<RequestHandler> singleton( handler );
+        final List<RouteCollection> routeCollections =
+            Collections.<RouteCollection> singletonList( new Collection( handler ) );
 
         server =
             vertx.createHttpServer()
-                 .requestHandler( new ApplicationRouter(
-                                                         new ApplicationRouterConfig().withPrefix( "/api" )
-                                                                                      .withHandler( redirector )
-                                                                                      .withRouteCollection( new Collection(
-                                                                                                                            redirector ) ) ) )
+                 .requestHandler( new RestRouter( handlers, routeCollections,
+                                                  Collections.<FilterCollection> emptyList() ) )
                  .listen( port, host );
 
         final HttpClientRequest req = client.get( requestPath, clientHandler );
@@ -112,8 +113,19 @@ public class DeprecatedApi10RedirectorTest
         {
             clientHandler.wait();
         }
+    }
 
-        return clientHandler.responseHeaders();
+    @Handles( "/test" )
+    public static final class TestHandler
+        implements RequestHandler
+    {
+        @Route( path = "/handle", method = Method.GET )
+        public void handle( final HttpServerRequest request )
+        {
+            Respond.to( request )
+                   .ok()
+                   .send();
+        }
     }
 
     public static final class Collection
@@ -122,10 +134,10 @@ public class DeprecatedApi10RedirectorTest
 
         private final Binding binding;
 
-        public Collection( final DeprecatedApi10Redirector redirector )
+        public Collection( final TestHandler handler )
             throws Exception
         {
-            binding = new Binding( new BindingInfo(), redirector );
+            binding = new Binding( new BindingInfo(), handler );
         }
 
         @Override
@@ -164,7 +176,7 @@ public class DeprecatedApi10RedirectorTest
         public BindingInfo()
             throws Exception
         {
-            this.cls = DeprecatedApi10Redirector.class;
+            this.cls = TestHandler.class;
             this.methodName = "handle";
             final java.lang.reflect.Method method =
                 cls.getMethod( methodName, new Class<?>[] { HttpServerRequest.class } );
@@ -248,20 +260,20 @@ public class DeprecatedApi10RedirectorTest
     public static final class Binding
         extends RouteBinding
     {
-        private final DeprecatedApi10Redirector redirector;
+        private final TestHandler handler;
 
-        public Binding( final BindingInfo info, final DeprecatedApi10Redirector redirector )
+        public Binding( final BindingInfo info, final TestHandler handler )
         {
             super( info.getPriority(), info.getPath(), info.getMethod(), info.getContentType(), info.getKey(),
                    info.getCls(), info.getMethodName(), Arrays.asList( info.getVersions() ) );
-            this.redirector = redirector;
+            this.handler = handler;
         }
 
         @Override
         protected void dispatch( final ApplicationRouter router, final HttpServerRequest req )
             throws Exception
         {
-            redirector.handle( req );
+            handler.handle( req );
         }
     }
 
