@@ -78,6 +78,11 @@ public class RevisionsManager
     {
         try
         {
+            if ( event.getType() == DataFileEventType.accessed )
+            {
+                return;
+            }
+
             if ( event.getType() == DataFileEventType.deleted )
             {
                 dataFileGit.deleteAndCommit( event.getSummary(), event.getFile() );

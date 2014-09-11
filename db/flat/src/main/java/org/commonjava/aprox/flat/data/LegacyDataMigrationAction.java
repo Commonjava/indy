@@ -46,7 +46,7 @@ public class LegacyDataMigrationAction
     @Override
     public String getId()
     {
-        return "Legacy storage-location migrator";
+        return "Legacy store-definition data migrator";
     }
 
     @Override

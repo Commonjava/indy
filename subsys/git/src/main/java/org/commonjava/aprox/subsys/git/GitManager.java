@@ -124,8 +124,11 @@ public class GitManager
         // TODO: Get the email info from somewhere...
         this.email = email;
 
+        String[] preExistingFromCreate = null;
         if ( !dotGitDir.isDirectory() )
         {
+            preExistingFromCreate = rootDir.list();
+
             try
             {
                 repo.create();
@@ -138,6 +141,12 @@ public class GitManager
         }
 
         git = new Git( repo );
+
+        if ( preExistingFromCreate != null && preExistingFromCreate.length > 0 )
+        {
+            addAndCommitPaths( new ChangeSummary( ChangeSummary.SYSTEM_USER, "Committing pre-existing files." ),
+                               preExistingFromCreate );
+        }
 
         if ( checkUpdate )
         {
@@ -157,9 +166,7 @@ public class GitManager
         final Set<String> paths = new HashSet<>();
         for ( final File f : files )
         {
-            final String path = Paths.get( f.toURI() )
-                                     .relativize( Paths.get( rootDir.toURI() ) )
-                                     .toString();
+            final String path = relativize( f );
 
             if ( path != null && path.length() > 0 )
             {
@@ -169,6 +176,13 @@ public class GitManager
         }
 
         return addAndCommitPaths( summary, paths );
+    }
+
+    private String relativize( final File f )
+    {
+        return Paths.get( rootDir.toURI() )
+                    .relativize( Paths.get( f.toURI() ) )
+                    .toString();
     }
 
     public GitManager addAndCommitPaths( final ChangeSummary summary, final String... paths )
@@ -188,6 +202,8 @@ public class GitManager
             {
                 add.addFilepattern( filepath );
             }
+
+            logger.info( "Adding:\n  " + join( paths, "\n  " ) + "\n\nSummary: " + summary );
 
             add.call();
 
@@ -223,13 +239,13 @@ public class GitManager
 
             for ( final File file : deleted )
             {
-                final String filepath = Paths.get( file.toURI() )
-                                             .relativize( Paths.get( rootDir.toURI() ) )
-                                             .toString();
+                final String filepath = relativize( file );
 
                 rm = rm.addFilepattern( filepath );
                 commit = commit.setOnly( filepath );
             }
+
+            logger.info( "Deleting:\n  " + join( deleted, "\n  " ) + "\n\nSummary: " + summary );
 
             rm.call();
 
@@ -260,9 +276,7 @@ public class GitManager
             final RevCommit rc = pw.parseCommit( oid );
             pw.markStart( rc );
 
-            final String filepath = Paths.get( f.toURI() )
-                                         .relativize( Paths.get( rootDir.toURI() ) )
-                                         .toString();
+            final String filepath = relativize( f );
 
             pw.setTreeFilter( AndTreeFilter.create( PathFilter.create( filepath ), TreeFilter.ANY_DIFF ) );
 
@@ -296,9 +310,7 @@ public class GitManager
             final RevCommit rc = pw.parseCommit( oid );
             pw.markStart( rc );
 
-            final String filepath = Paths.get( f.toURI() )
-                                         .relativize( Paths.get( rootDir.toURI() ) )
-                                         .toString();
+            final String filepath = relativize( f );
 
             pw.setTreeFilter( AndTreeFilter.create( PathFilter.create( filepath ), TreeFilter.ANY_DIFF ) );
 
@@ -406,9 +418,9 @@ public class GitManager
             throw new GitSubsystemException( "Failed to retrieve status of: %s. Reason: %s", e, rootDir, e.getMessage() );
         }
 
-        if ( !status.isClean() )
+        final Map<String, StageState> css = status.getConflictingStageState();
+        if ( !css.isEmpty() )
         {
-            final Map<String, StageState> css = status.getConflictingStageState();
             throw new GitSubsystemException( "%s contains conflicts. Cannot auto-commit.\n  %s", rootDir,
                                              new JoinString( "\n  ", css.entrySet() ) );
         }
@@ -426,7 +438,22 @@ public class GitManager
             toAdd.addAll( untracked );
         }
 
-        addAndCommitPaths( changeSummary, toAdd );
+        final Set<String> untrackedFolders = status.getUntrackedFolders();
+        if ( untrackedFolders != null && !untrackedFolders.isEmpty() )
+        {
+            toAdd.addAll( untrackedFolders );
+
+            //            for ( String folderPath : untrackedFolders )
+            //            {
+            //                File dir = new File( rootDir, folderPath );
+            //                Files.walkFileTree( null, null )
+            //            }
+        }
+
+        if ( !toAdd.isEmpty() )
+        {
+            addAndCommitPaths( changeSummary, toAdd );
+        }
 
         return this;
     }
