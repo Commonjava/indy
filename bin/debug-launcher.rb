@@ -63,15 +63,19 @@ class Launcher
       uibase = "#{launch_dir}/var/lib/aprox/ui"
       
       mv( uibase, "#{uibase}.bak" )
-      ln_s( "#{BASEDIR}/uis/layover/src/main/js/app", uibase )
+      mkdir(uibase)
+      Dir["#{BASEDIR}/uis/layover/src/main/js/app/*"].each{|file|
+        fname = File.basename(file)
+        ln_s( file, File.join(uibase, fname) )
+      }
       
-      mkdir( "#{uibase}/layover" ) unless File.directory?("#{uibase}/layover")
+      addon_base = File.join(uibase, "layover")
+      mkdir( addon_base ) unless File.directory?(addon_base)
       
       Dir["#{uibase}.bak/layover/*"].each{|addon_path|
         addon = File.basename(addon_path)
-        addon_target = "#{uibase}/layover/#{addon}"
-        rm(addon_target) if File.exists?(addon_target)
-        ln_s( "#{BASEDIR}/addons/#{addon}/src/main/ui/layover/#{addon}", addon_target )
+        addon_target = File.join( addon_base, addon )
+        ln_s( "#{BASEDIR}/addons/#{addon}/common/src/main/ui/layover/#{addon}", addon_target )
       }
     end
 
