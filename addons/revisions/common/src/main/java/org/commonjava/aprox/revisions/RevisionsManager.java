@@ -61,7 +61,7 @@ public class RevisionsManager
         dataDir.mkdirs();
         FileUtils.write( gitignore, join( DATA_DIR_GITIGNORES, "\n" ) );
 
-        final GitConfig dataConf = new GitConfig( dataDir, revisionsConfig.getDataUpstreamUrl() );
+        final GitConfig dataConf = new GitConfig( dataDir, revisionsConfig.getDataUpstreamUrl(), true );
         dataFileGit = new GitManager( dataConf );
 
         final ChangeSummary summary =
@@ -107,12 +107,16 @@ public class RevisionsManager
         throws GitSubsystemException
     {
         dataFileGit.pullUpdates( revisionsConfig.getConflictStrategy() );
+
+        // FIXME: fire events to signal data owners to reload...
+        // FIXME: Return some sort of status
     }
 
     public void pushDateUpdates()
         throws GitSubsystemException
     {
         dataFileGit.pushUpdates();
+        // FIXME: Return some sort of status
     }
 
     public List<ChangeSummary> getDataChangeLog( final File f, final int start, final int length )

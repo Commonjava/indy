@@ -27,7 +27,7 @@ import org.vertx.java.core.http.HttpServerRequest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-@Handles( "/changelog" )
+@Handles( "/revisions/log" )
 public class ChangelogResource
     implements RequestHandler
 {

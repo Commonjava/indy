@@ -7,6 +7,18 @@ var aproxServices = angular.module('aprox.services', ['ngResource']);
 
 aproxServices.factory('StoreUtilSvc', function(){
   return {
+    resourceMode: function(){
+      if ( window.location.hash.endsWith( "/edit" ) ){
+        return 'edit';
+      }
+      else if ( window.location.hash.endsWith( "/new" ) ){
+        return 'new';
+      }
+      else{
+        return 'view';
+      }
+    },
+    
     formatKey: function(type, name){
       return type + ':' + name;
     },

@@ -31,49 +31,8 @@ aproxControllers.controller('RemoteListCtl', ['$scope', 'RemoteSvc', 'StoreUtilS
     $scope.orderProp = 'key';
   }]);
 
-aproxControllers.controller('RemoteDetailCtl', ['$scope', '$routeParams', '$location', 'RemoteSvc', 'StoreUtilSvc', function($scope, $routeParams, $location, RemoteSvc, StoreUtilSvc) {
-  $scope.raw = {
-    name: '',
-  };
-
-  $scope.store = RemoteSvc.get({name: $routeParams.name}, function(store){
-      $scope.raw.name = StoreUtilSvc.nameFromKey(store.key);
-      $scope.raw.editHref = StoreUtilSvc.editHref(store.key);
-      $scope.raw.storeHref = StoreUtilSvc.storeHref(store.key);
-      $scope.raw.description = StoreUtilSvc.defaultDescription(store.description);
-
-      var useX509 = store.server_certificate_pem !== undefined;
-      useX509 = store.key_certificate_pem !== undefined || useX509;
-
-      $scope.raw.use_x509 = useX509;
-
-      var useProxy = store.proxy_host !== undefined;
-      $scope.raw.use_proxy = useProxy;
-
-      var useAuth = (useProxy && store.proxy_user !== undefined);
-      useAuth = store.user !== undefined || useAuth;
-
-      $scope.raw.use_auth = useAuth;
-  });
-
-  $scope.storeUtils = StoreUtilSvc;
-
-  $scope.delete = function(){
-    if ( confirm( "Really delete '" + $scope.raw.name + "'??") )
-    {
-      RemoteSvc.delete({name: $scope.raw.name}, function(){
-        $location.path( '/remote' );
-      });
-    }
-    else{
-      $location.path( '/remote' );
-    }
-  };
-
-}]);
-
-aproxControllers.controller('RemoteEditCtl', ['$scope', '$routeParams', '$location', 'RemoteSvc', 'StoreUtilSvc', function($scope, $routeParams, $location, RemoteSvc, StoreUtilSvc) {
-  $scope.editMode = window.location.hash.startsWith( "#/remote/edit" );
+aproxControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 'RemoteSvc', 'StoreUtilSvc', function($scope, $routeParams, $location, RemoteSvc, StoreUtilSvc) {
+  $scope.mode = StoreUtilSvc.resourceMode();
   $scope.storeUtils = StoreUtilSvc;
 
   $scope.raw = {
@@ -82,7 +41,7 @@ aproxControllers.controller('RemoteEditCtl', ['$scope', '$routeParams', '$locati
     cache_timeout_seconds: '',
   };
 
-  if ( $scope.editMode ){
+  if ( $scope.mode == 'edit' ){
     $scope.store = RemoteSvc.get({name: $routeParams.name}, function(store){
       $scope.raw.name = StoreUtilSvc.nameFromKey(store.key);
       $scope.raw.storeHref = StoreUtilSvc.storeHref(store.key);
@@ -103,7 +62,7 @@ aproxControllers.controller('RemoteEditCtl', ['$scope', '$routeParams', '$locati
       $scope.raw.use_auth = useAuth;
     });
   }
-  else{
+  else if (scope.mode == 'new'){
     $scope.store = {
       url: '',
       timeout_seconds: 60,
@@ -111,6 +70,29 @@ aproxControllers.controller('RemoteEditCtl', ['$scope', '$routeParams', '$locati
       is_passthrough: false
     };
   }
+  else{
+    $scope.store = RemoteSvc.get({name: $routeParams.name}, function(store){
+      $scope.raw.name = StoreUtilSvc.nameFromKey(store.key);
+      $scope.raw.editHref = StoreUtilSvc.editHref(store.key);
+      $scope.raw.storeHref = StoreUtilSvc.storeHref(store.key);
+      $scope.raw.description = StoreUtilSvc.defaultDescription(store.description);
+
+      var useX509 = store.server_certificate_pem !== undefined;
+      useX509 = store.key_certificate_pem !== undefined || useX509;
+
+      $scope.raw.use_x509 = useX509;
+
+      var useProxy = store.proxy_host !== undefined;
+      $scope.raw.use_proxy = useProxy;
+
+      var useAuth = (useProxy && store.proxy_user !== undefined);
+      useAuth = store.user !== undefined || useAuth;
+
+      $scope.raw.use_auth = useAuth;
+    });
+  }
+
+  $scope.storeUtils = StoreUtilSvc;
 
   $scope.save = function(){
     if ( $scope.is_passthrough ){
@@ -174,41 +156,8 @@ aproxControllers.controller('HostedListCtl', ['$scope', 'HostedSvc', 'StoreUtilS
     $scope.orderProp = 'key';
   }]);
 
-aproxControllers.controller('HostedDetailCtl', ['$scope', '$routeParams', '$location', 'HostedSvc', 'StoreUtilSvc', function($scope, $routeParams, $location, HostedSvc, StoreUtilSvc) {
-  $scope.raw = {};
-
-  $scope.store = HostedSvc.get({name: $routeParams.name}, function(store){
-    $scope.raw.name = StoreUtilSvc.nameFromKey(store.key);
-    $scope.raw.storeHref = StoreUtilSvc.storeHref(store.key);
-    $scope.raw.editHref = StoreUtilSvc.editHref(store.key);
-    $scope.raw.description = StoreUtilSvc.defaultDescription(store.description);
-  });
-  $scope.storeUtils = StoreUtilSvc;
-
-  $scope.allowUploads = function(store){
-    return store.allow_snapshots || store.allow_releases;
-  };
-
-  $scope.showSnapshotTimeout = function(store){
-    return store.allow_snapshots;
-  };
-
-  $scope.delete = function(){
-    if ( confirm( "Really delete '" + $scope.raw.name + "'??") )
-    {
-      HostedSvc.delete({name: $scope.raw.name}, function(){
-        $location.path( '/hosted' );
-      });
-    }
-    else{
-      $location.path( '/hosted' );
-    }
-  };
-
-}]);
-
-aproxControllers.controller('HostedEditCtl', ['$scope', '$routeParams', '$location', 'HostedSvc', 'StoreUtilSvc', function($scope, $routeParams, $location, HostedSvc, StoreUtilSvc) {
-  $scope.editMode = window.location.hash.startsWith( "#/hosted/edit" );
+aproxControllers.controller('HostedCtl', ['$scope', '$routeParams', '$location', 'HostedSvc', 'StoreUtilSvc', function($scope, $routeParams, $location, HostedSvc, StoreUtilSvc) {
+  $scope.mode = StoreUtilSvc.resourceMode();
   $scope.storeUtils = StoreUtilSvc;
 
   $scope.raw = {
@@ -216,20 +165,34 @@ aproxControllers.controller('HostedEditCtl', ['$scope', '$routeParams', '$locati
     snapshot_timeout_seconds: '',
   };
 
-  if ( $scope.editMode ){
+  if ( $scope.mode == 'edit' ){
     $scope.store = HostedSvc.get({name: $routeParams.name}, function(store){
       $scope.raw.name = $scope.storeUtils.nameFromKey(store.key);
       $scope.raw.snapshotTimeoutSeconds = StoreUtilSvc.secondsToDuration(store.snapshotTimeoutSeconds);
     });
   }
-  else{
+  else if($scope.mode == 'new'){
     $scope.store = {
       allow_releases: true,
       allow_snapshots: true,
       snapshotTimeoutSeconds: 86400,
     };
   }
+  else{
+    $scope.store = HostedSvc.get({name: $routeParams.name}, function(store){
+      $scope.raw.name = StoreUtilSvc.nameFromKey(store.key);
+      $scope.raw.storeHref = StoreUtilSvc.storeHref(store.key);
+      $scope.raw.editHref = StoreUtilSvc.editHref(store.key);
+      $scope.raw.description = StoreUtilSvc.defaultDescription(store.description);
+    });
+    
+    $scope.storeUtils = StoreUtilSvc;
+  }
 
+  $scope.showSnapshotTimeout = function(store){
+    return store.allow_snapshots;
+  };
+  
   $scope.allowUploads = function(store){
     return store.allow_snapshots || store.allow_releases;
   };
@@ -293,67 +256,45 @@ aproxControllers.controller('GroupListCtl', ['$scope', 'GroupSvc', 'StoreUtilSvc
     $scope.orderProp = 'key';
   }]);
 
-aproxControllers.controller('GroupDetailCtl', ['$scope', '$routeParams', '$location', 'GroupSvc', 'StoreUtilSvc', function($scope, $routeParams, $location, GroupSvc, StoreUtilSvc) {
-  $scope.raw = {
-    constituentHrefs: {},
-  };
-
-  $scope.store = GroupSvc.get({name: $routeParams.name}, function(store){
-    $scope.raw.name = StoreUtilSvc.nameFromKey(store.key);
-    $scope.raw.editHref = StoreUtilSvc.editHref(store.key);
-    $scope.raw.storeHref = StoreUtilSvc.storeHref(store.key);
-    $scope.raw.description = StoreUtilSvc.defaultDescription(store.description);
-
-    for(var i=0; i<store.constituents.length; i++){
-      var item = store.constituents[i];
-      $scope.raw.constituentHrefs[item] = {
-        detailHref: StoreUtilSvc.detailHref(item),
-      };
-    }
-  });
-  $scope.storeUtils = StoreUtilSvc;
-
-  $scope.delete = function(){
-    if ( confirm( "Really delete '" + $scope.raw.name + "'??") )
-    {
-      GroupSvc.delete({name: $scope.raw.name}, function(){
-        $location.path( '/group' );
-      });
-    }
-    else{
-      $location.path( '/group' );
-    }
-  };
-
-}]);
-
-aproxControllers.controller('GroupEditCtl', ['$scope', '$routeParams', '$location', 'GroupSvc', 'StoreUtilSvc', 'AllEndpointsSvc', function($scope, $routeParams, $location, GroupSvc, StoreUtilSvc, AllEndpointsSvc) {
-  $scope.editMode = window.location.hash.startsWith( "#/group/edit" );
+aproxControllers.controller('GroupCtl', ['$scope', '$routeParams', '$location', 'GroupSvc', 'StoreUtilSvc', 'AllEndpointsSvc', function($scope, $routeParams, $location, GroupSvc, StoreUtilSvc, AllEndpointsSvc) {
+  $scope.mode = StoreUtilSvc.resourceMode();
   $scope.storeUtils = StoreUtilSvc;
 
   $scope.raw = {
     name: '',
     available: [],
+    constituentHrefs: {},
   };
 
-  if ( $scope.editMode ){
+  if ( $scope.mode == 'edit' ){
     $scope.store = GroupSvc.get({name: $routeParams.name}, function(store){
       $scope.raw.name = $scope.storeUtils.nameFromKey(store.key);
     });
   }
-  else{
+  else if ($scope.mode == 'new'){
     $scope.store = {
       constituents: [],
     };
+  }
+  else{
+    $scope.store = GroupSvc.get({name: $routeParams.name}, function(store){
+      $scope.raw.name = StoreUtilSvc.nameFromKey(store.key);
+      $scope.raw.editHref = StoreUtilSvc.editHref(store.key);
+      $scope.raw.storeHref = StoreUtilSvc.storeHref(store.key);
+      $scope.raw.description = StoreUtilSvc.defaultDescription(store.description);
+
+      for(var i=0; i<store.constituents.length; i++){
+        var item = store.constituents[i];
+        $scope.raw.constituentHrefs[item] = {
+          detailHref: StoreUtilSvc.detailHref(item),
+        };
+      }
+    });
   }
 
   AllEndpointsSvc.query(function(listing){
     $scope.raw.available = StoreUtilSvc.sortEndpoints( listing.items );
   });
-
-  $scope.addConstituent = function(constituent){
-    alert("FOO" + constituent);
-  };
 
   $scope.save = function(){
     if ( $scope.editMode ){

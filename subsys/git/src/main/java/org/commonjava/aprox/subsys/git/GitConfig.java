@@ -9,10 +9,13 @@ public class GitConfig
 
     private final String url;
 
-    public GitConfig( final File dir, final String url )
+    private final boolean commitFileManifestsEnabled;
+
+    public GitConfig( final File dir, final String url, final boolean commitFileManifestsEnabled )
     {
         this.dir = dir;
         this.url = url;
+        this.commitFileManifestsEnabled = commitFileManifestsEnabled;
     }
 
     public File getContentDir()
@@ -23,6 +26,11 @@ public class GitConfig
     public String getCloneFrom()
     {
         return url;
+    }
+
+    public boolean isCommitFileManifestsEnabled()
+    {
+        return commitFileManifestsEnabled;
     }
 
 }

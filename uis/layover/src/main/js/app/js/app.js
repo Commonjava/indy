@@ -20,24 +20,24 @@ aprox.config(['$routeProvider', '$controllerProvider', '$compileProvider', '$fil
   aprox.filterProvider = $filterProvider;
   aprox.provide = $provide;
   
-  $routeProvider.when('/remote', {templateUrl: 'partials/remote-list.html', controller: 'RemoteListCtl'});
-  $routeProvider.when('/remote/view/:name', {templateUrl: 'partials/remote-detail.html', controller: 'RemoteDetailCtl'});
-  $routeProvider.when('/remote/new', {templateUrl: 'partials/remote-edit.html', controller: 'RemoteEditCtl'});
-  $routeProvider.when('/remote/edit/:name', {templateUrl: 'partials/remote-edit.html', controller: 'RemoteEditCtl'});
+  $routeProvider.when('/remote', {templateUrl: 'partials/remote-list.html'});
+  $routeProvider.when('/remote/view/:name', {templateUrl: 'partials/remote-detail.html'});
+  $routeProvider.when('/remote/new', {templateUrl: 'partials/remote-edit.html'});
+  $routeProvider.when('/remote/edit/:name', {templateUrl: 'partials/remote-edit.html'});
 
-  $routeProvider.when('/hosted', {templateUrl: 'partials/hosted-list.html', controller: 'HostedListCtl'});
-  $routeProvider.when('/hosted/view/:name', {templateUrl: 'partials/hosted-detail.html', controller: 'HostedDetailCtl'});
-  $routeProvider.when('/hosted/new', {templateUrl: 'partials/hosted-edit.html', controller: 'HostedEditCtl'});
-  $routeProvider.when('/hosted/edit/:name', {templateUrl: 'partials/hosted-edit.html', controller: 'HostedEditCtl'});
+  $routeProvider.when('/hosted', {templateUrl: 'partials/hosted-list.html'});
+  $routeProvider.when('/hosted/view/:name', {templateUrl: 'partials/hosted-detail.html'});
+  $routeProvider.when('/hosted/new', {templateUrl: 'partials/hosted-edit.html'});
+  $routeProvider.when('/hosted/edit/:name', {templateUrl: 'partials/hosted-edit.html'});
 
-  $routeProvider.when('/group', {templateUrl: 'partials/group-list.html', controller: 'GroupListCtl'});
-  $routeProvider.when('/group/view/:name', {templateUrl: 'partials/group-detail.html', controller: 'GroupDetailCtl'});
-  $routeProvider.when('/group/new', {templateUrl: 'partials/group-edit.html', controller: 'GroupEditCtl'});
-  $routeProvider.when('/group/edit/:name', {templateUrl: 'partials/group-edit.html', controller: 'GroupEditCtl'});
+  $routeProvider.when('/group', {templateUrl: 'partials/group-list.html'});
+  $routeProvider.when('/group/view/:name', {templateUrl: 'partials/group-detail.html'});
+  $routeProvider.when('/group/new', {templateUrl: 'partials/group-edit.html'});
+  $routeProvider.when('/group/edit/:name', {templateUrl: 'partials/group-edit.html'});
   
-  $routeProvider.when('/nfc', {templateUrl: 'partials/nfc.html', controller: 'NfcController'});
-  $routeProvider.when('/nfc/view/all', {templateUrl: 'partials/nfc.html', controller: 'NfcController'});
-  $routeProvider.when('/nfc/view/:type/:name', {templateUrl: 'partials/nfc.html', controller: 'NfcController'});
+  $routeProvider.when('/nfc', {templateUrl: 'partials/nfc.html'});
+  $routeProvider.when('/nfc/view/all', {templateUrl: 'partials/nfc.html'});
+  $routeProvider.when('/nfc/view/:type/:name', {templateUrl: 'partials/nfc.html'});
 
   if ( addons !== undefined ){
     addons.items.each( function(addon){

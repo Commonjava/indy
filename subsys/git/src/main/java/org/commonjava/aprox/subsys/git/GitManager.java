@@ -55,9 +55,12 @@ public class GitManager
 
     private final File rootDir;
 
+    private final GitConfig config;
+
     public GitManager( final GitConfig config )
         throws GitSubsystemException
     {
+        this.config = config;
         rootDir = config.getContentDir();
         final String cloneUrl = config.getCloneFrom();
 
@@ -207,7 +210,7 @@ public class GitManager
 
             add.call();
 
-            commit.setMessage( summary.getSummary() )
+            commit.setMessage( buildMessage( summary, paths ) )
                   .setAuthor( summary.getUser(), email )
                   .call();
         }
@@ -223,13 +226,50 @@ public class GitManager
         return this;
     }
 
+    private String buildMessage( final ChangeSummary summary, final Collection<String> paths )
+    {
+        final StringBuilder message = new StringBuilder().append( summary.getSummary() );
+        if ( config.isCommitFileManifestsEnabled() )
+        {
+            message.append( "\n\nFiles changed:\n" )
+                   .append( join( paths, "\n" ) );
+
+        }
+
+        return message.toString();
+    }
+
     public GitManager deleteAndCommit( final ChangeSummary summary, final File... deleted )
         throws GitSubsystemException
     {
         return deleteAndCommit( summary, Arrays.asList( deleted ) );
     }
 
-    public GitManager deleteAndCommit( final ChangeSummary summary, final Collection<File> deleted )
+    public GitManager deleteAndCommit( final ChangeSummary summary, final Collection<File> files )
+        throws GitSubsystemException
+    {
+        final Set<String> paths = new HashSet<>();
+        for ( final File f : files )
+        {
+            final String path = relativize( f );
+
+            if ( path != null && path.length() > 0 )
+            {
+                paths.add( path );
+            }
+
+        }
+
+        return deleteAndCommitPaths( summary, paths );
+    }
+
+    public GitManager deleteAndCommitPaths( final ChangeSummary summary, final String... paths )
+        throws GitSubsystemException
+    {
+        return deleteAndCommitPaths( summary, Arrays.asList( paths ) );
+    }
+
+    public GitManager deleteAndCommitPaths( final ChangeSummary summary, final Collection<String> paths )
         throws GitSubsystemException
     {
         try
@@ -237,19 +277,17 @@ public class GitManager
             RmCommand rm = git.rm();
             CommitCommand commit = git.commit();
 
-            for ( final File file : deleted )
+            for ( final String path : paths )
             {
-                final String filepath = relativize( file );
-
-                rm = rm.addFilepattern( filepath );
-                commit = commit.setOnly( filepath );
+                rm = rm.addFilepattern( path );
+                commit = commit.setOnly( path );
             }
 
-            logger.info( "Deleting:\n  " + join( deleted, "\n  " ) + "\n\nSummary: " + summary );
+            logger.info( "Deleting:\n  " + join( paths, "\n  " ) + "\n\nSummary: " + summary );
 
             rm.call();
 
-            commit.setMessage( summary.getSummary() )
+            commit.setMessage( buildMessage( summary, paths ) )
                   .setAuthor( summary.getUser(), email )
                   .call();
         }

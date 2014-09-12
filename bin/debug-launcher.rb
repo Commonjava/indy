@@ -46,7 +46,10 @@ class Launcher
     target = File.join( BASEDIR, 'launchers', launcher, 'target' )
     launch_dir = File.join(target, "aprox" )
 
-    rm_rf( launch_dir ) if config[:clean]
+    if config[:clean]
+      puts "Deleting AProx launch dir..."
+      rm_rf( launch_dir )
+    end
 
     glob = File.join( target, "aprox-launcher-#{launcher}-*-launcher.tar.gz" )
 
@@ -57,8 +60,19 @@ class Launcher
     do_exec( "tar -zxvf #{archives[0]} -C #{target}" )
 
     if (config[:uidev])
-      mv( "#{launch_dir}/ui", "#{launch_dir}/ui.bak" )
-      ln_s( "#{BASEDIR}/uis/layover/src/main/js/app", "#{launch_dir}/ui" )
+      uibase = "#{launch_dir}/var/lib/aprox/ui"
+      
+      mv( uibase, "#{uibase}.bak" )
+      ln_s( "#{BASEDIR}/uis/layover/src/main/js/app", uibase )
+      
+      mkdir( "#{uibase}/layover" ) unless File.directory?("#{uibase}/layover")
+      
+      Dir["#{uibase}.bak/layover/*"].each{|addon_path|
+        addon = File.basename(addon_path)
+        addon_target = "#{uibase}/layover/#{addon}"
+        rm(addon_target) if File.exists?(addon_target)
+        ln_s( "#{BASEDIR}/addons/#{addon}/src/main/ui/layover/#{addon}", addon_target )
+      }
     end
 
     if ( config[:debug] )
