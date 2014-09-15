@@ -1,20 +1,5 @@
 <div class="container-fluid" ng-controller="GroupCtl">
-    <div class="control-panel">
-        <div class="cp-row">
-            <a class="cp-button" href="#/group">&lt; Back</a>
-        </div>
-        <div class="cp-row">
-            <a class="new-button cp-button" href="#/group/new">New...</a>
-        </div>
-        <div class="cp-row">
-          <a class="cp-button" ng-href="{{raw.editHref}}">Edit</a>
-        </div>
-        <div class="cp-row">
-          <a href="" name="del" ng-click="delete()" class="del-button cp-button">Delete</a>
-        </div>
-      <div class="cp-row cp-debug">
-        <input type="checkbox" ng-model="enableDebug" ng-init="checked=false" /> Debug Data
-      </div>
+    <div class="control-panel" ng-include="'partials/includes/store-control-panel.html'">
     </div>
     
     <div class="content-panel" ng-include="'partials/includes/group-view.html'">

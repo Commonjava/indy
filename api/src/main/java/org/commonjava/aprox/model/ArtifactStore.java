@@ -26,7 +26,9 @@ public abstract class ArtifactStore
 
     private String description;
 
-    private transient Map<String, String> metadata;
+    private transient Map<String, String> transientMetadata;
+
+    private Map<String, String> metadata;
 
     protected ArtifactStore()
     {
@@ -103,6 +105,16 @@ public abstract class ArtifactStore
         return true;
     }
 
+    public void setMetadata( final Map<String, String> metadata )
+    {
+        this.metadata = metadata;
+    }
+
+    public Map<String, String> getMetadata()
+    {
+        return metadata;
+    }
+
     public synchronized String setMetadata( final String key, final String value )
     {
         if ( key == null || value == null )
@@ -121,6 +133,26 @@ public abstract class ArtifactStore
     public String getMetadata( final String key )
     {
         return metadata == null ? null : metadata.get( key );
+    }
+
+    public synchronized String setTransientMetadata( final String key, final String value )
+    {
+        if ( key == null || value == null )
+        {
+            return null;
+        }
+
+        if ( transientMetadata == null )
+        {
+            transientMetadata = new HashMap<String, String>();
+        }
+
+        return transientMetadata.put( key, value );
+    }
+
+    public String getTransientMetadata( final String key )
+    {
+        return transientMetadata == null ? null : transientMetadata.get( key );
     }
 
     @Override

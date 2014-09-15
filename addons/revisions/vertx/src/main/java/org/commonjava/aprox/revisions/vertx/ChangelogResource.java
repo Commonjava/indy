@@ -6,6 +6,7 @@ import static org.commonjava.aprox.bind.vertx.util.PathParam.type;
 import java.io.File;
 import java.util.List;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.audit.ChangeSummary;
@@ -26,8 +27,10 @@ import org.slf4j.LoggerFactory;
 import org.vertx.java.core.http.HttpServerRequest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-@Handles( "/revisions/log" )
+@Handles( "/revisions/changelog" )
+@ApplicationScoped
 public class ChangelogResource
     implements RequestHandler
 {
@@ -45,6 +48,9 @@ public class ChangelogResource
 
     @Inject
     private DataFileStoreDataManager storeManager;
+
+    @Inject
+    private ObjectMapper objectMapper;
 
     @Route( "/store/:type/:name" )
     public void getStoreChangelog( final HttpServerRequest request )
@@ -76,7 +82,7 @@ public class ChangelogResource
             final List<ChangeSummary> dataChangeLog = revisions.getDataChangeLog( f, start, count );
             Respond.to( request )
                    .ok()
-                   .jsonEntity( new ChangeSummaryDTO( dataChangeLog ) )
+                   .jsonEntity( new ChangeSummaryDTO( dataChangeLog ), objectMapper )
                    .send();
         }
         catch ( final GitSubsystemException e )

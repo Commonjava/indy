@@ -1,5 +1,6 @@
 package org.commonjava.aprox.revisions;
 
+import static org.apache.commons.lang.StringUtils.isEmpty;
 import static org.apache.commons.lang.StringUtils.join;
 
 import java.io.File;
@@ -112,17 +113,34 @@ public class RevisionsManager
         // FIXME: Return some sort of status
     }
 
-    public void pushDateUpdates()
+    public void pushDataUpdates()
         throws GitSubsystemException
     {
         dataFileGit.pushUpdates();
         // FIXME: Return some sort of status
     }
 
-    public List<ChangeSummary> getDataChangeLog( final File f, final int start, final int length )
+    public List<ChangeSummary> getDataChangeLog( final String path, final int start, final int length )
         throws GitSubsystemException
     {
-        return dataFileGit.getChangelog( f, start, length );
+        final File file;
+        if ( isEmpty( path ) || path.equals( "/" ) )
+        {
+            file = dataFileManager.getDetachedDataBasedir();
+        }
+        else
+        {
+            file = dataFileManager.getDataFile( path )
+                                  .getDetachedFile();
+        }
+
+        return dataFileGit.getChangelog( file, start, length );
+    }
+
+    public List<ChangeSummary> getDataChangeLog( final File f, final int start, final int count )
+        throws GitSubsystemException
+    {
+        return dataFileGit.getChangelog( f, start, count );
     }
 
 }

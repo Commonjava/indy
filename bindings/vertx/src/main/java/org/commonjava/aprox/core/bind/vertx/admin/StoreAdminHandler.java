@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.bind.vertx.admin;
 
+import static org.apache.commons.lang.StringUtils.isEmpty;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatBadRequestResponse;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatCreatedResponse;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithJsonEntity;
@@ -252,7 +253,13 @@ public class StoreAdminHandler
         try
         {
             String summary = buffer.getString( 0, buffer.length() );
-            if ( summary == null )
+            if ( isEmpty( summary ) )
+            {
+                summary = request.headers()
+                                 .get( "CHANGELOG" );
+            }
+
+            if ( isEmpty( summary ) )
             {
                 summary = "Changelog not provided";
             }

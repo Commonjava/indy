@@ -52,80 +52,95 @@ directives.directive('apHint', function(){
   };
 });
 
-directives.directive('apDurationHint', function() {
+directives.directive('apDurationHint', ['$timeout',function(timer) {
   return {
     restrict: 'E',
     link: function(scope, element, attributes){
-      var suggestion = element.text();
-      if ( suggestion == '' ){
-        suggestion = "24h 36m 00s";
-      }
-
-      element.html('<span class="hint">(eg. ' + suggestion + ')</span>');
+      var run=function(){
+        var suggestion = element.text();
+        if ( suggestion == '' ){
+          suggestion = "24h 36m 00s";
+        }
+        
+        element.html('<span class="hint">(eg. ' + suggestion + ')</span>');
+      };
+      
+      timer(run, 0);
     }
   };
-});
+}]);
 
-directives.directive('apGroupConstituent', function() {
+directives.directive('apGroupConstituent', ['$timeout', function(timer) {
   return {
     restrict: 'A',
     templateUrl: 'partials/directives/ap-group-constituent.html',
     link: function(scope, element, attributes){
-      scope.rmConstituent = function(){
-        var idx = scope.store.constituents.indexOf(scope.constituent);
-
-        var parts = scope.constituent.split(':')
-        scope.raw.available.push({type: parts[0], name: parts[1]});
-
-        scope.store.constituents.splice(idx,1);
-
-        scope.storeUtils.sortEndpoints(scope.raw.available);
+      var run = function(){
+        scope.rmConstituent = function(){
+          var idx = scope.store.constituents.indexOf(scope.constituent);
+          
+          var parts = scope.constituent.split(':')
+          scope.raw.available.push({type: parts[0], name: parts[1]});
+          
+          scope.store.constituents.splice(idx,1);
+          
+          scope.storeUtils.sortEndpoints(scope.raw.available);
+        };
+        
+        scope.promote = function(){
+          var idx = scope.store.constituents.indexOf(scope.constituent);
+          if ( idx > 0){
+            scope.store.constituents.move(idx, idx-1);
+          }
+        };
+        
+        scope.top = function(){
+          var idx = scope.store.constituents.indexOf(scope.constituent);
+          scope.store.constituents.move(idx, 0);
+        };
+        
+        scope.demote = function(){
+          var idx = scope.store.constituents.indexOf(scope.constituent);
+          if ( idx < scope.store.constituents.length-1){
+            scope.store.constituents.move(idx, idx+1);
+          }
+        };
+        
+        scope.bottom = function(){
+          var idx = scope.store.constituents.indexOf(scope.constituent);
+          scope.store.constituents.move(idx, scope.store.constituents.length-1);
+        };
       };
-
-      scope.promote = function(){
-        var idx = scope.store.constituents.indexOf(scope.constituent);
-        if ( idx > 0){
-          scope.store.constituents.move(idx, idx-1);
-        }
-      };
-
-      scope.top = function(){
-        var idx = scope.store.constituents.indexOf(scope.constituent);
-        scope.store.constituents.move(idx, 0);
-      };
-
-      scope.demote = function(){
-        var idx = scope.store.constituents.indexOf(scope.constituent);
-        if ( idx < scope.store.constituents.length-1){
-          scope.store.constituents.move(idx, idx+1);
-        }
-      };
-
-      scope.bottom = function(){
-        var idx = scope.store.constituents.indexOf(scope.constituent);
-        scope.store.constituents.move(idx, scope.store.constituents.length-1);
-      };
-
+      
+      timer(run, 0);
     },
   };
-});
+}]);
 
-directives.directive('apGroupAvailable', function() {
+directives.directive('apGroupAvailable', ['$timeout', function( timer ) {
   return {
     restrict: 'A',
     templateUrl: 'partials/directives/ap-group-available.html',
     link: function(scope, element, attributes){
-      scope.addConstituent = function(){
-        scope.store.constituents.push(scope.available.type + ':' + scope.available.name);
-        element.addClass('hidden');
+      var run = function(){
+        scope.addConstituent = function(){
+          scope.store.constituents.push(scope.available.type + ':' + scope.available.name);
+          element.addClass('hidden');
+        };
+
+        var key = scope.available.type + ':' + scope.available.name;
+        var idx = scope.store.constituents.indexOf(key);
+        var gKey = 'group:' + scope.raw.name;
+        
+        if ( idx > -1 ){
+          element.addClass('hidden');
+        }
+        else if ( key == gKey ){
+          element.addClass('hidden');
+        }
       };
-
-      var key = scope.available.type + ':' + scope.available.name;
-      var idx = scope.store.constituents.indexOf(key);
-
-      if ( idx > -1 ){
-        element.addClass('hidden');
-      }
+      
+      timer(run, 100);
     },
   };
-});
+}]);

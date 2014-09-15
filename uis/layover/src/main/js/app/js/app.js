@@ -4,6 +4,7 @@
 
 var aprox = angular.module('aprox', [
   'ngRoute',
+  'ngDialog',
   'aprox.filters',
   'aprox.directives',
   'aprox.services',

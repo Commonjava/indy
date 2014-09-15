@@ -5,10 +5,88 @@
 
 var aproxServices = angular.module('aprox.services', ['ngResource']);
 
+aproxServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
+  return {
+    promptForChangelog: function(scope, confirmLabel, callback){
+      scope.raw.confirmLabel=confirmLabel;
+      scope.raw.changelog='';
+      
+      console.log('Confirm label: ' + scope.raw.confirmLabel);
+      
+      ngDialog.openConfirm({template: 'partials/dialogs/changelog-dialog.html', scope: scope }).then(function(data){
+        if ( !scope.raw.changelog || scope.raw.changelog.length < 1 ){
+          alert( "You must provide a changelog!" );
+          return;
+        }
+        
+        callback(scope.raw.changelog);
+      }, 
+      function(data){
+        console.log(scope.confirmLabel + ": cancelled");
+      });
+    },
+    addControlHrefs: function(scope, storeType, storeName, mode){
+      scope.raw.backHref='#/' + storeType;
+      if (mode == 'view'){
+        scope.raw.newHref='#/' + storeType + '/new';
+        scope.raw.editHref='#/' + storeType + '/edit/' + storeName;
+      }
+    },
+    addStoreControls: function(scope, location, storeType, storeService, StoreUtilSvc, fixups){
+      var self=this;
+      
+      scope.save = function(){
+        scope.store.metadata={};
+        self.promptForChangelog(scope, 'Save', function(changelog){
+          scope.store.metadata['changelog'] = changelog;
+          
+          if ( fixups && fixups.save){
+            fixups.save(scope);
+          }
+
+          if ( scope.mode == 'edit' ){
+            storeService.resource.update({name: scope.raw.name}, scope.store, function(){
+              location.path( StoreUtilSvc.detailPath(scope.store.key) );
+            });
+          }
+          else if ( scope.mode == 'new' ){
+            scope.store.key = StoreUtilSvc.formatKey(storeType, scope.raw.name);
+            storeService.resource.create({}, scope.store, function(){
+              location.path( StoreUtilSvc.detailPath(scope.store.key) );
+            });
+          }
+        });
+      };
+
+      scope.remove = function(){
+        console.log("confirm delete");
+        self.promptForChangelog(scope, 'Delete', function(changelog){
+          console.log("deleting with changelog: " + changelog);
+          
+          storeService.remove(scope.raw.name, changelog, {
+            success: function(data,status){
+              location.path( '/' + storeType );
+            },
+          });
+        });
+      };
+
+      scope.cancel = function(){
+        if ( scope.mode == 'edit' ){
+          location.path( StoreUtilSvc.detailPath(scope.store.key) );
+        }
+        else{
+          location.path( '/' + storeType );
+        }
+      };
+    },
+  };
+}]);
+
 aproxServices.factory('StoreUtilSvc', function(){
   return {
     resourceMode: function(){
-      if ( window.location.hash.endsWith( "/edit" ) ){
+      if ( window.location.hash.match( ".+/edit/.+" ) ){
         return 'edit';
       }
       else if ( window.location.hash.endsWith( "/new" ) ){
@@ -209,55 +287,88 @@ aproxServices.factory('StoreUtilSvc', function(){
 });
 
 
-aproxServices.factory('RemoteSvc', ['$resource',
-  function($resource){
-    return $resource(appPath( '/api/1.0/admin/remote/:name' ), {}, {
-      query: {method:'GET', params:{name:''}, isArray:false},
-      update: {method: 'PUT'},
-      create: {method: 'POST'},
-    });
+aproxServices.factory('RemoteSvc', ['$resource', '$http',
+  function($resource, $http){
+    return {
+      resource: $resource(appPath( '/api/1.0/admin/remote/:name' ), {}, {
+        query: {method:'GET', params:{name:''}, isArray:false},
+        update: {method: 'PUT'},
+        create: {method: 'POST'},
+      }),
+      remove: function( name, changelog, functions ){
+        $http.delete('/api/admin/remote/' + name, {
+          headers:{
+          'CHANGELOG': changelog,
+          }
+        }).success( functions.success );
+      },
+    };
   }]);
 
-aproxServices.factory('HostedSvc', ['$resource',
-  function($resource){
-    return $resource(appPath( '/api/1.0/admin/hosted/:name' ), {}, {
-      query: {method:'GET', params:{name:''}, isArray:false},
-      update: {method: 'PUT'},
-      create: {method: 'POST'},
-    });
+aproxServices.factory('HostedSvc', ['$resource', '$http',
+  function($resource, $http){
+    return {
+      resource: $resource(appPath( '/api/1.0/admin/hosted/:name' ), {}, {
+        query: {method:'GET', params:{name:''}, isArray:false},
+        update: {method: 'PUT'},
+        create: {method: 'POST'},
+      }),
+      remove: function( name, changelog, functions ){
+        $http.delete('/api/admin/hosted/' + name, {
+          headers:{
+          'CHANGELOG': changelog,
+          }
+        }).success( functions.success );
+      },
+    }
   }]);
 
-aproxServices.factory('GroupSvc', ['$resource',
-  function($resource){
-    return $resource(appPath( '/api/1.0/admin/group/:name' ), {}, {
-      query: {method:'GET', params:{name:''}, isArray:false},
-      update: {method: 'PUT'},
-      create: {method: 'POST'},
-    });
+aproxServices.factory('GroupSvc', ['$resource', '$http',
+  function($resource, $http){
+    return {
+      resource: $resource(appPath( '/api/1.0/admin/group/:name' ), {}, {
+        query: {method:'GET', params:{name:''}, isArray:false},
+        update: {method: 'PUT'},
+        create: {method: 'POST'},
+      }),
+      remove: function( name, changelog, functions ){
+        $http.delete('/api/admin/group/' + name, {
+          headers:{
+          'CHANGELOG': changelog,
+          }
+        }).success( functions.success );
+      },
+    };
   }]);
 
 aproxServices.factory('NfcSvc', ['$resource',
   function($resource) {
-    return $resource(appPath('/api/1.0/nfc/:type/:name/:path'), {}, {
-      query : { method : 'GET', params : { type: '', name: '', path: '' }, isArray : false },
-      get : { method : 'GET', params : { path: '' }, isArray : false },
-      deleteAll: {method: 'DELETE', params: {type:'', name:'', path:''}},
-      delete: {method: 'DELETE'},
-    });
+    return {
+      resource: $resource(appPath('/api/1.0/nfc/:type/:name/:path'), {}, {
+        query : { method : 'GET', params : { type: '', name: '', path: '' }, isArray : false },
+        get : { method : 'GET', params : { path: '' }, isArray : false },
+        deleteAll: {method: 'DELETE', params: {type:'', name:'', path:''}},
+        delete: {method: 'DELETE'},
+      }),
+    };
 }]);
 
 aproxServices.factory('AllEndpointsSvc', ['$resource',
   function($resource){
-    return $resource(appPath( '/api/1.0/stats/all-endpoints' ), {}, {
-      query: {method:'GET', params:{}, isArray:false},
-    });
+    return {
+      resource: $resource(appPath( '/api/1.0/stats/all-endpoints' ), {}, {
+        query: {method:'GET', params:{}, isArray:false},
+      }),
+    }
   }]);
 
 aproxServices.factory('FooterSvc', ['$resource',
   function($resource){
-    return $resource(appPath( '/api/1.0/stats/version-info' ), {}, {
-      query: {method:'GET', params:{}, isArray:false},
-    });
+    return {
+      resource: $resource(appPath( '/api/1.0/stats/version-info' ), {}, {
+        query: {method:'GET', params:{}, isArray:false},
+      }),
+    }
   }]);
 
 

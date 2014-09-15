@@ -18,7 +18,7 @@ aproxControllers.controller('NavCtl', ['$scope', function($scope){
 }]);
 
 aproxControllers.controller('RemoteListCtl', ['$scope', 'RemoteSvc', 'StoreUtilSvc', function($scope, RemoteSvc, StoreUtilSvc) {
-    $scope.listing = RemoteSvc.query({}, function(listing){
+    $scope.listing = RemoteSvc.resource.query({}, function(listing){
       for(var i=0; i<listing.items.length; i++){
         var item = listing.items[i];
         item.detailHref = StoreUtilSvc.detailHref(item.key);
@@ -31,7 +31,7 @@ aproxControllers.controller('RemoteListCtl', ['$scope', 'RemoteSvc', 'StoreUtilS
     $scope.orderProp = 'key';
   }]);
 
-aproxControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 'RemoteSvc', 'StoreUtilSvc', function($scope, $routeParams, $location, RemoteSvc, StoreUtilSvc) {
+aproxControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 'RemoteSvc', 'StoreUtilSvc', 'ControlSvc', function($scope, $routeParams, $location, RemoteSvc, StoreUtilSvc, ControlSvc) {
   $scope.mode = StoreUtilSvc.resourceMode();
   $scope.storeUtils = StoreUtilSvc;
 
@@ -40,9 +40,27 @@ aproxControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location',
     timeout_seconds: '',
     cache_timeout_seconds: '',
   };
+  
+  $scope.controls = function( store ){
+    $scope.store = store;
+    
+    ControlSvc.addControlHrefs($scope, 'remote', $scope.raw.name, $scope.mode);
+    ControlSvc.addStoreControls($scope, $location, 'remote', RemoteSvc, StoreUtilSvc, {
+      save: function(scope){
+        if ( scope.is_passthrough ){
+          delete scope.store.cache_timeout_seconds;
+        }
+        else{
+          scope.store.cache_timeout_seconds = StoreUtilSvc.durationToSeconds(scope.raw.cache_timeout_seconds);
+        }
+    
+        scope.store.timeout_seconds = StoreUtilSvc.durationToSeconds(scope.raw.timeout_seconds);
+      },
+    });
+  };
 
   if ( $scope.mode == 'edit' ){
-    $scope.store = RemoteSvc.get({name: $routeParams.name}, function(store){
+    RemoteSvc.resource.get({name: $routeParams.name}, function(store){
       $scope.raw.name = StoreUtilSvc.nameFromKey(store.key);
       $scope.raw.storeHref = StoreUtilSvc.storeHref(store.key);
       $scope.raw.cache_timeout_seconds = StoreUtilSvc.secondsToDuration(store.cache_timeout_seconds);
@@ -60,20 +78,23 @@ aproxControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location',
       useAuth = store.user !== undefined || useAuth;
 
       $scope.raw.use_auth = useAuth;
+      
+      $scope.controls( store );
     });
   }
-  else if (scope.mode == 'new'){
+  else if ($scope.mode == 'new'){
     $scope.store = {
       url: '',
       timeout_seconds: 60,
       cache_timeout_seconds: 86400,
       is_passthrough: false
     };
+    
+    $scope.controls( $scope.store );
   }
   else{
-    $scope.store = RemoteSvc.get({name: $routeParams.name}, function(store){
+    RemoteSvc.resource.get({name: $routeParams.name}, function(store){
       $scope.raw.name = StoreUtilSvc.nameFromKey(store.key);
-      $scope.raw.editHref = StoreUtilSvc.editHref(store.key);
       $scope.raw.storeHref = StoreUtilSvc.storeHref(store.key);
       $scope.raw.description = StoreUtilSvc.defaultDescription(store.description);
 
@@ -89,59 +110,15 @@ aproxControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location',
       useAuth = store.user !== undefined || useAuth;
 
       $scope.raw.use_auth = useAuth;
+      
+      $scope.controls( store );
     });
   }
-
-  $scope.storeUtils = StoreUtilSvc;
-
-  $scope.save = function(){
-    if ( $scope.is_passthrough ){
-      delete $scope.store.cache_timeout_seconds;
-    }
-    else{
-      $scope.store.cache_timeout_seconds = StoreUtilSvc.durationToSeconds($scope.raw.cache_timeout_seconds);
-    }
-
-    $scope.store.timeout_seconds = StoreUtilSvc.durationToSeconds($scope.raw.timeout_seconds);
-
-    if ( $scope.editMode ){
-      RemoteSvc.update({name: $scope.raw.name}, $scope.store, function(){
-        $location.path( StoreUtilSvc.detailPath($scope.store.key) );
-      });
-    }
-    else{
-      $scope.store.key = StoreUtilSvc.formatKey('remote', $scope.raw.name);
-      RemoteSvc.create({}, $scope.store, function(){
-        $location.path( StoreUtilSvc.detailPath($scope.store.key) );
-      });
-    }
-  };
-
-  $scope.delete = function(){
-    if ( confirm( "Really delete '" + $scope.raw.name + "'??") )
-    {
-      RemoteSvc.delete({name: $scope.raw.name}, function(){
-        $location.path( '/remote' );
-      });
-    }
-    else{
-      $location.path( '/remote' );
-    }
-  };
-
-  $scope.cancel = function(){
-    if ( $scope.editMode ){
-      $location.path( StoreUtilSvc.detailPath($scope.store.key) );
-    }
-    else{
-      $location.path( '/remote' );
-    }
-  };
 
 }]);
 
 aproxControllers.controller('HostedListCtl', ['$scope', 'HostedSvc', 'StoreUtilSvc', function($scope, HostedSvc, StoreUtilSvc) {
-    $scope.listing = HostedSvc.query({}, function(listing){
+    $scope.listing = HostedSvc.resource.query({}, function(listing){
       for(var i=0; i<listing.items.length; i++){
         var item = listing.items[i];
         item.detailHref = StoreUtilSvc.detailHref(item.key);
@@ -156,7 +133,7 @@ aproxControllers.controller('HostedListCtl', ['$scope', 'HostedSvc', 'StoreUtilS
     $scope.orderProp = 'key';
   }]);
 
-aproxControllers.controller('HostedCtl', ['$scope', '$routeParams', '$location', 'HostedSvc', 'StoreUtilSvc', function($scope, $routeParams, $location, HostedSvc, StoreUtilSvc) {
+aproxControllers.controller('HostedCtl', ['$scope', '$routeParams', '$location', 'HostedSvc', 'StoreUtilSvc', 'ControlSvc', function($scope, $routeParams, $location, HostedSvc, StoreUtilSvc, ControlSvc) {
   $scope.mode = StoreUtilSvc.resourceMode();
   $scope.storeUtils = StoreUtilSvc;
 
@@ -164,11 +141,37 @@ aproxControllers.controller('HostedCtl', ['$scope', '$routeParams', '$location',
     name: '',
     snapshot_timeout_seconds: '',
   };
+  
+  $scope.showSnapshotTimeout = function(store){
+    return store.allow_snapshots;
+  };
+  
+  $scope.allowUploads = function(store){
+    return store.allow_snapshots || store.allow_releases;
+  };
+  
+  $scope.controls = function( store ){
+    $scope.store = store;
+    
+    ControlSvc.addControlHrefs($scope, 'hosted', $scope.raw.name, $scope.mode);
+    ControlSvc.addStoreControls($scope, $location, 'hosted', HostedSvc, StoreUtilSvc, {
+      save: function(scope){
+        if (!$scope.store.allow_snapshots){
+          delete $scope.store.snapshotTimeoutSeconds;
+        }
+        else{
+          $scope.store.snapshotTimeoutSeconds = StoreUtilSvc.durationToSeconds($scope.raw.snapshotTimeoutSeconds);
+        }
+      },
+    });
+  };
 
   if ( $scope.mode == 'edit' ){
-    $scope.store = HostedSvc.get({name: $routeParams.name}, function(store){
+    HostedSvc.resource.get({name: $routeParams.name}, function(store){
       $scope.raw.name = $scope.storeUtils.nameFromKey(store.key);
       $scope.raw.snapshotTimeoutSeconds = StoreUtilSvc.secondsToDuration(store.snapshotTimeoutSeconds);
+      
+      $scope.controls( store );
     });
   }
   else if($scope.mode == 'new'){
@@ -177,72 +180,22 @@ aproxControllers.controller('HostedCtl', ['$scope', '$routeParams', '$location',
       allow_snapshots: true,
       snapshotTimeoutSeconds: 86400,
     };
+    
+    $scope.controls( $scope.store );
   }
   else{
-    $scope.store = HostedSvc.get({name: $routeParams.name}, function(store){
+    HostedSvc.resource.get({name: $routeParams.name}, function(store){
       $scope.raw.name = StoreUtilSvc.nameFromKey(store.key);
       $scope.raw.storeHref = StoreUtilSvc.storeHref(store.key);
-      $scope.raw.editHref = StoreUtilSvc.editHref(store.key);
       $scope.raw.description = StoreUtilSvc.defaultDescription(store.description);
+      
+      $scope.controls(store);
     });
-    
-    $scope.storeUtils = StoreUtilSvc;
   }
-
-  $scope.showSnapshotTimeout = function(store){
-    return store.allow_snapshots;
-  };
-  
-  $scope.allowUploads = function(store){
-    return store.allow_snapshots || store.allow_releases;
-  };
-
-  $scope.save = function(){
-    if (!$scope.store.allow_snapshots){
-      delete $scope.store.snapshotTimeoutSeconds;
-    }
-    else{
-      $scope.store.snapshotTimeoutSeconds = StoreUtilSvc.durationToSeconds($scope.raw.snapshotTimeoutSeconds);
-    }
-
-    if ( $scope.editMode ){
-      HostedSvc.update({name: $scope.raw.name}, $scope.store, function(){
-        $location.path( StoreUtilSvc.detailPath($scope.store.key) );
-      });
-    }
-    else{
-      $scope.store.key = StoreUtilSvc.formatKey('hosted', $scope.raw.name);
-      HostedSvc.create({}, $scope.store, function(){
-        $location.path( StoreUtilSvc.detailPath($scope.store.key) );
-      });
-    }
-  };
-
-  $scope.delete = function(){
-    if ( confirm( "Really delete '" + $scope.raw.name + "'??") )
-    {
-      HostedSvc.delete({name: $scope.raw.name}, function(){
-        $location.path( '/hosted' );
-      });
-    }
-    else{
-      $location.path( '/hosted' );
-    }
-  };
-
-  $scope.cancel = function(){
-    if ( $scope.editMode ){
-      $location.path( StoreUtilSvc.detailPath($scope.store.key) );
-    }
-    else{
-      $location.path( '/hosted' );
-    }
-  };
-
 }]);
 
 aproxControllers.controller('GroupListCtl', ['$scope', 'GroupSvc', 'StoreUtilSvc', function($scope, GroupSvc, StoreUtilSvc) {
-    $scope.listing = GroupSvc.query({}, function(listing){
+    $scope.listing = GroupSvc.resource.query({}, function(listing){
       for(var i=0; i<listing.items.length; i++){
         var item = listing.items[i];
         item.detailHref = StoreUtilSvc.detailHref(item.key);
@@ -256,7 +209,7 @@ aproxControllers.controller('GroupListCtl', ['$scope', 'GroupSvc', 'StoreUtilSvc
     $scope.orderProp = 'key';
   }]);
 
-aproxControllers.controller('GroupCtl', ['$scope', '$routeParams', '$location', 'GroupSvc', 'StoreUtilSvc', 'AllEndpointsSvc', function($scope, $routeParams, $location, GroupSvc, StoreUtilSvc, AllEndpointsSvc) {
+aproxControllers.controller('GroupCtl', ['$scope', '$routeParams', '$location', 'GroupSvc', 'StoreUtilSvc', 'ControlSvc', 'AllEndpointsSvc', function($scope, $routeParams, $location, GroupSvc, StoreUtilSvc, ControlSvc, AllEndpointsSvc) {
   $scope.mode = StoreUtilSvc.resourceMode();
   $scope.storeUtils = StoreUtilSvc;
 
@@ -265,21 +218,39 @@ aproxControllers.controller('GroupCtl', ['$scope', '$routeParams', '$location', 
     available: [],
     constituentHrefs: {},
   };
+  
+  $scope.controls = function(store){
+    $scope.store = store;
+    
+    AllEndpointsSvc.resource.query(function(listing){
+      $scope.raw.available = StoreUtilSvc.sortEndpoints( listing.items );
+    });
+
+    ControlSvc.addControlHrefs($scope, 'group', $scope.raw.name, $scope.mode);
+    ControlSvc.addStoreControls($scope, $location, 'group', GroupSvc, StoreUtilSvc);
+  };
 
   if ( $scope.mode == 'edit' ){
-    $scope.store = GroupSvc.get({name: $routeParams.name}, function(store){
+    GroupSvc.resource.get({name: $routeParams.name}, function(store){
       $scope.raw.name = $scope.storeUtils.nameFromKey(store.key);
+      
+      if ( !store.constituents ){
+        store.constituents = [];
+      }
+      
+      $scope.controls(store);
     });
   }
   else if ($scope.mode == 'new'){
     $scope.store = {
       constituents: [],
     };
+    
+    $scope.controls($scope.store);
   }
   else{
-    $scope.store = GroupSvc.get({name: $routeParams.name}, function(store){
+    GroupSvc.resource.get({name: $routeParams.name}, function(store){
       $scope.raw.name = StoreUtilSvc.nameFromKey(store.key);
-      $scope.raw.editHref = StoreUtilSvc.editHref(store.key);
       $scope.raw.storeHref = StoreUtilSvc.storeHref(store.key);
       $scope.raw.description = StoreUtilSvc.defaultDescription(store.description);
 
@@ -289,48 +260,10 @@ aproxControllers.controller('GroupCtl', ['$scope', '$routeParams', '$location', 
           detailHref: StoreUtilSvc.detailHref(item),
         };
       }
+      
+      $scope.controls(store);
     });
   }
-
-  AllEndpointsSvc.query(function(listing){
-    $scope.raw.available = StoreUtilSvc.sortEndpoints( listing.items );
-  });
-
-  $scope.save = function(){
-    if ( $scope.editMode ){
-      GroupSvc.update({name: $scope.raw.name}, $scope.store, function(){
-        $location.path( StoreUtilSvc.detailPath($scope.store.key) );
-      });
-    }
-    else{
-      $scope.store.key = StoreUtilSvc.formatKey('group', $scope.raw.name);
-      GroupSvc.create({}, $scope.store, function(){
-        $location.path( StoreUtilSvc.detailPath($scope.store.key) );
-      });
-    }
-  };
-
-  $scope.delete = function(){
-    if ( confirm( "Really delete '" + $scope.raw.name + "'??") )
-    {
-      GroupSvc.delete({name: $scope.raw.name}, function(){
-        $location.path( '/group' );
-      });
-    }
-    else{
-      $location.path( '/group' );
-    }
-  };
-
-  $scope.cancel = function(){
-    if ( $scope.editMode ){
-      $location.path( StoreUtilSvc.detailPath($scope.store.key) );
-    }
-    else{
-      $location.path( '/group' );
-    }
-  };
-
 }]);
 
 aproxControllers.controller('NfcController', ['$scope', '$routeParams', '$location', 'NfcSvc', 'StoreUtilSvc', 'AllEndpointsSvc', 
@@ -340,7 +273,7 @@ aproxControllers.controller('NfcController', ['$scope', '$routeParams', '$locati
   };
   
   $scope.clearAllNFC = function(){
-    NfcSvc.deleteAll();
+    NfcSvc.resource.deleteAll();
     $location.path('/nfc');
   };
   
@@ -352,7 +285,7 @@ aproxControllers.controller('NfcController', ['$scope', '$routeParams', '$locati
     var name=StoreUtilSvc.nameFromKey(key);
     var type = StoreUtilSvc.typeFromKey(key);
     
-    NfcSvc.delete({name: name, type: type},
+    NfcSvc.resource.delete({name: name, type: type},
       function(){
         $scope.message = {type: 'OK', message: 'Cleared NFC for ' + key + "'"};
 //        alert( "NFC for " + key + " has been cleared!");
@@ -375,7 +308,7 @@ aproxControllers.controller('NfcController', ['$scope', '$routeParams', '$locati
     var name=StoreUtilSvc.nameFromKey(key);
     var type = StoreUtilSvc.typeFromKey(key);
     
-    NfcSvc.delete({name: name, type: type, path: path},
+    NfcSvc.resource.delete({name: name, type: type, path: path},
       function(){
         $scope.message = {type: 'OK', message: 'Cleared NFC for ' + key + "', path: " + path};
 //        alert( "NFC for: " + key + ", path: " + path + " has been cleared!" );
@@ -406,7 +339,7 @@ aproxControllers.controller('NfcController', ['$scope', '$routeParams', '$locati
     }
   };
   
-  AllEndpointsSvc.query(function(listing){
+  AllEndpointsSvc.resource.query(function(listing){
     var available = [];
     listing.items.each(function(item){
       item.key = StoreUtilSvc.formatKey(item.type, item.name);
@@ -421,7 +354,7 @@ aproxControllers.controller('NfcController', ['$scope', '$routeParams', '$locati
 //    alert( "showing all NFC entries");
     delete $scope.currentKey;
     
-    NfcSvc.query({}, function(nfc){
+    NfcSvc.resource.query({}, function(nfc){
       nfc.sections.each(function(section){
         section.label = StoreUtilSvc.keyLabel(section.key);
         section.paths.sort();
@@ -439,7 +372,7 @@ aproxControllers.controller('NfcController', ['$scope', '$routeParams', '$locati
       
 //      alert( "showing NFC entries for: " + $scope.currentKey);
       
-      NfcSvc.get({type:routeType, name:routeName}, function(nfc){
+      NfcSvc.resource.get({type:routeType, name:routeName}, function(nfc){
         nfc.sections.each(function(section){
           section.label = StoreUtilSvc.keyLabel(section.key);
           section.paths.sort();
@@ -452,6 +385,6 @@ aproxControllers.controller('NfcController', ['$scope', '$routeParams', '$locati
 }]);
 
 aproxControllers.controller('FooterCtl', ['$scope', 'FooterSvc', function($scope, FooterSvc){
-    $scope.stats = FooterSvc.query();
+    $scope.stats = FooterSvc.resource.query();
   }]);
 

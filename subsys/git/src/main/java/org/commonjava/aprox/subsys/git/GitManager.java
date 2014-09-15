@@ -1,5 +1,6 @@
 package org.commonjava.aprox.subsys.git;
 
+import static org.apache.commons.lang.StringUtils.isEmpty;
 import static org.apache.commons.lang.StringUtils.join;
 
 import java.io.File;
@@ -350,35 +351,39 @@ public class GitManager
 
             final String filepath = relativize( f );
 
-            pw.setTreeFilter( AndTreeFilter.create( PathFilter.create( filepath ), TreeFilter.ANY_DIFF ) );
-
-            final PlotCommitList<PlotLane> cl = new PlotCommitList<>();
-            cl.source( pw );
-            if ( cl.size() < start )
+            if ( !isEmpty( filepath ) && !filepath.equals( "/" ) )
             {
-                return Collections.emptyList();
-            }
-
-            int to;
-            if ( length < 0 )
-            {
-                to = cl.size();
+                pw.setTreeFilter( AndTreeFilter.create( PathFilter.create( filepath ), TreeFilter.ALL ) );
             }
             else
             {
-                to = start + length - 1;
+                pw.setTreeFilter( TreeFilter.ALL );
             }
 
-            if ( cl.size() < to )
-            {
-                to = cl.size() - 1;
-            }
-
-            final List<PlotCommit<PlotLane>> commits = cl.subList( start, to );
             final List<ChangeSummary> changelogs = new ArrayList<ChangeSummary>();
-            for ( final PlotCommit<PlotLane> commit : commits )
+            int count = 0;
+            final int stop = length > 0 ? length : 0;
+            RevCommit commit = null;
+            while ( ( commit = pw.next() ) != null && ( stop < 1 || count < stop ) )
             {
-                changelogs.add( toChangeSummary( commit ) );
+                if ( count < start )
+                {
+                    count++;
+                    continue;
+                }
+
+                changelogs.add( new ChangeSummary( commit.getAuthorIdent()
+                                                         .getName(), commit.getFullMessage() ) );
+                count++;
+            }
+
+            if ( length < -1 )
+            {
+                final int remove = ( -1 * length ) - 1;
+                for ( int i = 0; i < remove; i++ )
+                {
+                    changelogs.remove( changelogs.size() - 1 );
+                }
             }
 
             return changelogs;

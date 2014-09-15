@@ -1,13 +1,5 @@
 <div class="container-fluid" ng-controller="RemoteCtl">
-    <div class="control-panel">
-        <div class="cp-row">
-          <button name="save" ng-click="save()" class="cp-button">Save</button>
-          <button name="cancel" ng-click="cancel()" class="cp-button">Cancel</button>
-          <button name="del" ng-click="delete()" class="del-button cp-button">Delete</button>
-        </div>
-        <div class="cp-row cp-debug">
-          <input type="checkbox" ng-model="enableDebug" ng-init="checked=false" /> Debug Data
-        </div>
+    <div class="control-panel" ng-include="'partials/includes/store-control-panel.html'">
     </div>
     <div class="content-panel">
       <table class="detail-table">
