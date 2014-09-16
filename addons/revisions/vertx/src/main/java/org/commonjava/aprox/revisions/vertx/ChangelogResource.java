@@ -4,6 +4,7 @@ import static org.commonjava.aprox.bind.vertx.util.PathParam.name;
 import static org.commonjava.aprox.bind.vertx.util.PathParam.type;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -84,6 +85,8 @@ public class ChangelogResource
                    .ok()
                    .jsonEntity( new ChangeSummaryDTO( dataChangeLog ), objectMapper )
                    .send();
+
+            logger.info( "\n\n\n\n\n\n{} Sent changelog for: {}\n\n{}\n\n\n\n\n\n\n", new Date(), key, dataChangeLog );
         }
         catch ( final GitSubsystemException e )
         {

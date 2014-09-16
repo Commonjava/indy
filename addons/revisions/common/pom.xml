@@ -66,6 +66,7 @@
             <configuration>
               <descriptorRefs>
                 <descriptorRef>confset</descriptorRef>
+                <descriptorRef>uiset</descriptorRef>
               </descriptorRefs>
             </configuration>
           </execution>

@@ -25,6 +25,7 @@ aproxServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
         console.log(scope.confirmLabel + ": cancelled");
       });
     },
+    
     addControlHrefs: function(scope, storeType, storeName, mode){
       scope.raw.backHref='#/' + storeType;
       if (mode == 'view'){
@@ -32,6 +33,7 @@ aproxServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
         scope.raw.editHref='#/' + storeType + '/edit/' + storeName;
       }
     },
+    
     addStoreControls: function(scope, location, storeType, storeService, StoreUtilSvc, fixups){
       var self=this;
       

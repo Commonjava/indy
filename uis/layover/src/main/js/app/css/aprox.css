@@ -256,12 +256,39 @@ li.option{
 pre{
 }
 
-.detail-table{
+.detail-table,
+.detail-container {
+  width: 80%;
   margin-top: 20px;
+}
+
+.left-and-right {
+	
+}
+
+.detail-table>caption,
+.detail-container-caption {
+	font-weight: bold;
+	margin-bottom: 20px;
 }
 
 td.detail-value{
   text-align: left;
+}
+
+.detail-group-start {
+  border-top: 1px solid black;
+  margin-top: 10px;
+  padding-top: 5px;
+}
+
+.detail-group-start,
+.detail-item-notend {
+  margin-bottom: 5px;
+}
+
+.detail-group-end{
+	margin-bottom: 10px;
 }
 
 ol.detail-edit-list,

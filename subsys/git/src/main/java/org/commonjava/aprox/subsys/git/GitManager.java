@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -372,8 +373,7 @@ public class GitManager
                     continue;
                 }
 
-                changelogs.add( new ChangeSummary( commit.getAuthorIdent()
-                                                         .getName(), commit.getFullMessage() ) );
+                changelogs.add( toChangeSummary( commit ) );
                 count++;
             }
 
@@ -394,10 +394,10 @@ public class GitManager
         }
     }
 
-    private ChangeSummary toChangeSummary( final PlotCommit<PlotLane> commit )
+    private ChangeSummary toChangeSummary( final RevCommit commit )
     {
         return new ChangeSummary( commit.getAuthorIdent()
-                                        .getName(), commit.getFullMessage() );
+                                        .getName(), commit.getFullMessage(), new Date( commit.getCommitTime() ) );
     }
 
     public GitManager pullUpdates()
