@@ -7,6 +7,16 @@
 		      <select ng-model="form.key" ng-selected="form.key" ng-options="a.key as a.label for a in form.available">
 		      </select>
 		    </div>
+		  </div>
+      <div class="cp-row">
+        <div class="cp-col">
+          <span class="label">Start:</span><input size="3" ng-model="form.start" />
+        </div>
+        <div class="cp-col">
+          <span class="label">Count:</span><input size="3" ng-model="form.count" />
+        </div>
+      </div>
+      <div class="cp-row">
 	       <div class="cp-col">
 	         <button class="cp-button" ng-click="change()">Retrieve</button>
 	       </div>
@@ -29,16 +39,16 @@
 		    <div ng-repeat="change in form.changes" class="detail-group-container" ng-controller="StoreChangelogEntryCtl">
 	        <div ng-click="toggleSummary()" class="detail-field detail-group-start left-and-right">
 	          <div class="left-col">
-	            <span class="label">User:</span>
+	            <span class="detail-label">User:</span>
 	            <span class="detail-value">{{change.user}}</span>
 	          </div>
 	          <div class="right-col">
-	            <span class="label">Date:</span>
+	            <span class="detail-label">Date:</span>
 	            <span class="detail-value">{{change.datestamp}}</span>
 	          </div>
 	        </div>
 	        <div ng-click="toggleSummary()" ng-if="display" class="detail-field detail-group-end">
-	          <span class="label">Summary:</span>
+	          <span class="detail-label">Summary:</span>
 	          <span class="detail-value">
 	            <pre>{{change.summary}}</pre>
 	          </span>

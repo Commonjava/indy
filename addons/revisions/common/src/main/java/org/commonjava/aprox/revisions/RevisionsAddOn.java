@@ -16,9 +16,7 @@ public class RevisionsAddOn
     implements AproxAddOn
 {
 
-    private static final String ROUTE_CHANGELOG = "/revisions/changelog/store";
-
-    private static final String ROUTE_CHANGELOG_VIEW = "/revisions/changelog/store/:type/:name";
+    private static final String ROUTE_CHANGELOG = "/revisions/changelog/stores";
 
     private AproxAddOnID id;
 
@@ -32,8 +30,6 @@ public class RevisionsAddOn
                 new AproxAddOnID().withName( "Revisions" )
                                   .withInitJavascriptHref( "revisions/js/revisions.js" )
                                   .withRoute( new UIRoute().withRoute( ROUTE_CHANGELOG )
-                                                           .withTemplateHref( "revisions/partials/store-changelog.html" ) )
-                                  .withRoute( new UIRoute().withRoute( ROUTE_CHANGELOG_VIEW )
                                                            .withTemplateHref( "revisions/partials/store-changelog.html" ) )
                                   .withSection( new UISection().withName( "Store Changelogs" )
                                                                .withRoute( ROUTE_CHANGELOG ) );

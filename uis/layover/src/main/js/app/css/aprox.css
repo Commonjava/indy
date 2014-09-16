@@ -1,33 +1,9 @@
-/* START: sticky footer */
-*{
-  margin: 0;
-}
-html, body{
-  height: 100%;
-}
-
-.content-wrapper{
-  min-height: 100%;
-  height: auto !important;
-  height: 100%;
-  margin: 0 auto -4em;
-}
-
-.footer-push{
-  height: 2.75em;
-}
-
-footer{
-  height: 2.75em;
-}
-/* END: sticky footer */
-
 /* brought in from monorail UI */
 body{
   font-family: sans-serif;
 }
 
-.product-name, .navbar-content, .items-label, .button{
+.product-name, .navbar-content{
   font-variant: small-caps;
 }
 
@@ -48,9 +24,6 @@ body{
 
 .menu > li {
   display: inline;
-  border: 1px solid #333;
-  border-top: none;
-  border-bottom: none;
   padding: 5px;
   margin: 0px;
   margin-left: -6px;
@@ -58,7 +31,6 @@ body{
 
 .menu a.button{
   text-decoration: none;
-  font-size: 1.1em;
 }
 
 .vdiv{
@@ -70,16 +42,10 @@ body{
   margin-right: 5px;
 }
 
-.nav-button:hover{
-  color: white;
-  background-color: #333;
-  font-size: 1.1em;
-}
-
 .button:hover,
 .cp-button:hover,
 .nav-button:hover{
-  font-weight: bold;
+  color: blue;
 }
 
 .del-button:hover{
@@ -157,6 +123,10 @@ td{
   margin-bottom: 10px;
 }
 
+.cp-col{
+	display: inline-block;
+}
+
 .inline{
   display: inline;
 }
@@ -185,7 +155,6 @@ td{
 
 .key{
   font-weight: bold;
-  font-size: 1.1em;
   font-family: sans-serif;
 }
 
@@ -299,7 +268,7 @@ li.detail-edit-list{
   min-width: 40%;
 }
 
-label, caption, .label{
+label, caption, .label, .detail-label{
   font-weight: bold;
   text-align: left;
 }
