@@ -348,6 +348,7 @@ public class GitManager
 
             final PlotWalk pw = new PlotWalk( repo );
             final RevCommit rc = pw.parseCommit( oid );
+            toChangeSummary( rc );
             pw.markStart( rc );
 
             final String filepath = relativize( f );
@@ -363,7 +364,7 @@ public class GitManager
 
             final List<ChangeSummary> changelogs = new ArrayList<ChangeSummary>();
             int count = 0;
-            final int stop = length > 0 ? length : 0;
+            final int stop = length > 0 ? length + 1 : 0;
             RevCommit commit = null;
             while ( ( commit = pw.next() ) != null && ( stop < 1 || count < stop ) )
             {

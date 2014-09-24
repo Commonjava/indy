@@ -64,10 +64,6 @@
       <artifactId>maven-repository-metadata</artifactId>
     </dependency>
     
-    <dependency>
-      <groupId>org.commonjava.web</groupId>
-      <artifactId>json-serialization</artifactId>
-    </dependency>
     
     <dependency>
       <groupId>org.hamcrest</groupId>
@@ -78,25 +74,8 @@
     	<artifactId>weld-se-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.qarqas</groupId>
-      <artifactId>qarqas-test-harness</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.web</groupId>
-      <artifactId>json-test-harness</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-db-memory</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.shelflife</groupId>
-      <artifactId>shelflife-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.shelflife</groupId>
-      <artifactId>shelflife-store-memory</artifactId>
       <scope>test</scope>
     </dependency>
     <!-- <dependency>
@@ -131,5 +110,35 @@
       <groupId>org.commonjava.maven.galley</groupId>
       <artifactId>galley-maven</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.quartz-scheduler</groupId>
+      <artifactId>quartz</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.derby</groupId>
+      <artifactId>derby</artifactId>
+    </dependency>
   </dependencies>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>confset</id>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <descriptorRefs>
+                <descriptorRef>confset</descriptorRef>
+              </descriptorRefs>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

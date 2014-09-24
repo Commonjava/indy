@@ -21,7 +21,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
+import org.commonjava.aprox.depgraph.dto.ProjectListing;
 import org.commonjava.aprox.depgraph.util.PresetParameterParser;
 import org.commonjava.aprox.depgraph.util.RequestAdvisor;
 import org.commonjava.aprox.util.ApplicationStatus;
@@ -34,10 +34,11 @@ import org.commonjava.maven.atlas.ident.version.InvalidVersionSpecificationExcep
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.dto.GraphExport;
 import org.commonjava.maven.cartographer.ops.GraphOps;
-import org.commonjava.web.json.model.Listing;
-import org.commonjava.web.json.ser.JsonSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ApplicationScoped
 public class GraphController
@@ -48,8 +49,7 @@ public class GraphController
     private GraphOps ops;
 
     @Inject
-    @DepgraphSpecific
-    private JsonSerializer serializer;
+    private ObjectMapper serializer;
 
     @Inject
     private RequestAdvisor requestAdvisor;
@@ -109,13 +109,18 @@ public class GraphController
                 errors = ops.getAllProjectErrors( params );
             }
 
-            return errors == null ? null : serializer.toString( errors );
+            return errors == null ? null : serializer.writeValueAsString( errors );
         }
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException( "Failed to lookup resolution errors for: {}. Reason: {}", e,
                                               ref == null ? "all projects" : ref, e.getMessage() );
         }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to serialize to JSON. Reason: %s", e, e.getMessage() );
+        }
+
     }
 
     public String incomplete( final String gav, final String workspaceId, final Map<String, String[]> params )
@@ -140,12 +145,17 @@ public class GraphController
 
             final Set<ProjectVersionRef> result = ops.getIncomplete( viewParams );
 
-            return result == null ? null : serializer.toString( new Listing<ProjectVersionRef>( result ) );
+            return result == null ? null
+                            : serializer.writeValueAsString( new ProjectListing<ProjectVersionRef>( result ) );
         }
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException( "Failed to lookup incomplete subgraphs for: {}. Reason: {}", e,
                                               ref == null ? "all projects" : ref, e.getMessage() );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to serialize to JSON. Reason: %s", e, e.getMessage() );
         }
     }
 
@@ -171,12 +181,17 @@ public class GraphController
 
             final Set<ProjectVersionRef> result = ops.getVariable( viewParams );
 
-            return result == null ? null : serializer.toString( new Listing<ProjectVersionRef>( result ) );
+            return result == null ? null
+                            : serializer.writeValueAsString( new ProjectListing<ProjectVersionRef>( result ) );
         }
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException( "Failed to lookup variable subgraphs for: {}. Reason: {}", e,
                                               ref == null ? "all projects" : ref, e.getMessage() );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to serialize to JSON. Reason: %s", e, e.getMessage() );
         }
     }
 
@@ -190,7 +205,8 @@ public class GraphController
         {
             final List<ProjectVersionRef> ancestry = ops.getAncestry( root, params );
 
-            return ancestry == null ? null : serializer.toString( new Listing<ProjectVersionRef>( ancestry ) );
+            final ProjectListing<ProjectVersionRef> listing = new ProjectListing<>( ancestry );
+            return ancestry == null ? null : serializer.writeValueAsString( listing );
         }
         catch ( final CartoDataException e )
         {
@@ -202,6 +218,10 @@ public class GraphController
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST,
                                               "Invalid version in request: '{}'. Reason: {}", e, version,
                                               e.getMessage() );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to serialize to JSON. Reason: %s", e, e.getMessage() );
         }
     }
 
@@ -221,7 +241,7 @@ public class GraphController
 
             final BuildOrder buildOrder = ops.getBuildOrder( ref, params );
 
-            return buildOrder == null ? null : serializer.toString( buildOrder );
+            return buildOrder == null ? null : serializer.writeValueAsString( buildOrder );
         }
         catch ( final CartoDataException e )
         {
@@ -233,6 +253,10 @@ public class GraphController
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST,
                                               "Invalid version in request: '{}'. Reason: {}", e, version,
                                               e.getMessage() );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to serialize to JSON. Reason: %s", e, e.getMessage() );
         }
     }
 
@@ -253,7 +277,7 @@ public class GraphController
 
             if ( graph != null )
             {
-                return serializer.toString( graph );
+                return serializer.writeValueAsString( graph );
             }
             else
             {
@@ -270,6 +294,10 @@ public class GraphController
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST,
                                               "Invalid version in request: '{}'. Reason: {}", e, version,
                                               e.getMessage() );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to serialize to JSON. Reason: %s", e, e.getMessage() );
         }
     }
 

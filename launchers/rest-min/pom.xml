@@ -35,10 +35,6 @@
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-filer-default</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.commonjava.shelflife</groupId>
-      <artifactId>shelflife-store-flat</artifactId>
-    </dependency>
   </dependencies>
   
   <build>

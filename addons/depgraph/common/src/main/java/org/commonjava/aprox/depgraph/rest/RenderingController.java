@@ -30,7 +30,6 @@ import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.aprox.depgraph.dto.WebBomDTO;
 import org.commonjava.aprox.depgraph.dto.WebOperationConfigDTO;
-import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.depgraph.util.ConfigDTOHelper;
 import org.commonjava.aprox.depgraph.util.PresetParameterParser;
 import org.commonjava.aprox.depgraph.util.RequestAdvisor;
@@ -53,9 +52,11 @@ import org.commonjava.maven.cartographer.ops.GraphRenderingOps;
 import org.commonjava.maven.cartographer.ops.ResolveOps;
 import org.commonjava.maven.cartographer.preset.CommonPresetParameters;
 import org.commonjava.maven.cartographer.preset.PresetSelector;
-import org.commonjava.web.json.ser.JsonSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ApplicationScoped
 // FIXME: DTO Validations!!
@@ -81,8 +82,7 @@ public class RenderingController
     private PresetParameterParser presetParamParser;
 
     @Inject
-    @DepgraphSpecific
-    private JsonSerializer serializer;
+    private ObjectMapper serializer;
 
     @Inject
     private ResolveOps resolveOps;
@@ -110,7 +110,15 @@ public class RenderingController
         throws AproxWorkflowException
     {
         final File workBasedir = config.getWorkBasedir();
-        final String dtoJson = serializer.toString( dto );
+        String dtoJson;
+        try
+        {
+            dtoJson = serializer.writeValueAsString( dto );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to serialize to JSON: %s", e, e.getMessage() );
+        }
 
         final File out = new File( workBasedir, DigestUtils.md5Hex( dtoJson ) );
         workBasedir.mkdirs();

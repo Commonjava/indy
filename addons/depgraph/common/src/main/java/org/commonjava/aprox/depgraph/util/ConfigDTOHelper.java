@@ -23,15 +23,15 @@ import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.aprox.depgraph.dto.MetadataCollationDTO;
 import org.commonjava.aprox.depgraph.dto.WebBomDTO;
 import org.commonjava.aprox.depgraph.dto.WebOperationConfigDTO;
-import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.cartographer.dto.GraphComposition;
 import org.commonjava.maven.cartographer.preset.PresetSelector;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.spi.transport.LocationExpander;
-import org.commonjava.web.json.ser.JsonSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ApplicationScoped
 public class ConfigDTOHelper
@@ -40,8 +40,7 @@ public class ConfigDTOHelper
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    @DepgraphSpecific
-    private JsonSerializer serializer;
+    private ObjectMapper serializer;
 
     @Inject
     private PresetSelector presets;
@@ -72,7 +71,16 @@ public class ConfigDTOHelper
         throws AproxWorkflowException
     {
         logger.info( "Got configuration JSON:\n\n{}\n\n", json );
-        final WebOperationConfigDTO dto = serializer.fromString( json, WebOperationConfigDTO.class );
+        WebOperationConfigDTO dto;
+        try
+        {
+            dto = serializer.readValue( json, WebOperationConfigDTO.class );
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxWorkflowException( "Failed to deserialize DTO from JSON. Reason: %s", e, e.getMessage() );
+        }
+
         if ( dto == null )
         {
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "No configuration found in request body!" );
@@ -93,7 +101,15 @@ public class ConfigDTOHelper
     public GraphComposition readGraphComposition( final String json )
         throws AproxWorkflowException
     {
-        final GraphComposition dto = serializer.fromString( json, GraphComposition.class );
+        GraphComposition dto;
+        try
+        {
+            dto = serializer.readValue( json, GraphComposition.class );
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxWorkflowException( "Failed to deserialize DTO from JSON. Reason: %s", e, e.getMessage() );
+        }
 
         dto.resolveFilters( presets, config.getDefaultWebFilterPreset() );
 
@@ -131,7 +147,16 @@ public class ConfigDTOHelper
     public MetadataCollationDTO readCollationDTO( final String json )
         throws AproxWorkflowException
     {
-        final MetadataCollationDTO dto = serializer.fromString( json, MetadataCollationDTO.class );
+        MetadataCollationDTO dto;
+        try
+        {
+            dto = serializer.readValue( json, MetadataCollationDTO.class );
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxWorkflowException( "Failed to deserialize DTO from JSON. Reason: %s", e, e.getMessage() );
+        }
+
         if ( dto == null )
         {
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "No collation configuration found in request body!" );
@@ -169,7 +194,16 @@ public class ConfigDTOHelper
     public WebBomDTO readBomDTO( final String json )
         throws AproxWorkflowException
     {
-        final WebBomDTO dto = serializer.fromString( json, WebBomDTO.class );
+        WebBomDTO dto;
+        try
+        {
+            dto = serializer.readValue( json, WebBomDTO.class );
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxWorkflowException( "Failed to deserialize DTO from JSON. Reason: %s", e, e.getMessage() );
+        }
+
         if ( dto == null )
         {
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST,

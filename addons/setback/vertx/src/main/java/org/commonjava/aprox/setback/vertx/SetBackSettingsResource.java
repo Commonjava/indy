@@ -5,7 +5,6 @@ import javax.inject.Inject;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.vertx.util.PathParam;
 import org.commonjava.aprox.bind.vertx.util.ResponseUtils;
-import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.setback.rest.SetBackController;
@@ -17,17 +16,12 @@ import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.commonjava.vertx.vabr.types.Method;
-import org.commonjava.web.json.ser.JsonSerializer;
 import org.vertx.java.core.http.HttpServerRequest;
 
 @Handles( "/setback" )
 public class SetBackSettingsResource
     implements RequestHandler
 {
-
-    @Inject
-    @AproxData
-    private JsonSerializer serializer;
 
     @Inject
     private SetBackController controller;

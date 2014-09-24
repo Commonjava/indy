@@ -37,16 +37,6 @@
       <artifactId>hamcrest-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.shelflife</groupId>
-      <artifactId>shelflife-store-memory</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.web</groupId>
-      <artifactId>json-test-harness</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-db-memory</artifactId>
       <scope>test</scope>

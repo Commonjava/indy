@@ -26,7 +26,6 @@ import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.dto.AddOnListing;
 import org.commonjava.aprox.dto.EndpointViewListing;
-import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.spi.AproxAddOn;
 import org.commonjava.aprox.spi.AproxAddOnID;
@@ -35,9 +34,11 @@ import org.commonjava.aprox.subsys.template.AproxGroovyException;
 import org.commonjava.aprox.subsys.template.TemplatingEngine;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.UriFormatter;
-import org.commonjava.web.json.ser.JsonSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ApplicationScoped
 public class StatsController
@@ -59,8 +60,7 @@ public class StatsController
     private TemplatingEngine templates;
 
     @Inject
-    @AproxData
-    private JsonSerializer serializer;
+    private ObjectMapper serializer;
 
     @Inject
     private Instance<AproxAddOn> addonsInjected;
@@ -72,7 +72,7 @@ public class StatsController
     }
 
     public StatsController( final StoreDataManager dataManager, final TemplatingEngine templates,
-                            final JsonSerializer serializer, final AProxVersioning versioning,
+                            final ObjectMapper serializer, final AProxVersioning versioning,
                             final Set<AproxAddOn> addons )
     {
         this.dataManager = dataManager;
@@ -138,12 +138,17 @@ public class StatsController
     public String getActiveAddOnsJavascript()
         throws AproxWorkflowException
     {
-        final String json = serializer.toString( getActiveAddOns() );
         try
         {
+            final String json = serializer.writeValueAsString( getActiveAddOns() );
             return templates.render( ACTIVE_ADDONS_JS, Collections.<String, Object> singletonMap( ADDONS_KEY, json ) );
         }
         catch ( final AproxGroovyException e )
+        {
+            throw new AproxWorkflowException( "Failed to render javascript wrapper for active addons. Reason: %s", e,
+                                              e.getMessage() );
+        }
+        catch ( final JsonProcessingException e )
         {
             throw new AproxWorkflowException( "Failed to render javascript wrapper for active addons. Reason: %s", e,
                                               e.getMessage() );

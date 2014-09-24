@@ -38,7 +38,6 @@ import org.commonjava.aprox.content.StoreResource;
 import org.commonjava.aprox.core.dto.DirectoryListingDTO;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
@@ -50,7 +49,9 @@ import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
-import org.commonjava.web.json.ser.JsonSerializer;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ApplicationScoped
 public class ContentController
@@ -74,20 +75,19 @@ public class ContentController
     private TemplatingEngine templates;
 
     @Inject
-    @AproxData
-    private JsonSerializer serializer;
+    private ObjectMapper mapper;
 
     protected ContentController()
     {
     }
 
     public ContentController( final StoreDataManager storeManager, final ContentManager contentManager,
-                              final TemplatingEngine templates, final JsonSerializer serializer )
+                              final TemplatingEngine templates, final ObjectMapper mapper )
     {
         this.storeManager = storeManager;
         this.contentManager = contentManager;
         this.templates = templates;
-        this.serializer = serializer;
+        this.mapper = mapper;
     }
 
     public ApplicationStatus delete( final StoreType type, final String name, final String path )
@@ -230,7 +230,16 @@ public class ContentController
         final List<StoreResource> listed = getListing( key, path );
         if ( ApplicationContent.application_json.equals( acceptHeader ) )
         {
-            return serializer.toString( new DirectoryListingDTO( listed ) );
+            final DirectoryListingDTO dto = new DirectoryListingDTO( listed );
+            try
+            {
+                return mapper.writeValueAsString( dto );
+            }
+            catch ( final JsonProcessingException e )
+            {
+                throw new AproxWorkflowException( "Failed to render listing to JSON: %s. Reason: %s", e, dto,
+                                                  e.getMessage() );
+            }
         }
 
         final Map<String, Set<String>> listingUrls = new TreeMap<String, Set<String>>();

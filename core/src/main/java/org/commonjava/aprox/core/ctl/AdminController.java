@@ -17,8 +17,11 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
+import org.commonjava.aprox.action.start.AproxInitException;
 import org.commonjava.aprox.action.start.MigrationAction;
+import org.commonjava.aprox.action.start.StartupAction;
 import org.commonjava.aprox.audit.ChangeSummary;
+import org.commonjava.aprox.core.expire.ScheduleManager;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
@@ -29,8 +32,6 @@ import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.stats.AProxVersioning;
 import org.commonjava.aprox.util.ApplicationStatus;
-import org.commonjava.shelflife.ExpirationManager;
-import org.commonjava.shelflife.ExpirationManagerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,8 +43,10 @@ public class AdminController
     @Inject
     private StoreDataManager storeManager;
 
+    /* Injected to make sure this gets initialized up front. */
+    @SuppressWarnings( "unused" )
     @Inject
-    private ExpirationManager expirationManager;
+    private ScheduleManager scheduleManager;
 
     @Inject
     private AProxVersioning versioning;
@@ -51,15 +54,18 @@ public class AdminController
     @Inject
     private Instance<MigrationAction> migrationActions;
 
+    @Inject
+    private Instance<StartupAction> startupActions;
+
     protected AdminController()
     {
     }
 
-    public AdminController( final StoreDataManager storeManager, final ExpirationManager expirationManager,
+    public AdminController( final StoreDataManager storeManager, final ScheduleManager scheduleManager,
                             final AProxVersioning versioning )
     {
         this.storeManager = storeManager;
-        this.expirationManager = expirationManager;
+        this.scheduleManager = scheduleManager;
         this.versioning = versioning;
     }
 
@@ -124,12 +130,14 @@ public class AdminController
     }
 
     public void started()
+        throws AproxInitException
     {
         logger.info( "\n\n\n\n\n STARTING AProx\n    Version: {}\n    Built-By: {}\n    Commit-ID: {}\n    Built-On: {}\n\n\n\n\n",
                      versioning.getVersion(), versioning.getBuilder(), versioning.getCommitId(),
                      versioning.getTimestamp() );
 
         runMigrationActions();
+        runStartupActions();
 
         final ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, "Initializing default data." );
 
@@ -164,13 +172,6 @@ public class AdminController
 
                 storeManager.storeGroup( pub, summary, true );
             }
-
-            // make sure the expiration manager is running...
-            expirationManager.loadNextExpirations();
-        }
-        catch ( final ExpirationManagerException e )
-        {
-            throw new RuntimeException( "Failed to boot aprox components: " + e.getMessage(), e );
         }
         catch ( final ProxyDataException e )
         {
@@ -181,6 +182,7 @@ public class AdminController
     }
 
     private void runMigrationActions()
+        throws AproxInitException
     {
         boolean changed = false;
         if ( migrationActions != null )
@@ -189,7 +191,21 @@ public class AdminController
             for ( final MigrationAction action : migrationActions )
             {
                 logger.info( "Running migration action: '{}'", action.getId() );
-                changed = action.execute() || changed;
+                changed = action.migrate() || changed;
+            }
+        }
+    }
+
+    private void runStartupActions()
+        throws AproxInitException
+    {
+        if ( startupActions != null )
+        {
+            logger.info( "Running startup actions..." );
+            for ( final StartupAction action : startupActions )
+            {
+                logger.info( "Running startup action: '{}'", action.getId() );
+                action.start();
             }
         }
     }

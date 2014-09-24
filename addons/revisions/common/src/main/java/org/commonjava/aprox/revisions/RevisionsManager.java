@@ -5,6 +5,7 @@ import static org.apache.commons.lang.StringUtils.join;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -28,7 +29,7 @@ import org.slf4j.LoggerFactory;
 public class RevisionsManager
 {
 
-    private static final String[] DATA_DIR_GITIGNORES = { "depgraph", "shelflife" };
+    private static final String[] DATA_DIR_GITIGNORES = { "depgraph", "scheduler" };
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -120,13 +121,26 @@ public class RevisionsManager
         // FIXME: Return some sort of status
     }
 
-    public List<ChangeSummary> getDataChangeLog( final String path, final int start, final int length )
+    public List<ChangeSummary> getDataChangeLog( String path, final int start, final int length )
         throws GitSubsystemException
     {
+        final File basedir = dataFileManager.getDetachedDataBasedir();
+        if ( new File( path ).isAbsolute() )
+        {
+            if ( !path.startsWith( basedir.getPath() ) )
+            {
+                throw new GitSubsystemException( "Cannot reference path outside of data basedir." );
+            }
+
+            path = Paths.get( basedir.toURI() )
+                        .relativize( Paths.get( path ) )
+                        .toString();
+        }
+
         final File file;
         if ( isEmpty( path ) || path.equals( "/" ) )
         {
-            file = dataFileManager.getDetachedDataBasedir();
+            file = basedir;
         }
         else
         {

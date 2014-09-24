@@ -1,20 +1,25 @@
-import com.hazelcast.impl.management.DetectDeadlockRequest;
-
 <?xml version="1.0" encoding="UTF-8">
 <settings>
+<% def overridesCentral = false %>
 <!-- 
 This settings.xml for ${key} incorporates the following stores from AProx:<% allStores.each { %>
   * ${it.key}<% } %>
- -->
+ --><%
+allStores.each {
+  if ( it.name == 'central' ){
+    overridesCentral = true
+  }
+}
+%>
   <localRepository>${System.getProperty( "user.home" )}/.m2/repository-${key.type.singularEndpointName()}-${key.name}</localRepository>
-  <mirrors>
+<% if (!overridesCentral){ %>  <mirrors>
     <mirror>
       <mirrorOf>central</mirrorOf>
       <id>disabled-central</id>
       <url>http://not.used:99999/</url>
     </mirror>
-  </mirrors>
-  <profiles>
+  </mirrors><% } 
+%>  <profiles>
     <profile>
       <id>aprox-repos</id>
       <repositories><% remotes.each{ %>

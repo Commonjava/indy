@@ -10,6 +10,8 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.json;
 
+import com.fasterxml.jackson.core.io.SerializedString;
+
 public final class SerializationConstants
 {
 
@@ -17,44 +19,44 @@ public final class SerializationConstants
     {
     }
 
-    public static final String SOURCE_URIS = "source-uris";
+    public static final SerializedString SOURCE_URIS = new SerializedString( "source-uris" );
 
-    public static final String SOURCE_URI = "source-uri";
+    public static final SerializedString SOURCE_URI = new SerializedString( "source-uri" );
 
-    public static final String POM_LOCATION_URI = "pom-location-uri";
+    public static final SerializedString POM_LOCATION_URI = new SerializedString( "pom-location-uri" );
 
-    public static final String PROJECT_VERSION = "gav";
+    public static final SerializedString PROJECT_VERSION = new SerializedString( "gav" );
 
-    public static final String GAV = PROJECT_VERSION;
+    public static final SerializedString GAV = PROJECT_VERSION;
 
-    public static final String RELATIONSHIP_TYPE = "rel";
+    public static final SerializedString RELATIONSHIP_TYPE = new SerializedString( "rel" );
 
-    public static final String DECLARING_REF = "declaring";
+    public static final SerializedString DECLARING_REF = new SerializedString( "declaring" );
 
-    public static final String TARGET_REF = "target";
+    public static final SerializedString TARGET_REF = new SerializedString( "target" );
 
-    public static final String INDEX = "idx";
+    public static final SerializedString INDEX = new SerializedString( "idx" );
 
-    public static final String MANAGED = "managed";
+    public static final SerializedString MANAGED = new SerializedString( "managed" );
 
-    public static final String SCOPE = "scope";
+    public static final SerializedString SCOPE = new SerializedString( "scope" );
 
-    public static final String PLUGIN_REF = "plugin";
+    public static final SerializedString PLUGIN_REF = new SerializedString( "plugin" );
 
-    public static final String JSON_VERSION = "jsonVersion";
+    public static final SerializedString JSON_VERSION = new SerializedString( "jsonVersion" );
 
     public static final int CURRENT_JSON_VERSION = 1;
 
-    public static final String EPROJECT_KEY = "ekey";
+    public static final SerializedString EPROJECT_KEY = new SerializedString( "ekey" );
 
-    public static final String RELATIONSHIPS = "relationships";
+    public static final SerializedString RELATIONSHIPS = new SerializedString( "relationships" );
 
-    public static final String EPROFILES = "eprofiles";
+    public static final SerializedString EPROFILES = new SerializedString( "eprofiles" );
 
-    public static final String CYCLES = "cycles";
+    public static final SerializedString CYCLES = new SerializedString( "cycles" );
 
-    public static final String WEB_ROOTS = "gavs";
+    public static final SerializedString WEB_ROOTS = new SerializedString( "gavs" );
 
-    public static final String GAVS = WEB_ROOTS;
+    public static final SerializedString GAVS = WEB_ROOTS;
 
 }

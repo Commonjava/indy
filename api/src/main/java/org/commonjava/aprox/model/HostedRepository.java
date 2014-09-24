@@ -10,7 +10,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.model;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class HostedRepository
     extends ArtifactStore
@@ -20,10 +20,10 @@ public class HostedRepository
 
     private String storage;
 
-    @SerializedName( "allow_snapshots" )
+    @JsonProperty( "allow_snapshots" )
     private boolean allowSnapshots = false;
 
-    @SerializedName( "allow_releases" )
+    @JsonProperty( "allow_releases" )
     private boolean allowReleases = true;
 
     private int snapshotTimeoutSeconds;

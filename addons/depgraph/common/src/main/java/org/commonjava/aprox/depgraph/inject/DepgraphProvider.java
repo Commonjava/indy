@@ -13,17 +13,13 @@ package org.commonjava.aprox.depgraph.inject;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
-import org.commonjava.aprox.depgraph.json.DepgraphSerializationAdapter;
-import org.commonjava.aprox.model.io.StoreKeySerializer;
 import org.commonjava.maven.atlas.graph.RelationshipGraphException;
 import org.commonjava.maven.atlas.graph.RelationshipGraphFactory;
 import org.commonjava.maven.atlas.graph.spi.neo4j.FileNeo4jConnectionFactory;
-import org.commonjava.web.json.ser.JsonSerializer;
 
 @ApplicationScoped
 public class DepgraphProvider
@@ -34,8 +30,6 @@ public class DepgraphProvider
 
     private RelationshipGraphFactory graphFactory;
 
-    private JsonSerializer serializer;
-
     protected DepgraphProvider()
     {
     }
@@ -43,11 +37,11 @@ public class DepgraphProvider
     public DepgraphProvider( final AproxDepgraphConfig config )
     {
         this.config = config;
-        setup();
+        init();
     }
 
     @PostConstruct
-    public void setup()
+    public void init()
     {
         this.graphFactory =
             new RelationshipGraphFactory( new FileNeo4jConnectionFactory( config.getDataBasedir(), true ) );
@@ -64,21 +58,6 @@ public class DepgraphProvider
     public RelationshipGraphFactory getGraphFactory()
     {
         return graphFactory;
-    }
-
-    @Produces
-    @DepgraphSpecific
-    @Default
-    public synchronized JsonSerializer getJsonSerializer()
-    {
-        if ( serializer == null )
-        {
-            serializer =
-                new JsonSerializer( new StoreKeySerializer(), new DepgraphSerializationAdapter(),
-                                    new PrettyPrintAdapter() );
-        }
-
-        return serializer;
     }
 
 }

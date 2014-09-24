@@ -39,7 +39,6 @@ import javax.inject.Inject;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.aprox.depgraph.dto.WebOperationConfigDTO;
-import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.depgraph.util.ConfigDTOHelper;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.galley.CacheOnlyLocation;
@@ -57,9 +56,11 @@ import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferBatch;
-import org.commonjava.web.json.ser.JsonSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ApplicationScoped
 public class RepositoryController
@@ -75,8 +76,7 @@ public class RepositoryController
     private ResolveOps ops;
 
     @Inject
-    @DepgraphSpecific
-    private JsonSerializer serializer;
+    private ObjectMapper serializer;
 
     @Inject
     private TransferManager transferManager;
@@ -153,7 +153,14 @@ public class RepositoryController
             throw new AproxWorkflowException( "Failed to generate runtime repository. Reason: {}", e, e.getMessage() );
         }
 
-        return serializer.toString( result );
+        try
+        {
+            return serializer.writeValueAsString( result );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to serialize to JSON: %s", e, e.getMessage() );
+        }
     }
 
     public String getDownloadLog( final InputStream configStream, final String baseUri, final UriFormatter uriFormatter )

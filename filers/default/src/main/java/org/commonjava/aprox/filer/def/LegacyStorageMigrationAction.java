@@ -42,7 +42,7 @@ public class LegacyStorageMigrationAction
     }
 
     @Override
-    public boolean execute()
+    public boolean migrate()
     {
         final File basedir = config.getStorageRootDirectory();
         if ( !basedir.exists() )

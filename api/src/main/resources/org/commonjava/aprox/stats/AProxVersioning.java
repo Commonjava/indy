@@ -12,10 +12,7 @@ package org.commonjava.aprox.stats;
 
 import javax.inject.Singleton;
 
-import org.commonjava.web.json.ser.JsonAdapters;
-
 @Singleton
-@JsonAdapters( AProxVersioningAdapter.class )
 public class AProxVersioning
 {
     

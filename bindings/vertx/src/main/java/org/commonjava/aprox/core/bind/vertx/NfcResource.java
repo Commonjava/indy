@@ -3,7 +3,6 @@ package org.commonjava.aprox.core.bind.vertx;
 import static org.commonjava.aprox.bind.vertx.util.PathParam.name;
 import static org.commonjava.aprox.bind.vertx.util.PathParam.path;
 import static org.commonjava.aprox.bind.vertx.util.PathParam.type;
-import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.setStatus;
 import static org.commonjava.aprox.util.ApplicationStatus.OK;
@@ -15,7 +14,6 @@ import javax.inject.Inject;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.core.ctl.NfcController;
 import org.commonjava.aprox.core.dto.NotFoundCacheDTO;
-import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.util.ApplicationContent;
@@ -23,9 +21,12 @@ import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.commonjava.vertx.vabr.types.Method;
-import org.commonjava.web.json.ser.JsonSerializer;
+import org.commonjava.vertx.vabr.util.Respond;
 import org.vertx.java.core.MultiMap;
 import org.vertx.java.core.http.HttpServerRequest;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Handles( "/nfc" )
 public class NfcResource
@@ -36,8 +37,7 @@ public class NfcResource
     private NfcController controller;
 
     @Inject
-    @AproxData
-    private JsonSerializer serializer;
+    private ObjectMapper serializer;
 
     @Route( method = DELETE )
     public void clearAll( final HttpServerRequest request )
@@ -83,8 +83,18 @@ public class NfcResource
     {
         final NotFoundCacheDTO dto = controller.getAllMissing();
 
-        final String json = serializer.toString( dto );
-        formatOkResponseWithJsonEntity( request, json );
+        try
+        {
+            Respond.to( request )
+                   .jsonEntity( dto, serializer )
+                   .send();
+        }
+        catch ( final JsonProcessingException e )
+        {
+            Respond.to( request )
+                   .serverError( e, "Failed to serialize to JSON.", true )
+                   .send();
+        }
     }
 
     @Route( path = "/:type/:name", method = Method.GET, contentType = ApplicationContent.application_json )
@@ -98,12 +108,21 @@ public class NfcResource
         {
             final NotFoundCacheDTO dto = controller.getMissing( key );
 
-            final String json = serializer.toString( dto );
-            formatOkResponseWithJsonEntity( request, json );
+            Respond.to( request )
+                   .jsonEntity( dto, serializer )
+                   .send();
         }
         catch ( final AproxWorkflowException e )
         {
-            formatResponse( e, request );
+            Respond.to( request )
+                   .serverError( e, true )
+                   .send();
+        }
+        catch ( final JsonProcessingException e )
+        {
+            Respond.to( request )
+                   .serverError( e, "Failed to serialize to JSON.", true )
+                   .send();
         }
     }
 

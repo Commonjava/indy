@@ -28,6 +28,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Qualifier;
 
+import org.commonjava.aprox.action.start.AproxInitException;
 import org.commonjava.aprox.bind.vertx.AproxRouter;
 import org.commonjava.aprox.core.ctl.AdminController;
 import org.commonjava.aprox.inject.RestApp;
@@ -99,7 +100,14 @@ public class RestRouter
     @PostConstruct
     public void initializeComponents()
     {
-        adminController.started();
+        try
+        {
+            adminController.started();
+        }
+        catch ( final AproxInitException e )
+        {
+            throw new RuntimeException( "Failed to start aprox: " + e.getMessage(), e );
+        }
 
         logger.info( "\n\nCONSTRUCTING WEB ROUTES FOR APROX...\n\n" );
 

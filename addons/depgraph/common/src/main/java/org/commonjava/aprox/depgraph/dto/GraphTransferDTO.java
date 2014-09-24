@@ -19,22 +19,23 @@ import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 public class GraphTransferDTO
 {
 
-    private Set<ProjectVersionRef> roots;
+    private Set<ProjectVersionRef> gavs;
 
     private Set<ProjectRelationship<?>> relationships;
 
     private Set<EProjectCycle> cycles;
 
-    public GraphTransferDTO( final Set<ProjectVersionRef> roots, final Set<ProjectRelationship<?>> relationships, final Set<EProjectCycle> cycles )
+    public GraphTransferDTO( final Set<ProjectVersionRef> gavs, final Set<ProjectRelationship<?>> relationships,
+                             final Set<EProjectCycle> cycles )
     {
-        this.roots = roots;
+        this.gavs = gavs;
         this.relationships = relationships;
         this.cycles = cycles;
     }
 
-    public Set<ProjectVersionRef> getRoots()
+    public Set<ProjectVersionRef> getGAVs()
     {
-        return roots;
+        return gavs;
     }
 
     public Set<ProjectRelationship<?>> getRelationships()
@@ -47,9 +48,9 @@ public class GraphTransferDTO
         return cycles;
     }
 
-    public void setRoots( final Set<ProjectVersionRef> roots )
+    public void setGAVs( final Set<ProjectVersionRef> roots )
     {
-        this.roots = roots;
+        this.gavs = roots;
     }
 
     public void setRelationships( final Set<ProjectRelationship<?>> relationships )

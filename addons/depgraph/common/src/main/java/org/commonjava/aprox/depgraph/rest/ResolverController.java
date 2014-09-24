@@ -22,7 +22,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.depgraph.util.PresetParameterParser;
 import org.commonjava.aprox.depgraph.util.RequestAdvisor;
 import org.commonjava.aprox.util.ApplicationStatus;
@@ -34,9 +33,11 @@ import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.discover.DefaultDiscoveryConfig;
 import org.commonjava.maven.cartographer.discover.DiscoverySourceManager;
 import org.commonjava.maven.cartographer.ops.ResolveOps;
-import org.commonjava.web.json.ser.JsonSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ApplicationScoped
 public class ResolverController
@@ -48,8 +49,7 @@ public class ResolverController
     private ResolveOps ops;
 
     @Inject
-    @DepgraphSpecific
-    private JsonSerializer serializer;
+    private ObjectMapper serializer;
 
     @Inject
     private DiscoverySourceManager sourceManager;
@@ -97,12 +97,16 @@ public class ResolverController
                 resolved = Collections.singleton( ref );
             }
 
-            return serializer.toString( Collections.singletonMap( "resolvedTopLevelGAVs", resolved ) );
+            return serializer.writeValueAsString( Collections.singletonMap( "resolvedTopLevelGAVs", resolved ) );
         }
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException( "Failed to resolve graph: {} from: {}. Reason: {}", e, ref, from,
                                               e.getMessage() );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to serialize to JSON: %s", e, e.getMessage() );
         }
     }
 

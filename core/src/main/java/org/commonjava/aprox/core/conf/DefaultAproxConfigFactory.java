@@ -112,9 +112,9 @@ public class DefaultAproxConfigFactory
         logger.info( "Verifying AProx system properties are set..." );
         /* Set config path */
         String confPath = System.getProperty( AproxConfigFactory.CONFIG_PATH_PROP );
+        final String aproxHome = System.getProperty( "aprox.home" );
         if ( confPath == null )
         {
-            final String aproxHome = System.getProperty( "aprox.home" );
             if ( aproxHome != null )
             {
                 final String path = PathUtils.join( aproxHome, "etc/aprox/main.conf" );
@@ -131,7 +131,7 @@ public class DefaultAproxConfigFactory
         System.setProperty( AproxConfigFactory.CONFIG_PATH_PROP, confPath );
 
         /* Set config dir */
-        String confDir = System.getProperty( AproxConfigFactory.CONFIG_DIR_PROP);
+        final String confDir = System.getProperty( AproxConfigFactory.CONFIG_DIR_PROP);
         if ( confDir == null )
         {
             final File f = new File( confPath );

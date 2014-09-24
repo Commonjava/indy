@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.rest;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,7 +19,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
+import org.commonjava.aprox.depgraph.dto.ProjectListing;
+import org.commonjava.aprox.depgraph.dto.ProjectRelationshipListing;
 import org.commonjava.aprox.depgraph.util.PresetParameterParser;
 import org.commonjava.aprox.depgraph.util.RequestAdvisor;
 import org.commonjava.maven.atlas.graph.ViewParams;
@@ -32,8 +34,9 @@ import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.ops.GraphOps;
-import org.commonjava.web.json.model.Listing;
-import org.commonjava.web.json.ser.JsonSerializer;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ApplicationScoped
 public class ProjectController
@@ -42,8 +45,7 @@ public class ProjectController
     private GraphOps ops;
 
     @Inject
-    @DepgraphSpecific
-    private JsonSerializer serializer;
+    private ObjectMapper serializer;
 
     @Inject
     private RequestAdvisor requestAdvisor;
@@ -64,12 +66,16 @@ public class ProjectController
                 return null;
             }
 
-            return serializer.toString( new Listing<String>( error ) );
+            return serializer.writeValueAsString( Collections.singletonMap( "items", Collections.singleton( error ) ) );
         }
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException( "Failed to lookup errors for: {} in: {}. Reason: {}", e,
                                               ref == null ? "all projects" : ref, params, e.getMessage() );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to serialize to JSON: %s", e, e.getMessage() );
         }
     }
 
@@ -81,13 +87,18 @@ public class ProjectController
         try
         {
             final List<ProjectVersionRef> matching = ops.listProjects( groupIdPattern, artifactIdPattern, params );
-            return matching == null ? null : serializer.toString( new Listing<ProjectVersionRef>( matching ) );
+            return matching == null ? null
+                            : serializer.writeValueAsString( new ProjectListing<ProjectVersionRef>( matching ) );
         }
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException(
                                               "Failed to lookup project listing matching groupId pattern: '{}' and artifactId pattern: '{}'. Reason: {}",
                                               e, groupIdPattern, artifactIdPattern, e.getMessage() );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to serialize to JSON: %s", e, e.getMessage() );
         }
     }
 
@@ -102,12 +113,16 @@ public class ProjectController
         {
             final ProjectVersionRef parent = ops.getProjectParent( ref, params );
 
-            return parent == null ? null : serializer.toString( parent );
+            return parent == null ? null : serializer.writeValueAsString( parent );
         }
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException( "Failed to lookup parent for: {}:{}:{}. Reason: {}", e, groupId,
                                               artifactId, version, e.getMessage() );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to serialize to JSON: %s", e, e.getMessage() );
         }
     }
 
@@ -124,12 +139,17 @@ public class ProjectController
             final Set<ProjectRelationship<?>> rels =
                 ops.getDirectRelationshipsFrom( ref, params, RelationshipType.DEPENDENCY );
 
-            return rels == null ? null : serializer.toString( new Listing<ProjectRelationship<?>>( rels ) );
+            return rels == null ? null
+ : serializer.writeValueAsString( new ProjectRelationshipListing( rels ) );
         }
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException( "Failed to lookup dependencies for: {}:{}:{}. Reason: {}", e, groupId,
                                               artifactId, version, e.getMessage() );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to serialize to JSON: %s", e, e.getMessage() );
         }
     }
 
@@ -142,13 +162,17 @@ public class ProjectController
         try
         {
             final Set<ProjectRelationship<?>> rels = ops.getDirectRelationshipsFrom( ref, params, types );
-            return rels == null ? null : serializer.toString( new Listing<ProjectRelationship<?>>( rels ) );
+            return rels == null ? null : serializer.writeValueAsString( new ProjectRelationshipListing( rels ) );
         }
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException( "Failed to lookup relationships of type: {} for: {}:{}:{}. Reason: {}",
                                               e, new JoinString( ", ", types ), groupId, artifactId, version,
                                               e.getMessage() );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to serialize to JSON: %s", e, e.getMessage() );
         }
     }
 
@@ -166,12 +190,16 @@ public class ProjectController
             final Set<RelationshipType> types = filter.getAllowedTypes();
             final Set<ProjectRelationship<?>> rels =
                 ops.getDirectRelationshipsFrom( ref, params, types.toArray( new RelationshipType[types.size()] ) );
-            return rels == null ? null : serializer.toString( new Listing<ProjectRelationship<?>>( rels ) );
+            return rels == null ? null : serializer.writeValueAsString( new ProjectRelationshipListing( rels ) );
         }
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException( "Failed to lookup relationships specified by: {}:{}:{}. Reason: {}", e,
                                               groupId, artifactId, version, e.getMessage() );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to serialize to JSON: %s", e, e.getMessage() );
         }
     }
 
@@ -184,13 +212,17 @@ public class ProjectController
         try
         {
             final Set<ProjectRelationship<?>> rels = ops.getDirectRelationshipsTo( ref, params, types );
-            return rels == null ? null : serializer.toString( new Listing<ProjectRelationship<?>>( rels ) );
+            return rels == null ? null : serializer.writeValueAsString( new ProjectRelationshipListing( rels ) );
         }
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException( "Failed to lookup relationships of type: {} for: {}:{}:{}. Reason: {}",
                                               e, new JoinString( ", ", types ), groupId, artifactId, version,
                                               e.getMessage() );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to serialize to JSON: %s", e, e.getMessage() );
         }
     }
 
@@ -208,12 +240,16 @@ public class ProjectController
             final Set<RelationshipType> types = filter.getAllowedTypes();
             final Set<ProjectRelationship<?>> rels =
                 ops.getDirectRelationshipsTo( ref, params, types.toArray( new RelationshipType[types.size()] ) );
-            return rels == null ? null : serializer.toString( new Listing<ProjectRelationship<?>>( rels ) );
+            return rels == null ? null : serializer.writeValueAsString( new ProjectRelationshipListing( rels ) );
         }
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException( "Failed to lookup relationships specified by: {}:{}:{}. Reason: {}", e,
                                               groupId, artifactId, version, e.getMessage() );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to serialize to JSON: %s", e, e.getMessage() );
         }
     }
 

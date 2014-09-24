@@ -10,7 +10,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.stats;
 
-import org.commonjava.web.json.ser.JsonSerializer;
+import org.commonjava.aprox.model.io.AproxObjectMapper;
 import org.junit.Test;
 
 public class AProxVersioningTest
@@ -18,8 +18,10 @@ public class AProxVersioningTest
 
     @Test
     public void serializeToJson()
+        throws Exception
     {
-        final String json = new JsonSerializer().toString( new AProxVersioning() );
+        final String json = new AproxObjectMapper( true )
+                                              .writeValueAsString( new AProxVersioning() );
 
         System.out.println( json );
     }

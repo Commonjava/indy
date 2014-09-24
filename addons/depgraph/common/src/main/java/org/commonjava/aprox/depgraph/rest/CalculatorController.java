@@ -17,7 +17,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.depgraph.util.ConfigDTOHelper;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.cartographer.data.CartoDataException;
@@ -26,7 +25,9 @@ import org.commonjava.maven.cartographer.dto.GraphComposition;
 import org.commonjava.maven.cartographer.dto.GraphDescription;
 import org.commonjava.maven.cartographer.dto.GraphDifference;
 import org.commonjava.maven.cartographer.ops.CalculationOps;
-import org.commonjava.web.json.ser.JsonSerializer;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ApplicationScoped
 public class CalculatorController
@@ -36,8 +37,7 @@ public class CalculatorController
     private CalculationOps ops;
 
     @Inject
-    @DepgraphSpecific
-    private JsonSerializer serializer;
+    private ObjectMapper serializer;
 
     @Inject
     private ConfigDTOHelper configHelper;
@@ -71,12 +71,16 @@ public class CalculatorController
             else
             {
                 final GraphDifference<?> difference = ops.difference( graphs.get( 0 ), graphs.get( 1 ), workspaceId );
-                return serializer.toString( difference );
+                return serializer.writeValueAsString( difference );
             }
         }
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException( "Failed to retrieve graph(s): {}", e, e.getMessage() );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to serialize to JSON. Reason: %s", e, e.getMessage() );
         }
     }
 
@@ -115,12 +119,16 @@ public class CalculatorController
             {
                 final GraphCalculation result = ops.calculate( dto, workspaceId );
 
-                return serializer.toString( result );
+                return serializer.writeValueAsString( result );
             }
         }
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException( "Failed to retrieve graph(s): {}", e, e.getMessage() );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to serialize to JSON. Reason: %s", e, e.getMessage() );
         }
     }
 

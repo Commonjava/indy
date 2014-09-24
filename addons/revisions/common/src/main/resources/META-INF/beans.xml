@@ -16,7 +16,4 @@
       http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
       
   
-  <decorators>
-    <class>org.commonjava.aprox.autoprox.data.AutoProxDataManagerDecorator</class>
-  </decorators>
 </beans>

@@ -89,8 +89,7 @@ public class SetBackSettingsManager
             return false;
         }
 
-        final DataFile settingsXml = manager.getDataFile( DATA_DIR, key.getType()
-                                                                       .singularEndpointName(), key.getName() );
+        final DataFile settingsXml = getSettingsXml( key );
         if ( settingsXml.exists() )
         {
             try
@@ -255,7 +254,7 @@ public class SetBackSettingsManager
     private DataFile getSettingsXml( final StoreKey key )
     {
         return manager.getDataFile( DATA_DIR, key.getType()
-                                                 .singularEndpointName(), key.getName() );
+                                                 .singularEndpointName(), "settings-" + key.getName() + ".xml" );
     }
 
     public DataFile getSetBackSettings( final StoreKey key )

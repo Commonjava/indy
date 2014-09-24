@@ -14,7 +14,7 @@ import org.commonjava.aprox.core.content.DefaultContentManager;
 import org.commonjava.aprox.core.content.DefaultDownloadManager;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
-import org.commonjava.aprox.model.io.StoreKeySerializer;
+import org.commonjava.aprox.model.io.AproxObjectMapper;
 import org.commonjava.aprox.subsys.datafile.DataFileManager;
 import org.commonjava.aprox.subsys.datafile.change.DataFileEventManager;
 import org.commonjava.aprox.subsys.template.TemplatingEngine;
@@ -22,7 +22,6 @@ import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.SimpleLocation;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.testing.core.CoreFixture;
-import org.commonjava.web.json.ser.JsonSerializer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -52,9 +51,7 @@ public class ContentControllerTest
                                                                                            .newFolder( "aprox-home" ),
                                                                                     new DataFileEventManager() ) );
 
-        content =
-            new ContentController( storeManager, contentManager, templates,
-                                   new JsonSerializer( new StoreKeySerializer() ) );
+        content = new ContentController( storeManager, contentManager, templates, new AproxObjectMapper( true ) );
     }
 
     @Test

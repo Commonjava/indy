@@ -20,8 +20,9 @@ import javax.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.AproxWorkflowException;
+import org.commonjava.aprox.depgraph.dto.MetadataBatchUpdateDTO;
 import org.commonjava.aprox.depgraph.dto.MetadataCollationDTO;
-import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
+import org.commonjava.aprox.depgraph.dto.MetadataUpdateDTO;
 import org.commonjava.aprox.depgraph.util.ConfigDTOHelper;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.atlas.graph.ViewParams;
@@ -30,11 +31,11 @@ import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.dto.MetadataCollation;
 import org.commonjava.maven.cartographer.ops.MetadataOps;
-import org.commonjava.web.json.ser.JsonSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ApplicationScoped
 public class MetadataController
@@ -46,8 +47,7 @@ public class MetadataController
     private MetadataOps ops;
 
     @Inject
-    @DepgraphSpecific
-    private JsonSerializer serializer;
+    private ObjectMapper serializer;
 
     @Inject
     private ConfigDTOHelper configHelper;
@@ -76,22 +76,27 @@ public class MetadataController
     public void batchUpdate( final String json, final String workspaceId )
         throws AproxWorkflowException
     {
-        final TypeToken<Map<ProjectVersionRef, Map<String, String>>> tt =
-            new TypeToken<Map<ProjectVersionRef, Map<String, String>>>()
-            {
-            };
+        MetadataBatchUpdateDTO dto;
+        try
+        {
+            dto = serializer.readValue( json, MetadataBatchUpdateDTO.class );
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxWorkflowException( "Failed to deserialize DTO from JSON: %s", e, e.getMessage() );
+        }
 
-        final Map<ProjectVersionRef, Map<String, String>> batch = serializer.fromString( json, tt );
-        if ( batch == null || batch.isEmpty() )
+        if ( dto == null || dto.isEmpty() )
         {
             throw new AproxWorkflowException( ApplicationStatus.NOT_MODIFIED, "No changes found in metadata request." );
         }
 
         final ViewParams params = new ViewParams( workspaceId );
-        for ( final Map.Entry<ProjectVersionRef, Map<String, String>> entry : batch.entrySet() )
+        for ( final Map.Entry<ProjectVersionRef, MetadataUpdateDTO> entry : dto )
         {
             final ProjectVersionRef ref = entry.getKey();
-            final Map<String, String> metadata = entry.getValue();
+            final Map<String, String> metadata = entry.getValue()
+                                                      .getUpdates();
 
             logger.debug( "Adding metadata for: {}\n\n  ", ref, new JoinString( "\n  ", metadata.entrySet() ) );
             try
@@ -122,7 +127,14 @@ public class MetadataController
                                               e.getMessage() );
         }
 
-        return metadata == null ? null : serializer.toString( metadata );
+        try
+        {
+            return metadata == null ? null : serializer.writeValueAsString( metadata );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to render JSON: %s", e, e.getMessage() );
+        }
     }
 
     public String getMetadataValue( final String groupId, final String artifactId, final String version,
@@ -133,12 +145,16 @@ public class MetadataController
         try
         {
             final String value = ops.getMetadataValue( ref, key, new ViewParams( workspaceId ) );
-            return value == null ? null : serializer.toString( Collections.singletonMap( key, value ) );
+            return value == null ? null : serializer.writeValueAsString( Collections.singletonMap( key, value ) );
         }
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException( "Failed to retrieve metadata map for: {}. Reason: {}", e, ref,
                                               e.getMessage() );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to render JSON: %s", e, e.getMessage() );
         }
     }
 
@@ -154,11 +170,15 @@ public class MetadataController
                                 final String workspaceId )
         throws AproxWorkflowException
     {
-        final TypeToken<Map<String, String>> tt = new TypeToken<Map<String, String>>()
+        MetadataUpdateDTO metadata;
+        try
         {
-        };
-
-        final Map<String, String> metadata = serializer.fromString( json, tt );
+            metadata = serializer.readValue( json, MetadataUpdateDTO.class );
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxWorkflowException( "Failed to parse JSON for update DTO: %s", e, e.getMessage() );
+        }
 
         if ( metadata == null || metadata.isEmpty() )
         {
@@ -168,11 +188,12 @@ public class MetadataController
 
         final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
 
-        logger.debug( "Adding metadata for: {}\n\n  ", ref, new JoinString( "\n  ", metadata.entrySet() ) );
+        logger.debug( "Adding metadata for: {}\n\n  ", ref, new JoinString( "\n  ", metadata.getUpdates()
+                                                                                            .entrySet() ) );
 
         try
         {
-            ops.updateMetadata( ref, metadata, new ViewParams( workspaceId ) );
+            ops.updateMetadata( ref, metadata.getUpdates(), new ViewParams( workspaceId ) );
         }
         catch ( final CartoDataException e )
         {
@@ -202,13 +223,17 @@ public class MetadataController
         try
         {
             final MetadataCollation result = ops.collate( dto );
-            return result == null ? null : serializer.toString( result );
+            return result == null ? null : serializer.writeValueAsString( result );
         }
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException(
                                               "Failed to resolve or collate graph contents by metadata: {}. Reason: {}",
                                               e, dto, e.getMessage() );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to render JSON: %s", e, e.getMessage() );
         }
     }
 

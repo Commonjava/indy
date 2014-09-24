@@ -18,8 +18,6 @@
   <alternatives>
     <stereotype>org.commonjava.aprox.inject.Production</stereotype>
     
-    <class>org.commonjava.shelflife.clock.ThreadedClockSource</class>
-    <class>org.commonjava.shelflife.event.JEEEventManager</class>
     <class>org.commonjava.aprox.flat.data.DataFileStoreDataManager</class>
   </alternatives>
   

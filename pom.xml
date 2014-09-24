@@ -33,17 +33,16 @@
   </scm>
   
   <properties>
-    <javaVersion>1.6</javaVersion>
+    <javaVersion>1.7</javaVersion>
     <qarqas.clientKey>aprox</qarqas.clientKey>
     <slf4j-version>1.6.1</slf4j-version>
     <jbossas-version>7.1.1.Final</jbossas-version>
     <arquillian-version>1.0.1.Final</arquillian-version>
     <qarqas-version>0.3</qarqas-version>
-    <shelflife-version>0.6.3</shelflife-version>
-    <atlasVersion>0.13.6-SNAPSHOT</atlasVersion>
-    <galleyVersion>0.6.8-SNAPSHOT</galleyVersion>
-    <cartoVersion>0.8</cartoVersion>
-    <bomVersion>12</bomVersion>
+    <atlasVersion>0.13.7-SNAPSHOT</atlasVersion>
+    <galleyVersion>0.6.9-SNAPSHOT</galleyVersion>
+    <cartoVersion>0.8.1-SNAPSHOT</cartoVersion>
+    <bomVersion>13-SNAPSHOT</bomVersion>
     <webdavVersion>3.1.1</webdavVersion>
     <vabrVersion>1.10-SNAPSHOT</vabrVersion>
     
@@ -100,6 +99,14 @@
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-core</artifactId>
         <version>0.15.4-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-core</artifactId>
+        <version>0.15.4-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>confset</classifier>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
@@ -316,22 +323,6 @@
         <scope>test</scope>
       </dependency>
 
-      <dependency>
-        <groupId>org.commonjava.shelflife</groupId>
-        <artifactId>shelflife-core</artifactId>
-        <version>${shelflife-version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.shelflife</groupId>
-        <artifactId>shelflife-store-memory</artifactId>
-        <version>${shelflife-version}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.shelflife</groupId>
-        <artifactId>shelflife-store-flat</artifactId>
-        <version>${shelflife-version}</version>
-      </dependency>
       
       <dependency>
         <groupId>org.commonjava.maven.galley</groupId>
@@ -510,6 +501,16 @@
         <groupId>org.eclipse.jgit</groupId>
         <artifactId>org.eclipse.jgit</artifactId>
         <version>3.0.0.201306101825-r</version>
+      </dependency>
+      <dependency>
+        <groupId>org.quartz-scheduler</groupId>
+        <artifactId>quartz</artifactId>
+        <version>2.2.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.derby</groupId>
+        <artifactId>derby</artifactId>
+        <version>10.10.2.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

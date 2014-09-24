@@ -17,10 +17,6 @@
       
   <alternatives>
     <stereotype>org.commonjava.aprox.inject.Production</stereotype>
-    <!-- <stereotype>org.commonjava.tensor.inject.TensorProduction</stereotype> -->
-    
-    <class>org.commonjava.shelflife.clock.ThreadedClockSource</class>
-    <class>org.commonjava.shelflife.event.JEEEventManager</class>
   </alternatives>
   
   <decorators>

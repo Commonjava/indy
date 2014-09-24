@@ -14,7 +14,7 @@ import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.util.UriFormatter;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Lightweight view of an {@link ArtifactStore} designed for external use. Each instance includes the name and type of the store, plus a resource-uri
@@ -27,7 +27,7 @@ public final class EndpointView
 
     private final String type;
 
-    @SerializedName( "resource_uri" )
+    @JsonProperty( "resource_uri" )
     private final String resourceUri;
 
     public EndpointView( final ArtifactStore store, final String baseUri, final UriFormatter uriBuilder )

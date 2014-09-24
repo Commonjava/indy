@@ -134,7 +134,7 @@ aproxServices.factory('StoreUtilSvc', function(){
       var proto = window.location.protocol;
 
       // TODO: In-UI browser that allows simple searching
-      return proto + "//" + hostAndPort + basepath + 'api/1.0/' + parts[0] + '/' + parts[1] + '/';
+      return proto + "//" + hostAndPort + basepath + 'api/' + parts[0] + '/' + parts[1] + '/';
     },
 
     detailPath: function(key){
@@ -292,7 +292,7 @@ aproxServices.factory('StoreUtilSvc', function(){
 aproxServices.factory('RemoteSvc', ['$resource', '$http',
   function($resource, $http){
     return {
-      resource: $resource(appPath( '/api/1.0/admin/remote/:name' ), {}, {
+      resource: $resource(appPath( '/api/admin/remote/:name' ), {}, {
         query: {method:'GET', params:{name:''}, isArray:false},
         update: {method: 'PUT'},
         create: {method: 'POST'},
@@ -310,7 +310,7 @@ aproxServices.factory('RemoteSvc', ['$resource', '$http',
 aproxServices.factory('HostedSvc', ['$resource', '$http',
   function($resource, $http){
     return {
-      resource: $resource(appPath( '/api/1.0/admin/hosted/:name' ), {}, {
+      resource: $resource(appPath( '/api/admin/hosted/:name' ), {}, {
         query: {method:'GET', params:{name:''}, isArray:false},
         update: {method: 'PUT'},
         create: {method: 'POST'},
@@ -328,7 +328,7 @@ aproxServices.factory('HostedSvc', ['$resource', '$http',
 aproxServices.factory('GroupSvc', ['$resource', '$http',
   function($resource, $http){
     return {
-      resource: $resource(appPath( '/api/1.0/admin/group/:name' ), {}, {
+      resource: $resource(appPath( '/api/admin/group/:name' ), {}, {
         query: {method:'GET', params:{name:''}, isArray:false},
         update: {method: 'PUT'},
         create: {method: 'POST'},
@@ -346,7 +346,7 @@ aproxServices.factory('GroupSvc', ['$resource', '$http',
 aproxServices.factory('NfcSvc', ['$resource',
   function($resource) {
     return {
-      resource: $resource(appPath('/api/1.0/nfc/:type/:name/:path'), {}, {
+      resource: $resource(appPath('/api/nfc/:type/:name/:path'), {}, {
         query : { method : 'GET', params : { type: '', name: '', path: '' }, isArray : false },
         get : { method : 'GET', params : { path: '' }, isArray : false },
         deleteAll: {method: 'DELETE', params: {type:'', name:'', path:''}},
@@ -358,7 +358,7 @@ aproxServices.factory('NfcSvc', ['$resource',
 aproxServices.factory('AllEndpointsSvc', ['$resource',
   function($resource){
     return {
-      resource: $resource(appPath( '/api/1.0/stats/all-endpoints' ), {}, {
+      resource: $resource(appPath( '/api/stats/all-endpoints' ), {}, {
         query: {method:'GET', params:{}, isArray:false},
       }),
     }
@@ -367,7 +367,7 @@ aproxServices.factory('AllEndpointsSvc', ['$resource',
 aproxServices.factory('FooterSvc', ['$resource',
   function($resource){
     return {
-      resource: $resource(appPath( '/api/1.0/stats/version-info' ), {}, {
+      resource: $resource(appPath( '/api/stats/version-info' ), {}, {
         query: {method:'GET', params:{}, isArray:false},
       }),
     }

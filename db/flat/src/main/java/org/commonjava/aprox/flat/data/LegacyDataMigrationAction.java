@@ -50,7 +50,7 @@ public class LegacyDataMigrationAction
     }
 
     @Override
-    public boolean execute()
+    public boolean migrate()
     {
         final DataFile basedir = fileManager.getDataFile( DataFileStoreDataManager.APROX_STORE );
         final ChangeSummary summary =

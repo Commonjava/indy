@@ -39,7 +39,8 @@ public class AproxGroovyException
     {
         if ( formattedMessage == null )
         {
-            final String format = super.getMessage();
+            final String format = super.getMessage()
+                                       .replaceAll( "\\{\\}", "%s" );
             if ( params == null || params.length < 1 )
             {
                 formattedMessage = format;

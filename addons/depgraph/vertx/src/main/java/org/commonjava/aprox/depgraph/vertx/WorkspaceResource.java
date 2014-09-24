@@ -30,6 +30,7 @@ import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.commonjava.vertx.vabr.types.Method;
+import org.commonjava.vertx.vabr.util.Respond;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.buffer.Buffer;
@@ -167,7 +168,19 @@ public class WorkspaceResource
     @Route( contentType = application_json )
     public void list( final HttpServerRequest request )
     {
-        final String json = controller.list();
+        String json;
+        try
+        {
+            json = controller.list();
+        }
+        catch ( final AproxWorkflowException e )
+        {
+            Respond.to( request )
+                   .serverError( e, true )
+                   .send();
+            return;
+        }
+
         if ( json == null )
         {
             setStatus( ApplicationStatus.NOT_FOUND, request ).end();

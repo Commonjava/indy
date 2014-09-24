@@ -77,11 +77,6 @@
       <artifactId>hamcrest-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.web</groupId>
-      <artifactId>json-test-harness</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.commonjava.util</groupId>
       <artifactId>configuration-api</artifactId>
     </dependency>

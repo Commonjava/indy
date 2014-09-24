@@ -10,11 +10,8 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.dto;
 
-import org.commonjava.aprox.depgraph.json.GAVWithPresetSer;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.web.json.ser.JsonAdapters;
 
-@JsonAdapters( GAVWithPresetSer.class )
 public class GAVWithPreset
 {
 

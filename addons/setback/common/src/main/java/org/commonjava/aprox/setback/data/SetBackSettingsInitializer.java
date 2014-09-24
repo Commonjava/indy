@@ -44,7 +44,7 @@ public class SetBackSettingsInitializer
     }
 
     @Override
-    public boolean execute()
+    public boolean migrate()
     {
         boolean changed = false;
         try

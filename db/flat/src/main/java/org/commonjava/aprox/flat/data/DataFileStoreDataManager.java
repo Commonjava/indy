@@ -19,7 +19,6 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.data.ProxyDataException;
-import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Group;
@@ -29,11 +28,10 @@ import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.subsys.datafile.DataFile;
 import org.commonjava.aprox.subsys.datafile.DataFileManager;
-import org.commonjava.web.json.ser.JsonSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.JsonSyntaxException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ApplicationScoped
 @Alternative
@@ -48,14 +46,13 @@ public class DataFileStoreDataManager
     private DataFileManager manager;
 
     @Inject
-    @AproxData
-    private JsonSerializer serializer;
+    private ObjectMapper serializer;
 
     protected DataFileStoreDataManager()
     {
     }
 
-    protected DataFileStoreDataManager( final DataFileManager manager, final JsonSerializer serializer )
+    protected DataFileStoreDataManager( final DataFileManager manager, final ObjectMapper serializer )
     {
         this.manager = manager;
         this.serializer = serializer;
@@ -79,7 +76,7 @@ public class DataFileStoreDataManager
                 try
                 {
                     final String json = f.readString();
-                    final HostedRepository dp = serializer.fromString( json, HostedRepository.class );
+                    final HostedRepository dp = serializer.readValue( json, HostedRepository.class );
                     if ( dp == null )
                     {
                         f.delete( summary );
@@ -106,7 +103,7 @@ public class DataFileStoreDataManager
                 try
                 {
                     final String json = f.readString();
-                    final RemoteRepository r = serializer.fromString( json, RemoteRepository.class );
+                    final RemoteRepository r = serializer.readValue( json, RemoteRepository.class );
                     if ( r == null )
                     {
                         f.delete( summary );
@@ -117,10 +114,6 @@ public class DataFileStoreDataManager
                     }
                 }
                 catch ( final IOException e )
-                {
-                    logger.error( String.format( "Failed to load repository: %s. Reason: %s", f, e.getMessage() ), e );
-                }
-                catch ( final JsonSyntaxException e )
                 {
                     logger.error( String.format( "Failed to load repository: %s. Reason: %s", f, e.getMessage() ), e );
                 }
@@ -137,7 +130,7 @@ public class DataFileStoreDataManager
                 try
                 {
                     final String json = f.readString();
-                    final Group g = serializer.fromString( json, Group.class );
+                    final Group g = serializer.readValue( json, Group.class );
                     if ( g == null )
                     {
                         f.delete( summary );
@@ -305,7 +298,7 @@ public class DataFileStoreDataManager
 
             try
             {
-                f.writeString( serializer.toString( store ), "UTF-8", summary );
+                f.writeString( serializer.writeValueAsString( store ), "UTF-8", summary );
             }
             catch ( final IOException e )
             {

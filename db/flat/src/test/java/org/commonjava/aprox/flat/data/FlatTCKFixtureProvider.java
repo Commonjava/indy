@@ -15,12 +15,14 @@ import java.io.File;
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.core.data.TCKFixtureProvider;
 import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.model.io.AproxObjectMapper;
 import org.commonjava.aprox.subsys.datafile.DataFileManager;
 import org.commonjava.aprox.subsys.datafile.change.DataFileEventManager;
 import org.commonjava.aprox.subsys.datafile.conf.DataFileConfiguration;
-import org.commonjava.web.json.ser.JsonSerializer;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class FlatTCKFixtureProvider
     extends TemporaryFolder
@@ -47,7 +49,7 @@ public class FlatTCKFixtureProvider
 
         configDir = newFolder( "db" );
 
-        final JsonSerializer serializer = new JsonSerializer();
+        final ObjectMapper serializer = new AproxObjectMapper( true );
 
         dataManager =
             new TestFlatFileDataManager( new DataFileConfiguration().withDataBasedir( configDir ), serializer );
@@ -60,7 +62,7 @@ public class FlatTCKFixtureProvider
         extends DataFileStoreDataManager
     {
 
-        public TestFlatFileDataManager( final DataFileConfiguration config, final JsonSerializer serializer )
+        public TestFlatFileDataManager( final DataFileConfiguration config, final ObjectMapper serializer )
         {
             super( new DataFileManager( config, new DataFileEventManager() ), serializer );
         }

@@ -11,8 +11,6 @@
 package org.commonjava.aprox.core.bind.vertx.stats;
 
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatEntity;
-import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithJsonEntity;
-import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
 import static org.commonjava.vertx.vabr.types.BuiltInParam._classContextUrl;
 
 import java.util.Date;
@@ -22,7 +20,6 @@ import javax.inject.Inject;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.core.ctl.StatsController;
 import org.commonjava.aprox.dto.EndpointViewListing;
-import org.commonjava.aprox.inject.AproxData;
 import org.commonjava.aprox.util.ApplicationContent;
 import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.vertx.vabr.anno.Handles;
@@ -31,7 +28,6 @@ import org.commonjava.vertx.vabr.anno.Routes;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.commonjava.vertx.vabr.types.Method;
 import org.commonjava.vertx.vabr.util.Respond;
-import org.commonjava.web.json.ser.JsonSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.buffer.Buffer;
@@ -48,10 +44,6 @@ public class StatsHandler
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    @AproxData
-    private JsonSerializer serializer;
-
-    @Inject
     private StatsController statsController;
 
     @Inject
@@ -63,7 +55,18 @@ public class StatsHandler
     @Routes( { @Route( path = "/addons/active", method = Method.GET, contentType = ApplicationContent.application_json ) } )
     public void getAddonList( final Buffer buffer, final HttpServerRequest request )
     {
-        formatOkResponseWithJsonEntity( request, serializer.toString( statsController.getActiveAddOns() ) );
+        try
+        {
+            Respond.to( request )
+                   .jsonEntity( statsController.getActiveAddOns(), objectMapper )
+                   .send();
+        }
+        catch ( final JsonProcessingException e )
+        {
+            Respond.to( request )
+                   .serverError( e, "Failed to serialize to JSON.", true )
+                   .send();
+        }
     }
 
     @Routes( { @Route( path = "/addons/active.js", method = Method.GET, contentType = ApplicationContent.application_json ) } )
@@ -71,19 +74,34 @@ public class StatsHandler
     {
         try
         {
-            formatOkResponseWithJsonEntity( request, statsController.getActiveAddOnsJavascript() );
+            Respond.to( request )
+                   .ok()
+                   .entity( statsController.getActiveAddOnsJavascript() )
+                   .send();
         }
         catch ( final AproxWorkflowException e )
         {
             logger.error( String.format( "Failed to format active-addons javascript: %s", formatEntity( e ) ), e );
-            formatResponse( e, request );
+            Respond.to( request )
+                   .serverError( e, true );
         }
     }
 
     @Routes( { @Route( path = "/version-info", method = Method.GET, contentType = ApplicationContent.application_json ) } )
     public void getAProxVersion( final Buffer buffer, final HttpServerRequest request )
     {
-        formatOkResponseWithJsonEntity( request, serializer.toString( statsController.getVersionInfo() ) );
+        try
+        {
+            Respond.to( request )
+                   .jsonEntity( statsController.getVersionInfo(), objectMapper )
+                   .send();
+        }
+        catch ( final JsonProcessingException e )
+        {
+            Respond.to( request )
+                   .serverError( e, "Failed to serialize to JSON.", true )
+                   .send();
+        }
     }
 
     @Routes( { @Route( path = "/all-endpoints", method = Method.GET, contentType = ApplicationContent.application_json ) } )

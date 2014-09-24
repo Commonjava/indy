@@ -23,7 +23,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.store.LockReleaseFailedException;
 import org.apache.maven.index.ArtifactScanningListener;
 import org.apache.maven.index.DefaultScannerListener;
@@ -39,15 +38,18 @@ import org.apache.maven.index.updater.IndexUpdateRequest;
 import org.apache.maven.index.updater.IndexUpdateResult;
 import org.apache.maven.index.updater.IndexUpdater;
 import org.apache.maven.index.updater.ResourceFetcher;
-import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
 import org.commonjava.aprox.change.event.ArtifactStoreDeleteEvent;
+import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
 import org.commonjava.aprox.content.DownloadManager;
+import org.commonjava.aprox.core.expire.AproxSchedulerException;
+import org.commonjava.aprox.core.expire.ScheduleManager;
+import org.commonjava.aprox.core.expire.SchedulerEvent;
+import org.commonjava.aprox.core.expire.StoreKeyMatcher;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.indexer.inject.IndexCreatorSet;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.HostedRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.util.LocationUtils;
@@ -55,11 +57,7 @@ import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.maven.galley.event.FileStorageEvent;
 import org.commonjava.maven.galley.model.Transfer;
-import org.commonjava.shelflife.ExpirationManager;
-import org.commonjava.shelflife.ExpirationManagerException;
-import org.commonjava.shelflife.event.ExpirationEvent;
-import org.commonjava.shelflife.model.Expiration;
-import org.commonjava.shelflife.model.ExpirationKey;
+import org.quartz.TriggerKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,15 +65,17 @@ import org.slf4j.LoggerFactory;
 public class IndexHandler
 {
 
-    public static final long GROUP_INDEX_TIMEOUT = TimeUnit.MILLISECONDS.convert( 24, TimeUnit.HOURS );
+    public static final int GROUP_INDEX_TIMEOUT_SECONDS = (int) TimeUnit.SECONDS.convert( 24, TimeUnit.HOURS );
 
-    public static final long DEPLOY_POINT_INDEX_TIMEOUT = TimeUnit.MILLISECONDS.convert( 10, TimeUnit.MINUTES );
+    public static final int HOSTED_REPO_INDEX_TIMEOUT_SECONDS = (int) TimeUnit.SECONDS.convert( 10, TimeUnit.MINUTES );
 
     public static final String INDEX_KEY_PREFIX = "aprox-index";
 
     private static final String INDEX_DIR = "/.index";
 
     private static final String INDEX_PROPERTIES = ".index/nexus-maven-repository-index-updater.properties";
+
+    private static final String REINDEX_JOB_TYPE = "REINDEX";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -95,7 +95,7 @@ public class IndexHandler
     private IndexCreatorSet indexCreators;
 
     @Inject
-    private ExpirationManager expirationManager;
+    private ScheduleManager scheduleManager;
 
     @Inject
     private StoreDataManager storeDataManager;
@@ -113,10 +113,11 @@ public class IndexHandler
     {
     }
 
-    public IndexHandler( final ExpirationManager expirationManager, final StoreDataManager storeDataManager, final DownloadManager fileManager )
+    public IndexHandler( final ScheduleManager scheduleManager, final StoreDataManager storeDataManager,
+                         final DownloadManager fileManager )
         throws AproxIndexerException
     {
-        this.expirationManager = expirationManager;
+        this.scheduleManager = scheduleManager;
         this.storeDataManager = storeDataManager;
         this.fileManager = fileManager;
     }
@@ -137,48 +138,55 @@ public class IndexHandler
             return;
         }
 
-        if ( key.getType() == StoreType.hosted )
+        int timeoutSeconds = -1;
+        if ( key.getType() == StoreType.group )
         {
-            HostedRepository store = null;
-            try
-            {
-                store = storeDataManager.getHostedRepository( key.getName() );
-            }
-            catch ( final ProxyDataException e )
-            {
-                logger.error( String.format( "Failed to retrieve deploy-point for index update: %s. Reason: %s", key, e.getMessage() ), e );
-            }
+            timeoutSeconds = GROUP_INDEX_TIMEOUT_SECONDS;
+        }
+        else if ( key.getType() == StoreType.hosted )
+        {
+            timeoutSeconds = HOSTED_REPO_INDEX_TIMEOUT_SECONDS;
+        }
 
-            if ( store != null )
+        if ( timeoutSeconds > 0 )
+        {
+            if ( storeDataManager.hasArtifactStore( key ) )
             {
-                final Expiration exp = expirationForDeployPoint( key.getName() );
                 try
                 {
-                    if ( !expirationManager.contains( exp ) )
+                    final TriggerKey tk =
+                        scheduleManager.findFirstMatchingTrigger( new StoreKeyMatcher( key, REINDEX_JOB_TYPE ) );
+
+                    if ( tk == null )
                     {
-                        expirationManager.schedule( exp );
+
+                        scheduleManager.scheduleForStore( key, REINDEX_JOB_TYPE, REINDEX_JOB_TYPE, key, timeoutSeconds,
+                                                          timeoutSeconds );
                     }
                 }
-                catch ( final ExpirationManagerException e )
+                catch ( final AproxSchedulerException e )
                 {
-                    logger.error( String.format( "Failed to schedule index update for deploy-point: %s. Reason: %s", key, e.getMessage() ), e );
+                    logger.error( "Failed to schedule reindex for: " + key, e );
                 }
+            }
+            else
+            {
+                logger.error( "No such ArtifactStore: {}", key );
             }
         }
     }
 
-    public void onExpire( @Observes final ExpirationEvent event )
+    public void onExpire( @Observes final SchedulerEvent event )
     {
-        logger.info( "Updating indexes as a result of ExpirationEvent." );
-        final Expiration expiration = event.getExpiration();
-        final String[] parts = expiration.getKey()
-                                         .getParts();
-        if ( !INDEX_KEY_PREFIX.equals( parts[0] ) )
+        if ( !event.getJobType()
+                   .equals( REINDEX_JOB_TYPE ) )
         {
             return;
         }
 
-        executor.execute( new IndexExpirationRunnable( expiration ) );
+        logger.info( "Updating indexes as a result of ExpirationEvent." );
+        final StoreKey storeKey = StoreKey.fromString( event.getPayload() );
+        executor.execute( new IndexExpirationRunnable( storeKey ) );
     }
 
     public void onAdd( @Observes final ArtifactStoreUpdateEvent event )
@@ -420,19 +428,6 @@ public class IndexHandler
                 {
                     logger.error( String.format( "Failed to commit index updates for group: %s. Reason: %s", group.getKey(), e.getMessage() ), e );
                 }
-
-                try
-                {
-                    final Expiration exp = expirationForGroup( group.getName() );
-
-                    expirationManager.schedule( exp );
-
-                    logger.info( "Next index update in group: {} scheduled for: {}", group.getName(), new Date( exp.getExpires() ) );
-                }
-                catch ( final ExpirationManagerException e )
-                {
-                    logger.error( String.format( "Failed to schedule indexer trigger for group: %s. Reason: %s", group.getName(), e.getMessage() ), e );
-                }
             }
             catch ( final ProxyDataException e )
             {
@@ -582,32 +577,19 @@ public class IndexHandler
         return null;
     }
 
-    private Expiration expirationForGroup( final String name )
-    {
-        return new Expiration( new ExpirationKey( StoreType.group.name(), INDEX_KEY_PREFIX, name ), GROUP_INDEX_TIMEOUT,
-                               new StoreKey( StoreType.group, name ) );
-    }
-
-    private Expiration expirationForDeployPoint( final String name )
-    {
-        return new Expiration( new ExpirationKey( StoreType.hosted.name(), INDEX_KEY_PREFIX, name ), DEPLOY_POINT_INDEX_TIMEOUT,
-                               new StoreKey( StoreType.hosted, name ) );
-    }
-
     public class IndexExpirationRunnable
         implements Runnable
     {
-        private final Expiration expiration;
+        private final StoreKey key;
 
-        public IndexExpirationRunnable( final Expiration expiration )
+        public IndexExpirationRunnable( final StoreKey key )
         {
-            this.expiration = expiration;
+            this.key = key;
         }
 
         @Override
         public void run()
         {
-            final StoreKey key = StoreKey.fromString( (String) expiration.getData() );
             final StoreType type = key.getType();
 
             ArtifactStore store;
@@ -658,7 +640,8 @@ public class IndexHandler
                 final Set<ArtifactStore> updated = new HashSet<ArtifactStore>();
                 for ( final String name : event )
                 {
-                    updateGroupsFor( new StoreKey( type, name ), updated, true );
+                    final StoreKey sk = new StoreKey( type, name );
+                    updateGroupsFor( sk, updated, true );
                 }
             }
             else
@@ -667,9 +650,13 @@ public class IndexHandler
                 {
                     try
                     {
-                        expirationManager.cancel( expirationForGroup( name ) );
+                        final StoreKey sk = new StoreKey( type, name );
+                        final Set<TriggerKey> canceled =
+                            scheduleManager.cancelAll( new StoreKeyMatcher( sk, REINDEX_JOB_TYPE ) );
+
+                        scheduleManager.deleteJobs( canceled );
                     }
-                    catch ( final ExpirationManagerException e )
+                    catch ( final AproxSchedulerException e )
                     {
                         logger.error( String.format( "Failed to cancel indexer trigger for group: %s. Reason: %s", name, e.getMessage() ), e );
                     }
@@ -685,8 +672,6 @@ public class IndexHandler
 
         public AdditionRunnable( final ArtifactStoreUpdateEvent event )
         {
-            logger.info( "Constructed AdditionRunnable from: {}", StringUtils.join( Thread.currentThread()
-                                                                                          .getStackTrace(), "\n" ) );
             this.event = event;
         }
 

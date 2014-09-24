@@ -16,7 +16,7 @@ import java.net.URL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class RemoteRepository
     extends ArtifactStore
@@ -27,13 +27,13 @@ public class RemoteRepository
 
     public static final int DEFAULT_TIMEOUT_SECONDS = 120;
 
-    @SerializedName( "url" )
+    @JsonProperty( "url" )
     private String url;
 
-    @SerializedName( "timeout_seconds" )
+    @JsonProperty( "timeout_seconds" )
     private int timeoutSeconds;
 
-    @SerializedName( "nfc_timeout_seconds" )
+    @JsonProperty( "nfc_timeout_seconds" )
     private int nfcTimeoutSeconds;
 
     private String host;
@@ -44,31 +44,31 @@ public class RemoteRepository
 
     private String password;
 
-    @SerializedName( "is_passthrough" )
+    @JsonProperty( "is_passthrough" )
     private boolean passthrough;
 
-    @SerializedName( "cache_timeout_seconds" )
+    @JsonProperty( "cache_timeout_seconds" )
     private int cacheTimeoutSeconds;
 
-    @SerializedName( "key_password" )
+    @JsonProperty( "key_password" )
     private String keyPassword;
 
-    @SerializedName( "key_certificate_pem" )
+    @JsonProperty( "key_certificate_pem" )
     private String keyCertificatePem;
 
-    @SerializedName( "server_certificate_pem" )
+    @JsonProperty( "server_certificate_pem" )
     private String serverCertificatePem;
 
-    @SerializedName( "proxy_host" )
+    @JsonProperty( "proxy_host" )
     private String proxyHost;
 
-    @SerializedName( "proxy_port" )
+    @JsonProperty( "proxy_port" )
     private int proxyPort;
 
-    @SerializedName( "proxy_user" )
+    @JsonProperty( "proxy_user" )
     private String proxyUser;
 
-    @SerializedName( "proxy_password" )
+    @JsonProperty( "proxy_password" )
     private String proxyPassword;
 
     RemoteRepository()

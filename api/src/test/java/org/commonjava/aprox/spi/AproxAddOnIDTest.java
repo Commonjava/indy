@@ -8,20 +8,23 @@ import java.util.List;
 
 import org.commonjava.aprox.dto.UIRoute;
 import org.commonjava.aprox.dto.UISection;
-import org.commonjava.web.json.ser.JsonSerializer;
+import org.commonjava.aprox.model.io.AproxObjectMapper;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class AproxAddOnIDTest
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private final JsonSerializer serializer = new JsonSerializer();
+    private final ObjectMapper mapper = new AproxObjectMapper( true );
 
     @Test
     public void roundTripSerialize()
+        throws Exception
     {
         final UIRoute route = new UIRoute( "/foo", "/partials/foo.html" );
         final UISection section = new UISection( "Foo (Add-On)", route.getRoute() );
@@ -31,11 +34,11 @@ public class AproxAddOnIDTest
                                                   .withRoute( route )
                                                   .withSection( section );
 
-        final String json = serializer.toString( id );
+        final String json = mapper.writeValueAsString( id );
 
         logger.info( json );
 
-        final AproxAddOnID result = serializer.fromString( json, AproxAddOnID.class );
+        final AproxAddOnID result = mapper.readValue( json, AproxAddOnID.class );
 
         assertThat( result.getName(), equalTo( id.getName() ) );
         assertThat( result.getInitJavascriptHref(), equalTo( id.getInitJavascriptHref() ) );

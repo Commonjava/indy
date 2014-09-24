@@ -48,10 +48,9 @@ public final class DataFileEvent
     @Override
     public String toString()
     {
-        return String.format( "DataFileEvent [id=%s, file=%s, type=%s, timestamp=%s]%s", id, file, type,
-                              ( summary == null ? ""
-                        : "\nSummary: "
-            + summary ) );
+        final String summ = summary == null ? "" : "\nSummary: " + summary;
+        return String.format( "DataFileEvent [id=%s, file=%s, type=%s, timestamp=%s]%s", id, file, type, timestamp,
+                              summ );
     }
 
     public File getFile()

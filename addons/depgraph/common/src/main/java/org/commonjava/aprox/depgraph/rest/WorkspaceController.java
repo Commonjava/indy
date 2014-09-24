@@ -10,9 +10,11 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.rest;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -20,7 +22,6 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.dto.GraphWorkspaceDTO;
-import org.commonjava.aprox.depgraph.inject.DepgraphSpecific;
 import org.commonjava.aprox.dto.CreationDTO;
 import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.maven.atlas.graph.RelationshipGraph;
@@ -28,8 +29,9 @@ import org.commonjava.maven.atlas.graph.RelationshipGraphException;
 import org.commonjava.maven.atlas.graph.RelationshipGraphFactory;
 import org.commonjava.maven.atlas.graph.ViewParams;
 import org.commonjava.maven.cartographer.data.CartoGraphUtils;
-import org.commonjava.web.json.model.Listing;
-import org.commonjava.web.json.ser.JsonSerializer;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ApplicationScoped
 public class WorkspaceController
@@ -39,8 +41,7 @@ public class WorkspaceController
     private RelationshipGraphFactory graphFactory;
 
     @Inject
-    @DepgraphSpecific
-    private JsonSerializer serializer;
+    private ObjectMapper serializer;
 
     public void delete( final String id )
         throws AproxWorkflowException
@@ -71,7 +72,7 @@ public class WorkspaceController
 
             graph = graphFactory.open( new ViewParams( id ), true );
 
-            final String json = serializer.toString( new GraphWorkspaceDTO( graph ) );
+            final String json = serializer.writeValueAsString( new GraphWorkspaceDTO( graph ) );
 
             return new CreationDTO( new URI( uriFormatter.formatAbsolutePathTo( serviceUrl, graph.getWorkspaceId() ) ),
                                     json );
@@ -84,6 +85,10 @@ public class WorkspaceController
         {
             throw new AproxWorkflowException( "Failed to generate location URI for: {}. Reason: {}", e, id,
                                               e.getMessage() );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to serialize to JSON: %s", e, e.getMessage() );
         }
         finally
         {
@@ -102,14 +107,32 @@ public class WorkspaceController
                                    final InputStream configStream, final String encoding )
         throws AproxWorkflowException
     {
-        final ViewParams params = serializer.fromStream( configStream, encoding, ViewParams.class );
+        ViewParams params;
+        try
+        {
+            params = serializer.readValue( configStream, ViewParams.class );
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxWorkflowException( "Failed to read DTO from JSON: %s", e, e.getMessage() );
+        }
+
         return createFrom( serviceUrl, uriFormatter, params );
     }
 
     public CreationDTO createFrom( final String serviceUrl, final UriFormatter uriFormatter, final String json )
         throws AproxWorkflowException
     {
-        final ViewParams params = serializer.fromString( json, ViewParams.class );
+        ViewParams params;
+        try
+        {
+            params = serializer.readValue( json, ViewParams.class );
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxWorkflowException( "Failed to read DTO from JSON: %s", e, e.getMessage() );
+        }
+
         return createFrom( serviceUrl, uriFormatter, params );
     }
 
@@ -126,7 +149,7 @@ public class WorkspaceController
 
             graph = graphFactory.open( params, true );
 
-            final String json = serializer.toString( graph );
+            final String json = serializer.writeValueAsString( graph );
 
             return new CreationDTO( new URI( uriFormatter.formatAbsolutePathTo( serviceUrl, graph.getWorkspaceId() ) ),
                                     json );
@@ -139,6 +162,10 @@ public class WorkspaceController
         {
             throw new AproxWorkflowException( "Failed to generate location URI for: {}. Reason: {}", e,
                                               graph.getWorkspaceId(), e.getMessage() );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to serialize to JSON: %s", e, e.getMessage() );
         }
         finally
         {
@@ -153,11 +180,15 @@ public class WorkspaceController
         try
         {
             graph = graphFactory.open( new ViewParams( id ), false );
-            return graph == null ? null : serializer.toString( graph );
+            return graph == null ? null : serializer.writeValueAsString( graph );
         }
         catch ( final RelationshipGraphException e )
         {
             throw new AproxWorkflowException( "Failed to load workspace: {}. Reason: {}", e, id, e.getMessage() );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to serialize to JSON: %s", e, e.getMessage() );
         }
         finally
         {
@@ -167,9 +198,18 @@ public class WorkspaceController
     }
 
     public String list()
+        throws AproxWorkflowException
     {
         final Set<String> graph = graphFactory.listWorkspaces();
-        return graph == null || graph.isEmpty() ? null : serializer.toString( new Listing<String>( graph ) );
+        try
+        {
+            return graph == null || graph.isEmpty() ? null
+                            : serializer.writeValueAsString( Collections.singletonMap( "items", graph ) );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to serialize to JSON: %s", e, e.getMessage() );
+        }
     }
 
 

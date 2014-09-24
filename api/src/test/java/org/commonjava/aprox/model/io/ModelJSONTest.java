@@ -6,13 +6,14 @@ import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.model.HostedRepository;
-import org.commonjava.web.json.ser.JsonSerializer;
 import org.junit.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ModelJSONTest
 {
 
-    private final JsonSerializer serializer = new JsonSerializer( new StoreKeySerializer() );
+    private final ObjectMapper mapper = new AproxObjectMapper( true );
 
     String loadJson( final String resource )
         throws Exception
@@ -34,7 +35,7 @@ public class ModelJSONTest
     {
         final String json = loadJson( "hosted-with-storage.json" );
         System.out.println( json );
-        final HostedRepository repo = serializer.fromString( json, HostedRepository.class );
+        final HostedRepository repo = mapper.readValue( json, HostedRepository.class );
         System.out.println( repo );
     }
 

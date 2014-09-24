@@ -39,7 +39,7 @@ import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.dto.EndpointView;
 import org.commonjava.aprox.dto.EndpointViewListing;
-import org.commonjava.aprox.inject.AproxData;
+import org.commonjava.aprox.dto.StoreListingDTO;
 import org.commonjava.aprox.model.ArtifactStore;
 import org.commonjava.aprox.model.Group;
 import org.commonjava.aprox.model.HostedRepository;
@@ -47,12 +47,10 @@ import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
-import org.commonjava.web.json.model.Listing;
-import org.commonjava.web.json.ser.JsonSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ApplicationScoped
 public class ReplicationController
@@ -63,8 +61,7 @@ public class ReplicationController
     private StoreDataManager data;
 
     @Inject
-    @AproxData
-    private JsonSerializer serializer;
+    private ObjectMapper serializer;
 
     @Inject
     private AproxHttpProvider http;
@@ -74,7 +71,7 @@ public class ReplicationController
     }
 
     public ReplicationController( final StoreDataManager data, final AproxHttpProvider http,
-                                  final JsonSerializer serializer )
+                                  final ObjectMapper serializer )
     {
         this.data = data;
         this.http = http;
@@ -234,10 +231,11 @@ public class ReplicationController
                 final String json = IOUtils.toString( response.getEntity()
                                                               .getContent() );
 
-                final Listing<RemoteRepository> listing =
-                    serializer.fromString( json, new TypeToken<Listing<RemoteRepository>>()
-                    {
-                    }.getType() );
+                final StoreListingDTO<RemoteRepository> listing =
+                    serializer.readValue( json,
+                                          serializer.getTypeFactory()
+                                                    .constructParametricType( StoreListingDTO.class,
+                                                                              RemoteRepository.class ) );
 
                 if ( listing != null )
                 {
@@ -281,9 +279,9 @@ public class ReplicationController
                 final String json = IOUtils.toString( response.getEntity()
                                                               .getContent() );
 
-                final Listing<Group> listing = serializer.fromString( json, new TypeToken<Listing<Group>>()
-                {
-                }.getType() );
+                final StoreListingDTO<Group> listing =
+                    serializer.readValue( json, serializer.getTypeFactory()
+                                                          .constructParametricType( StoreListingDTO.class, Group.class ) );
 
                 for ( final Group store : listing.getItems() )
                 {
@@ -324,10 +322,11 @@ public class ReplicationController
                 final String json = IOUtils.toString( response.getEntity()
                                                               .getContent() );
 
-                final Listing<HostedRepository> listing =
-                    serializer.fromString( json, new TypeToken<Listing<HostedRepository>>()
-                    {
-                    }.getType() );
+                final StoreListingDTO<HostedRepository> listing =
+                    serializer.readValue( json,
+                                          serializer.getTypeFactory()
+                                                    .constructParametricType( StoreListingDTO.class,
+                                                                              HostedRepository.class ) );
 
                 for ( final HostedRepository store : listing.getItems() )
                 {
@@ -406,8 +405,8 @@ public class ReplicationController
             if ( status == HttpStatus.SC_OK )
             {
                 final EndpointViewListing listing =
-                    serializer.fromStream( response.getEntity()
-                                                   .getContent(), "UTF-8", EndpointViewListing.class );
+                    serializer.readValue( response.getEntity()
+                                                  .getContent(), EndpointViewListing.class );
 
                 return listing.getItems();
             }

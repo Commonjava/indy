@@ -69,8 +69,8 @@
       <artifactId>weld-se-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.web</groupId>
-      <artifactId>json-test-harness</artifactId>
+      <groupId>org.commonjava.cdi.util</groupId>
+      <artifactId>weft</artifactId>
     </dependency>
   </dependencies>
   

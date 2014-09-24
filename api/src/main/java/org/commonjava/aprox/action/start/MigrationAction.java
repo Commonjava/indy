@@ -23,6 +23,7 @@ public interface MigrationAction
     /**
      * Execute the migration, and return whether anything was changed as a result.
      */
-    boolean execute();
+    boolean migrate()
+        throws AproxInitException;
 
 }
