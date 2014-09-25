@@ -14,7 +14,7 @@
   <parent>
     <groupId>org.commonjava.aprox</groupId>
     <artifactId>aprox-db</artifactId>
-    <version>0.16.0</version>
+    <version>0.16.1-SNAPSHOT</version>
   </parent>
   
   <artifactId>aprox-db-flat</artifactId>
