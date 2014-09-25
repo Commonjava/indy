@@ -67,7 +67,7 @@ aprox.controllerProvider.register('StoreChangelogCtl', ['$scope', '$location', '
         
         for(var i=0; i<listing.items.length; i++){
           var item = listing.items[i];
-          item.datestamp = new Date(item.timestamp * 1000).toUTCString();
+          item.datestamp = new Date(item.timestamp).toUTCString();
           $scope.form.changes.push(item);
         }
       }

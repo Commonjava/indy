@@ -24,7 +24,7 @@ import org.junit.rules.TemporaryFolder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class FlatTCKFixtureProvider
+public class DataFileTCKFixtureProvider
     extends TemporaryFolder
     implements TCKFixtureProvider
 {

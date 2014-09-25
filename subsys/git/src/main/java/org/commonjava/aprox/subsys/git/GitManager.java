@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.maven.atlas.ident.util.JoinString;
@@ -31,6 +32,7 @@ import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.errors.RevisionSyntaxException;
 import org.eclipse.jgit.lib.IndexDiff.StageState;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revplot.PlotCommit;
 import org.eclipse.jgit.revplot.PlotCommitList;
@@ -352,14 +354,15 @@ public class GitManager
             pw.markStart( rc );
 
             final String filepath = relativize( f );
+            logger.info( "Getting changelog for: {} (start: {}, length: {})", filepath, start, length );
 
             if ( !isEmpty( filepath ) && !filepath.equals( "/" ) )
             {
-                pw.setTreeFilter( AndTreeFilter.create( PathFilter.create( filepath ), TreeFilter.ALL ) );
+                pw.setTreeFilter( AndTreeFilter.create( PathFilter.create( filepath ), TreeFilter.ANY_DIFF ) );
             }
             else
             {
-                pw.setTreeFilter( TreeFilter.ALL );
+                pw.setTreeFilter( TreeFilter.ANY_DIFF );
             }
 
             final List<ChangeSummary> changelogs = new ArrayList<ChangeSummary>();
@@ -374,6 +377,7 @@ public class GitManager
                     continue;
                 }
 
+                //                printFiles( commit );
                 changelogs.add( toChangeSummary( commit ) );
                 count++;
             }
@@ -395,10 +399,44 @@ public class GitManager
         }
     }
 
+    //    private void printFiles( final RevCommit commit )
+    //        throws IOException
+    //    {
+    //        final RevWalk tree = new RevWalk( repo );
+    //        final RevCommit parent = commit.getParentCount() > 0 ? tree.parseCommit( commit.getParent( 0 )
+    //                                                                                       .getId() ) : null;
+    //
+    //        final DiffFormatter df = new DiffFormatter( DisabledOutputStream.INSTANCE );
+    //        df.setRepository( repo );
+    //        df.setDiffComparator( RawTextComparator.DEFAULT );
+    //        df.setDetectRenames( true );
+    //
+    //        final List<DiffEntry> diffs;
+    //        if ( parent == null )
+    //        {
+    //            diffs =
+    //                df.scan( new EmptyTreeIterator(),
+    //                         new CanonicalTreeParser( null, tree.getObjectReader(), commit.getTree() ) );
+    //        }
+    //        else
+    //        {
+    //            diffs = df.scan( parent.getTree(), commit.getTree() );
+    //        }
+    //
+    //        for ( final DiffEntry diff : diffs )
+    //        {
+    //            logger.info( "({} {} {}", diff.getChangeType()
+    //                                          .name(), diff.getNewMode()
+    //                                                       .getBits(), diff.getNewPath() );
+    //        }
+    //    }
+
     private ChangeSummary toChangeSummary( final RevCommit commit )
     {
-        return new ChangeSummary( commit.getAuthorIdent()
-                                        .getName(), commit.getFullMessage(), new Date( commit.getCommitTime() ) );
+        final PersonIdent who = commit.getAuthorIdent();
+        final Date when = new Date( TimeUnit.MILLISECONDS.convert( commit.getCommitTime(), TimeUnit.SECONDS ) );
+        return new ChangeSummary( who.getName(), commit.getFullMessage(), when, commit.getId()
+                                                                                      .name() );
     }
 
     public GitManager pullUpdates()

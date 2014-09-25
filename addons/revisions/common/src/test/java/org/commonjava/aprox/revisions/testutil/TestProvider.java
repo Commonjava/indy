@@ -7,10 +7,8 @@ import javax.enterprise.inject.Produces;
 
 import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
-import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
 import org.commonjava.aprox.inject.TestData;
-import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.subsys.datafile.conf.DataFileConfiguration;
 import org.commonjava.maven.galley.maven.internal.type.StandardTypeMapper;
 import org.commonjava.maven.galley.maven.parse.XMLInfrastructure;
@@ -32,8 +30,6 @@ public class TestProvider
 
     private DefaultStorageProviderConfiguration storageProviderConfig;
 
-    private StoreDataManager storeManager;
-
     private NotFoundCache nfc;
 
     private XMLInfrastructure xmlInfra;
@@ -50,7 +46,6 @@ public class TestProvider
         this.storageProviderConfig = new DefaultStorageProviderConfiguration( TEMP.newFolder( "storage" ) );
         this.dataConfig = new DataFileConfiguration( TEMP.newFolder( "data" ), TEMP.newFolder( "work" ) );
 
-        this.storeManager = new MemoryStoreDataManager();
         this.nfc = new MemoryNotFoundCache();
         this.xmlInfra = new XMLInfrastructure();
         this.typeMapper = new StandardTypeMapper();
@@ -71,14 +66,6 @@ public class TestProvider
     public DefaultStorageProviderConfiguration getStorageProviderConfig()
     {
         return storageProviderConfig;
-    }
-
-    @Produces
-    @TestData
-    @Default
-    public StoreDataManager getStoreManager()
-    {
-        return storeManager;
     }
 
     @Produces

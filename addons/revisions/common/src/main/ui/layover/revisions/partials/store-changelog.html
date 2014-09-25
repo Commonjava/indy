@@ -53,6 +53,10 @@
 	            <pre>{{change.summary}}</pre>
 	          </span>
 	        </div>
+          <div ng-click="toggleSummary()" ng-if="display" class="detail-field detail-group">
+            <span class="detail-label">Commit ID:</span>
+            <span class="detail-value">{{change.revisionId.substring(0,7)}}</span>
+          </div>
 		    </div>
 		  </div>
 	  </div>

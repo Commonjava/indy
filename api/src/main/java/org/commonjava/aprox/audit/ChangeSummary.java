@@ -12,18 +12,22 @@ public class ChangeSummary
 
     private final String summary;
 
+    private final String revisionId;
+
     public ChangeSummary( final String user, final String summary )
     {
         this.user = user;
         this.summary = summary;
         this.timestamp = new Date();
+        this.revisionId = null;
     }
 
-    public ChangeSummary( final String user, final String summary, final Date timestamp )
+    public ChangeSummary( final String user, final String summary, final Date timestamp, final String revisionId )
     {
         this.user = user;
         this.summary = summary;
         this.timestamp = timestamp;
+        this.revisionId = revisionId;
     }
 
     public String getUser()
@@ -45,6 +49,11 @@ public class ChangeSummary
     public String toString()
     {
         return String.format( "[%s; %s] %s", user, timestamp, summary );
+    }
+
+    public String getRevisionId()
+    {
+        return revisionId;
     }
 
 }

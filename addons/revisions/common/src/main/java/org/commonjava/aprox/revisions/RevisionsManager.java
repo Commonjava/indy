@@ -15,7 +15,10 @@ import javax.inject.Inject;
 
 import org.apache.commons.io.FileUtils;
 import org.commonjava.aprox.audit.ChangeSummary;
+import org.commonjava.aprox.flat.data.DataFileStoreDataManager;
+import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.revisions.conf.RevisionsConfig;
+import org.commonjava.aprox.subsys.datafile.DataFile;
 import org.commonjava.aprox.subsys.datafile.DataFileManager;
 import org.commonjava.aprox.subsys.datafile.change.DataFileEvent;
 import org.commonjava.aprox.subsys.datafile.change.DataFileEventType;
@@ -41,15 +44,20 @@ public class RevisionsManager
     @Inject
     private DataFileManager dataFileManager;
 
+    @Inject
+    private DataFileStoreDataManager storeManager;
+
     protected RevisionsManager()
     {
     }
 
-    public RevisionsManager( final RevisionsConfig revisionsConfig, final DataFileManager dataFileManager )
+    public RevisionsManager( final RevisionsConfig revisionsConfig, final DataFileManager dataFileManager,
+                             final DataFileStoreDataManager storeManager )
         throws GitSubsystemException, IOException
     {
         this.revisionsConfig = revisionsConfig;
         this.dataFileManager = dataFileManager;
+        this.storeManager = storeManager;
         setup();
     }
 
@@ -119,6 +127,13 @@ public class RevisionsManager
     {
         dataFileGit.pushUpdates();
         // FIXME: Return some sort of status
+    }
+
+    public List<ChangeSummary> getDataChangeLog( final StoreKey key, final int start, final int count )
+        throws GitSubsystemException
+    {
+        final DataFile dataFile = storeManager.getDataFile( key );
+        return dataFileGit.getChangelog( dataFile.getDetachedFile(), start, count );
     }
 
     public List<ChangeSummary> getDataChangeLog( String path, final int start, final int length )

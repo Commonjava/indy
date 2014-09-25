@@ -15,12 +15,12 @@ import org.commonjava.aprox.core.data.RepositoryDataManagerTCK;
 import org.commonjava.aprox.core.data.TCKFixtureProvider;
 import org.junit.Rule;
 
-public class FlatRepositoryManagementTest
+public class RepositoryManagementTest
     extends RepositoryDataManagerTCK
 {
 
     @Rule
-    public FlatTCKFixtureProvider provider = new FlatTCKFixtureProvider();
+    public DataFileTCKFixtureProvider provider = new DataFileTCKFixtureProvider();
 
     @Override
     protected TCKFixtureProvider getFixtureProvider()

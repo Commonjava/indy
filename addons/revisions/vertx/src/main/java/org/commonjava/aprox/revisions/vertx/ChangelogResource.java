@@ -3,7 +3,6 @@ package org.commonjava.aprox.revisions.vertx;
 import static org.commonjava.aprox.bind.vertx.util.PathParam.name;
 import static org.commonjava.aprox.bind.vertx.util.PathParam.type;
 
-import java.io.File;
 import java.util.Date;
 import java.util.List;
 
@@ -11,12 +10,10 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.audit.ChangeSummary;
-import org.commonjava.aprox.flat.data.DataFileStoreDataManager;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
 import org.commonjava.aprox.revisions.RevisionsManager;
 import org.commonjava.aprox.revisions.vertx.dto.ChangeSummaryDTO;
-import org.commonjava.aprox.subsys.datafile.DataFile;
 import org.commonjava.aprox.subsys.git.GitSubsystemException;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
@@ -48,9 +45,6 @@ public class ChangelogResource
     private RevisionsManager revisions;
 
     @Inject
-    private DataFileStoreDataManager storeManager;
-
-    @Inject
     private ObjectMapper objectMapper;
 
     @Route( "/store/:type/:name" )
@@ -75,12 +69,9 @@ public class ChangelogResource
         final int start = query.getInt( START_PARAM, 0 );
         final int count = query.getInt( COUNT_PARAM, DEFAULT_CHANGELOG_COUNT );
 
-        final DataFile storeFile = storeManager.getDataFile( key );
-        final File f = storeFile.getDetachedFile();
-
         try
         {
-            final List<ChangeSummary> dataChangeLog = revisions.getDataChangeLog( f, start, count );
+            final List<ChangeSummary> dataChangeLog = revisions.getDataChangeLog( key, start, count );
             Respond.to( request )
                    .ok()
                    .jsonEntity( new ChangeSummaryDTO( dataChangeLog ), objectMapper )

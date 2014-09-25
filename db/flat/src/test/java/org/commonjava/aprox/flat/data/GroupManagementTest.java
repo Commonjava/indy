@@ -15,12 +15,12 @@ import org.commonjava.aprox.core.data.GroupDataManagerTCK;
 import org.commonjava.aprox.core.data.TCKFixtureProvider;
 import org.junit.Rule;
 
-public class FlatGroupManagementTest
+public class GroupManagementTest
     extends GroupDataManagerTCK
 {
 
     @Rule
-    public FlatTCKFixtureProvider provider = new FlatTCKFixtureProvider();
+    public DataFileTCKFixtureProvider provider = new DataFileTCKFixtureProvider();
 
     @Override
     protected TCKFixtureProvider getFixtureProvider()
