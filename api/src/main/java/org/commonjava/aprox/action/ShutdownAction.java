@@ -8,22 +8,19 @@
  * Contributors:
  *     Red Hat, Inc. - initial API and implementation
  ******************************************************************************/
-package org.commonjava.aprox.action.start;
+package org.commonjava.aprox.action;
 
 /**
- * Converts storage/data formats from older versions of AProx into up-to-date forms.
- * These are run right after the system boots, but before it listens for requests.
+ * Performs some sort of service/subsystem shutdown as AProx is stopping.
  */
-public interface MigrationAction
+public interface ShutdownAction
+    extends AproxLifecycleAction
 {
 
-    /** Used mainly for reporting, this is a unique identifier for this migration action. */
-    String getId();
-
     /**
-     * Execute the migration, and return whether anything was changed as a result.
+     * Stop the service on shutdown.
      */
-    boolean migrate()
-        throws AproxInitException;
+    void stop()
+        throws AproxLifecycleException;
 
 }

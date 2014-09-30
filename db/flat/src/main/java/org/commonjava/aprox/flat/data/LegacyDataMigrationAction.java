@@ -15,7 +15,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.commonjava.aprox.action.start.MigrationAction;
+import org.commonjava.aprox.action.MigrationAction;
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.model.HostedRepository;
@@ -116,6 +116,12 @@ public class LegacyDataMigrationAction
         }
 
         return changed;
+    }
+
+    @Override
+    public int getPriority()
+    {
+        return 85;
     }
 
 }

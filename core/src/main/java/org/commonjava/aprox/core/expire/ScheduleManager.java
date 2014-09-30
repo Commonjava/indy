@@ -38,8 +38,8 @@ import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.commonjava.aprox.action.start.AproxInitException;
-import org.commonjava.aprox.action.start.StartupAction;
+import org.commonjava.aprox.action.AproxLifecycleException;
+import org.commonjava.aprox.action.StartupAction;
 import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.core.conf.AproxSchedulerConfig;
@@ -117,7 +117,7 @@ public class ScheduleManager
 
     @Override
     public void start()
-        throws AproxInitException
+        throws AproxLifecycleException
     {
         try
         {
@@ -157,7 +157,7 @@ public class ScheduleManager
         }
         catch ( final SchedulerException e )
         {
-            throw new AproxInitException( "Failed to start scheduler", e );
+            throw new AproxLifecycleException( "Failed to start scheduler", e );
         }
     }
 
@@ -704,6 +704,12 @@ public class ScheduleManager
     public String getId()
     {
         return "AProx Scheduler";
+    }
+
+    @Override
+    public int getPriority()
+    {
+        return 90;
     }
 
 }

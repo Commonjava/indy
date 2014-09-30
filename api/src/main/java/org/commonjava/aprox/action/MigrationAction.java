@@ -8,22 +8,20 @@
  * Contributors:
  *     Red Hat, Inc. - initial API and implementation
  ******************************************************************************/
-package org.commonjava.aprox.action.start;
+package org.commonjava.aprox.action;
 
 /**
  * Converts storage/data formats from older versions of AProx into up-to-date forms.
- * These are run right after the system boots, but before it listens for requests.
+ * These are run right after the system boots, but before AProx enters its startup sequence (see {@link StartupAction}).
  */
-public interface StartupAction
+public interface MigrationAction
+    extends AproxLifecycleAction
 {
-
-    /** Used mainly for reporting, this is a unique identifier for this migration action. */
-    String getId();
 
     /**
      * Execute the migration, and return whether anything was changed as a result.
      */
-    void start()
-        throws AproxInitException;
+    boolean migrate()
+        throws AproxLifecycleException;
 
 }

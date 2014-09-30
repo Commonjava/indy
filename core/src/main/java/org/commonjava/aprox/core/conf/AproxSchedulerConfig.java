@@ -10,6 +10,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.conf;
 
+import java.util.Map;
 import java.util.Properties;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -26,6 +27,22 @@ public class AproxSchedulerConfig
 
     public static final String SECTION_NAME = "scheduler";
 
+    private static final String QUARTZ_DATASOURCE_PREFIX = "org.quartz.dataSource.ds.";
+
+    private static final String DS_DRIVER = "driver";
+
+    private static final String DS_URL = "URL";
+
+    private static final String DDL_PROP = "ddl";
+
+    private transient boolean dbDetailsParsed;
+
+    private transient String ddlFile;
+
+    private transient String dbUrl;
+
+    private transient String dbDriver;
+
     public AproxSchedulerConfig()
     {
         super( SECTION_NAME );
@@ -40,6 +57,94 @@ public class AproxSchedulerConfig
         {
             this.parameter( key, props.getProperty( key ) );
         }
+    }
+
+    private synchronized void parseDatabaseDetails()
+    {
+        if ( !dbDetailsParsed )
+        {
+            dbDetailsParsed = true;
+
+            final Map<String, String> configMap = getConfiguration();
+            if ( configMap == null )
+            {
+                return;
+            }
+
+            for ( final Map.Entry<String, String> entry : configMap.entrySet() )
+            {
+                final String key = entry.getKey();
+                if ( DDL_PROP.equalsIgnoreCase( key ) )
+                {
+                    ddlFile = entry.getValue();
+                }
+                else if ( key.startsWith( QUARTZ_DATASOURCE_PREFIX ) )
+                {
+                    if ( key.endsWith( DS_DRIVER ) )
+                    {
+                        this.dbDriver = entry.getValue();
+                    }
+                    else if ( key.endsWith( DS_URL ) )
+                    {
+                        this.dbUrl = entry.getValue();
+                    }
+                }
+            }
+        }
+    }
+
+    public String getDdlFile()
+    {
+        parseDatabaseDetails();
+        return ddlFile;
+    }
+
+    public String getDbUrl()
+    {
+        parseDatabaseDetails();
+        return dbUrl;
+    }
+
+    public String getDbDriver()
+    {
+        parseDatabaseDetails();
+        return dbDriver;
+    }
+
+    public CharSequence validate()
+    {
+        parseDatabaseDetails();
+        final StringBuilder sb = new StringBuilder();
+        if ( dbDriver == null )
+        {
+            if ( sb.length() > 0 )
+            {
+                sb.append( "\n" );
+            }
+            sb.append( "Missing database driver (" )
+              .append( QUARTZ_DATASOURCE_PREFIX )
+              .append( DS_DRIVER )
+              .append( ")" );
+        }
+
+        if ( dbUrl == null )
+        {
+            if ( sb.length() > 0 )
+            {
+                sb.append( "\n" );
+            }
+            sb.append( "Missing database URL (" )
+              .append( QUARTZ_DATASOURCE_PREFIX )
+              .append( DS_URL )
+              .append( ")" );
+        }
+
+        if ( sb.length() > 0 )
+        {
+            return sb;
+        }
+
+        return null;
     }
 
 }

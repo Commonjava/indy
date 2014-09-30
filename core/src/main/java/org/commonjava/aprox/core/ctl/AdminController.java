@@ -13,33 +13,21 @@ package org.commonjava.aprox.core.ctl;
 import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.action.start.AproxInitException;
-import org.commonjava.aprox.action.start.MigrationAction;
-import org.commonjava.aprox.action.start.StartupAction;
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.core.expire.ScheduleManager;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.HostedRepository;
-import org.commonjava.aprox.model.RemoteRepository;
 import org.commonjava.aprox.model.StoreKey;
 import org.commonjava.aprox.model.StoreType;
-import org.commonjava.aprox.stats.AProxVersioning;
 import org.commonjava.aprox.util.ApplicationStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class AdminController
 {
-    private final Logger logger = LoggerFactory.getLogger( getClass() );
-
     @Inject
     private StoreDataManager storeManager;
 
@@ -48,25 +36,14 @@ public class AdminController
     @Inject
     private ScheduleManager scheduleManager;
 
-    @Inject
-    private AProxVersioning versioning;
-
-    @Inject
-    private Instance<MigrationAction> migrationActions;
-
-    @Inject
-    private Instance<StartupAction> startupActions;
-
     protected AdminController()
     {
     }
 
-    public AdminController( final StoreDataManager storeManager, final ScheduleManager scheduleManager,
-                            final AProxVersioning versioning )
+    public AdminController( final StoreDataManager storeManager, final ScheduleManager scheduleManager )
     {
         this.storeManager = storeManager;
         this.scheduleManager = scheduleManager;
-        this.versioning = versioning;
     }
 
     public boolean store( final ArtifactStore store, final String user, final boolean skipExisting )
@@ -127,93 +104,6 @@ public class AdminController
         {
             throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to delete: {}. Reason: {}", e, key, e.getMessage() );
         }
-    }
-
-    public void started()
-        throws AproxInitException
-    {
-        logger.info( "\n\n\n\n\n STARTING AProx\n    Version: {}\n    Built-By: {}\n    Commit-ID: {}\n    Built-On: {}\n\n\n\n\n",
-                     versioning.getVersion(), versioning.getBuilder(), versioning.getCommitId(),
-                     versioning.getTimestamp() );
-
-        runMigrationActions();
-        runStartupActions();
-
-        final ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, "Initializing default data." );
-
-        try
-        {
-            logger.info( "Verfiying that AProx DB + basic data is installed..." );
-            storeManager.install();
-
-            if ( !storeManager.hasRemoteRepository( "central" ) )
-            {
-                final RemoteRepository central =
-                    new RemoteRepository( "central", "http://repo.maven.apache.org/maven2/" );
-                central.setCacheTimeoutSeconds( 86400 );
-                storeManager.storeRemoteRepository( central, summary, true );
-            }
-
-            if ( !storeManager.hasHostedRepository( "local-deployments" ) )
-            {
-                final HostedRepository local = new HostedRepository( "local-deployments" );
-                local.setAllowReleases( true );
-                local.setAllowSnapshots( true );
-                local.setSnapshotTimeoutSeconds( 86400 );
-
-                storeManager.storeHostedRepository( local, summary, true );
-            }
-
-            if ( !storeManager.hasGroup( "public" ) )
-            {
-                final Group pub = new Group( "public" );
-                pub.addConstituent( new StoreKey( StoreType.remote, "central" ) );
-                pub.addConstituent( new StoreKey( StoreType.hosted, "local-deployments" ) );
-
-                storeManager.storeGroup( pub, summary, true );
-            }
-        }
-        catch ( final ProxyDataException e )
-        {
-            throw new RuntimeException( "Failed to boot aprox components: " + e.getMessage(), e );
-        }
-
-        logger.info( "...done." );
-    }
-
-    private void runMigrationActions()
-        throws AproxInitException
-    {
-        boolean changed = false;
-        if ( migrationActions != null )
-        {
-            logger.info( "Running migration actions..." );
-            for ( final MigrationAction action : migrationActions )
-            {
-                logger.info( "Running migration action: '{}'", action.getId() );
-                changed = action.migrate() || changed;
-            }
-        }
-    }
-
-    private void runStartupActions()
-        throws AproxInitException
-    {
-        if ( startupActions != null )
-        {
-            logger.info( "Running startup actions..." );
-            for ( final StartupAction action : startupActions )
-            {
-                logger.info( "Running startup action: '{}'", action.getId() );
-                action.start();
-            }
-        }
-    }
-
-    public void stopped()
-    {
-        logger.info( "\n\n\n\n\n SHUTTING DOWN AProx\n    Version: {}\n    Built-By: {}\n    Commit-ID: {}\n    Built-On: {}\n\n\n\n\n",
-                     versioning.getVersion(), versioning.getBuilder(), versioning.getCommitId(), versioning.getTimestamp() );
     }
 
 }

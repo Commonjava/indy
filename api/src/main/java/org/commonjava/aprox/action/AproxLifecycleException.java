@@ -1,8 +1,8 @@
-package org.commonjava.aprox.action.start;
+package org.commonjava.aprox.action;
 
 import java.text.MessageFormat;
 
-public class AproxInitException
+public class AproxLifecycleException
     extends Exception
 {
     private static final long serialVersionUID = 1L;
@@ -11,13 +11,13 @@ public class AproxInitException
 
     private String formattedMessage;
 
-    public AproxInitException( final String message, final Throwable cause, final Object... params )
+    public AproxLifecycleException( final String message, final Throwable cause, final Object... params )
     {
         super( message, cause );
         this.params = params;
     }
 
-    public AproxInitException( final String message, final Object... params )
+    public AproxLifecycleException( final String message, final Object... params )
     {
         super( message );
         this.params = params;

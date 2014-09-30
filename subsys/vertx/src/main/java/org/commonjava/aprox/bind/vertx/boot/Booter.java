@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.codehaus.plexus.interpolation.InterpolationException;
+import org.commonjava.aprox.action.AproxLifecycleException;
+import org.commonjava.aprox.action.AproxLifecycleManager;
 import org.commonjava.aprox.conf.AproxConfigFactory;
 import org.commonjava.web.config.ConfigurationException;
 import org.jboss.weld.environment.se.Weld;
@@ -39,6 +41,8 @@ public class Booter
     public static final int ERR_CANT_CONFIGURE_LOGGING = 4;
 
     private static final int ERR_CANT_CONFIGURE_APROX = 5;
+
+    private static final int ERR_CANT_START_APROX = 6;
 
     public static void main( final String[] args )
     {
@@ -156,6 +160,26 @@ public class Booter
             return ERR_CANT_CONFIGURE_APROX;
         }
 
+        final AproxLifecycleManager lifecycleManager = container.instance()
+                                                                .select( AproxLifecycleManager.class )
+                                                                .get();
+        try
+        {
+            lifecycleManager.start();
+        }
+        catch ( final AproxLifecycleException e )
+        {
+            System.err.printf( "\n\nFailed to start AProx: %s", e.getMessage() );
+            e.printStackTrace();
+
+            return ERR_CANT_START_APROX;
+        }
+
+        System.out.println( "Setting up shutdown hook..." );
+        Runtime.getRuntime()
+               .addShutdownHook( new Thread( lifecycleManager.createShutdownRunnable() ) );
+
+        final int exit = 0;
         final MasterRouter router = container.instance()
                                              .select( MasterRouter.class )
                                              .get();
@@ -173,7 +197,8 @@ public class Booter
                   .listen( bootOptions.getPort(), bootOptions.getBind() );
         }
 
-        System.out.printf( "AProx: %s workers listening on %s:%s\n\n", bootOptions.getWorkers(), bootOptions.getBind(), bootOptions.getPort() );
+        System.out.printf( "AProx: %s workers listening on %s:%s\n\n", bootOptions.getWorkers(), bootOptions.getBind(),
+                           bootOptions.getPort() );
 
         synchronized ( this )
         {
@@ -183,12 +208,12 @@ public class Booter
             }
             catch ( final InterruptedException e )
             {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
+                System.err.println( "AProx exiting" );
             }
         }
 
-        return 0;
+        return exit;
     }
 
 }

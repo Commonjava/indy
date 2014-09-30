@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
@@ -28,9 +27,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Qualifier;
 
-import org.commonjava.aprox.action.start.AproxInitException;
 import org.commonjava.aprox.bind.vertx.AproxRouter;
-import org.commonjava.aprox.core.ctl.AdminController;
 import org.commonjava.aprox.inject.RestApp;
 import org.commonjava.vertx.vabr.ApplicationRouterConfig;
 import org.commonjava.vertx.vabr.bind.filter.FilterCollection;
@@ -70,9 +67,6 @@ public class RestRouter
     @Inject
     private Instance<FilterCollection> filterCollectionInstances;
 
-    @Inject
-    private AdminController adminController;
-
     public RestRouter()
     {
         super( new ApplicationRouterConfig().withAppAcceptId( APROX_ID )
@@ -100,15 +94,6 @@ public class RestRouter
     @PostConstruct
     public void initializeComponents()
     {
-        try
-        {
-            adminController.started();
-        }
-        catch ( final AproxInitException e )
-        {
-            throw new RuntimeException( "Failed to start aprox: " + e.getMessage(), e );
-        }
-
         logger.info( "\n\nCONSTRUCTING WEB ROUTES FOR APROX...\n\n" );
 
         final Set<RouteCollection> routes = new HashSet<>();
@@ -167,12 +152,6 @@ public class RestRouter
         bindRouteCollections( routes );
         bindFilterCollections( filters );
         logger.info( "\n\n...done.\n\n" );
-    }
-
-    @PreDestroy
-    public void stopped()
-    {
-        adminController.stopped();
     }
 
 }

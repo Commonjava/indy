@@ -5,7 +5,8 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.commonjava.aprox.action.start.MigrationAction;
+import org.commonjava.aprox.action.AproxLifecycleException;
+import org.commonjava.aprox.action.StartupAction;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.ArtifactStore;
@@ -16,7 +17,7 @@ import org.slf4j.LoggerFactory;
 
 @Named( "set-back-initializer" )
 public class SetBackSettingsInitializer
-    implements MigrationAction
+    implements StartupAction
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -44,9 +45,9 @@ public class SetBackSettingsInitializer
     }
 
     @Override
-    public boolean migrate()
+    public void start()
+        throws AproxLifecycleException
     {
-        boolean changed = false;
         try
         {
             final List<ArtifactStore> stores = storeManager.getAllArtifactStores();
@@ -65,7 +66,6 @@ public class SetBackSettingsInitializer
                     try
                     {
                         settingsManager.generateStoreSettings( store.getKey() );
-                        changed = true;
                     }
                     catch ( final SetBackDataException e )
                     {
@@ -76,10 +76,16 @@ public class SetBackSettingsInitializer
         }
         catch ( final ProxyDataException e )
         {
-            logger.error( "Failed to retrieve full list of ArtifactStores available on the system", e );
+            throw new AproxLifecycleException(
+                                               "Failed to retrieve full list of ArtifactStores available on the system",
+                                               e );
         }
+    }
 
-        return changed;
+    @Override
+    public int getPriority()
+    {
+        return 40;
     }
 
 }
