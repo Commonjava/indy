@@ -277,7 +277,7 @@ public class ScheduleManager
             JobDetail detail = scheduler.getJobDetail( jk );
             if ( detail == null )
             {
-                detail = JobBuilder.newJob()
+                detail = JobBuilder.newJob( ExpirationJob.class )
                                    .withIdentity( jk )
                                    .storeDurably()
                                    .requestRecovery()
