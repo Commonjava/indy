@@ -19,7 +19,7 @@ import javax.sql.rowset.RowSetWarning;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.action.AproxLifecycleException;
-import org.commonjava.aprox.action.MigrationAction;
+import org.commonjava.aprox.action.BootupAction;
 import org.commonjava.aprox.action.ShutdownAction;
 import org.commonjava.aprox.core.conf.AproxSchedulerConfig;
 import org.slf4j.Logger;
@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 
 @Named( "scheduler-db" )
 public class DatabaseLifecycleActions
-    implements MigrationAction, ShutdownAction
+    implements BootupAction, ShutdownAction
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -46,11 +46,11 @@ public class DatabaseLifecycleActions
     @Override
     public int getPriority()
     {
-        return 90;
+        return 95;
     }
 
     @Override
-    public boolean migrate()
+    public void init()
         throws AproxLifecycleException
     {
         final CharSequence violations = schedulerConfig.validate();
@@ -187,8 +187,6 @@ public class DatabaseLifecycleActions
                     {
                         logger.info( "Scheduler database tables appear to exist. Skipping." );
                     }
-
-                    return true;
                 }
             }
             catch ( final SQLWarning | RowSetWarning e )
@@ -204,8 +202,6 @@ public class DatabaseLifecycleActions
                 close( tableQuery, stmt, connection, url );
             }
         }
-
-        return false;
     }
 
     private void close( final ResultSet tableQuery, final Statement stmt, final Connection connection, final String url )

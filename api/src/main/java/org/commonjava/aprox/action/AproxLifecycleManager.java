@@ -14,6 +14,12 @@ import org.commonjava.aprox.stats.AProxVersioning;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Handles the startup sequence (managing {@link BootupAction}, {@link MigrationAction}, and {@link StartupAction} instances in order), and the 
+ * shutdown sequence (managing {@link ShutdownAction} instances in order.
+ * 
+ * @author jdcasey
+ */
 @ApplicationScoped
 public class AproxLifecycleManager
 {
@@ -42,6 +48,9 @@ public class AproxLifecycleManager
     private AProxVersioning versioning;
 
     @Inject
+    private Instance<BootupAction> bootupActionInstances;
+
+    @Inject
     private Instance<MigrationAction> migrationActionInstances;
 
     @Inject
@@ -49,6 +58,8 @@ public class AproxLifecycleManager
 
     @Inject
     private Instance<ShutdownAction> shutdownActionInstances;
+
+    private List<BootupAction> bootupActions;
 
     private List<MigrationAction> migrationActions;
 
@@ -60,24 +71,32 @@ public class AproxLifecycleManager
     {
     }
 
-    public AproxLifecycleManager( final AProxVersioning versioning,
+    public AproxLifecycleManager( final AProxVersioning versioning, final Iterable<BootupAction> bootupActionInstances,
                                   final Iterable<MigrationAction> migrationActionInstances,
                                   final Iterable<StartupAction> startupActionInstances,
                                   final Iterable<ShutdownAction> shutdownActionInstances )
     {
-        initialize( migrationActionInstances, startupActionInstances, shutdownActionInstances );
+        initialize( bootupActionInstances, migrationActionInstances, startupActionInstances, shutdownActionInstances );
     }
 
     @PostConstruct
     public void init()
     {
-        initialize( migrationActionInstances, startupActionInstances, shutdownActionInstances );
+        initialize( bootupActionInstances, migrationActionInstances, startupActionInstances, shutdownActionInstances );
     }
 
-    private void initialize( final Iterable<MigrationAction> migrationActionInstances,
+    private void initialize( final Iterable<BootupAction> bootupActionInstances,
+                             final Iterable<MigrationAction> migrationActionInstances,
                              final Iterable<StartupAction> startupActionInstances,
                              final Iterable<ShutdownAction> shutdownActionInstances )
     {
+        bootupActions = new ArrayList<>();
+        for ( final BootupAction action : bootupActionInstances )
+        {
+            bootupActions.add( action );
+        }
+        Collections.sort( bootupActions, PRIORITY_COMPARATOR );
+
         migrationActions = new ArrayList<>();
         for ( final MigrationAction action : migrationActionInstances )
         {
@@ -100,6 +119,15 @@ public class AproxLifecycleManager
         Collections.sort( shutdownActions, PRIORITY_COMPARATOR );
     }
 
+    /**
+     * Start sequence is:
+     * <ul>
+     *   <li>Start all {@link BootupAction} instances, with highest priority executing first.</li>
+     *   <li>Run all {@link MigrationAction} instances, with highest priority executing first.</li>
+     *   <li>Run all {@link StartupAction} instances, with highest priority executing first.</li>
+     * </ul>
+     * @throws AproxLifecycleException
+     */
     public void start()
         throws AproxLifecycleException
     {
@@ -107,12 +135,17 @@ public class AproxLifecycleManager
                      versioning.getVersion(), versioning.getBuilder(), versioning.getCommitId(),
                      versioning.getTimestamp() );
 
+        runBootupActions();
         runMigrationActions();
         runStartupActions();
 
         logger.info( "...done. AProx is ready to run." );
     }
 
+    /**
+     * Run all {@link ShutdownAction} instances, with highest priority executing first.
+     * @throws AproxLifecycleException
+     */
     public void stop()
         throws AproxLifecycleException
     {
@@ -123,6 +156,20 @@ public class AproxLifecycleManager
         runShutdownActions();
 
         logger.info( "...done. AProx is ready to shut down." );
+    }
+
+    private void runBootupActions()
+        throws AproxLifecycleException
+    {
+        if ( bootupActions != null )
+        {
+            logger.info( "Running bootup actions..." );
+            for ( final BootupAction action : bootupActions )
+            {
+                logger.info( "Running bootup action: '{}'", action.getId() );
+                action.init();
+            }
+        }
     }
 
     private void runMigrationActions()
@@ -168,6 +215,9 @@ public class AproxLifecycleManager
         }
     }
 
+    /**
+     * Create a Runnable that can be used in {@link Runtime#addShutdownHook(Thread)}.
+     */
     public Runnable createShutdownRunnable()
     {
         return new Runnable()

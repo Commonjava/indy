@@ -39,7 +39,7 @@ import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.commonjava.aprox.action.AproxLifecycleException;
-import org.commonjava.aprox.action.StartupAction;
+import org.commonjava.aprox.action.BootupAction;
 import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.core.conf.AproxSchedulerConfig;
@@ -77,7 +77,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 @ApplicationScoped
 public class ScheduleManager
-    implements StartupAction
+    implements BootupAction
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -116,7 +116,7 @@ public class ScheduleManager
     private Scheduler scheduler;
 
     @Override
-    public void start()
+    public void init()
         throws AproxLifecycleException
     {
         try
@@ -709,7 +709,7 @@ public class ScheduleManager
     @Override
     public int getPriority()
     {
-        return 90;
+        return 80;
     }
 
 }
