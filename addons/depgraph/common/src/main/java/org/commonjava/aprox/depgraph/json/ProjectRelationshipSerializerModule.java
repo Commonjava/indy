@@ -117,6 +117,7 @@ public class ProjectRelationshipSerializerModule
                     break;
                 }
             }
+            gen.writeEndObject();
         }
 
     }
