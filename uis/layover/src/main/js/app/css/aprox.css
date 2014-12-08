@@ -111,12 +111,27 @@ td{
 }
 
 .control-panel{
-  border-left: 1px solid #333;
+  border-left: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
   float: right;
-  min-width: 250px;
-  margin: 20px;
+  min-width: 15%;
+  margin: 0px;
   margin-top: 0px;
-  padding-left: 10px;
+  padding-left: 1%;
+}
+
+.content-panel{
+  display: block;
+  margin-top: 10px;
+  margin-left: 20px;
+  margin-right: 15%;
+  min-width: 60%;
+}
+
+footer{
+  border-top: 1px solid #ddd;
+  padding: 5px;
+  margin-top: 20px;
 }
 
 .cp-row{
@@ -175,20 +190,6 @@ div.sidebyside{
   margin-right: 20px;
 }
 
-.content-panel{
-  display: block;
-  margin-top: 10px;
-  margin-left: 20px;
-  margin-right: 250px;
-  min-width: 80%;
-}
-
-footer{
-  border-top: 1px solid #ddd;
-  padding: 5px;
-  margin-top: 20px;
-}
-
 .options-field{
 }
 
@@ -226,8 +227,8 @@ pre{
 }
 
 .detail-table,
-.detail-container {
-  width: 80%;
+.detail-container{
+  width: 90%;
   margin-top: 20px;
 }
 
@@ -235,14 +236,18 @@ pre{
 	
 }
 
-.detail-table>caption,
 .detail-container-caption {
 	font-weight: bold;
 	margin-bottom: 20px;
 }
 
-td.detail-value{
+.detail-value{
   text-align: left;
+}
+
+.detail-hint{
+	margin-bottom: 20px;
+	padding-left: 20px;
 }
 
 .detail-group-start {
@@ -268,7 +273,37 @@ li.detail-edit-list{
   min-width: 40%;
 }
 
-label, caption, .label, .detail-label{
+.fieldset{
+  min-width: 90%;
+	margin-top: 10px;
+	padding-left: 3px;
+	padding-right: 3px;
+	padding-top: 1px;
+  margin-bottom: 50px;
+}
+
+.sub-fields{
+	margin-top: 5px;
+  padding: 20px;
+  padding-left: 20px;
+	border: 1px solid #ddd;
+	background-color: #eee;
+	margin-bottom: 20px;
+}
+
+.sub-fields>.fieldset{
+	padding-bottom: 0px;
+	margin-bottom: 0px;
+}
+
+.fieldset-caption{
+	padding-bottom: 0px;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 5px;
+}
+
+label, .fieldset-caption, .label, .detail-label{
+	color: #333;
   font-weight: bold;
   text-align: left;
 }
@@ -277,16 +312,17 @@ label, caption, .label, .detail-label{
   margin-left: 20px;
 }
 
-.label{
+label, .label{
   padding-right: 5px;
+  min-width: 12%;
 }
 
 .hint, .description{
   font-style: italic;
   font-size: 80%;
   color: #333;
-  margin-left: 1.2em;
-  margin-right: 1.2em;
+  margin-left: 5px;
+  margin-right: 5px;
   text-decoration: none !important;
   text-align: left;
 }
@@ -297,10 +333,6 @@ label, caption, .label, .detail-label{
   width: 40em;
 }
 
-.fieldset{
-  margin-top: 20px;
-}
-
 .textarea-label{
   margin-top: 10px;
 }
@@ -309,14 +341,28 @@ label, caption, .label, .detail-label{
 }
 
 .left-col,
-.right-col{
+.right-col,
+.left-half,
+.right-half{
   vertical-align: top;
-  min-width: 30%;
+  min-width: 10%;
   display: inline-block;
 }
 
-.left-col{
-  margin-right: 50px;
+.right-col{
+	margin-left: 5%;
+}
+
+.left-half,
+.right-half{
+  vertical-align: top;
+  min-width: 40%;
+  display: inline-block;
+}
+
+.right-half{
+  margin-left: 5%;
+  width: 40%;
 }
 
 .textarea-label{
@@ -324,8 +370,12 @@ label, caption, .label, .detail-label{
 }
 
 .text-description{
-  height: 2em;
-  width: 89em;
+  /*height: 2em; */
+  min-width: 80%;
+}
+
+.remainder-field{
+	min-width: 80em;
 }
 
 .listing-text{

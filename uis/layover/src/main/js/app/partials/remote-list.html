@@ -18,27 +18,24 @@
       </div>
     </div>
     <div class="content-panel">
-      <table class="store-listing">
-        <tr>
-            <th>Name</th>
-            <th>Local URL</th>
-            <th>Remote URL</th>
-        </tr>
-        <tr ng-repeat-start="store in listing.items | filter:query | orderBy:orderProp" class="store-listing-item listing-item-start">
-            <td class="key">
-                <a ng-href="{{store.detailHref}}">{{store.name}}</a>
-            </td>
-            <td class="field">
-              <a ng-href="{{store.storeHref}}" target="_new">{{store.storeHref}}</a>
-            </td>
-            <td class="field">
-              <a ng-href="{{store.url}}" target="_new">{{store.url}}</a>
-            </td>
-        </tr>
-        <tr ng-repeat-end class="store-listing-item listing-item-end">
-          <td colspan="3" class="description field">{{store.description}}</td>
-        </tr>
-      </table>
+      <div class="store-listing">
+        <div ng-repeat="store in listing.items | filter:query | orderBy:orderProp" class="store-listing-item listing-item-start">
+          <div class="fieldset-caption"><a href="#/remote/view/{{storeUtils.nameFromKey(store.key)}}">{{store.name}}</a></div>
+          <div class="fieldset two-col">
+            <div class="two-col">
+	            <div class="field left-half">
+	              <label>Local URL:</label>
+	              <a ng-href="{{store.storeHref}}" target="_new">{{store.storeHref}}</a>
+	            </div>
+	            <div class="field right-half">
+	              <label>Remote URL:</label>
+	              <a ng-href="{{store.url}}" target="_new">{{store.url}}</a>
+	            </div>
+	          </div>
+            <div class="description field"><span>{{store.description}}</span></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div ng-if="enableDebug" class="debug">

@@ -1,32 +1,31 @@
 
-<table class="detail-table">
-	<tr class="detail-field">
-		<td class="detail-label">Name:</td>
-		<td class="detail-value"><span class="key">{{raw.name}}</span></td>
-	</tr>
-	<tr class="detail-field">
-		<td class="detail-label">Local URL:</td>
-		<td class="detail-value">
-		  <a ng-if="!raw.demo" ng-href="{{raw.storeHref}}" target="_new">{{raw.storeHref}}</a>
-      <span ng-if="raw.demo">{{raw.storeHref}}</span>
-		</td>
-	</tr>
-</table>
+<div class="fieldset-caption">Basics</div>
+<div class="fieldset">
+	<div class="detail-field">
+		<label>Name:</label>
+		<span class="key">{{raw.name}}</span>
+	</div>
+	<div class="detail-field">
+		<label>Local URL:</label>
+		<span><a ng-if="!raw.demo" ng-href="{{raw.storeHref}}" target="_new">{{raw.storeHref}}</a></span>
+    <span ng-if="raw.demo">{{raw.storeHref}}</span>
+	</div>
+</div>
 
+<div class="fieldset-caption">Description</div>
 <div class="fieldset">
 	<div class="text-field">
-		<div class="textarea-label">
-			<label>Description</label>
-		</div>
 		<textarea readonly="true" class="text-description"
 			ng-model="raw.description"></textarea>
 	</div>
 </div>
 
-<ol class="detail-value detail-value-list">
-	<lt class="detail-label list-label">Constituents:</lt>
-	<li ng-if="raw.constituentHrefs" ng-repeat="constituent in store.constituents" class="detail-value-list-item">
-		<a ng-if="raw.constituentHrefs[constituent].detailHref" ng-href="{{raw.constituentHrefs[constituent].detailHref}}">{{constituent}}</a>
-		<span ng-if="!raw.constituentHrefs[constituent].detailHref">{{constituent}}</span>
-  </li>
-</ol>
+<div class="fieldset-caption">Constituents</div>
+<div class="fieldset">
+	<ol class="detail-value detail-value-list">
+	  <li ng-if="raw.constituentHrefs" ng-repeat="constituent in store.constituents" class="detail-value-list-item">
+	    <a ng-if="raw.constituentHrefs[constituent].detailHref" ng-href="{{raw.constituentHrefs[constituent].detailHref}}">{{constituent}}</a>
+	    <span ng-if="!raw.constituentHrefs[constituent].detailHref">{{constituent}}</span>
+	  </li>
+	</ol>
+</div>

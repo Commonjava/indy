@@ -19,29 +19,26 @@
       </div>
     </div>
     <div class="content-panel">
-      <table class="store-listing">
-        <tr>
-            <th>Name</th>
-            <th>Local URL</th>
-            <th>Options</th>
-        </tr>
-        <tr ng-repeat-start="store in listing.items | filter:query | orderBy:orderProp" class="store-listing-item listing-item-start">
-            <td class="key">
-                <a href="{{store.detailHref}}">{{store.name}}</a>
-            </td>
-            <td class="field">
-              <a href="{{store.storeHref}}" target="_new">{{store.storeHref}}</a>
-            </td>
-            <td class="options-field">
-              <ul class="options" ng-repeat="option in store.hostedOptions">
-                <li class="option"><span title="{{option.title}}">{{option.icon}}</span></li>
-              </ul>
-            </td>
-        </tr>
-        <tr ng-repeat-end class="store-listing-item listing-item-end">
-          <td colspan="3"><ap-listing-description></ap-listing-description></td>
-        </tr>
-      </table>
+      <div class="store-listing">
+        <div ng-repeat="store in listing.items | filter:query | orderBy:orderProp" class="store-listing-item listing-item-start">
+          <div class="fieldset-caption"><a href="#/hosted/view/{{storeUtils.nameFromKey(store.key)}}">{{store.name}}</a></div>
+          <div class="fieldset">
+            <div class="two-col">
+	            <div class="field left-half">
+	              <label>Local URL:</label>
+	              <span><a href="{{store.storeHref}}" target="_new">{{store.storeHref}}</a></span>
+	            </div>
+	            <div class="options-field field right-half">
+	              <label>Capabilities:</label>
+	              <div class="options" ng-repeat="option in store.hostedOptions">
+	                <span class="key" title="{{option.title}}">{{option.icon}}</span>
+	              </div>
+	            </div>
+            </div>
+            <div class="field"><ap-listing-description></ap-listing-description></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div ng-if="enableDebug" class="debug">

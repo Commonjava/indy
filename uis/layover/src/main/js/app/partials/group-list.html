@@ -19,30 +19,26 @@
       </div>
     </div>
     <div class="content-panel">
-      <table class="store-listing">
-        <tr>
-            <th>Name</th>
-            <th>Local URL</th>
-            <th>Constituents</th>
-        </tr>
-        <tr ng-repeat-start="store in listing.items | filter:query | orderBy:orderProp" class="store-listing-item listing-item-start">
-            <!-- {{storeUtils.nameFromKey(store.key)}} -->
-            <!-- -->
-            <td class="key">
-                <a href="#/group/view/{{storeUtils.nameFromKey(store.key)}}">{{storeUtils.nameFromKey(store.key)}}</a>
-            </td>
-            <td class="field">
-              <a href="{{storeUtils.storeHref(store.key)}}" target="_new">{{storeUtils.storeHref(store.key)}}</a>
-            </td>
-            <td class="options-field">
-              <span class="option" title="{{store.constituents.join('\n')}}">(view)</span>
-            </td>
-            <!-- -->
-        </tr>
-        <tr ng-repeat-end class="store-listing-item listing-item-end">
-          <td colspan="3"><ap-listing-description></ap-listing-description></td>
-        </tr>
-      </table>
+      <div class="store-listing">
+        <div ng-repeat="store in listing.items | filter:query | orderBy:orderProp" class="store-listing-item listing-item-start">
+          <div class="fieldset-caption">
+              <a href="#/group/view/{{storeUtils.nameFromKey(store.key)}}">{{storeUtils.nameFromKey(store.key)}}</a>
+          </div>
+          <div class="fieldset">
+            <div class="two-col">
+              <div class="field left-half">
+                <label>Local URL:</label>
+                <a href="{{storeUtils.storeHref(store.key)}}" target="_new">{{storeUtils.storeHref(store.key)}}</a>
+              </div>
+              <div class="options-field field right-half">
+                <label>Constituents:</label>
+                <span class="option" title="{{store.constituents.join('\n')}}">(mouse over to view)</span>
+              </div>
+            </div>
+          <div class="description field"><ap-listing-description></ap-listing-description></div>
+          </div>
+        </div>
+      </div>
     </div>
     <div ng-if="enableDebug" class="debug">
       JSON:

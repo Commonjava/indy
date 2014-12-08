@@ -2,49 +2,50 @@
     <div class="control-panel" ng-include="'partials/includes/store-control-panel.html'">
     </div>
     <div class="content-panel">
-      <table class="detail-table">
-        <tr class="detail-field">
-          <td class="label">Name:</td>
-          <td class="detail-value">
-            <input type="text" ng-model="raw.name" ng-if="!editMode" />
-              <span ng-if="editMode" class="key">{{raw.name}}</span>
-          </td>
-        </tr>
-        <tr class="detail-field">
-          <td class="label">Alternative Storage Directory:</td>
-          <td class="detail-value"><input type="text" ng-model="store.storage" size="50"/><span class="hint">(calculated by default)</span></td>
-        </tr>
-      </table>
+      <div class="fieldset-caption">Basics</div>
+      <div class="fieldset">
+        <div class="detail-field">
+          <label>Name:</label>
+          <span ng-if="!editMode"><input type="text" ng-model="raw.name"/></span>
+          <span ng-if="editMode" class="key">{{raw.name}}</span>
+        </div>
+        <div class="detail-field">
+          <label>Storage Directory:</label>
+          <span><input type="text" ng-model="store.storage" size="50"/></span>
+          <span class="hint">(calculated by default)</span>
+        </div>
+      </div>
 
+      <div class="fieldset-caption">Description</div>
       <div class="fieldset">
         <div class="text-field">
-          <div class="textarea-label">
-            <label>Description</label>
-          </div>
           <textarea class="text-description" ng-model="store.description"></textarea>
         </div>
       </div>
 
-      <table class="detail-table">
-        <tr class="detail-field">
-          <td class="detail-value">{{allowUploads(store) | checkmark}}</td>
-          <td class="label">Uploads Allowed?</td>
-        </tr>
-        <tr class="detail-field">
-          <td class="detail-value"><input type="checkbox" ng-model="store.allow_releases"/></td>
-          <td class="label">Releases Allowed?</td>
-        </tr>
-        <tr class="detail-field">
-          <td class="detail-value"><input type="checkbox" ng-model="store.allow_snapshots"/></td>
-          <td class="label">Snapshots Allowed?</td>
-        </tr>
-      </table>
-      <table ng-if="store.allow_snapshots" class="detail-table">
-        <tr class="detail-field">
-          <td class="label">Snapshot Timeout:</td>
-          <td class="detail-value"><input type="text" ng-model="raw.snapshotTimeoutSeconds"/><ap-duration-hint></ap-duration-hint></td>
-        </tr>
-      </table>
+      <div class="fieldset-caption">Capabilities</div>
+      <div class="fieldset">
+        <div class="detail-field">
+          <span>{{allowUploads(store) | checkmark}}</span>
+          <label>Allow Uploads</label>
+        </div>
+        <div class="detail-field">
+          <span><input type="checkbox" ng-model="store.allow_releases"/></span>
+          <label>Allow Releases</label>
+        </div>
+        <div class="detail-field">
+          <span><input type="checkbox" ng-model="store.allow_snapshots"/></span>
+          <label>Allow Snapshots</label>
+        </div>
+        
+	      <div ng-if="store.allow_snapshots" class="sub-fields">
+	        <div class="detail-field">
+	          <label>Snapshot Timeout:</label>
+	          <span><input type="text" ng-model="raw.snapshotTimeoutSeconds"/></span>
+	          <span><ap-duration-hint></ap-duration-hint></span>
+	        </div>
+	      </div>
+      </div>
     </div>
     <div ng-if="enableDebug" class="debug">
         <div class="debug-section">

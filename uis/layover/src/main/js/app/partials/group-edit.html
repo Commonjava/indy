@@ -2,33 +2,33 @@
     <div class="control-panel" ng-include="'partials/includes/store-control-panel.html'">
     </div>
     <div class="content-panel">
-      <table class="detail-table">
-        <tr class="detail-field">
-          <td class="label">Name:</td>
-          <td class="detail-value">
-            <input type="text" ng-model="raw.name" ng-if="!editMode" />
-              <span ng-if="editMode" class="key">{{raw.name}}</span>
-          </td>
-        </tr>
-      </table>
+      <div class="fieldset-caption">Basics</div>
+      <div class="fieldset">
+        <div class="detail-field">
+          <label>Name:</label>
+          <span ng-if="!editMode"><input type="text" ng-model="raw.name"/></span>
+          <span ng-if="editMode" class="key">{{raw.name}}</span>
+        </div>
+      </div>
 
+      <div class="fieldset-caption">Description</div>
       <div class="fieldset">
         <div class="text-field">
-          <div class="textarea-label">
-            <label>Description</label>
-          </div>
           <textarea class="text-description" ng-model="store.description"></textarea>
         </div>
       </div>
 
-      <ol class="left-col detail-value detail-edit-list">
-          <lt><span class="label list-label">Constituents:</span><span class="hint">(hover for controls)</span></lt>
-        <li ng-repeat="constituent in store.constituents" ap-group-constituent class="detail-value-list-item"></li>
-      </ol>
-      <ol class="right-col detail-value detail-edit-list">
-          <lt><span class="label list-label">Available:</span><span class="hint">(click to add to constituents)</span></lt>
-        <li ng-repeat="available in raw.available" ap-group-available class="detail-value-list-item"></li>
-      </ol>
+      <div class="fieldset-caption">Constituents</div>
+      <div class="fieldset">
+	      <ol class="left-col detail-value detail-edit-list">
+	          <lt><label>Current:</label><span class="hint">(hover for controls)</span></lt>
+	        <li ng-repeat="constituent in store.constituents" ap-group-constituent class="detail-value-list-item"></li>
+	      </ol>
+	      <ol class="right-col detail-value detail-edit-list">
+	          <lt><label>Available:</label><span class="hint">(click to add to constituents)</span></lt>
+	        <li ng-repeat="available in raw.available" ap-group-available class="detail-value-list-item"></li>
+	      </ol>
+	    </div>
     </div>
     <div ng-if="enableDebug" class="debug">
         <div class="debug-section">
