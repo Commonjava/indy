@@ -15,8 +15,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 
-import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.StoreType;
+import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.aprox.model.core.StoreType;
 
 /**
  * Event signaling the deletion of one or more {@link ArtifactStore} instances. This event will always contain the same type of store, when there is

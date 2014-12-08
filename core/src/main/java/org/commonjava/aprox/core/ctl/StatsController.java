@@ -26,7 +26,7 @@ import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.dto.AddOnListing;
 import org.commonjava.aprox.dto.EndpointViewListing;
-import org.commonjava.aprox.model.ArtifactStore;
+import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.spi.AproxAddOn;
 import org.commonjava.aprox.spi.AproxAddOnID;
 import org.commonjava.aprox.stats.AProxVersioning;

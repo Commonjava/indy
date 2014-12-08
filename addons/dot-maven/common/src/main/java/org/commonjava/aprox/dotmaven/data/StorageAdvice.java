@@ -10,8 +10,8 @@
  ******************************************************************************/
 package org.commonjava.aprox.dotmaven.data;
 
-import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.HostedRepository;
+import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.aprox.model.core.HostedRepository;
 
 public class StorageAdvice
 {

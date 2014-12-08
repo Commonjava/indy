@@ -13,7 +13,7 @@ package org.commonjava.aprox.depgraph.util;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.core.StoreKey;
 
 public final class AproxDepgraphUtils
 {

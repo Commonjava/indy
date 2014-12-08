@@ -10,7 +10,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.change.event;
 
-import org.commonjava.aprox.model.ArtifactStore;
+import org.commonjava.aprox.model.core.ArtifactStore;
 
 /** 
  * Enumeration of the types of configuration updates that can happen for {@link ArtifactStore}'s.

@@ -20,7 +20,7 @@ import java.util.List;
 import org.commonjava.aprox.autoprox.data.AutoProxRule;
 import org.commonjava.aprox.autoprox.data.RuleMapping;
 import org.commonjava.aprox.autoprox.util.ScriptRuleParser;
-import org.commonjava.aprox.model.RemoteRepository;
+import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.subsys.template.ScriptEngine;
 import org.junit.Test;
 

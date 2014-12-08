@@ -12,7 +12,7 @@ package org.commonjava.aprox.core.content.group;
 
 import java.util.Collection;
 
-import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.core.Group;
 import org.commonjava.maven.galley.model.Transfer;
 
 public interface MetadataMerger

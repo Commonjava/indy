@@ -6,10 +6,10 @@ import static org.junit.Assert.assertThat;
 import java.io.File;
 
 import org.commonjava.aprox.audit.ChangeSummary;
-import org.commonjava.aprox.model.RemoteRepository;
-import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.model.StoreType;
-import org.commonjava.aprox.model.io.AproxObjectMapper;
+import org.commonjava.aprox.model.core.RemoteRepository;
+import org.commonjava.aprox.model.core.StoreKey;
+import org.commonjava.aprox.model.core.StoreType;
+import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.subsys.datafile.DataFile;
 import org.commonjava.aprox.subsys.datafile.DataFileManager;
 import org.commonjava.aprox.subsys.datafile.change.DataFileEventManager;

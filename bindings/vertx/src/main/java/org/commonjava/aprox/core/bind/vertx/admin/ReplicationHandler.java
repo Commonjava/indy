@@ -23,7 +23,7 @@ import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.vertx.util.SecurityParam;
 import org.commonjava.aprox.core.ctl.ReplicationController;
 import org.commonjava.aprox.core.dto.ReplicationDTO;
-import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.util.ApplicationContent;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;

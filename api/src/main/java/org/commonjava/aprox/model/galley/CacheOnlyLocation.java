@@ -13,8 +13,8 @@ package org.commonjava.aprox.model.galley;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.commonjava.aprox.model.HostedRepository;
-import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.core.HostedRepository;
+import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 
 public class CacheOnlyLocation

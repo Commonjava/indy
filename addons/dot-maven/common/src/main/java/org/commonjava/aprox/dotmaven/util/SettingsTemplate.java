@@ -18,8 +18,8 @@ import net.sf.webdav.exceptions.WebdavException;
 
 import org.commonjava.aprox.dotmaven.data.StorageAdvice;
 import org.commonjava.aprox.dotmaven.webctl.RequestInfo;
-import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.model.StoreType;
+import org.commonjava.aprox.model.core.StoreKey;
+import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.subsys.template.AproxGroovyException;
 import org.commonjava.aprox.subsys.template.TemplatingEngine;
 

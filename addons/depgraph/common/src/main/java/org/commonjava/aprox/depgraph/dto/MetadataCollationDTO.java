@@ -12,8 +12,8 @@ package org.commonjava.aprox.depgraph.dto;
 
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.cartographer.dto.MetadataCollationRecipe;
 import org.commonjava.maven.galley.TransferException;

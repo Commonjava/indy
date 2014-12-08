@@ -8,11 +8,11 @@ import org.commonjava.aprox.action.MigrationAction;
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.HostedRepository;
-import org.commonjava.aprox.model.RemoteRepository;
-import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.model.StoreType;
+import org.commonjava.aprox.model.core.Group;
+import org.commonjava.aprox.model.core.HostedRepository;
+import org.commonjava.aprox.model.core.RemoteRepository;
+import org.commonjava.aprox.model.core.StoreKey;
+import org.commonjava.aprox.model.core.StoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

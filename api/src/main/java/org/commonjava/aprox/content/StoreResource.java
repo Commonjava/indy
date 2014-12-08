@@ -1,6 +1,6 @@
 package org.commonjava.aprox.content;
 
-import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.maven.galley.model.ConcreteResource;
 

@@ -27,7 +27,7 @@ import java.net.URISyntaxException;
 
 import javax.enterprise.context.ApplicationScoped;
 
-import org.commonjava.aprox.model.io.AproxSerializationException;
+import org.commonjava.aprox.model.core.io.AproxSerializationException;
 import org.commonjava.maven.atlas.graph.rel.BomRelationship;
 import org.commonjava.maven.atlas.graph.rel.DependencyRelationship;
 import org.commonjava.maven.atlas.graph.rel.ExtensionRelationship;

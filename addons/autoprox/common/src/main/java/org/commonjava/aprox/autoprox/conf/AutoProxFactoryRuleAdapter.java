@@ -4,9 +4,9 @@ import java.net.MalformedURLException;
 
 import org.commonjava.aprox.autoprox.data.AbstractAutoProxRule;
 import org.commonjava.aprox.autoprox.data.AutoProxRuleException;
-import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.HostedRepository;
-import org.commonjava.aprox.model.RemoteRepository;
+import org.commonjava.aprox.model.core.Group;
+import org.commonjava.aprox.model.core.HostedRepository;
+import org.commonjava.aprox.model.core.RemoteRepository;
 
 /**
  * @deprecated This is only provided as a shim to allow legacy rules to work.

@@ -16,8 +16,8 @@ import static org.junit.Assert.assertThat;
 
 import java.net.URI;
 
-import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.model.StoreType;
+import org.commonjava.aprox.model.core.StoreKey;
+import org.commonjava.aprox.model.core.StoreType;
 import org.junit.Test;
 
 public class AproxDiscoveryUtilsTest

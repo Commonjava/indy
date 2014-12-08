@@ -10,8 +10,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.audit.ChangeSummary;
-import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.model.StoreType;
+import org.commonjava.aprox.model.core.StoreKey;
+import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.revisions.RevisionsManager;
 import org.commonjava.aprox.revisions.vertx.dto.ChangeSummaryDTO;
 import org.commonjava.aprox.subsys.git.GitSubsystemException;

@@ -15,8 +15,8 @@ import static org.apache.commons.lang.StringUtils.isEmpty;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.model.StoreType;
+import org.commonjava.aprox.model.core.StoreKey;
+import org.commonjava.aprox.model.core.StoreType;
 
 public final class StoreURIMatcher
     implements URIMatcher

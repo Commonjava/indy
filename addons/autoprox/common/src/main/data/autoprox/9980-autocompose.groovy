@@ -3,7 +3,7 @@ import org.commonjava.aprox.autoprox.data.*;
 
 import java.net.MalformedURLException;
 
-import org.commonjava.aprox.model.*;
+import org.commonjava.aprox.model.core.*;
 
 class ComplexGroupsRule extends AbstractAutoProxRule
 {

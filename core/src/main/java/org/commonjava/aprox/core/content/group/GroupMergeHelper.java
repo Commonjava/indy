@@ -21,8 +21,8 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.content.DownloadManager;
-import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.core.Group;
+import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.slf4j.Logger;

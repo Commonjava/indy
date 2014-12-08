@@ -2,9 +2,9 @@ package org.commonjava.aprox.autoprox.data;
 
 import java.net.MalformedURLException;
 
-import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.HostedRepository;
-import org.commonjava.aprox.model.RemoteRepository;
+import org.commonjava.aprox.model.core.Group;
+import org.commonjava.aprox.model.core.HostedRepository;
+import org.commonjava.aprox.model.core.RemoteRepository;
 
 public abstract class AbstractAutoProxRule
     implements AutoProxRule

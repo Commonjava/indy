@@ -3,9 +3,9 @@ package org.commonjava.aprox.core.expire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.model.StoreType;
-import org.commonjava.aprox.model.io.AproxObjectMapper;
+import org.commonjava.aprox.model.core.StoreKey;
+import org.commonjava.aprox.model.core.StoreType;
+import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.junit.Test;
 
 public class ContentExpirationTest

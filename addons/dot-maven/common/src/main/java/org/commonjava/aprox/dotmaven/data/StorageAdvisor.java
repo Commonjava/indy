@@ -10,7 +10,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.dotmaven.data;
 
-import static org.commonjava.aprox.model.StoreType.hosted;
+import static org.commonjava.aprox.model.core.StoreType.hosted;
 
 import java.util.List;
 
@@ -20,9 +20,9 @@ import javax.inject.Inject;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.dotmaven.DotMavenException;
-import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.HostedRepository;
-import org.commonjava.aprox.model.StoreType;
+import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.aprox.model.core.HostedRepository;
+import org.commonjava.aprox.model.core.StoreType;
 
 @ApplicationScoped
 public class StorageAdvisor

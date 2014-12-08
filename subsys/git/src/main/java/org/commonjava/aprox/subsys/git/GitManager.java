@@ -28,10 +28,14 @@ import org.eclipse.jgit.api.RmCommand;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.NoFilepatternException;
+import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.errors.RevisionSyntaxException;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.IndexDiff.StageState;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revplot.PlotCommit;
@@ -39,7 +43,11 @@ import org.eclipse.jgit.revplot.PlotCommitList;
 import org.eclipse.jgit.revplot.PlotLane;
 import org.eclipse.jgit.revplot.PlotWalk;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevTree;
+import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.treewalk.CanonicalTreeParser;
+import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
@@ -201,6 +209,12 @@ public class GitManager
     public GitManager addAndCommitPaths( final ChangeSummary summary, final Collection<String> paths )
         throws GitSubsystemException
     {
+        if ( !verifyChangesExist( paths ) )
+        {
+            logger.info( "No actual changes in:\n  {}\n\nSkipping commit.", join( paths, "\n  " ) );
+            return this;
+        }
+
         try
         {
             final AddCommand add = git.add();
@@ -228,6 +242,69 @@ public class GitManager
         }
 
         return this;
+    }
+
+    private boolean verifyChangesExist( final Collection<String> paths )
+        throws GitSubsystemException
+    {
+        try
+        {
+            final DiffFormatter formatter = new DiffFormatter( System.out );
+            formatter.setRepository( repo );
+
+            // resolve the HEAD object
+            final ObjectId oid = repo.resolve( Constants.HEAD );
+            if ( oid == null )
+            {
+                // if there's no head, then these must be real changes...
+                return true;
+            }
+
+            // reset a new tree object to the HEAD
+            final RevWalk walk = new RevWalk( repo );
+            final RevCommit commit = walk.parseCommit( oid );
+            final RevTree treeWalk = walk.parseTree( commit );
+
+            // construct filters for the paths we're trying to add/commit
+            final List<TreeFilter> filters = new ArrayList<>();
+            for ( final String path : paths )
+            {
+                filters.add( PathFilter.create( path ) );
+            }
+
+            // we're interested in trees with an actual diff. This should improve walk performance.
+            filters.add( TreeFilter.ANY_DIFF );
+
+            // set the path filters from above
+            walk.setTreeFilter( AndTreeFilter.create( filters ) );
+
+            // setup the tree for doing the comparison vs. uncommitted files
+            final CanonicalTreeParser tree = new CanonicalTreeParser();
+            final ObjectReader oldReader = repo.newObjectReader();
+            try
+            {
+                tree.reset( oldReader, treeWalk.getId() );
+            }
+            finally
+            {
+                oldReader.release();
+            }
+            walk.dispose();
+
+            // this iterator will actually scan the uncommitted files for diff'ing
+            final FileTreeIterator files = new FileTreeIterator( repo );
+
+            // do the scan.
+            final List<DiffEntry> entries = formatter.scan( tree, files );
+
+            // we're not interested in WHAT the differences are, only that there are differences.
+            return entries != null && !entries.isEmpty();
+        }
+        catch ( final IOException e )
+        {
+            throw new GitSubsystemException( "Failed to scan for actual changes among: %s. Reason: %s", e, paths,
+                                             e.getMessage() );
+        }
     }
 
     private String buildMessage( final ChangeSummary summary, final Collection<String> paths )
@@ -346,7 +423,7 @@ public class GitManager
 
         try
         {
-            final ObjectId oid = repo.resolve( "HEAD" );
+            final ObjectId oid = repo.resolve( Constants.HEAD );
 
             final PlotWalk pw = new PlotWalk( repo );
             final RevCommit rc = pw.parseCommit( oid );

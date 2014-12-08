@@ -15,7 +15,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 
-import org.commonjava.aprox.model.ArtifactStore;
+import org.commonjava.aprox.model.core.ArtifactStore;
 
 /**
  * Event signaling that one or more specified {@link ArtifactStore} instances' configurations were changed. The {@link ArtifactStoreUpdateType}

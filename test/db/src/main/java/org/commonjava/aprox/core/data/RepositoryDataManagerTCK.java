@@ -20,8 +20,8 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.RemoteRepository;
+import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.aprox.model.core.RemoteRepository;
 import org.junit.Before;
 import org.junit.Test;
 

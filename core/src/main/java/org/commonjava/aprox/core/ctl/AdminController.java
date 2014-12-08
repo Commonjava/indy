@@ -20,9 +20,9 @@ import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.core.expire.ScheduleManager;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.model.StoreType;
+import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.aprox.model.core.StoreKey;
+import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.util.ApplicationStatus;
 
 @ApplicationScoped

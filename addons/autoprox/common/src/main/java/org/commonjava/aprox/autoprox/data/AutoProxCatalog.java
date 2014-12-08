@@ -17,9 +17,9 @@ import java.util.List;
 import javax.enterprise.inject.Alternative;
 import javax.inject.Named;
 
-import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.HostedRepository;
-import org.commonjava.aprox.model.RemoteRepository;
+import org.commonjava.aprox.model.core.Group;
+import org.commonjava.aprox.model.core.HostedRepository;
+import org.commonjava.aprox.model.core.RemoteRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

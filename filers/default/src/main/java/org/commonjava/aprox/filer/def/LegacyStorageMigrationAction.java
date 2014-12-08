@@ -17,7 +17,7 @@ import javax.inject.Named;
 
 import org.commonjava.aprox.action.MigrationAction;
 import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
-import org.commonjava.aprox.model.StoreType;
+import org.commonjava.aprox.model.core.StoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

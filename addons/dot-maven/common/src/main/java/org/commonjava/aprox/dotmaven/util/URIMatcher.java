@@ -10,8 +10,8 @@
  ******************************************************************************/
 package org.commonjava.aprox.dotmaven.util;
 
-import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.model.StoreType;
+import org.commonjava.aprox.model.core.StoreKey;
+import org.commonjava.aprox.model.core.StoreType;
 
 public interface URIMatcher
 {

@@ -10,8 +10,8 @@
  ******************************************************************************/
 package org.commonjava.aprox.change.event;
 
-import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.aprox.model.core.StoreKey;
 
 /**
  * Event to signal that the rescanning of a particular artifact store has started.

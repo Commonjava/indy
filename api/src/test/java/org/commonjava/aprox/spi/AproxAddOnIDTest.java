@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.commonjava.aprox.dto.UIRoute;
 import org.commonjava.aprox.dto.UISection;
-import org.commonjava.aprox.model.io.AproxObjectMapper;
+import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

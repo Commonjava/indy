@@ -10,7 +10,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.mem.data;
 
-import static org.commonjava.aprox.model.StoreType.group;
+import static org.commonjava.aprox.model.core.StoreType.group;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,12 +31,12 @@ import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateType;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.HostedRepository;
-import org.commonjava.aprox.model.RemoteRepository;
-import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.model.StoreType;
+import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.aprox.model.core.Group;
+import org.commonjava.aprox.model.core.HostedRepository;
+import org.commonjava.aprox.model.core.RemoteRepository;
+import org.commonjava.aprox.model.core.StoreKey;
+import org.commonjava.aprox.model.core.StoreType;
 
 @ApplicationScoped
 @Alternative

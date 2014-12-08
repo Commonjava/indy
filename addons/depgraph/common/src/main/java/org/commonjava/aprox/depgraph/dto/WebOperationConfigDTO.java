@@ -16,8 +16,8 @@ import java.util.TreeSet;
 
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.cartographer.dto.RepositoryContentRecipe;
 import org.commonjava.maven.galley.TransferException;

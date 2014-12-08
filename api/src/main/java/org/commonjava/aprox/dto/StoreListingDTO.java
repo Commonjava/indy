@@ -2,7 +2,7 @@ package org.commonjava.aprox.dto;
 
 import java.util.List;
 
-import org.commonjava.aprox.model.ArtifactStore;
+import org.commonjava.aprox.model.core.ArtifactStore;
 
 public class StoreListingDTO<T extends ArtifactStore>
 {

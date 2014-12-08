@@ -1,6 +1,6 @@
 package org.commonjava.aprox.core.dto;
 
-import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.core.StoreKey;
 
 public class DirectoryListingEntryDTO
 {

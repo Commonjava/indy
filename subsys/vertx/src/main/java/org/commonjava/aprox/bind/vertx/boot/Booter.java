@@ -190,21 +190,21 @@ public class Booter
                                      .select( Vertx.class )
                                      .get();
 
-        for ( int i = 0; i < bootOptions.getWorkers(); i++ )
-        {
+        //        for ( int i = 0; i < bootOptions.getWorkers(); i++ )
+        //        {
             final HttpServer server = vertx.createHttpServer();
             server.requestHandler( router )
                   .listen( bootOptions.getPort(), bootOptions.getBind() );
-        }
+        //        }
+        //
+        //        System.out.printf( "AProx: %s workers listening on %s:%s\n\n", bootOptions.getWorkers(), bootOptions.getBind(),
+        //                           bootOptions.getPort() );
 
-        System.out.printf( "AProx: %s workers listening on %s:%s\n\n", bootOptions.getWorkers(), bootOptions.getBind(),
-                           bootOptions.getPort() );
-
-        synchronized ( this )
+        synchronized ( vertx )
         {
             try
             {
-                wait();
+                vertx.wait();
             }
             catch ( final InterruptedException e )
             {

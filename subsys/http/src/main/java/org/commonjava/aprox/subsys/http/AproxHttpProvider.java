@@ -23,7 +23,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.commonjava.aprox.content.DownloadManager;
-import org.commonjava.aprox.model.RemoteRepository;
+import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.maven.galley.auth.AttributePasswordManager;
 import org.commonjava.maven.galley.spi.auth.PasswordManager;
 import org.commonjava.maven.galley.transport.htcli.Http;

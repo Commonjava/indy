@@ -1,7 +1,7 @@
 package org.commonjava.aprox.core.ctl;
 
-import static org.commonjava.aprox.model.StoreType.group;
-import static org.commonjava.aprox.model.StoreType.remote;
+import static org.commonjava.aprox.model.core.StoreType.group;
+import static org.commonjava.aprox.model.core.StoreType.remote;
 import static org.commonjava.aprox.util.LocationUtils.toLocation;
 import static org.commonjava.aprox.util.LocationUtils.toLocations;
 
@@ -18,8 +18,8 @@ import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.core.dto.NotFoundCacheDTO;
 import org.commonjava.aprox.data.ProxyDataException;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Location;

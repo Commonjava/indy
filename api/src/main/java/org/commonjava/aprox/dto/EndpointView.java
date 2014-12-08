@@ -10,8 +10,8 @@
  ******************************************************************************/
 package org.commonjava.aprox.dto;
 
-import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.util.UriFormatter;
 
 import com.fasterxml.jackson.annotation.JsonProperty;

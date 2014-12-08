@@ -14,12 +14,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.commonjava.aprox.audit.ChangeSummary;
-import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.HostedRepository;
-import org.commonjava.aprox.model.RemoteRepository;
-import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.model.StoreType;
+import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.aprox.model.core.Group;
+import org.commonjava.aprox.model.core.HostedRepository;
+import org.commonjava.aprox.model.core.RemoteRepository;
+import org.commonjava.aprox.model.core.StoreKey;
+import org.commonjava.aprox.model.core.StoreType;
 
 /**
  * Data manager used to access and manipulate the configurations for {@link ArtifactStore} instances.

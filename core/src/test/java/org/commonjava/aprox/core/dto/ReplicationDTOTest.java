@@ -3,7 +3,7 @@ package org.commonjava.aprox.core.dto;
 import java.util.Arrays;
 
 import org.commonjava.aprox.core.dto.ReplicationAction.ActionType;
-import org.commonjava.aprox.model.io.AproxObjectMapper;
+import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.junit.Test;
 
 public class ReplicationDTOTest

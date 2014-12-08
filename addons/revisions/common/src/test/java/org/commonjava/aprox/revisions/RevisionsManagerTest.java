@@ -81,6 +81,32 @@ public class RevisionsManagerTest
     }
 
     @Test
+    public void commitOneFileTwice_NoChangeSecondTime_RetrieveOneChangelog()
+        throws Exception
+    {
+        revManager.setup();
+
+        final DataFile f1 = dfManager.getDataFile( "test/foo.txt" );
+        f1.writeString( "this is a test", "UTF-8", new ChangeSummary( "test-user", "test for first write of file." ) );
+
+        List<DataFileEvent> events = listener.waitForEvents( 1 );
+        System.out.println( "Got events:\n  " + join( events, "\n  " ) );
+
+        f1.writeString( "this is a test", "UTF-8", new ChangeSummary( "test-user", "test for second write of file." ) );
+
+        events = listener.waitForEvents( 1 );
+        System.out.println( "Got events:\n  " + join( events, "\n  " ) );
+
+        final List<ChangeSummary> changeLog = revManager.getDataChangeLog( f1.getPath(), 0, -1 );
+        assertThat( changeLog, notNullValue() );
+        assertThat( changeLog.size(), equalTo( 1 ) );
+
+        assertThat( changeLog.get( 0 )
+                             .getSummary()
+                             .contains( "test for first write of file." ), equalTo( true ) );
+    }
+
+    @Test
     public void commitTwoDifferentFilesAndRetrieveChangelogForOneOfThem_LimitToOldestEvent()
         throws Exception
     {

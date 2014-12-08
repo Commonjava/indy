@@ -16,7 +16,7 @@ import org.commonjava.aprox.content.StoreResource;
 import org.commonjava.aprox.core.content.group.GroupMergeHelper;
 import org.commonjava.aprox.core.content.group.MavenMetadataMerger;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
-import org.commonjava.aprox.model.RemoteRepository;
+import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;

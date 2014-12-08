@@ -14,8 +14,8 @@ import java.io.InputStream;
 import java.util.List;
 
 import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.Group;
+import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.aprox.model.core.Group;
 import org.commonjava.maven.galley.model.Transfer;
 
 public interface GroupPathHandler

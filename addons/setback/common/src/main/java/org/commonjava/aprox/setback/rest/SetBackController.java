@@ -4,7 +4,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.model.StoreKey;
+import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.setback.data.SetBackDataException;
 import org.commonjava.aprox.setback.data.SetBackSettingsManager;
 import org.commonjava.aprox.subsys.datafile.DataFile;

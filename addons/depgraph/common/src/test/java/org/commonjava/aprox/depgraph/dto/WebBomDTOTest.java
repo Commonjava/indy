@@ -8,9 +8,9 @@ import java.util.Collections;
 
 import org.commonjava.aprox.depgraph.json.MetadataBatchUpdateSerializerModule;
 import org.commonjava.aprox.depgraph.json.ProjectRelationshipSerializerModule;
-import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.model.StoreType;
-import org.commonjava.aprox.model.io.AproxObjectMapper;
+import org.commonjava.aprox.model.core.StoreKey;
+import org.commonjava.aprox.model.core.StoreType;
+import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.dto.GraphComposition;
 import org.commonjava.maven.cartographer.dto.GraphDescription;

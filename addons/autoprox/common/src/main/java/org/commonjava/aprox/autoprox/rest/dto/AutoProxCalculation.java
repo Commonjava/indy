@@ -3,10 +3,10 @@ package org.commonjava.aprox.autoprox.rest.dto;
 import java.util.List;
 
 import org.commonjava.aprox.autoprox.data.RuleMapping;
-import org.commonjava.aprox.model.ArtifactStore;
-import org.commonjava.aprox.model.Group;
-import org.commonjava.aprox.model.HostedRepository;
-import org.commonjava.aprox.model.RemoteRepository;
+import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.aprox.model.core.Group;
+import org.commonjava.aprox.model.core.HostedRepository;
+import org.commonjava.aprox.model.core.RemoteRepository;
 
 public class AutoProxCalculation
 {

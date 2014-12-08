@@ -15,7 +15,7 @@ import java.io.File;
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.core.data.TCKFixtureProvider;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.model.io.AproxObjectMapper;
+import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.subsys.datafile.DataFileManager;
 import org.commonjava.aprox.subsys.datafile.change.DataFileEventManager;
 import org.commonjava.aprox.subsys.datafile.conf.DataFileConfiguration;

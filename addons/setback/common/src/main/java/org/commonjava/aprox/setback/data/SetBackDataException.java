@@ -14,7 +14,7 @@ import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.text.MessageFormat;
 
-import org.commonjava.aprox.model.ArtifactStore;
+import org.commonjava.aprox.model.core.ArtifactStore;
 
 /**
  * Exception that indicates an error occurred while retrieving or managing configuration data about one or more

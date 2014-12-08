@@ -14,8 +14,8 @@ import static org.apache.commons.lang.StringUtils.join;
 
 import java.io.File;
 
-import org.commonjava.aprox.model.StoreKey;
-import org.commonjava.aprox.model.StoreType;
+import org.commonjava.aprox.model.core.StoreKey;
+import org.commonjava.aprox.model.core.StoreType;
 
 public final class NameUtils
 {
