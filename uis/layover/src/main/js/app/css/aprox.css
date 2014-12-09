@@ -84,6 +84,11 @@ header{
   border-collapse: separate;
 }
 
+.store-listing-item{
+	margin-bottom: 20px;
+	border: 1px solid #ddd;
+}
+
 .listing-item-end td{
   padding-bottom: 10px;
 }

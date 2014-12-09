@@ -20,7 +20,7 @@
     </div>
     <div class="content-panel">
       <div class="store-listing">
-        <div ng-repeat="store in listing.items | filter:query | orderBy:orderProp" class="store-listing-item listing-item-start">
+        <div ng-repeat="store in listing.items | filter:query | orderBy:orderProp" class="list-item store-listing-item listing-item-start">
           <div class="fieldset-caption">
               <a href="#/group/view/{{storeUtils.nameFromKey(store.key)}}">{{storeUtils.nameFromKey(store.key)}}</a>
           </div>

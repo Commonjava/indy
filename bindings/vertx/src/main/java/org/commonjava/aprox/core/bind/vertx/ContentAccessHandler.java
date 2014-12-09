@@ -91,10 +91,23 @@ public class ContentAccessHandler
         try
         {
             final Transfer stored = contentController.store( st, name, path, stream );
+            logger.info( "Stored: {}", stored );
+
             final StoreKey storageKey = LocationUtils.getKey( stored );
+            logger.info( "Key for storage location: {}", storageKey );
 
             formatCreatedResponse( request, uriFormatter, st.singularEndpointName(), storageKey.getName(),
                                    stored.getPath() );
+
+            try
+            {
+                request.response()
+                       .end();
+            }
+            catch ( final IllegalStateException e )
+            {
+                logger.error( "While trying to end response: " + e.getMessage(), e );
+            }
         }
         catch ( final AproxWorkflowException e )
         {
@@ -104,14 +117,6 @@ public class ContentAccessHandler
         finally
         {
             IOUtils.closeQuietly( stream );
-            try
-            {
-                request.response()
-                       .end();
-            }
-            catch ( final IllegalStateException e )
-            {
-            }
         }
     }
 
