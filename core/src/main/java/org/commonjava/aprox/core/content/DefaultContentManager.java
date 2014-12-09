@@ -204,6 +204,22 @@ public class DefaultContentManager
                            final TransferOperation op )
         throws AproxWorkflowException
     {
+        if ( StoreType.group == store.getKey()
+                                     .getType() )
+        {
+            try
+            {
+                final List<ArtifactStore> allMembers = storeManager.getOrderedConcreteStoresInGroup( store.getName() );
+
+                return store( allMembers, path, stream, op );
+            }
+            catch ( final ProxyDataException e )
+            {
+                throw new AproxWorkflowException( "Failed to lookup concrete members of: %s. Reason: %s", e, store,
+                                                  e.getMessage() );
+            }
+        }
+
         final Transfer txfr = downloadManager.store( store, path, stream, op );
         if ( txfr != null )
         {

@@ -120,9 +120,12 @@ public class DefaultDownloadManager
 
                 for ( final ListingResult lr : results )
                 {
-                    for ( final String file : lr.getListing() )
+                    if ( lr != null && lr.getListing() != null )
                     {
-                        result.add( new StoreResource( (KeyedLocation) lr.getLocation(), dir, file ) );
+                        for ( final String file : lr.getListing() )
+                        {
+                            result.add( new StoreResource( (KeyedLocation) lr.getLocation(), dir, file ) );
+                        }
                     }
                 }
             }
@@ -142,7 +145,7 @@ public class DefaultDownloadManager
                 try
                 {
                     final ListingResult lr = transfers.list( res );
-                    if ( lr != null )
+                    if ( lr != null && lr.getListing() != null )
                     {
                         for ( final String file : lr.getListing() )
                         {
@@ -162,9 +165,12 @@ public class DefaultDownloadManager
                 try
                 {
                     final ListingResult listing = transfers.list( res );
-                    for ( final String child : listing.getListing() )
+                    if ( listing != null && listing.getListing() != null )
                     {
-                        result.add( new StoreResource( loc, dir, child ) );
+                        for ( final String child : listing.getListing() )
+                        {
+                            result.add( new StoreResource( loc, dir, child ) );
+                        }
                     }
                 }
                 catch ( final TransferException e )
@@ -194,9 +200,12 @@ public class DefaultDownloadManager
 
             for ( final ListingResult lr : results )
             {
-                for ( final String file : lr.getListing() )
+                if ( lr != null && lr.getListing() != null )
                 {
-                    result.add( new StoreResource( (KeyedLocation) lr.getLocation(), dir, file ) );
+                    for ( final String file : lr.getListing() )
+                    {
+                        result.add( new StoreResource( (KeyedLocation) lr.getLocation(), dir, file ) );
+                    }
                 }
             }
         }
