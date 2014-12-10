@@ -1,6 +1,8 @@
 /* brought in from monorail UI */
 body{
   font-family: sans-serif;
+  padding-top: 70px;
+  padding-bottom: 70px;
 }
 
 .product-name, .navbar-content{
@@ -29,8 +31,25 @@ body{
   margin-left: -6px;
 }
 
-.menu a.button{
+a.cp-button,
+a.button{
+	padding: 5px;
+	margin: 2px;
   text-decoration: none;
+  border: 1px solid #aaa;
+  border-radius: 3px;
+  background-image:
+    linear-gradient(#fff, #ddd);
+}
+
+a.cp-button:hover,
+a.button:hover{
+	font-weight: bold;
+}
+
+.cp-debug{
+	color: #aaa;
+	float: right;
 }
 
 .vdiv{
@@ -86,11 +105,6 @@ header{
 
 .store-listing-item{
 	margin-bottom: 20px;
-	border: 1px solid #ddd;
-}
-
-.listing-item-end td{
-  padding-bottom: 10px;
 }
 
 table{
@@ -121,15 +135,16 @@ td{
   float: right;
   min-width: 15%;
   margin: 0px;
-  margin-top: 0px;
+  padding-right: 1%;
+  margin-top: 0.5%;
   padding-left: 1%;
+  display: inline-block;
 }
 
 .content-panel{
-  display: block;
-  margin-top: 10px;
-  margin-left: 20px;
-  margin-right: 15%;
+  display: inline-block;
+  margin-top: 0.5%;
+  margin-left: 2%;
   min-width: 60%;
 }
 
@@ -149,6 +164,11 @@ footer{
 
 .inline{
   display: inline;
+}
+
+.inline.label{
+	font-weight: normal;
+	font-size: 1em;
 }
 
 .inline-cp{
@@ -174,6 +194,7 @@ footer{
 }
 
 .key{
+	font-size: 1.1em;
   font-weight: bold;
   font-family: sans-serif;
 }
@@ -301,10 +322,11 @@ li.detail-edit-list{
 	margin-bottom: 0px;
 }
 
-.fieldset-caption{
+.fieldset-caption,
+.subsection-caption{
 	padding-bottom: 0px;
   border-bottom: 1px solid #ddd;
-  margin-bottom: 5px;
+  margin-bottom: 1%;
 }
 
 label, .fieldset-caption, .label, .detail-label{
@@ -401,3 +423,15 @@ label, .label{
 .hidden{
   display: none;
 }
+
+.section,
+.subsection{
+	margin-bottom: 1%;
+}
+
+.subsection-caption{
+	margin-left: -2%;
+}
+
+
+

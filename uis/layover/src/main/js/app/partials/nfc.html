@@ -1,16 +1,21 @@
 <div class="container-fluid" ng-controller="NfcController">
   <div class="control-panel">
     <div class="cp-row">
-        <a class="cp-button" href="" ng-click="clearAllNFC()">Clear All</a>
+      Not-Found Cache Entries for:
     </div>
     <div class="cp-row">
-      Show NFC for:
       <select ng-model="currentKey" ng-change="show()" ng-options="store.key as store.label for store in raw.available">
       </select>
     </div>
     <div class="cp-row">
       <a class="cp-button" href="" ng-click="showAll()">Show All</a>
+      <a class="cp-button" href="" ng-click="clearAllNFC()">Clear All</a>
     </div>
+    <hr/>
+    <div class="cp-row">
+      Search: <input ng-model="query">
+    </div>
+    <hr/>
     <div class="cp-row cp-debug">
       <input type="checkbox" ng-model="enableDebug" ng-init="checked=false" /> Debug Data
     </div>
@@ -18,15 +23,15 @@
     
   <div class="content-panel">
     <ul>
-      <li ng-repeat="section in sections">
+      <li class="section" ng-repeat="section in sections">
         <div class="with-inline-cp">
-          <div class="inline label">{{section.label}}</div>
+          <div class="inline key">{{section.label}}</div>
           <div class="inline inline-cp">
             <a href="" ng-click="clearSection(section)" class="inline-cp-action">&#x2718;</a>
           </div>
         </div>
         <ul>
-          <li ng-repeat="path in section.paths">
+          <li ng-repeat="path in section.paths | filter:query">
             <div class="with-inline-cp">
               <div class="inline label">{{path}}</div>
 		          <div class="inline inline-cp">

@@ -2,20 +2,16 @@
 	<div class="container-fluid">
 	  <div class="control-panel">
 	    <div class="cp-row">
-	      <div class="cp-col">
-	        Test a new:
-		      <select ng-model="form.type" ng-options="type for type in types">
-		      </select>
-		    </div>
-		    <div class="cp-col">
-	         named: <input type="text" ng-model="form.name" />
-	       </div>
-	       <div class="cp-col">
-	         <a class="cp-button" href="" ng-click="change()">Calculate!</a>
-	       </div>
+	       Test a new:
+	      <select ng-model="form.type" ng-options="type for type in types">
+	      </select>
+		  </div>
+		  <div class="cp-row">
+	       named: <input size="15" type="text" ng-model="form.name" />
 	    </div>
-	    <div class="cp-row" ng-if="store">
-         <a class="cp-button" href="" ng-click="create()">Create it!</a>
+	    <div class="cp-row">
+         <a class="cp-button" href="" ng-click="change()">Calculate</a>
+         <a class="cp-button" ng-if="store" href="" ng-click="create()">Create</a>
 	    </div>
       <div class="cp-row cp-debug">
         <input type="checkbox" ng-model="enableDebug" ng-init="checked=false" /> Debug Data
@@ -33,8 +29,8 @@
     <div class="section">Also created: <span class="hint">(click for details)</span></div>
     <li ng-repeat="store in supplemental" ng-controller="AutoProxCalcConstituentCtl">
       <a ng-if="!display" href="" ng-click="displayConstituent()">{{store.key}}</a>
-      <div class="content-panel item-expanded" ng-if="display">
-        <div class="subsection">{{store.key}} [<a href="" ng-click="hideConstituent()">Hide</a>]</div>
+      <div class="content-panel item-expanded subsection" ng-if="display">
+        <div class="subsection-caption">{{store.key}} [<a href="" ng-click="hideConstituent()">Hide</a>]</div>
         <div ng-include="'partials/includes/' + store.type + '-view.html'"></div>
       </div>
     </li>

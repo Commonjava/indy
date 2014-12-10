@@ -21,7 +21,7 @@ aprox.provide.factory('AutoProxUtilsSvc', function(){
 });
 
 aprox.provide.factory('AutoProxCalculatorSvc', ['$resource', function($resource){
-  return $resource(appPath('/api/1.0/autoprox/eval/:type/:name'), {}, {
+  return $resource(appPath('/api/autoprox/eval/:type/:name'), {}, {
     eval: {
       method:'GET', 
       params:{type: 'remote', name:'foo'}, 
@@ -31,7 +31,7 @@ aprox.provide.factory('AutoProxCalculatorSvc', ['$resource', function($resource)
 }]);
 
 aprox.provide.factory('AutoProxCatalogSvc', ['$resource', function($resource){
-  return $resource(appPath('/api/1.0/autoprox/catalog'), {}, {
+  return $resource(appPath('/api/autoprox/catalog'), {}, {
     query: {method:'GET', params:{}, isArray:false},
   });
 }]);
@@ -127,6 +127,8 @@ aprox.controllerProvider.register('AutoProxCalculatorCtl', ['$scope', '$routePar
 	
   var routeType = $routeParams.type;
   var routeName = $routeParams.name;
+  
+  alert( "Got route type: " + routeType + "\n and name: " + routeName );
   
   if ( routeType !== undefined && routeName !== undefined ){
     $scope.form.type = routeType;

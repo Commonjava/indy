@@ -1,18 +1,18 @@
 <div class="container-fluid" ng-controller="RemoteListCtl">
     <div class="control-panel">
-        <div class="cp-row">
-            <a class="btn btn-default" href="#/remote/new">New...</a>
-        </div>
-        <div class="cp-row">
-          Search: <input ng-model="query">
-        </div>
-        <div class="cp-row">
-          Sort by:
-          <select ng-model="orderProp">
-            <option value="key">Name</option>
-            <option value="url">Remote URL</option>
-          </select>
-        </div>
+      <div class="cp-row">
+        Search: <input ng-model="query">
+      </div>
+      <div class="cp-row">
+        Sort by:
+        <select ng-model="orderProp">
+          <option value="key">Name</option>
+          <option value="url">Remote URL</option>
+        </select>
+      </div>
+      <div class="cp-row">
+          <a class="btn btn-default" href="#/remote/new">New...</a>
+      </div>
       <div class="cp-row cp-debug">
         <input type="checkbox" ng-model="enableDebug" ng-init="checked=false" /> Debug Data
       </div>
