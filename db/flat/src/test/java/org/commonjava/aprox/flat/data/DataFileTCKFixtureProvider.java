@@ -14,6 +14,7 @@ import java.io.File;
 
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.core.data.TCKFixtureProvider;
+import org.commonjava.aprox.core.data.testutil.StoreEventDispatcherStub;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.subsys.datafile.DataFileManager;
@@ -64,7 +65,8 @@ public class DataFileTCKFixtureProvider
 
         public TestFlatFileDataManager( final DataFileConfiguration config, final ObjectMapper serializer )
         {
-            super( new DataFileManager( config, new DataFileEventManager() ), serializer );
+            super( new DataFileManager( config, new DataFileEventManager() ), serializer,
+                   new StoreEventDispatcherStub() );
         }
 
         //        @Override

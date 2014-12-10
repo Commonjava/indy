@@ -12,6 +12,7 @@ import org.commonjava.aprox.content.ContentManager;
 import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.core.content.DefaultContentManager;
 import org.commonjava.aprox.core.content.DefaultDownloadManager;
+import org.commonjava.aprox.core.data.DefaultStoreEventDispatcher;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
@@ -39,7 +40,7 @@ public class ContentControllerTest
     {
         fixture.initMissingComponents();
 
-        final StoreDataManager storeManager = new MemoryStoreDataManager();
+        final StoreDataManager storeManager = new MemoryStoreDataManager( new DefaultStoreEventDispatcher() );
         final DownloadManager fileManager =
             new DefaultDownloadManager( storeManager, fixture.getTransfers(), fixture.getLocations() );
 

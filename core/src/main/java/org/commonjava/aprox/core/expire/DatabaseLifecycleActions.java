@@ -32,7 +32,15 @@ public class DatabaseLifecycleActions
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private static final String DEFAULT_DDL_RESOURCE = "scheduler/quartz-derby.sql";
+    private static final String APACHEDB_DDL_RESOURCE = "scheduler/quartz-derby.sql";
+
+    private static final String APACHEDB_CREATE_OPTION = "create=true";
+
+    private static final String APACHEDB_DRIVER_SUPER_PACKAGE = "org.apache.derby";
+
+    private static final String APACHEDB_URL_PREFIX = "jdbc:derby:";
+
+    private static final String APACHEDB_SHUTDOWN_URL = "jdbc:derby:;shutdown=true";
 
     @Inject
     private AproxSchedulerConfig schedulerConfig;
@@ -59,20 +67,42 @@ public class DatabaseLifecycleActions
             throw new AproxLifecycleException( "Scheduler configuration is not valid:\n%s", violations );
         }
 
-        final String ddl = schedulerConfig.getDdlFile();
+        String ddl = schedulerConfig.getDdlFile();
         final String driverName = schedulerConfig.getDbDriver();
-        final String url = schedulerConfig.getDbUrl();
+        String url = schedulerConfig.getDbUrl();
+
+        if ( driverName.startsWith( APACHEDB_DRIVER_SUPER_PACKAGE ) )
+        {
+            final File dbDir = new File( url.substring( APACHEDB_URL_PREFIX.length() ) );
+            logger.info( "Looking for existing apacheDB at: {}", dbDir );
+            if ( !dbDir.exists() && !url.contains( APACHEDB_CREATE_OPTION ) )
+            {
+                if ( !url.contains( ";" ) )
+                {
+                    url += ";";
+                }
+
+                url += APACHEDB_CREATE_OPTION;
+            }
+
+            if ( ddl == null )
+            {
+                ddl = APACHEDB_DDL_RESOURCE;
+            }
+        }
 
         List<String> lines = null;
-        if ( ddl != null )
+
+        final File ddlFile = new File( ddl );
+        if ( ddlFile.exists() )
         {
             try
             {
-                lines = FileUtils.readLines( new File( ddl ) );
+                lines = FileUtils.readLines( ddlFile );
             }
             catch ( final IOException e )
             {
-                throw new AproxLifecycleException( "Failed to read DDL from: " + ddl, e );
+                throw new AproxLifecycleException( "Failed to read DDL from file: " + ddl, e );
             }
         }
 
@@ -80,7 +110,7 @@ public class DatabaseLifecycleActions
         {
             final InputStream resource = Thread.currentThread()
                                                .getContextClassLoader()
-                                               .getResourceAsStream( DEFAULT_DDL_RESOURCE );
+                                               .getResourceAsStream( ddl );
 
             if ( resource != null )
             {
@@ -90,7 +120,7 @@ public class DatabaseLifecycleActions
                 }
                 catch ( final IOException e )
                 {
-                    throw new AproxLifecycleException( "Failed to read DDL from: " + DEFAULT_DDL_RESOURCE, e );
+                    throw new AproxLifecycleException( "Failed to read DDL from classpath: " + ddl, e );
                 }
             }
         }
@@ -171,7 +201,7 @@ public class DatabaseLifecycleActions
                     }
                     catch ( final SQLException e )
                     {
-                        logger.info( "Failed to query qrtz_job_details for existence. Tables will be created.", e );
+                        logger.info( "Failed to query qrtz_job_details for existence. Tables will be created." );
                     }
 
                     if ( !found )
@@ -254,9 +284,9 @@ public class DatabaseLifecycleActions
         throws AproxLifecycleException
     {
         final String dbDriver = schedulerConfig.getDbDriver();
-        if ( dbDriver.contains( "derby" ) )
+        if ( dbDriver.startsWith( APACHEDB_DRIVER_SUPER_PACKAGE ) )
         {
-            final String url = "jdbc:derby:;shutdown=true";
+            final String url = APACHEDB_SHUTDOWN_URL;
 
             Connection connection = null;
             try

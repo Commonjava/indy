@@ -76,6 +76,8 @@ public class AutoProxCatalog
 
     public RuleMapping getRuleMappingFor( final String name )
     {
+        //        logger.info( "Called via:\n  {}", join( Thread.currentThread()
+        //                                                      .getStackTrace(), "\n  " ) );
         for ( final RuleMapping mapping : getRuleMappings() )
         {
             logger.info( "Checking rule: '{}' for applicability to name: '{}'", mapping.getScriptName(), name );

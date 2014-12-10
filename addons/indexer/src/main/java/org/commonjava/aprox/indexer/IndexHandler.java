@@ -38,14 +38,14 @@ import org.apache.maven.index.updater.IndexUpdateRequest;
 import org.apache.maven.index.updater.IndexUpdateResult;
 import org.apache.maven.index.updater.IndexUpdater;
 import org.apache.maven.index.updater.ResourceFetcher;
-import org.commonjava.aprox.change.event.ArtifactStoreDeleteEvent;
+import org.commonjava.aprox.change.event.AbstractStoreDeleteEvent;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
 import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.core.expire.AproxSchedulerException;
 import org.commonjava.aprox.core.expire.ScheduleManager;
 import org.commonjava.aprox.core.expire.SchedulerEvent;
 import org.commonjava.aprox.core.expire.StoreKeyMatcher;
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.indexer.inject.IndexCreatorSet;
 import org.commonjava.aprox.model.core.ArtifactStore;
@@ -122,7 +122,7 @@ public class IndexHandler
         this.fileManager = fileManager;
     }
 
-    public void onDelete( @Observes final ArtifactStoreDeleteEvent event )
+    public void onDelete( @Observes final AbstractStoreDeleteEvent event )
     {
         logger.info( "Updating indexes as a result of ProxyManagerDeleteEvent." );
         executor.execute( new DeletionRunnable( event ) );
@@ -311,7 +311,7 @@ public class IndexHandler
                 }
             }
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             logger.error( String.format( "Failed to retrieve groups that contain: %s. Reason: %s", storeKey, e.getMessage() ), e );
         }
@@ -429,7 +429,7 @@ public class IndexHandler
                     logger.error( String.format( "Failed to commit index updates for group: %s. Reason: %s", group.getKey(), e.getMessage() ), e );
                 }
             }
-            catch ( final ProxyDataException e )
+            catch ( final AproxDataException e )
             {
                 logger.error( String.format( "Failed to retrieve concrete stores in group: %s. Reason: %s", groupKey, e.getMessage() ), e );
                 return;
@@ -597,7 +597,7 @@ public class IndexHandler
             {
                 store = storeDataManager.getArtifactStore( key );
             }
-            catch ( final ProxyDataException e )
+            catch ( final AproxDataException e )
             {
                 logger.error( String.format( "Failed to update index for: %s. Reason: %s", key, e.getMessage() ), e );
                 return;
@@ -624,9 +624,9 @@ public class IndexHandler
     public class DeletionRunnable
         implements Runnable
     {
-        private final ArtifactStoreDeleteEvent event;
+        private final AbstractStoreDeleteEvent event;
 
-        public DeletionRunnable( final ArtifactStoreDeleteEvent event )
+        public DeletionRunnable( final AbstractStoreDeleteEvent event )
         {
             this.event = event;
         }
@@ -634,31 +634,27 @@ public class IndexHandler
         @Override
         public void run()
         {
-            final StoreType type = event.getType();
-            if ( type != StoreType.group )
+            for ( final ArtifactStore store : event )
             {
-                final Set<ArtifactStore> updated = new HashSet<ArtifactStore>();
-                for ( final String name : event )
+                if ( StoreType.group != store.getKey()
+                                             .getType() )
                 {
-                    final StoreKey sk = new StoreKey( type, name );
-                    updateGroupsFor( sk, updated, true );
+                    final Set<ArtifactStore> updated = new HashSet<ArtifactStore>();
+                    updateGroupsFor( store.getKey(), updated, true );
                 }
-            }
-            else
-            {
-                for ( final String name : event )
+                else
                 {
                     try
                     {
-                        final StoreKey sk = new StoreKey( type, name );
                         final Set<TriggerKey> canceled =
-                            scheduleManager.cancelAll( new StoreKeyMatcher( sk, REINDEX_JOB_TYPE ) );
+                            scheduleManager.cancelAll( new StoreKeyMatcher( store.getKey(), REINDEX_JOB_TYPE ) );
 
                         scheduleManager.deleteJobs( canceled );
                     }
                     catch ( final AproxSchedulerException e )
                     {
-                        logger.error( String.format( "Failed to cancel indexer trigger for group: %s. Reason: %s", name, e.getMessage() ), e );
+                        logger.error( String.format( "Failed to cancel indexer trigger for: %s. Reason: %s", store,
+                                                     e.getMessage() ), e );
                     }
                 }
             }

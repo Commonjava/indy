@@ -17,7 +17,7 @@ import org.commonjava.aprox.content.ContentGenerator;
 import org.commonjava.aprox.content.ContentManager;
 import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.content.StoreResource;
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.Group;
@@ -98,7 +98,7 @@ public class DefaultContentManager
                 {
                     members = storeManager.getOrderedConcreteStoresInGroup( store.getName() );
                 }
-                catch ( final ProxyDataException e )
+                catch ( final AproxDataException e )
                 {
                     throw new AproxWorkflowException( "Failed to lookup concrete members of: %s. Reason: %s", e, store,
                                                       e.getMessage() );
@@ -158,7 +158,7 @@ public class DefaultContentManager
             {
                 members = storeManager.getOrderedConcreteStoresInGroup( store.getName() );
             }
-            catch ( final ProxyDataException e )
+            catch ( final AproxDataException e )
             {
                 throw new AproxWorkflowException( "Failed to lookup concrete members of: %s. Reason: %s", e, store,
                                                   e.getMessage() );
@@ -213,7 +213,7 @@ public class DefaultContentManager
 
                 return store( allMembers, path, stream, op );
             }
-            catch ( final ProxyDataException e )
+            catch ( final AproxDataException e )
             {
                 throw new AproxWorkflowException( "Failed to lookup concrete members of: %s. Reason: %s", e, store,
                                                   e.getMessage() );
@@ -229,7 +229,7 @@ public class DefaultContentManager
             {
                 transferStore = storeManager.getArtifactStore( kl.getKey() );
             }
-            catch ( final ProxyDataException e )
+            catch ( final AproxDataException e )
             {
                 throw new AproxWorkflowException( "Failed to lookup store: %s. Reason: %s", e, kl.getKey(),
                                                   e.getMessage() );
@@ -266,7 +266,7 @@ public class DefaultContentManager
             {
                 transferStore = storeManager.getArtifactStore( kl.getKey() );
             }
-            catch ( final ProxyDataException e )
+            catch ( final AproxDataException e )
             {
                 throw new AproxWorkflowException( "Failed to lookup store: %s. Reason: %s", e, kl.getKey(),
                                                   e.getMessage() );
@@ -294,7 +294,7 @@ public class DefaultContentManager
             {
                 members = storeManager.getOrderedConcreteStoresInGroup( store.getName() );
             }
-            catch ( final ProxyDataException e )
+            catch ( final AproxDataException e )
             {
                 throw new AproxWorkflowException( "Failed to lookup concrete members of: %s. Reason: %s", e, store,
                                                   e.getMessage() );
@@ -375,7 +375,7 @@ public class DefaultContentManager
             {
                 members = storeManager.getOrderedConcreteStoresInGroup( store.getName() );
             }
-            catch ( final ProxyDataException e )
+            catch ( final AproxDataException e )
             {
                 throw new AproxWorkflowException( "Failed to lookup concrete members of: %s. Reason: %s", e, store,
                                                   e.getMessage() );

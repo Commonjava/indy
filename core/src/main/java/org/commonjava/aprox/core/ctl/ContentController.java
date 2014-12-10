@@ -36,7 +36,7 @@ import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.content.ContentManager;
 import org.commonjava.aprox.content.StoreResource;
 import org.commonjava.aprox.core.dto.DirectoryListingDTO;
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.StoreKey;
@@ -161,7 +161,7 @@ public class ContentController
             final List<ArtifactStore> stores = storeManager.getAllConcreteArtifactStores();
             contentManager.rescanAll( stores );
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR,
                                               "Failed to retrieve list of concrete stores. Reason: {}", e,
@@ -177,7 +177,7 @@ public class ContentController
             final List<ArtifactStore> stores = storeManager.getAllConcreteArtifactStores();
             contentManager.deleteAll( stores, path );
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR,
                                               "Failed to retrieve list of concrete stores. Reason: {}", e,
@@ -193,7 +193,7 @@ public class ContentController
         {
             store = storeManager.getArtifactStore( key );
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Cannot retrieve store: {}. Reason: {}",
                                               e, key, e.getMessage() );

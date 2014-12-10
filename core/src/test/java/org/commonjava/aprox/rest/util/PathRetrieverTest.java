@@ -23,6 +23,7 @@ import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.content.AproxLocationExpander;
 import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.core.content.DefaultDownloadManager;
+import org.commonjava.aprox.core.data.DefaultStoreEventDispatcher;
 import org.commonjava.aprox.fixture.GalleyFixture;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
@@ -55,7 +56,7 @@ public class PathRetrieverTest
     {
         repoRoot = tempFolder.newFolder( "repository" );
         fixture = new GalleyFixture( repoRoot );
-        data = new MemoryStoreDataManager();
+        data = new MemoryStoreDataManager( new DefaultStoreEventDispatcher() );
 
         downloader = new DefaultDownloadManager( data, fixture.getTransfers(), new AproxLocationExpander( data ) );
     }

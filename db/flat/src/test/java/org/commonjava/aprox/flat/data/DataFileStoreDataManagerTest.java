@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 import java.io.File;
 
 import org.commonjava.aprox.audit.ChangeSummary;
+import org.commonjava.aprox.core.data.testutil.StoreEventDispatcherStub;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
@@ -37,7 +38,7 @@ public class DataFileStoreDataManagerTest
 
         final DataFileManager fileMgr = new DataFileManager( fileCfg, new DataFileEventManager() );
 
-        mgr = new DataFileStoreDataManager( fileMgr, new AproxObjectMapper( false ) );
+        mgr = new DataFileStoreDataManager( fileMgr, new AproxObjectMapper( false ), new StoreEventDispatcherStub() );
     }
 
     @Test

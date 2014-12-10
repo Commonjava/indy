@@ -7,7 +7,7 @@ import javax.inject.Named;
 
 import org.commonjava.aprox.action.AproxLifecycleException;
 import org.commonjava.aprox.action.StartupAction;
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.StoreType;
@@ -65,7 +65,7 @@ public class SetBackSettingsInitializer
                 {
                     try
                     {
-                        settingsManager.generateStoreSettings( store.getKey() );
+                        settingsManager.generateStoreSettings( store );
                     }
                     catch ( final SetBackDataException e )
                     {
@@ -74,7 +74,7 @@ public class SetBackSettingsInitializer
                 }
             }
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             throw new AproxLifecycleException(
                                                "Failed to retrieve full list of ArtifactStores available on the system",

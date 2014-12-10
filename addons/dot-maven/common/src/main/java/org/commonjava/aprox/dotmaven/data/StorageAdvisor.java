@@ -17,7 +17,7 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.dotmaven.DotMavenException;
 import org.commonjava.aprox.model.core.ArtifactStore;
@@ -52,7 +52,7 @@ public class StorageAdvisor
                 {
                     constituents = dataManager.getOrderedConcreteStoresInGroup( store.getName() );
                 }
-                catch ( final ProxyDataException e )
+                catch ( final AproxDataException e )
                 {
                     throw new DotMavenException( "Failed to retrieve constituent ArtifactStores for group: %s. Reason: %s", e, store.getName(),
                                                  e.getMessage() );

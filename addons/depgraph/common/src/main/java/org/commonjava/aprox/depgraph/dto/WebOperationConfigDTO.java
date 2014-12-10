@@ -14,7 +14,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.StoreKey;
@@ -77,7 +77,7 @@ public class WebOperationConfigDTO
             {
                 store = dataManager.getArtifactStore( source );
             }
-            catch ( final ProxyDataException e )
+            catch ( final AproxDataException e )
             {
                 throw new TransferException( "Cannot find ArtifactStore to match source key: %s. Reason: %s", e,
                                              source, e.getMessage() );
@@ -107,7 +107,7 @@ public class WebOperationConfigDTO
                 {
                     store = dataManager.getArtifactStore( key );
                 }
-                catch ( final ProxyDataException e )
+                catch ( final AproxDataException e )
                 {
                     throw new TransferException( "Cannot find ArtifactStore to match excluded key: %s. Reason: %s", e,
                                                  key,

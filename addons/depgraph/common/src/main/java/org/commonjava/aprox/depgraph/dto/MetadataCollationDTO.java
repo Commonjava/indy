@@ -10,7 +10,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.dto;
 
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.StoreKey;
@@ -38,7 +38,7 @@ public class MetadataCollationDTO
             {
                 store = dataManager.getArtifactStore( source );
             }
-            catch ( final ProxyDataException e )
+            catch ( final AproxDataException e )
             {
                 throw new TransferException( "Cannot find ArtifactStore to match source key: %s. Reason: %s", e,
                                              source, e.getMessage() );

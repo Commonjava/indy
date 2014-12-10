@@ -15,7 +15,7 @@ import java.util.Collections;
 import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depgraph.util.AproxDepgraphUtils;
 import org.commonjava.aprox.inject.Production;
@@ -146,7 +146,7 @@ public class AproxProjectGraphDiscoverer
                 {
                     store = storeManager.getArtifactStore( key );
                 }
-                catch ( final ProxyDataException e )
+                catch ( final AproxDataException e )
                 {
                     logger.error( String.format( "Failed to lookup ArtifactStore for key: {}. Reason: {}", key,
                                                  e.getMessage() ), e );

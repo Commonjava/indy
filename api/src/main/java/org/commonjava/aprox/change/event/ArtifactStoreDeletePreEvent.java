@@ -10,25 +10,22 @@
  ******************************************************************************/
 package org.commonjava.aprox.change.event;
 
-import java.util.Collection;
+import java.util.Map;
 
 import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.maven.galley.model.Transfer;
 
 /**
- * Event to signal that the rescanning of a particular artifact store has started.
+ * Event signaling the deletion of one or more {@link ArtifactStore} instances is ABOUT TO HAPPEN. This event will always contain a mapping of 
+ * affected stores to their root storage locations, available via {@link #getStoreRoots()}.
  */
-public class ArtifactStoreRescanEvent
-    extends AbstractAproxEvent
+public class ArtifactStoreDeletePreEvent
+    extends AbstractStoreDeleteEvent
 {
 
-    public ArtifactStoreRescanEvent( final ArtifactStore store )
+    public ArtifactStoreDeletePreEvent( final Map<ArtifactStore, Transfer> storeRoots )
     {
-        super( store );
-    }
-
-    public ArtifactStoreRescanEvent( final Collection<ArtifactStore> stores )
-    {
-        super( stores );
+        super( storeRoots );
     }
 
 }

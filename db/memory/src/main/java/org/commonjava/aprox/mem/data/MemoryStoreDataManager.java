@@ -21,16 +21,14 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Event;
 import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.audit.ChangeSummary;
-import org.commonjava.aprox.change.event.ArtifactStoreDeleteEvent;
-import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateType;
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.data.StoreEventDispatcher;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.HostedRepository;
@@ -49,32 +47,34 @@ public class MemoryStoreDataManager
     //    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private Event<ArtifactStoreUpdateEvent> storeEvent;
-
-    @Inject
-    private Event<ArtifactStoreDeleteEvent> delEvent;
+    private StoreEventDispatcher dispatcher;
 
     public MemoryStoreDataManager()
     {
     }
 
+    public MemoryStoreDataManager( final StoreEventDispatcher dispatcher )
+    {
+        this.dispatcher = dispatcher;
+    }
+
     @Override
     public HostedRepository getHostedRepository( final String name )
-        throws ProxyDataException
+        throws AproxDataException
     {
         return (HostedRepository) stores.get( new StoreKey( StoreType.hosted, name ) );
     }
 
     @Override
     public ArtifactStore getArtifactStore( final StoreKey key )
-        throws ProxyDataException
+        throws AproxDataException
     {
         return stores.get( key );
     }
 
     @Override
     public RemoteRepository getRemoteRepository( final String name )
-        throws ProxyDataException
+        throws AproxDataException
     {
         final StoreKey key = new StoreKey( StoreType.remote, name );
 
@@ -83,48 +83,48 @@ public class MemoryStoreDataManager
 
     @Override
     public Group getGroup( final String name )
-        throws ProxyDataException
+        throws AproxDataException
     {
         return (Group) stores.get( new StoreKey( StoreType.group, name ) );
     }
 
     @Override
     public List<Group> getAllGroups()
-        throws ProxyDataException
+        throws AproxDataException
     {
         return getAll( StoreType.group, Group.class );
     }
 
     @Override
     public List<RemoteRepository> getAllRemoteRepositories()
-        throws ProxyDataException
+        throws AproxDataException
     {
         return getAll( StoreType.remote, RemoteRepository.class );
     }
 
     @Override
     public List<HostedRepository> getAllHostedRepositories()
-        throws ProxyDataException
+        throws AproxDataException
     {
         return getAll( StoreType.hosted, HostedRepository.class );
     }
 
     @Override
     public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
-        throws ProxyDataException
+        throws AproxDataException
     {
         return getGroupOrdering( groupName, false );
     }
 
     @Override
     public List<ArtifactStore> getOrderedStoresInGroup( final String groupName )
-        throws ProxyDataException
+        throws AproxDataException
     {
         return getGroupOrdering( groupName, true );
     }
 
     private List<ArtifactStore> getGroupOrdering( final String groupName, final boolean includeGroups )
-        throws ProxyDataException
+        throws AproxDataException
     {
         final Group master = (Group) stores.get( new StoreKey( StoreType.group, groupName ) );
         if ( master == null )
@@ -170,7 +170,7 @@ public class MemoryStoreDataManager
 
     @Override
     public Set<Group> getGroupsContaining( final StoreKey repo )
-        throws ProxyDataException
+        throws AproxDataException
     {
         final Set<Group> groups = new HashSet<Group>();
         for ( final Group group : getAllGroups() )
@@ -211,7 +211,7 @@ public class MemoryStoreDataManager
 
     @Override
     public boolean storeHostedRepository( final HostedRepository repo, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         return store( repo, summary, false );
     }
@@ -219,17 +219,19 @@ public class MemoryStoreDataManager
     @Override
     public boolean storeHostedRepository( final HostedRepository repo, final ChangeSummary summary,
                                           final boolean skipIfExists )
-        throws ProxyDataException
+        throws AproxDataException
     {
+        final boolean exists = stores.containsKey( repo.getKey() );
+        dispatcher.updating( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, repo );
+
         final boolean result = store( repo, summary, skipIfExists );
-        fireStoreEvent( ArtifactStoreUpdateType.ADD_OR_UPDATE, repo );
 
         return result;
     }
 
     @Override
     public boolean storeRemoteRepository( final RemoteRepository repository, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         return store( repository, summary, false );
     }
@@ -237,33 +239,37 @@ public class MemoryStoreDataManager
     @Override
     public boolean storeRemoteRepository( final RemoteRepository repository, final ChangeSummary summary,
                                           final boolean skipIfExists )
-        throws ProxyDataException
+        throws AproxDataException
     {
+        final boolean exists = stores.containsKey( repository.getKey() );
+        dispatcher.updating( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, repository );
+
         final boolean result = store( repository, summary, skipIfExists );
-        fireStoreEvent( skipIfExists ? ArtifactStoreUpdateType.ADD : ArtifactStoreUpdateType.ADD_OR_UPDATE, repository );
         return result;
     }
 
     @Override
     public boolean storeGroup( final Group group, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         return store( group, summary, false );
     }
 
     @Override
     public boolean storeGroup( final Group group, final ChangeSummary summary, final boolean skipIfExists )
-        throws ProxyDataException
+        throws AproxDataException
     {
+        final boolean exists = stores.containsKey( group.getKey() );
+        dispatcher.updating( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, group );
+
         final boolean result = store( group, summary, skipIfExists );
-        fireStoreEvent( ArtifactStoreUpdateType.ADD_OR_UPDATE, group );
 
         return result;
     }
 
     @Override
     public boolean storeArtifactStore( final ArtifactStore store, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         return store( store, summary, false );
     }
@@ -271,10 +277,12 @@ public class MemoryStoreDataManager
     @Override
     public boolean storeArtifactStore( final ArtifactStore store, final ChangeSummary summary,
                                        final boolean skipIfExists )
-        throws ProxyDataException
+        throws AproxDataException
     {
+        final boolean exists = stores.containsKey( store.getKey() );
+        dispatcher.updating( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, store );
+
         final boolean result = store( store, summary, skipIfExists );
-        fireStoreEvent( ArtifactStoreUpdateType.ADD_OR_UPDATE, store );
 
         return result;
     }
@@ -292,69 +300,87 @@ public class MemoryStoreDataManager
 
     @Override
     public void deleteHostedRepository( final HostedRepository repo, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
+        dispatcher.deleting( repo );
         stores.remove( repo.getKey() );
-        fireDeleteEvent( StoreType.hosted, repo.getName() );
+        dispatcher.deleted( repo );
     }
 
     @Override
     public void deleteHostedRepository( final String name, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
+        final ArtifactStore store = stores.get( new StoreKey( StoreType.hosted, name ) );
+        dispatcher.deleting( store );
         stores.remove( new StoreKey( StoreType.hosted, name ) );
-        fireDeleteEvent( StoreType.hosted, name );
+        dispatcher.deleted( store );
     }
 
     @Override
     public void deleteRemoteRepository( final RemoteRepository repo, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
+        dispatcher.deleting( repo );
+
         stores.remove( repo.getKey() );
-        fireDeleteEvent( StoreType.remote, repo.getName() );
+        dispatcher.deleted( repo );
     }
 
     @Override
     public void deleteRemoteRepository( final String name, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
-        stores.remove( new StoreKey( StoreType.remote, name ) );
-        fireDeleteEvent( StoreType.remote, name );
+        final StoreKey key = new StoreKey( StoreType.remote, name );
+        final ArtifactStore store = stores.get( key );
+        dispatcher.deleting( store );
+
+        stores.remove( key );
+        dispatcher.deleted( store );
     }
 
     @Override
     public void deleteGroup( final Group group, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
+        dispatcher.deleting( group );
+
         stores.remove( group.getKey() );
-        fireDeleteEvent( StoreType.group, group.getName() );
+        dispatcher.deleted( group );
     }
 
     @Override
     public void deleteGroup( final String name, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
-        stores.remove( new StoreKey( StoreType.group, name ) );
-        fireDeleteEvent( StoreType.group, name );
+        final StoreKey key = new StoreKey( StoreType.group, name );
+        final ArtifactStore store = stores.get( key );
+        dispatcher.deleting( store );
+
+        stores.remove( key );
+        dispatcher.deleted( store );
     }
 
     @Override
     public void deleteArtifactStore( final StoreKey key, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
+        final ArtifactStore store = stores.get( key );
+        dispatcher.deleting( store );
+
         stores.remove( key );
-        fireDeleteEvent( key.getType(), key.getName() );
+        dispatcher.deleted( store );
     }
 
     @Override
     public void install()
-        throws ProxyDataException
+        throws AproxDataException
     {
     }
 
     @Override
     public void clear( final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         stores.clear();
     }
@@ -392,35 +418,9 @@ public class MemoryStoreDataManager
         return result;
     }
 
-    private void fireDeleteEvent( final StoreType type, final String... names )
-    {
-        final ArtifactStoreDeleteEvent event = new ArtifactStoreDeleteEvent( type, names );
-
-        if ( delEvent != null )
-        {
-            delEvent.fire( event );
-        }
-    }
-
-    private void fireStoreEvent( final ArtifactStoreUpdateType type, final RemoteRepository... repos )
-    {
-        if ( storeEvent != null )
-        {
-            storeEvent.fire( new ArtifactStoreUpdateEvent( type, repos ) );
-        }
-    }
-
-    private void fireStoreEvent( final ArtifactStoreUpdateType type, final ArtifactStore... stores )
-    {
-        if ( storeEvent != null )
-        {
-            storeEvent.fire( new ArtifactStoreUpdateEvent( type, stores ) );
-        }
-    }
-
     @Override
     public List<ArtifactStore> getAllArtifactStores()
-        throws ProxyDataException
+        throws AproxDataException
     {
         return new ArrayList<ArtifactStore>( stores.values() );
     }
@@ -433,7 +433,7 @@ public class MemoryStoreDataManager
 
     @Override
     public List<? extends ArtifactStore> getAllArtifactStores( final StoreType type )
-        throws ProxyDataException
+        throws AproxDataException
     {
         return getAll( type, type.getStoreClass() );
     }
@@ -464,7 +464,7 @@ public class MemoryStoreDataManager
 
     @Override
     public void reload()
-        throws ProxyDataException
+        throws AproxDataException
     {
     }
 

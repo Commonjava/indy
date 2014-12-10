@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depgraph.discover.AproxModelDiscoverer;
 import org.commonjava.aprox.model.core.ArtifactStore;
@@ -91,7 +91,7 @@ public class DepgraphStorageListenerRunnable
         {
             originatingStore = aprox.getArtifactStore( key );
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             error = new CartoDataException( "Failed to retrieve store for: {}. Reason: {}", e, key, e.getMessage() );
         }
@@ -200,7 +200,7 @@ public class DepgraphStorageListenerRunnable
                 }
             }
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             logger.error( "Cannot lookup full store list for groups containing artifact store: {}. Reason: {}", e,
                           originatingStore.getKey(), e.getMessage() );

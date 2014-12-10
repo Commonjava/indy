@@ -17,7 +17,7 @@ import javax.inject.Named;
 
 import org.commonjava.aprox.action.MigrationAction;
 import org.commonjava.aprox.audit.ChangeSummary;
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.model.core.HostedRepository;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreType;
@@ -110,7 +110,7 @@ public class LegacyDataMigrationAction
 
             data.reload();
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             throw new RuntimeException( "Failed to reload artifact-store definitions: " + e.getMessage(), e );
         }

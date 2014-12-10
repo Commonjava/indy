@@ -12,8 +12,6 @@ package org.commonjava.aprox.change.event;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
 
 import org.commonjava.aprox.model.core.ArtifactStore;
 
@@ -22,22 +20,20 @@ import org.commonjava.aprox.model.core.ArtifactStore;
  * gives more information about the nature of the update.
  */
 public class ArtifactStoreUpdateEvent
-    implements Iterable<ArtifactStore>, AproxEvent
+    extends AbstractAproxEvent
 {
 
     private final ArtifactStoreUpdateType type;
 
-    private final Collection<ArtifactStore> changes;
-
     public ArtifactStoreUpdateEvent( final ArtifactStoreUpdateType type, final Collection<ArtifactStore> changes )
     {
+        super( changes );
         this.type = type;
-        this.changes = Collections.unmodifiableCollection( changes );
     }
 
     public ArtifactStoreUpdateEvent( final ArtifactStoreUpdateType type, final ArtifactStore... changes )
     {
-        this.changes = Collections.unmodifiableCollection( Arrays.asList( changes ) );
+        super( Arrays.asList( changes ) );
         this.type = type;
     }
 
@@ -50,20 +46,11 @@ public class ArtifactStoreUpdateEvent
     }
 
     /**
-     * Iterate over the changed {@link ArtifactStore}'s specified in this event.
-     */
-    @Override
-    public Iterator<ArtifactStore> iterator()
-    {
-        return changes.iterator();
-    }
-
-    /**
      * Return the changed {@link ArtifactStore}'s specified in this event.
      */
     public Collection<ArtifactStore> getChanges()
     {
-        return changes;
+        return getStores();
     }
 
 }

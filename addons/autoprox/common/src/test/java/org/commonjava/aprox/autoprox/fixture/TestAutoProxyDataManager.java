@@ -6,7 +6,8 @@ import java.util.Set;
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.autoprox.data.AutoProxCatalog;
 import org.commonjava.aprox.autoprox.data.AutoProxDataManagerDecorator;
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.core.data.DefaultStoreEventDispatcher;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
@@ -26,90 +27,90 @@ public class TestAutoProxyDataManager
 
     public TestAutoProxyDataManager( final AutoProxCatalog catalog, final AproxHttpProvider http )
     {
-        super( new MemoryStoreDataManager(), catalog, http );
+        super( new MemoryStoreDataManager( new DefaultStoreEventDispatcher() ), catalog, http );
         delegate = getDelegate();
     }
 
     @Override
     public List<ArtifactStore> getAllArtifactStores()
-        throws ProxyDataException
+        throws AproxDataException
     {
         return delegate.getAllArtifactStores();
     }
 
     @Override
     public List<? extends ArtifactStore> getAllArtifactStores( final StoreType type )
-        throws ProxyDataException
+        throws AproxDataException
     {
         return delegate.getAllArtifactStores( type );
     }
 
     @Override
     public List<Group> getAllGroups()
-        throws ProxyDataException
+        throws AproxDataException
     {
         return delegate.getAllGroups();
     }
 
     @Override
     public List<RemoteRepository> getAllRemoteRepositories()
-        throws ProxyDataException
+        throws AproxDataException
     {
         return delegate.getAllRemoteRepositories();
     }
 
     @Override
     public List<HostedRepository> getAllHostedRepositories()
-        throws ProxyDataException
+        throws AproxDataException
     {
         return delegate.getAllHostedRepositories();
     }
 
     @Override
     public List<ArtifactStore> getAllConcreteArtifactStores()
-        throws ProxyDataException
+        throws AproxDataException
     {
         return delegate.getAllConcreteArtifactStores();
     }
 
     @Override
     public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
-        throws ProxyDataException
+        throws AproxDataException
     {
         return delegate.getOrderedConcreteStoresInGroup( groupName );
     }
 
     @Override
     public List<ArtifactStore> getOrderedStoresInGroup( final String groupName )
-        throws ProxyDataException
+        throws AproxDataException
     {
         return delegate.getOrderedStoresInGroup( groupName );
     }
 
     @Override
     public Set<Group> getGroupsContaining( final StoreKey repo )
-        throws ProxyDataException
+        throws AproxDataException
     {
         return delegate.getGroupsContaining( repo );
     }
 
     @Override
     public void install()
-        throws ProxyDataException
+        throws AproxDataException
     {
         delegate.install();
     }
 
     @Override
     public void reload()
-        throws ProxyDataException
+        throws AproxDataException
     {
         delegate.reload();
     }
 
     @Override
     public boolean storeHostedRepository( final HostedRepository deploy, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         return delegate.storeHostedRepository( deploy, summary );
     }
@@ -117,14 +118,14 @@ public class TestAutoProxyDataManager
     @Override
     public boolean storeHostedRepository( final HostedRepository deploy, final ChangeSummary summary,
                                           final boolean skipIfExists )
-        throws ProxyDataException
+        throws AproxDataException
     {
         return delegate.storeHostedRepository( deploy, summary, skipIfExists );
     }
 
     @Override
     public boolean storeRemoteRepository( final RemoteRepository proxy, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         return delegate.storeRemoteRepository( proxy, summary );
     }
@@ -132,91 +133,91 @@ public class TestAutoProxyDataManager
     @Override
     public boolean storeRemoteRepository( final RemoteRepository repository, final ChangeSummary summary,
                                           final boolean skipIfExists )
-        throws ProxyDataException
+        throws AproxDataException
     {
         return delegate.storeRemoteRepository( repository, summary, skipIfExists );
     }
 
     @Override
     public boolean storeGroup( final Group group, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         return delegate.storeGroup( group, summary );
     }
 
     @Override
     public boolean storeGroup( final Group group, final ChangeSummary summary, final boolean skipIfExists )
-        throws ProxyDataException
+        throws AproxDataException
     {
         return delegate.storeGroup( group, summary, skipIfExists );
     }
 
     @Override
     public boolean storeArtifactStore( final ArtifactStore key, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         return delegate.storeArtifactStore( key, summary );
     }
 
     @Override
     public boolean storeArtifactStore( final ArtifactStore key, final ChangeSummary summary, final boolean skipIfExists )
-        throws ProxyDataException
+        throws AproxDataException
     {
         return delegate.storeArtifactStore( key, summary, skipIfExists );
     }
 
     @Override
     public void deleteHostedRepository( final HostedRepository deploy, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         delegate.deleteHostedRepository( deploy, summary );
     }
 
     @Override
     public void deleteHostedRepository( final String name, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         delegate.deleteHostedRepository( name, summary );
     }
 
     @Override
     public void deleteRemoteRepository( final RemoteRepository repo, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         delegate.deleteRemoteRepository( repo, summary );
     }
 
     @Override
     public void deleteRemoteRepository( final String name, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         delegate.deleteRemoteRepository( name, summary );
     }
 
     @Override
     public void deleteGroup( final Group group, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         delegate.deleteGroup( group, summary );
     }
 
     @Override
     public void deleteGroup( final String name, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         delegate.deleteGroup( name, summary );
     }
 
     @Override
     public void deleteArtifactStore( final StoreKey key, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         delegate.deleteArtifactStore( key, summary );
     }
 
     @Override
     public void clear( final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         delegate.clear( summary );
     }

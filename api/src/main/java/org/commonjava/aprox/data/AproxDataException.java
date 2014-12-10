@@ -20,7 +20,7 @@ import org.commonjava.aprox.model.core.ArtifactStore;
  * Exception that indicates an error occurred while retrieving or managing configuration data about one or more
  * {@link ArtifactStore} instances.
  */
-public class ProxyDataException
+public class AproxDataException
     extends Exception
 {
     private static final long serialVersionUID = 1L;
@@ -29,13 +29,13 @@ public class ProxyDataException
 
     private String formattedMessage;
 
-    public ProxyDataException( final String message, final Throwable cause, final Object... params )
+    public AproxDataException( final String message, final Throwable cause, final Object... params )
     {
         super( message, cause );
         this.params = params;
     }
 
-    public ProxyDataException( final String message, final Object... params )
+    public AproxDataException( final String message, final Object... params )
     {
         super( message );
         this.params = params;

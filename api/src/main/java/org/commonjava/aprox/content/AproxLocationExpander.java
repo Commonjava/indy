@@ -18,7 +18,7 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.RemoteRepository;
@@ -105,7 +105,7 @@ public class AproxLocationExpander
                         logger.debug( "Expanded group: {} to:\n  {}", gl.getKey(), new JoinString( "\n  ", result ) );
                     }
                 }
-                catch ( final ProxyDataException e )
+                catch ( final AproxDataException e )
                 {
                     throw new TransferException(
                                                  "Failed to lookup ordered concrete artifact stores contained in group: {}. Reason: {}",
@@ -127,7 +127,7 @@ public class AproxLocationExpander
                     logger.debug( "Adding single store: {} for location: {}", store, location );
                     result.add( LocationUtils.toLocation( store ) );
                 }
-                catch ( final ProxyDataException e )
+                catch ( final AproxDataException e )
                 {
                     throw new TransferException( "Failed to lookup store for key: {}. Reason: {}", e, key,
                                                  e.getMessage() );

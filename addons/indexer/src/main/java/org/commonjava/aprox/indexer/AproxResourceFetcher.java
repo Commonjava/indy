@@ -17,7 +17,7 @@ import java.io.InputStream;
 import org.apache.maven.index.updater.ResourceFetcher;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.content.DownloadManager;
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.StoreKey;
@@ -59,7 +59,7 @@ public class AproxResourceFetcher
                 throw new IOException( String.format( "No such repository: %s.", id ) );
             }
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             logger.error( String.format( "Failed to lookup store: %s. Reason: %s", id, e.getMessage() ), e );
             throw new IOException( String.format( "Failed to lookup store: %s. Reason: %s", id, e.getMessage() ), e );

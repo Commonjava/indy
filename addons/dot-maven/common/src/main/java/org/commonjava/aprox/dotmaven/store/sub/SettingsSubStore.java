@@ -27,7 +27,7 @@ import net.sf.webdav.StoredObject;
 import net.sf.webdav.exceptions.WebdavException;
 import net.sf.webdav.spi.ITransaction;
 
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.dotmaven.DotMavenException;
 import org.commonjava.aprox.dotmaven.data.StorageAdvice;
@@ -129,7 +129,7 @@ public class SettingsSubStore
             {
                 all = aprox.getAllArtifactStores( type );
             }
-            catch ( final ProxyDataException e )
+            catch ( final AproxDataException e )
             {
                 logger.error( String.format( "Failed to retrieve list of artifact stores: %s", e.getMessage() ), e );
                 throw new WebdavException( "Failed to retrieve list of settings configurations." );
@@ -172,7 +172,7 @@ public class SettingsSubStore
         {
             store = aprox.getArtifactStore( key );
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             logger.error( String.format( "Failed to retrieve artifact store: %s. Reason: %s", key, e.getMessage() ), e );
             throw new WebdavException( "Failed to retrieve length for: " + matcher.getURI() );

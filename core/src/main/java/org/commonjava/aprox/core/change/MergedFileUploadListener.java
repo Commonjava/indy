@@ -24,7 +24,7 @@ import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.core.content.group.ArchetypeCatalogMerger;
 import org.commonjava.aprox.core.content.group.GroupMergeHelper;
 import org.commonjava.aprox.core.content.group.MavenMetadataMerger;
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.StoreKey;
@@ -90,7 +90,7 @@ public class MergedFileUploadListener
                         }
                     }
                 }
-                catch ( final ProxyDataException e )
+                catch ( final AproxDataException e )
                 {
                     logger.warn( "Failed to regenerate maven-metadata.xml for groups after deployment to: {}"
                         + "\nCannot retrieve associated groups: {}", e, key, e.getMessage() );

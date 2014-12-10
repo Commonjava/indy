@@ -33,62 +33,62 @@ public interface StoreDataManager
      * Return the {@link HostedRepository} instance corresponding to the given name.
      */
     HostedRepository getHostedRepository( final String name )
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Return the {@link RemoteRepository} instance corresponding to the given name.
      */
     RemoteRepository getRemoteRepository( final String name )
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Return the {@link Group} instance corresponding to the given name.
      */
     Group getGroup( final String name )
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Return the {@link ArtifactStore} instance corresponding to the given key, where key is a composite of {@link StoreType} 
      * (hosted, remote, or group) and name.
      */
     ArtifactStore getArtifactStore( StoreKey key )
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Return the full list of {@link ArtifactStore} instances available on the system.
      */
     List<ArtifactStore> getAllArtifactStores()
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Return the full list of {@link ArtifactStore} instances of a given {@link StoreType} (hosted, remote, or group) available on the system.
      */
     List<? extends ArtifactStore> getAllArtifactStores( StoreType type )
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Return the full list of {@link Group} instances available on the system.
      */
     List<Group> getAllGroups()
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Return the full list of {@link RemoteRepository} instances available on the system.
      */
     List<RemoteRepository> getAllRemoteRepositories()
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Return the full list of {@link HostedRepository} instances available on the system.
      */
     List<HostedRepository> getAllHostedRepositories()
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Return the full list of non-{@link Group} instances available on the system.
      */
     List<ArtifactStore> getAllConcreteArtifactStores()
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * For a {@link Group} with the given name, return (<b>IN ORDER</b>) the list of
@@ -99,7 +99,7 @@ public interface StoreDataManager
      * it contains.
      */
     List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * For a {@link Group} with the given name, return (<b>IN ORDER</b>) the list of
@@ -109,20 +109,20 @@ public interface StoreDataManager
      * of any groups in the list. Groups that are members are returned along with the rest of the membership.
      */
     List<ArtifactStore> getOrderedStoresInGroup( final String groupName )
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Return the set of {@link Group}'s that contain the {@link ArtifactStore} corresponding to the given {@link StoreKey} in their membership.
      */
     Set<Group> getGroupsContaining( final StoreKey repo )
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Store a modified or new {@link HostedRepository} instance. This is equivalent to 
      * {@link StoreDataManager#storeHostedRepository(HostedRepository, boolean)} with skip flag <code>false</code>
      */
     boolean storeHostedRepository( final HostedRepository deploy, final ChangeSummary summary )
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Store a modified or new {@link HostedRepository} instance. If the store already exists, and <code>skipIfExists</code> is true, abort the
@@ -130,14 +130,14 @@ public interface StoreDataManager
      */
     boolean storeHostedRepository( final HostedRepository deploy, final ChangeSummary summary,
                                    final boolean skipIfExists )
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Store a modified or new {@link RemoteRepository} instance. This is equivalent to 
      * {@link StoreDataManager#storeRemoteRepository(RemoteRepository, boolean)} with skip flag <code>false</code>
      */
     boolean storeRemoteRepository( final RemoteRepository proxy, final ChangeSummary summary )
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Store a modified or new {@link RemoteRepository} instance. If the store already exists, and <code>skipIfExists</code> is true, abort the
@@ -145,83 +145,83 @@ public interface StoreDataManager
      */
     boolean storeRemoteRepository( final RemoteRepository repository, final ChangeSummary summary,
                                    final boolean skipIfExists )
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Store a modified or new {@link Group} instance. This is equivalent to 
      * {@link StoreDataManager#storeGroup(Group, boolean)} with skip flag <code>false</code>
      */
     boolean storeGroup( final Group group, final ChangeSummary summary )
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Store a modified or new {@link Group} instance. If the store already exists, and <code>skipIfExists</code> is true, abort the
      * operation.
      */
     boolean storeGroup( final Group group, final ChangeSummary summary, final boolean skipIfExists )
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Store a modified or new {@link ArtifactStore} instance. This is equivalent to 
      * {@link StoreDataManager#storeArtifactStore(ArtifactStore, boolean)} with skip flag <code>false</code>
      */
     boolean storeArtifactStore( ArtifactStore key, final ChangeSummary summary )
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Store a modified or new {@link ArtifactStore} instance. If the store already exists, and <code>skipIfExists</code> is true, abort the
      * operation.
      */
     boolean storeArtifactStore( ArtifactStore key, final ChangeSummary summary, boolean skipIfExists )
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Delete the given {@link HostedRepository}.
      */
     void deleteHostedRepository( final HostedRepository deploy, final ChangeSummary summary )
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Delete the {@link HostedRepository} corresponding to the given name.
      */
     void deleteHostedRepository( final String name, final ChangeSummary summary )
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Delete the given {@link RemoteRepository}.
      */
     void deleteRemoteRepository( final RemoteRepository repo, final ChangeSummary summary )
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Delete the {@link RemoteRepository} corresponding to the given name.
      */
     void deleteRemoteRepository( final String name, final ChangeSummary summary )
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Delete the given {@link Group}.
      */
     void deleteGroup( final Group group, final ChangeSummary summary )
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Delete the {@link Group} corresponding to the given name.
      */
     void deleteGroup( final String name, final ChangeSummary summary )
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Delete the {@link ArtifactStore} corresponding to the given {@link StoreKey}. If the store doesn't exist, simply return (don't fail).
      */
     void deleteArtifactStore( StoreKey key, final ChangeSummary summary )
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Delete all {@link ArtifactStore} instances currently in the system.
      */
     void clear( final ChangeSummary summary )
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * If no {@link ArtifactStore}'s exist in the system, install a couple of defaults:
@@ -232,13 +232,13 @@ public interface StoreDataManager
      * </ul>
      */
     void install()
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Mechanism for clearing all cached {@link ArtifactStore} instances and reloading them from some backing store.
      */
     void reload()
-        throws ProxyDataException;
+        throws AproxDataException;
 
     /**
      * Return true if the system contains a {@link RemoteRepository} with the given name; false otherwise.

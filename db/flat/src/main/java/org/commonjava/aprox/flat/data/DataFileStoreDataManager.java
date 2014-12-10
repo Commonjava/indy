@@ -18,7 +18,8 @@ import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.audit.ChangeSummary;
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
+import org.commonjava.aprox.data.StoreEventDispatcher;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.Group;
@@ -52,15 +53,17 @@ public class DataFileStoreDataManager
     {
     }
 
-    protected DataFileStoreDataManager( final DataFileManager manager, final ObjectMapper serializer )
+    protected DataFileStoreDataManager( final DataFileManager manager, final ObjectMapper serializer,
+                                        final StoreEventDispatcher dispatcher )
     {
+        super( dispatcher );
         this.manager = manager;
         this.serializer = serializer;
     }
 
     @PostConstruct
     public void readDefinitions()
-        throws ProxyDataException
+        throws AproxDataException
     {
         DataFile dir = manager.getDataFile( APROX_STORE, StoreType.hosted.singularEndpointName() );
         final ChangeSummary summary =
@@ -150,7 +153,7 @@ public class DataFileStoreDataManager
 
     @Override
     public boolean storeHostedRepository( final HostedRepository deploy, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         final boolean result = super.storeHostedRepository( deploy, summary );
         if ( result )
@@ -164,7 +167,7 @@ public class DataFileStoreDataManager
     @Override
     public boolean storeHostedRepository( final HostedRepository deploy, final ChangeSummary summary,
                                           final boolean skipIfExists )
-        throws ProxyDataException
+        throws AproxDataException
     {
         final boolean result = super.storeHostedRepository( deploy, summary, skipIfExists );
         if ( result )
@@ -177,7 +180,7 @@ public class DataFileStoreDataManager
 
     @Override
     public boolean storeRemoteRepository( final RemoteRepository proxy, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         final boolean result = super.storeRemoteRepository( proxy, summary );
         if ( result )
@@ -191,7 +194,7 @@ public class DataFileStoreDataManager
     @Override
     public boolean storeRemoteRepository( final RemoteRepository repository, final ChangeSummary summary,
                                           final boolean skipIfExists )
-        throws ProxyDataException
+        throws AproxDataException
     {
         final boolean result = super.storeRemoteRepository( repository, summary, skipIfExists );
         if ( result )
@@ -204,7 +207,7 @@ public class DataFileStoreDataManager
 
     @Override
     public boolean storeGroup( final Group group, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         final boolean result = super.storeGroup( group, summary );
         if ( result )
@@ -217,7 +220,7 @@ public class DataFileStoreDataManager
 
     @Override
     public boolean storeGroup( final Group group, final ChangeSummary summary, final boolean skipIfExists )
-        throws ProxyDataException
+        throws AproxDataException
     {
         final boolean result = super.storeGroup( group, summary, skipIfExists );
         if ( result )
@@ -230,7 +233,7 @@ public class DataFileStoreDataManager
 
     @Override
     public void deleteHostedRepository( final HostedRepository deploy, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         super.deleteHostedRepository( deploy, summary );
         delete( summary, deploy );
@@ -238,7 +241,7 @@ public class DataFileStoreDataManager
 
     @Override
     public void deleteHostedRepository( final String name, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         super.deleteHostedRepository( name, summary );
         delete( StoreType.hosted, name, summary );
@@ -246,7 +249,7 @@ public class DataFileStoreDataManager
 
     @Override
     public void deleteRemoteRepository( final RemoteRepository repo, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         super.deleteRemoteRepository( repo, summary );
         delete( summary, repo );
@@ -254,7 +257,7 @@ public class DataFileStoreDataManager
 
     @Override
     public void deleteRemoteRepository( final String name, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         super.deleteRemoteRepository( name, summary );
         delete( StoreType.remote, name, summary );
@@ -262,7 +265,7 @@ public class DataFileStoreDataManager
 
     @Override
     public void deleteGroup( final Group group, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         super.deleteGroup( group, summary );
         delete( summary, group );
@@ -270,14 +273,14 @@ public class DataFileStoreDataManager
 
     @Override
     public void deleteGroup( final String name, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         super.deleteGroup( name, summary );
         delete( StoreType.group, name, summary );
     }
 
     private void store( final boolean skipIfExists, final ChangeSummary summary, final ArtifactStore... stores )
-        throws ProxyDataException
+        throws AproxDataException
     {
         for ( final ArtifactStore store : stores )
         {
@@ -293,7 +296,7 @@ public class DataFileStoreDataManager
             final DataFile d = f.getParent();
             if ( !d.mkdirs() )
             {
-                throw new ProxyDataException( "Cannot create storage directory: {} for definition: {}", d, store );
+                throw new AproxDataException( "Cannot create storage directory: {} for definition: {}", d, store );
             }
 
             try
@@ -302,14 +305,14 @@ public class DataFileStoreDataManager
             }
             catch ( final IOException e )
             {
-                throw new ProxyDataException( "Cannot write definition: {} to: {}. Reason: {}", e, store, f,
+                throw new AproxDataException( "Cannot write definition: {} to: {}. Reason: {}", e, store, f,
                                               e.getMessage() );
             }
         }
     }
 
     private void delete( final ChangeSummary summary, final ArtifactStore... stores )
-        throws ProxyDataException
+        throws AproxDataException
     {
         for ( final ArtifactStore store : stores )
         {
@@ -323,14 +326,14 @@ public class DataFileStoreDataManager
             }
             catch ( final IOException e )
             {
-                throw new ProxyDataException( "Cannot delete store definition: {} in file: {}. Reason: {}", e, store,
+                throw new AproxDataException( "Cannot delete store definition: {} in file: {}. Reason: {}", e, store,
                                               f, e.getMessage() );
             }
         }
     }
 
     private void delete( final StoreType type, final String name, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         final DataFile f = manager.getDataFile( APROX_STORE, type.singularEndpointName(), name + ".json" );
         try
@@ -339,14 +342,14 @@ public class DataFileStoreDataManager
         }
         catch ( final IOException e )
         {
-            throw new ProxyDataException( "Cannot delete store definition: {}:{} in file: {}. Reason: {}", e, type,
+            throw new AproxDataException( "Cannot delete store definition: {}:{} in file: {}. Reason: {}", e, type,
                                           name, f, e.getMessage() );
         }
     }
 
     @Override
     public boolean storeArtifactStore( final ArtifactStore store, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         final boolean result = super.storeArtifactStore( store, summary );
         if ( result )
@@ -360,7 +363,7 @@ public class DataFileStoreDataManager
     @Override
     public boolean storeArtifactStore( final ArtifactStore store, final ChangeSummary summary,
                                        final boolean skipIfExists )
-        throws ProxyDataException
+        throws AproxDataException
     {
         final boolean result = super.storeArtifactStore( store, summary );
         if ( result )
@@ -373,7 +376,7 @@ public class DataFileStoreDataManager
 
     @Override
     public void deleteArtifactStore( final StoreKey key, final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         super.deleteArtifactStore( key, summary );
         delete( key.getType(), key.getName(), summary );
@@ -381,7 +384,7 @@ public class DataFileStoreDataManager
 
     @Override
     public void clear( final ChangeSummary summary )
-        throws ProxyDataException
+        throws AproxDataException
     {
         super.clear( summary );
 
@@ -392,13 +395,13 @@ public class DataFileStoreDataManager
         }
         catch ( final IOException e )
         {
-            throw new ProxyDataException( "Failed to delete AProx storage files: {}", e, e.getMessage() );
+            throw new AproxDataException( "Failed to delete AProx storage files: {}", e, e.getMessage() );
         }
     }
 
     @Override
     public void install()
-        throws ProxyDataException
+        throws AproxDataException
     {
         if ( !manager.getDataFile( APROX_STORE )
                      .isDirectory() )
@@ -414,7 +417,7 @@ public class DataFileStoreDataManager
 
     @Override
     public void reload()
-        throws ProxyDataException
+        throws AproxDataException
     {
         // NOTE: Call to super for this, because the local implementation DELETES THE DB DIR!!!
         super.clear( new ChangeSummary( ChangeSummary.SYSTEM_USER, "Reloading from storage" ) );

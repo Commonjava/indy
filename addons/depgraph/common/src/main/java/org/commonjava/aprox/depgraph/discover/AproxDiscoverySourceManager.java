@@ -26,7 +26,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.inject.Production;
 import org.commonjava.aprox.model.core.ArtifactStore;
@@ -109,7 +109,7 @@ public class AproxDiscoverySourceManager
                     }
                 }
             }
-            catch ( final ProxyDataException e )
+            catch ( final AproxDataException e )
             {
                 throw new CartoDataException(
                                               "Failed to lookup ArtifactStore instances to search for URL: %s. Reason: %s",
@@ -196,7 +196,7 @@ public class AproxDiscoverySourceManager
                                 newSources.add( toDiscoveryURI( store.getKey() ) );
                             }
                         }
-                        catch ( final ProxyDataException e )
+                        catch ( final AproxDataException e )
                         {
                             throw new CartoDataException(
                                                           "Failed to lookup ordered concrete stores for: {}. Reason: {}",
@@ -236,7 +236,7 @@ public class AproxDiscoverySourceManager
         {
             store = stores.getArtifactStore( key );
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             logger.error( String.format( "Failed to lookup ArtifactStore for key: {}. Reason: {}", key, e.getMessage() ),
                           e );
@@ -272,7 +272,7 @@ public class AproxDiscoverySourceManager
                 {
                     store = this.stores.getArtifactStore( key );
                 }
-                catch ( final ProxyDataException e )
+                catch ( final AproxDataException e )
                 {
                     logger.error( String.format( "Failed to lookup ArtifactStore for key: %s. Reason: %s", key,
                                                  e.getMessage() ), e );

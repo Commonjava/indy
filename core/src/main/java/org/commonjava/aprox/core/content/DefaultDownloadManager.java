@@ -32,7 +32,7 @@ import org.commonjava.aprox.change.event.AproxFileEventManager;
 import org.commonjava.aprox.change.event.ArtifactStoreRescanEvent;
 import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.content.StoreResource;
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.HostedRepository;
@@ -454,7 +454,7 @@ public class DefaultDownloadManager
         {
             store = storeManager.getArtifactStore( key );
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             throw new AproxWorkflowException( "Failed to retrieve ArtifactStore for: %s. Reason: %s", e, key,
                                               e.getMessage() );
@@ -489,7 +489,7 @@ public class DefaultDownloadManager
         {
             store = storeManager.getArtifactStore( key );
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             throw new AproxWorkflowException( "Failed to retrieve ArtifactStore for: %s. Reason: %s", e, key,
                                               e.getMessage() );
@@ -559,7 +559,8 @@ public class DefaultDownloadManager
     public void rescan( final ArtifactStore store )
         throws AproxWorkflowException
     {
-        executor.execute( new Rescanner( getStorageReference( store.getKey() ), rescansInProgress, fileEventManager,
+        executor.execute( new Rescanner( store, getStorageReference( store.getKey() ), rescansInProgress,
+                                         fileEventManager,
                                          rescanEvent ) );
     }
 
@@ -578,10 +579,13 @@ public class DefaultDownloadManager
 
         private final AproxFileEventManager fileEventManager;
 
-        public Rescanner( final Transfer start, final Map<StoreKey, Byte> rescansInProgress,
+        private final ArtifactStore store;
+
+        public Rescanner( final ArtifactStore store, final Transfer start, final Map<StoreKey, Byte> rescansInProgress,
                           final AproxFileEventManager fileEventManager,
                           final Event<ArtifactStoreRescanEvent> rescanEvent )
         {
+            this.store = store;
             this.start = start;
             this.rescansInProgress = rescansInProgress;
             this.fileEventManager = fileEventManager;
@@ -591,8 +595,7 @@ public class DefaultDownloadManager
         @Override
         public void run()
         {
-            final KeyedLocation kl = (KeyedLocation) start.getLocation();
-            final StoreKey storeKey = kl.getKey();
+            final StoreKey storeKey = store.getKey();
             synchronized ( rescansInProgress )
             {
                 if ( rescansInProgress.containsKey( storeKey ) )
@@ -607,7 +610,7 @@ public class DefaultDownloadManager
             {
                 if ( rescanEvent != null )
                 {
-                    rescanEvent.fire( new ArtifactStoreRescanEvent( kl.getKey() ) );
+                    rescanEvent.fire( new ArtifactStoreRescanEvent( store ) );
                 }
 
                 doRescan( start );

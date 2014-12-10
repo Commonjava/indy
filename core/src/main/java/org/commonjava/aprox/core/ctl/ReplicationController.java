@@ -35,7 +35,7 @@ import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.core.dto.ReplicationAction;
 import org.commonjava.aprox.core.dto.ReplicationAction.ActionType;
 import org.commonjava.aprox.core.dto.ReplicationDTO;
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.dto.EndpointView;
 import org.commonjava.aprox.dto.EndpointViewListing;
@@ -158,7 +158,7 @@ public class ReplicationController
                         }
                     }
                 }
-            catch ( final ProxyDataException e )
+            catch ( final AproxDataException e )
             {
                 logger.error( e.getMessage(), e );
                 throw new AproxWorkflowException( e.getMessage(), e );

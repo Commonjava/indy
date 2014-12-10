@@ -27,7 +27,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpHead;
 import org.commonjava.aprox.audit.ChangeSummary;
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
@@ -77,7 +77,7 @@ public abstract class AutoProxDataManagerDecorator
 
     @Override
     public Group getGroup( final String name )
-        throws ProxyDataException
+        throws AproxDataException
     {
         logger.debug( "DECORATED (getGroup: {})", name );
         Group g = dataManager.getGroup( name );
@@ -98,7 +98,7 @@ public abstract class AutoProxDataManagerDecorator
             }
             catch ( final AutoProxRuleException e )
             {
-                throw new ProxyDataException(
+                throw new AproxDataException(
                                               "[AUTOPROX] Failed to create new group from factory matching: '%s'. Reason: %s",
                                               e, name, e.getMessage() );
             }
@@ -150,10 +150,10 @@ public abstract class AutoProxDataManagerDecorator
      *     </ul>
      *   </li>
      * </ul>
-     * @throws ProxyDataException if the selected rule encounters an error while creating the new group/repository instance(s).
+     * @throws AproxDataException if the selected rule encounters an error while creating the new group/repository instance(s).
      */
     private boolean checkValidity( final String name )
-        throws ProxyDataException
+        throws AproxDataException
     {
         if ( catalog.isValidationEnabled( name ) )
         {
@@ -213,7 +213,7 @@ public abstract class AutoProxDataManagerDecorator
             }
             catch ( final AutoProxRuleException e )
             {
-                throw new ProxyDataException(
+                throw new AproxDataException(
                                               "[AUTOPROX] Failed to create new group from factory matching: '%s'. Reason: %s",
                                               e, name, e.getMessage() );
             }
@@ -224,7 +224,7 @@ public abstract class AutoProxDataManagerDecorator
 
     @Override
     public RemoteRepository getRemoteRepository( final String name )
-        throws ProxyDataException
+        throws AproxDataException
     {
         logger.debug( "DECORATED (getRemoteRepository: {})", name );
         RemoteRepository repo = dataManager.getRemoteRepository( name );
@@ -257,7 +257,7 @@ public abstract class AutoProxDataManagerDecorator
             }
             catch ( final AutoProxRuleException e )
             {
-                throw new ProxyDataException(
+                throw new AproxDataException(
                                               "[AUTOPROX] Failed to create new remote repository from factory matching: '%s'. Reason: %s",
                                               e, name, e.getMessage() );
             }
@@ -268,7 +268,7 @@ public abstract class AutoProxDataManagerDecorator
 
     @Override
     public HostedRepository getHostedRepository( final String name )
-        throws ProxyDataException
+        throws AproxDataException
     {
         logger.debug( "DECORATED (getHostedRepository: {})", name );
         HostedRepository repo = dataManager.getHostedRepository( name );
@@ -289,7 +289,7 @@ public abstract class AutoProxDataManagerDecorator
             }
             catch ( final AutoProxRuleException e )
             {
-                throw new ProxyDataException(
+                throw new AproxDataException(
                                               "[AUTOPROX] Failed to create new hosted repository from factory matching: '%s'. Reason: %s",
                                               e, name, e.getMessage() );
             }
@@ -308,7 +308,7 @@ public abstract class AutoProxDataManagerDecorator
 
     @Override
     public ArtifactStore getArtifactStore( final StoreKey key )
-        throws ProxyDataException
+        throws AproxDataException
     {
         if ( key == null )
         {
@@ -331,7 +331,7 @@ public abstract class AutoProxDataManagerDecorator
 
     @Override
     public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
-        throws ProxyDataException
+        throws AproxDataException
     {
         getGroup( groupName );
         return dataManager.getOrderedConcreteStoresInGroup( groupName );
@@ -339,7 +339,7 @@ public abstract class AutoProxDataManagerDecorator
 
     @Override
     public List<ArtifactStore> getOrderedStoresInGroup( final String groupName )
-        throws ProxyDataException
+        throws AproxDataException
     {
         getGroup( groupName );
         return dataManager.getOrderedStoresInGroup( groupName );
@@ -352,7 +352,7 @@ public abstract class AutoProxDataManagerDecorator
         {
             return getRemoteRepository( name ) != null;
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             logger.error( String.format( "Failed to retrieve/create remote: %s. Reason: %s", name, e.getMessage() ), e );
         }
@@ -367,7 +367,7 @@ public abstract class AutoProxDataManagerDecorator
         {
             return getHostedRepository( name ) != null;
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             logger.error( String.format( "Failed to retrieve/create hosted: %s. Reason: %s", name, e.getMessage() ), e );
         }
@@ -382,7 +382,7 @@ public abstract class AutoProxDataManagerDecorator
         {
             return getGroup( name ) != null;
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             logger.error( String.format( "Failed to retrieve/create group: %s. Reason: %s", name, e.getMessage() ), e );
         }
@@ -397,7 +397,7 @@ public abstract class AutoProxDataManagerDecorator
         {
             return getArtifactStore( key ) != null;
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             logger.error( String.format( "Failed to retrieve/create: %s. Reason: %s", key, e.getMessage() ), e );
         }

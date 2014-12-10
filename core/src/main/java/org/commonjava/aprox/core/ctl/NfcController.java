@@ -16,7 +16,7 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.core.dto.NotFoundCacheDTO;
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.StoreKey;
@@ -74,7 +74,7 @@ public class NfcController
             {
                 stores = storeManager.getOrderedConcreteStoresInGroup( key.getName() );
             }
-            catch ( final ProxyDataException e )
+            catch ( final AproxDataException e )
             {
                 throw new AproxWorkflowException( "Failed to retrieve concrete constituent ArtifactStores for: %s.", e,
                                                   key );
@@ -100,7 +100,7 @@ public class NfcController
             {
                 store = storeManager.getArtifactStore( key );
             }
-            catch ( final ProxyDataException e )
+            catch ( final AproxDataException e )
             {
                 throw new AproxWorkflowException( "Failed to retrieve ArtifactStore: %s.", e, key );
             }
@@ -153,7 +153,7 @@ public class NfcController
                 }
             }
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             throw new AproxWorkflowException( "Failed to retrieve ArtifactStore: %s.", e, key );
         }

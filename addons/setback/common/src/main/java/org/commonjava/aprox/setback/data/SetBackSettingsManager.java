@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,9 +14,9 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.audit.ChangeSummary;
-import org.commonjava.aprox.change.event.ArtifactStoreDeleteEvent;
+import org.commonjava.aprox.change.event.AbstractStoreDeleteEvent;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.Group;
@@ -29,6 +28,7 @@ import org.commonjava.aprox.subsys.datafile.DataFileManager;
 import org.commonjava.aprox.subsys.template.AproxGroovyException;
 import org.commonjava.aprox.subsys.template.TemplatingEngine;
 import org.commonjava.aprox.util.ApplicationContent;
+import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,16 +63,14 @@ public class SetBackSettingsManager
         this.manager = manager;
     }
 
-    public void deleteSettingsOnEvent( @Observes final ArtifactStoreDeleteEvent event )
+    public void deleteSettingsOnEvent( @Observes final AbstractStoreDeleteEvent event )
     {
-        final StoreType type = event.getType();
-        final Set<String> names = new HashSet<String>( event.getNames() );
-        for ( final String name : names )
+        for ( final Map.Entry<ArtifactStore, Transfer> storeRoot : event.getStoreRoots()
+                                                                        .entrySet() )
         {
-            final StoreKey key = new StoreKey( type, name );
             try
             {
-                deleteStoreSettings( key );
+                deleteStoreSettings( storeRoot.getKey() );
             }
             catch ( final SetBackDataException e )
             {
@@ -81,9 +79,10 @@ public class SetBackSettingsManager
         }
     }
 
-    public boolean deleteStoreSettings( final StoreKey key )
+    public boolean deleteStoreSettings( final ArtifactStore store )
         throws SetBackDataException
     {
+        final StoreKey key = store.getKey();
         if ( StoreType.hosted == key.getType() )
         {
             return false;
@@ -95,13 +94,13 @@ public class SetBackSettingsManager
             try
             {
                 settingsXml.delete( new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                       "SETBACK: Deleting generated SetBack settings.xml for: " + key ) );
+                                                       "SETBACK: Deleting generated SetBack settings.xml for: " + store ) );
             }
             catch ( final IOException e )
             {
                 throw new SetBackDataException(
                                                 "Failed to delete SetBack settings.xml for: %s.\n  at: %s\n  Reason: %s",
-                                                e, key, settingsXml, e.getMessage() );
+                                                e, store, settingsXml, e.getMessage() );
             }
 
             return true;
@@ -117,7 +116,7 @@ public class SetBackSettingsManager
         {
             try
             {
-                generateStoreSettings( store.getKey() );
+                generateStoreSettings( store );
             }
             catch ( final SetBackDataException e )
             {
@@ -126,75 +125,65 @@ public class SetBackSettingsManager
         }
     }
 
-    public DataFile generateStoreSettings( final StoreKey key )
+    public DataFile generateStoreSettings( final ArtifactStore store )
         throws SetBackDataException
     {
+        final StoreKey key = store.getKey();
         if ( StoreType.group == key.getType() )
         {
-            return updateSettingsForGroup( key );
+            return updateSettingsForGroup( (Group) store );
         }
         else if ( StoreType.remote == key.getType() )
         {
-            return updateSettingsRelatedToRemote( key );
+            return updateSettingsRelatedToRemote( store );
         }
 
         return null;
     }
 
-    private DataFile updateSettingsRelatedToRemote( final StoreKey key )
+    private DataFile updateSettingsRelatedToRemote( final ArtifactStore store )
         throws SetBackDataException
     {
         Set<Group> groups;
         try
         {
-            groups = storeManager.getGroupsContaining( key );
+            groups = storeManager.getGroupsContaining( store.getKey() );
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
-            logger.error( String.format( "Failed to retrieve groups containing: {}. Reason: {}", key, e.getMessage() ),
+            logger.error( String.format( "Failed to retrieve groups containing: {}. Reason: {}", store, e.getMessage() ),
                           e );
             return null;
         }
 
         for ( final Group group : groups )
         {
-            updateSettingsForGroup( group.getKey() );
+            updateSettingsForGroup( group );
         }
 
-        return updateSettingsForRemote( key );
+        return updateSettingsForRemote( (RemoteRepository) store );
     }
 
-    private DataFile updateSettingsForRemote( final StoreKey key )
+    private DataFile updateSettingsForRemote( final RemoteRepository store )
         throws SetBackDataException
     {
-        RemoteRepository store;
-        try
-        {
-            store = storeManager.getRemoteRepository( key.getName() );
-        }
-        catch ( final ProxyDataException e )
-        {
-            throw new SetBackDataException( "Failed to lookup remote repository: %s. Reason: %s", e, key,
-                                            e.getMessage() );
-        }
-
-        return updateSettings( key, Collections.<ArtifactStore> singletonList( store ),
+        return updateSettings( store, Collections.<ArtifactStore> singletonList( store ),
                                Collections.<RemoteRepository> singletonList( store ) );
     }
 
-    private DataFile updateSettingsForGroup( final StoreKey key )
+    private DataFile updateSettingsForGroup( final Group group )
         throws SetBackDataException
     {
-        logger.info( "Updating set-back settings.xml for group: {}", key.getName() );
+        logger.info( "Updating set-back settings.xml for group: {}", group.getName() );
         List<ArtifactStore> concreteStores;
         try
         {
-            concreteStores = storeManager.getOrderedConcreteStoresInGroup( key.getName() );
+            concreteStores = storeManager.getOrderedConcreteStoresInGroup( group.getName() );
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             logger.error( String.format( "Failed to retrieve concrete membership for group: {}. Reason: {}",
-                                         key.getName(), e.getMessage() ), e );
+                                         group.getName(), e.getMessage() ), e );
             return null;
         }
 
@@ -208,17 +197,19 @@ public class SetBackSettingsManager
             }
         }
 
-        return updateSettings( key, concreteStores, remotes );
+        return updateSettings( group, concreteStores, remotes );
     }
 
-    private DataFile updateSettings( final StoreKey key, final List<ArtifactStore> allStores,
+    private DataFile updateSettings( final ArtifactStore store, final List<ArtifactStore> allStores,
                                      final List<RemoteRepository> remotes )
         throws SetBackDataException
     {
+        final StoreKey key = store.getKey();
         final DataFile settingsXml = getSettingsXml( key );
 
         final Map<String, Object> params = new HashMap<String, Object>();
         params.put( "key", key );
+        params.put( "store", store );
         params.put( "remotes", remotes );
         params.put( "allStores", allStores );
 

@@ -3,7 +3,7 @@ package org.commonjava.aprox.core.expire;
 import static org.commonjava.aprox.util.LocationUtils.getKey;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.Executor;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -11,7 +11,7 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.change.event.ArtifactStoreDeleteEvent;
+import org.commonjava.aprox.change.event.AbstractStoreDeleteEvent;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateType;
 import org.commonjava.aprox.content.DownloadManager;
@@ -259,7 +259,7 @@ public class TimeoutEventListener
             public void run()
             {
                 final ArtifactStoreUpdateType eventType = event.getType();
-                if ( eventType == ArtifactStoreUpdateType.ADD_OR_UPDATE )
+                if ( eventType == ArtifactStoreUpdateType.UPDATE )
                 {
                     for ( final ArtifactStore store : event )
                     {
@@ -295,30 +295,20 @@ public class TimeoutEventListener
         } );
     }
 
-    public void onStoreDeletion( @Observes final ArtifactStoreDeleteEvent event )
+    public void onStoreDeletion( @Observes final AbstractStoreDeleteEvent event )
     {
         executor.execute( new Runnable()
         {
             @Override
             public void run()
             {
-                final StoreType type = event.getType();
-                final Collection<String> names = event.getNames();
-
-                for ( final String name : names )
+                for ( final Map.Entry<ArtifactStore, Transfer> storeRoot : event.getStoreRoots()
+                                                                                .entrySet() )
                 {
-                    final StoreKey key = new StoreKey( type, name );
-                    Transfer dir;
-                    try
-                    {
-                        dir = fileManager.getStoreRootDirectory( key );
-                    }
-                    catch ( final AproxWorkflowException e )
-                    {
-                        logger.error( "Failed to cancel file expirations for deleted artifact store: {}. Error: {}", e,
-                                      key, e.getMessage() );
-                        return;
-                    }
+                    final StoreKey key = storeRoot.getKey()
+                                                  .getKey();
+
+                    final Transfer dir = storeRoot.getValue();
 
                     if ( dir.exists() && dir.isDirectory() )
                     {

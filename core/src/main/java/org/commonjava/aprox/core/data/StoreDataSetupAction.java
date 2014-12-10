@@ -6,7 +6,7 @@ import javax.inject.Named;
 import org.commonjava.aprox.action.AproxLifecycleException;
 import org.commonjava.aprox.action.MigrationAction;
 import org.commonjava.aprox.audit.ChangeSummary;
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.HostedRepository;
@@ -79,7 +79,7 @@ public class StoreDataSetupAction
                 changed = true;
             }
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             throw new RuntimeException( "Failed to boot aprox components: " + e.getMessage(), e );
         }

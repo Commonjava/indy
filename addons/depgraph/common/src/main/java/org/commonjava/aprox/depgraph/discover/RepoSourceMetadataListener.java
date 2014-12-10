@@ -21,7 +21,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreType;
@@ -101,7 +101,7 @@ public class RepoSourceMetadataListener
                         {
                             repo = aprox.getRemoteRepository( sub );
                         }
-                        catch ( final ProxyDataException e )
+                        catch ( final AproxDataException e )
                         {
                             logger.error( "Failed to retrieve repository with name: '{}' for {} metadata association in dependency graph. Reason: {}",
                                           e, sub, FOUND_IN_METADATA, e.getMessage() );

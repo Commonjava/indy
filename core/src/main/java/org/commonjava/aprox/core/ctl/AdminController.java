@@ -18,7 +18,7 @@ import javax.inject.Inject;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.core.expire.ScheduleManager;
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.StoreKey;
@@ -61,7 +61,7 @@ public class AdminController
 
             return storeManager.storeArtifactStore( store, summary, skipExisting );
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to store: {}. Reason: {}", e, store.getKey(), e.getMessage() );
         }
@@ -74,7 +74,7 @@ public class AdminController
         {
             return storeManager.getAllArtifactStores( type );
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to list: {}. Reason: {}", e, type, e.getMessage() );
         }
@@ -87,7 +87,7 @@ public class AdminController
         {
             return storeManager.getArtifactStore( key );
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to retrieve: {}. Reason: {}", e, key, e.getMessage() );
         }
@@ -100,7 +100,7 @@ public class AdminController
         {
             storeManager.deleteArtifactStore( key, new ChangeSummary( user, changelog ) );
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to delete: {}. Reason: {}", e, key, e.getMessage() );
         }

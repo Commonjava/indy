@@ -11,13 +11,14 @@
 package org.commonjava.aprox.mem.data;
 
 import org.commonjava.aprox.core.data.TCKFixtureProvider;
+import org.commonjava.aprox.core.data.testutil.StoreEventDispatcherStub;
 import org.commonjava.aprox.data.StoreDataManager;
 
 public class MemoryTCKFixtureProvider
     implements TCKFixtureProvider
 {
 
-    private final MemoryStoreDataManager dataManager = new MemoryStoreDataManager();
+    private final MemoryStoreDataManager dataManager = new MemoryStoreDataManager( new StoreEventDispatcherStub() );
 
     @Override
     public StoreDataManager getDataManager()

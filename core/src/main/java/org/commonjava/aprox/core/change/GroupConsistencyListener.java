@@ -16,12 +16,12 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.audit.ChangeSummary;
-import org.commonjava.aprox.change.event.ArtifactStoreDeleteEvent;
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.change.event.ArtifactStoreDeletePostEvent;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.StoreKey;
-import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.util.ChangeSynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,8 +37,9 @@ public class GroupConsistencyListener
 
     private final ChangeSynchronizer changeSync = new ChangeSynchronizer();
 
-    private void processChanged( final StoreKey key )
+    private void processChanged( final ArtifactStore store )
     {
+        final StoreKey key = store.getKey();
         try
         {
             final Set<Group> groups = proxyDataManager.getGroupsContaining( key );
@@ -52,7 +53,7 @@ public class GroupConsistencyListener
 
             changeSync.setChanged();
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             logger.error( String.format( "Failed to remove group constituent listings for: %s. Error: %s", key,
                                          e.getMessage() ), e );
@@ -76,14 +77,12 @@ public class GroupConsistencyListener
     // }
     // }
 
-    public void storeDeleted( @Observes final ArtifactStoreDeleteEvent event )
+    public void storeDeleted( @Observes final ArtifactStoreDeletePostEvent event )
     {
         //        logger.info( "Processing proxy-manager store deletion: {}", event );
-        final StoreType type = event.getType();
-        for ( final String name : event )
+        for ( final ArtifactStore store : event )
         {
-            final StoreKey key = new StoreKey( type, name );
-            processChanged( key );
+            processChanged( store );
         }
     }
 

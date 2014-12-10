@@ -13,6 +13,7 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.commonjava.aprox.audit.ChangeSummary;
+import org.commonjava.aprox.core.data.DefaultStoreEventDispatcher;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
@@ -48,7 +49,7 @@ public class SetBackSettingsManagerTest
     public void setup()
         throws Exception
     {
-        storeManager = new MemoryStoreDataManager();
+        storeManager = new MemoryStoreDataManager( new DefaultStoreEventDispatcher() );
 
         final File dataSrc = new File( "./src/main/data" );
         final File data = temp.newFolder( "data" );
@@ -92,7 +93,9 @@ public class SetBackSettingsManagerTest
         assertThat( "No repository with id: " + remote.getName() + " found in settings.xml",
                     lines.contains( "<id>" + remote.getName() + "</id>" ), equalTo( true ) );
 
-        manager.deleteStoreSettings( key );
+        final ArtifactStore store = storeManager.getArtifactStore( key );
+
+        manager.deleteStoreSettings( store );
 
         assertThat( "Settings.xml for: " + key + " should have been deleted!", manager.getSetBackSettings( key ),
                     nullValue() );
@@ -222,7 +225,8 @@ public class SetBackSettingsManagerTest
     private List<String> generateSettings( final StoreKey key )
         throws Exception
     {
-        final DataFile settings = manager.generateStoreSettings( key );
+        final ArtifactStore store = storeManager.getArtifactStore( key );
+        final DataFile settings = manager.generateStoreSettings( store );
         assertThat( "settings.xml returned from generateStoreSettings(..) for: " + key + " does not exist!",
                     settings.exists(), equalTo( true ) );
 

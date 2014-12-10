@@ -22,7 +22,7 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.dto.AddOnListing;
 import org.commonjava.aprox.dto.EndpointViewListing;
@@ -126,7 +126,7 @@ public class StatsController
         {
             stores.addAll( dataManager.getAllArtifactStores() );
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to retrieve all endpoints: {}",
                                               e, e.getMessage() );

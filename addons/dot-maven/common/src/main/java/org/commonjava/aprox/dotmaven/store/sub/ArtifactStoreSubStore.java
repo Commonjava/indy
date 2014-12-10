@@ -34,7 +34,7 @@ import net.sf.webdav.exceptions.WebdavException;
 import net.sf.webdav.spi.ITransaction;
 
 import org.commonjava.aprox.content.DownloadManager;
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.dotmaven.DotMavenException;
 import org.commonjava.aprox.dotmaven.data.StorageAdvice;
@@ -208,7 +208,7 @@ public class ArtifactStoreSubStore
                 }
             }
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             logger.error( String.format( "Failed to lookup ArtifactStore(s) for key: %s. Reason: %s", key, e.getMessage() ), e );
             throw new WebdavException( "Failed to get content for: " + resourceUri );
@@ -326,7 +326,7 @@ public class ArtifactStoreSubStore
                     }
                 }
             }
-            catch ( final ProxyDataException e )
+            catch ( final AproxDataException e )
             {
                 logger.error( String.format( "Failed to lookup ArtifactStore(s) for key: %s. Reason: %s", key, e.getMessage() ), e );
                 throw new WebdavException( "Failed to get listing for: " + folderUri );
@@ -345,7 +345,7 @@ public class ArtifactStoreSubStore
             {
                 stores = aprox.getAllArtifactStores( type );
             }
-            catch ( final ProxyDataException e )
+            catch ( final AproxDataException e )
             {
                 logger.error( String.format( "Failed to lookup ArtifactStores of type: %s. Reason: %s", type, e.getMessage() ), e );
                 throw new WebdavException( "Failed to get listing for: " + folderUri );
@@ -461,7 +461,7 @@ public class ArtifactStoreSubStore
         {
             store = aprox.getArtifactStore( key );
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             logger.error( String.format( "Failed to retrieve artifact store: %s for URI: %s\nReason: %s", key, uri, e.getMessage() ), e );
             throw new WebdavException( "Cannot create: " + uri );

@@ -43,7 +43,7 @@ import org.commonjava.aprox.action.BootupAction;
 import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.core.conf.AproxSchedulerConfig;
-import org.commonjava.aprox.data.ProxyDataException;
+import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.Group;
@@ -229,7 +229,7 @@ public class ScheduleManager
         {
             repo = (RemoteRepository) dataManager.getArtifactStore( key );
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             logger.error( String.format( "Failed to retrieve store for: %s. Reason: %s", key, e.getMessage() ), e );
         }
@@ -335,7 +335,7 @@ public class ScheduleManager
                 deploy = findDeployPoint( group );
             }
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             logger.error( String.format( "Failed to retrieve deploy point for: %s. Reason: %s", key, e.getMessage() ),
                           e );
@@ -364,7 +364,7 @@ public class ScheduleManager
     }
 
     private HostedRepository findDeployPoint( final Group group )
-        throws ProxyDataException
+        throws AproxDataException
     {
         for ( final StoreKey key : group.getConstituents() )
         {
@@ -415,7 +415,7 @@ public class ScheduleManager
                     }
                 }
             }
-            catch ( final ProxyDataException e )
+            catch ( final AproxDataException e )
             {
                 logger.error( String.format( "Attempting to update groups for metadata change; Failed to retrieve groups containing store: {}. Error: {}",
                                              key, e.getMessage() ), e );
@@ -436,7 +436,7 @@ public class ScheduleManager
         {
             store = dataManager.getArtifactStore( key );
         }
-        catch ( final ProxyDataException e )
+        catch ( final AproxDataException e )
         {
             logger.error( String.format( "Failed to update metadata after snapshot deletion. Reason: {}",
                                          e.getMessage() ), e );

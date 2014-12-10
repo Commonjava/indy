@@ -20,7 +20,7 @@ public enum ArtifactStoreUpdateType
 
     /** Definite creation of new store. */
     ADD,
-    /** Could be an update, or could be a creation of a new store. */
-    ADD_OR_UPDATE;
+    /** upadting an existing store. */
+    UPDATE;
 
 }
