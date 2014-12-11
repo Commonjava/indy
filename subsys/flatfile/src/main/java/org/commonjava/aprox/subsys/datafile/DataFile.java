@@ -72,10 +72,59 @@ public final class DataFile
         return file.exists();
     }
 
+    public void writeString( final String content, final ChangeSummary summary )
+        throws IOException
+    {
+        FileUtils.write( file, content );
+        events.modified( file, summary );
+    }
+
     public void writeString( final String content, final String encoding, final ChangeSummary summary )
         throws IOException
     {
         FileUtils.write( file, content, encoding );
+        events.modified( file, summary );
+    }
+
+    public void writeLines( final List<String> lines, final String encoding, final ChangeSummary summary )
+        throws IOException
+    {
+        FileUtils.writeLines( file, lines, encoding );
+        events.modified( file, summary );
+    }
+
+    public void writeLines( final List<String> lines, final ChangeSummary summary )
+        throws IOException
+    {
+        FileUtils.writeLines( file, lines );
+        events.modified( file, summary );
+    }
+
+    public void appendString( final String content, final ChangeSummary summary )
+        throws IOException
+    {
+        FileUtils.write( file, content, true );
+        events.modified( file, summary );
+    }
+
+    public void appendString( final String content, final String encoding, final ChangeSummary summary )
+        throws IOException
+    {
+        FileUtils.write( file, content, encoding, true );
+        events.modified( file, summary );
+    }
+
+    public void appendLines( final List<String> lines, final String encoding, final ChangeSummary summary )
+        throws IOException
+    {
+        FileUtils.writeLines( file, lines, encoding, true );
+        events.modified( file, summary );
+    }
+
+    public void appendLines( final List<String> lines, final ChangeSummary summary )
+        throws IOException
+    {
+        FileUtils.writeLines( file, lines, true );
         events.modified( file, summary );
     }
 
@@ -142,4 +191,5 @@ public final class DataFile
     {
         return file;
     }
+
 }

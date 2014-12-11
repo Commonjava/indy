@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <!--
   Copyright (c) 2014 Red Hat, Inc..
   All rights reserved. This program and the accompanying materials
@@ -11,41 +11,18 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
   <parent>
     <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-parent</artifactId>
+    <artifactId>aprox-addons</artifactId>
     <version>0.16.4-SNAPSHOT</version>
   </parent>
-  
-  <artifactId>aprox-addons</artifactId>
+  <artifactId>aprox-folo</artifactId>
+  <name>AProx :: Add-Ons :: Folo Usage Tracker :: Parent</name>
   <packaging>pom</packaging>
 
-  <name>AProx :: Add-Ons :: Parent</name>
-  
   <modules>
-    <module>autoprox</module>
-    <module>depgraph</module>
-    <module>dot-maven</module>
-    <module>folo</module>
-    <module>indexer</module>
-    <module>revisions</module>
-    <module>setback</module>
+    <module>common</module>
+    <module>vertx</module>
   </modules>
-  
-  <profiles>
-    <profile>
-      <id>almost-there</id>
-      
-      <modules>
-        <module>security</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>experimental</id>
-      
-      <modules>
-      </modules>
-    </profile>
-  </profiles>
+
 </project>

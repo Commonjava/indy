@@ -28,7 +28,7 @@ import org.commonjava.web.config.annotation.SectionName;
 
 @SectionName( "flatfiles" )
 @Alternative
-@Named( "unused" )
+@Named
 public class DataFileConfiguration
 {
 

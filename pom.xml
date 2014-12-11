@@ -42,7 +42,7 @@
     <atlasVersion>0.13.7</atlasVersion>
     <galleyVersion>0.6.8</galleyVersion>
     <cartoVersion>0.8.1</cartoVersion>
-    <bomVersion>13</bomVersion>
+    <bomVersion>14-SNAPSHOT</bomVersion>
     <webdavVersion>3.1.1</webdavVersion>
     <vabrVersion>1.11-SNAPSHOT</vabrVersion>
     
@@ -320,6 +320,32 @@
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-ftests-core</artifactId>
         <version>0.16.4-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-folo-vertx</artifactId>
+        <version>0.16.4-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-folo-common</artifactId>
+        <version>0.16.4-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-folo-common</artifactId>
+        <version>0.16.4-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>dataset</classifier>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-folo-common</artifactId>
+        <version>0.16.4-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>confset</classifier>
+        <scope>provided</scope>
       </dependency>
       
       

@@ -11,7 +11,7 @@ import org.commonjava.aprox.spi.AproxAddOnID;
 
 @ApplicationScoped
 @Default
-@Named( "autoprox" )
+@Named
 public class AutoProxAddOn
     implements AproxAddOn
 {
