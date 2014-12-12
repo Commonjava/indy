@@ -1,0 +1,6 @@
+#!/usr/bin/python
+
+print "Ready to serve AProx volume data."
+while True:
+  # nothing
+  unused=True
