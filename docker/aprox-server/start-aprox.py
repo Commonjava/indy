@@ -79,13 +79,19 @@ if not os.path.isdir(APROX_DIR):
   if os.path.isdir(APROX_DEV_VOL):
     for file in os.listdir(APROX_DEV_VOL):
       if fnmatch.fnmatch(file, APROX_DEV_BINARIES_PATTERN):
-        run('tar -zxvf %s -C /opt' % os.path.join(APROX_DEV_VOL, file))
+        devTarball = os.path.join(APROX_DEV_VOL, file)
+        
+        print "Unpacking development binary of AProx: %s" % devTarball
+        run('tar -zxvf %s -C /opt' % devTarball)
         unpacked=True
         break
     
     if not unpacked:
-      print "Using development version of AProx, expanded and available in %s" % APROX_DEV_VOL
-      shutil.copytree(APROX_DEV_VOL, APROX_DIR)
+      if not os.path.exists(os.path.join(APROX_DEV_VOL, 'bin/aprox.sh')):
+        print "Development volume %s exists but doesn't appear to contain expanded AProx (can't find 'bin/aprox.sh'). Ignoring." % APROX_DEV_VOL
+      else:
+        print "Using expanded AProx deployment, in development volume: %s" % APROX_DEV_VOL
+        shutil.copytree(APROX_DEV_VOL, APROX_DIR)
     
   else:
       aproxBinaryUrl = os.environ.get(APROX_URL_ENVAR) or DEF_APROX_BINARY_URL
