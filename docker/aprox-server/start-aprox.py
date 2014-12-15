@@ -121,4 +121,4 @@ if not os.path.isdir(APROX_DIR):
 
 
 opts = os.environ.get(APROX_OPTS_ENVAR) or ''
-run("%s %s" % (os.path.join(APROX_DIR, 'bin', 'aprox.sh'), opts), fail=False)
+run("%s -p 8081 %s" % (os.path.join(APROX_DIR, 'bin', 'aprox.sh'), opts), fail=False)
