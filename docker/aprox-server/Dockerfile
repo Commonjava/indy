@@ -5,11 +5,12 @@ MAINTAINER John Casey <jdcasey@commonjava.org>
 RUN yum -y update
 RUN yum -y install wget git tar which curl java-1.7.0-openjdk-devel
 
-VOLUME /var/lib/aprox/storage /var/lib/aprox/data /var/log/aprox /etc/aprox
+VOLUME /var/lib/aprox/storage /var/lib/aprox/data /var/log/aprox /etc/aprox /tmp/aprox
 
 EXPOSE 8080
+EXPOSE 8000
 
-ADD start-aprox /usr/local/bin/start-aprox
-RUN chmod +x /usr/local/bin/start-aprox
+ADD start-aprox.py /usr/local/bin/start-aprox.py
+RUN chmod +x /usr/local/bin/start-aprox.py
 
-CMD "/usr/local/bin/start-aprox"
+CMD "/usr/local/bin/start-aprox.py"

@@ -292,6 +292,10 @@ public class DefaultDownloadManager
             else
             {
                 target = transfers.getCacheReference( res );
+                if ( !target.exists() )
+                {
+                    target = null;
+                }
             }
 
             return target;
