@@ -10,6 +10,8 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.conf;
 
+import java.io.InputStream;
+
 import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
@@ -18,6 +20,7 @@ import javax.inject.Named;
 
 import org.commonjava.aprox.conf.AbstractAproxConfigInfo;
 import org.commonjava.aprox.conf.AbstractAproxFeatureConfig;
+import org.commonjava.aprox.conf.AproxConfigClassInfo;
 import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.inject.Production;
@@ -55,7 +58,7 @@ public class DefaultAproxConfiguration
         }
 
         @Override
-        public AproxConfigInfo getInfo()
+        public AproxConfigClassInfo getInfo()
         {
             return info;
         }
@@ -68,6 +71,20 @@ public class DefaultAproxConfiguration
         public ConfigInfo()
         {
             super( DefaultAproxConfiguration.class );
+        }
+
+        @Override
+        public String getDefaultConfigFileName()
+        {
+            return AproxConfigInfo.APPEND_DEFAULTS_TO_MAIN_CONF;
+        }
+
+        @Override
+        public InputStream getDefaultConfig()
+        {
+            return Thread.currentThread()
+                         .getContextClassLoader()
+                         .getResourceAsStream( "default-main.conf" );
         }
     }
 

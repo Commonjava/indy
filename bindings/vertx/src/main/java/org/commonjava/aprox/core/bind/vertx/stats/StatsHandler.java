@@ -19,7 +19,7 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.core.ctl.StatsController;
-import org.commonjava.aprox.dto.EndpointViewListing;
+import org.commonjava.aprox.model.core.dto.EndpointViewListing;
 import org.commonjava.aprox.util.ApplicationContent;
 import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.vertx.vabr.anno.Handles;

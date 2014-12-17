@@ -70,6 +70,12 @@ public class BootOptions
 
     private final String aproxHome;
 
+    public BootOptions( final String aproxHome )
+        throws IOException, InterpolationException
+    {
+        this( null, aproxHome );
+    }
+
     public BootOptions( final File bootDefaults, final String aproxHome )
         throws IOException, InterpolationException
     {

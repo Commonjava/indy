@@ -10,7 +10,7 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.ctl;
 
-import static org.commonjava.aprox.util.UrlUtils.buildUrl;
+import static org.commonjava.maven.galley.util.UrlUtils.buildUrl;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -28,24 +28,25 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.params.ConnRoutePNames;
+import org.commonjava.aprox.AproxException;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.audit.ChangeSummary;
-import org.commonjava.aprox.core.dto.ReplicationAction;
-import org.commonjava.aprox.core.dto.ReplicationAction.ActionType;
-import org.commonjava.aprox.core.dto.ReplicationDTO;
 import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.dto.EndpointView;
-import org.commonjava.aprox.dto.EndpointViewListing;
-import org.commonjava.aprox.dto.StoreListingDTO;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.HostedRepository;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
+import org.commonjava.aprox.model.core.dto.EndpointView;
+import org.commonjava.aprox.model.core.dto.EndpointViewListing;
+import org.commonjava.aprox.model.core.dto.ReplicationAction;
+import org.commonjava.aprox.model.core.dto.ReplicationAction.ActionType;
+import org.commonjava.aprox.model.core.dto.ReplicationDTO;
+import org.commonjava.aprox.model.core.dto.StoreListingDTO;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +82,14 @@ public class ReplicationController
     public Set<StoreKey> replicate( final ReplicationDTO dto, final String user )
         throws AproxWorkflowException
     {
-        dto.validate();
+        try
+        {
+            dto.validate();
+        }
+        catch ( final AproxException e )
+        {
+            throw new AproxWorkflowException( "Invalid replication request DTO: %s", e, e.getMessage() );
+        }
 
         List<? extends ArtifactStore> remoteStores = null;
         List<EndpointView> remoteEndpoints = null;
@@ -370,8 +378,10 @@ public class ReplicationController
             proxy = new HttpHost( dto.getProxyHost(), dto.getProxyPort(), "http" );
         }
 
-        get.getParams()
-           .setParameter( ConnRoutePNames.DEFAULT_PROXY, proxy );
+        final RequestConfig config = RequestConfig.custom()
+                                                  .setProxy( proxy )
+                                                  .build();
+        get.setConfig( config );
 
         return get;
     }

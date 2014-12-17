@@ -10,6 +10,8 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.conf;
 
+import java.io.InputStream;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
@@ -99,6 +101,20 @@ public class AproxWeftConfig
         throws ConfigurationException
     {
         // NOP; just block map init in the underlying implementation.
+    }
+
+    @Override
+    public String getDefaultConfigFileName()
+    {
+        return "conf.d/threadpools.conf";
+    }
+
+    @Override
+    public InputStream getDefaultConfig()
+    {
+        return Thread.currentThread()
+                     .getContextClassLoader()
+                     .getResourceAsStream( "default-threadpools.conf" );
     }
 
 }

@@ -82,10 +82,6 @@ public abstract class ArtifactStore
         {
             return true;
         }
-        if ( !super.equals( obj ) )
-        {
-            return false;
-        }
         if ( getClass() != obj.getClass() )
         {
             return false;

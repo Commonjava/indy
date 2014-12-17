@@ -5,7 +5,7 @@ import javax.enterprise.inject.Default;
 import javax.inject.Named;
 
 import org.commonjava.aprox.spi.AproxAddOn;
-import org.commonjava.aprox.spi.AproxAddOnID;
+import org.commonjava.aprox.spi.model.AproxAddOnID;
 
 @ApplicationScoped
 @Default

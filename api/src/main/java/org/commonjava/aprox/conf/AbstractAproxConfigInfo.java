@@ -13,11 +13,11 @@ package org.commonjava.aprox.conf;
 import org.commonjava.web.config.ConfigUtils;
 
 /**
- * Abstract implementation of {@link AproxConfigInfo} meant to make implementation as simple as providing a section name and configuration-info
+ * Abstract implementation of {@link AproxConfigClassInfo} meant to make implementation as simple as providing a section name and configuration-info
  * registration class via the super() constructor.
  */
 public abstract class AbstractAproxConfigInfo
-    implements AproxConfigInfo
+    implements AproxConfigClassInfo
 {
 
     private final Class<?> type;

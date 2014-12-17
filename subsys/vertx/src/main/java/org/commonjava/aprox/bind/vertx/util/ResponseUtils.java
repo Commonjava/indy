@@ -16,7 +16,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.dto.CreationDTO;
+import org.commonjava.aprox.model.core.dto.CreationDTO;
 import org.commonjava.aprox.util.ApplicationContent;
 import org.commonjava.aprox.util.ApplicationHeader;
 import org.commonjava.aprox.util.ApplicationStatus;

@@ -21,7 +21,9 @@
   <packaging>pom</packaging>
 
   <modules>
+    <module>client-java</module>
     <module>common</module>
+    <module>model-java</module>
     <module>vertx</module>
   </modules>
 

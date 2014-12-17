@@ -24,6 +24,7 @@
   
   <modules>
     <module>db</module>
+    <module>fixtures-core</module>
     <module>utils</module>
   </modules>
 </project>

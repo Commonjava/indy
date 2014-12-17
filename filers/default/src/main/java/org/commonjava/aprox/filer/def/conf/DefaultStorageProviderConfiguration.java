@@ -11,6 +11,7 @@
 package org.commonjava.aprox.filer.def.conf;
 
 import java.io.File;
+import java.io.InputStream;
 
 import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.Default;
@@ -20,6 +21,7 @@ import javax.inject.Named;
 
 import org.commonjava.aprox.conf.AbstractAproxConfigInfo;
 import org.commonjava.aprox.conf.AbstractAproxFeatureConfig;
+import org.commonjava.aprox.conf.AproxConfigClassInfo;
 import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.aprox.inject.Production;
 import org.commonjava.web.config.ConfigurationException;
@@ -54,7 +56,7 @@ public class DefaultStorageProviderConfiguration
         }
 
         @Override
-        public AproxConfigInfo getInfo()
+        public AproxConfigClassInfo getInfo()
         {
             return info;
         }
@@ -67,6 +69,20 @@ public class DefaultStorageProviderConfiguration
         public FilerDefaultConfigInfo()
         {
             super( DefaultStorageProviderConfiguration.class );
+        }
+
+        @Override
+        public String getDefaultConfigFileName()
+        {
+            return AproxConfigInfo.APPEND_DEFAULTS_TO_MAIN_CONF;
+        }
+
+        @Override
+        public InputStream getDefaultConfig()
+        {
+            return Thread.currentThread()
+                         .getContextClassLoader()
+                         .getResourceAsStream( "default-storage.conf" );
         }
     }
 

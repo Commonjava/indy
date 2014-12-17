@@ -18,6 +18,7 @@ import org.commonjava.web.config.section.MapSectionListener;
  */
 public abstract class AbstractAproxMapConfig
     extends MapSectionListener
+    implements AproxConfigInfo
 {
 
     private String sectionName;
@@ -34,6 +35,7 @@ public abstract class AbstractAproxMapConfig
     /**
      * Return the name of the configuration subsection that pertains to this configuration class.
      */
+    @Override
     public String getSectionName()
     {
         return sectionName;

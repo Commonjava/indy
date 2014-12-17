@@ -47,7 +47,7 @@ public abstract class AbstractAproxFeatureConfig<T, U extends T>
      * @see org.commonjava.aprox.conf.AproxFeatureConfig#getInfo()
      */
     @Override
-    public abstract AproxConfigInfo getInfo();
+    public abstract AproxConfigClassInfo getInfo();
 
     protected T getConfig()
         throws ConfigurationException

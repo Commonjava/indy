@@ -11,6 +11,7 @@
 package org.commonjava.aprox.bind.vertx.conf;
 
 import java.io.File;
+import java.io.InputStream;
 
 import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.Default;
@@ -20,6 +21,7 @@ import javax.inject.Named;
 
 import org.commonjava.aprox.conf.AbstractAproxConfigInfo;
 import org.commonjava.aprox.conf.AbstractAproxFeatureConfig;
+import org.commonjava.aprox.conf.AproxConfigClassInfo;
 import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.ConfigNames;
@@ -52,7 +54,7 @@ public class UIConfiguration
         }
 
         @Override
-        public AproxConfigInfo getInfo()
+        public AproxConfigClassInfo getInfo()
         {
             return info;
         }
@@ -65,6 +67,20 @@ public class UIConfiguration
         public UIConfigInfo()
         {
             super( UIConfiguration.class );
+        }
+
+        @Override
+        public String getDefaultConfigFileName()
+        {
+            return AproxConfigInfo.APPEND_DEFAULTS_TO_MAIN_CONF;
+        }
+
+        @Override
+        public InputStream getDefaultConfig()
+        {
+            return Thread.currentThread()
+                         .getContextClassLoader()
+                         .getResourceAsStream( "default-ui.conf" );
         }
     }
 

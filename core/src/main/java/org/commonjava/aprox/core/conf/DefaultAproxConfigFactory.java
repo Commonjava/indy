@@ -13,6 +13,7 @@ package org.commonjava.aprox.core.conf;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -20,8 +21,10 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.aprox.conf.AbstractAproxMapConfig;
+import org.commonjava.aprox.conf.AproxConfigClassInfo;
 import org.commonjava.aprox.conf.AproxConfigFactory;
 import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.aprox.util.PathUtils;
@@ -41,7 +44,7 @@ public class DefaultAproxConfigFactory
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private Instance<AproxConfigInfo> configSections;
+    private Instance<AproxConfigClassInfo> configSections;
 
     @Inject
     private Instance<AbstractAproxMapConfig> mapConfigs;
@@ -64,7 +67,7 @@ public class DefaultAproxConfigFactory
                      Thread.currentThread()
                            .getName(), StringUtils.join( new RuntimeException( "Diagnostic trace:" ).getStackTrace(), "\n  " ) );
 
-        for ( final AproxConfigInfo section : configSections )
+        for ( final AproxConfigClassInfo section : configSections )
         {
             with( section.getSectionName(), section.getConfigurationClass() );
         }
@@ -79,6 +82,42 @@ public class DefaultAproxConfigFactory
         logger.info( "\n\n[CONFIG] Reading configuration in: '{}'\n\nfrom {}", Thread.currentThread()
                                                                                      .getName(), config );
 
+        File configFile = new File( config );
+        if ( configFile.isDirectory() )
+        {
+            configFile = new File( configFile, "main.conf" );
+        }
+
+        if ( !configFile.exists() )
+        {
+            File dir = configFile;
+            if ( dir.getName()
+                    .equals( "main.conf" ) )
+            {
+                dir = dir.getParentFile();
+            }
+
+            logger.warn( "Cannot find configuration in: {}. Writing default configurations there for future modification.",
+                         dir );
+
+            if ( !dir.exists() && !dir.mkdirs() )
+            {
+                throw new ConfigurationException(
+                                                  "Failed to create configuration directory: %s, in order to write defaults.",
+                                                  dir );
+            }
+
+            for ( final AproxConfigClassInfo section : configSections )
+            {
+                writeDefaultsFor( section, dir );
+            }
+
+            for ( final AbstractAproxMapConfig section : mapConfigs )
+            {
+                writeDefaultsFor( section, dir );
+            }
+        }
+
         InputStream stream = null;
         try
         {
@@ -87,7 +126,8 @@ public class DefaultAproxConfigFactory
         }
         catch ( final IOException e )
         {
-            throw new ConfigurationException( "Cannot open configuration file: {}. Reason: {}", e, configPath, e.getMessage() );
+            throw new ConfigurationException( "Cannot open configuration file: {}. Reason: {}", e, configPath,
+                                              e.getMessage() );
         }
         finally
         {
@@ -96,6 +136,37 @@ public class DefaultAproxConfigFactory
 
         logger.info( "[CONFIG] AProx configuration complete for: '{}'.\n\n\n\n", Thread.currentThread()
                                                                                        .getName() );
+    }
+
+    private void writeDefaultsFor( final AproxConfigInfo section, final File dir )
+        throws ConfigurationException
+    {
+        final InputStream configStream = section.getDefaultConfig();
+        if ( configStream != null )
+        {
+            final String fname = section.getDefaultConfigFileName();
+            final File file = new File( dir, fname );
+            file.getParentFile()
+                .mkdirs();
+
+            FileOutputStream out = null;
+            try
+            {
+                // if the filename is 'main.conf', then APPEND the config.
+                out = new FileOutputStream( file, fname.equals( "main.conf" ) );
+                IOUtils.copy( configStream, out );
+            }
+            catch ( final IOException e )
+            {
+                throw new ConfigurationException( "Failed to write default configuration to: %s. Reason: %s", e, file,
+                                                  e.getMessage() );
+            }
+            finally
+            {
+                closeQuietly( out );
+                closeQuietly( configStream );
+            }
+        }
     }
 
     private String configPath( final String configPath )

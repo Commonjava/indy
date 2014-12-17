@@ -10,6 +10,8 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.conf;
 
+import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -34,6 +36,12 @@ public class AproxSchedulerConfig
     private static final String DS_URL = "URL";
 
     private static final String DDL_PROP = "ddl";
+
+    private static final String DEFAULT_DB_URL =
+        String.format( "jdbc:derby:%s/var/lib/aprox/data/scheduler",
+                       System.getProperty( "aprox.home", System.getProperty( "java.io.tmpdir" ) ) );
+
+    private static final String DEFAULT_DB_DRIVER = "org.apache.derby.jdbc.EmbeddedDriver";
 
     private transient boolean dbDetailsParsed;
 
@@ -102,49 +110,80 @@ public class AproxSchedulerConfig
     public String getDbUrl()
     {
         parseDatabaseDetails();
-        return dbUrl;
+        return dbUrl == null ? DEFAULT_DB_URL : dbUrl;
     }
 
     public String getDbDriver()
     {
         parseDatabaseDetails();
-        return dbDriver;
+        return dbDriver == null ? DEFAULT_DB_DRIVER : dbDriver;
     }
 
     public CharSequence validate()
     {
-        parseDatabaseDetails();
-        final StringBuilder sb = new StringBuilder();
-        if ( dbDriver == null )
-        {
-            if ( sb.length() > 0 )
-            {
-                sb.append( "\n" );
-            }
-            sb.append( "Missing database driver (" )
-              .append( QUARTZ_DATASOURCE_PREFIX )
-              .append( DS_DRIVER )
-              .append( ")" );
-        }
-
-        if ( dbUrl == null )
-        {
-            if ( sb.length() > 0 )
-            {
-                sb.append( "\n" );
-            }
-            sb.append( "Missing database URL (" )
-              .append( QUARTZ_DATASOURCE_PREFIX )
-              .append( DS_URL )
-              .append( ")" );
-        }
-
-        if ( sb.length() > 0 )
-        {
-            return sb;
-        }
+        //        parseDatabaseDetails();
+        //        final StringBuilder sb = new StringBuilder();
+        //        if ( dbDriver == null )
+        //        {
+        //            if ( sb.length() > 0 )
+        //            {
+        //                sb.append( "\n" );
+        //            }
+        //            sb.append( "Missing database driver (" )
+        //              .append( QUARTZ_DATASOURCE_PREFIX )
+        //              .append( DS_DRIVER )
+        //              .append( ")" );
+        //        }
+        //
+        //        if ( dbUrl == null )
+        //        {
+        //            if ( sb.length() > 0 )
+        //            {
+        //                sb.append( "\n" );
+        //            }
+        //            sb.append( "Missing database URL (" )
+        //              .append( QUARTZ_DATASOURCE_PREFIX )
+        //              .append( DS_URL )
+        //              .append( ")" );
+        //        }
+        //
+        //        if ( sb.length() > 0 )
+        //        {
+        //            return sb;
+        //        }
 
         return null;
+    }
+
+    @Override
+    public Map<String, String> getConfiguration()
+    {
+        Map<String, String> configuration = super.getConfiguration();
+        if ( configuration == null )
+        {
+            configuration = new HashMap<>();
+        }
+
+        if ( configuration.isEmpty() )
+        {
+
+        }
+
+        return configuration;
+    }
+
+    @Override
+    public String getDefaultConfigFileName()
+    {
+        return "conf.d/scheduler.conf";
+    }
+
+    @Override
+    public InputStream getDefaultConfig()
+    {
+        return Thread.currentThread()
+                     .getContextClassLoader()
+                     .getResourceAsStream( "default-scheduler.conf" );
     }
 
 }

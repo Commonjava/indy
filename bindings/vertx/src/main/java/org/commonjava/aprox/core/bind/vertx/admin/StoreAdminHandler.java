@@ -12,7 +12,6 @@ package org.commonjava.aprox.core.bind.vertx.admin;
 
 import static org.apache.commons.lang.StringUtils.isEmpty;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
-import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.setStatus;
 
 import java.io.IOException;
 import java.util.List;
@@ -23,17 +22,18 @@ import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.vertx.util.PathParam;
 import org.commonjava.aprox.bind.vertx.util.SecurityParam;
 import org.commonjava.aprox.core.ctl.AdminController;
-import org.commonjava.aprox.dto.StoreListingDTO;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
+import org.commonjava.aprox.model.core.dto.StoreListingDTO;
 import org.commonjava.aprox.util.ApplicationContent;
-import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
+import org.commonjava.vertx.vabr.types.ApplicationStatus;
+import org.commonjava.vertx.vabr.types.BuiltInParam;
 import org.commonjava.vertx.vabr.types.Method;
 import org.commonjava.vertx.vabr.util.Respond;
 import org.slf4j.Logger;
@@ -100,17 +100,17 @@ public class StoreAdminHandler
                                                       .get( SecurityParam.user.key() ), true ) )
             {
                 Respond.to( request )
-                       .created( "admin", type, store.getName() )
+                       .created( request.params()
+                                        .get( BuiltInParam._classContextUrl.key() ), type, store.getName() )
                        .jsonEntity( store, objectMapper )
                        .send();
             }
             else
             {
-                setStatus( ApplicationStatus.CONFLICT, request );
-                request.response()
-                       .setChunked( true )
-                       .write( "{\"error\": \"Store already exists.\"}" )
-                       .end();
+                Respond.to( request )
+                       .status( ApplicationStatus.CONFLICT )
+                       .entity( "{\"error\": \"Store already exists.\"}" )
+                       .send();
             }
         }
         catch ( final AproxWorkflowException e )
@@ -175,17 +175,11 @@ public class StoreAdminHandler
             if ( adminController.store( store, request.params()
                                                       .get( SecurityParam.user.key() ), false ) )
             {
-                setStatus( ApplicationStatus.OK, request );
-                request.response()
-                       .end();
+                Respond.to( request ).ok().send();
             }
             else
             {
-                setStatus( ApplicationStatus.NOT_MODIFIED, request );
-                request.response()
-                       .setChunked( true )
-                       .write( "{\"error\": \"Store already exists.\"}" )
-                       .end();
+                Respond.to( request ).notModified().send();
             }
         }
         catch ( final AproxWorkflowException e )
@@ -213,7 +207,7 @@ public class StoreAdminHandler
 
             logger.info( "Returning listing containing stores:\n\t{}", new JoinString( "\n\t", stores ) );
 
-            final StoreListingDTO dto = new StoreListingDTO( stores );
+            final StoreListingDTO<ArtifactStore> dto = new StoreListingDTO<ArtifactStore>( stores );
             Respond.to( request )
                    .jsonEntity( dto, objectMapper )
                    .send();
@@ -255,9 +249,7 @@ public class StoreAdminHandler
 
             if ( store == null )
             {
-                setStatus( ApplicationStatus.NOT_FOUND, request );
-                request.response()
-                       .end();
+                Respond.to( request ).notFound().send();
             }
             else
             {
@@ -315,9 +307,7 @@ public class StoreAdminHandler
             adminController.delete( key, request.params()
                                                 .get( SecurityParam.user.key() ), summary );
 
-            setStatus( ApplicationStatus.OK, request );
-            request.response()
-                   .end();
+            Respond.to( request ).deleted().send();
         }
         catch ( final AproxWorkflowException e )
         {

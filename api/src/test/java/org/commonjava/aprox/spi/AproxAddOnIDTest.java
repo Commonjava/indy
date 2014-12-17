@@ -6,9 +6,10 @@ import static org.junit.Assert.assertThat;
 
 import java.util.List;
 
-import org.commonjava.aprox.dto.UIRoute;
-import org.commonjava.aprox.dto.UISection;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
+import org.commonjava.aprox.spi.model.AproxAddOnID;
+import org.commonjava.aprox.spi.model.UIRoute;
+import org.commonjava.aprox.spi.model.UISection;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

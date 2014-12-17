@@ -23,6 +23,10 @@ import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.HttpServer;
 
@@ -43,6 +47,8 @@ public class Booter
     private static final int ERR_CANT_CONFIGURE_APROX = 5;
 
     private static final int ERR_CANT_START_APROX = 6;
+
+    protected static final int ERR_CANT_LISTEN = 7;
 
     public static void main( final String[] args )
     {
@@ -96,7 +102,7 @@ public class Booter
         {
             final Booter booter = new Booter( boot );
             System.out.println( "Starting AProx booter: " + booter );
-            final int result = booter.run();
+            final int result = booter.runAndWait();
             if ( result != 0 )
             {
                 System.exit( result );
@@ -122,83 +128,55 @@ public class Booter
         System.err.println();
     }
 
-    private final BootOptions bootOptions;
-
-    private Booter( final BootOptions bootOptions )
+    public static void setConfigPathProperty( final String config )
     {
-        this.bootOptions = bootOptions;
+        final Properties properties = System.getProperties();
+
+        System.out.printf( "\n\nUsing AProx configuration: %s\n", config );
+        properties.setProperty( AproxConfigFactory.CONFIG_PATH_PROP, config );
+        System.setProperties( properties );
     }
 
-    private int run()
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
+    private final BootOptions bootOptions;
+
+    private int exit = 0;
+
+    private Vertx vertx;
+
+    private final Weld weld;
+
+    private final WeldContainer container;
+
+    private AproxLifecycleManager lifecycleManager;
+
+    private AproxConfigFactory configFactory;
+
+    private MasterRouter router;
+
+    private BootStatus status;
+
+    public Booter( final BootOptions bootOptions )
     {
-        System.out.println( "Booter running: " + this );
+        this.bootOptions = bootOptions;
 
         if ( bootOptions.getConfig() != null )
         {
-            final Properties properties = System.getProperties();
-
-            System.out.printf( "\n\nUsing AProx configuration: %s\n", bootOptions.getConfig() );
-            properties.setProperty( AproxConfigFactory.CONFIG_PATH_PROP, bootOptions.getConfig() );
-            System.setProperties( properties );
+            setConfigPathProperty( bootOptions.getConfig() );
         }
 
-        final Weld weld = new Weld();
-        final WeldContainer container = weld.initialize();
+        weld = new Weld();
+        container = weld.initialize();
+    }
 
-        final AproxConfigFactory configFactory = container.instance()
-                                                          .select( AproxConfigFactory.class )
-                                                          .get();
-        try
-        {
-            System.out.printf( "\n\nLoading AProx configuration factory: %s\n", configFactory );
-            configFactory.load( bootOptions.getConfig() );
-        }
-        catch ( final ConfigurationException e )
-        {
-            System.err.printf( "Failed to configure AProx: %s", e.getMessage() );
-            e.printStackTrace();
-            return ERR_CANT_CONFIGURE_APROX;
-        }
+    private int runAndWait()
+    {
+        start();
 
-        final AproxLifecycleManager lifecycleManager = container.instance()
-                                                                .select( AproxLifecycleManager.class )
-                                                                .get();
-        try
-        {
-            lifecycleManager.start();
-        }
-        catch ( final AproxLifecycleException e )
-        {
-            System.err.printf( "\n\nFailed to start AProx: %s", e.getMessage() );
-            e.printStackTrace();
-
-            return ERR_CANT_START_APROX;
-        }
-
-        System.out.println( "Setting up shutdown hook..." );
+        logger.info( "Setting up shutdown hook..." );
         Runtime.getRuntime()
                .addShutdownHook( new Thread( lifecycleManager.createShutdownRunnable() ) );
-
-        final int exit = 0;
-        final MasterRouter router = container.instance()
-                                             .select( MasterRouter.class )
-                                             .get();
-
-        router.setPrefix( bootOptions.getContextPath() );
-
-        final Vertx vertx = container.instance()
-                                     .select( Vertx.class )
-                                     .get();
-
-        //        for ( int i = 0; i < bootOptions.getWorkers(); i++ )
-        //        {
-            final HttpServer server = vertx.createHttpServer();
-            server.requestHandler( router )
-                  .listen( bootOptions.getPort(), bootOptions.getBind() );
-        //        }
-        //
-        //        System.out.printf( "AProx: %s workers listening on %s:%s\n\n", bootOptions.getWorkers(), bootOptions.getBind(),
-        //                           bootOptions.getPort() );
 
         synchronized ( vertx )
         {
@@ -209,11 +187,131 @@ public class Booter
             catch ( final InterruptedException e )
             {
                 e.printStackTrace();
-                System.err.println( "AProx exiting" );
+                logger.info( "AProx exiting" );
             }
         }
 
         return exit;
+    }
+
+    public BootStatus start()
+    {
+        logger.info( "Booter running: " + this );
+
+        configFactory = container.instance()
+                                 .select( AproxConfigFactory.class )
+                                 .get();
+        try
+        {
+            logger.info( "\n\nLoading AProx configuration factory: {}\n", configFactory );
+            configFactory.load( bootOptions.getConfig() );
+        }
+        catch ( final ConfigurationException e )
+        {
+            logger.error( "Failed to configure AProx: {}", e.getMessage() );
+            e.printStackTrace();
+            exit = ERR_CANT_CONFIGURE_APROX;
+            status = new BootStatus( exit, e );
+            return status;
+        }
+
+        lifecycleManager = container.instance()
+                                    .select( AproxLifecycleManager.class )
+                                    .get();
+        try
+        {
+            lifecycleManager.start();
+        }
+        catch ( final AproxLifecycleException e )
+        {
+            logger.error( "\n\nFailed to start AProx: {}", e.getMessage() );
+            e.printStackTrace();
+
+            exit = ERR_CANT_START_APROX;
+            status = new BootStatus( exit, e );
+            return status;
+        }
+
+        router = container.instance()
+                          .select( MasterRouter.class )
+                          .get();
+
+        router.setPrefix( bootOptions.getContextPath() );
+
+        vertx = container.instance()
+                         .select( Vertx.class )
+                         .get();
+
+        //        for ( int i = 0; i < bootOptions.getWorkers(); i++ )
+        //        {
+        status = new BootStatus();
+        final HttpServer server = vertx.createHttpServer();
+        server.requestHandler( router )
+              .listen( bootOptions.getPort(), bootOptions.getBind(), new Handler<AsyncResult<HttpServer>>()
+              {
+                  @Override
+                  public void handle( final AsyncResult<HttpServer> event )
+                  {
+                      if ( event.failed() )
+                      {
+                          logger.error( "HTTP server failure:\n\n", event.cause() );
+                          status.markFailed( ERR_CANT_LISTEN, event.cause() );
+
+                          server.close( new Handler<AsyncResult<Void>>()
+                          {
+                              @Override
+                              public void handle( final AsyncResult<Void> event )
+                              {
+                                  logger.info( "Shutdown complete." );
+                                  synchronized ( status )
+                                  {
+                                      status.notifyAll();
+                                  }
+                              }
+                          } );
+                      }
+                      else
+                      {
+                          status.markSuccess();
+                          synchronized ( status )
+                          {
+                              status.notifyAll();
+                          }
+                      }
+                  }
+              } );
+        //        }
+        //
+        //        System.out.printf( "AProx: %s workers listening on %s:%s\n\n", bootOptions.getWorkers(), bootOptions.getBind(),
+        System.out.printf( "AProx listening on %s:%s\n\n", bootOptions.getBind(), bootOptions.getPort() );
+
+        while ( !status.isSet() )
+        {
+            synchronized ( status )
+            {
+                try
+                {
+                    status.wait();
+                }
+                catch ( final InterruptedException e )
+                {
+                    logger.warn( "Interrupt received! Quitting." );
+                    Thread.currentThread()
+                          .interrupt();
+                    break;
+                }
+            }
+        }
+
+        return status;
+    }
+
+    public void stop()
+    {
+        if ( container != null )
+        {
+            weld.shutdown();
+        }
     }
 
 }

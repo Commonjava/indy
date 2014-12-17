@@ -28,7 +28,21 @@ public class AbstractAproxEvent
 
     protected AbstractAproxEvent( final Collection<ArtifactStore> stores )
     {
-        this.stores = stores == null ? Collections.<ArtifactStore> emptySet() : stores;
+        this.stores = stores == null ? Collections.<ArtifactStore> emptySet() : clearNulls( stores );
+    }
+
+    private Collection<ArtifactStore> clearNulls( final Collection<ArtifactStore> stores )
+    {
+        for ( final Iterator<ArtifactStore> it = stores.iterator(); it.hasNext(); )
+        {
+            final ArtifactStore store = it.next();
+            if ( store == null )
+            {
+                it.remove();
+            }
+        }
+
+        return stores;
     }
 
     protected AbstractAproxEvent( final ArtifactStore... stores )

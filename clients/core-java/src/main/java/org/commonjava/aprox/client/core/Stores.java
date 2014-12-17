@@ -1,9 +1,6 @@
 package org.commonjava.aprox.client.core;
 
-import java.nio.file.Paths;
-
 import org.commonjava.aprox.model.core.ArtifactStore;
-import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreType;
 
 public class Stores
@@ -18,34 +15,35 @@ public class Stores
     public <T extends ArtifactStore> T create( final T value, final Class<T> type )
         throws AproxClientException
     {
-        return http.putWithResponse( "/admin", value, type );
+        return http.postWithResponse( String.format( "/admin/%s", value.getKey()
+                                                                       .getType()
+                                                                       .singularEndpointName() ), value, type );
     }
 
     public boolean exists( final StoreType type, final String name )
         throws AproxClientException
     {
-        return http.exists( Paths.get( "/admin", type.singularEndpointName(), name )
-                                 .toString() );
+        return http.exists( String.format( "/admin/%s/%s", type.singularEndpointName(), name ) );
     }
 
     public void delete( final StoreType type, final String name )
         throws AproxClientException
     {
-        http.delete( Paths.get( "/admin", type.singularEndpointName(), name )
-                                 .toString() );
+        http.delete( String.format( "/admin/%s/%s", type.singularEndpointName(), name ) );
     }
 
-    public <T extends ArtifactStore> T update( final T store, final Class<T> type )
+    public boolean update( final ArtifactStore store )
         throws AproxClientException
     {
-        return http.postWithResponse( "/admin", store, type );
+        return http.put( String.format( "/admin/%s/%s", store.getKey()
+                                                             .getType()
+                                                             .singularEndpointName(), store.getName() ), store );
     }
 
-    public RemoteRepository load( final StoreType type, final String name )
+    public ArtifactStore load( final StoreType type, final String name )
         throws AproxClientException
     {
-        return http.get( Paths.get( "/admin", type.singularEndpointName(), name )
-                              .toString(), RemoteRepository.class );
+        return http.get( String.format( "/admin/%s/%s", type.singularEndpointName(), name ), type.getStoreClass() );
     }
 
 }

@@ -53,7 +53,7 @@ public class DataFileStoreDataManager
     {
     }
 
-    protected DataFileStoreDataManager( final DataFileManager manager, final ObjectMapper serializer,
+    public DataFileStoreDataManager( final DataFileManager manager, final ObjectMapper serializer,
                                         final StoreEventDispatcher dispatcher )
     {
         super( dispatcher );

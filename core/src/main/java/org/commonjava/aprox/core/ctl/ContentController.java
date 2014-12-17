@@ -35,12 +35,12 @@ import javax.inject.Inject;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.content.ContentManager;
 import org.commonjava.aprox.content.StoreResource;
-import org.commonjava.aprox.core.dto.DirectoryListingDTO;
 import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
+import org.commonjava.aprox.model.core.dto.DirectoryListingDTO;
 import org.commonjava.aprox.subsys.template.AproxGroovyException;
 import org.commonjava.aprox.subsys.template.TemplatingEngine;
 import org.commonjava.aprox.util.ApplicationContent;
@@ -230,7 +230,7 @@ public class ContentController
         final List<StoreResource> listed = getListing( key, path );
         if ( ApplicationContent.application_json.equals( acceptHeader ) )
         {
-            final DirectoryListingDTO dto = new DirectoryListingDTO( listed );
+            final DirectoryListingDTO dto = new DirectoryListingDTO( StoreResource.convertToEntries( listed ) );
             try
             {
                 return mapper.writeValueAsString( dto );

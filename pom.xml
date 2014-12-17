@@ -44,7 +44,7 @@
     <cartoVersion>0.8.1</cartoVersion>
     <bomVersion>14-SNAPSHOT</bomVersion>
     <webdavVersion>3.1.1</webdavVersion>
-    <vabrVersion>1.11</vabrVersion>
+    <vabrVersion>1.12-SNAPSHOT</vabrVersion>
     
     <vertx.testtools.version>2.0.0-final</vertx.testtools.version>
   </properties>
@@ -272,6 +272,12 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-test-fixtures-core</artifactId>
+        <version>0.17.0-SNAPSHOT</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-test-utils</artifactId>
         <version>0.17.0-SNAPSHOT</version>
         <scope>test</scope>
@@ -324,6 +330,16 @@
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-folo-vertx</artifactId>
+        <version>0.17.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-folo-client-java</artifactId>
+        <version>0.17.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-folo-model-java</artifactId>
         <version>0.17.0-SNAPSHOT</version>
       </dependency>
       <dependency>

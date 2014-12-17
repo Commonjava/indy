@@ -24,11 +24,13 @@ import javax.inject.Inject;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.dto.AddOnListing;
-import org.commonjava.aprox.dto.EndpointViewListing;
 import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.aprox.model.core.StoreKey;
+import org.commonjava.aprox.model.core.dto.EndpointView;
+import org.commonjava.aprox.model.core.dto.EndpointViewListing;
 import org.commonjava.aprox.spi.AproxAddOn;
-import org.commonjava.aprox.spi.AproxAddOnID;
+import org.commonjava.aprox.spi.model.AddOnListing;
+import org.commonjava.aprox.spi.model.AproxAddOnID;
 import org.commonjava.aprox.stats.AProxVersioning;
 import org.commonjava.aprox.subsys.template.AproxGroovyException;
 import org.commonjava.aprox.subsys.template.TemplatingEngine;
@@ -132,7 +134,22 @@ public class StatsController
                                               e, e.getMessage() );
         }
 
-        return new EndpointViewListing( stores, baseUri, uriFormatter );
+        final List<EndpointView> points = new ArrayList<EndpointView>();
+        for ( final ArtifactStore store : stores )
+        {
+            final StoreKey key = store.getKey();
+            final String resourceUri =
+                uriFormatter.formatAbsolutePathTo( baseUri, key.getType()
+                                                               .singularEndpointName(), key.getName() );
+
+            final EndpointView point = new EndpointView( store, resourceUri );
+            if ( !points.contains( point ) )
+            {
+                points.add( point );
+            }
+        }
+
+        return new EndpointViewListing( points );
     }
 
     public String getActiveAddOnsJavascript()

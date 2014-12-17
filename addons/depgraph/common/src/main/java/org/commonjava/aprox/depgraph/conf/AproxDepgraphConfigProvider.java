@@ -10,6 +10,9 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.conf;
 
+import java.io.File;
+import java.io.InputStream;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
@@ -17,6 +20,7 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.conf.AbstractAproxConfigInfo;
 import org.commonjava.aprox.conf.AbstractAproxFeatureConfig;
+import org.commonjava.aprox.conf.AproxConfigClassInfo;
 import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.aprox.inject.Production;
 import org.commonjava.aprox.subsys.datafile.DataFileManager;
@@ -33,6 +37,20 @@ public class AproxDepgraphConfigProvider
         public AproxDepgraphConfigInfo()
         {
             super( AproxDepgraphConfig.class );
+        }
+
+        @Override
+        public String getDefaultConfigFileName()
+        {
+            return new File( AproxConfigInfo.CONF_INCLUDES_DIR, "depgraph.conf" ).getPath();
+        }
+
+        @Override
+        public InputStream getDefaultConfig()
+        {
+            return Thread.currentThread()
+                         .getContextClassLoader()
+                         .getResourceAsStream( "default-depgraph.conf" );
         }
     }
 
@@ -57,7 +75,7 @@ public class AproxDepgraphConfigProvider
     }
 
     @Override
-    public AproxConfigInfo getInfo()
+    public AproxConfigClassInfo getInfo()
     {
         return info;
     }

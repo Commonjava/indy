@@ -22,7 +22,7 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.dto.GraphWorkspaceDTO;
-import org.commonjava.aprox.dto.CreationDTO;
+import org.commonjava.aprox.model.core.dto.CreationDTO;
 import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.maven.atlas.graph.RelationshipGraph;
 import org.commonjava.maven.atlas.graph.RelationshipGraphException;

@@ -32,20 +32,4 @@
     <module>revisions</module>
     <module>setback</module>
   </modules>
-  
-  <profiles>
-    <profile>
-      <id>almost-there</id>
-      
-      <modules>
-        <module>security</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>experimental</id>
-      
-      <modules>
-      </modules>
-    </profile>
-  </profiles>
 </project>

@@ -39,6 +39,11 @@ public class DefaultStoreEventDispatcher
             final Map<ArtifactStore, Transfer> storeRoots = new HashMap<>();
             for ( final ArtifactStore store : stores )
             {
+                if ( store == null )
+                {
+                    continue;
+                }
+
                 final Transfer root = fileManager.getStoreRootDirectory( store );
                 storeRoots.put( store, root );
             }
@@ -57,6 +62,11 @@ public class DefaultStoreEventDispatcher
             final Map<ArtifactStore, Transfer> storeRoots = new HashMap<>();
             for ( final ArtifactStore store : stores )
             {
+                if ( store == null )
+                {
+                    continue;
+                }
+
                 final Transfer root = fileManager.getStoreRootDirectory( store );
                 storeRoots.put( store, root );
             }

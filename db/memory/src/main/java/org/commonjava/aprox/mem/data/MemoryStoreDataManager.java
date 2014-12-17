@@ -138,7 +138,8 @@ public class MemoryStoreDataManager
         return result;
     }
 
-    private void recurseGroup( final Group master, final List<ArtifactStore> result, final boolean includeGroups )
+    private synchronized void recurseGroup( final Group master, final List<ArtifactStore> result,
+                                            final boolean includeGroups )
     {
         if ( master == null )
         {
@@ -184,8 +185,13 @@ public class MemoryStoreDataManager
         return groups;
     }
 
-    private boolean groupContains( final Group g, final StoreKey key )
+    private synchronized boolean groupContains( final Group g, final StoreKey key )
     {
+        if ( g == null || g.getConstituents() == null )
+        {
+            return false;
+        }
+
         if ( g.getConstituents()
               .contains( key ) )
         {
@@ -287,7 +293,8 @@ public class MemoryStoreDataManager
         return result;
     }
 
-    private boolean store( final ArtifactStore store, final ChangeSummary summary, final boolean skipIfExists )
+    private synchronized boolean store( final ArtifactStore store, final ChangeSummary summary,
+                                        final boolean skipIfExists )
     {
         if ( !skipIfExists || !stores.containsKey( store.getKey() ) )
         {
@@ -299,28 +306,42 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void deleteHostedRepository( final HostedRepository repo, final ChangeSummary summary )
+    public synchronized void deleteHostedRepository( final HostedRepository repo, final ChangeSummary summary )
         throws AproxDataException
     {
+        if ( !stores.containsKey( repo.getKey() ) )
+        {
+            return;
+        }
+
         dispatcher.deleting( repo );
         stores.remove( repo.getKey() );
         dispatcher.deleted( repo );
     }
 
     @Override
-    public void deleteHostedRepository( final String name, final ChangeSummary summary )
+    public synchronized void deleteHostedRepository( final String name, final ChangeSummary summary )
         throws AproxDataException
     {
         final ArtifactStore store = stores.get( new StoreKey( StoreType.hosted, name ) );
+        if ( store == null )
+        {
+            return;
+        }
         dispatcher.deleting( store );
         stores.remove( new StoreKey( StoreType.hosted, name ) );
         dispatcher.deleted( store );
     }
 
     @Override
-    public void deleteRemoteRepository( final RemoteRepository repo, final ChangeSummary summary )
+    public synchronized void deleteRemoteRepository( final RemoteRepository repo, final ChangeSummary summary )
         throws AproxDataException
     {
+        if ( !stores.containsKey( repo.getKey() ) )
+        {
+            return;
+        }
+
         dispatcher.deleting( repo );
 
         stores.remove( repo.getKey() );
@@ -328,11 +349,15 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void deleteRemoteRepository( final String name, final ChangeSummary summary )
+    public synchronized void deleteRemoteRepository( final String name, final ChangeSummary summary )
         throws AproxDataException
     {
         final StoreKey key = new StoreKey( StoreType.remote, name );
         final ArtifactStore store = stores.get( key );
+        if ( store == null )
+        {
+            return;
+        }
         dispatcher.deleting( store );
 
         stores.remove( key );
@@ -340,9 +365,13 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void deleteGroup( final Group group, final ChangeSummary summary )
+    public synchronized void deleteGroup( final Group group, final ChangeSummary summary )
         throws AproxDataException
     {
+        if ( !stores.containsKey( group.getKey() ) )
+        {
+            return;
+        }
         dispatcher.deleting( group );
 
         stores.remove( group.getKey() );
@@ -350,11 +379,15 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void deleteGroup( final String name, final ChangeSummary summary )
+    public synchronized void deleteGroup( final String name, final ChangeSummary summary )
         throws AproxDataException
     {
         final StoreKey key = new StoreKey( StoreType.group, name );
         final ArtifactStore store = stores.get( key );
+        if ( store == null )
+        {
+            return;
+        }
         dispatcher.deleting( store );
 
         stores.remove( key );
@@ -362,10 +395,15 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void deleteArtifactStore( final StoreKey key, final ChangeSummary summary )
+    public synchronized void deleteArtifactStore( final StoreKey key, final ChangeSummary summary )
         throws AproxDataException
     {
         final ArtifactStore store = stores.get( key );
+        if ( store == null )
+        {
+            return;
+        }
+
         dispatcher.deleting( store );
 
         stores.remove( key );
@@ -385,11 +423,16 @@ public class MemoryStoreDataManager
         stores.clear();
     }
 
-    private <T extends ArtifactStore> List<T> getAll( final StoreType storeType, final Class<T> type )
+    private synchronized <T extends ArtifactStore> List<T> getAll( final StoreType storeType, final Class<T> type )
     {
         final List<T> result = new ArrayList<T>();
         for ( final Map.Entry<StoreKey, ArtifactStore> store : stores.entrySet() )
         {
+            if ( store.getValue() == null )
+            {
+                continue;
+            }
+
             if ( store.getKey()
                       .getType() == storeType )
             {
@@ -400,7 +443,7 @@ public class MemoryStoreDataManager
         return result;
     }
 
-    private List<ArtifactStore> getAll( final StoreType... storeTypes )
+    private synchronized List<ArtifactStore> getAll( final StoreType... storeTypes )
     {
         final List<ArtifactStore> result = new ArrayList<ArtifactStore>();
         for ( final Map.Entry<StoreKey, ArtifactStore> store : stores.entrySet() )

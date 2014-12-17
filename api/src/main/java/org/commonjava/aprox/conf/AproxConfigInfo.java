@@ -1,32 +1,31 @@
-/*******************************************************************************
- * Copyright (c) 2014 Red Hat, Inc..
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Public License v3.0
- * which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/gpl.html
- * 
- * Contributors:
- *     Red Hat, Inc. - initial API and implementation
- ******************************************************************************/
 package org.commonjava.aprox.conf;
 
-/**
- * Registration helper to describe configuration for an add-on or subsystem of AProx. This helps AProx keep configurations local to the
- * codebases that use them, by allowing them to register enough information to hook into the {@link AproxConfigFactory} and read a subsection
- * of the overall configuration (file).
- * 
- */
+import java.io.InputStream;
+
 public interface AproxConfigInfo
 {
+    String APPEND_DEFAULTS_TO_MAIN_CONF = "main.conf";
 
-    /**
-     * The configuration class which will be instantiated with information read by the {@link AproxConfigFactory}.
-     */
-    Class<?> getConfigurationClass();
+    String CONF_INCLUDES_DIR = "conf.d";
 
     /**
      * The name of the configuration file subsection that applies to this configuration.
      */
     String getSectionName();
+
+    /**
+     * The name of the file to be written in case no configuration is provided, to allow modification of defaults in future executions.
+     * @return a filename, of the form *.conf (unless it's 'main.conf', in which case it'll be appended to the main config file), 
+     *  which will be written to the etc/aprox/conf.d directory.
+     */
+    String getDefaultConfigFileName();
+
+    /**
+     * The actual content which should be added to the default configuration file in case no configuration is provided, to allow modification of 
+     * defaults in future executions.
+     * 
+     * @return The content, usually as a result of loading Thread.currentThread().getContextClassLoader().getResourceAsStream("foo")
+     */
+    InputStream getDefaultConfig();
 
 }

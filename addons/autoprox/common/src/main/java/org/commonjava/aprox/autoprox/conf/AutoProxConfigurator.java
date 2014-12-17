@@ -11,6 +11,7 @@
 package org.commonjava.aprox.autoprox.conf;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
@@ -189,6 +190,20 @@ public class AutoProxConfigurator
         {
             enabled = false;
         }
+    }
+
+    @Override
+    public String getDefaultConfigFileName()
+    {
+        return "conf.d/autoprox.conf";
+    }
+
+    @Override
+    public InputStream getDefaultConfig()
+    {
+        return Thread.currentThread()
+                     .getContextClassLoader()
+                     .getResourceAsStream( "default-autoprox.conf" );
     }
 
 }

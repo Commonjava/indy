@@ -13,9 +13,9 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.core.ctl.NfcController;
-import org.commonjava.aprox.core.dto.NotFoundCacheDTO;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
+import org.commonjava.aprox.model.core.dto.NotFoundCacheDTO;
 import org.commonjava.aprox.util.ApplicationContent;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;

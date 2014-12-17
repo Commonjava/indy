@@ -10,6 +10,9 @@
  ******************************************************************************/
 package org.commonjava.aprox.folo.conf;
 
+import java.io.File;
+import java.io.InputStream;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.Default;
@@ -19,6 +22,7 @@ import javax.inject.Named;
 
 import org.commonjava.aprox.conf.AbstractAproxConfigInfo;
 import org.commonjava.aprox.conf.AbstractAproxFeatureConfig;
+import org.commonjava.aprox.conf.AproxConfigClassInfo;
 import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.ConfigName;
@@ -37,6 +41,20 @@ public class FoloConfig
         public ConfigInfo()
         {
             super( FoloConfig.class );
+        }
+
+        @Override
+        public String getDefaultConfigFileName()
+        {
+            return new File( AproxConfigInfo.CONF_INCLUDES_DIR, "folo.conf" ).getPath();
+        }
+
+        @Override
+        public InputStream getDefaultConfig()
+        {
+            return Thread.currentThread()
+                         .getContextClassLoader()
+                         .getResourceAsStream( "default-folo.conf" );
         }
     }
 
@@ -85,7 +103,7 @@ public class FoloConfig
         }
 
         @Override
-        public AproxConfigInfo getInfo()
+        public AproxConfigClassInfo getInfo()
         {
             return info;
         }

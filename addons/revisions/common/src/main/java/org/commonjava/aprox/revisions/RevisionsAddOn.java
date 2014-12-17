@@ -4,10 +4,10 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.inject.Named;
 
-import org.commonjava.aprox.dto.UIRoute;
-import org.commonjava.aprox.dto.UISection;
 import org.commonjava.aprox.spi.AproxAddOn;
-import org.commonjava.aprox.spi.AproxAddOnID;
+import org.commonjava.aprox.spi.model.AproxAddOnID;
+import org.commonjava.aprox.spi.model.UIRoute;
+import org.commonjava.aprox.spi.model.UISection;
 
 @ApplicationScoped
 @Default

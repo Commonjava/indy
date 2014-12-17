@@ -22,6 +22,14 @@
   
   <dependencies>
     <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-model-core-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-test-fixtures-core</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
     </dependency>
@@ -32,10 +40,6 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-model-core-java</artifactId>
     </dependency>
   </dependencies>
 </project>
