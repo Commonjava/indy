@@ -6,17 +6,16 @@ import java.net.ServerSocket;
 import java.util.Properties;
 import java.util.Random;
 
+import org.apache.commons.io.IOUtils;
 import org.codehaus.plexus.interpolation.InterpolationException;
 import org.commonjava.aprox.bind.vertx.boot.BootOptions;
 import org.commonjava.aprox.bind.vertx.boot.BootStatus;
 import org.commonjava.aprox.bind.vertx.boot.Booter;
-import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CoreVertxServerFixture
-    extends ExternalResource
 {
 
     private static final int MAX_PORTGEN_TRIES = 16;
@@ -45,6 +44,53 @@ public class CoreVertxServerFixture
         this( newTemporaryFolder() );
     }
 
+    public CoreVertxServerFixture( final File aproxHome )
+    {
+        this( null, aproxHome );
+    }
+
+    public CoreVertxServerFixture( final File bootDefaults, final File aproxHome )
+    {
+        this( newBootOptions( bootDefaults, aproxHome.getAbsolutePath() ) );
+    }
+
+    public String getUrl()
+    {
+        return String.format( "http://127.0.0.1:%d/api/", options.getPort() );
+    }
+
+    public BootStatus getBootStatus()
+    {
+        return status;
+    }
+
+    public boolean isStarted()
+    {
+        return status.isSuccess();
+    }
+
+    public void start()
+        throws Exception
+    {
+        if ( options.isHelp() )
+        {
+            throw new IllegalArgumentException( "Cannot start server when help option is enabled." );
+        }
+
+        booter = new Booter( options );
+        logger.info( "\n\n\n\nAProx STARTING UP\n\n\n" );
+        status = booter.start();
+    }
+
+    public void stop()
+    {
+        if ( status.isSuccess() )
+        {
+            logger.info( "\n\n\n\nAProx SHUTTING DOWN\n\n\n" );
+            booter.stop();
+        }
+    }
+
     private static TemporaryFolder newTemporaryFolder()
     {
         final TemporaryFolder folder = new TemporaryFolder();
@@ -58,16 +104,6 @@ public class CoreVertxServerFixture
         }
 
         return folder;
-    }
-
-    public CoreVertxServerFixture( final File aproxHome )
-    {
-        this( null, aproxHome );
-    }
-
-    public CoreVertxServerFixture( final File bootDefaults, final File aproxHome )
-    {
-        this( newBootOptions( bootDefaults, aproxHome.getAbsolutePath() ) );
     }
 
     private static BootOptions newBootOptions( final File bootDefaults, final String aproxHome )
@@ -90,11 +126,6 @@ public class CoreVertxServerFixture
         }
     }
 
-    public String getUrl()
-    {
-        return String.format( "http://127.0.0.1:%d/api/", options.getPort() );
-    }
-
     private static int generatePort()
     {
         final Random rand = new Random();
@@ -102,53 +133,24 @@ public class CoreVertxServerFixture
         while ( tries < MAX_PORTGEN_TRIES )
         {
             final int port = Math.abs( rand.nextInt() ) % 32000;
+            ServerSocket ss = null;
             try
             {
-                new ServerSocket( port );
+                ss = new ServerSocket( port );
                 return port;
             }
             catch ( final IOException | IllegalArgumentException e )
             {
+            }
+            finally
+            {
+                IOUtils.closeQuietly( ss );
             }
 
             tries++;
         }
 
         throw new IllegalStateException( "Cannot find an open port after " + MAX_PORTGEN_TRIES + " tries. Giving up." );
-    }
-
-    public BootStatus getBootStatus()
-    {
-        return status;
-    }
-
-    public boolean isBooted()
-    {
-        return status.isSuccess();
-    }
-
-    @Override
-    public void before()
-        throws Throwable
-    {
-        if ( options.isHelp() )
-        {
-            throw new IllegalArgumentException( "Cannot start server when help option is enabled." );
-        }
-
-        booter = new Booter( options );
-        logger.info( "\n\n\n\nAProx STARTING UP\n\n\n" );
-        status = booter.start();
-    }
-
-    @Override
-    public void after()
-    {
-        if ( status.isSuccess() )
-        {
-            logger.info( "\n\n\n\nAProx SHUTTING DOWN\n\n\n" );
-            booter.stop();
-        }
     }
 
 }

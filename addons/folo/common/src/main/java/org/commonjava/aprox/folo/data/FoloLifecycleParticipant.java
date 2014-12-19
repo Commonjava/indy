@@ -1,6 +1,7 @@
 package org.commonjava.aprox.folo.data;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -52,7 +53,7 @@ public class FoloLifecycleParticipant
         try
         {
             final DataFile dataFile = dataFileManager.getDataFile( ".gitignore" );
-            final List<String> lines = dataFile.readLines();
+            final List<String> lines = dataFile.exists() ? dataFile.readLines() : new ArrayList<String>();
             if ( !lines.contains( ARTIMON_DIRECTORY_IGNORE ) )
             {
                 lines.add( ARTIMON_DIRECTORY_IGNORE );

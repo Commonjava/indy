@@ -4,7 +4,12 @@ import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.aprox.client.core.util.UrlUtils.buildUrl;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
@@ -17,12 +22,15 @@ import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 
 public class AproxClientHttp
 {
@@ -50,6 +58,58 @@ public class AproxClientHttp
     {
         this.http = HttpClientBuilder.create()
                                      .build();
+    }
+
+    public Map<String, String> head( final String path )
+        throws AproxClientException
+    {
+        return head( path, HttpStatus.SC_OK );
+    }
+
+    public Map<String, String> head( final String path, final int responseCode )
+        throws AproxClientException
+    {
+        checkConnected();
+        CloseableHttpResponse response = null;
+        try
+        {
+            final HttpHead request = newHead( buildUrl( baseUrl, path ) );
+
+            response = http.execute( request );
+            final StatusLine sl = response.getStatusLine();
+            if ( sl.getStatusCode() != responseCode )
+            {
+                if ( sl.getStatusCode() == HttpStatus.SC_NOT_FOUND )
+                {
+                    return null;
+                }
+
+                throw new AproxClientException( "Error executing HEAD: %s. Status was: %d %s (%s)", path,
+                                                sl.getStatusCode(), sl.getReasonPhrase(), sl.getProtocolVersion() );
+            }
+
+            final Map<String, String> headers = new HashMap<>();
+            for ( final Header header : response.getAllHeaders() )
+            {
+                final String name = header.getName()
+                                          .toLowerCase();
+
+                if ( !headers.containsKey( name ) )
+                {
+                    headers.put( name, header.getValue() );
+                }
+            }
+
+            return headers;
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxClientException( "AProx request failed: %s", e, e.getMessage() );
+        }
+        finally
+        {
+            closeQuietly( response );
+        }
     }
 
     public <T> T get( final String path, final Class<T> type )
@@ -93,6 +153,112 @@ public class AproxClientHttp
         }
 
         return result;
+    }
+
+    public <T> T get( final String path, final TypeReference<T> typeRef )
+        throws AproxClientException
+    {
+        checkConnected();
+
+        final ErrorHolder holder = new ErrorHolder();
+        T result = null;
+        try
+        {
+            result = http.execute( newGet( buildUrl( baseUrl, path ) ), new ResponseHandler<T>()
+            {
+                @Override
+                public T handleResponse( final HttpResponse response )
+                    throws ClientProtocolException, IOException
+                {
+                    final StatusLine sl = response.getStatusLine();
+                    if ( sl.getStatusCode() != 200 )
+                    {
+                        holder.setError( new AproxClientException(
+                                                                   "Error retrieving %s from: %s. Status was: %d %s (%s)",
+                                                                   typeRef.getType(), path, sl.getStatusCode(),
+                                                                   sl.getReasonPhrase(), sl.getProtocolVersion() ) );
+                        return null;
+                    }
+
+                    final T value = objectMapper.readValue( response.getEntity()
+                                                                    .getContent(), typeRef );
+
+                    return value;
+                }
+            } );
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxClientException( "AProx request failed: %s", e, e.getMessage() );
+        }
+
+        if ( holder.hasError() )
+        {
+            throw holder.getError();
+        }
+
+        return result;
+    }
+
+    public CloseableHttpResponse getRaw( final String path )
+        throws AproxClientException
+    {
+        return getRaw( path, Collections.singletonMap( "Accept", "*" ) );
+    }
+
+    public CloseableHttpResponse getRaw( final String path, final Map<String, String> headers )
+        throws AproxClientException
+    {
+        checkConnected();
+
+        CloseableHttpResponse response = null;
+        try
+        {
+            final HttpGet req = newRawGet( buildUrl( baseUrl, path ) );
+
+            response = http.execute( req );
+            return response;
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxClientException( "AProx request failed: %s", e, e.getMessage() );
+        }
+    }
+
+    public void putWithStream( final String path, final InputStream stream )
+        throws AproxClientException
+    {
+        putWithStream( path, stream, HttpStatus.SC_CREATED );
+    }
+
+    public void putWithStream( final String path, final InputStream stream, final int responseCode )
+        throws AproxClientException
+    {
+        checkConnected();
+
+        CloseableHttpResponse response = null;
+        try
+        {
+            final HttpPut put = newPut( buildUrl( baseUrl, path ) );
+
+            put.setEntity( new InputStreamEntity( stream ) );
+
+            response = http.execute( put );
+            final StatusLine sl = response.getStatusLine();
+            if ( sl.getStatusCode() != responseCode )
+            {
+                throw new AproxClientException( "Error in response from: %s. Status was: %d %s (%s)", path,
+                                                sl.getStatusCode(), sl.getReasonPhrase(), sl.getProtocolVersion() );
+            }
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxClientException( "AProx request failed: %s", e, e.getMessage() );
+        }
+        finally
+        {
+            closeQuietly( response );
+        }
     }
 
     public boolean put( final String path, final Object value )
@@ -188,6 +354,60 @@ public class AproxClientHttp
         return result;
     }
 
+    public <T> T postWithResponse( final String path, final T value, final TypeReference<T> typeRef )
+        throws AproxClientException
+    {
+        return postWithResponse( path, value, typeRef, HttpStatus.SC_CREATED );
+    }
+
+    public <T> T postWithResponse( final String path, final T value, final TypeReference<T> typeRef,
+                                   final int responseCode )
+        throws AproxClientException
+    {
+        checkConnected();
+
+        final ErrorHolder holder = new ErrorHolder();
+        T result = null;
+        try
+        {
+            final HttpPost post = newPost( buildUrl( baseUrl, path ) );
+
+            post.setEntity( new StringEntity( objectMapper.writeValueAsString( value ) ) );
+
+            result = http.execute( post, new ResponseHandler<T>()
+            {
+                @Override
+                public T handleResponse( final HttpResponse response )
+                    throws ClientProtocolException, IOException
+                {
+                    final StatusLine sl = response.getStatusLine();
+                    if ( sl.getStatusCode() != responseCode )
+                    {
+                        holder.setError( new AproxClientException(
+                                                                   "Error retrieving %s from: %s. Status was: %d %s (%s)",
+                                                                   typeRef.getType(), path, sl.getStatusCode(),
+                                                                   sl.getReasonPhrase(), sl.getProtocolVersion() ) );
+                        return null;
+                    }
+
+                    return objectMapper.readValue( response.getEntity()
+                                                           .getContent(), typeRef );
+                }
+            } );
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxClientException( "AProx request failed: %s", e, e.getMessage() );
+        }
+
+        if ( holder.hasError() )
+        {
+            throw holder.getError();
+        }
+
+        return result;
+    }
+
     private void checkConnected()
         throws AproxClientException
     {
@@ -212,7 +432,7 @@ public class AproxClientHttp
         throws AproxClientException
     {
         checkConnected();
-        
+
         CloseableHttpResponse response = null;
         try
         {
@@ -250,11 +470,20 @@ public class AproxClientHttp
         CloseableHttpResponse response = null;
         try
         {
-            final HttpDelete delete = newDelete( buildUrl( baseUrl, path ) );
+            final HttpHead equest = newHead( buildUrl( baseUrl, path ) );
 
-            response = http.execute( delete );
+            response = http.execute( equest );
             final StatusLine sl = response.getStatusLine();
-            return sl.getStatusCode() == responseCode;
+            if ( sl.getStatusCode() == responseCode )
+            {
+                return true;
+            }
+            else if ( sl.getStatusCode() == HttpStatus.SC_NOT_FOUND )
+            {
+                return false;
+            }
+
+            throw new AproxClientException( "Error checking existence of: %s. Error was: %s", path, sl );
         }
         catch ( final IOException e )
         {
@@ -287,13 +516,19 @@ public class AproxClientHttp
 
     }
 
-    private HttpGet newGet( final String url )
+    private HttpGet newRawGet( final String url )
     {
         final HttpGet req = new HttpGet( url );
         return req;
     }
 
-    @SuppressWarnings( "unused" )
+    private HttpGet newGet( final String url )
+    {
+        final HttpGet req = new HttpGet( url );
+        addJsonHeaders( req );
+        return req;
+    }
+
     private HttpHead newHead( final String url )
     {
         final HttpHead req = new HttpHead( url );
@@ -325,6 +560,11 @@ public class AproxClientHttp
         final HttpPost req = new HttpPost( url );
         addJsonHeaders( req );
         return req;
+    }
+
+    public String getBaseUrl()
+    {
+        return baseUrl;
     }
 
 }

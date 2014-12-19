@@ -28,5 +28,9 @@
     	<groupId>junit</groupId>
     	<artifactId>junit</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-folo-model-java</artifactId>
+    </dependency>
   </dependencies>
 </project>

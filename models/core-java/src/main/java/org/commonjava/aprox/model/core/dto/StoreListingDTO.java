@@ -28,4 +28,26 @@ public class StoreListingDTO<T extends ArtifactStore>
         this.items = items;
     }
 
+    @Override
+    public String toString()
+    {
+        final StringBuilder sb = new StringBuilder();
+        sb.append( "StoreListingDTO[" );
+        if ( items == null || items.isEmpty() )
+        {
+            sb.append( "NO STORES" );
+        }
+        else
+        {
+            for ( final T item : items )
+            {
+                sb.append( "\n  " )
+                  .append( item );
+            }
+        }
+
+        sb.append( "\n]" );
+        return sb.toString();
+    }
+
 }

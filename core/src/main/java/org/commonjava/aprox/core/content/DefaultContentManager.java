@@ -2,17 +2,25 @@ package org.commonjava.aprox.core.content;
 
 import static org.commonjava.aprox.util.ContentUtils.dedupeListing;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
+import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.AproxWorkflowException;
+import org.commonjava.aprox.content.ContentDigest;
 import org.commonjava.aprox.content.ContentGenerator;
 import org.commonjava.aprox.content.ContentManager;
 import org.commonjava.aprox.content.DownloadManager;
@@ -21,14 +29,19 @@ import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.Group;
+import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DefaultContentManager
     implements ContentManager
 {
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private Instance<ContentGenerator> contentProducerInstances;
@@ -181,6 +194,7 @@ public class DefaultContentManager
         }
         else
         {
+            logger.info( "Attempting to retrieve: {} from: {}", path, store.getKey() );
             item = downloadManager.retrieve( store, path );
 
             if ( item == null )
@@ -433,6 +447,69 @@ public class DefaultContentManager
         }
 
         return dedupeListing( listed );
+    }
+
+    @Override
+    public Map<ContentDigest, String> digest( final StoreKey key, final String path, final ContentDigest... types )
+        throws AproxWorkflowException
+    {
+        final Transfer txfr = downloadManager.getStorageReference( key, path );
+        if ( txfr == null || !txfr.exists() )
+        {
+            return Collections.emptyMap();
+        }
+
+        InputStream stream = null;
+        try
+        {
+            // TODO: Compute it as the file is uploaded/downloaded into cache.
+            stream = txfr.openInputStream( false );
+
+            final Map<ContentDigest, MessageDigest> digests = new HashMap<>();
+            for ( final ContentDigest digest : types )
+            {
+                digests.put( digest, MessageDigest.getInstance( digest.digestName() ) );
+            }
+
+            final byte[] buf = new byte[16384];
+            int read = -1;
+            while ( ( read = stream.read( buf ) ) > -1 )
+            {
+                for ( final MessageDigest digest : digests.values() )
+                {
+                    digest.update( buf, 0, read );
+                }
+            }
+
+            final Map<ContentDigest, String> result = new HashMap<>();
+            for ( final Map.Entry<ContentDigest, MessageDigest> entry : digests.entrySet() )
+            {
+                final StringBuilder sb = new StringBuilder();
+                for ( final byte b : entry.getValue()
+                                          .digest() )
+                {
+                    final String hex = Integer.toHexString( b & 0xff );
+                    if ( hex.length() < 2 )
+                    {
+                        sb.append( '0' );
+                    }
+                    sb.append( hex );
+                }
+
+                result.put( entry.getKey(), sb.toString() );
+            }
+
+            return result;
+        }
+        catch ( IOException | NoSuchAlgorithmException e )
+        {
+            throw new AproxWorkflowException( "Failed to calculate checksums (MD5, SHA-256) for: %s. Reason: %s", e,
+                                              txfr, e.getMessage() );
+        }
+        finally
+        {
+            IOUtils.closeQuietly( stream );
+        }
     }
 
 }

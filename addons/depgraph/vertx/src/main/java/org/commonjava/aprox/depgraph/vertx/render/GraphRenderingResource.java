@@ -17,9 +17,9 @@ import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_artifactI
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_groupId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_version;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParamUtils.getWorkspaceId;
+import static org.commonjava.aprox.model.util.HttpUtils.parseQueryMap;
 import static org.commonjava.aprox.util.ApplicationContent.application_xml;
 import static org.commonjava.aprox.util.ApplicationContent.text_plain;
-import static org.commonjava.aprox.util.RequestUtils.parseQueryMap;
 import static org.commonjava.vertx.vabr.types.Method.POST;
 
 import java.io.File;

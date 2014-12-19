@@ -23,6 +23,7 @@
   <modules>
     <module>client-java</module>
     <module>common</module>
+    <module>ftests</module>
     <module>model-java</module>
     <module>vertx</module>
   </modules>

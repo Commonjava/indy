@@ -32,12 +32,12 @@ import org.commonjava.aprox.bind.vertx.util.VertxRequestUtils;
 import org.commonjava.aprox.core.ctl.ContentController;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
+import org.commonjava.aprox.model.util.HttpUtils;
 import org.commonjava.aprox.subsys.datafile.conf.DataFileConfiguration;
 import org.commonjava.aprox.util.ApplicationContent;
 import org.commonjava.aprox.util.ApplicationHeader;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.LocationUtils;
-import org.commonjava.aprox.util.RequestUtils;
 import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.vertx.vabr.anno.Handles;
@@ -186,7 +186,7 @@ public class ContentAccessHandler
              } );
     }
 
-    @Routes( { @Route( path = "/:type=(hosted|remote|group)/:name:?path=(/.+)", method = Method.DELETE, fork = false ) } )
+    @Routes( { @Route( path = "/:type=(hosted|remote|group)/:name:?path=(/.+)", method = Method.DELETE ) } )
     public void doDelete( final HttpServerRequest request )
     {
         //        request.pause();
@@ -222,7 +222,7 @@ public class ContentAccessHandler
         //        request.resume();
     }
 
-    @Routes( { @Route( path = "/:type=(hosted|remote|group)/:name:path=(/.*)", method = Method.HEAD, fork = false ) } )
+    @Routes( { @Route( path = "/:type=(hosted|remote|group)/:name:path=(/.*)", method = Method.HEAD ) } )
     public void doHead( final HttpServerRequest request )
     {
         //        request.pause();
@@ -263,7 +263,7 @@ public class ContentAccessHandler
                 request.response()
                        .putHeader( ApplicationHeader.content_type.key(), givenAccept )
                        .putHeader( ApplicationHeader.content_length.key(), Long.toString( content.length() ) )
-                       .putHeader( ApplicationHeader.last_modified.key(), RequestUtils.formatDateHeader( new Date() ) )
+                       .putHeader( ApplicationHeader.last_modified.key(), HttpUtils.formatDateHeader( new Date() ) )
                        .end();
                 request.response()
                        .close();
@@ -279,7 +279,7 @@ public class ContentAccessHandler
                        .putHeader( ApplicationHeader.content_length.key(), Long.toString( item.getDetachedFile()
                                                                                               .length() ) )
                        .putHeader( ApplicationHeader.last_modified.key(),
-                                   RequestUtils.formatDateHeader( item.getDetachedFile()
+                                   HttpUtils.formatDateHeader( item.getDetachedFile()
                                                                       .lastModified() ) )
                        .end();
                 request.response()

@@ -10,10 +10,10 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.util;
 
-import static org.commonjava.aprox.util.RequestUtils.getBooleanParamWithDefault;
-import static org.commonjava.aprox.util.RequestUtils.getFirstParameterValue;
-import static org.commonjava.aprox.util.RequestUtils.getLongParamWithDefault;
-import static org.commonjava.aprox.util.RequestUtils.getStringParamWithDefault;
+import static org.commonjava.aprox.model.util.HttpUtils.getBooleanParamWithDefault;
+import static org.commonjava.aprox.model.util.HttpUtils.getFirstParameterValue;
+import static org.commonjava.aprox.model.util.HttpUtils.getLongParamWithDefault;
+import static org.commonjava.aprox.model.util.HttpUtils.getStringParamWithDefault;
 
 import java.net.URI;
 import java.util.ArrayList;

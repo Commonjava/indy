@@ -12,10 +12,10 @@ package org.commonjava.aprox.bind.vertx.ui;
 
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.setStatus;
+import static org.commonjava.aprox.model.util.HttpUtils.formatDateHeader;
 import static org.commonjava.aprox.util.ApplicationStatus.BAD_REQUEST;
 import static org.commonjava.aprox.util.ApplicationStatus.NOT_FOUND;
 import static org.commonjava.aprox.util.ApplicationStatus.OK;
-import static org.commonjava.aprox.util.RequestUtils.formatDateHeader;
 import static org.commonjava.vertx.vabr.types.Method.ANY;
 import static org.commonjava.vertx.vabr.types.Method.GET;
 

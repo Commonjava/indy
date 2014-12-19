@@ -1,11 +1,14 @@
 package org.commonjava.aprox.folo.model;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.commonjava.aprox.model.core.StoreKey;
 
 public class TrackedContentRecord
+    implements Iterable<AffectedStoreRecord>
 {
 
     private TrackingKey key;
@@ -103,6 +106,13 @@ public class TrackedContentRecord
     public String toString()
     {
         return String.format( "TrackedStoreRecord [%s]", key );
+    }
+
+    @Override
+    public Iterator<AffectedStoreRecord> iterator()
+    {
+        return affectedStores == null ? Collections.<AffectedStoreRecord> emptyIterator() : affectedStores.values()
+                             .iterator();
     }
 
 }

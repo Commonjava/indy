@@ -15,8 +15,8 @@ public class CoreVertxServerFixtureTest
         throws Throwable
     {
         final CoreVertxServerFixture fix = new CoreVertxServerFixture( temp );
-        fix.before();
-        fix.after();
+        fix.start();
+        fix.stop();
     }
 
 }

@@ -79,6 +79,11 @@
       <artifactId>weld-se</artifactId>
       <scope>compile</scope>
     </dependency>
+    
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-ftests-core</artifactId>
+    </dependency>
   </dependencies>
   
   <build>
@@ -126,6 +131,14 @@
               </configuration>
             </execution>
           </executions>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <dependenciesToScan>
+              <dependency>org.commonjava.aprox:aprox-ftests-core</dependency>
+            </dependenciesToScan> 
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>

@@ -1,6 +1,7 @@
 package org.commonjava.aprox.model.core.io;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,12 +35,23 @@ public class AproxObjectMapper
         ctorModules = null;
     }
 
-    public AproxObjectMapper( final boolean marker, final Module... additionalModules )
+    public AproxObjectMapper( final boolean unused, final Module... additionalModules )
     {
         final Set<Module> mods = new HashSet<Module>();
         mods.add( new ApiSerializerModule() );
         mods.add( new ProjectVersionRefSerializerModule() );
         mods.addAll( Arrays.asList( additionalModules ) );
+        this.ctorModules = mods;
+
+        init();
+    }
+
+    public AproxObjectMapper( final Collection<Module> additionalModules )
+    {
+        final Set<Module> mods = new HashSet<Module>();
+        mods.add( new ApiSerializerModule() );
+        mods.add( new ProjectVersionRefSerializerModule() );
+        mods.addAll( additionalModules );
         this.ctorModules = mods;
 
         init();
@@ -63,11 +75,25 @@ public class AproxObjectMapper
         if ( injectedModules != null )
         {
             registerModules( injectedModules );
+            for ( final Module module : injectedModules )
+            {
+                if ( module instanceof AproxSerializerModule )
+                {
+                    ( (AproxSerializerModule) module ).register( this );
+                }
+            }
         }
 
         if ( ctorModules != null )
         {
             registerModules( ctorModules );
+            for ( final Module module : ctorModules )
+            {
+                if ( module instanceof AproxSerializerModule )
+                {
+                    ( (AproxSerializerModule) module ).register( this );
+                }
+            }
         }
     }
 

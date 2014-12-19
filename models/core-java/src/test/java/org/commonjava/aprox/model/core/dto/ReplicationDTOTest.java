@@ -1,4 +1,4 @@
-package org.commonjava.aprox.core.dto;
+package org.commonjava.aprox.model.core.dto;
 
 import java.util.Arrays;
 

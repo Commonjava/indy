@@ -10,8 +10,8 @@
  ******************************************************************************/
 package org.commonjava.aprox.depgraph.rest;
 
-import static org.commonjava.aprox.util.RequestUtils.getBooleanParamWithDefault;
-import static org.commonjava.aprox.util.RequestUtils.getLongParamWithDefault;
+import static org.commonjava.aprox.model.util.HttpUtils.getBooleanParamWithDefault;
+import static org.commonjava.aprox.model.util.HttpUtils.getLongParamWithDefault;
 
 import java.net.URI;
 import java.util.Collections;

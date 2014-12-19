@@ -36,11 +36,11 @@ import org.commonjava.aprox.folo.ctl.FoloContentController;
 import org.commonjava.aprox.folo.model.TrackingKey;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
+import org.commonjava.aprox.model.util.HttpUtils;
 import org.commonjava.aprox.subsys.datafile.conf.DataFileConfiguration;
 import org.commonjava.aprox.util.ApplicationContent;
 import org.commonjava.aprox.util.ApplicationHeader;
 import org.commonjava.aprox.util.LocationUtils;
-import org.commonjava.aprox.util.RequestUtils;
 import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.vertx.vabr.anno.Handles;
@@ -68,7 +68,7 @@ import org.vertx.java.core.streams.Pump;
  * 
  * @author jdcasey
  */
-@Handles( "/folo/track/:type=(hosted|group|remote)/:name/:id/:path=(.+)" )
+@Handles( "/folo/track/:id/:type=(hosted|group|remote)/:name/:path=(.+)" )
 public class FoloContentAccessHandler
     implements RequestHandler
 {
@@ -205,7 +205,7 @@ public class FoloContentAccessHandler
              } );
     }
 
-    @Routes( { @Route( method = Method.HEAD, fork = false ) } )
+    @Routes( { @Route( method = Method.HEAD ) } )
     public void doHead( final HttpServerRequest request )
     {
         //        request.pause();
@@ -252,7 +252,7 @@ public class FoloContentAccessHandler
                 request.response()
                        .putHeader( ApplicationHeader.content_type.key(), givenAccept )
                        .putHeader( ApplicationHeader.content_length.key(), Long.toString( content.length() ) )
-                       .putHeader( ApplicationHeader.last_modified.key(), RequestUtils.formatDateHeader( new Date() ) )
+                       .putHeader( ApplicationHeader.last_modified.key(), HttpUtils.formatDateHeader( new Date() ) )
                        .end();
                 request.response()
                        .close();
@@ -268,7 +268,7 @@ public class FoloContentAccessHandler
                        .putHeader( ApplicationHeader.content_length.key(), Long.toString( item.getDetachedFile()
                                                                                               .length() ) )
                        .putHeader( ApplicationHeader.last_modified.key(),
-                                   RequestUtils.formatDateHeader( item.getDetachedFile()
+                                   HttpUtils.formatDateHeader( item.getDetachedFile()
                                                                       .lastModified() ) )
                        .end();
                 request.response()

@@ -324,6 +324,11 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-ftests-common</artifactId>
+        <version>0.17.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-ftests-core</artifactId>
         <version>0.17.0-SNAPSHOT</version>
       </dependency>

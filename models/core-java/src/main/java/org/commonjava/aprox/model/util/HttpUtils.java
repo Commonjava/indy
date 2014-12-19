@@ -8,10 +8,11 @@
  * Contributors:
  *     Red Hat, Inc. - initial API and implementation
  ******************************************************************************/
-package org.commonjava.aprox.util;
+package org.commonjava.aprox.model.util;
 
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -21,12 +22,12 @@ import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class RequestUtils
+public final class HttpUtils
 {
 
-    private static final Logger logger = LoggerFactory.getLogger( RequestUtils.class );
+    private static final Logger logger = LoggerFactory.getLogger( HttpUtils.class );
 
-    private RequestUtils()
+    private HttpUtils()
     {
     }
 
@@ -40,6 +41,12 @@ public final class RequestUtils
     public static String formatDateHeader( final Date date )
     {
         return new SimpleDateFormat( DATE_HEADER_FMT ).format( date );
+    }
+
+    public static Date parseDateHeader( final String date )
+        throws ParseException
+    {
+        return new SimpleDateFormat( DATE_HEADER_FMT ).parse( date );
     }
 
     public static Map<String, String[]> parseQueryMap( final String query )

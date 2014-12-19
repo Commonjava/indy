@@ -173,6 +173,10 @@ public class Api10AliasingTest
 
         private final String methodName;
 
+        private String handlesPath;
+
+        private String routePath;
+
         public BindingInfo()
             throws Exception
         {
@@ -184,13 +188,13 @@ public class Api10AliasingTest
             final Handles handles = cls.getAnnotation( Handles.class );
             final Route route = method.getAnnotation( Route.class );
 
-            String handlesPath = handles.value();
+            handlesPath = handles.value();
             if ( handlesPath == null || handlesPath.length() < 1 )
             {
                 handlesPath = handles.prefix();
             }
 
-            String routePath = route.value();
+            routePath = route.value();
             if ( routePath == null || routePath.length() < 1 )
             {
                 routePath = route.path();
@@ -223,6 +227,16 @@ public class Api10AliasingTest
         public String getPath()
         {
             return path;
+        }
+
+        public String getRoutePath()
+        {
+            return routePath;
+        }
+
+        public String getHandlerPath()
+        {
+            return handlesPath;
         }
 
         public Method getMethod()
@@ -264,7 +278,8 @@ public class Api10AliasingTest
 
         public Binding( final BindingInfo info, final TestHandler handler )
         {
-            super( info.getPriority(), info.getPath(), info.getMethod(), info.getContentType(), info.getKey(),
+            super( info.getPriority(), info.getPath(), info.getRoutePath(), info.getHandlerPath(), info.getMethod(),
+                   info.getContentType(), info.getKey(),
                    info.getCls(), info.getMethodName(), Arrays.asList( info.getVersions() ) );
             this.handler = handler;
         }

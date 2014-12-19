@@ -2,11 +2,13 @@ package org.commonjava.aprox.content;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.HostedRepository;
+import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 
@@ -79,5 +81,8 @@ public interface ContentManager
         throws AproxWorkflowException;
 
     List<StoreResource> list( List<? extends ArtifactStore> stores, String path )
+        throws AproxWorkflowException;
+
+    Map<ContentDigest, String> digest( StoreKey key, String path, ContentDigest... types )
         throws AproxWorkflowException;
 }

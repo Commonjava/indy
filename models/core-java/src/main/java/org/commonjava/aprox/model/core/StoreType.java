@@ -92,8 +92,27 @@ public enum StoreType
         return null;
     }
 
+    public static StoreType get( final Class<?> storeCls )
+    {
+        if ( storeCls == null )
+        {
+            return null;
+        }
+
+        for ( final StoreType st : values() )
+        {
+            if ( st.storeClass.equals( storeCls ) )
+            {
+                return st;
+            }
+        }
+
+        return null;
+    }
+
     public Class<? extends ArtifactStore> getStoreClass()
     {
         return storeClass;
     }
+
 }

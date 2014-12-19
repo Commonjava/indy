@@ -20,7 +20,7 @@ import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.q_artifactI
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.q_groupId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.q_scopes;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParamUtils.getWorkspaceId;
-import static org.commonjava.aprox.util.RequestUtils.parseQueryMap;
+import static org.commonjava.aprox.model.util.HttpUtils.parseQueryMap;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
