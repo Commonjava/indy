@@ -152,6 +152,12 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-ftests-depgraph</artifactId>
+        <version>0.17.0-SNAPSHOT</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-autoprox-vertx</artifactId>
         <version>0.17.0-SNAPSHOT</version>
       </dependency>
@@ -331,11 +337,18 @@
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-ftests-core</artifactId>
         <version>0.17.0-SNAPSHOT</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-folo-vertx</artifactId>
         <version>0.17.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-ftests-folo</artifactId>
+        <version>0.17.0-SNAPSHOT</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>

@@ -80,6 +80,15 @@ public class CoreVertxServerFixture
         booter = new Booter( options );
         logger.info( "\n\n\n\nAProx STARTING UP\n\n\n" );
         status = booter.start();
+
+        if ( status == null )
+        {
+            throw new IllegalStateException( "Failed to start server!" );
+        }
+        else if ( status.isFailed() )
+        {
+            throw new IllegalStateException( "Failed to start server!", status.getError() );
+        }
     }
 
     public void stop()

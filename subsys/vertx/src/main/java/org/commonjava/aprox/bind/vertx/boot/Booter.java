@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.codehaus.plexus.interpolation.InterpolationException;
+import org.commonjava.aprox.AproxException;
 import org.commonjava.aprox.action.AproxLifecycleException;
 import org.commonjava.aprox.action.AproxLifecycleManager;
 import org.commonjava.aprox.conf.AproxConfigFactory;
@@ -49,6 +50,8 @@ public class Booter
     private static final int ERR_CANT_START_APROX = 6;
 
     protected static final int ERR_CANT_LISTEN = 7;
+
+    private static final int ERR_CANT_INIT_BOOTER = 8;
 
     public static void main( final String[] args )
     {
@@ -100,12 +103,21 @@ public class Booter
 
         if ( canStart )
         {
-            final Booter booter = new Booter( boot );
-            System.out.println( "Starting AProx booter: " + booter );
-            final int result = booter.runAndWait();
-            if ( result != 0 )
+            try
             {
-                System.exit( result );
+                final Booter booter = new Booter( boot );
+
+                System.out.println( "Starting AProx booter: " + booter );
+                final int result = booter.runAndWait();
+                if ( result != 0 )
+                {
+                    System.exit( result );
+                }
+            }
+            catch ( final AproxException e )
+            {
+                System.err.printf( "ERROR INITIALIZING BOOTER: %s", e.getMessage() );
+                System.exit( ERR_CANT_INIT_BOOTER );
             }
         }
     }
@@ -158,16 +170,24 @@ public class Booter
     private BootStatus status;
 
     public Booter( final BootOptions bootOptions )
+        throws AproxException
     {
         this.bootOptions = bootOptions;
 
-        if ( bootOptions.getConfig() != null )
+        try
         {
-            setConfigPathProperty( bootOptions.getConfig() );
-        }
+            if ( bootOptions.getConfig() != null )
+            {
+                setConfigPathProperty( bootOptions.getConfig() );
+            }
 
-        weld = new Weld();
-        container = weld.initialize();
+            weld = new Weld();
+            container = weld.initialize();
+        }
+        catch ( final RuntimeException e )
+        {
+            throw new AproxException( "Failed to initialize Booter: " + e.getMessage(), e );
+        }
     }
 
     private int runAndWait()
