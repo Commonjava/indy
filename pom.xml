@@ -42,9 +42,9 @@
     <atlasVersion>0.13.7</atlasVersion>
     <galleyVersion>0.6.8</galleyVersion>
     <cartoVersion>0.8.1</cartoVersion>
-    <bomVersion>14-SNAPSHOT</bomVersion>
+    <bomVersion>14</bomVersion>
     <webdavVersion>3.1.1</webdavVersion>
-    <vabrVersion>1.12-SNAPSHOT</vabrVersion>
+    <vabrVersion>1.12</vabrVersion>
     
     <vertx.testtools.version>2.0.0-final</vertx.testtools.version>
   </properties>
