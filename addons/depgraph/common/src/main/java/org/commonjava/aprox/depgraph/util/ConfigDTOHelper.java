@@ -26,6 +26,7 @@ import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.aprox.depgraph.dto.MetadataCollationDTO;
+import org.commonjava.aprox.depgraph.dto.PathsDTO;
 import org.commonjava.aprox.depgraph.dto.WebBomDTO;
 import org.commonjava.aprox.depgraph.dto.WebOperationConfigDTO;
 import org.commonjava.aprox.util.ApplicationStatus;
@@ -90,6 +91,52 @@ public class ConfigDTOHelper
         {
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
                                               "No configuration found in request body!" );
+        }
+
+        try
+        {
+            dto.calculateLocations( locationExpander, dataManager );
+        }
+        catch ( final TransferException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
+                                              "One or more sources/excluded sources is invalid: {}", e, e.getMessage() );
+        }
+
+        return dto;
+    }
+
+    public PathsDTO readPathsDTO( final InputStream configStream )
+        throws AproxWorkflowException
+    {
+        try
+        {
+            return readPathsDTO( IOUtils.toString( configStream ) );
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxWorkflowException( "Failed to read configuration JSON from request body. Reason: {}",
+                                              e, e.getMessage() );
+        }
+    }
+
+    public PathsDTO readPathsDTO( final String json )
+        throws AproxWorkflowException
+    {
+        logger.info( "Got paths configuration JSON:\n\n{}\n\n", json );
+        PathsDTO dto;
+        try
+        {
+            dto = serializer.readValue( json, PathsDTO.class );
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxWorkflowException( "Failed to deserialize PathsDTO from JSON. Reason: %s", e, e.getMessage() );
+        }
+
+        if ( dto == null )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "No PathsDTO found in request body!" );
         }
 
         try
