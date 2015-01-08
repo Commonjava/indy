@@ -16,17 +16,24 @@ public class AproxFoloContentClientModule
     extends AproxClientModule
 {
 
+    private static final String TRACKING_PATH = "/folo/track";
+
+    public String trackingUrl( final String id, final StoreType type, final String name )
+    {
+        return UrlUtils.buildUrl( http.getBaseUrl(), TRACKING_PATH, id, type.singularEndpointName(), name );
+    }
+
     public boolean exists( final String trackingId, final StoreType type, final String name, final String path )
         throws AproxClientException
     {
-        return http.exists( UrlUtils.buildUrl( "/folo/track", trackingId, type.singularEndpointName(), name, path ) );
+        return http.exists( UrlUtils.buildUrl( TRACKING_PATH, trackingId, type.singularEndpointName(), name, path ) );
     }
 
     public PathInfo store( final String trackingId, final StoreType type, final String name, final String path,
                            final InputStream stream )
         throws AproxClientException
     {
-        http.putWithStream( UrlUtils.buildUrl( "/folo/track", trackingId, type.singularEndpointName(), name, path ),
+        http.putWithStream( UrlUtils.buildUrl( TRACKING_PATH, trackingId, type.singularEndpointName(), name, path ),
                             stream );
         return getInfo( trackingId, type, name, path );
     }
@@ -35,7 +42,7 @@ public class AproxFoloContentClientModule
         throws AproxClientException
     {
         final Map<String, String> headers =
-            http.head( UrlUtils.buildUrl( "/folo/track", trackingId, type.singularEndpointName(), name, path ) );
+            http.head( UrlUtils.buildUrl( TRACKING_PATH, trackingId, type.singularEndpointName(), name, path ) );
         return new PathInfo( headers );
     }
 
@@ -43,7 +50,7 @@ public class AproxFoloContentClientModule
         throws AproxClientException
     {
         final CloseableHttpResponse response =
-            http.getRaw( UrlUtils.buildUrl( "/folo/track", trackingId, type.singularEndpointName(), name, path ) );
+            http.getRaw( UrlUtils.buildUrl( TRACKING_PATH, trackingId, type.singularEndpointName(), name, path ) );
 
         if ( response.getStatusLine()
                      .getStatusCode() != 200 )
