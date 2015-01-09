@@ -25,17 +25,17 @@
   
   <dependencies>
     <dependency>
+      <groupId>org.commonjava.aprox.ui</groupId>
+      <artifactId>aprox-ui-layover</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox.embed</groupId>
+      <artifactId>aprox-embedder-easyprox</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.commonjava.aprox.launch</groupId>
       <artifactId>aprox-launcher-base</artifactId>
       <type>tar.gz</type>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-autoprox-vertx</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-autoprox-common</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
@@ -63,35 +63,15 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-dot-maven-vertx</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-dot-maven-common</artifactId>
       <type>tar.gz</type>
       <classifier>dataset</classifier>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-setback-vertx</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-setback-common</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-setback-common</artifactId>
       <type>tar.gz</type>
       <classifier>dataset</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-revisions-vertx</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-revisions-common</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
@@ -104,14 +84,6 @@
       <artifactId>aprox-revisions-common</artifactId>
       <type>tar.gz</type>
       <classifier>uiset</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-indexer</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
     </dependency>
   </dependencies>
   

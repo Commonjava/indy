@@ -26,13 +26,8 @@
       <includes>
         <include>${project.groupId}:${project.artifactId}:jar:${project.version}</include>
       </includes>
-      <outputDirectory>/</outputDirectory>
+      <outputDirectory>lib/local</outputDirectory>
       <unpack>true</unpack>
-      <unpackOptions>
-        <excludes>
-          <exclude>META-INF/**</exclude>
-        </excludes>
-      </unpackOptions>
     </dependencySet>
     <!-- base launcher configs/scripts -->
     <dependencySet>
@@ -114,10 +109,9 @@
       <useProjectArtifact>true</useProjectArtifact>
       <useProjectAttachments>true</useProjectAttachments>
       <includes>
-        <include>${project.groupId}:${project.artifactId}:jar:launcher-classes:${project.version}</include>
+        <include>org.commonjava.aprox.embed:*</include>
       </includes>
       <outputDirectory>lib</outputDirectory>
-      <outputFileNameMapping>aprox-cdi-components-${project.version}.jar</outputFileNameMapping>
     </dependencySet>
     
     <!-- other runtime dependencies -->
@@ -125,10 +119,17 @@
       <useProjectArtifact>false</useProjectArtifact>
       <scope>runtime</scope>
       <excludes>
-        <exclude>org.commonjava.*</exclude>
+        <exclude>org.commonjava.aprox.embed:*</exclude>
       </excludes>
       <outputDirectory>lib/thirdparty</outputDirectory>
     </dependencySet>
   </dependencySets>
+  
+  <fileSets>
+    <fileSet>
+      <directory>${project.build.directory}/etc</directory>
+      <outputDirectory>etc</outputDirectory>
+    </fileSet>
+  </fileSets>
   
 </assembly>

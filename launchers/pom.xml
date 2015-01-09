@@ -39,47 +39,15 @@
   <dependencies>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-bindings-vertx</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>args4j</groupId>
-      <artifactId>args4j</artifactId>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.commonjava.aprox.ui</groupId>
-      <artifactId>aprox-ui-layover</artifactId>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-core</artifactId>
       <type>tar.gz</type>
       <classifier>confset</classifier>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-db-flat</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-filer-default</artifactId>
-    </dependency>
-    
-    <dependency>
       <groupId>org.jboss.weld.se</groupId>
       <artifactId>weld-se</artifactId>
       <scope>compile</scope>
     </dependency>
-    
   </dependencies>
   
   <build>
@@ -88,25 +56,17 @@
         <directory>src/main/resources</directory>
         <filtering>true</filtering>
       </resource>
+      <resource>
+        <directory>src/main/etc</directory>
+        <filtering>true</filtering>
+        <targetPath>../etc</targetPath>
+      </resource>
     </resources>
     <pluginManagement>
       <plugins>
         <plugin>
           <artifactId>maven-assembly-plugin</artifactId>
           <executions>
-            <execution>
-              <id>launcher-prep</id>
-              <goals>
-                <goal>single</goal>
-              </goals>
-              <phase>prepare-package</phase>
-              <configuration>
-                <skipAssembly>${disableLauncher}</skipAssembly>
-                <descriptorRefs>
-                  <descriptorRef>launcher-prep-classes</descriptorRef>
-                </descriptorRefs>
-              </configuration>
-            </execution>
             <execution>
               <id>launcher</id>
               <goals>
@@ -115,15 +75,9 @@
               <phase>package</phase>
               <configuration>
                 <skipAssembly>${disableLauncher}</skipAssembly>
-                <archive>
-                  <manifest>
-                    <mainClass>org.commonjava.aprox.bind.vertx.boot.Booter</mainClass>
-                  </manifest>
-                </archive>
                 <descriptorRefs>
                   <descriptorRef>launcher</descriptorRef>
                 </descriptorRefs>
-                <!-- <appendAssemblyId>false</appendAssemblyId> -->
               </configuration>
             </execution>
           </executions>

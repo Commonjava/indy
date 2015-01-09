@@ -70,7 +70,6 @@
     <module>addons</module>
     <module>launchers</module>
     <module>embedders</module>
-    <module>embedder-deps</module>
     <module>uis</module>
     <module>ftests</module>
     <module>clients</module>
@@ -696,6 +695,10 @@
   <build>
     <pluginManagement>
       <plugins>
+        <plugin>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>2.3</version>
+        </plugin>
         <plugin>
           <artifactId>maven-assembly-plugin</artifactId>
           <dependencies>

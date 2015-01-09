@@ -10,12 +10,13 @@ BASEDIR=`dirname ${BASEDIR}`
 
 # echo "basedir: ${BASEDIR}"
 
+APROX_LOCALLIB_DIR=${APROX_LOCALLIB_DIR:-${BASEDIR}/lib/local}
 APROX_LOGCONF_DIR=${APROX_LOGCONF_DIR:-${BASEDIR}/etc/aprox/logging}
 
 echo "Loading logging config from: ${APROX_LOGCONF_DIR}"
 
-CP="${APROX_LOGCONF_DIR}"
-for f in $(find $BASEDIR/lib/aprox-cdi-components-*.jar -type f)
+CP="${APROX_LOCALLIB_DIR}:${APROX_LOGCONF_DIR}"
+for f in $(find $BASEDIR/lib/aprox-embedder-*.jar -type f)
 do
   CP=${CP}:${f}
 done
@@ -43,5 +44,10 @@ test -f ${APROX_ENV} && source ${APROX_ENV}
 #JAVA_DEBUG_OPTS="-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n"
 JAVA_OPTS="$JAVA_OPTS $JAVA_DEBUG_OPTS"
 
-exec "$JAVA" ${JAVA_OPTS} -cp "${CP}" -Daprox.home="${BASEDIR}" -Daprox.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS} "$@"
-
+"$JAVA" ${JAVA_OPTS} -cp "${CP}" -Daprox.home="${BASEDIR}" -Daprox.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS} "$@"
+ret=$?
+if [ $ret == 0 -o $ret == 130 ]; then
+  exit 0
+else
+  exit $ret
+fi

@@ -9,6 +9,7 @@ import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
 import org.commonjava.aprox.inject.TestData;
+import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.subsys.datafile.conf.DataFileConfiguration;
 import org.commonjava.maven.galley.maven.internal.type.StandardTypeMapper;
 import org.commonjava.maven.galley.maven.parse.XMLInfrastructure;
@@ -40,6 +41,8 @@ public class TestProvider
 
     private DataFileConfiguration dataConfig;
 
+    private AproxObjectMapper objectMapper;
+
     @PostConstruct
     public void init()
     {
@@ -50,6 +53,15 @@ public class TestProvider
         this.xmlInfra = new XMLInfrastructure();
         this.typeMapper = new StandardTypeMapper();
         this.aproxConfig = new DefaultAproxConfiguration();
+        this.objectMapper = new AproxObjectMapper( true );
+    }
+
+    @Produces
+    @Default
+    @TestData
+    public AproxObjectMapper getObjectMapper()
+    {
+        return objectMapper;
     }
 
     @Produces

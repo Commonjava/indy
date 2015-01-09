@@ -29,50 +29,32 @@
     <module>savant</module>
   </modules>
   
-  <properties>
-    <!-- defaults for assembly -->
-    <distName>${project.artifactId}</distName>
-    <disableEmbedder>false</disableEmbedder>
-  </properties>
-  
   <dependencies>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-bindings-vertx</artifactId>
-      <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>args4j</groupId>
-      <artifactId>args4j</artifactId>
-    </dependency>
-    
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-api</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-core</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-db-flat</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-filer-default</artifactId>
-      <scope>provided</scope>
     </dependency>
     
     <dependency>
-      <groupId>org.commonjava.aprox.embed.dep</groupId>
-      <artifactId>aprox-embedder-deps-base</artifactId>
-      <type>pom</type>
+      <groupId>args4j</groupId>
+      <artifactId>args4j</artifactId>
     </dependency>
-    
     <dependency>
       <groupId>org.jboss.weld.se</groupId>
       <artifactId>weld-se</artifactId>
@@ -90,25 +72,23 @@
     <pluginManagement>
       <plugins>
         <plugin>
-          <artifactId>maven-assembly-plugin</artifactId>
+          <artifactId>maven-shade-plugin</artifactId>
           <executions>
             <execution>
-              <id>embedder-prep</id>
+              <id>shade-cdi-components</id>
               <goals>
-                <goal>single</goal>
+                <goal>shade</goal>
               </goals>
               <phase>package</phase>
               <configuration>
-                <skipAssembly>${disableEmbedder}</skipAssembly>
-                <appendAssemblyId>false</appendAssemblyId>
-                <descriptorRefs>
-                  <descriptorRef>embedder</descriptorRef>
-                </descriptorRefs>
-                <archive>
-                  <manifest>
-                    <mainClass>org.commonjava.aprox.bind.vertx.boot.Booter</mainClass>
-                  </manifest>
-                </archive>
+                <createDependencyReducedPom>true</createDependencyReducedPom>
+                <keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
+                <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+                <artifactSet>
+                  <includes>
+                    <include>org.commonjava*:*</include>
+                  </includes>
+                </artifactSet>
               </configuration>
             </execution>
           </executions>

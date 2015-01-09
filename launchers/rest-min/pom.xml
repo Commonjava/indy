@@ -23,17 +23,13 @@
   
   <dependencies>
     <dependency>
+      <groupId>org.commonjava.aprox.embed</groupId>
+      <artifactId>aprox-embedder-min</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.commonjava.aprox.launch</groupId>
       <artifactId>aprox-launcher-base</artifactId>
       <type>tar.gz</type>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-db-flat</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-filer-default</artifactId>
     </dependency>
   </dependencies>
   

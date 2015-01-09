@@ -27,67 +27,50 @@
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-autoprox-vertx</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-autoprox-common</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-dot-maven-vertx</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-depgraph-common</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-depgraph-vertx</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-setback-vertx</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-setback-common</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-revisions-vertx</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-revisions-common</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-indexer</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-folo-vertx</artifactId>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-folo-common</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox.embed.dep</groupId>
-      <artifactId>aprox-embedder-deps-savant</artifactId>
-      <type>pom</type>
     </dependency>
   </dependencies>
   
@@ -96,7 +79,7 @@
     
     <plugins>
       <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
+        <artifactId>maven-shade-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
