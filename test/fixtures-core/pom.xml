@@ -24,6 +24,7 @@
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-core</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -36,8 +37,14 @@
       <optional>true</optional>
     </dependency>
     <dependency>
+      <groupId>org.jboss.weld.se</groupId>
+      <artifactId>weld-se-core</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-db-flat</artifactId>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 </project>

@@ -214,6 +214,11 @@ public class Booter
         return exit;
     }
 
+    public WeldContainer getContainer()
+    {
+        return container;
+    }
+
     public BootStatus start()
     {
         logger.info( "Booter running: " + this );

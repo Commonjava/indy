@@ -11,6 +11,7 @@ import org.codehaus.plexus.interpolation.InterpolationException;
 import org.commonjava.aprox.bind.vertx.boot.BootOptions;
 import org.commonjava.aprox.bind.vertx.boot.BootStatus;
 import org.commonjava.aprox.bind.vertx.boot.Booter;
+import org.jboss.weld.environment.se.WeldContainer;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +55,11 @@ public class CoreVertxServerFixture
         this( newBootOptions( bootDefaults, aproxHome.getAbsolutePath() ) );
     }
 
+    public WeldContainer getContainer()
+    {
+        return booter.getContainer();
+    }
+
     public String getUrl()
     {
         return String.format( "http://127.0.0.1:%d/api/", options.getPort() );
@@ -93,7 +99,7 @@ public class CoreVertxServerFixture
 
     public void stop()
     {
-        if ( status.isSuccess() )
+        if ( status != null && status.isSuccess() )
         {
             logger.info( "\n\n\n\nAProx SHUTTING DOWN\n\n\n" );
             booter.stop();

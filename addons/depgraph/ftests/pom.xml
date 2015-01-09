@@ -24,10 +24,12 @@
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-depgraph-vertx</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-depgraph-common</artifactId>
+      <scope>provided</scope>
     </dependency>
     <!--
     <dependency>

@@ -36,6 +36,7 @@
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-bindings-vertx</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

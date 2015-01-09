@@ -430,4 +430,9 @@ public class DataFileStoreDataManager
                                                     .singularEndpointName(), key.getName() + ".json" );
     }
 
+    public DataFileManager getFileManager()
+    {
+        return manager;
+    }
+
 }

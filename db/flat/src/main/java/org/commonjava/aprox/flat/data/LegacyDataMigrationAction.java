@@ -18,11 +18,11 @@ import javax.inject.Named;
 import org.commonjava.aprox.action.MigrationAction;
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.data.AproxDataException;
+import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.HostedRepository;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.subsys.datafile.DataFile;
-import org.commonjava.aprox.subsys.datafile.DataFileManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,10 +38,7 @@ public class LegacyDataMigrationAction
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private DataFileManager fileManager;
-
-    @Inject
-    private DataFileStoreDataManager data;
+    private StoreDataManager data;
 
     @Override
     public String getId()
@@ -52,7 +49,15 @@ public class LegacyDataMigrationAction
     @Override
     public boolean migrate()
     {
-        final DataFile basedir = fileManager.getDataFile( DataFileStoreDataManager.APROX_STORE );
+        if ( !( data instanceof DataFileStoreDataManager ) )
+        {
+            return true;
+        }
+
+        final DataFileStoreDataManager data = (DataFileStoreDataManager) this.data;
+
+        final DataFile basedir = data.getFileManager()
+                                     .getDataFile( DataFileStoreDataManager.APROX_STORE );
         final ChangeSummary summary =
             new ChangeSummary( ChangeSummary.SYSTEM_USER, "Migrating legacy store definitions." );
 

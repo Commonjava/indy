@@ -80,10 +80,6 @@
       <scope>compile</scope>
     </dependency>
     
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-ftests-core</artifactId>
-    </dependency>
   </dependencies>
   
   <build>
@@ -132,15 +128,39 @@
             </execution>
           </executions>
         </plugin>
-        <plugin>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <configuration>
-            <dependenciesToScan>
-              <dependency>org.commonjava.aprox:aprox-ftests-core</dependency>
-            </dependenciesToScan> 
-          </configuration>
-        </plugin>
       </plugins>
     </pluginManagement>
   </build>
+  
+  <profiles>
+    <profile>
+      <id>run-its</id>
+      
+      <dependencies>
+        <dependency>
+          <groupId>org.commonjava.aprox</groupId>
+          <artifactId>aprox-ftests-core</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.commonjava.aprox</groupId>
+          <artifactId>aprox-test-providers-core</artifactId>
+        </dependency>
+      </dependencies>
+      
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <configuration>
+                <dependenciesToScan>
+                  <dependency>org.commonjava.aprox:aprox-ftests-core</dependency>
+                </dependenciesToScan> 
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+  </profiles>
 </project>

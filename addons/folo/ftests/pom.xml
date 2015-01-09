@@ -24,10 +24,12 @@
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-folo-vertx</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-folo-common</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>

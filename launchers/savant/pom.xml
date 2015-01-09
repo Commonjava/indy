@@ -141,19 +141,6 @@
       <type>tar.gz</type>
       <classifier>confset</classifier>
     </dependency>
-    
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-ftests-depgraph</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-ftests-folo</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-    </dependency>
   </dependencies>
   
   <build>
@@ -165,4 +152,38 @@
       </plugin>
     </plugins>
   </build>
+  
+  <profiles>
+    <profile>
+      <id>run-its</id>
+      
+      <dependencies>
+        <dependency>
+          <groupId>org.commonjava.aprox</groupId>
+          <artifactId>aprox-ftests-depgraph</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.commonjava.aprox</groupId>
+          <artifactId>aprox-ftests-folo</artifactId>
+        </dependency>
+      </dependencies>
+      
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <configuration>
+                <dependenciesToScan>
+                  <dependency>org.commonjava.aprox:aprox-ftests-core</dependency>
+                  <dependency>org.commonjava.aprox:aprox-ftests-folo</dependency>
+                  <dependency>org.commonjava.aprox:aprox-ftests-depgraph</dependency>
+                </dependenciesToScan> 
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+  </profiles>
 </project>

@@ -45,7 +45,10 @@ public abstract class AbstractAproxFunctionalTest
     @After
     public void stop()
     {
-        fixture.stop();
+        if ( fixture != null )
+        {
+            fixture.stop();
+        }
     }
 
     protected CoreVertxServerFixture newServerFixture()

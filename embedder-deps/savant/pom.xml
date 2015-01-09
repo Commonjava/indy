@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<!--
+  Copyright (c) 2014 Red Hat, Inc..
+  All rights reserved. This program and the accompanying materials
+  are made available under the terms of the GNU Public License v3.0
+  which accompanies this distribution, and is available at
+  http://www.gnu.org/licenses/gpl.html
+  
+  Contributors:
+      Red Hat, Inc. - initial API and implementation
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.commonjava.aprox.embed.dep</groupId>
+    <artifactId>aprox-embedder-deps</artifactId>
+    <version>0.17.1-SNAPSHOT</version>
+  </parent>
+  
+  <artifactId>aprox-embedder-deps-savant</artifactId>
+  <packaging>pom</packaging>
+  
+  <name>AProx :: Embedder-Dependencies :: Savant</name>
+  
+  <dependencies>
+    <dependency><groupId>org.eclipse.jgit</groupId><artifactId>org.eclipse.jgit</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>com.jcraft</groupId><artifactId>jsch</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>com.googlecode.javaewah</groupId><artifactId>JavaEWAH</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.apache.maven.mae</groupId><artifactId>mae-booter</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.sonatype.sisu</groupId><artifactId>sisu-inject-plexus</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.sonatype.sisu</groupId><artifactId>sisu-inject-bean</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.sonatype.sisu</groupId><artifactId>sisu-guice</artifactId><classifier>no_aop</classifier></dependency> <!-- type: no_aop -->
+    <dependency><groupId>org.apache.maven.mae</groupId><artifactId>mae-api</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.codehaus.plexus</groupId><artifactId>plexus-classworlds</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.apache.maven</groupId><artifactId>maven-embedder</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.apache.maven</groupId><artifactId>maven-settings</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.apache.maven</groupId><artifactId>maven-core</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.apache.maven</groupId><artifactId>maven-settings-builder</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.apache.maven</groupId><artifactId>maven-artifact</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.apache.maven</groupId><artifactId>maven-aether-provider</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.sonatype.aether</groupId><artifactId>aether-spi</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.sonatype.aether</groupId><artifactId>aether-impl</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.apache.maven</groupId><artifactId>maven-plugin-api</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.apache.maven</groupId><artifactId>maven-model-builder</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.apache.maven</groupId><artifactId>maven-compat</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.apache.maven.wagon</groupId><artifactId>wagon-provider-api</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.sonatype.plexus</groupId><artifactId>plexus-sec-dispatcher</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.sonatype.plexus</groupId><artifactId>plexus-cipher</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>commons-cli</groupId><artifactId>commons-cli</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.apache.maven.mae</groupId><artifactId>mae-container</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.apache.maven.indexer</groupId><artifactId>indexer-core</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.apache.maven.indexer</groupId><artifactId>indexer-artifact</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.codehaus.plexus</groupId><artifactId>plexus-component-annotations</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.apache.lucene</groupId><artifactId>lucene-core</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.apache.lucene</groupId><artifactId>lucene-highlighter</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.apache.lucene</groupId><artifactId>lucene-memory</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.apache.lucene</groupId><artifactId>lucene-queries</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>jakarta-regexp</groupId><artifactId>jakarta-regexp</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.sonatype.aether</groupId><artifactId>aether-api</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.sonatype.aether</groupId><artifactId>aether-util</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.apache.maven</groupId><artifactId>maven-model</artifactId></dependency> <!-- type: jar -->
+
+    <dependency><groupId>com.google.guava</groupId><artifactId>guava</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.neo4j</groupId><artifactId>neo4j</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.neo4j</groupId><artifactId>neo4j-kernel</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.apache.geronimo.specs</groupId><artifactId>geronimo-jta_1.1_spec</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.neo4j</groupId><artifactId>neo4j-lucene-index</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.neo4j</groupId><artifactId>neo4j-graph-algo</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.neo4j</groupId><artifactId>neo4j-udc</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.neo4j</groupId><artifactId>neo4j-graph-matching</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.neo4j</groupId><artifactId>neo4j-cypher</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.scala-lang</groupId><artifactId>scala-library</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>com.googlecode.concurrentlinkedhashmap</groupId><artifactId>concurrentlinkedhashmap-lru</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>org.neo4j</groupId><artifactId>neo4j-jmx</artifactId></dependency> <!-- type: jar -->
+    <dependency><groupId>com.google.code.gson</groupId><artifactId>gson</artifactId></dependency> <!-- type: jar -->
+  </dependencies>
+</project>
