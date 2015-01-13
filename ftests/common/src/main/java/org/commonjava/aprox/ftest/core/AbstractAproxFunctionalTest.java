@@ -4,11 +4,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Random;
 
-import org.commonjava.aprox.bind.vertx.boot.BootStatus;
+import org.commonjava.aprox.boot.AproxBootException;
+import org.commonjava.aprox.boot.BootStatus;
 import org.commonjava.aprox.client.core.Aprox;
 import org.commonjava.aprox.client.core.AproxClientModule;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
-import org.commonjava.aprox.test.fixture.core.CoreVertxServerFixture;
+import org.commonjava.aprox.test.fixture.core.CoreServerFixture;
 import org.junit.After;
 import org.junit.Before;
 
@@ -22,7 +23,7 @@ public abstract class AbstractAproxFunctionalTest
 
     protected Aprox client;
 
-    private CoreVertxServerFixture fixture;
+    private CoreServerFixture fixture;
 
     @Before
     public void start()
@@ -51,9 +52,10 @@ public abstract class AbstractAproxFunctionalTest
         }
     }
 
-    protected CoreVertxServerFixture newServerFixture()
+    protected CoreServerFixture newServerFixture()
+        throws AproxBootException
     {
-        return new CoreVertxServerFixture();
+        return new CoreServerFixture();
     }
 
     protected Collection<Module> getAdditionalMapperModules()

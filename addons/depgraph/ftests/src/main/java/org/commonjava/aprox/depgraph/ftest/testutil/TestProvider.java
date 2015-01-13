@@ -7,6 +7,7 @@ import javax.enterprise.inject.Produces;
 
 import org.commonjava.aprox.depgraph.util.PresetParameterParser;
 import org.commonjava.aprox.depgraph.vertx.util.VertXPresetParamParser;
+import org.commonjava.aprox.inject.TestData;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.maven.ArtifactManager;
 import org.commonjava.maven.galley.maven.internal.ArtifactManagerImpl;
@@ -65,6 +66,7 @@ public class TestProvider
 
     @Produces
     @Default
+    @TestData
     public PresetParameterParser getPresetParameterParser()
     {
         return presetParser;
@@ -72,6 +74,7 @@ public class TestProvider
 
     @Produces
     @Default
+    @TestData
     public ArtifactManager getArtifactManager()
     {
         return artifacts;
@@ -79,6 +82,7 @@ public class TestProvider
 
     @Produces
     @Default
+    @TestData
     public MavenPomReader getMavenPomReader()
     {
         return pomReader;

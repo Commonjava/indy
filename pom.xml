@@ -60,6 +60,7 @@
   <modules>
     <module>models</module>
     <module>api</module>
+    <module>boot</module>
     <module>bindings</module>
     <module>core</module>
     <module>subsys</module>
@@ -68,7 +69,7 @@
     <module>test</module>
     <module>tools</module>
     <module>addons</module>
-    <module>launchers</module>
+    <module>deployments</module>
     <module>embedders</module>
     <module>uis</module>
     <module>ftests</module>
@@ -404,22 +405,19 @@
         <version>0.17.1-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox.embed.dep</groupId>
-        <artifactId>aprox-embedder-deps-base</artifactId>
+        <groupId>org.commonjava.aprox.boot</groupId>
+        <artifactId>aprox-booter-api</artifactId>
         <version>0.17.1-SNAPSHOT</version>
-        <type>pom</type>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox.embed.dep</groupId>
-        <artifactId>aprox-embedder-deps-easyprox</artifactId>
+        <groupId>org.commonjava.aprox.boot</groupId>
+        <artifactId>aprox-booter-vertx</artifactId>
         <version>0.17.1-SNAPSHOT</version>
-        <type>pom</type>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox.embed.dep</groupId>
-        <artifactId>aprox-embedder-deps-savant</artifactId>
+        <groupId>org.commonjava.aprox.boot</groupId>
+        <artifactId>aprox-booter-jarex</artifactId>
         <version>0.17.1-SNAPSHOT</version>
-        <type>pom</type>
       </dependency>
       
       
@@ -678,6 +676,17 @@
       <dependency><groupId>com.googlecode.concurrentlinkedhashmap</groupId><artifactId>concurrentlinkedhashmap-lru</artifactId><version>1.3.1</version></dependency> <!-- type: jar -->
       <dependency><groupId>org.neo4j</groupId><artifactId>neo4j-jmx</artifactId><version>1.9.6</version></dependency> <!-- type: jar -->
       <dependency><groupId>com.google.code.gson</groupId><artifactId>gson</artifactId><version>2.2.2</version></dependency> <!-- type: jar -->
+      <dependency>
+        <groupId>org.commonjava.atservice</groupId>
+        <artifactId>atservice-annotation</artifactId>
+        <version>0.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.atservice</groupId>
+        <artifactId>atservice-processor</artifactId>
+        <version>0.1</version>
+        <scope>provided</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   
@@ -757,15 +766,5 @@
       </plugins>
     </pluginManagement>
   </build>
-  
-  <profiles>
-    <profile>
-      <id>run-its</id>
-      
-      <modules>
-        <module>embedder-tests</module>
-      </modules>
-    </profile>
-  </profiles>
   
 </project>

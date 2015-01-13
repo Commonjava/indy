@@ -20,7 +20,7 @@ import javax.inject.Inject;
 import net.sf.webdav.exceptions.WebdavException;
 
 import org.apache.commons.io.IOUtils;
-import org.commonjava.aprox.bind.vertx.boot.MasterRouter;
+import org.commonjava.aprox.bind.vertx.MasterRouter;
 import org.commonjava.aprox.bind.vertx.util.PathParam;
 import org.commonjava.aprox.bind.vertx.util.ResponseUtils;
 import org.commonjava.aprox.dotmaven.inject.DotMavenApp;

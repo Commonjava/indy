@@ -40,5 +40,9 @@
       <artifactId>aprox-bindings-vertx</artifactId>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox.boot</groupId>
+      <artifactId>aprox-booter-api</artifactId>
+    </dependency>
   </dependencies>
 </project>

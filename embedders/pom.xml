@@ -50,6 +50,10 @@
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-filer-default</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox.boot</groupId>
+      <artifactId>aprox-booter-vertx</artifactId>
+    </dependency>
     
     <dependency>
       <groupId>args4j</groupId>
@@ -59,6 +63,10 @@
       <groupId>org.jboss.weld.se</groupId>
       <artifactId>weld-se</artifactId>
       <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox.boot</groupId>
+      <artifactId>aprox-booter-vertx</artifactId>
     </dependency>
   </dependencies>
   
@@ -100,6 +108,10 @@
   <profiles>
     <profile>
       <id>run-its</id>
+
+      <modules>
+        <module>embedder-tests</module>
+      </modules>
       
       <dependencies>
         <dependency>

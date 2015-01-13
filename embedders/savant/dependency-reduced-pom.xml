@@ -24,12 +24,20 @@
           <plugins>
             <plugin>
               <artifactId>maven-surefire-plugin</artifactId>
+              <version>2.15</version>
               <configuration>
                 <dependenciesToScan>
                   <dependency>org.commonjava.aprox:aprox-ftests-core</dependency>
                   <dependency>org.commonjava.aprox:aprox-ftests-folo</dependency>
                   <dependency>org.commonjava.aprox:aprox-ftests-depgraph</dependency>
                 </dependenciesToScan>
+                <excludes>
+                  <exclude>**/*Fixture*.java</exclude>
+                  <exclude>**/fixture/*.java</exclude>
+                  <exclude>**/*Live*.java</exclude>
+                  <exclude>**/live/*.java</exclude>
+                  <exclude>**/live/**/*.java</exclude>
+                </excludes>
               </configuration>
             </plugin>
           </plugins>
@@ -39,10 +47,14 @@
         <dependency>
           <groupId>org.commonjava.aprox</groupId>
           <artifactId>aprox-ftests-depgraph</artifactId>
+          <version>0.17.1-SNAPSHOT</version>
+          <scope>test</scope>
         </dependency>
         <dependency>
           <groupId>org.commonjava.aprox</groupId>
           <artifactId>aprox-ftests-folo</artifactId>
+          <version>0.17.1-SNAPSHOT</version>
+          <scope>test</scope>
         </dependency>
       </dependencies>
     </profile>
@@ -71,12 +83,6 @@
           <groupId>org.jboss.weld.se</groupId>
         </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>log4j-over-slf4j</artifactId>
-      <version>1.7.4</version>
-      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
@@ -226,12 +232,6 @@
       <groupId>org.commonjava.maven.galley</groupId>
       <artifactId>galley-transport-filearc</artifactId>
       <version>0.6.8</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.atservice</groupId>
-      <artifactId>atservice-annotation</artifactId>
-      <version>0.1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -832,6 +832,36 @@
       <artifactId>commons-io</artifactId>
       <version>2.4</version>
       <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox.boot</groupId>
+      <artifactId>aprox-booter-vertx</artifactId>
+      <version>0.17.1-SNAPSHOT</version>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>weld-se-core</artifactId>
+          <groupId>org.jboss.weld.se</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox.boot</groupId>
+      <artifactId>aprox-booter-api</artifactId>
+      <version>0.17.1-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>log4j-over-slf4j</artifactId>
+      <version>1.7.4</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.atservice</groupId>
+      <artifactId>atservice-annotation</artifactId>
+      <version>0.1</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>args4j</groupId>

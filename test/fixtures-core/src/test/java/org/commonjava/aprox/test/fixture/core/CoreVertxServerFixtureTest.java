@@ -14,7 +14,7 @@ public class CoreVertxServerFixtureTest
     public void startAndStopWithNoOptions()
         throws Throwable
     {
-        final CoreVertxServerFixture fix = new CoreVertxServerFixture( temp );
+        final CoreServerFixture fix = new CoreServerFixture( temp );
         fix.start();
         fix.stop();
     }
