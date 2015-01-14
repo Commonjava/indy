@@ -92,6 +92,17 @@
                 <createDependencyReducedPom>true</createDependencyReducedPom>
                 <keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
                 <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+                <!--
+                <relocations>
+                  <relocation>
+                    <pattern>org.commonjava.aprox</pattern>
+                    <shadedPattern>org.commonjava.aprox.shaded</shadedPattern>
+                  </relocation>
+                </relocations>
+                <transformers>
+                  <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                </transformers>
+                -->
                 <artifactSet>
                   <includes>
                     <include>org.commonjava*:*</include>

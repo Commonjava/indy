@@ -10,11 +10,6 @@
  ******************************************************************************/
 package org.commonjava.aprox.boot.vertx;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
-
-import org.codehaus.plexus.interpolation.InterpolationException;
 import org.commonjava.aprox.action.AproxLifecycleException;
 import org.commonjava.aprox.action.AproxLifecycleManager;
 import org.commonjava.aprox.bind.vertx.MasterRouter;
@@ -28,8 +23,6 @@ import org.commonjava.atservice.annotation.Service;
 import org.commonjava.web.config.ConfigurationException;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.AsyncResult;
@@ -41,108 +34,47 @@ import org.vertx.java.core.http.HttpServer;
 public class VertxBooter
     implements WeldBootInterface
 {
-    private static final int ERR_CANT_CONFIGURE_APROX = 5;
-
-    private static final int ERR_CANT_START_APROX = 6;
-
-    protected static final int ERR_CANT_LISTEN = 7;
-
-    private static final int ERR_CANT_INIT_BOOTER = 8;
-
     public static void main( final String[] args )
     {
-        final String bootDef = System.getProperty( BOOT_DEFAULTS_PROP );
-        File bootDefaults = null;
-        if ( bootDef != null )
-        {
-            bootDefaults = new File( bootDef );
-        }
-
-        final BootOptions boot;
+        BootOptions boot;
         try
         {
-            final String aproxHome = System.getProperty( APROX_HOME_PROP, new File( "." ).getCanonicalPath() );
-
-            boot = new BootOptions( bootDefaults, aproxHome );
+            boot = BootOptions.loadFromSysprops();
         }
-        catch ( final IOException e )
-        {
-            System.err.printf( "ERROR LOADING BOOT DEFAULTS: %s.\nReason: %s\n\n", bootDefaults, e.getMessage() );
-            System.exit( ERR_CANT_LOAD_BOOT_DEFAULTS );
-            return;
-        }
-        catch ( final InterpolationException e )
-        {
-            System.err.printf( "ERROR RESOLVING BOOT DEFAULTS: %s.\nReason: %s\n\n", bootDefaults, e.getMessage() );
-            System.exit( ERR_CANT_INTERP_BOOT_DEFAULTS );
-            return;
-        }
-
-        final CmdLineParser parser = new CmdLineParser( boot );
-        boolean canStart = true;
-        try
-        {
-            parser.parseArgument( args );
-        }
-        catch ( final CmdLineException e )
+        catch ( final AproxBootException e )
         {
             System.err.printf( "ERROR: %s", e.getMessage() );
-            printUsage( parser, e );
-            System.exit( ERR_CANT_PARSE_ARGS );
+            System.exit( ERR_CANT_LOAD_BOOT_OPTIONS );
+            return;
         }
 
-        if ( boot.isHelp() )
+        try
         {
-            printUsage( parser, null );
-            canStart = false;
-        }
-
-        if ( canStart )
-        {
-            try
+            if ( boot.parseArgs( args ) )
             {
-                final VertxBooter booter = new VertxBooter();
-
-                System.out.println( "Starting AProx booter: " + booter );
-                final int result = booter.runAndWait( boot );
-                if ( result != 0 )
+                try
                 {
-                    System.exit( result );
+                    final VertxBooter booter = new VertxBooter();
+
+                    System.out.println( "Starting AProx booter: " + booter );
+                    final int result = booter.runAndWait( boot );
+                    if ( result != 0 )
+                    {
+                        System.exit( result );
+                    }
+                }
+                catch ( final AproxBootException e )
+                {
+                    System.err.printf( "ERROR INITIALIZING BOOTER: %s", e.getMessage() );
+                    System.exit( ERR_CANT_INIT_BOOTER );
                 }
             }
-            catch ( final AproxBootException e )
-            {
-                System.err.printf( "ERROR INITIALIZING BOOTER: %s", e.getMessage() );
-                System.exit( ERR_CANT_INIT_BOOTER );
-            }
         }
-    }
-
-    public static void printUsage( final CmdLineParser parser, final CmdLineException error )
-    {
-        if ( error != null )
+        catch ( final AproxBootException e )
         {
-            System.err.println( "Invalid option(s): " + error.getMessage() );
-            System.err.println();
+            System.err.printf( "ERROR: %s", e.getMessage() );
+            System.exit( ERR_CANT_PARSE_ARGS );
         }
-
-        System.err.println( "Usage: $0 [OPTIONS] [<target-path>]" );
-        System.err.println();
-        System.err.println();
-        // If we are running under a Linux shell COLUMNS might be available for the width
-        // of the terminal.
-        parser.setUsageWidth( ( System.getenv( "COLUMNS" ) == null ? 100 : Integer.valueOf( System.getenv( "COLUMNS" ) ) ) );
-        parser.printUsage( System.err );
-        System.err.println();
-    }
-
-    public static void setConfigPathProperty( final String config )
-    {
-        final Properties properties = System.getProperties();
-
-        System.out.printf( "\n\nUsing AProx configuration: %s\n", config );
-        properties.setProperty( AproxConfigFactory.CONFIG_PATH_PROP, config );
-        System.setProperties( properties );
     }
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -172,10 +104,7 @@ public class VertxBooter
 
         try
         {
-            if ( bootOptions.getConfig() != null )
-            {
-                setConfigPathProperty( bootOptions.getConfig() );
-            }
+            bootOptions.setSystemProperties();
 
             weld = new Weld();
             container = weld.initialize();
@@ -186,7 +115,7 @@ public class VertxBooter
         }
     }
 
-    private int runAndWait( final BootOptions bootOptions )
+    public int runAndWait( final BootOptions bootOptions )
         throws AproxBootException
     {
         start( bootOptions );
@@ -217,6 +146,7 @@ public class VertxBooter
         return container;
     }
 
+    @Override
     public BootOptions getBootOptions()
     {
         return bootOptions;

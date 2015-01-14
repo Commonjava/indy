@@ -1,14 +1,14 @@
 package org.commonjava.aprox.model.core.io;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
+import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
-import javax.inject.Singleton;
+import javax.inject.Named;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator.Feature;
@@ -18,7 +18,8 @@ import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-@Singleton
+@Alternative
+@Named
 public class AproxObjectMapper
     extends ObjectMapper
 {
@@ -46,12 +47,15 @@ public class AproxObjectMapper
         init();
     }
 
-    public AproxObjectMapper( final Collection<Module> additionalModules )
+    public AproxObjectMapper( final Iterable<Module> modules )
     {
         final Set<Module> mods = new HashSet<Module>();
         mods.add( new ApiSerializerModule() );
         mods.add( new ProjectVersionRefSerializerModule() );
-        mods.addAll( additionalModules );
+        for ( final Module module : mods )
+        {
+            mods.add( module );
+        }
         this.ctorModules = mods;
 
         init();

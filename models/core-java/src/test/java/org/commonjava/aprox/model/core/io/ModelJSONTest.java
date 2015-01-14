@@ -6,7 +6,6 @@ import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.model.core.HostedRepository;
-import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;

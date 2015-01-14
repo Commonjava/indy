@@ -1,5 +1,7 @@
 package org.commonjava.aprox.test.fixture.core;
 
+import java.io.IOException;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
@@ -7,7 +9,6 @@ import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.conf.AproxConfigFactory;
 import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.data.StoreEventDispatcher;
@@ -22,6 +23,7 @@ import org.commonjava.maven.galley.maven.parse.XMLInfrastructure;
 import org.commonjava.maven.galley.maven.spi.type.TypeMapper;
 import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
+import org.commonjava.web.config.ConfigurationException;
 import org.junit.rules.TemporaryFolder;
 
 @ApplicationScoped
@@ -29,9 +31,6 @@ public class CoreServerProvider
 {
 
     private final TemporaryFolder folder = new TemporaryFolder();
-
-    @Inject
-    private AproxConfigFactory factory;
 
     @Inject
     private DefaultAproxConfiguration.FeatureConfig aproxConfigFeature;
@@ -61,18 +60,27 @@ public class CoreServerProvider
 
     @PostConstruct
     public void init()
-        throws Exception
     {
-        folder.create();
-        this.nfc = new MemoryNotFoundCache();
-        this.dataFileManager =
-            new DataFileManager( new DataFileConfiguration( folder.newFolder( "aprox-data" ) ), dataFileEvents );
-        this.storeManager = new DataFileStoreDataManager( dataFileManager, objectMapper, storeDispatch );
-        this.storageConfig = new DefaultStorageProviderConfiguration( folder.newFolder( "aprox-storage" ) );
+        try
+        {
+            folder.create();
+            this.nfc = new MemoryNotFoundCache();
+            this.dataFileManager =
+                new DataFileManager( new DataFileConfiguration( folder.newFolder( "aprox-data" ) ), dataFileEvents );
+            this.storeManager = new DataFileStoreDataManager( dataFileManager, objectMapper, storeDispatch );
+            this.storageConfig = new DefaultStorageProviderConfiguration( folder.newFolder( "aprox-storage" ) );
 
-        this.config = aproxConfigFeature.getAproxConfig();
-        this.xml = new XMLInfrastructure();
-        this.typeMapper = new StandardTypeMapper();
+            this.config = aproxConfigFeature.getAproxConfig();
+            this.xml = new XMLInfrastructure();
+            this.typeMapper = new StandardTypeMapper();
+        }
+        catch ( IOException | ConfigurationException e )
+        {
+            throw new IllegalStateException( "Failed to start core server provider: " + e.getMessage(), e );
+        }
+        finally
+        {
+        }
     }
 
     @PreDestroy

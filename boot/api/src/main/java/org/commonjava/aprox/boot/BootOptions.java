@@ -19,6 +19,8 @@ import org.apache.commons.io.IOUtils;
 import org.codehaus.plexus.interpolation.InterpolationException;
 import org.codehaus.plexus.interpolation.PropertiesBasedValueSource;
 import org.codehaus.plexus.interpolation.StringSearchInterpolator;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
 public class BootOptions
@@ -62,7 +64,51 @@ public class BootOptions
 
     private Properties bootProps;
 
-    private final String aproxHome;
+    private String aproxHome;
+
+    public static final BootOptions loadFromSysprops()
+        throws AproxBootException
+    {
+        final String bootDef = System.getProperty( BootInterface.BOOT_DEFAULTS_PROP );
+        File bootDefaults = null;
+        if ( bootDef != null )
+        {
+            bootDefaults = new File( bootDef );
+        }
+
+        try
+        {
+            final String aproxHome =
+                System.getProperty( BootInterface.APROX_HOME_PROP, new File( "." ).getCanonicalPath() );
+
+            return new BootOptions( bootDefaults, aproxHome );
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxBootException( "ERROR LOADING BOOT DEFAULTS: %s.\nReason: %s\n\n", e, bootDefaults,
+                                          e.getMessage() );
+        }
+        catch ( final InterpolationException e )
+        {
+            throw new AproxBootException( "ERROR RESOLVING BOOT DEFAULTS: %s.\nReason: %s\n\n", e, bootDefaults,
+                                          e.getMessage() );
+        }
+    }
+
+    public void setSystemProperties()
+    {
+        final Properties properties = System.getProperties();
+
+        System.out.printf( "\n\nUsing AProx configuration: %s\n", config );
+        properties.setProperty( BootInterface.CONFIG_PATH_PROP, config );
+        properties.setProperty( BootInterface.APROX_HOME_PROP, aproxHome );
+        System.setProperties( properties );
+    }
+
+    public BootOptions()
+    {
+
+    }
 
     public BootOptions( final String aproxHome )
         throws IOException, InterpolationException
@@ -222,6 +268,67 @@ public class BootOptions
     public void setContextPath( final String contextPath )
     {
         this.contextPath = contextPath;
+    }
+
+    public boolean parseArgs( final String[] args )
+        throws AproxBootException
+    {
+        final CmdLineParser parser = new CmdLineParser( this );
+        boolean canStart = true;
+        try
+        {
+            parser.parseArgument( args );
+        }
+        catch ( final CmdLineException e )
+        {
+            throw new AproxBootException( "Failed to parse command-line args: %s", e, e.getMessage() );
+        }
+
+        if ( isHelp() )
+        {
+            printUsage( parser, null );
+            canStart = false;
+        }
+
+        return canStart;
+    }
+
+    public static void printUsage( final CmdLineParser parser, final CmdLineException error )
+    {
+        if ( error != null )
+        {
+            System.err.println( "Invalid option(s): " + error.getMessage() );
+            System.err.println();
+        }
+
+        System.err.println( "Usage: $0 [OPTIONS] [<target-path>]" );
+        System.err.println();
+        System.err.println();
+        // If we are running under a Linux shell COLUMNS might be available for the width
+        // of the terminal.
+        parser.setUsageWidth( ( System.getenv( "COLUMNS" ) == null ? 100 : Integer.valueOf( System.getenv( "COLUMNS" ) ) ) );
+        parser.printUsage( System.err );
+        System.err.println();
+    }
+
+    public String getAproxHome()
+    {
+        return aproxHome;
+    }
+
+    public void setAproxHome( final String aproxHome )
+    {
+        this.aproxHome = aproxHome;
+    }
+
+    public void setPort( final Integer port )
+    {
+        this.port = port;
+    }
+
+    public void setWorkers( final Integer workers )
+    {
+        this.workers = workers;
     }
 
 }

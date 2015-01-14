@@ -292,22 +292,16 @@
       <artifactId>maven-embedder</artifactId>
       <version>3.0.3</version>
       <scope>compile</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>maven-core</artifactId>
+          <groupId>org.apache.maven</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-settings</artifactId>
-      <version>3.0.3</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-core</artifactId>
-      <version>3.0.3</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-settings-builder</artifactId>
       <version>3.0.3</version>
       <scope>compile</scope>
     </dependency>
@@ -319,26 +313,8 @@
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
-      <artifactId>maven-aether-provider</artifactId>
-      <version>3.0.3</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.sonatype.aether</groupId>
-      <artifactId>aether-spi</artifactId>
-      <version>1.11</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.sonatype.aether</groupId>
-      <artifactId>aether-impl</artifactId>
-      <version>1.11</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
-      <version>3.0.3</version>
+      <version>3.0.4</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -346,6 +322,12 @@
       <artifactId>maven-compat</artifactId>
       <version>3.0.3</version>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>maven-core</artifactId>
+          <groupId>org.apache.maven</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.wagon</groupId>

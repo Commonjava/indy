@@ -29,32 +29,4 @@
     <module>jarex</module>
   </modules>
   
-  <dependencies>
-    <dependency>
-      <groupId>org.commonjava.atservice</groupId>
-      <artifactId>atservice-annotation</artifactId>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.commonjava.atservice</groupId>
-      <artifactId>atservice-processor</artifactId>
-    </dependency>
-  </dependencies>
-  
-  <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <configuration>
-            <source>${javaVersion}</source>
-            <target>${javaVersion}</target>
-            <annotationProcessors>
-              <annotationProcessor>org.commonjava.atservice.processor.ServiceAnnotationProcessor</annotationProcessor>
-            </annotationProcessors>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build>
 </project>

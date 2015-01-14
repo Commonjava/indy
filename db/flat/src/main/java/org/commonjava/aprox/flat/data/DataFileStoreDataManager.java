@@ -63,91 +63,99 @@ public class DataFileStoreDataManager
 
     @PostConstruct
     public void readDefinitions()
-        throws AproxDataException
     {
-        DataFile dir = manager.getDataFile( APROX_STORE, StoreType.hosted.singularEndpointName() );
-        final ChangeSummary summary =
-            new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                               "Reading definitions from disk, culling invalid definition files." );
-
-        String[] files = dir.list();
-        if ( files != null )
+        try
         {
-            for ( final String file : files )
+            DataFile dir = manager.getDataFile( APROX_STORE, StoreType.hosted.singularEndpointName() );
+            final ChangeSummary summary =
+                new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                   "Reading definitions from disk, culling invalid definition files." );
+
+            String[] files = dir.list();
+            if ( files != null )
             {
-                final DataFile f = dir.getChild( file );
-                try
+                for ( final String file : files )
                 {
-                    final String json = f.readString();
-                    final HostedRepository dp = serializer.readValue( json, HostedRepository.class );
-                    if ( dp == null )
+                    final DataFile f = dir.getChild( file );
+                    try
                     {
-                        f.delete( summary );
+                        final String json = f.readString();
+                        final HostedRepository dp = serializer.readValue( json, HostedRepository.class );
+                        if ( dp == null )
+                        {
+                            f.delete( summary );
+                        }
+                        else
+                        {
+                            storeHostedRepository( dp, summary );
+                        }
                     }
-                    else
+                    catch ( final IOException e )
                     {
-                        storeHostedRepository( dp, summary );
+                        logger.error( String.format( "Failed to load deploy point: %s. Reason: %s", f, e.getMessage() ),
+                                      e );
                     }
                 }
-                catch ( final IOException e )
+            }
+
+            dir = manager.getDataFile( APROX_STORE, StoreType.remote.singularEndpointName() );
+            files = dir.list();
+            if ( files != null )
+            {
+                for ( final String file : files )
                 {
-                    logger.error( String.format( "Failed to load deploy point: %s. Reason: %s", f, e.getMessage() ), e );
+                    final DataFile f = dir.getChild( file );
+                    try
+                    {
+                        final String json = f.readString();
+                        final RemoteRepository r = serializer.readValue( json, RemoteRepository.class );
+                        if ( r == null )
+                        {
+                            f.delete( summary );
+                        }
+                        else
+                        {
+                            storeRemoteRepository( r, summary );
+                        }
+                    }
+                    catch ( final IOException e )
+                    {
+                        logger.error( String.format( "Failed to load repository: %s. Reason: %s", f, e.getMessage() ),
+                                      e );
+                    }
+                }
+            }
+
+            dir = manager.getDataFile( APROX_STORE, StoreType.group.singularEndpointName() );
+            files = dir.list();
+            if ( files != null )
+            {
+                for ( final String file : files )
+                {
+                    final DataFile f = dir.getChild( file );
+                    try
+                    {
+                        final String json = f.readString();
+                        final Group g = serializer.readValue( json, Group.class );
+                        if ( g == null )
+                        {
+                            f.delete( summary );
+                        }
+                        else
+                        {
+                            storeGroup( g, summary );
+                        }
+                    }
+                    catch ( final IOException e )
+                    {
+                        logger.error( String.format( "Failed to load group: %s. Reason: %s", f, e.getMessage() ), e );
+                    }
                 }
             }
         }
-
-        dir = manager.getDataFile( APROX_STORE, StoreType.remote.singularEndpointName() );
-        files = dir.list();
-        if ( files != null )
+        catch ( final AproxDataException e )
         {
-            for ( final String file : files )
-            {
-                final DataFile f = dir.getChild( file );
-                try
-                {
-                    final String json = f.readString();
-                    final RemoteRepository r = serializer.readValue( json, RemoteRepository.class );
-                    if ( r == null )
-                    {
-                        f.delete( summary );
-                    }
-                    else
-                    {
-                        storeRemoteRepository( r, summary );
-                    }
-                }
-                catch ( final IOException e )
-                {
-                    logger.error( String.format( "Failed to load repository: %s. Reason: %s", f, e.getMessage() ), e );
-                }
-            }
-        }
-
-        dir = manager.getDataFile( APROX_STORE, StoreType.group.singularEndpointName() );
-        files = dir.list();
-        if ( files != null )
-        {
-            for ( final String file : files )
-            {
-                final DataFile f = dir.getChild( file );
-                try
-                {
-                    final String json = f.readString();
-                    final Group g = serializer.readValue( json, Group.class );
-                    if ( g == null )
-                    {
-                        f.delete( summary );
-                    }
-                    else
-                    {
-                        storeGroup( g, summary );
-                    }
-                }
-                catch ( final IOException e )
-                {
-                    logger.error( String.format( "Failed to load group: %s. Reason: %s", f, e.getMessage() ), e );
-                }
-            }
+            throw new IllegalStateException( "Failed to start store data manager: " + e.getMessage(), e );
         }
     }
 

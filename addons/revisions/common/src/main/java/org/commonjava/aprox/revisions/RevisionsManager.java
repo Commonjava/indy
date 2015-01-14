@@ -63,24 +63,33 @@ public class RevisionsManager
 
     @PostConstruct
     public void setup()
-        throws GitSubsystemException, IOException
     {
-        final File dataDir = dataFileManager.getDetachedDataBasedir();
-        final File gitignore = new File( dataDir, ".gitignore" );
-
-        dataDir.mkdirs();
-        FileUtils.write( gitignore, join( DATA_DIR_GITIGNORES, "\n" ) );
-
-        final GitConfig dataConf = new GitConfig( dataDir, revisionsConfig.getDataUpstreamUrl(), true );
-        dataFileGit = new GitManager( dataConf );
-
-        final ChangeSummary summary =
-            new ChangeSummary( ChangeSummary.SYSTEM_USER, "Committing files modified outside of the AProx UI." );
-        dataFileGit.commitModifiedFiles( summary );
-
-        if ( revisionsConfig.isPushEnabled() )
+        try
         {
-            dataFileGit.pushUpdates();
+            final File dataDir = dataFileManager.getDetachedDataBasedir();
+            final File gitignore = new File( dataDir, ".gitignore" );
+
+            dataDir.mkdirs();
+            FileUtils.write( gitignore, join( DATA_DIR_GITIGNORES, "\n" ) );
+
+            final GitConfig dataConf = new GitConfig( dataDir, revisionsConfig.getDataUpstreamUrl(), true );
+            dataFileGit = new GitManager( dataConf );
+
+            final ChangeSummary summary =
+                new ChangeSummary( ChangeSummary.SYSTEM_USER, "Committing files modified outside of the AProx UI." );
+            dataFileGit.commitModifiedFiles( summary );
+
+            if ( revisionsConfig.isPushEnabled() )
+            {
+                dataFileGit.pushUpdates();
+            }
+        }
+        catch ( GitSubsystemException | IOException e )
+        {
+            throw new IllegalStateException( "Failed to start revisions manager: " + e.getMessage(), e );
+        }
+        finally
+        {
         }
     }
 
