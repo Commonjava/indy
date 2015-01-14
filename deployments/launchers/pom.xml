@@ -13,7 +13,7 @@
 
   <parent>
     <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-parent</artifactId>
+    <artifactId>aprox-deployments</artifactId>
     <version>0.17.1-SNAPSHOT</version>
   </parent>
   
