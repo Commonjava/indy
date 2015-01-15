@@ -12,8 +12,8 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.commonjava.aprox.embed</groupId>
-    <artifactId>aprox-embedders</artifactId>
+    <groupId>org.commonjava.aprox</groupId>
+    <artifactId>aprox-parent</artifactId>
     <version>0.17.1-SNAPSHOT</version>
   </parent>
   

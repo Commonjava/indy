@@ -808,4 +808,13 @@
     </pluginManagement>
   </build>
   
+  <profiles>
+    <profile>
+      <id>run-its</id>
+      <modules>
+        <module>embedder-tests</module>
+      </modules>
+    </profile>
+  </profiles>
+  
 </project>

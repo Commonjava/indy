@@ -120,10 +120,6 @@
     <profile>
       <id>run-its</id>
 
-      <modules>
-        <module>embedder-tests</module>
-      </modules>
-      
       <dependencies>
         <dependency>
           <groupId>org.commonjava.aprox</groupId>
