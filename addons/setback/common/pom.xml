@@ -14,7 +14,7 @@
   <parent>
     <groupId>org.commonjava.aprox</groupId>
     <artifactId>aprox-setback</artifactId>
-    <version>0.18.0</version>
+    <version>0.18.1-SNAPSHOT</version>
   </parent>
   <artifactId>aprox-setback-common</artifactId>
   <name>AProx :: Add-Ons :: Set-Back :: Common</name>
