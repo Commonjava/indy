@@ -22,7 +22,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpGet;
-import org.commonjava.aprox.subsys.http.AproxHttpConnectionManager;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
 import org.commonjava.maven.galley.auth.MemoryPasswordManager;
 import org.junit.rules.ExternalResource;
@@ -51,7 +50,7 @@ public class HttpTestFixture
             throw new RuntimeException( "Failed to setup temp folder.", e );
         }
 
-        http = new AproxHttpProvider( new MemoryPasswordManager(), new AproxHttpConnectionManager( true ) );
+        http = new AproxHttpProvider( new MemoryPasswordManager() );
         http.setup();
     }
 

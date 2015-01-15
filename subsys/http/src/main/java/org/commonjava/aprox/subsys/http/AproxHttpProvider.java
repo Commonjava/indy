@@ -14,13 +14,13 @@ import static org.commonjava.aprox.util.LocationUtils.toLocation;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.client.HttpClient;
-import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.model.core.RemoteRepository;
@@ -38,17 +38,13 @@ public class AproxHttpProvider
 
     private PasswordManager passwordManager;
 
-    @Inject
-    private ClientConnectionManager connectionManager;
-
     protected AproxHttpProvider()
     {
     }
 
-    public AproxHttpProvider( final PasswordManager passwordManager, final ClientConnectionManager connectionManager )
+    public AproxHttpProvider( final PasswordManager passwordManager )
     {
         this.passwordManager = passwordManager;
-        this.connectionManager = connectionManager;
         setup();
     }
 
@@ -60,27 +56,28 @@ public class AproxHttpProvider
             passwordManager = new AttributePasswordManager();
         }
 
-        if ( connectionManager == null )
-        {
-            connectionManager = new AproxHttpConnectionManager( true );
-        }
-
-        http = new HttpImpl( passwordManager, connectionManager );
+        http = new HttpImpl( passwordManager );
     }
 
     @Produces
+    @Default
+    @Singleton
     public PasswordManager getPasswordManager()
     {
         return passwordManager;
     }
 
     @Produces
+    @Default
+    @Singleton
     public Http getHttpComponent()
     {
         return http;
     }
 
     @Produces
+    @Default
+    @Singleton
     public HttpClient getClient()
     {
         return http.getClient();

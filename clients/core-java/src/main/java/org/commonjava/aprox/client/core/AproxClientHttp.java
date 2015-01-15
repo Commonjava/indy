@@ -127,18 +127,28 @@ public class AproxClientHttp
                 public T handleResponse( final HttpResponse response )
                     throws ClientProtocolException, IOException
                 {
-                    final StatusLine sl = response.getStatusLine();
-                    if ( sl.getStatusCode() != 200 )
+                    try
                     {
-                        holder.setError( new AproxClientException(
-                                                                   "Error retrieving %s from: %s. Status was: %d %s (%s)",
-                                                                   type.getSimpleName(), path, sl.getStatusCode(),
-                                                                   sl.getReasonPhrase(), sl.getProtocolVersion() ) );
-                        return null;
-                    }
+                        final StatusLine sl = response.getStatusLine();
+                        if ( sl.getStatusCode() != 200 )
+                        {
+                            holder.setError( new AproxClientException(
+                                                                       "Error retrieving %s from: %s. Status was: %d %s (%s)",
+                                                                       type.getSimpleName(), path, sl.getStatusCode(),
+                                                                       sl.getReasonPhrase(), sl.getProtocolVersion() ) );
+                            return null;
+                        }
 
-                    return objectMapper.readValue( response.getEntity()
-                                                           .getContent(), type );
+                        return objectMapper.readValue( response.getEntity()
+                                                               .getContent(), type );
+                    }
+                    finally
+                    {
+                        if ( response instanceof CloseableHttpResponse )
+                        {
+                            closeQuietly( (CloseableHttpResponse) response );
+                        }
+                    }
                 }
             } );
         }
@@ -170,6 +180,8 @@ public class AproxClientHttp
                 public T handleResponse( final HttpResponse response )
                     throws ClientProtocolException, IOException
                 {
+                    try
+                    {
                     final StatusLine sl = response.getStatusLine();
                     if ( sl.getStatusCode() != 200 )
                     {
@@ -184,6 +196,14 @@ public class AproxClientHttp
                                                                     .getContent(), typeRef );
 
                     return value;
+                    }
+                    finally
+                    {
+                        if ( response instanceof CloseableHttpResponse )
+                        {
+                            closeQuietly( (CloseableHttpResponse) response );
+                        }
+                    }
                 }
             } );
         }
@@ -222,6 +242,10 @@ public class AproxClientHttp
         catch ( final IOException e )
         {
             throw new AproxClientException( "AProx request failed: %s", e, e.getMessage() );
+        }
+        finally
+        {
+            closeQuietly( response );
         }
     }
 
@@ -326,6 +350,8 @@ public class AproxClientHttp
                 public T handleResponse( final HttpResponse response )
                     throws ClientProtocolException, IOException
                 {
+                    try
+                    {
                     final StatusLine sl = response.getStatusLine();
                     if ( sl.getStatusCode() != responseCode )
                     {
@@ -338,6 +364,14 @@ public class AproxClientHttp
 
                     return objectMapper.readValue( response.getEntity()
                                                            .getContent(), type );
+                    }
+                    finally
+                    {
+                        if ( response instanceof CloseableHttpResponse )
+                        {
+                            closeQuietly( (CloseableHttpResponse) response );
+                        }
+                    }
                 }
             } );
         }
@@ -380,6 +414,8 @@ public class AproxClientHttp
                 public T handleResponse( final HttpResponse response )
                     throws ClientProtocolException, IOException
                 {
+                    try
+                    {
                     final StatusLine sl = response.getStatusLine();
                     if ( sl.getStatusCode() != responseCode )
                     {
@@ -392,6 +428,14 @@ public class AproxClientHttp
 
                     return objectMapper.readValue( response.getEntity()
                                                            .getContent(), typeRef );
+                    }
+                    finally
+                    {
+                        if ( response instanceof CloseableHttpResponse )
+                        {
+                            closeQuietly( (CloseableHttpResponse) response );
+                        }
+                    }
                 }
             } );
         }
