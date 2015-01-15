@@ -66,7 +66,7 @@ for repo in ${REPOS}
         cd ${repo}
         git config credential.helper store
         git pull
-        cd -
+        cd $WORKSPACE
         echo
     else
         echo -e "Cloning ${repo}"
