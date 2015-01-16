@@ -74,6 +74,9 @@
     <module>uis</module>
     <module>ftests</module>
     <module>clients</module>
+    
+    <!-- TODO: put in profile, figure out why release version-adjustment isn't working in profile -->
+    <module>embedder-tests</module>
   </modules>
   
   <dependencyManagement>
@@ -821,7 +824,9 @@
     <profile>
       <id>run-its</id>
       <modules>
+        <!--
         <module>embedder-tests</module>
+        -->
       </modules>
     </profile>
   </profiles>
