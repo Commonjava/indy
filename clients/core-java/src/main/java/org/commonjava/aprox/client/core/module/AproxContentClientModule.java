@@ -10,6 +10,8 @@ import org.commonjava.aprox.client.core.AproxClientModule;
 import org.commonjava.aprox.client.core.helper.PathInfo;
 import org.commonjava.aprox.client.core.util.ResponseManagingInputStream;
 import org.commonjava.aprox.client.core.util.UrlUtils;
+import org.commonjava.aprox.model.core.StoreType;
+import org.commonjava.aprox.model.core.dto.DirectoryListingDTO;
 
 public class AproxContentClientModule
     extends AproxClientModule
