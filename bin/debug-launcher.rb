@@ -43,7 +43,7 @@ class Launcher
     launcher = config[:flavor]
     puts "Launching: #{launcher}"
 
-    target = File.join( BASEDIR, 'launchers', launcher, 'target' )
+    target = File.join( BASEDIR, 'deployments/launchers', launcher, 'target' )
     launch_dir = File.join(target, "aprox" )
 
     if config[:clean]
