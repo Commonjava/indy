@@ -26,11 +26,8 @@ import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.core.type.TypeReference;
 
 public class AproxClientHttp
 {
@@ -245,7 +242,8 @@ public class AproxClientHttp
         }
         finally
         {
-            closeQuietly( response );
+            // DO NOT CLOSE!!!! We're handing off control of the response to the caller!
+            //            closeQuietly( response );
         }
     }
 

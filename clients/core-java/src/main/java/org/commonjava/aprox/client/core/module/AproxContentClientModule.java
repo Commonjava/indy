@@ -10,8 +10,6 @@ import org.commonjava.aprox.client.core.AproxClientModule;
 import org.commonjava.aprox.client.core.helper.PathInfo;
 import org.commonjava.aprox.client.core.util.ResponseManagingInputStream;
 import org.commonjava.aprox.client.core.util.UrlUtils;
-import org.commonjava.aprox.model.core.StoreType;
-import org.commonjava.aprox.model.core.dto.DirectoryListingDTO;
 
 public class AproxContentClientModule
     extends AproxClientModule
@@ -26,8 +24,7 @@ public class AproxContentClientModule
             p += "/";
         }
 
-        return http.get( UrlUtils.buildUrl( type.singularEndpointName(), name, p ),
-                         DirectoryListingDTO.class );
+        return http.get( UrlUtils.buildUrl( type.singularEndpointName(), name, p ), DirectoryListingDTO.class );
     }
 
     public void delete( final StoreType type, final String name, final String path )
@@ -52,8 +49,7 @@ public class AproxContentClientModule
     public PathInfo getInfo( final StoreType type, final String name, final String path )
         throws AproxClientException
     {
-        final Map<String, String> headers =
- http.head( UrlUtils.buildUrl( type.singularEndpointName(), name, path ) );
+        final Map<String, String> headers = http.head( UrlUtils.buildUrl( type.singularEndpointName(), name, path ) );
         return new PathInfo( headers );
     }
 
