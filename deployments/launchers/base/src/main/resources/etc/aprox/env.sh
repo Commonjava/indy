@@ -1,2 +1,2 @@
 
-MAIN_CLASS=org.commonjava.aprox.bind.vertx.boot.Booter
+MAIN_CLASS=org.commonjava.aprox.boot.vertx.VertxBooter
