@@ -113,4 +113,7 @@ public interface DownloadManager
 
     Transfer getStorageReference( final ArtifactStore store, final String... path );
 
+    List<Transfer> listRecursively( StoreKey src, String startPath )
+        throws AproxWorkflowException;
+
 }

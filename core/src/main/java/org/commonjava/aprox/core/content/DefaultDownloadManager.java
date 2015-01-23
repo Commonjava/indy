@@ -656,4 +656,41 @@ public class DefaultDownloadManager
 
     }
 
+    @Override
+    public List<Transfer> listRecursively( final StoreKey src, final String startPath )
+        throws AproxWorkflowException
+    {
+        final List<Transfer> result = new ArrayList<>();
+        final Transfer transfer = getStorageReference( src, startPath );
+        recurseListing( transfer, result );
+
+        return result;
+    }
+
+    private void recurseListing( final Transfer transfer, final List<Transfer> result )
+        throws AproxWorkflowException
+    {
+        if ( transfer.isDirectory() )
+        {
+            try
+            {
+                final String[] children = transfer.list();
+                for ( final String child : children )
+                {
+                    final Transfer childTransfer = transfer.getChild( child );
+                    recurseListing( childTransfer, result );
+                }
+            }
+            catch ( final IOException e )
+            {
+                throw new AproxWorkflowException( "Failed to list children of: %s. Reason: %s", e, transfer,
+                                                  e.getMessage() );
+            }
+        }
+        else if ( transfer.exists() )
+        {
+            result.add( transfer );
+        }
+    }
+
 }

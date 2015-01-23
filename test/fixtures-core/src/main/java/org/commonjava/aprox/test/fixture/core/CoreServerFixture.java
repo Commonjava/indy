@@ -30,6 +30,8 @@ public class CoreServerFixture
 
     private BootStatus status;
 
+    private TemporaryFolder temp;
+
     public CoreServerFixture( final TemporaryFolder folder )
         throws AproxBootException
     {
@@ -46,7 +48,10 @@ public class CoreServerFixture
     public CoreServerFixture()
         throws AproxBootException
     {
-        this( newTemporaryFolder() );
+        this.booter = BootFinder.find();
+        this.temp = newTemporaryFolder();
+        this.options = newBootOptions( null, temp.newFolder( "aprox-home." )
+                                                 .getAbsolutePath() );
     }
 
     public CoreServerFixture( final BootInterface booter, final File bootDefaults, final File aproxHome )
@@ -102,6 +107,11 @@ public class CoreServerFixture
         {
             logger.info( "\n\n\n\nAProx SHUTTING DOWN\n\n\n" );
             booter.stop();
+        }
+
+        if ( temp != null )
+        {
+            temp.delete();
         }
     }
 

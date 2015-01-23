@@ -22,7 +22,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.commonjava.aprox.conf.AbstractAproxMapConfig;
 import org.commonjava.aprox.conf.AproxConfigClassInfo;
 import org.commonjava.aprox.conf.AproxConfigFactory;
@@ -63,9 +62,9 @@ public class DefaultAproxConfigFactory
     {
         setSystemProperties();
 
-        logger.info( "\n\n\n\n[CONFIG] Reading AProx configuration in: '{}'\n\nfrom:\n\n  {}\n\nAdding configuration section listeners:",
+        logger.info( "\n\n\n\n[CONFIG] Reading AProx configuration in: '{}'\n\nAdding configuration section listeners:",
                      Thread.currentThread()
-                           .getName(), StringUtils.join( new RuntimeException( "Diagnostic trace:" ).getStackTrace(), "\n  " ) );
+                           .getName() );
 
         for ( final AproxConfigClassInfo section : configSections )
         {
@@ -171,7 +170,7 @@ public class DefaultAproxConfigFactory
 
     private String configPath( final String configPath )
     {
-        if ( configPath != null && !configPath.equals(""))
+        if ( configPath != null && !configPath.equals( "" ) )
         {
             return configPath;
         }
@@ -202,7 +201,7 @@ public class DefaultAproxConfigFactory
         System.setProperty( AproxConfigFactory.CONFIG_PATH_PROP, confPath );
 
         /* Set config dir */
-        final String confDir = System.getProperty( AproxConfigFactory.CONFIG_DIR_PROP);
+        final String confDir = System.getProperty( AproxConfigFactory.CONFIG_DIR_PROP );
         if ( confDir == null )
         {
             final File f = new File( confPath );

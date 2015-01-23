@@ -17,6 +17,11 @@ public class AproxContentClientModule
     extends AproxClientModule
 {
 
+    public String contentUrl( final StoreType type, final String name, final String path )
+    {
+        return UrlUtils.buildUrl( type.singularEndpointName(), name, path );
+    }
+
     public DirectoryListingDTO listContents( final StoreType type, final String name, final String path )
         throws AproxClientException
     {
@@ -26,32 +31,32 @@ public class AproxContentClientModule
             p += "/";
         }
 
-        return http.get( UrlUtils.buildUrl( type.singularEndpointName(), name, p ), DirectoryListingDTO.class );
+        return http.get( contentUrl( type, name, p ), DirectoryListingDTO.class );
     }
 
     public void delete( final StoreType type, final String name, final String path )
         throws AproxClientException
     {
-        http.delete( UrlUtils.buildUrl( type.singularEndpointName(), name, path ) );
+        http.delete( contentUrl( type, name, path ) );
     }
 
     public boolean exists( final StoreType type, final String name, final String path )
         throws AproxClientException
     {
-        return http.exists( UrlUtils.buildUrl( type.singularEndpointName(), name, path ) );
+        return http.exists( contentUrl( type, name, path ) );
     }
 
     public PathInfo store( final StoreType type, final String name, final String path, final InputStream stream )
         throws AproxClientException
     {
-        http.putWithStream( UrlUtils.buildUrl( type.singularEndpointName(), name, path ), stream );
+        http.putWithStream( contentUrl( type, name, path ), stream );
         return getInfo( type, name, path );
     }
 
     public PathInfo getInfo( final StoreType type, final String name, final String path )
         throws AproxClientException
     {
-        final Map<String, String> headers = http.head( UrlUtils.buildUrl( type.singularEndpointName(), name, path ) );
+        final Map<String, String> headers = http.head( contentUrl( type, name, path ) );
         return new PathInfo( headers );
     }
 
@@ -59,7 +64,7 @@ public class AproxContentClientModule
         throws AproxClientException
     {
         final CloseableHttpResponse response =
-            http.getRaw( UrlUtils.buildUrl( type.singularEndpointName(), name, path ) );
+ http.getRaw( contentUrl( type, name, path ) );
 
         if ( response.getStatusLine()
                      .getStatusCode() != 200 )

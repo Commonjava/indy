@@ -393,6 +393,32 @@
         <scope>provided</scope>
       </dependency>
       <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-promote-vertx</artifactId>
+        <version>0.18.4-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-ftests-promote</artifactId>
+        <version>0.18.4-SNAPSHOT</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-promote-client-java</artifactId>
+        <version>0.18.4-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-promote-model-java</artifactId>
+        <version>0.18.4-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-promote-common</artifactId>
+        <version>0.18.4-SNAPSHOT</version>
+      </dependency>
+      <dependency>
         <groupId>org.commonjava.aprox.embed</groupId>
         <artifactId>aprox-embedder-min</artifactId>
         <version>0.18.4-SNAPSHOT</version>

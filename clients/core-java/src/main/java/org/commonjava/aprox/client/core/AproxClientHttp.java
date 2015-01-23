@@ -326,13 +326,13 @@ public class AproxClientHttp
         return true;
     }
 
-    public <T> T postWithResponse( final String path, final T value, final Class<T> type )
+    public <T> T postWithResponse( final String path, final Object value, final Class<T> type )
         throws AproxClientException
     {
         return postWithResponse( path, value, type, HttpStatus.SC_CREATED );
     }
 
-    public <T> T postWithResponse( final String path, final T value, final Class<T> type, final int responseCode )
+    public <T> T postWithResponse( final String path, final Object value, final Class<T> type, final int responseCode )
         throws AproxClientException
     {
         checkConnected();
@@ -389,13 +389,13 @@ public class AproxClientHttp
         return result;
     }
 
-    public <T> T postWithResponse( final String path, final T value, final TypeReference<T> typeRef )
+    public <T> T postWithResponse( final String path, final Object value, final TypeReference<T> typeRef )
         throws AproxClientException
     {
         return postWithResponse( path, value, typeRef, HttpStatus.SC_CREATED );
     }
 
-    public <T> T postWithResponse( final String path, final T value, final TypeReference<T> typeRef,
+    public <T> T postWithResponse( final String path, final Object value, final TypeReference<T> typeRef,
                                    final int responseCode )
         throws AproxClientException
     {
