@@ -182,20 +182,20 @@ public class AproxClientHttp
                 {
                     try
                     {
-                    final StatusLine sl = response.getStatusLine();
-                    if ( sl.getStatusCode() != 200 )
-                    {
-                        holder.setError( new AproxClientException(
-                                                                   "Error retrieving %s from: %s. Status was: %d %s (%s)",
-                                                                   typeRef.getType(), path, sl.getStatusCode(),
-                                                                   sl.getReasonPhrase(), sl.getProtocolVersion() ) );
-                        return null;
-                    }
+                        final StatusLine sl = response.getStatusLine();
+                        if ( sl.getStatusCode() != 200 )
+                        {
+                            holder.setError( new AproxClientException(
+                                                                       "Error retrieving %s from: %s. Status was: %d %s (%s)",
+                                                                       typeRef.getType(), path, sl.getStatusCode(),
+                                                                       sl.getReasonPhrase(), sl.getProtocolVersion() ) );
+                            return null;
+                        }
 
-                    final T value = objectMapper.readValue( response.getEntity()
-                                                                    .getContent(), typeRef );
+                        final T value = objectMapper.readValue( response.getEntity()
+                                                                        .getContent(), typeRef );
 
-                    return value;
+                        return value;
                     }
                     finally
                     {
@@ -353,18 +353,18 @@ public class AproxClientHttp
                 {
                     try
                     {
-                    final StatusLine sl = response.getStatusLine();
-                    if ( sl.getStatusCode() != responseCode )
-                    {
-                        holder.setError( new AproxClientException(
-                                                                   "Error retrieving %s from: %s. Status was: %d %s (%s)",
-                                                                   type.getSimpleName(), path, sl.getStatusCode(),
-                                                                   sl.getReasonPhrase(), sl.getProtocolVersion() ) );
-                        return null;
-                    }
+                        final StatusLine sl = response.getStatusLine();
+                        if ( sl.getStatusCode() != responseCode )
+                        {
+                            holder.setError( new AproxClientException(
+                                                                       "Error retrieving %s from: %s. Status was: %d %s (%s)",
+                                                                       type.getSimpleName(), path, sl.getStatusCode(),
+                                                                       sl.getReasonPhrase(), sl.getProtocolVersion() ) );
+                            return null;
+                        }
 
-                    return objectMapper.readValue( response.getEntity()
-                                                           .getContent(), type );
+                        return objectMapper.readValue( response.getEntity()
+                                                               .getContent(), type );
                     }
                     finally
                     {
@@ -417,18 +417,18 @@ public class AproxClientHttp
                 {
                     try
                     {
-                    final StatusLine sl = response.getStatusLine();
-                    if ( sl.getStatusCode() != responseCode )
-                    {
-                        holder.setError( new AproxClientException(
-                                                                   "Error retrieving %s from: %s. Status was: %d %s (%s)",
-                                                                   typeRef.getType(), path, sl.getStatusCode(),
-                                                                   sl.getReasonPhrase(), sl.getProtocolVersion() ) );
-                        return null;
-                    }
+                        final StatusLine sl = response.getStatusLine();
+                        if ( sl.getStatusCode() != responseCode )
+                        {
+                            holder.setError( new AproxClientException(
+                                                                       "Error retrieving %s from: %s. Status was: %d %s (%s)",
+                                                                       typeRef.getType(), path, sl.getStatusCode(),
+                                                                       sl.getReasonPhrase(), sl.getProtocolVersion() ) );
+                            return null;
+                        }
 
-                    return objectMapper.readValue( response.getEntity()
-                                                           .getContent(), typeRef );
+                        return objectMapper.readValue( response.getEntity()
+                                                               .getContent(), typeRef );
                     }
                     finally
                     {

@@ -42,6 +42,11 @@ public class StorageDeletionListener
         try
         {
             final String[] list = txfr.list();
+            if ( list == null )
+            {
+                return;
+            }
+
             for ( final String fname : list )
             {
                 final Transfer child = txfr.getChild( fname );

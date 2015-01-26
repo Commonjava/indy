@@ -72,6 +72,14 @@
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-folo-common</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-promote-vertx</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-promote-common</artifactId>
+    </dependency>
   </dependencies>
   
   <build>
@@ -105,6 +113,9 @@
             <plugin>
               <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                  <forkCount>4</forkCount>
+                  <reuseForks>false</reuseForks>
+                  <redirectTestOutputToFile>true</redirectTestOutputToFile>
                   <dependenciesToScan>
                     <dependency>org.commonjava.aprox:aprox-ftests-core</dependency>
                     <dependency>org.commonjava.aprox:aprox-ftests-folo</dependency>

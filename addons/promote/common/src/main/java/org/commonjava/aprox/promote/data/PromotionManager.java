@@ -100,7 +100,7 @@ public class PromotionManager
             return new PromoteResult( request, pending, Collections.<String> emptySet(), null );
         }
 
-        return runPromotions( request, pending, new HashSet<String>(), contents );
+        return runPromotions( request, pending, Collections.<String> emptySet(), contents );
     }
 
     /**
@@ -146,7 +146,15 @@ public class PromotionManager
         final List<Transfer> contents = getTransfersForPaths( result.getRequest()
                                                                     .getTarget(), result.getCompletedPaths() );
         final Set<String> completed = result.getCompletedPaths();
-        final Set<String> pending = result.getPendingPaths();
+        if ( completed == null || completed.isEmpty() )
+        {
+            result.setError( null );
+            return result;
+        }
+
+        Set<String> pending = result.getPendingPaths();
+        pending = pending == null ? new HashSet<String>() : new HashSet<String>( pending );
+
         String error = null;
         final boolean copyToSource = result.getRequest()
                                            .isPurgeSource();
@@ -207,6 +215,11 @@ public class PromotionManager
     private PromoteResult runPromotions( final PromoteRequest request, final Set<String> pending,
                                          final Set<String> prevComplete, final List<Transfer> contents )
     {
+        if ( pending == null || pending.isEmpty() )
+        {
+            return new PromoteResult( request, pending, prevComplete, null );
+        }
+
         final Set<String> complete = prevComplete == null ? new HashSet<String>() : new HashSet<>( prevComplete );
 
         String error = null;

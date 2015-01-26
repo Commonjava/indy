@@ -70,7 +70,7 @@ public class AproxContentClientModule
                      .getStatusCode() != 200 )
         {
             IOUtils.closeQuietly( response );
-            throw new AproxClientException( "Response returned status: %d.", response.getStatusLine() );
+            throw new AproxClientException( "Response returned status: %s.", response.getStatusLine() );
         }
 
         return new ResponseManagingInputStream( response );

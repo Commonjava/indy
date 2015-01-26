@@ -14,7 +14,7 @@
   <parent>
     <groupId>org.commonjava</groupId>
     <artifactId>commonjava</artifactId>
-    <version>4</version>
+    <version>5-SNAPSHOT</version>
   </parent>
   
   <groupId>org.commonjava.aprox</groupId>
@@ -44,7 +44,7 @@
     <cartoVersion>0.8.1</cartoVersion>
     <bomVersion>14</bomVersion>
     <webdavVersion>3.1.1</webdavVersion>
-    <vabrVersion>1.12</vabrVersion>
+    <vabrVersion>1.13-SNAPSHOT</vabrVersion>
     
     <vertx.testtools.version>2.0.0-final</vertx.testtools.version>
   </properties>

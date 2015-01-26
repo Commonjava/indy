@@ -2,7 +2,6 @@ package org.commonjava.aprox.promote.bind.vertx;
 
 import java.io.IOException;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
@@ -10,9 +9,11 @@ import org.commonjava.aprox.promote.data.PromotionException;
 import org.commonjava.aprox.promote.data.PromotionManager;
 import org.commonjava.aprox.promote.model.PromoteRequest;
 import org.commonjava.aprox.promote.model.PromoteResult;
+import org.commonjava.aprox.util.ApplicationContent;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
+import org.commonjava.vertx.vabr.types.Method;
 import org.commonjava.vertx.vabr.util.Respond;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +24,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Handles( "/promotion" )
-@ApplicationScoped
 public class PromoteResource
     implements RequestHandler
 {
@@ -36,10 +36,10 @@ public class PromoteResource
     @Inject
     private ObjectMapper mapper;
 
-    @Route( path = "/promote" )
-    public void promote( final HttpServerRequest request, final Buffer body )
+    @Route( path = "/promote", method = Method.POST, contentType = ApplicationContent.application_json )
+    public void promote( final Buffer buffer, final HttpServerRequest request )
     {
-        final String json = body.getString( 0, body.length() );
+        final String json = buffer.getString( 0, buffer.length() );
         PromoteRequest req;
         try
         {
@@ -74,10 +74,10 @@ public class PromoteResource
         }
     }
 
-    @Route( path = "/resume" )
-    public void resume( final HttpServerRequest request, final Buffer body )
+    @Route( path = "/resume", method = Method.POST, contentType = ApplicationContent.application_json )
+    public void resume( final Buffer buffer, final HttpServerRequest request )
     {
-        final String json = body.getString( 0, body.length() );
+        final String json = buffer.getString( 0, buffer.length() );
         PromoteResult result;
         try
         {
@@ -112,10 +112,10 @@ public class PromoteResource
         }
     }
 
-    @Route( path = "/rollback" )
-    public void rollback( final HttpServerRequest request, final Buffer body )
+    @Route( path = "/rollback", method = Method.POST, contentType = ApplicationContent.application_json )
+    public void rollback( final Buffer buffer, final HttpServerRequest request )
     {
-        final String json = body.getString( 0, body.length() );
+        final String json = buffer.getString( 0, buffer.length() );
         PromoteResult result;
         try
         {

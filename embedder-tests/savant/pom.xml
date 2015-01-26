@@ -27,6 +27,18 @@
       <groupId>org.commonjava.aprox.embed</groupId>
       <artifactId>aprox-embedder-savant</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-ftests-folo</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-ftests-promote</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-ftests-depgraph</artifactId>
+    </dependency>
   </dependencies>
   
   <build>
@@ -34,10 +46,14 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
+            <forkCount>4</forkCount>
+            <reuseForks>false</reuseForks>
+            <redirectTestOutputToFile>true</redirectTestOutputToFile>
             <dependenciesToScan>
               <dependency>org.commonjava.aprox:aprox-ftests-core</dependency>
               <dependency>org.commonjava.aprox:aprox-ftests-folo</dependency>
               <dependency>org.commonjava.aprox:aprox-ftests-depgraph</dependency>
+              <dependency>org.commonjava.aprox:aprox-ftests-promote</dependency>
             </dependenciesToScan> 
           </configuration>
       </plugin>

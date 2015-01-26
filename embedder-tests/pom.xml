@@ -54,6 +54,9 @@
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
+            <forkCount>4</forkCount>
+            <reuseForks>false</reuseForks>
+            <redirectTestOutputToFile>true</redirectTestOutputToFile>
             <dependenciesToScan>
               <dependency>org.commonjava.aprox:aprox-ftests-core</dependency>
             </dependenciesToScan> 
