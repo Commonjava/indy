@@ -10,6 +10,7 @@ import org.commonjava.aprox.client.core.AproxClientModule;
 import org.commonjava.aprox.client.core.helper.PathInfo;
 import org.commonjava.aprox.client.core.util.ResponseManagingInputStream;
 import org.commonjava.aprox.client.core.util.UrlUtils;
+import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.model.core.dto.DirectoryListingDTO;
 
@@ -20,6 +21,12 @@ public class AproxContentClientModule
     public String contentUrl( final StoreType type, final String name, final String path )
     {
         return UrlUtils.buildUrl( type.singularEndpointName(), name, path );
+    }
+
+    public String contentUrl( final StoreKey key, final String path )
+    {
+        return UrlUtils.buildUrl( key.getType()
+                                     .singularEndpointName(), key.getName(), path );
     }
 
     public DirectoryListingDTO listContents( final StoreType type, final String name, final String path )
