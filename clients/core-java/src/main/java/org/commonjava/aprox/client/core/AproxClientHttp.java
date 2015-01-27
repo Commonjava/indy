@@ -3,11 +3,15 @@ package org.commonjava.aprox.client.core;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.aprox.client.core.util.UrlUtils.buildUrl;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -22,10 +26,12 @@ import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,30 +40,63 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 public class AproxClientHttp
 {
+    private static final int GLOBAL_MAX_CONNECTIONS = 20;
+
+    private static final long MONITOR_PERIOD = 1;
+
+    private static final TimeUnit MONITOR_PERIOD_UNITS = TimeUnit.SECONDS;
+
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private final String baseUrl;
 
-    private CloseableHttpClient http;
-
     private final AproxObjectMapper objectMapper;
+
+    private HttpClientConnectionManager connectionManager;
+
+    private final ScheduledExecutorService exec;
+
+    private Monitor monitor;
 
     public AproxClientHttp( final String baseUrl )
     {
+        this.exec = Executors.newScheduledThreadPool( 2 );
+
         this.baseUrl = baseUrl;
         this.objectMapper = new AproxObjectMapper( true );
     }
 
     public AproxClientHttp( final String baseUrl, final AproxObjectMapper mapper )
     {
+        this.exec = Executors.newScheduledThreadPool( 2 );
+
         this.baseUrl = baseUrl;
         this.objectMapper = mapper;
     }
 
-    public void connect()
+    public void connect( final HttpClientConnectionManager connectionManager )
+        throws AproxClientException
     {
-        this.http = HttpClientBuilder.create()
-                                     .build();
+        if ( this.connectionManager != null )
+        {
+            throw new AproxClientException( "Already connected! (Possibly when you called a client "
+                + "API method previously.) Call close before connecting again." );
+        }
+
+        this.connectionManager = connectionManager;
+        startMonitor();
+    }
+
+    public synchronized void connect()
+    {
+        if ( this.connectionManager == null )
+        {
+            final PoolingHttpClientConnectionManager pcm = new PoolingHttpClientConnectionManager();
+            pcm.setDefaultMaxPerRoute( GLOBAL_MAX_CONNECTIONS );
+
+            this.connectionManager = pcm;
+            startMonitor();
+        }
     }
 
     public Map<String, String> head( final String path )
@@ -69,13 +108,13 @@ public class AproxClientHttp
     public Map<String, String> head( final String path, final int responseCode )
         throws AproxClientException
     {
-        checkConnected();
+        connect();
         CloseableHttpResponse response = null;
         try
         {
             final HttpHead request = newHead( buildUrl( baseUrl, path ) );
 
-            response = http.execute( request );
+            response = newClient().execute( request );
             final StatusLine sl = response.getStatusLine();
             if ( sl.getStatusCode() != responseCode )
             {
@@ -115,13 +154,13 @@ public class AproxClientHttp
     public <T> T get( final String path, final Class<T> type )
         throws AproxClientException
     {
-        checkConnected();
+        connect();
 
         final ErrorHolder holder = new ErrorHolder();
         T result = null;
         try
         {
-            result = http.execute( newGet( buildUrl( baseUrl, path ) ), new ResponseHandler<T>()
+            result = newClient().execute( newGet( buildUrl( baseUrl, path ) ), new ResponseHandler<T>()
             {
                 @Override
                 public T handleResponse( final HttpResponse response )
@@ -168,13 +207,13 @@ public class AproxClientHttp
     public <T> T get( final String path, final TypeReference<T> typeRef )
         throws AproxClientException
     {
-        checkConnected();
+        connect();
 
         final ErrorHolder holder = new ErrorHolder();
         T result = null;
         try
         {
-            result = http.execute( newGet( buildUrl( baseUrl, path ) ), new ResponseHandler<T>()
+            result = newClient().execute( newGet( buildUrl( baseUrl, path ) ), new ResponseHandler<T>()
             {
                 @Override
                 public T handleResponse( final HttpResponse response )
@@ -229,14 +268,14 @@ public class AproxClientHttp
     public CloseableHttpResponse getRaw( final String path, final Map<String, String> headers )
         throws AproxClientException
     {
-        checkConnected();
+        connect();
 
         CloseableHttpResponse response = null;
         try
         {
             final HttpGet req = newRawGet( buildUrl( baseUrl, path ) );
 
-            response = http.execute( req );
+            response = newClient().execute( req );
             return response;
         }
         catch ( final IOException e )
@@ -259,7 +298,7 @@ public class AproxClientHttp
     public void putWithStream( final String path, final InputStream stream, final int responseCode )
         throws AproxClientException
     {
-        checkConnected();
+        connect();
 
         CloseableHttpResponse response = null;
         try
@@ -268,7 +307,7 @@ public class AproxClientHttp
 
             put.setEntity( new InputStreamEntity( stream ) );
 
-            response = http.execute( put );
+            response = newClient().execute( put );
             final StatusLine sl = response.getStatusLine();
             if ( sl.getStatusCode() != responseCode )
             {
@@ -295,7 +334,7 @@ public class AproxClientHttp
     public boolean put( final String path, final Object value, final int responseCode )
         throws AproxClientException
     {
-        checkConnected();
+        connect();
 
         CloseableHttpResponse response = null;
         try
@@ -304,7 +343,7 @@ public class AproxClientHttp
 
             put.setEntity( new StringEntity( objectMapper.writeValueAsString( value ) ) );
 
-            response = http.execute( put );
+            response = newClient().execute( put );
             final StatusLine sl = response.getStatusLine();
             if ( sl.getStatusCode() != responseCode )
             {
@@ -335,7 +374,7 @@ public class AproxClientHttp
     public <T> T postWithResponse( final String path, final Object value, final Class<T> type, final int responseCode )
         throws AproxClientException
     {
-        checkConnected();
+        connect();
 
         final ErrorHolder holder = new ErrorHolder();
         T result = null;
@@ -345,7 +384,7 @@ public class AproxClientHttp
 
             post.setEntity( new StringEntity( objectMapper.writeValueAsString( value ) ) );
 
-            result = http.execute( post, new ResponseHandler<T>()
+            result = newClient().execute( post, new ResponseHandler<T>()
             {
                 @Override
                 public T handleResponse( final HttpResponse response )
@@ -399,7 +438,7 @@ public class AproxClientHttp
                                    final int responseCode )
         throws AproxClientException
     {
-        checkConnected();
+        connect();
 
         final ErrorHolder holder = new ErrorHolder();
         T result = null;
@@ -409,7 +448,7 @@ public class AproxClientHttp
 
             post.setEntity( new StringEntity( objectMapper.writeValueAsString( value ) ) );
 
-            result = http.execute( post, new ResponseHandler<T>()
+            result = newClient().execute( post, new ResponseHandler<T>()
             {
                 @Override
                 public T handleResponse( final HttpResponse response )
@@ -453,18 +492,12 @@ public class AproxClientHttp
         return result;
     }
 
-    private void checkConnected()
-        throws AproxClientException
-    {
-        if ( http == null )
-        {
-            throw new AproxClientException( "HTTP not connected. You must call connect() first!" );
-        }
-    }
-
     public void close()
     {
-        closeQuietly( http );
+        if ( connectionManager instanceof Closeable )
+        {
+            closeQuietly( (Closeable) connectionManager );
+        }
     }
 
     public void delete( final String path )
@@ -476,14 +509,14 @@ public class AproxClientHttp
     public void delete( final String path, final int responseCode )
         throws AproxClientException
     {
-        checkConnected();
+        connect();
 
         CloseableHttpResponse response = null;
         try
         {
             final HttpDelete delete = newDelete( buildUrl( baseUrl, path ) );
 
-            response = http.execute( delete );
+            response = newClient().execute( delete );
             final StatusLine sl = response.getStatusLine();
             if ( sl.getStatusCode() != responseCode )
             {
@@ -510,14 +543,14 @@ public class AproxClientHttp
     public boolean exists( final String path, final int responseCode )
         throws AproxClientException
     {
-        checkConnected();
+        connect();
 
         CloseableHttpResponse response = null;
         try
         {
-            final HttpHead equest = newHead( buildUrl( baseUrl, path ) );
+            final HttpHead request = newHead( buildUrl( baseUrl, path ) );
 
-            response = http.execute( equest );
+            response = newClient().execute( request );
             final StatusLine sl = response.getStatusLine();
             if ( sl.getStatusCode() == responseCode )
             {
@@ -540,25 +573,22 @@ public class AproxClientHttp
         }
     }
 
-    private static final class ErrorHolder
+    public String getBaseUrl()
     {
-        private AproxClientException error;
+        return baseUrl;
+    }
 
-        public AproxClientException getError()
-        {
-            return error;
-        }
+    private CloseableHttpClient newClient()
+    {
+        return HttpClients.custom()
+                          .setConnectionManager( connectionManager )
+                          .build();
+    }
 
-        public void setError( final AproxClientException error )
-        {
-            this.error = error;
-        }
-
-        public boolean hasError()
-        {
-            return error != null;
-        }
-
+    private void startMonitor()
+    {
+        this.monitor = new Monitor();
+        exec.scheduleAtFixedRate( monitor, MONITOR_PERIOD, MONITOR_PERIOD, MONITOR_PERIOD_UNITS );
     }
 
     private HttpGet newRawGet( final String url )
@@ -607,9 +637,35 @@ public class AproxClientHttp
         return req;
     }
 
-    public String getBaseUrl()
+    private static final class ErrorHolder
     {
-        return baseUrl;
+        private AproxClientException error;
+
+        public AproxClientException getError()
+        {
+            return error;
+        }
+
+        public void setError( final AproxClientException error )
+        {
+            this.error = error;
+        }
+
+        public boolean hasError()
+        {
+            return error != null;
+        }
+    }
+
+    private final class Monitor
+        implements Runnable
+    {
+        @Override
+        public void run()
+        {
+            connectionManager.closeExpiredConnections();
+            connectionManager.closeIdleConnections( MONITOR_PERIOD, MONITOR_PERIOD_UNITS );
+        }
     }
 
 }
