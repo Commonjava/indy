@@ -77,6 +77,7 @@ if not os.path.isdir(APROX_DIR):
     os.mkdir(parentDir)
     
   if os.path.isdir(APROX_DEV_VOL):
+    unpacked=False
     for file in os.listdir(APROX_DEV_VOL):
       if fnmatch.fnmatch(file, APROX_DEV_BINARIES_PATTERN):
         devTarball = os.path.join(APROX_DEV_VOL, file)
