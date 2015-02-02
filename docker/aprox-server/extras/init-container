@@ -1,0 +1,25 @@
+#!/bin/bash
+
+APROX_VERSION='0.18.4'
+APROX_FLAVOR='savant'
+
+APROX_PORTS="-p 8081:8081"
+#APROX_PORTS="${APROX_PORTS} -p 8000:8000" #For debugging.
+
+APROX_BINARY_URL="http://repo.maven.apache.org/maven2/org/commonjava/aprox/launch/aprox-launcher-${APROX_FLAVOR}/${APROX_VERSION}/aprox-launcher-${APROX_FLAVOR}-${APROX_VERSION}-launcher.tar.gz"
+
+APROX_ENVARS="-e 'APROX_BINARY_URL=${APROX_BINARY_URL}'"
+
+#APROX_ETC_URL='http://github.com/myuser/my-aprox-etc.git'
+#APROX_ENVARS="${APROX_ENVARS} -e 'APROX_ETC_URL=${APROX_ETC_URL}'"
+
+#APROX_OPTS=''
+#APROX_ENVARS="${APROX_ENVARS} -e 'APROX_OPTS=${APROX_OPTS}'"
+
+
+docker run \
+    ${APROX_PORTS} \
+    ${APROX_ENVARS} \
+    -d --name="aprox" \
+    --volumes-from=aprox-volumes \
+    buildchimp/aprox
