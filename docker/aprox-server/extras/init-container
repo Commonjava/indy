@@ -22,4 +22,4 @@ docker run \
     ${APROX_ENVARS} \
     -d --name="aprox" \
     --volumes-from=aprox-volumes \
-    buildchimp/aprox
+    buildchimp/aprox-dev

@@ -11,13 +11,22 @@ import fnmatch
 APROX_DEV_VOL = '/tmp/aprox'
 APROX_DEV_BINARIES_PATTERN='aprox*-launcher.tar.gz'
 
+
 # Envars that can be set using -e from 'docker run' command.
+APROX_VERSION_ENVAR='APROX_VERSION'
+APROX_FLAVOR_ENVAR='APROX_FLAVOR'
 APROX_URL_ENVAR = 'APROX_BINARY_URL'
 APROX_ETC_URL_ENVAR = 'APROX_ETC_URL'
 APROX_OPTS_ENVAR = 'APROX_OPTS'
+APROX_DEVMODE_ENVAR = 'APROX_DEV'
 
-# default aprox binary to download.
-DEF_APROX_BINARY_URL = 'http://repo.maven.apache.org/maven2/org/commonjava/aprox/launch/aprox-launcher-savant/0.16.4/aprox-launcher-savant-0.16.4-launcher.tar.gz'
+
+# Defaults
+DEF_APROX_VERSION='0.18.4'
+DEF_APROX_FLAVOR='savant'
+
+DEF_APROX_BINARY_URL_FORMAT = 'http://repo.maven.apache.org/maven2/org/commonjava/aprox/launch/aprox-launcher-{flavor}/{version}/aprox-launcher-{flavor}-{version}-launcher.tar.gz'
+
 
 # locations for expanded aprox binary
 APROX_DIR = '/opt/aprox'
@@ -26,12 +35,14 @@ APROX_STORAGE = os.path.join(APROX_DIR, 'var/lib/aprox/storage')
 APROX_DATA = os.path.join(APROX_DIR, 'var/lib/aprox/data')
 APROX_LOGS = os.path.join(APROX_DIR, 'var/log/aprox')
 
+
 # locations on global fs
 ETC_APROX = '/etc/aprox'
 VAR_APROX = '/var/lib/aprox'
 VAR_STORAGE = os.path.join(VAR_APROX, 'storage')
 VAR_DATA = os.path.join(VAR_APROX, 'data')
 LOGS = '/var/log/aprox'
+
 
 def run(cmd, fail_message='Error running command', fail=True):
   print cmd
@@ -71,39 +82,37 @@ def move_and_link(src, target, replaceIfExists=False):
   os.symlink(target, src)
 
 
-if not os.path.isdir(APROX_DIR):
+if os.path.isdir(APROX_DIR) is False:
   parentDir = os.path.dirname(APROX_DIR)
-  if not os.path.isdir(parentDir):
+  if os.path.isdir(parentDir) is False:
     os.mkdir(parentDir)
-    
-  if os.path.isdir(APROX_DEV_VOL):
+  
+  if os.environ.get(APROX_DEVMODE_ENVAR) is not None:
     unpacked=False
     for file in os.listdir(APROX_DEV_VOL):
       if fnmatch.fnmatch(file, APROX_DEV_BINARIES_PATTERN):
         devTarball = os.path.join(APROX_DEV_VOL, file)
-        
         print "Unpacking development binary of AProx: %s" % devTarball
         run('tar -zxvf %s -C /opt' % devTarball)
         unpacked=True
         break
-    
-    if not unpacked:
+    if unpacked is False:
       if not os.path.exists(os.path.join(APROX_DEV_VOL, 'bin/aprox.sh')):
         print "Development volume %s exists but doesn't appear to contain expanded AProx (can't find 'bin/aprox.sh'). Ignoring." % APROX_DEV_VOL
       else:
         print "Using expanded AProx deployment, in development volume: %s" % APROX_DEV_VOL
         shutil.copytree(APROX_DEV_VOL, APROX_DIR)
-    
   else:
-      aproxBinaryUrl = os.environ.get(APROX_URL_ENVAR) or DEF_APROX_BINARY_URL
+      version=os.environ.get(APROX_VERSION_ENVAR) or DEF_APROX_VERSION
+      flavor=os.environ.get(APROX_FLAVOR_ENVAR) or DEF_APROX_FLAVOR
+      aproxBinaryUrl = os.environ.get(APROX_URL_ENVAR) or DEF_APROX_BINARY_URL_FORMAT.format(version=version, flavor=flavor)
       
       print 'Downloading: %s' % aproxBinaryUrl
+      
       download = urlopen(aproxBinaryUrl)
       with open('/tmp/aprox.tar.gz', 'wb') as f:
         f.write(download.read())
-      
       run('ls -alh /tmp/')
-      
       run('tar -zxvf /tmp/aprox.tar.gz -C /opt')
     #  with tarfile.open('/tmp/aprox.tar.gz') as tar:
     #    tar.extractall(parentDir)
