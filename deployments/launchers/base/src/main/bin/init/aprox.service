@@ -1,0 +1,16 @@
+# Put in /etc/systemd/system/multi-user.target.wants/
+# Adjust /opt/aprox/bin to match the deployment location
+
+[Unit]
+Description=AProx Volumes Container
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+RestartSec=10
+ExecStart=/opt/aprox/bin/aprox.sh
+ExecStop=/usr/bin/pkill -f aprox
+
+[Install]
+WantedBy=multi-user.target
