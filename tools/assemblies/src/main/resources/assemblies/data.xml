@@ -9,32 +9,33 @@
       Red Hat, Inc. - initial API and implementation
 -->
 <assembly>
-  <id>launcher-base</id>
+  <id>data</id>
   <formats>
+    <format>zip</format>
     <format>tar.gz</format>
   </formats>
   
-  <includeBaseDirectory>false</includeBaseDirectory>
+  <includeBaseDirectory>true</includeBaseDirectory>
+  <baseDirectory>aprox-data</baseDirectory>
+  
+  <dependencySets>
+    <!-- data sets -->
+    <dependencySet>
+      <useProjectArtifact>false</useProjectArtifact>
+      <scope>provided</scope>
+      <includes>
+        <include>*:tar.gz:dataset:*</include>
+      </includes>
+      <outputDirectory>/</outputDirectory>
+      <unpack>true</unpack>
+    </dependencySet>
+  </dependencySets>
   
   <fileSets>
     <fileSet>
-      <directory>target/classes</directory>
+      <directory>${project.build.directory}/var/lib/aprox/data</directory>
       <outputDirectory>/</outputDirectory>
-      <fileMode>0750</fileMode>
-      <directoryMode>770</directoryMode>
-      <includes>
-        <include>**/*.sh</include>
-        <include>**/bin/init/*</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <directory>target/classes</directory>
-      <outputDirectory>/</outputDirectory>
-      <fileMode>0640</fileMode>
-      <directoryMode>770</directoryMode>
-      <excludes>
-        <exclude>**/*.sh</exclude>
-      </excludes>
     </fileSet>
   </fileSets>
+  
 </assembly>

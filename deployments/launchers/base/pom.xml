@@ -49,10 +49,11 @@
             </goals>
             <phase>package</phase>
             <configuration>
-              <descriptors>
-                <descriptor>src/main/assembly/tarball.xml</descriptor>
-              </descriptors>
-              <appendAssemblyId>false</appendAssemblyId>
+              <descriptorRefs>
+                <descriptorRef>binset</descriptorRef>
+                <descriptorRef>dataset</descriptorRef>
+                <descriptorRef>confset</descriptorRef>
+              </descriptorRefs>
             </configuration>
           </execution>
         </executions>

@@ -35,6 +35,19 @@
     <dependency>
       <groupId>org.commonjava.aprox.launch</groupId>
       <artifactId>aprox-launcher-base</artifactId>
+      <classifier>binset</classifier>
+      <type>tar.gz</type>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox.launch</groupId>
+      <artifactId>aprox-launcher-base</artifactId>
+      <classifier>confset</classifier>
+      <type>tar.gz</type>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox.launch</groupId>
+      <artifactId>aprox-launcher-base</artifactId>
+      <classifier>dataset</classifier>
       <type>tar.gz</type>
     </dependency>
     <dependency>

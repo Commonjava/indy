@@ -135,7 +135,25 @@
         <groupId>org.commonjava.aprox.launch</groupId>
         <artifactId>aprox-launcher-base</artifactId>
         <version>0.18.5-SNAPSHOT</version>
+        <classifier>binset</classifier>
         <type>tar.gz</type>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox.launch</groupId>
+        <artifactId>aprox-launcher-base</artifactId>
+        <version>0.18.5-SNAPSHOT</version>
+        <classifier>confset</classifier>
+        <type>tar.gz</type>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox.launch</groupId>
+        <artifactId>aprox-launcher-base</artifactId>
+        <version>0.18.5-SNAPSHOT</version>
+        <classifier>dataset</classifier>
+        <type>tar.gz</type>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>

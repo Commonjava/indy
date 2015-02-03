@@ -29,22 +29,6 @@
       <outputDirectory>lib/local</outputDirectory>
       <unpack>true</unpack>
     </dependencySet>
-    <!-- base launcher configs/scripts -->
-    <dependencySet>
-      <useProjectArtifact>false</useProjectArtifact>
-      <scope>runtime</scope>
-      <includes>
-        <include>org.commonjava.aprox.launch:aprox-launcher-base:tar.gz:${project.version}</include>
-      </includes>
-      <outputDirectory>/</outputDirectory>
-      <directoryMode>770</directoryMode>
-      <unpack>true</unpack>
-      <unpackOptions>
-        <excludes>
-          <exclude>META-INF/**</exclude>
-        </excludes>
-      </unpackOptions>
-    </dependencySet>
     <!-- user interface -->
     <dependencySet>
       <useProjectArtifact>false</useProjectArtifact>
@@ -81,6 +65,16 @@
         <include>*:tar.gz:docset:*</include>
       </includes>
       <outputDirectory>usr/share/doc/aprox</outputDirectory>
+      <unpack>true</unpack>
+    </dependencySet>
+    <!-- bin sets -->
+    <dependencySet>
+      <useProjectArtifact>false</useProjectArtifact>
+      <scope>provided</scope>
+      <includes>
+        <include>*:tar.gz:binset:*</include>
+      </includes>
+      <outputDirectory>bin</outputDirectory>
       <unpack>true</unpack>
     </dependencySet>
     <!-- configuration sets -->

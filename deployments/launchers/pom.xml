@@ -77,6 +77,8 @@
                 <skipAssembly>${disableLauncher}</skipAssembly>
                 <descriptorRefs>
                   <descriptorRef>launcher</descriptorRef>
+                  <descriptorRef>etc</descriptorRef>
+                  <descriptorRef>data</descriptorRef>
                 </descriptorRefs>
               </configuration>
             </execution>
