@@ -30,6 +30,8 @@ DEF_APROX_BINARY_URL_FORMAT = 'http://repo.maven.apache.org/maven2/org/commonjav
 
 # locations for expanded aprox binary
 APROX_DIR = '/opt/aprox'
+BOOT_PROPS = 'boot.properties'
+APROX_BIN = os.path.join(APROX_DIR, 'bin')
 APROX_ETC = os.path.join(APROX_DIR, 'etc/aprox')
 APROX_STORAGE = os.path.join(APROX_DIR, 'var/lib/aprox/storage')
 APROX_DATA = os.path.join(APROX_DIR, 'var/lib/aprox/data')
@@ -128,6 +130,13 @@ if os.path.isdir(APROX_DIR) is False:
   move_and_link(APROX_STORAGE, VAR_STORAGE)
   move_and_link(APROX_DATA, VAR_DATA)
   move_and_link(APROX_LOGS, LOGS)
+  
+  etcBootOpts = os.path.join(APROX_ETC, BOOT_PROPS)
+  if os.path.exists(etcBootOpts):
+    binBootOpts = os.path.join(APROX_BIN, BOOT_PROPS)
+    if os.path.exists(binBootOpts):
+      os.remove(binBootOpts)
+    os.symlink(binBootOpts, etcBootOpts)
 
 
 opts = os.environ.get(APROX_OPTS_ENVAR) or ''
