@@ -1,4 +1,5 @@
-# Put in /etc/systemd/system/multi-user.target.wants/
+# 1. Put in /etc/systemd/system/
+# 2. Execute `systemctl enable aprox-server-novols` to install
 
 [Unit]
 Description=AProx Server Container (No Volumes Container)

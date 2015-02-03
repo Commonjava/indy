@@ -1,10 +1,9 @@
-# Put in /etc/systemd/system/multi-user.target.wants/
-# Adjust /opt/aprox/bin to match the deployment location
+# 1. Adjust /opt/aprox/bin to match the deployment location
+# 2. Put in /etc/systemd/system/
+# 3. Execute `systemctl enable aprox` to install
 
 [Unit]
-Description=AProx Volumes Container
-Requires=docker.service
-After=docker.service
+Description=AProx Local Service
 
 [Service]
 Restart=always
