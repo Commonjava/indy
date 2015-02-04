@@ -7,8 +7,70 @@ from urllib2 import urlopen
 import shutil
 import fnmatch
 
+def run(cmd, fail_message='Error running command', fail=True):
+  print cmd
+  ret = os.system(cmd)
+  if fail and ret != 0:
+    print "%s (failed with code: %s)" % (fail_message, ret)
+    sys.exit(ret)
+
+
+
+def runIn(cmd, workdir, fail_message='Error running command', fail=True):
+  olddir = os.getcwd()
+  os.chdir(workdir)
+  
+  print "In: %s, executing: %s" % (workdir, cmd)
+  
+  ret = os.system(cmd)
+  if fail and ret != 0:
+    print "%s (failed with code: %s)" % (fail_message, ret)
+    sys.exit(ret)
+  
+  os.chdir(olddir)
+
+
+
+def move_and_link(src, target, replaceIfExists=False):
+  srcParent = os.path.dirname(src)
+  if not os.path.isdir(srcParent):
+    os.mkdir(srcParent)
+  
+  if not os.path.isdir(target):
+    os.mkdir(target)
+  
+  print "Source: %s\nTarget: %s" % (src, target)
+  if os.path.isdir(src):
+    for f in os.listdir(src):
+      targetFile = os.path.join(target, f)
+      srcFile = os.path.join(src, f)
+      if os.path.exists(targetFile):
+        if not replaceIfExists:
+          print "Target dir exists: %s. NOT replacing." % targetFile
+          continue
+        else:
+          print "Target dir exists: %s. Replacing." % targetFile
+        
+        if os.path.isdir(targetFile):
+          shutil.rmtree(targetFile)
+        else:
+          os.remove(targetFile)
+        
+      if os.path.isdir(srcFile):
+        shutil.copytree(srcFile, targetFile)
+      else:
+        shutil.copy(srcFile, targetFile)
+    
+    shutil.rmtree(src)
+  
+  os.symlink(target, src)
+
+
+
+
 # Envar for reading development binary volume mount point
 APROX_DEV_VOL = '/tmp/aprox'
+SSH_CONFIG_VOL = '/tmp/ssh-config'
 APROX_DEV_BINARIES_PATTERN='aprox*-launcher.tar.gz'
 
 
@@ -45,6 +107,7 @@ VAR_STORAGE = os.path.join(VAR_APROX, 'storage')
 VAR_DATA = os.path.join(VAR_APROX, 'data')
 LOGS = '/var/log/aprox'
 
+
 # if true, attempt to use aprox distro tarball or directory from attached volume
 devmode = os.environ.get(APROX_DEVMODE_ENVAR)
 
@@ -65,59 +128,11 @@ opts = os.environ.get(APROX_OPTS_ENVAR) or ''
 
 print "Read environment:\n  devmode: %s\n  aprox version: %s\n  aprox flavor: %s\n  aprox binary URL: %s\n  aprox etc Git URL: %s\n  aprox cli opts: %s" % (devmode, version, flavor, aproxBinaryUrl, aproxEtcUrl, opts)
 
-def run(cmd, fail_message='Error running command', fail=True):
-  print cmd
-  ret = os.system(cmd)
-  if fail and ret != 0:
-    print "%s (failed with code: %s)" % (fail_message, ret)
-    sys.exit(ret)
-
-def runIn(cmd, workdir, fail_message='Error running command', fail=True):
-  olddir = os.getcwd()
-  os.chdir(workdir)
-  
-  print "In: %s, executing: %s" % (workdir, cmd)
-  
-  ret = os.system(cmd)
-  if fail and ret != 0:
-    print "%s (failed with code: %s)" % (fail_message, ret)
-    sys.exit(ret)
-  
-  os.chdir(olddir)
-
-def move_and_link(src, target, replaceIfExists=False):
-  srcParent = os.path.dirname(src)
-  if not os.path.isdir(srcParent):
-    os.mkdir(srcParent)
-  
-  if not os.path.isdir(target):
-    os.mkdir(target)
-  
-  print "Source: %s\nTarget: %s" % (src, target)
-  if os.path.isdir(src):
-    for f in os.listdir(src):
-      targetFile = os.path.join(target, f)
-      srcFile = os.path.join(src, f)
-      if os.path.exists(targetFile):
-        if not replaceIfExists:
-          print "Target dir exists: %s. NOT replacing." % targetFile
-          continue
-        else:
-          print "Target dir exists: %s. Replacing." % targetFile
-        
-        if os.path.isdir(targetFile):
-          shutil.rmtree(targetFile)
-        else:
-          os.remove(targetFile)
-        
-      if os.path.isdir(srcFile):
-        shutil.copytree(srcFile, targetFile)
-      else:
-        shutil.copy(srcFile, targetFile)
-    
-    shutil.rmtree(src)
-  
-  os.symlink(target, src)
+if not os.path.isdir('/root/.ssh') and os.path.isdir(SSH_CONFIG_VOL):
+  print "Importing SSH configurations from volume: %s" % SSH_CONFIG_VOL
+  run("cp -rf %s /root/.ssh" % SSH_CONFIG_VOL)
+  run("chmod 700 /root/.ssh")
+  run("chmod 600 /root/.ssh/*")
 
 
 if os.path.isdir(APROX_DIR) is False:
