@@ -122,14 +122,20 @@ public class RevisionsConfig
         String action = conflictAction;
         if ( action == null )
         {
-            action = ConflictStrategy.merge.name();
+            action = ConflictStrategy.overwrite.name();
         }
         else
         {
             action = action.toLowerCase();
         }
 
-        return ConflictStrategy.valueOf( action );
+        ConflictStrategy result = ConflictStrategy.valueOf( action );
+        if ( result == null )
+        {
+            result = ConflictStrategy.overwrite;
+        }
+
+        return result;
     }
 
 }

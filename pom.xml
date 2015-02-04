@@ -43,7 +43,7 @@
     <galleyVersion>0.6.8</galleyVersion>
     <cartoVersion>0.8.1</cartoVersion>
     <bomVersion>14</bomVersion>
-    <webdavVersion>3.1.1</webdavVersion>
+    <webdavVersion>3.2-SNAPSHOT</webdavVersion>
     <vabrVersion>1.12</vabrVersion>
     
     <vertx.testtools.version>2.0.0-final</vertx.testtools.version>
@@ -821,6 +821,10 @@
             <source>${javaVersion}</source>
             <target>${javaVersion}</target>
           </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.10</version>
         </plugin>
         <!-- <plugin>
           <artifactId>maven-compiler-plugin</artifactId>

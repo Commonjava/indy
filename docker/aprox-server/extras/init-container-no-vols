@@ -1,6 +1,6 @@
 #!/bin/bash
 
-APROX_VERSION='0.18.4'
+APROX_VERSION='0.18.5'
 APROX_FLAVOR='savant'
 
 APROX_PORTS="-p 8081:8081"
@@ -16,9 +16,14 @@ APROX_ENVARS="-e 'APROX_BINARY_URL=${APROX_BINARY_URL}'"
 #APROX_OPTS=''
 #APROX_ENVARS="${APROX_ENVARS} -e 'APROX_OPTS=${APROX_OPTS}'"
 
+SSHDIR=$USER/.ssh
 
+chcon -Rt svirt_sandbox_file_t $SSHDIR
+
+set -x
 docker run \
     ${APROX_PORTS} \
     ${APROX_ENVARS} \
-    -d --name="aprox" \
+    -t --name="aprox" \
+    -v $SSHDIR:/tmp/ssh-config \
     buildchimp/aprox

@@ -56,13 +56,13 @@ public final class UrlInfo
                 password = userInfo.substring( idx + 1 );
 
                 final StringBuilder sb = new StringBuilder();
-                idx = this.url.indexOf( "://" );
-                sb.append( this.url.substring( 0, idx + 3 ) );
+                idx = this.rawUrl.indexOf( "://" );
+                sb.append( this.rawUrl.substring( 0, idx + 3 ) );
 
-                idx = this.url.indexOf( "@" );
+                idx = this.rawUrl.indexOf( "@" );
                 if ( idx > 0 )
                 {
-                    sb.append( this.url.substring( idx + 1 ) );
+                    sb.append( this.rawUrl.substring( idx + 1 ) );
                 }
 
                 resultUrl = sb.toString();
