@@ -64,10 +64,11 @@ public class RevisionsConfig
         @Produces
         @Default
         @ApplicationScoped
-        public RevisionsConfig getFlatFileConfig()
+        public RevisionsConfig getRevisionsConfig()
             throws ConfigurationException
         {
-            return getConfig();
+            final RevisionsConfig config = getConfig();
+            return config == null ? new RevisionsConfig() : config;
         }
 
         @Override

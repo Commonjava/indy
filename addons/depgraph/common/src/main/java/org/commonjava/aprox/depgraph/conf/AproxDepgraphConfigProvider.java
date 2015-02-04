@@ -71,7 +71,13 @@ public class AproxDepgraphConfigProvider
     public AproxDepgraphConfig getDepgraphConfig()
         throws ConfigurationException
     {
-        return getConfig().setDirectories( ffManager.getDetachedDataBasedir(), ffManager.getDetachedWorkBasedir() );
+        AproxDepgraphConfig config = getConfig();
+        if ( config == null )
+        {
+            config = new AproxDepgraphConfig();
+        }
+
+        return config.setDirectories( ffManager.getDetachedDataBasedir(), ffManager.getDetachedWorkBasedir() );
     }
 
     @Override
