@@ -28,7 +28,7 @@ EXEC=$APROX_HOME/bin/aprox.sh
 RETVAL=0
 
 start() {
-    PID=$(ps ax | grep -v grep | grep "$APROX_HOME/lib/aprox-cdi-components-@version@.jar" | grep java | awk '{print $1}' | sort | uniq)
+    PID=$(pgrep -f aprox)
     if [ "x$PID" == "x" ]; then
       echo -n $"Starting $PROG: "
       $EXEC > /dev/null 2>&1 &
@@ -41,7 +41,7 @@ start() {
     fi
 }
 stop() {
-    PID=$(ps ax | grep -v grep | grep "$APROX_HOME/lib/aprox-cdi-components-@version@.jar" | grep java | awk '{print $1}' | sort | uniq)
+    PID=$(pgrep -f aprox)
     echo -n $"Shutting down $PROG: "
 
     if [ "x$PID" == "x" ]; then
@@ -65,6 +65,14 @@ restart() {
     sleep 10
     start
 }
+status() {
+    if [ ! -f /var/lock/subsys/$PROG ]; then
+        echo "$PROG is stopped"
+    else
+        PID=$(pgrep -f aprox)
+        echo "$PROG (pid  ${PID}) is running..."
+    fi
+}
 
 # See how we're called.
 case "$1" in
@@ -82,13 +90,7 @@ case "$1" in
     RETVAL=$?
     ;;
   status)
-    if [ ! -f /var/lock/subsys/$PROG ];
-        then
-            echo "$PROG is stopped"
-        else
-            PID=$(ps ax | grep -v grep | grep "$APROX_HOME/lib/aprox-cdi-components-@version@.jar" | grep java | awk '{print $1}' | sort | uniq)
-            echo "$PROG (pid  ${PID}) is running..."
-        fi
+    status
     ;;
   *)
     echo $"Usage: $0 {start|stop|restart|condrestart|status}"

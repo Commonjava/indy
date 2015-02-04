@@ -4,6 +4,7 @@
 
 [Unit]
 Description=AProx Local Service
+After=network.target
 
 [Service]
 Restart=always

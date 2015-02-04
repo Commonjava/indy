@@ -53,6 +53,19 @@ def run(cmd, fail_message='Error running command', fail=True):
     print "%s (failed with code: %s)" % (fail_message, ret)
     sys.exit(ret)
 
+def runIn(cmd, workdir, fail_message='Error running command', fail=True):
+  olddir = os.getcwd()
+  os.chdir(workdir)
+  
+  print "In: %s, executing: %s" % (workdir, cmd)
+  
+  ret = os.system(cmd)
+  if fail and ret != 0:
+    print "%s (failed with code: %s)" % (fail_message, ret)
+    sys.exit(ret)
+  
+  os.chdir(olddir)
+
 def move_and_link(src, target, replaceIfExists=False):
   srcParent = os.path.dirname(src)
   if not os.path.isdir(srcParent):
@@ -137,6 +150,9 @@ if os.path.isdir(APROX_DIR) is False:
     if os.path.exists(binBootOpts):
       os.remove(binBootOpts)
     os.symlink(binBootOpts, etcBootOpts)
+else
+  if os.path.isdir(os.path.join(APROX_ETC, ".git")) is True:
+    runIn("git pull", APROX_ETC, "Failed to pull updates to etc git repository.")
 
 
 opts = os.environ.get(APROX_OPTS_ENVAR) or ''
