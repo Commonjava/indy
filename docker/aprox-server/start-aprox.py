@@ -150,7 +150,7 @@ if os.path.isdir(APROX_DIR) is False:
     if os.path.exists(binBootOpts):
       os.remove(binBootOpts)
     os.symlink(binBootOpts, etcBootOpts)
-else
+else:
   if os.path.isdir(os.path.join(APROX_ETC, ".git")) is True:
     runIn("git pull", APROX_ETC, "Failed to pull updates to etc git repository.")
 
