@@ -45,6 +45,25 @@ VAR_STORAGE = os.path.join(VAR_APROX, 'storage')
 VAR_DATA = os.path.join(VAR_APROX, 'data')
 LOGS = '/var/log/aprox'
 
+# if true, attempt to use aprox distro tarball or directory from attached volume
+devmode = os.environ.get(APROX_DEVMODE_ENVAR)
+
+# aprox release to use
+version=os.environ.get(APROX_VERSION_ENVAR) or DEF_APROX_VERSION
+
+# currently one of: rest-min, easyprox, savant
+flavor=os.environ.get(APROX_FLAVOR_ENVAR) or DEF_APROX_FLAVOR
+
+# URL for aprox distro tarball to download and expand
+aproxBinaryUrl = os.environ.get(APROX_URL_ENVAR) or DEF_APROX_BINARY_URL_FORMAT.format(version=version, flavor=flavor)
+
+# Git location supplying /opt/aprox/etc/aprox
+aproxEtcUrl = os.environ.get(APROX_ETC_URL_ENVAR)
+
+# command-line options for aprox
+opts = os.environ.get(APROX_OPTS_ENVAR) or ''
+
+print "Read environment:\n  devmode: %s\n  aprox version: %s\n  aprox flavor: %s\n  aprox binary URL: %s\n  aprox etc Git URL: %s\n  aprox cli opts: %s" % (devmode, version, flavor, aproxBinaryUrl, aproxEtcUrl, opts)
 
 def run(cmd, fail_message='Error running command', fail=True):
   print cmd
@@ -74,13 +93,17 @@ def move_and_link(src, target, replaceIfExists=False):
   if not os.path.isdir(target):
     os.mkdir(target)
   
+  print "Source: %s\nTarget: %s" % (src, target)
   if os.path.isdir(src):
     for f in os.listdir(src):
       targetFile = os.path.join(target, f)
       srcFile = os.path.join(src, f)
       if os.path.exists(targetFile):
         if not replaceIfExists:
+          print "Target dir exists: %s. NOT replacing." % targetFile
           continue
+        else:
+          print "Target dir exists: %s. Replacing." % targetFile
         
         if os.path.isdir(targetFile):
           shutil.rmtree(targetFile)
@@ -102,7 +125,7 @@ if os.path.isdir(APROX_DIR) is False:
   if os.path.isdir(parentDir) is False:
     os.mkdir(parentDir)
   
-  if os.environ.get(APROX_DEVMODE_ENVAR) is not None:
+  if devmode is not None:
     unpacked=False
     for file in os.listdir(APROX_DEV_VOL):
       if fnmatch.fnmatch(file, APROX_DEV_BINARIES_PATTERN):
@@ -118,10 +141,6 @@ if os.path.isdir(APROX_DIR) is False:
         print "Using expanded AProx deployment, in development volume: %s" % APROX_DEV_VOL
         shutil.copytree(APROX_DEV_VOL, APROX_DIR)
   else:
-      version=os.environ.get(APROX_VERSION_ENVAR) or DEF_APROX_VERSION
-      flavor=os.environ.get(APROX_FLAVOR_ENVAR) or DEF_APROX_FLAVOR
-      aproxBinaryUrl = os.environ.get(APROX_URL_ENVAR) or DEF_APROX_BINARY_URL_FORMAT.format(version=version, flavor=flavor)
-      
       print 'Downloading: %s' % aproxBinaryUrl
       
       download = urlopen(aproxBinaryUrl)
@@ -132,10 +151,8 @@ if os.path.isdir(APROX_DIR) is False:
     #  with tarfile.open('/tmp/aprox.tar.gz') as tar:
     #    tar.extractall(parentDir)
     
-  # Git location supplying /opt/aprox/etc/aprox
-  aproxEtcUrl = os.environ.get(APROX_ETC_URL_ENVAR)
-  
   if aproxEtcUrl is not None:
+    print "Cloning: %s" % aproxEtcUrl
     shutil.rmtree(APROX_ETC)
     run("git clone %s %s" % (aproxEtcUrl, APROX_ETC), "Failed to checkout aprox/etc from: %s" % aproxEtcUrl)
   
@@ -152,8 +169,8 @@ if os.path.isdir(APROX_DIR) is False:
     os.symlink(binBootOpts, etcBootOpts)
 else:
   if os.path.isdir(os.path.join(APROX_ETC, ".git")) is True:
+    print "Updating aprox etc/ git repository..."
     runIn("git pull", APROX_ETC, "Failed to pull updates to etc git repository.")
 
 
-opts = os.environ.get(APROX_OPTS_ENVAR) or ''
 run("%s -p 8081 %s" % (os.path.join(APROX_DIR, 'bin', 'aprox.sh'), opts), fail=False)
