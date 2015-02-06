@@ -9,9 +9,6 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -32,6 +29,8 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.commonjava.aprox.client.core.helper.CloseBlockingConnectionManager;
+import org.commonjava.aprox.client.core.helper.HttpResources;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,12 +38,9 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 public class AproxClientHttp
+    implements Closeable
 {
     private static final int GLOBAL_MAX_CONNECTIONS = 20;
-
-    private static final long MONITOR_PERIOD = 1;
-
-    private static final TimeUnit MONITOR_PERIOD_UNITS = TimeUnit.SECONDS;
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -52,24 +48,16 @@ public class AproxClientHttp
 
     private final AproxObjectMapper objectMapper;
 
-    private HttpClientConnectionManager connectionManager;
-
-    private final ScheduledExecutorService exec;
-
-    private Monitor monitor;
+    private CloseBlockingConnectionManager connectionManager;
 
     public AproxClientHttp( final String baseUrl )
     {
-        this.exec = Executors.newScheduledThreadPool( 2 );
-
         this.baseUrl = baseUrl;
         this.objectMapper = new AproxObjectMapper( true );
     }
 
     public AproxClientHttp( final String baseUrl, final AproxObjectMapper mapper )
     {
-        this.exec = Executors.newScheduledThreadPool( 2 );
-
         this.baseUrl = baseUrl;
         this.objectMapper = mapper;
     }
@@ -83,8 +71,7 @@ public class AproxClientHttp
                 + "API method previously.) Call close before connecting again." );
         }
 
-        this.connectionManager = connectionManager;
-        startMonitor();
+        this.connectionManager = new CloseBlockingConnectionManager( connectionManager );
     }
 
     public synchronized void connect()
@@ -94,8 +81,7 @@ public class AproxClientHttp
             final PoolingHttpClientConnectionManager pcm = new PoolingHttpClientConnectionManager();
             pcm.setDefaultMaxPerRoute( GLOBAL_MAX_CONNECTIONS );
 
-            this.connectionManager = pcm;
-            startMonitor();
+            this.connectionManager = new CloseBlockingConnectionManager( pcm );
         }
     }
 
@@ -109,34 +95,65 @@ public class AproxClientHttp
         throws AproxClientException
     {
         connect();
-        CloseableHttpResponse response = null;
+        final ErrorHolder error = new ErrorHolder();
+        HttpHead request = null;
+        CloseableHttpClient client = null;
         try
         {
-            final HttpHead request = newHead( buildUrl( baseUrl, path ) );
+            request = newHead( buildUrl( baseUrl, path ) );
+            client = newClient();
 
-            response = newClient().execute( request );
-            final StatusLine sl = response.getStatusLine();
-            if ( sl.getStatusCode() != responseCode )
+            final Map<String, String> headers = client.execute( request, new ResponseHandler<Map<String, String>>()
             {
-                if ( sl.getStatusCode() == HttpStatus.SC_NOT_FOUND )
+
+                @Override
+                public Map<String, String> handleResponse( final HttpResponse response )
+                    throws ClientProtocolException, IOException
                 {
-                    return null;
+                    try
+                    {
+                        final StatusLine sl = response.getStatusLine();
+                        if ( sl.getStatusCode() != responseCode )
+                        {
+                            if ( sl.getStatusCode() == HttpStatus.SC_NOT_FOUND )
+                            {
+                                return null;
+                            }
+
+                            error.setError( new AproxClientException(
+                                                                      "Error executing HEAD: %s. Status was: %d %s (%s)",
+                                                                      path, sl.getStatusCode(), sl.getReasonPhrase(),
+                                                                      sl.getProtocolVersion() ) );
+                        }
+
+                        final Map<String, String> headers = new HashMap<>();
+                        for ( final Header header : response.getAllHeaders() )
+                        {
+                            final String name = header.getName()
+                                                      .toLowerCase();
+
+                            if ( !headers.containsKey( name ) )
+                            {
+                                headers.put( name, header.getValue() );
+                            }
+                        }
+
+                        return headers;
+                    }
+                    finally
+                    {
+                        if ( response instanceof CloseableHttpResponse )
+                        {
+                            closeQuietly( (CloseableHttpResponse) response );
+                        }
+                    }
                 }
 
-                throw new AproxClientException( "Error executing HEAD: %s. Status was: %d %s (%s)", path,
-                                                sl.getStatusCode(), sl.getReasonPhrase(), sl.getProtocolVersion() );
-            }
+            } );
 
-            final Map<String, String> headers = new HashMap<>();
-            for ( final Header header : response.getAllHeaders() )
+            if ( error.hasError() )
             {
-                final String name = header.getName()
-                                          .toLowerCase();
-
-                if ( !headers.containsKey( name ) )
-                {
-                    headers.put( name, header.getValue() );
-                }
+                throw error.getError();
             }
 
             return headers;
@@ -147,7 +164,12 @@ public class AproxClientHttp
         }
         finally
         {
-            closeQuietly( response );
+            if ( request != null )
+            {
+                request.reset();
+            }
+
+            closeQuietly( client );
         }
     }
 
@@ -158,9 +180,13 @@ public class AproxClientHttp
 
         final ErrorHolder holder = new ErrorHolder();
         T result = null;
+        HttpGet request = null;
+        CloseableHttpClient client = null;
         try
         {
-            result = newClient().execute( newGet( buildUrl( baseUrl, path ) ), new ResponseHandler<T>()
+            client = newClient();
+            request = newGet( buildUrl( baseUrl, path ) );
+            result = client.execute( request, new ResponseHandler<T>()
             {
                 @Override
                 public T handleResponse( final HttpResponse response )
@@ -195,6 +221,15 @@ public class AproxClientHttp
         {
             throw new AproxClientException( "AProx request failed: %s", e, e.getMessage() );
         }
+        finally
+        {
+            if ( request != null )
+            {
+                request.reset();
+            }
+
+            closeQuietly( client );
+        }
 
         if ( holder.hasError() )
         {
@@ -211,9 +246,13 @@ public class AproxClientHttp
 
         final ErrorHolder holder = new ErrorHolder();
         T result = null;
+        HttpGet request = null;
+        CloseableHttpClient client = null;
         try
         {
-            result = newClient().execute( newGet( buildUrl( baseUrl, path ) ), new ResponseHandler<T>()
+            client = newClient();
+            request = newGet( buildUrl( baseUrl, path ) );
+            result = client.execute( request, new ResponseHandler<T>()
             {
                 @Override
                 public T handleResponse( final HttpResponse response )
@@ -250,6 +289,15 @@ public class AproxClientHttp
         {
             throw new AproxClientException( "AProx request failed: %s", e, e.getMessage() );
         }
+        finally
+        {
+            if ( request != null )
+            {
+                request.reset();
+            }
+
+            closeQuietly( client );
+        }
 
         if ( holder.hasError() )
         {
@@ -259,13 +307,13 @@ public class AproxClientHttp
         return result;
     }
 
-    public CloseableHttpResponse getRaw( final String path )
+    public HttpResources getRaw( final String path )
         throws AproxClientException
     {
         return getRaw( path, Collections.singletonMap( "Accept", "*" ) );
     }
 
-    public CloseableHttpResponse getRaw( final String path, final Map<String, String> headers )
+    public HttpResources getRaw( final String path, final Map<String, String> headers )
         throws AproxClientException
     {
         connect();
@@ -274,9 +322,10 @@ public class AproxClientHttp
         try
         {
             final HttpGet req = newRawGet( buildUrl( baseUrl, path ) );
+            final CloseableHttpClient client = newClient();
 
-            response = newClient().execute( req );
-            return response;
+            response = client.execute( req );
+            return new HttpResources( client, req, response );
         }
         catch ( final IOException e )
         {
@@ -301,13 +350,16 @@ public class AproxClientHttp
         connect();
 
         CloseableHttpResponse response = null;
+        HttpPut put = null;
+        CloseableHttpClient client = null;
         try
         {
-            final HttpPut put = newPut( buildUrl( baseUrl, path ) );
+            client = newClient();
+            put = newPut( buildUrl( baseUrl, path ) );
 
             put.setEntity( new InputStreamEntity( stream ) );
 
-            response = newClient().execute( put );
+            response = client.execute( put );
             final StatusLine sl = response.getStatusLine();
             if ( sl.getStatusCode() != responseCode )
             {
@@ -322,6 +374,12 @@ public class AproxClientHttp
         finally
         {
             closeQuietly( response );
+            if ( put != null )
+            {
+                put.reset();
+            }
+
+            closeQuietly( client );
         }
     }
 
@@ -337,13 +395,16 @@ public class AproxClientHttp
         connect();
 
         CloseableHttpResponse response = null;
+        HttpPut put = null;
+        CloseableHttpClient client = null;
         try
         {
-            final HttpPut put = newPut( buildUrl( baseUrl, path ) );
+            client = newClient();
+            put = newPut( buildUrl( baseUrl, path ) );
 
             put.setEntity( new StringEntity( objectMapper.writeValueAsString( value ) ) );
 
-            response = newClient().execute( put );
+            response = client.execute( put );
             final StatusLine sl = response.getStatusLine();
             if ( sl.getStatusCode() != responseCode )
             {
@@ -360,6 +421,11 @@ public class AproxClientHttp
         finally
         {
             closeQuietly( response );
+            if ( put != null )
+            {
+                put.reset();
+            }
+            closeQuietly( client );
         }
 
         return true;
@@ -378,13 +444,16 @@ public class AproxClientHttp
 
         final ErrorHolder holder = new ErrorHolder();
         T result = null;
+        HttpPost post = null;
+        CloseableHttpClient client = null;
         try
         {
-            final HttpPost post = newPost( buildUrl( baseUrl, path ) );
+            client = newClient();
+            post = newPost( buildUrl( baseUrl, path ) );
 
             post.setEntity( new StringEntity( objectMapper.writeValueAsString( value ) ) );
 
-            result = newClient().execute( post, new ResponseHandler<T>()
+            result = client.execute( post, new ResponseHandler<T>()
             {
                 @Override
                 public T handleResponse( final HttpResponse response )
@@ -419,6 +488,15 @@ public class AproxClientHttp
         {
             throw new AproxClientException( "AProx request failed: %s", e, e.getMessage() );
         }
+        finally
+        {
+            if ( post != null )
+            {
+                post.reset();
+            }
+
+            closeQuietly( client );
+        }
 
         if ( holder.hasError() )
         {
@@ -442,13 +520,16 @@ public class AproxClientHttp
 
         final ErrorHolder holder = new ErrorHolder();
         T result = null;
+        HttpPost post = null;
+        CloseableHttpClient client = null;
         try
         {
-            final HttpPost post = newPost( buildUrl( baseUrl, path ) );
+            client = newClient();
+            post = newPost( buildUrl( baseUrl, path ) );
 
             post.setEntity( new StringEntity( objectMapper.writeValueAsString( value ) ) );
 
-            result = newClient().execute( post, new ResponseHandler<T>()
+            result = client.execute( post, new ResponseHandler<T>()
             {
                 @Override
                 public T handleResponse( final HttpResponse response )
@@ -483,6 +564,15 @@ public class AproxClientHttp
         {
             throw new AproxClientException( "AProx request failed: %s", e, e.getMessage() );
         }
+        finally
+        {
+            if ( post != null )
+            {
+                post.reset();
+            }
+
+            closeQuietly( client );
+        }
 
         if ( holder.hasError() )
         {
@@ -492,12 +582,10 @@ public class AproxClientHttp
         return result;
     }
 
+    @Override
     public void close()
     {
-        if ( connectionManager instanceof Closeable )
-        {
-            closeQuietly( (Closeable) connectionManager );
-        }
+        connectionManager.reallyShutdown();
     }
 
     public void delete( final String path )
@@ -512,11 +600,14 @@ public class AproxClientHttp
         connect();
 
         CloseableHttpResponse response = null;
+        HttpDelete delete = null;
+        CloseableHttpClient client = null;
         try
         {
-            final HttpDelete delete = newDelete( buildUrl( baseUrl, path ) );
+            client = newClient();
+            delete = newDelete( buildUrl( baseUrl, path ) );
 
-            response = newClient().execute( delete );
+            response = client.execute( delete );
             final StatusLine sl = response.getStatusLine();
             if ( sl.getStatusCode() != responseCode )
             {
@@ -531,6 +622,11 @@ public class AproxClientHttp
         finally
         {
             closeQuietly( response );
+            if ( delete != null )
+            {
+                delete.reset();
+            }
+            closeQuietly( client );
         }
     }
 
@@ -546,11 +642,14 @@ public class AproxClientHttp
         connect();
 
         CloseableHttpResponse response = null;
+        HttpHead request = null;
+        CloseableHttpClient client = null;
         try
         {
-            final HttpHead request = newHead( buildUrl( baseUrl, path ) );
+            client = newClient();
+            request = newHead( buildUrl( baseUrl, path ) );
 
-            response = newClient().execute( request );
+            response = client.execute( request );
             final StatusLine sl = response.getStatusLine();
             if ( sl.getStatusCode() == responseCode )
             {
@@ -570,6 +669,13 @@ public class AproxClientHttp
         finally
         {
             closeQuietly( response );
+
+            if ( request != null )
+            {
+                request.reset();
+            }
+
+            closeQuietly( client );
         }
     }
 
@@ -583,12 +689,6 @@ public class AproxClientHttp
         return HttpClients.custom()
                           .setConnectionManager( connectionManager )
                           .build();
-    }
-
-    private void startMonitor()
-    {
-        this.monitor = new Monitor();
-        exec.scheduleAtFixedRate( monitor, MONITOR_PERIOD, MONITOR_PERIOD, MONITOR_PERIOD_UNITS );
     }
 
     private HttpGet newRawGet( final String url )
@@ -654,17 +754,6 @@ public class AproxClientHttp
         public boolean hasError()
         {
             return error != null;
-        }
-    }
-
-    private final class Monitor
-        implements Runnable
-    {
-        @Override
-        public void run()
-        {
-            connectionManager.closeExpiredConnections();
-            connectionManager.closeIdleConnections( MONITOR_PERIOD, MONITOR_PERIOD_UNITS );
         }
     }
 

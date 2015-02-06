@@ -47,6 +47,9 @@
     <vabrVersion>1.12</vabrVersion>
     
     <vertx.testtools.version>2.0.0-final</vertx.testtools.version>
+    
+    <test-forkCount>1C</test-forkCount>
+    <test-redirectOutput>true</test-redirectOutput>
   </properties>
   
   <distributionManagement>
@@ -824,7 +827,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.10</version>
+          <version>2.18.1</version>
         </plugin>
         <!-- <plugin>
           <artifactId>maven-compiler-plugin</artifactId>

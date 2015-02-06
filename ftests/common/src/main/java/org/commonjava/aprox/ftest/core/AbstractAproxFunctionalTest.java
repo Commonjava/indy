@@ -1,5 +1,7 @@
 package org.commonjava.aprox.ftest.core;
 
+import static org.apache.commons.io.IOUtils.closeQuietly;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Random;
@@ -25,6 +27,7 @@ public abstract class AbstractAproxFunctionalTest
 
     private CoreServerFixture fixture;
 
+    @SuppressWarnings( "resource" )
     @Before
     public void start()
         throws Throwable
@@ -46,10 +49,8 @@ public abstract class AbstractAproxFunctionalTest
     @After
     public void stop()
     {
-        if ( fixture != null )
-        {
-            fixture.stop();
-        }
+        closeQuietly( fixture );
+        closeQuietly( client );
     }
 
     protected CoreServerFixture newServerFixture()

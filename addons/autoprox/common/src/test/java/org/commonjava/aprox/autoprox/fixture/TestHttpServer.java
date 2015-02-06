@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.Random;
 
 import org.apache.commons.io.IOUtils;
+import org.commonjava.vertx.vabr.types.ApplicationStatus;
+import org.commonjava.vertx.vabr.util.Respond;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,102 +145,96 @@ public class TestHttpServer
     @Override
     public void handle( final HttpServerRequest req )
     {
-        final boolean ended = false;
-        try
+        req.pause();
+        final String wholePath = req.path();
+        String path = wholePath;
+        if ( path.length() > 1 )
         {
-            final String wholePath = req.path();
-            String path = wholePath;
-            if ( path.length() > 1 )
-            {
-                path = path.substring( 1 );
-            }
-
-            final Integer i = accessesByPath.get( wholePath );
-            if ( i == null )
-            {
-                accessesByPath.put( wholePath, 1 );
-            }
-            else
-            {
-                accessesByPath.put( wholePath, i + 1 );
-            }
-
-            if ( errors.containsKey( wholePath ) )
-            {
-                final String error = errors.get( wholePath );
-                logger.error( "Returning registered error: {}", error );
-                req.response()
-                   .setStatusCode( 500 )
-                   .setStatusMessage( error );
-
-                return;
-            }
-
-            logger.info( "Looking for expectation: '{}'", wholePath );
-            final Expectation expectation = expectations.get( wholePath );
-            if ( expectation != null )
-            {
-                logger.info( "Responding via registered expectation: {}", expectation );
-
-                req.response()
-                   .setStatusCode( expectation.code() )
-                   .setChunked( true )
-                   .write( expectation.body() );
-
-                return;
-            }
-
-            req.response()
-               .setStatusCode( 404 )
-               .setStatusMessage( "Not Found" );
-
-            //            logger.info( "Looking for classpath resource: '{}'", path );
-            //
-            //            final URL url = Thread.currentThread()
-            //                                  .getContextClassLoader()
-            //                                  .getResource( path );
-            //
-            //            logger.info( "Classpath URL is: '{}'", url );
-            //
-            //            if ( url == null )
-            //            {
-            //                req.response()
-            //                   .setStatusCode( 404 )
-            //                   .setStatusMessage( "Not found" );
-            //
-            //                return;
-            //            }
-            //            else
-            //            {
-            //                final String method = req.method()
-            //                                         .toUpperCase();
-            //
-            //                logger.info( "Method: '{}'", method );
-            //                if ( "GET".equals( method ) )
-            //                {
-            //                    doGet( req, url );
-            //                }
-            //                else if ( "HEAD".equals( method ) )
-            //                {
-            //                    req.response()
-            //                       .setStatusCode( 200 );
-            //                }
-            //                else
-            //                {
-            //                    req.response()
-            //                       .setStatusCode( 400 )
-            //                       .setStatusMessage( "Method: " + method + " not supported by test fixture." );
-            //                }
-            //            }
+            path = path.substring( 1 );
         }
-        finally
+
+        final Integer i = accessesByPath.get( wholePath );
+        if ( i == null )
         {
-            if ( !ended )
-            {
-                req.response()
-                   .end();
-            }
+            accessesByPath.put( wholePath, 1 );
         }
+        else
+        {
+            accessesByPath.put( wholePath, i + 1 );
+        }
+
+        if ( errors.containsKey( wholePath ) )
+        {
+            final String error = errors.get( wholePath );
+            logger.error( "Returning registered error: {}", error );
+            Respond.to( req )
+                   .status( ApplicationStatus.SERVER_ERROR )
+                   .send();
+
+            return;
+        }
+
+        logger.info( "Looking for expectation: '{}'", wholePath );
+        final Expectation expectation = expectations.get( wholePath );
+        if ( expectation != null )
+        {
+            logger.info( "Responding via registered expectation: {}", expectation );
+
+            final Respond responder = Respond.to( req )
+                                             .status( ApplicationStatus.getStatus( expectation.code() ) );
+
+            if ( expectation.body() != null )
+            {
+                responder.entity( expectation.body() );
+            }
+
+            responder.send();
+
+            return;
+        }
+
+        Respond.to( req )
+               .notFound()
+               .send();
+
+        //            logger.info( "Looking for classpath resource: '{}'", path );
+        //
+        //            final URL url = Thread.currentThread()
+        //                                  .getContextClassLoader()
+        //                                  .getResource( path );
+        //
+        //            logger.info( "Classpath URL is: '{}'", url );
+        //
+        //            if ( url == null )
+        //            {
+        //                req.response()
+        //                   .setStatusCode( 404 )
+        //                   .setStatusMessage( "Not found" );
+        //
+        //                return;
+        //            }
+        //            else
+        //            {
+        //                final String method = req.method()
+        //                                         .toUpperCase();
+        //
+        //                logger.info( "Method: '{}'", method );
+        //                if ( "GET".equals( method ) )
+        //                {
+        //                    doGet( req, url );
+        //                }
+        //                else if ( "HEAD".equals( method ) )
+        //                {
+        //                    req.response()
+        //                       .setStatusCode( 200 );
+        //                }
+        //                else
+        //                {
+        //                    req.response()
+        //                       .setStatusCode( 400 )
+        //                       .setStatusMessage( "Method: " + method + " not supported by test fixture." );
+        //                }
+        //            }
     }
 
     @SuppressWarnings( "unused" )
@@ -310,7 +306,7 @@ public class TestHttpServer
 
         String body()
         {
-            return body == null || body.length() < 1 ? "OK" : body;
+            return body;
         }
 
         @Override

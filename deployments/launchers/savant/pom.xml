@@ -143,9 +143,9 @@
             <plugin>
               <artifactId>maven-surefire-plugin</artifactId>
               <configuration>
-                <forkCount>4</forkCount>
+                <forkCount>${test-forkCount}</forkCount>
                 <reuseForks>false</reuseForks>
-                <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
                 <dependenciesToScan>
                   <dependency>org.commonjava.aprox:aprox-ftests-core</dependency>
                   <dependency>org.commonjava.aprox:aprox-ftests-folo</dependency>

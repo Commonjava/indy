@@ -4,11 +4,10 @@ import java.io.InputStream;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.commonjava.aprox.client.core.AproxClientException;
 import org.commonjava.aprox.client.core.AproxClientModule;
+import org.commonjava.aprox.client.core.helper.HttpResources;
 import org.commonjava.aprox.client.core.helper.PathInfo;
-import org.commonjava.aprox.client.core.util.ResponseManagingInputStream;
 import org.commonjava.aprox.client.core.util.UrlUtils;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
@@ -81,17 +80,15 @@ public class AproxContentClientModule
     public InputStream get( final StoreType type, final String name, final String path )
         throws AproxClientException
     {
-        final CloseableHttpResponse response =
- http.getRaw( contentPath( type, name, path ) );
+        final HttpResources resources = http.getRaw( contentPath( type, name, path ) );
 
-        if ( response.getStatusLine()
-                     .getStatusCode() != 200 )
+        if ( resources.getStatusCode() != 200 )
         {
-            IOUtils.closeQuietly( response );
-            throw new AproxClientException( "Response returned status: %s.", response.getStatusLine() );
+            IOUtils.closeQuietly( resources );
+            throw new AproxClientException( "Response returned status: %s.", resources.getStatusLine() );
         }
 
-        return new ResponseManagingInputStream( response );
+        return resources.getResponseStream();
     }
 
 }

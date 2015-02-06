@@ -1,5 +1,6 @@
 package org.commonjava.aprox.test.fixture.core;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -18,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CoreServerFixture
+    implements Closeable
 {
 
     private static final int MAX_PORTGEN_TRIES = 16;
@@ -35,7 +37,7 @@ public class CoreServerFixture
     public CoreServerFixture( final TemporaryFolder folder )
         throws AproxBootException
     {
-        this( BootFinder.find(), newBootOptions( null, folder.newFolder( "aprox-home." )
+        this( BootFinder.find(), newBootOptions( null, folder.newFolder( "aprox-home" )
                                           .getAbsolutePath() ) );
     }
 
@@ -50,7 +52,7 @@ public class CoreServerFixture
     {
         this.booter = BootFinder.find();
         this.temp = newTemporaryFolder();
-        this.options = newBootOptions( null, temp.newFolder( "aprox-home." )
+        this.options = newBootOptions( null, temp.newFolder( "aprox-home" )
                                                  .getAbsolutePath() );
     }
 
@@ -99,6 +101,12 @@ public class CoreServerFixture
         {
             throw new IllegalStateException( "Failed to start server!", status.getError() );
         }
+    }
+
+    @Override
+    public void close()
+    {
+        stop();
     }
 
     public void stop()

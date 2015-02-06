@@ -1,6 +1,6 @@
 package org.commonjava.aprox.client.core;
 
-import java.io.IOException;
+import java.io.Closeable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -11,6 +11,7 @@ import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.stats.AProxVersioning;
 
 public class Aprox
+    implements Closeable
 {
 
     private final AproxClientHttp http;
@@ -77,8 +78,8 @@ public class Aprox
         return this;
     }
 
+    @Override
     public void close()
-        throws IOException
     {
         http.close();
     }
