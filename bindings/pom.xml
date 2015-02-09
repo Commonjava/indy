@@ -16,7 +16,7 @@
   <parent>
     <groupId>org.commonjava.aprox</groupId>
     <artifactId>aprox-parent</artifactId>
-    <version>0.18.5</version>
+    <version>0.18.6-SNAPSHOT</version>
   </parent>
   
   <artifactId>aprox-bindings</artifactId>
