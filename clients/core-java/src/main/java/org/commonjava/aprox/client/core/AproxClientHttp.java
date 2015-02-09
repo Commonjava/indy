@@ -29,6 +29,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.util.EntityUtils;
 import org.commonjava.aprox.client.core.helper.CloseBlockingConnectionManager;
 import org.commonjava.aprox.client.core.helper.HttpResources;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
@@ -192,6 +193,7 @@ public class AproxClientHttp
                 public T handleResponse( final HttpResponse response )
                     throws ClientProtocolException, IOException
                 {
+                    InputStream stream = null;
                     try
                     {
                         final StatusLine sl = response.getStatusLine();
@@ -204,11 +206,14 @@ public class AproxClientHttp
                             return null;
                         }
 
-                        return objectMapper.readValue( response.getEntity()
-                                                               .getContent(), type );
+                        stream = response.getEntity()
+                                         .getContent();
+                        return objectMapper.readValue( stream, type );
                     }
                     finally
                     {
+                        closeQuietly( stream );
+
                         if ( response instanceof CloseableHttpResponse )
                         {
                             closeQuietly( (CloseableHttpResponse) response );
@@ -258,6 +263,7 @@ public class AproxClientHttp
                 public T handleResponse( final HttpResponse response )
                     throws ClientProtocolException, IOException
                 {
+                    InputStream stream = null;
                     try
                     {
                         final StatusLine sl = response.getStatusLine();
@@ -267,16 +273,21 @@ public class AproxClientHttp
                                                                        "Error retrieving %s from: %s. Status was: %d %s (%s)",
                                                                        typeRef.getType(), path, sl.getStatusCode(),
                                                                        sl.getReasonPhrase(), sl.getProtocolVersion() ) );
+
+                            EntityUtils.consumeQuietly( response.getEntity() );
                             return null;
                         }
 
-                        final T value = objectMapper.readValue( response.getEntity()
-                                                                        .getContent(), typeRef );
+                        stream = response.getEntity()
+                                         .getContent();
+                        final T value = objectMapper.readValue( stream, typeRef );
 
                         return value;
                     }
                     finally
                     {
+                        closeQuietly( stream );
+
                         if ( response instanceof CloseableHttpResponse )
                         {
                             closeQuietly( (CloseableHttpResponse) response );
@@ -459,6 +470,7 @@ public class AproxClientHttp
                 public T handleResponse( final HttpResponse response )
                     throws ClientProtocolException, IOException
                 {
+                    InputStream stream = null;
                     try
                     {
                         final StatusLine sl = response.getStatusLine();
@@ -471,11 +483,15 @@ public class AproxClientHttp
                             return null;
                         }
 
-                        return objectMapper.readValue( response.getEntity()
-                                                               .getContent(), type );
+                        stream = response.getEntity()
+                                         .getContent();
+
+                        return objectMapper.readValue( stream, type );
                     }
                     finally
                     {
+                        closeQuietly( stream );
+
                         if ( response instanceof CloseableHttpResponse )
                         {
                             closeQuietly( (CloseableHttpResponse) response );
@@ -535,6 +551,7 @@ public class AproxClientHttp
                 public T handleResponse( final HttpResponse response )
                     throws ClientProtocolException, IOException
                 {
+                    InputStream stream = null;
                     try
                     {
                         final StatusLine sl = response.getStatusLine();
@@ -547,11 +564,14 @@ public class AproxClientHttp
                             return null;
                         }
 
-                        return objectMapper.readValue( response.getEntity()
-                                                               .getContent(), typeRef );
+                        stream = response.getEntity()
+                                         .getContent();
+                        return objectMapper.readValue( stream, typeRef );
                     }
                     finally
                     {
+                        closeQuietly( stream );
+
                         if ( response instanceof CloseableHttpResponse )
                         {
                             closeQuietly( (CloseableHttpResponse) response );
@@ -686,6 +706,7 @@ public class AproxClientHttp
 
     private CloseableHttpClient newClient()
     {
+        //        return HttpClients.createDefault();
         return HttpClients.custom()
                           .setConnectionManager( connectionManager )
                           .build();

@@ -54,7 +54,7 @@ public class AproxFoloContentClientModule
         if ( resources.getStatusCode() != 200 )
         {
             IOUtils.closeQuietly( resources );
-            throw new AproxClientException( "Response returned status: %d.", resources.getStatusLine() );
+            throw new AproxClientException( "Response returned status: %s.", resources.getStatusLine() );
         }
 
         return resources.getResponseStream();
