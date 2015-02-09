@@ -17,12 +17,12 @@ public class StoreManagement06Test
     {
         final HostedRepository repo = new HostedRepository( newName() );
         client.stores()
-              .create( repo, HostedRepository.class );
+              .create( repo, name.getMethodName(), HostedRepository.class );
 
         repo.setAllowReleases( !repo.isAllowReleases() );
 
         assertThat( client.stores()
-                          .update( repo ), equalTo( true ) );
+                          .update( repo, name.getMethodName() ), equalTo( true ) );
 
         final HostedRepository result = client.stores()
                                               .load( StoreType.hosted, repo.getName(), HostedRepository.class );

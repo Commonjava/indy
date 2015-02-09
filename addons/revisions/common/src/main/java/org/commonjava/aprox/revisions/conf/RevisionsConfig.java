@@ -84,6 +84,10 @@ public class RevisionsConfig
 
     private String conflictAction;
 
+    private String branchName;
+
+    private String userEmail;
+
     public boolean isPushEnabled()
     {
         return pushEnabled;
@@ -136,6 +140,28 @@ public class RevisionsConfig
         }
 
         return result;
+    }
+
+    public String getBranchName()
+    {
+        return branchName;
+    }
+
+    @ConfigName( "branch.name" )
+    public void setBranchName( final String branchName )
+    {
+        this.branchName = branchName;
+    }
+
+    public String getUserEmail()
+    {
+        return userEmail;
+    }
+
+    @ConfigName( "user.email" )
+    public void setUserEmail( final String userEmail )
+    {
+        this.userEmail = userEmail;
     }
 
 }

@@ -21,13 +21,13 @@ public class StoreManagement10Test
         group.addConstituent( repo );
 
         assertThat( client.stores()
-                          .create( repo, HostedRepository.class ), notNullValue() );
+                          .create( repo, name.getMethodName(), HostedRepository.class ), notNullValue() );
         assertThat( client.stores()
-                          .create( group, Group.class ), notNullValue() );
+                          .create( group, name.getMethodName(), Group.class ), notNullValue() );
 
         client.stores()
               .delete( repo.getKey()
-                           .getType(), repo.getName() );
+                           .getType(), repo.getName(), name.getMethodName() );
 
         final Group result = client.stores()
                                            .load( group.getKey()

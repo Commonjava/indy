@@ -15,9 +15,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 public class AproxStoresClientModule
     extends AproxClientModule
 {
-    public <T extends ArtifactStore> T create( final T value, final Class<T> type )
+    public <T extends ArtifactStore> T create( final T value, final String changelog, final Class<T> type )
         throws AproxClientException
     {
+        value.setMetadata( ArtifactStore.METADATA_CHANGELOG, changelog );
         return http.postWithResponse( UrlUtils.buildUrl( "admin", value.getKey()
                                                                                         .getType()
                                                                                         .singularEndpointName() ),
@@ -30,15 +31,16 @@ public class AproxStoresClientModule
         return http.exists( UrlUtils.buildUrl( "admin", type.singularEndpointName(), name ) );
     }
 
-    public void delete( final StoreType type, final String name )
+    public void delete( final StoreType type, final String name, final String changelog )
         throws AproxClientException
     {
-        http.delete( UrlUtils.buildUrl( "admin", type.singularEndpointName(), name ) );
+        http.deleteWithChangelog( UrlUtils.buildUrl( "admin", type.singularEndpointName(), name ), changelog );
     }
 
-    public boolean update( final ArtifactStore store )
+    public boolean update( final ArtifactStore store, final String changelog )
         throws AproxClientException
     {
+        store.setMetadata( ArtifactStore.METADATA_CHANGELOG, changelog );
         return http.put( UrlUtils.buildUrl( "admin", store.getKey()
                                                                            .getType()
                                                                            .singularEndpointName(), store.getName() ),

@@ -72,7 +72,10 @@ public class RevisionsManager
             dataDir.mkdirs();
             FileUtils.write( gitignore, join( DATA_DIR_GITIGNORES, "\n" ) );
 
-            final GitConfig dataConf = new GitConfig( dataDir, revisionsConfig.getDataUpstreamUrl(), true );
+            final GitConfig dataConf =
+                new GitConfig( dataDir, revisionsConfig.getDataUpstreamUrl(), true ).setRemoteBranchName( revisionsConfig.getBranchName() )
+                                                                                    .setUserEmail( revisionsConfig.getUserEmail() );
+
             dataFileGit = new GitManager( dataConf );
 
             final ChangeSummary summary =

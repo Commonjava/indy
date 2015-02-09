@@ -16,7 +16,7 @@ public class StoreManagement04Test
     {
         final HostedRepository repo = new HostedRepository( newName() );
         final HostedRepository result = client.stores()
-                                              .create( repo, HostedRepository.class );
+                                              .create( repo, name.getMethodName(), HostedRepository.class );
 
         assertThat( result.getName(), equalTo( repo.getName() ) );
         assertThat( result.equals( repo ), equalTo( true ) );

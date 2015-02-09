@@ -16,7 +16,7 @@ public class StoreManagement01Test
     {
         final RemoteRepository rr = new RemoteRepository( newName(), "http://www.foo.com" );
         final RemoteRepository result = client.stores()
-                                              .create( rr, RemoteRepository.class );
+                                              .create( rr, name.getMethodName(), RemoteRepository.class );
 
         assertThat( result.getName(), equalTo( rr.getName() ) );
         assertThat( result.getUrl(), equalTo( rr.getUrl() ) );

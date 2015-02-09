@@ -17,14 +17,14 @@ public class StoreManagement03Test
     {
         final RemoteRepository rr = new RemoteRepository( newName(), "http://www.foo.com" );
         client.stores()
-              .create( rr, RemoteRepository.class );
+              .create( rr, name.getMethodName(), RemoteRepository.class );
 
         rr.setUrl( "https://www.foo.com/" );
 
         assertThat( rr.getUrl(), equalTo( "https://www.foo.com/" ) );
 
         final boolean updated = client.stores()
-                                      .update( rr );
+                                      .update( rr, name.getMethodName() );
         assertThat( updated, equalTo( true ) );
 
         final RemoteRepository result = client.stores()

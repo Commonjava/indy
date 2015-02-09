@@ -32,6 +32,7 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
 import org.commonjava.aprox.client.core.helper.CloseBlockingConnectionManager;
 import org.commonjava.aprox.client.core.helper.HttpResources;
+import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -626,6 +627,49 @@ public class AproxClientHttp
         {
             client = newClient();
             delete = newDelete( buildUrl( baseUrl, path ) );
+
+            response = client.execute( delete );
+            final StatusLine sl = response.getStatusLine();
+            if ( sl.getStatusCode() != responseCode )
+            {
+                throw new AproxClientException( "Error deleting: %s. Status was: %d %s (%s)", path, sl.getStatusCode(),
+                                                sl.getReasonPhrase(), sl.getProtocolVersion() );
+            }
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxClientException( "AProx request failed: %s", e, e.getMessage() );
+        }
+        finally
+        {
+            closeQuietly( response );
+            if ( delete != null )
+            {
+                delete.reset();
+            }
+            closeQuietly( client );
+        }
+    }
+
+    public void deleteWithChangelog( final String path, final String changelog )
+        throws AproxClientException
+    {
+        deleteWithChangelog( path, changelog, HttpStatus.SC_NO_CONTENT );
+    }
+
+    public void deleteWithChangelog( final String path, final String changelog, final int responseCode )
+        throws AproxClientException
+    {
+        connect();
+
+        CloseableHttpResponse response = null;
+        HttpDelete delete = null;
+        CloseableHttpClient client = null;
+        try
+        {
+            client = newClient();
+            delete = newDelete( buildUrl( baseUrl, path ) );
+            delete.setHeader( ArtifactStore.METADATA_CHANGELOG, changelog );
 
             response = client.execute( delete );
             final StatusLine sl = response.getStatusLine();

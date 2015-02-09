@@ -26,7 +26,7 @@ public class StoreManagement11Test
         {
             final HostedRepository repo = new HostedRepository( newName() );
             assertThat( client.stores()
-                              .create( repo, HostedRepository.class ), notNullValue() );
+                              .create( repo, name.getMethodName(), HostedRepository.class ), notNullValue() );
             hosteds.add( repo );
         }
 
@@ -35,7 +35,7 @@ public class StoreManagement11Test
         {
             final RemoteRepository repo = new RemoteRepository( newName(), newUrl() );
             assertThat( client.stores()
-                              .create( repo, RemoteRepository.class ), notNullValue() );
+                              .create( repo, name.getMethodName(), RemoteRepository.class ), notNullValue() );
             remotes.add( repo );
         }
 
@@ -44,7 +44,7 @@ public class StoreManagement11Test
         {
             final Group repo = new Group( newName() );
             assertThat( client.stores()
-                              .create( repo, Group.class ), notNullValue() );
+                              .create( repo, name.getMethodName(), Group.class ), notNullValue() );
             groups.add( repo );
         }
 

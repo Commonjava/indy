@@ -46,8 +46,10 @@ public class FoloAdminTest
     public void before()
         throws Exception
     {
-        final HostedRepository hosted = this.client.stores()
-                                                   .create( new HostedRepository( STORE ), HostedRepository.class );
+        final String changelog = "Setup " + name.getMethodName();
+        final HostedRepository hosted =
+            this.client.stores()
+                       .create( new HostedRepository( STORE ), changelog, HostedRepository.class );
 
         RemoteRepository central = null;
         if ( !client.stores()
@@ -55,7 +57,7 @@ public class FoloAdminTest
         {
             central =
                 client.stores()
-                      .create( new RemoteRepository( CENTRAL, "http://repo.maven.apache.org/maven2/" ),
+                      .create( new RemoteRepository( CENTRAL, "http://repo.maven.apache.org/maven2/" ), changelog,
                                RemoteRepository.class );
         }
 
@@ -69,12 +71,12 @@ public class FoloAdminTest
         else
         {
             g = client.stores()
-                      .create( new Group( PUBLIC ), Group.class );
+                      .create( new Group( PUBLIC ), changelog, Group.class );
         }
 
         g.setConstituents( Arrays.asList( hosted.getKey(), central.getKey() ) );
         client.stores()
-              .update( g );
+              .update( g, changelog );
     }
 
     @Test

@@ -17,12 +17,12 @@ public class StoreManagement09Test
     {
         final Group repo = new Group( newName() );
         client.stores()
-              .create( repo, Group.class );
+              .create( repo, name.getMethodName(), Group.class );
 
         repo.setDescription( "Testing" );
 
         assertThat( client.stores()
-                          .update( repo ), equalTo( true ) );
+                          .update( repo, name.getMethodName() ), equalTo( true ) );
 
         final Group result = client.stores()
                                    .load( StoreType.group, repo.getName(), Group.class );

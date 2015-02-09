@@ -16,7 +16,7 @@ public class StoreManagement07Test
     {
         final Group repo = new Group( newName() );
         final Group result = client.stores()
-                                   .create( repo, Group.class );
+                                   .create( repo, name.getMethodName(), Group.class );
 
         assertThat( result.getName(), equalTo( repo.getName() ) );
         assertThat( result.equals( repo ), equalTo( true ) );

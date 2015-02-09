@@ -28,8 +28,10 @@ public class AbstractFoloContentManagementTest
     public void before()
         throws Exception
     {
-        final HostedRepository hosted = this.client.stores()
-                   .create( new HostedRepository( STORE ), HostedRepository.class );
+        final String changelog = "Setup: " + name.getMethodName();
+        final HostedRepository hosted =
+            this.client.stores()
+                       .create( new HostedRepository( STORE ), changelog, HostedRepository.class );
 
         RemoteRepository central = null;
         if ( !client.stores()
@@ -37,8 +39,8 @@ public class AbstractFoloContentManagementTest
         {
             central =
                 client.stores()
-                  .create( new RemoteRepository( CENTRAL, "http://repo.maven.apache.org/maven2/" ),
-                           RemoteRepository.class );
+                      .create( new RemoteRepository( CENTRAL, "http://repo.maven.apache.org/maven2/" ), changelog,
+                               RemoteRepository.class );
         }
 
         Group g;
@@ -51,12 +53,12 @@ public class AbstractFoloContentManagementTest
         else
         {
             g = client.stores()
-                      .create( new Group( PUBLIC ), Group.class );
+                      .create( new Group( PUBLIC ), changelog, Group.class );
         }
 
         g.setConstituents( Arrays.asList( hosted.getKey(), central.getKey() ) );
         client.stores()
-              .update( g );
+              .update( g, changelog );
     }
 
     @Override

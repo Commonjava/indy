@@ -296,7 +296,7 @@ public class StoreAdminHandler
             if ( isEmpty( summary ) )
             {
                 summary = request.headers()
-                                 .get( "CHANGELOG" );
+                                 .get( ArtifactStore.METADATA_CHANGELOG );
             }
 
             if ( isEmpty( summary ) )

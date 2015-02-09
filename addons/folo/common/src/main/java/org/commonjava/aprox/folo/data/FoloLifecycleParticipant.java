@@ -18,9 +18,9 @@ public class FoloLifecycleParticipant
     implements StartupAction
 {
 
-    private static final String ARTIMON_ID = "folo";
+    private static final String FOLO_ID = "folo";
 
-    private static final String ARTIMON_DIRECTORY_IGNORE = "folo";
+    private static final String FOLO_DIRECTORY_IGNORE = "folo";
 
     @Inject
     private DataFileManager dataFileManager;
@@ -37,7 +37,7 @@ public class FoloLifecycleParticipant
     @Override
     public String getId()
     {
-        return ARTIMON_ID;
+        return FOLO_ID;
     }
 
     @Override
@@ -54,9 +54,9 @@ public class FoloLifecycleParticipant
         {
             final DataFile dataFile = dataFileManager.getDataFile( ".gitignore" );
             final List<String> lines = dataFile.exists() ? dataFile.readLines() : new ArrayList<String>();
-            if ( !lines.contains( ARTIMON_DIRECTORY_IGNORE ) )
+            if ( !lines.contains( FOLO_DIRECTORY_IGNORE ) )
             {
-                lines.add( ARTIMON_DIRECTORY_IGNORE );
+                lines.add( FOLO_DIRECTORY_IGNORE );
 
                 dataFile.writeLines( lines, new ChangeSummary( ChangeSummary.SYSTEM_USER,
                                                                "Adding artimon to ignored list." ) );

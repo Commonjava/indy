@@ -17,13 +17,13 @@ public class StoreManagement08Test
     {
         final Group repo = new Group( newName() );
         final Group result = client.stores()
-                                   .create( repo, Group.class );
+                                   .create( repo, name.getMethodName(), Group.class );
 
         assertThat( result.getName(), equalTo( repo.getName() ) );
         assertThat( result.equals( repo ), equalTo( true ) );
 
         client.stores()
-              .delete( StoreType.group, repo.getName() );
+              .delete( StoreType.group, name.getMethodName(), repo.getName() );
 
         assertThat( client.stores()
                           .exists( StoreType.group, repo.getName() ), equalTo( false ) );

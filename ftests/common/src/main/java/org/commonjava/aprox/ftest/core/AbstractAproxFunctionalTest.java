@@ -14,6 +14,8 @@ import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.test.fixture.core.CoreServerFixture;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestName;
 
 import com.fasterxml.jackson.databind.Module;
 
@@ -26,6 +28,9 @@ public abstract class AbstractAproxFunctionalTest
     protected Aprox client;
 
     private CoreServerFixture fixture;
+
+    @Rule
+    public TestName name = new TestName();
 
     @SuppressWarnings( "resource" )
     @Before

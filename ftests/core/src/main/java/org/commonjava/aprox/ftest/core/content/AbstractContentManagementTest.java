@@ -25,8 +25,11 @@ public class AbstractContentManagementTest
     public void before()
         throws Exception
     {
-        final HostedRepository hosted = this.client.stores()
-                   .create( new HostedRepository( STORE ), HostedRepository.class );
+        final String changelog = "Create test structures";
+
+        final HostedRepository hosted =
+            this.client.stores()
+                       .create( new HostedRepository( STORE ), changelog, HostedRepository.class );
 
         RemoteRepository central = null;
         if ( !client.stores()
@@ -34,8 +37,8 @@ public class AbstractContentManagementTest
         {
             central =
                 client.stores()
-                  .create( new RemoteRepository( CENTRAL, "http://repo.maven.apache.org/maven2/" ),
-                           RemoteRepository.class );
+                      .create( new RemoteRepository( CENTRAL, "http://repo.maven.apache.org/maven2/" ), changelog,
+                               RemoteRepository.class );
         }
 
         Group g;
@@ -48,12 +51,12 @@ public class AbstractContentManagementTest
         else
         {
             g = client.stores()
-                      .create( new Group( PUBLIC ), Group.class );
+                      .create( new Group( PUBLIC ), changelog, Group.class );
         }
 
         g.setConstituents( Arrays.asList( hosted.getKey(), central.getKey() ) );
         client.stores()
-              .update( g );
+              .update( g, changelog );
     }
 
 }

@@ -26,13 +26,14 @@ public class AbstractPromotionManagerTest
     public void setupRepos()
         throws Exception
     {
+        final String changelog = "Setup " + name.getMethodName();
         final AproxPromoteClientModule module = client.module( AproxPromoteClientModule.class );
         System.out.printf( "\n\n\n\nBASE-URL: %s\nPROMOTE-URL: %s\nRESUME-URL: %s\nROLLBACK-URL: %s\n\n\n\n",
                            client.getBaseUrl(), module.promoteUrl(), module.resumeUrl(), module.rollbackUrl() );
 
         source = new HostedRepository( "source" );
         client.stores()
-              .create( source, HostedRepository.class );
+              .create( source, changelog, HostedRepository.class );
 
         client.content()
               .store( source.getKey()
@@ -44,7 +45,7 @@ public class AbstractPromotionManagerTest
 
         target = new HostedRepository( "target" );
         client.stores()
-              .create( target, HostedRepository.class );
+              .create( target, changelog, HostedRepository.class );
     }
 
     @Override

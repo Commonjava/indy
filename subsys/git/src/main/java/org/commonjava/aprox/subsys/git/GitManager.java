@@ -120,25 +120,6 @@ public class GitManager
                                              e.getMessage() );
         }
 
-        String email = repo.getConfig()
-                           .getString( "user", null, "email" );
-
-        if ( email == null )
-        {
-            try
-            {
-                email = "aprox@" + InetAddress.getLocalHost()
-                                              .getCanonicalHostName();
-            }
-            catch ( final UnknownHostException e )
-            {
-                throw new GitSubsystemException( "Failed to resolve 'localhost'. Reason: {}", e, e.getMessage() );
-            }
-        }
-
-        // TODO: Get the email info from somewhere...
-        this.email = email;
-
         String[] preExistingFromCreate = null;
         if ( !dotGitDir.isDirectory() )
         {
@@ -154,6 +135,51 @@ public class GitManager
                                                  e.getMessage() );
             }
         }
+
+        String originUrl = repo.getConfig()
+                               .getString( "remote", "origin", "url" );
+        if ( originUrl == null )
+        {
+            originUrl = cloneUrl;
+            logger.info( "Setting origin URL: {}", originUrl );
+
+            repo.getConfig()
+                .setString( "remote", "origin", "url", originUrl );
+
+            repo.getConfig()
+                .setString( "remote", "origin", "fetch", "+refs/heads/*:refs/remotes/origin/*" );
+        }
+
+        String email = repo.getConfig()
+                           .getString( "user", null, "email" );
+
+        if ( email == null )
+        {
+            email = config.getUserEmail();
+        }
+
+        if ( email == null )
+        {
+            try
+            {
+                email = "aprox@" + InetAddress.getLocalHost()
+                                              .getCanonicalHostName();
+
+            }
+            catch ( final UnknownHostException e )
+            {
+                throw new GitSubsystemException( "Failed to resolve 'localhost'. Reason: {}", e, e.getMessage() );
+            }
+        }
+
+        if ( repo.getConfig()
+                 .getString( "user", null, "email" ) == null )
+        {
+            repo.getConfig()
+                .setString( "user", null, "email", email );
+        }
+
+        this.email = email;
 
         git = new Git( repo );
 
@@ -529,6 +555,7 @@ public class GitManager
         {
             git.pull()
                .setStrategy( strategy.mergeStrategy() )
+               .setRemoteBranchName( config.getRemoteBranchName() )
                .setRebase( true )
                .call();
         }
