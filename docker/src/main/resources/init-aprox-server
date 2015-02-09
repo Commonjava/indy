@@ -1,6 +1,6 @@
 #!/bin/bash
 
-APROX_VERSION='0.18.5'
+APROX_VERSION='@project.version@'
 APROX_FLAVOR='savant'
 
 APROX_PORTS="-p 8081:8081"
