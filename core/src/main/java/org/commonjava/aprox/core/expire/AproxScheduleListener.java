@@ -49,10 +49,17 @@ class AproxScheduleListener
         try
         {
             final Trigger trigger = scheduler.getTrigger( triggerKey );
-            final JobKey key = trigger.getJobKey();
+            if ( trigger == null )
+            {
+                logger.error( "Cannot find scheduler trigger for key: " + triggerKey );
+            }
+            else
+            {
+                final JobKey key = trigger.getJobKey();
 
-            final JobDetail detail = scheduler.getJobDetail( key );
-            eventDispatcher.fire( ScheduleManager.createEvent( SchedulerEventType.CANCEL, detail ) );
+                final JobDetail detail = scheduler.getJobDetail( key );
+                eventDispatcher.fire( ScheduleManager.createEvent( SchedulerEventType.CANCEL, detail ) );
+            }
         }
         catch ( final SchedulerException e )
         {
