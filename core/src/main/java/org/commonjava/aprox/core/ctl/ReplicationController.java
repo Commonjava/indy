@@ -22,7 +22,6 @@ import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -30,6 +29,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.util.EntityUtils;
 import org.commonjava.aprox.AproxException;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.audit.ChangeSummary;
@@ -236,8 +236,7 @@ public class ReplicationController
             final int status = statusLine.getStatusCode();
             if ( status == HttpStatus.SC_OK )
             {
-                final String json = IOUtils.toString( response.getEntity()
-                                                              .getContent() );
+                final String json = EntityUtils.toString( response.getEntity() );
 
                 final StoreListingDTO<RemoteRepository> listing =
                     serializer.readValue( json,
@@ -284,8 +283,7 @@ public class ReplicationController
             final int status = statusLine.getStatusCode();
             if ( status == HttpStatus.SC_OK )
             {
-                final String json = IOUtils.toString( response.getEntity()
-                                                              .getContent() );
+                final String json = EntityUtils.toString( response.getEntity() );
 
                 final StoreListingDTO<Group> listing =
                     serializer.readValue( json, serializer.getTypeFactory()
@@ -327,8 +325,7 @@ public class ReplicationController
             final int status = statusLine.getStatusCode();
             if ( status == HttpStatus.SC_OK )
             {
-                final String json = IOUtils.toString( response.getEntity()
-                                                              .getContent() );
+                final String json = EntityUtils.toString( response.getEntity() );
 
                 final StoreListingDTO<HostedRepository> listing =
                     serializer.readValue( json,
@@ -414,10 +411,8 @@ public class ReplicationController
             final int status = statusLine.getStatusCode();
             if ( status == HttpStatus.SC_OK )
             {
-                final EndpointViewListing listing =
-                    serializer.readValue( response.getEntity()
-                                                  .getContent(), EndpointViewListing.class );
-
+                final String json = EntityUtils.toString( response.getEntity() );
+                final EndpointViewListing listing = serializer.readValue( json, EndpointViewListing.class );
                 return listing.getItems();
             }
 

@@ -18,10 +18,10 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.util.EntityUtils;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
 import org.commonjava.maven.galley.auth.MemoryPasswordManager;
 import org.junit.rules.ExternalResource;
@@ -158,8 +158,7 @@ public class HttpTestFixture
 
         final StatusLine sl = response.getStatusLine();
 
-        IOUtils.toString( response.getEntity()
-                                  .getContent() );
+        EntityUtils.consume( response.getEntity() );
 
         assertThat( sl.getStatusCode(), equalTo( expectedResponse ) );
     }
