@@ -14,7 +14,7 @@
   <parent>
     <groupId>org.commonjava.aprox</groupId>
     <artifactId>aprox-revisions</artifactId>
-    <version>0.18.6</version>
+    <version>0.18.7-SNAPSHOT</version>
   </parent>
   <artifactId>aprox-revisions-common</artifactId>
   <name>AProx :: Add-Ons :: Revisions :: Common</name>

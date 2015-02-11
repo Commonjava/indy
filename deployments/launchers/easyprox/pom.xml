@@ -14,7 +14,7 @@
   <parent>
     <groupId>org.commonjava.aprox.launch</groupId>
     <artifactId>aprox-launchers</artifactId>
-    <version>0.18.6</version>
+    <version>0.18.7-SNAPSHOT</version>
   </parent>
   
   <artifactId>aprox-launcher-easyprox</artifactId>
