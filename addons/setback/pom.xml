@@ -14,7 +14,7 @@
   <parent>
     <groupId>org.commonjava.aprox</groupId>
     <artifactId>aprox-addons</artifactId>
-    <version>0.18.6-SNAPSHOT</version>
+    <version>0.18.6</version>
   </parent>
   <artifactId>aprox-setback</artifactId>
   <name>AProx :: Add-Ons :: Set-Back :: Parent</name>
