@@ -32,6 +32,7 @@ public class FoloContentManagement04Test
         final InputStream result = client.module( AproxFoloContentClientModule.class )
                                          .get( trackingId, hosted, STORE, path );
         final byte[] resultBytes = IOUtils.toByteArray( result );
+        result.close();
 
         assertThat( Arrays.equals( bytes, resultBytes ), equalTo( true ) );
     }

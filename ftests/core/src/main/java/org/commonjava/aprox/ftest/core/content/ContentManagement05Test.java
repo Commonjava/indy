@@ -23,6 +23,7 @@ public class ContentManagement05Test
         assertThat( result, notNullValue() );
 
         final String pom = IOUtils.toString( result );
+        result.close();
         assertThat( pom.contains( "<groupId>org.commonjava</groupId>" ), equalTo( true ) );
     }
 

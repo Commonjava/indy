@@ -122,6 +122,7 @@
     </plugins>
   </build>
   
+  <!--
   <profiles>
     <profile>
       <id>run-its</id>
@@ -158,4 +159,5 @@
       </build>
     </profile>
   </profiles>
+  -->
 </project>

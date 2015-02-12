@@ -205,6 +205,8 @@ public abstract class AutoProxDataManagerDecorator
                 }
                 finally
                 {
+                    head.reset();
+
                     http.clearRepositoryCredentials();
                     http.closeConnection();
                 }

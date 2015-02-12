@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -29,7 +30,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.util.EntityUtils;
 import org.commonjava.aprox.client.core.helper.CloseBlockingConnectionManager;
 import org.commonjava.aprox.client.core.helper.HttpResources;
 import org.commonjava.aprox.model.core.ArtifactStore;
@@ -203,11 +203,10 @@ public class AproxClientHttp
                                                                        "Error retrieving %s from: %s. Status was: %d %s (%s)",
                                                                        type.getSimpleName(), path, sl.getStatusCode(),
                                                                        sl.getReasonPhrase(), sl.getProtocolVersion() ) );
-                            EntityUtils.consumeQuietly( response.getEntity() );
                             return null;
                         }
 
-                        final String json = EntityUtils.toString( response.getEntity() );
+                        final String json = entityToString( response );
                         return objectMapper.readValue( json, type );
                     }
                     finally
@@ -218,6 +217,7 @@ public class AproxClientHttp
                         }
                     }
                 }
+
             } );
         }
         catch ( final IOException e )
@@ -271,11 +271,10 @@ public class AproxClientHttp
                                                                        typeRef.getType(), path, sl.getStatusCode(),
                                                                        sl.getReasonPhrase(), sl.getProtocolVersion() ) );
 
-                            EntityUtils.consumeQuietly( response.getEntity() );
                             return null;
                         }
 
-                        final String json = EntityUtils.toString( response.getEntity() );
+                        final String json = entityToString( response );
                         final T value = objectMapper.readValue( json, typeRef );
 
                         return value;
@@ -473,11 +472,11 @@ public class AproxClientHttp
                                                                        "Error retrieving %s from: %s. Status was: %d %s (%s)",
                                                                        type.getSimpleName(), path, sl.getStatusCode(),
                                                                        sl.getReasonPhrase(), sl.getProtocolVersion() ) );
-                            EntityUtils.consumeQuietly( response.getEntity() );
+
                             return null;
                         }
 
-                        final String json = EntityUtils.toString( response.getEntity() );
+                        final String json = entityToString( response );
                         return objectMapper.readValue( json, type );
                     }
                     finally
@@ -550,11 +549,11 @@ public class AproxClientHttp
                                                                        "Error retrieving %s from: %s. Status was: %d %s (%s)",
                                                                        typeRef.getType(), path, sl.getStatusCode(),
                                                                        sl.getReasonPhrase(), sl.getProtocolVersion() ) );
-                            EntityUtils.consumeQuietly( response.getEntity() );
+
                             return null;
                         }
 
-                        final String json = EntityUtils.toString( response.getEntity() );
+                        final String json = entityToString( response );
                         return objectMapper.readValue( json, typeRef );
                     }
                     finally
@@ -786,6 +785,23 @@ public class AproxClientHttp
         final HttpPost req = new HttpPost( url );
         addJsonHeaders( req );
         return req;
+    }
+
+    private String entityToString( final HttpResponse response )
+        throws IOException
+    {
+        InputStream stream = null;
+        try
+        {
+            stream = response.getEntity()
+                             .getContent();
+
+            return IOUtils.toString( stream );
+        }
+        finally
+        {
+            closeQuietly( stream );
+        }
     }
 
     private static final class ErrorHolder

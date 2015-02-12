@@ -10,9 +10,11 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.ctl;
 
+import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.maven.galley.util.UrlUtils.buildUrl;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -22,6 +24,7 @@ import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -29,7 +32,6 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.util.EntityUtils;
 import org.commonjava.aprox.AproxException;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.audit.ChangeSummary;
@@ -97,9 +99,9 @@ public class ReplicationController
         final boolean overwrite = dto.isOverwrite();
         final Set<StoreKey> replicated = new HashSet<StoreKey>();
         for ( final ReplicationAction action : dto )
-            {
+        {
             if ( action == null )
-                {
+            {
                 continue;
             }
 
@@ -110,21 +112,21 @@ public class ReplicationController
             try
             {
                 if ( action.getType() == ActionType.PROXY )
-                    {
+                {
                     if ( remoteEndpoints == null )
-                        {
+                    {
                         remoteEndpoints = getEndpoints( dto );
-                        }
+                    }
 
                     for ( final EndpointView view : remoteEndpoints )
-                        {
+                    {
                         final String key = "remote-" + view.getType() + "_" + view.getName();
                         if ( ( include == null || key.matches( include ) )
                             && ( exclude == null || !key.matches( exclude ) ) )
-                            {
+                        {
                             final StoreKey sk = new StoreKey( StoreType.remote, key );
                             if ( overwrite || !data.hasArtifactStore( sk ) )
-                                {
+                            {
                                 final RemoteRepository repo = new RemoteRepository( key, view.getResourceURI() );
                                 setProxyAttributes( repo, action );
 
@@ -132,8 +134,8 @@ public class ReplicationController
                                                                                      "REPLICATION: Proxying remote aprox repository: "
                                                                                          + view.getResourceURI() ) );
                                 replicated.add( repo.getKey() );
-                                }
                             }
+                        }
                     }
                 }
                 else if ( action.getType() == ActionType.MIRROR )
@@ -149,11 +151,11 @@ public class ReplicationController
                                                 .toString();
                         if ( ( include == null || key.matches( include ) )
                             && ( exclude == null || !key.matches( exclude ) ) )
-                            {
+                        {
                             if ( overwrite || !data.hasArtifactStore( store.getKey() ) )
-                                {
+                            {
                                 if ( store instanceof RemoteRepository )
-                                    {
+                                {
                                     setProxyAttributes( ( (RemoteRepository) store ), action );
                                 }
 
@@ -161,11 +163,11 @@ public class ReplicationController
                                                                                    "REPLICATION: Mirroring remote aprox store: "
                                                                                        + store.getKey() ) );
                                 replicated.add( store.getKey() );
-                                }
                             }
                         }
                     }
                 }
+            }
             catch ( final AproxDataException e )
             {
                 logger.error( e.getMessage(), e );
@@ -236,7 +238,7 @@ public class ReplicationController
             final int status = statusLine.getStatusCode();
             if ( status == HttpStatus.SC_OK )
             {
-                final String json = EntityUtils.toString( response.getEntity() );
+                final String json = entityToString( response );
 
                 final StoreListingDTO<RemoteRepository> listing =
                     serializer.readValue( json,
@@ -269,6 +271,7 @@ public class ReplicationController
         }
         finally
         {
+            req.reset();
             http.closeConnection();
         }
 
@@ -283,7 +286,7 @@ public class ReplicationController
             final int status = statusLine.getStatusCode();
             if ( status == HttpStatus.SC_OK )
             {
-                final String json = EntityUtils.toString( response.getEntity() );
+                final String json = entityToString( response );
 
                 final StoreListingDTO<Group> listing =
                     serializer.readValue( json, serializer.getTypeFactory()
@@ -311,6 +314,7 @@ public class ReplicationController
         }
         finally
         {
+            req.reset();
             http.closeConnection();
         }
 
@@ -325,7 +329,7 @@ public class ReplicationController
             final int status = statusLine.getStatusCode();
             if ( status == HttpStatus.SC_OK )
             {
-                final String json = EntityUtils.toString( response.getEntity() );
+                final String json = entityToString( response );
 
                 final StoreListingDTO<HostedRepository> listing =
                     serializer.readValue( json,
@@ -355,6 +359,7 @@ public class ReplicationController
         }
         finally
         {
+            req.reset();
             http.closeConnection();
         }
 
@@ -411,7 +416,7 @@ public class ReplicationController
             final int status = statusLine.getStatusCode();
             if ( status == HttpStatus.SC_OK )
             {
-                final String json = EntityUtils.toString( response.getEntity() );
+                final String json = entityToString( response );
                 final EndpointViewListing listing = serializer.readValue( json, EndpointViewListing.class );
                 return listing.getItems();
             }
@@ -429,7 +434,25 @@ public class ReplicationController
         }
         finally
         {
+            req.reset();
             http.closeConnection();
+        }
+    }
+
+    private String entityToString( final HttpResponse response )
+        throws IOException
+    {
+        InputStream stream = null;
+        try
+        {
+            stream = response.getEntity()
+                             .getContent();
+
+            return IOUtils.toString( stream );
+        }
+        finally
+        {
+            closeQuietly( stream );
         }
     }
 

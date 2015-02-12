@@ -21,7 +21,6 @@ import java.util.Map;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.util.EntityUtils;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
 import org.commonjava.maven.galley.auth.MemoryPasswordManager;
 import org.junit.rules.ExternalResource;
@@ -153,14 +152,19 @@ public class HttpTestFixture
         throws Exception
     {
         final HttpGet get = new HttpGet( testUrl );
-        final HttpResponse response = http.getClient()
-                                          .execute( get );
+        try
+        {
+            final HttpResponse response = http.getClient()
+                                              .execute( get );
 
-        final StatusLine sl = response.getStatusLine();
+            final StatusLine sl = response.getStatusLine();
 
-        EntityUtils.consume( response.getEntity() );
-
-        assertThat( sl.getStatusCode(), equalTo( expectedResponse ) );
+            assertThat( sl.getStatusCode(), equalTo( expectedResponse ) );
+        }
+        finally
+        {
+            get.reset();
+        }
     }
 
     public void expect( final String testUrl, final int responseCode, final String body )

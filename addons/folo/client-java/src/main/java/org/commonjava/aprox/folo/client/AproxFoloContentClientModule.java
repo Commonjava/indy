@@ -1,5 +1,6 @@
 package org.commonjava.aprox.folo.client;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
@@ -57,7 +58,14 @@ public class AproxFoloContentClientModule
             throw new AproxClientException( "Response returned status: %s.", resources.getStatusLine() );
         }
 
-        return resources.getResponseStream();
+        try
+        {
+            return resources.getResponseStream();
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxClientException( "Failed to open response content stream: %s", e, e.getMessage() );
+        }
     }
 
 }

@@ -48,8 +48,12 @@
     
     <vertx.testtools.version>2.0.0-final</vertx.testtools.version>
     
+    <test-forkCount>1</test-forkCount>
+    <test-redirectOutput>false</test-redirectOutput>
+<!--
     <test-forkCount>1C</test-forkCount>
     <test-redirectOutput>true</test-redirectOutput>
+ -->
   </properties>
   
   <distributionManagement>

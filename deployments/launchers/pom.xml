@@ -88,6 +88,7 @@
     </pluginManagement>
   </build>
   
+  <!--
   <profiles>
     <profile>
       <id>run-its</id>
@@ -97,12 +98,6 @@
           <groupId>org.commonjava.aprox</groupId>
           <artifactId>aprox-ftests-core</artifactId>
         </dependency>
-        <!--
-        <dependency>
-          <groupId>org.commonjava.aprox</groupId>
-          <artifactId>aprox-test-providers-core</artifactId>
-        </dependency>
-        -->
       </dependencies>
       
       <build>
@@ -124,4 +119,5 @@
       </build>
     </profile>
   </profiles>
+  -->
 </project>

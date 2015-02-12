@@ -29,6 +29,7 @@ public class ContentManagement04Test
         final InputStream result = client.content()
                                          .get( hosted, STORE, path );
         final byte[] resultBytes = IOUtils.toByteArray( result );
+        result.close();
 
         assertThat( Arrays.equals( bytes, resultBytes ), equalTo( true ) );
     }
