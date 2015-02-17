@@ -27,17 +27,20 @@ import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.model.core.dto.StoreListingDTO;
 import org.commonjava.aprox.util.ApplicationContent;
+import org.commonjava.aprox.util.ValuePipe;
 import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.commonjava.vertx.vabr.types.ApplicationStatus;
+import org.commonjava.vertx.vabr.types.BindingType;
 import org.commonjava.vertx.vabr.types.BuiltInParam;
 import org.commonjava.vertx.vabr.types.Method;
 import org.commonjava.vertx.vabr.util.Respond;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
@@ -63,20 +66,63 @@ public class StoreAdminHandler
     //    @Context
     //    private HttpServletRequest request;
 
+    @Routes( { @Route( path = "/:name", method = Method.HEAD, binding = BindingType.raw, fork = false ) } )
+    public void exists( final HttpServerRequest request )
+    {
+        request.endHandler( new Handler<Void>()
+        {
+            @Override
+            public void handle( final Void event )
+            {
+                final String type = request.params()
+                                           .get( PathParam.type.key() );
+                final String name = request.params()
+                                           .get( PathParam.name.key() );
+
+                final StoreType st = StoreType.get( type );
+
+                logger.info( "Checking for existence of: {}:{}", st, name );
+
+                if ( adminController.exists( new StoreKey( st, name ) ) )
+                {
+                    logger.info( "returning OK" );
+                    Respond.to( request )
+                           .ok()
+                           .send();
+                }
+                else
+                {
+                    logger.info( "Returning NOT FOUND" );
+                    Respond.to( request )
+                           .notFound()
+                           .send();
+                }
+            }
+        } );
+        request.resume();
+    }
+
     /*
      * (non-Javadoc)
      * @see org.commonjava.aprox.core.rest.admin.DeployPointAdminResource#create()
      */
     @Routes( { @Route( method = Method.POST, contentType = ApplicationContent.application_json ) } )
-    public void create( final Buffer buffer, final HttpServerRequest request )
+    public void create( final Buffer event, final HttpServerRequest request )
     {
-        final String json = buffer.getString( 0, buffer.length() );
+        //        request.pause();
+        //        request.bodyHandler( new Handler<Buffer>()
+        //        {
+        //            @Override
+        //            public void handle( final Buffer event )
+        //            {
+        final String json = event.getString( 0, event.length() );
+
         final String type = request.params()
                                    .get( PathParam.type.key() );
 
         final StoreType st = StoreType.get( type );
 
-        ArtifactStore store;
+        final ArtifactStore store;
         try
         {
             store = objectMapper.readValue( json, st.getStoreClass() );
@@ -85,10 +131,9 @@ public class StoreAdminHandler
         {
             final String message = "Failed to read " + st.getStoreClass()
                                                          .getSimpleName() + " from JSON:\n" + json;
+
             logger.error( message, e );
-            Respond.to( request )
-                   .serverError( e, message, true )
-                   .send();
+            formatResponse( e, request );
             return;
         }
 
@@ -127,6 +172,9 @@ public class StoreAdminHandler
                    .serverError( e, "Failed to serialize JSON response.", true )
                    .send();
         }
+        //            }
+        //        } );
+        //        request.resume();
     }
 
     /*
@@ -136,7 +184,6 @@ public class StoreAdminHandler
     @Routes( { @Route( path = "/:name", method = Method.PUT, contentType = ApplicationContent.application_json ) } )
     public void store( final Buffer buffer, final HttpServerRequest request )
     {
-        final String json = buffer.getString( 0, buffer.length() );
         final String type = request.params()
                                    .get( PathParam.type.key() );
         final String name = request.params()
@@ -144,8 +191,11 @@ public class StoreAdminHandler
 
         final StoreType st = StoreType.get( type );
 
+        final String json = buffer.getString( 0, buffer.length() );
+
         logger.info( "Got JSON:\n\n{}\n\n", json );
-        ArtifactStore store;
+
+        final ArtifactStore store;
         try
         {
             store = objectMapper.readValue( json, st.getStoreClass() );
@@ -155,9 +205,7 @@ public class StoreAdminHandler
             final String message = "Failed to read " + st.getStoreClass()
                                                          .getSimpleName() + " from JSON:\n" + json;
             logger.error( message, e );
-            Respond.to( request )
-                   .serverError( e, message, true )
-                   .send();
+            formatResponse( e, request );
             return;
         }
 
@@ -175,11 +223,15 @@ public class StoreAdminHandler
             if ( adminController.store( store, request.params()
                                                       .get( SecurityParam.user.key() ), false ) )
             {
-                Respond.to( request ).ok().send();
+                Respond.to( request )
+                       .ok()
+                       .send();
             }
             else
             {
-                Respond.to( request ).notModified().send();
+                Respond.to( request )
+                       .notModified()
+                       .send();
             }
         }
         catch ( final AproxWorkflowException e )
@@ -194,7 +246,7 @@ public class StoreAdminHandler
      * @see org.commonjava.aprox.core.rest.admin.DeployPointAdminResource#getAll()
      */
     @Routes( { @Route( method = Method.GET, contentType = ApplicationContent.application_json ) } )
-    public void getAll( final Buffer buffer, final HttpServerRequest request )
+    public void getAll( final HttpServerRequest request )
     {
         final String type = request.params()
                                    .get( PathParam.type.key() );
@@ -215,16 +267,12 @@ public class StoreAdminHandler
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            Respond.to( request )
-                   .serverError( e, true )
-                   .send();
+            formatResponse( e, request );
         }
         catch ( final JsonProcessingException e )
         {
             logger.error( e.getMessage(), e );
-            Respond.to( request )
-                   .serverError( e, true )
-                   .send();
+            formatResponse( e, request );
         }
     }
 
@@ -249,7 +297,9 @@ public class StoreAdminHandler
 
             if ( store == null )
             {
-                Respond.to( request ).notFound().send();
+                Respond.to( request )
+                       .notFound()
+                       .send();
             }
             else
             {
@@ -278,42 +328,64 @@ public class StoreAdminHandler
      * (non-Javadoc)
      * @see org.commonjava.aprox.core.rest.admin.DeployPointAdminResource#delete(java.lang.String)
      */
-    @Routes( { @Route( path = "/:name", method = Method.DELETE ) } )
-    public void delete( final Buffer buffer, final HttpServerRequest request )
+    @Routes( { @Route( path = "/:name", method = Method.DELETE, binding = BindingType.raw ) } )
+    public void delete( final HttpServerRequest request )
     {
-        final String type = request.params()
-                                   .get( PathParam.type.key() );
-        final String name = request.params()
-                                   .get( PathParam.name.key() );
+        final ValuePipe<String> summaryPipe = new ValuePipe<>();
+        request.pause()
+               .bodyHandler( new Handler<Buffer>()
+               {
+                   @Override
+                   public void handle( final Buffer event )
+                   {
+                       summaryPipe.set( event.getString( 0, event.length() ) );
+                   }
 
-        final StoreType st = StoreType.get( type );
-        final StoreKey key = new StoreKey( st, name );
+               } )
+               .endHandler( new Handler<Void>()
+               {
+                   @Override
+                   public void handle( final Void event )
+                   {
+                       final String type = request.params()
+                                                  .get( PathParam.type.key() );
+                       final String name = request.params()
+                                                  .get( PathParam.name.key() );
 
-        logger.info( "Deleting: {}", key );
-        try
-        {
-            String summary = buffer.getString( 0, buffer.length() );
-            if ( isEmpty( summary ) )
-            {
-                summary = request.headers()
-                                 .get( ArtifactStore.METADATA_CHANGELOG );
-            }
+                       final StoreType st = StoreType.get( type );
+                       final StoreKey key = new StoreKey( st, name );
 
-            if ( isEmpty( summary ) )
-            {
-                summary = "Changelog not provided";
-            }
+                       logger.info( "Deleting: {}", key );
+                       try
+                       {
+                           String summary = summaryPipe.get();
+                           //                           String summary = buffer.getString( 0, buffer.length() );
+                           if ( isEmpty( summary ) )
+                           {
+                               summary = request.headers()
+                                                .get( ArtifactStore.METADATA_CHANGELOG );
+                           }
 
-            adminController.delete( key, request.params()
-                                                .get( SecurityParam.user.key() ), summary );
+                           if ( isEmpty( summary ) )
+                           {
+                               summary = "Changelog not provided";
+                           }
 
-            Respond.to( request ).deleted().send();
-        }
-        catch ( final AproxWorkflowException e )
-        {
-            logger.error( e.getMessage(), e );
-            formatResponse( e, request );
-        }
+                           adminController.delete( key, request.params()
+                                                               .get( SecurityParam.user.key() ), summary );
+
+                           Respond.to( request )
+                                  .deleted()
+                                  .send();
+                       }
+                       catch ( final AproxWorkflowException e )
+                       {
+                           logger.error( e.getMessage(), e );
+                           formatResponse( e, request );
+                       }
+                   }
+               } )
+               .resume();
     }
 
 }

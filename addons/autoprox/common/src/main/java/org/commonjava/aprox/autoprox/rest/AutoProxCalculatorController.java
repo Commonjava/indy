@@ -44,7 +44,8 @@ public class AutoProxCalculatorController
         }
         catch ( final AutoProxRuleException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to evaluate: '{}'. Reason: {}",
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR.code(),
+                                              "Failed to evaluate: '{}'. Reason: {}",
                                               e, name, e.getMessage() );
         }
 
@@ -66,7 +67,8 @@ public class AutoProxCalculatorController
         }
         catch ( final AutoProxRuleException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to evaluate: '{}'. Reason: {}",
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR.code(),
+                                              "Failed to evaluate: '{}'. Reason: {}",
                                               e, name, e.getMessage() );
         }
 
@@ -96,7 +98,8 @@ public class AutoProxCalculatorController
         }
         catch ( final AutoProxRuleException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to evaluate: '{}'. Reason: {}",
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR.code(),
+                                              "Failed to evaluate: '{}'. Reason: {}",
                                               e, name, e.getMessage() );
         }
         finally

@@ -38,7 +38,7 @@ public class SetBackSettingsResource
 
         if ( StoreType.hosted == type )
         {
-            ResponseUtils.setStatus( ApplicationStatus.BAD_REQUEST, request );
+            ResponseUtils.status( ApplicationStatus.BAD_REQUEST, request );
             request.response()
                    .end();
             return;
@@ -58,7 +58,7 @@ public class SetBackSettingsResource
 
         if ( settingsXml != null && settingsXml.exists() )
         {
-            ResponseUtils.setStatus( ApplicationStatus.OK, request );
+            ResponseUtils.status( ApplicationStatus.OK, request );
             request.response()
                    .putHeader( ApplicationHeader.content_type.key(), ApplicationContent.application_xml );
 
@@ -68,7 +68,7 @@ public class SetBackSettingsResource
         }
         else
         {
-            ResponseUtils.setStatus( ApplicationStatus.NOT_FOUND, request );
+            ResponseUtils.status( ApplicationStatus.NOT_FOUND, request );
             request.response()
                    .end();
         }
@@ -86,7 +86,7 @@ public class SetBackSettingsResource
 
         if ( StoreType.hosted == type )
         {
-            ResponseUtils.setStatus( ApplicationStatus.BAD_REQUEST, request );
+            ResponseUtils.status( ApplicationStatus.BAD_REQUEST, request );
             request.response()
                    .end();
             return;
@@ -106,13 +106,13 @@ public class SetBackSettingsResource
 
         if ( found )
         {
-            ResponseUtils.setStatus( ApplicationStatus.OK, request );
+            ResponseUtils.status( ApplicationStatus.OK, request );
             request.response()
                    .end();
         }
         else
         {
-            ResponseUtils.setStatus( ApplicationStatus.NOT_FOUND, request );
+            ResponseUtils.status( ApplicationStatus.NOT_FOUND, request );
             request.response()
                    .end();
         }

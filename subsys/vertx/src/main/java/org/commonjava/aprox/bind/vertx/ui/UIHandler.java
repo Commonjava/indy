@@ -11,10 +11,8 @@
 package org.commonjava.aprox.bind.vertx.ui;
 
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
-import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.setStatus;
+import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.status;
 import static org.commonjava.aprox.model.util.HttpUtils.formatDateHeader;
-import static org.commonjava.aprox.util.ApplicationStatus.BAD_REQUEST;
-import static org.commonjava.aprox.util.ApplicationStatus.NOT_FOUND;
 import static org.commonjava.aprox.util.ApplicationStatus.OK;
 import static org.commonjava.vertx.vabr.types.Method.ANY;
 import static org.commonjava.vertx.vabr.types.Method.GET;
@@ -28,13 +26,14 @@ import javax.activation.MimetypesFileTypeMap;
 import javax.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
-import org.commonjava.aprox.bind.vertx.conf.UIConfiguration;
 import org.commonjava.aprox.bind.vertx.util.PathParam;
+import org.commonjava.aprox.conf.UIConfiguration;
 import org.commonjava.aprox.util.ApplicationHeader;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.commonjava.vertx.vabr.types.Method;
+import org.commonjava.vertx.vabr.util.Respond;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.buffer.Buffer;
@@ -103,7 +102,9 @@ public class UIHandler
             default:
             {
                 logger.error( "cannot handle request for method: {}", method );
-                setStatus( BAD_REQUEST, request );
+                Respond.to( request )
+                       .badRequest( "Cannot handle: " + method )
+                       .send();
             }
         }
 
@@ -143,7 +144,7 @@ public class UIHandler
             else
             {
                 logger.debug( "sending OK" );
-                setStatus( OK, request );
+                status( OK, request );
                 request.resume()
                        .response()
                        .setChunked( true )
@@ -155,7 +156,9 @@ public class UIHandler
         else
         {
             logger.debug( "sending 404" );
-            setStatus( NOT_FOUND, request );
+            Respond.to( request )
+                   .notFound()
+                   .send();
         }
 
         return false;
@@ -180,7 +183,7 @@ public class UIHandler
             {
                 logger.debug( "sending OK" );
                 // TODO: set headers for content info...
-                setStatus( OK, request );
+                status( OK, request );
                 request.resume()
                        .response()
                        .setChunked( true )
@@ -192,7 +195,9 @@ public class UIHandler
         else
         {
             logger.debug( "sending 404" );
-            setStatus( NOT_FOUND, request );
+            Respond.to( request )
+                   .notFound()
+                   .send();
         }
 
         return false;

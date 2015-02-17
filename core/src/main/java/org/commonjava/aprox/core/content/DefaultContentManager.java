@@ -32,6 +32,7 @@ import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.model.galley.KeyedLocation;
+import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.slf4j.Logger;
@@ -510,6 +511,53 @@ public class DefaultContentManager
         {
             IOUtils.closeQuietly( stream );
         }
+    }
+
+    @Override
+    public Transfer getTransfer( final StoreKey store, final String path, final TransferOperation op )
+        throws AproxWorkflowException
+    {
+        try
+        {
+            return getTransfer( storeManager.getArtifactStore( store ), path, op );
+        }
+        catch ( final AproxDataException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
+                                              "Failed to retrieve ArtifactStore for key: %s. Reason: %s", e, store,
+                                              e.getMessage() );
+
+        }
+    }
+
+    @Override
+    public Transfer getTransfer( final ArtifactStore store, final String path, final TransferOperation op )
+        throws AproxWorkflowException
+    {
+        if ( StoreType.group == store.getKey()
+                                     .getType() )
+        {
+            try
+            {
+                final List<ArtifactStore> allMembers = storeManager.getOrderedConcreteStoresInGroup( store.getName() );
+
+                return getTransfer( allMembers, path, op );
+            }
+            catch ( final AproxDataException e )
+            {
+                throw new AproxWorkflowException( "Failed to lookup concrete members of: %s. Reason: %s", e, store,
+                                                  e.getMessage() );
+            }
+        }
+
+        return downloadManager.getStorageReference( store, path, op );
+    }
+
+    @Override
+    public Transfer getTransfer( final List<ArtifactStore> stores, final String path, final TransferOperation op )
+        throws AproxWorkflowException
+    {
+        return downloadManager.getStorageReference( stores, path, op );
     }
 
 }

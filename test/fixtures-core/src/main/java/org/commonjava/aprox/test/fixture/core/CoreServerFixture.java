@@ -35,7 +35,7 @@ public class CoreServerFixture
     private TemporaryFolder temp;
 
     public CoreServerFixture( final TemporaryFolder folder )
-        throws AproxBootException
+        throws AproxBootException, IOException
     {
         this( BootFinder.find(), newBootOptions( null, folder.newFolder( "aprox-home" )
                                           .getAbsolutePath() ) );
@@ -48,7 +48,7 @@ public class CoreServerFixture
     }
 
     public CoreServerFixture()
-        throws AproxBootException
+        throws AproxBootException, IOException
     {
         this.booter = BootFinder.find();
         this.temp = newTemporaryFolder();

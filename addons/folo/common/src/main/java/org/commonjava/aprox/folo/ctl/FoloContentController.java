@@ -26,6 +26,7 @@ import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.model.TransferOperation;
 
 /**
  * Wrapper around {@link ContentController} that accepts {@link TrackingKey} in place of {@link StoreKey}, and uses the extra tracking ID it contains 
@@ -131,6 +132,24 @@ public class FoloContentController
         throws AproxWorkflowException
     {
         return contentController.isHtmlContent( item );
+    }
+
+    public Transfer getTransfer( final TrackingKey trackingKey, final String path, final TransferOperation op )
+        throws AproxWorkflowException
+    {
+        final Transfer item = contentController.getTransfer( trackingKey.getTrackedStore(), path, op );
+
+        final StoreKey affectedKey = LocationUtils.getKey( item );
+        try
+        {
+            recordManager.recordArtifact( trackingKey, affectedKey, path, StoreEffect.UPLOAD );
+        }
+        catch ( final FoloContentException e )
+        {
+            throw new AproxWorkflowException( "Failed to record upload: %s. Reason: %s", e, path, e.getMessage() );
+        }
+
+        return item;
     }
 
 }

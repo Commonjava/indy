@@ -356,7 +356,7 @@ public class RepositoryController
         if ( dto == null )
         {
             logger.warn( "Repository archive configuration is missing." );
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "JSON configuration not supplied" );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "JSON configuration not supplied" );
         }
 
         dto.resolveFilters( presets, config.getDefaultWebFilterPreset() );
@@ -364,7 +364,7 @@ public class RepositoryController
         if ( !dto.isValid() )
         {
             logger.warn( "Repository archive configuration is invalid: {}", dto );
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Invalid configuration: {}", dto );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid configuration: {}", dto );
         }
 
         Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> contents;

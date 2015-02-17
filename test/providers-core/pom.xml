@@ -27,11 +27,6 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-filer-default</artifactId>
     </dependency>

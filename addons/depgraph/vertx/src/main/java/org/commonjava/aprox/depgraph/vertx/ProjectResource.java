@@ -12,7 +12,6 @@ package org.commonjava.aprox.depgraph.vertx;
 
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
-import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.setStatus;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_artifactId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_groupId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_version;
@@ -27,12 +26,12 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.rest.ProjectController;
-import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.atlas.graph.rel.RelationshipType;
 import org.commonjava.maven.atlas.ident.DependencyScope;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
+import org.commonjava.vertx.vabr.util.Respond;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.MultiMap;
@@ -73,7 +72,9 @@ public class ProjectResource
         }
         else
         {
-            setStatus( ApplicationStatus.NO_CONTENT, request );
+            Respond.to( request )
+                   .noContent()
+                   .send();
         }
     }
 
@@ -101,7 +102,9 @@ public class ProjectResource
         }
         else
         {
-            setStatus( ApplicationStatus.NO_CONTENT, request );
+            Respond.to( request )
+                   .noContent()
+                   .send();
         }
     }
 
@@ -130,7 +133,9 @@ public class ProjectResource
         }
         else
         {
-            setStatus( ApplicationStatus.NO_CONTENT, request );
+            Respond.to( request )
+                   .noContent()
+                   .send();
         }
     }
 
@@ -162,7 +167,9 @@ public class ProjectResource
         }
         else
         {
-            setStatus( ApplicationStatus.NO_CONTENT, request );
+            Respond.to( request )
+                   .noContent()
+                   .send();
         }
     }
 
@@ -192,7 +199,9 @@ public class ProjectResource
         }
         else
         {
-            setStatus( ApplicationStatus.NO_CONTENT, request );
+            Respond.to( request )
+                   .noContent()
+                   .send();
         }
     }
 
@@ -223,7 +232,9 @@ public class ProjectResource
         }
         else
         {
-            setStatus( ApplicationStatus.NO_CONTENT, request );
+            Respond.to( request )
+                   .noContent()
+                   .send();
         }
     }
 
@@ -254,7 +265,9 @@ public class ProjectResource
         }
         else
         {
-            setStatus( ApplicationStatus.NO_CONTENT, request );
+            Respond.to( request )
+                   .noContent()
+                   .send();
         }
     }
 
@@ -285,7 +298,9 @@ public class ProjectResource
         }
         else
         {
-            setStatus( ApplicationStatus.NO_CONTENT, request );
+            Respond.to( request )
+                   .noContent()
+                   .send();
         }
     }
 

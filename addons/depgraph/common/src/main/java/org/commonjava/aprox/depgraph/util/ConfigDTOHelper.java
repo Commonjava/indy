@@ -83,7 +83,8 @@ public class ConfigDTOHelper
 
         if ( dto == null )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "No configuration found in request body!" );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
+                                              "No configuration found in request body!" );
         }
 
         try
@@ -92,7 +93,8 @@ public class ConfigDTOHelper
         }
         catch ( final TransferException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "One or more sources/excluded sources is invalid: {}", e, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
+                                              "One or more sources/excluded sources is invalid: {}", e, e.getMessage() );
         }
 
         return dto;
@@ -125,7 +127,8 @@ public class ConfigDTOHelper
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot read GraphComposition JSON from stream: {}", e, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
+                                              "Cannot read GraphComposition JSON from stream: {}", e, e.getMessage() );
         }
 
     }
@@ -139,7 +142,8 @@ public class ConfigDTOHelper
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot read MetadataCollationDTO JSON from stream: {}", e,
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
+                                              "Cannot read MetadataCollationDTO JSON from stream: {}", e,
                                               e.getMessage() );
         }
     }
@@ -159,7 +163,8 @@ public class ConfigDTOHelper
 
         if ( dto == null )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "No collation configuration found in request body!" );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
+                                              "No collation configuration found in request body!" );
         }
 
         dto.resolveFilters( presets, config.getDefaultWebFilterPreset() );
@@ -170,7 +175,8 @@ public class ConfigDTOHelper
         }
         catch ( final TransferException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "One or more sources/excluded sources is invalid: {}", e, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
+                                              "One or more sources/excluded sources is invalid: {}", e, e.getMessage() );
         }
 
         return dto;
@@ -186,7 +192,7 @@ public class ConfigDTOHelper
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST,
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
                                               "Cannot read WebBomDTO JSON from stream: {}", e, e.getMessage() );
         }
     }
@@ -206,7 +212,7 @@ public class ConfigDTOHelper
 
         if ( dto == null )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST,
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
                                               "No BOM configuration found in request body!" );
         }
 
@@ -218,7 +224,8 @@ public class ConfigDTOHelper
         }
         catch ( final TransferException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "AProx source store %s is invalid: %s", e,
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
+                                              "AProx source store %s is invalid: %s", e,
                                               dto.getSource(), e.getMessage() );
         }
 

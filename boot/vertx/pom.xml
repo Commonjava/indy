@@ -77,6 +77,9 @@
             <annotationProcessors>
               <annotationProcessor>org.commonjava.atservice.processor.ServiceAnnotationProcessor</annotationProcessor>
             </annotationProcessors>
+            <compilerArgs>
+              <arg>${vertxHandlerForkingArg}</arg>
+            </compilerArgs>
           </configuration>
         </plugin>
       </plugins>

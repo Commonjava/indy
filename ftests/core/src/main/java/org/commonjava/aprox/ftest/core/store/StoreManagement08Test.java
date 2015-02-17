@@ -26,7 +26,7 @@ public class StoreManagement08Test
               .delete( StoreType.group, name.getMethodName(), repo.getName() );
 
         assertThat( client.stores()
-                          .exists( StoreType.group, repo.getName() ), equalTo( false ) );
+                          .exists( StoreType.group, name.getMethodName() ), equalTo( false ) );
     }
 
 }

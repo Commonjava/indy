@@ -227,12 +227,12 @@ public class RenderingController
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Failed to render BOM: {}", e,
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Failed to render BOM: {}", e,
                                               e.getMessage() );
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR,
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR.code(),
                                               "Failed to generate BOM for: {} using config: {}. Reason: {}", e, config,
                                               e.getMessage() );
         }
@@ -262,7 +262,7 @@ public class RenderingController
             }
             else
             {
-                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND,
+                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
                                                   "Cannot find graph: {}:{}:{} in workspace: {}", groupId, artifactId,
                                                   version, workspaceId );
             }
@@ -270,13 +270,13 @@ public class RenderingController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR,
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR.code(),
                                               "Failed to render DOT file for: {}:{}:{} in workspace: {}. Reason: {}",
                                               e, groupId, artifactId, version, workspaceId, e.getMessage(), e );
         }
         catch ( final RelationshipGraphException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR,
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR.code(),
                                               "Failed to render DOT file for: {}:{}:{} in workspace: {}. Reason: {}",
                                               e, groupId, artifactId, version, workspaceId, e.getMessage(), e );
         }
@@ -292,7 +292,7 @@ public class RenderingController
         if ( dto == null )
         {
             logger.warn( "Repository archive configuration is missing." );
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "JSON configuration not supplied" );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "JSON configuration not supplied" );
         }
 
         dto.resolveFilters( presets, config.getDefaultWebFilterPreset() );
@@ -300,7 +300,7 @@ public class RenderingController
         if ( !dto.isValid() )
         {
             logger.warn( "Repository archive configuration is invalid: {}", dto );
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Invalid configuration: {}", dto );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid configuration: {}", dto );
         }
 
         GraphComposition result;

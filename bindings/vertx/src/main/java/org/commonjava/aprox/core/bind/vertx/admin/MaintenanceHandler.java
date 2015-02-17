@@ -11,7 +11,6 @@
 package org.commonjava.aprox.core.bind.vertx.admin;
 
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
-import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.setStatus;
 
 import javax.inject.Inject;
 
@@ -20,12 +19,12 @@ import org.commonjava.aprox.bind.vertx.util.PathParam;
 import org.commonjava.aprox.core.ctl.ContentController;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
-import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.commonjava.vertx.vabr.types.Method;
+import org.commonjava.vertx.vabr.util.Respond;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.buffer.Buffer;
@@ -54,7 +53,9 @@ public class MaintenanceHandler
         try
         {
             contentController.rescan( key );
-            setStatus( ApplicationStatus.OK, request );
+            Respond.to( request )
+                   .ok()
+                   .send();
         }
         catch ( final AproxWorkflowException e )
         {
@@ -69,7 +70,9 @@ public class MaintenanceHandler
         try
         {
             contentController.rescanAll();
-            setStatus( ApplicationStatus.OK, request );
+            Respond.to( request )
+                   .ok()
+                   .send();
         }
         catch ( final AproxWorkflowException e )
         {
@@ -92,7 +95,9 @@ public class MaintenanceHandler
         try
         {
             contentController.deleteAll( path );
-            setStatus( ApplicationStatus.OK, request );
+            Respond.to( request )
+                   .ok()
+                   .send();
         }
         catch ( final AproxWorkflowException e )
         {

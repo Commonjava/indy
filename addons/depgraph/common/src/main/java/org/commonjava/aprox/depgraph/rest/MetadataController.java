@@ -68,7 +68,7 @@ public class MetadataController
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST,
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
                                               "Cannot read metadata mapping JSON from stream: {}", e, e.getMessage() );
         }
     }
@@ -88,7 +88,8 @@ public class MetadataController
 
         if ( dto == null || dto.isEmpty() )
         {
-            throw new AproxWorkflowException( ApplicationStatus.NOT_MODIFIED, "No changes found in metadata request." );
+            throw new AproxWorkflowException( ApplicationStatus.NOT_MODIFIED.code(),
+                                              "No changes found in metadata request." );
         }
 
         final ViewParams params = new ViewParams( workspaceId );
@@ -105,7 +106,8 @@ public class MetadataController
             }
             catch ( final CartoDataException e )
             {
-                throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "Cannot update metadata: %s", e,
+                throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Cannot update metadata: %s",
+                                                  e,
                                                   e.getMessage() );
             }
         }
@@ -182,7 +184,7 @@ public class MetadataController
 
         if ( metadata == null || metadata.isEmpty() )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST,
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
                                               "No metadata updates found in request body!" );
         }
 
@@ -197,7 +199,7 @@ public class MetadataController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST,
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
                                               "Cannot update metadata for: '%s:%s:%s'. Reason: %s", e, groupId,
                                               artifactId, version, e.getMessage() );
         }

@@ -63,7 +63,8 @@ public class AdminController
         }
         catch ( final AproxDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to store: {}. Reason: {}", e, store.getKey(), e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR.code(), "Failed to store: {}. Reason: {}",
+                                              e, store.getKey(), e.getMessage() );
         }
     }
 
@@ -76,7 +77,8 @@ public class AdminController
         }
         catch ( final AproxDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to list: {}. Reason: {}", e, type, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR.code(), "Failed to list: {}. Reason: {}",
+                                              e, type, e.getMessage() );
         }
     }
 
@@ -89,7 +91,8 @@ public class AdminController
         }
         catch ( final AproxDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to retrieve: {}. Reason: {}", e, key, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR.code(),
+                                              "Failed to retrieve: {}. Reason: {}", e, key, e.getMessage() );
         }
     }
 
@@ -102,8 +105,14 @@ public class AdminController
         }
         catch ( final AproxDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to delete: {}. Reason: {}", e, key, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR.code(),
+                                              "Failed to delete: {}. Reason: {}", e, key, e.getMessage() );
         }
+    }
+
+    public boolean exists( final StoreKey key )
+    {
+        return storeManager.hasArtifactStore( key );
     }
 
 }

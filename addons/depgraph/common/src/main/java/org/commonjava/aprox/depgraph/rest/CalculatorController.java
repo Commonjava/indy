@@ -65,7 +65,7 @@ public class CalculatorController
 
             if ( graphs.size() != 2 )
             {
-                throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST,
+                throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
                                                   "You must specify EXACTLY two graph descriptions (GAV-set with optional filter preset) in order to perform a diff." );
             }
             else
@@ -108,12 +108,13 @@ public class CalculatorController
             if ( graphs.size() < 2 )
             {
                 throw new AproxWorkflowException(
-                                                  ApplicationStatus.BAD_REQUEST,
+                                                  ApplicationStatus.BAD_REQUEST.code(),
                                                   "You must specify at least two graph descriptions (GAV-set with optional filter preset) in order to perform a calculation." );
             }
             else if ( dto.getCalculation() == null )
             {
-                throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "You must specify a calculation type." );
+                throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
+                                                  "You must specify a calculation type." );
             }
             else
             {

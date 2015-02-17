@@ -4,8 +4,6 @@ import static org.commonjava.aprox.bind.vertx.util.PathParam.name;
 import static org.commonjava.aprox.bind.vertx.util.PathParam.path;
 import static org.commonjava.aprox.bind.vertx.util.PathParam.type;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
-import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.setStatus;
-import static org.commonjava.aprox.util.ApplicationStatus.OK;
 import static org.commonjava.vertx.vabr.types.Method.DELETE;
 import static org.commonjava.vertx.vabr.types.Method.GET;
 
@@ -43,7 +41,9 @@ public class NfcResource
     public void clearAll( final HttpServerRequest request )
     {
         controller.clear();
-        setStatus( OK, request ).end();
+        Respond.to( request )
+               .ok()
+               .send();
     }
 
     @Route( path = "/:type/:name:?path=(/.+)", method = Method.DELETE )
@@ -70,7 +70,9 @@ public class NfcResource
                 controller.clear( key, p );
             }
 
-            setStatus( OK, request ).end();
+            Respond.to( request )
+                   .ok()
+                   .send();
         }
         catch ( final AproxWorkflowException e )
         {

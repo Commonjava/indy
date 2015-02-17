@@ -2,9 +2,11 @@ package org.commonjava.aprox.ftest.core;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import org.commonjava.aprox.boot.AproxBootException;
 import org.commonjava.aprox.boot.BootStatus;
@@ -16,6 +18,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
+import org.junit.rules.Timeout;
 
 import com.fasterxml.jackson.databind.Module;
 
@@ -32,11 +35,20 @@ public abstract class AbstractAproxFunctionalTest
     @Rule
     public TestName name = new TestName();
 
+    @Rule
+    public Timeout timeout = Timeout.builder()
+                                    .withLookingForStuckThread( true )
+                                    .withTimeout( getTestTimeoutSeconds(), TimeUnit.SECONDS )
+                                    .build();
+
     @SuppressWarnings( "resource" )
     @Before
     public void start()
         throws Throwable
     {
+        Thread.currentThread()
+              .setName( getClass().getSimpleName() + "." + name.getMethodName() );
+
         fixture = newServerFixture();
         fixture.start();
 
@@ -51,6 +63,11 @@ public abstract class AbstractAproxFunctionalTest
                        getAdditionalClientModules() ).connect();
     }
 
+    protected long getTestTimeoutSeconds()
+    {
+        return 120;
+    }
+
     @After
     public void stop()
     {
@@ -59,7 +76,7 @@ public abstract class AbstractAproxFunctionalTest
     }
 
     protected CoreServerFixture newServerFixture()
-        throws AproxBootException
+        throws AproxBootException, IOException
     {
         return new CoreServerFixture();
     }

@@ -15,7 +15,6 @@ import java.io.Serializable;
 import java.text.MessageFormat;
 
 import org.commonjava.aprox.content.DownloadManager;
-import org.commonjava.aprox.util.ApplicationStatus;
 
 /**
  * Signals an error between the REST-resources layer and the next layer down (except for {@link DownloadManager}, which is normally two layers down thanks 
@@ -41,13 +40,6 @@ public class AproxWorkflowException
     {
         super( message, cause );
         this.params = params;
-    }
-
-    public AproxWorkflowException( final ApplicationStatus status, final String message, final Object... params )
-    {
-        super( message );
-        this.params = params;
-        this.status = status.code();
     }
 
     public AproxWorkflowException( final int status, final String message, final Object... params )
@@ -115,7 +107,7 @@ public class AproxWorkflowException
 
     public int getStatus()
     {
-        return status < 1 ? ApplicationStatus.BAD_REQUEST.code() : status;
+        return status < 1 ? 500 : status;
     }
 
     /**

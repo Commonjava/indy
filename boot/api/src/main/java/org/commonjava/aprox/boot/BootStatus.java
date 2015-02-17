@@ -17,10 +17,11 @@ public class BootStatus
         markFailed( exit, error );
     }
 
-    public void markFailed( final int exit, final Throwable error )
+    public synchronized void markFailed( final int exit, final Throwable error )
     {
         this.exit = exit;
         this.error = error;
+        notifyAll();
     }
 
     public boolean isSet()
@@ -48,9 +49,10 @@ public class BootStatus
         return exit;
     }
 
-    public void markSuccess()
+    public synchronized void markSuccess()
     {
         exit = 0;
+        notifyAll();
     }
 
 }

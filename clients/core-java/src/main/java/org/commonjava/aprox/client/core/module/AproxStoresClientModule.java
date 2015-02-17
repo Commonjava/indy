@@ -9,12 +9,16 @@ import org.commonjava.aprox.model.core.HostedRepository;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.model.core.dto.StoreListingDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
 public class AproxStoresClientModule
     extends AproxClientModule
 {
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
     public <T extends ArtifactStore> T create( final T value, final String changelog, final Class<T> type )
         throws AproxClientException
     {

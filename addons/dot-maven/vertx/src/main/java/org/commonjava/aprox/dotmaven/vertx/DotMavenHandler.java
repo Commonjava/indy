@@ -22,10 +22,8 @@ import net.sf.webdav.exceptions.WebdavException;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.bind.vertx.MasterRouter;
 import org.commonjava.aprox.bind.vertx.util.PathParam;
-import org.commonjava.aprox.bind.vertx.util.ResponseUtils;
 import org.commonjava.aprox.dotmaven.inject.DotMavenApp;
 import org.commonjava.aprox.dotmaven.webctl.DotMavenService;
-import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.anno.Routes;
@@ -57,7 +55,9 @@ public class DotMavenHandler
     @Routes( { @Route( method = Method.ANY, path = ":?path=(.*)", binding = BindingType.raw ) } )
     public void handle( final HttpServerRequest request )
     {
-        ResponseUtils.setStatus( ApplicationStatus.OK, request );
+        request.response()
+               .setStatusCode( 200 )
+               .setStatusMessage( "OK" );
 
         request.pause();
         String path = request.params()

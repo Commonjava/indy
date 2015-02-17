@@ -18,7 +18,8 @@ public enum ApplicationHeader
     uri( "URI" ),
     content_length( "Content-Length" ),
     last_modified( "Last-Modified" ),
-    deprecated( "Deprecated-Use-Alt" );
+    deprecated( "Deprecated-Use-Alt" ),
+    accept( "Accept" );
 
     private final String key;
 

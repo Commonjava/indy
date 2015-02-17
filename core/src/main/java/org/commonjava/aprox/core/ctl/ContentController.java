@@ -119,7 +119,7 @@ public class ContentController
 
         if ( item == null )
         {
-            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "{}",
+            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(), "{}",
                                               ( path + ( item == null ? " was not found." : "is a directory" ) ) );
         }
 
@@ -163,7 +163,7 @@ public class ContentController
         }
         catch ( final AproxDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR,
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR.code(),
                                               "Failed to retrieve list of concrete stores. Reason: {}", e,
                                               e.getMessage() );
         }
@@ -179,7 +179,7 @@ public class ContentController
         }
         catch ( final AproxDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR,
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR.code(),
                                               "Failed to retrieve list of concrete stores. Reason: {}", e,
                                               e.getMessage() );
         }
@@ -195,13 +195,14 @@ public class ContentController
         }
         catch ( final AproxDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Cannot retrieve store: {}. Reason: {}",
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR.code(),
+                                              "Cannot retrieve store: {}. Reason: {}",
                                               e, key, e.getMessage() );
         }
 
         if ( store == null )
         {
-            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "Cannot find store: {}", key );
+            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(), "Cannot find store: {}", key );
         }
 
         return store;
@@ -392,6 +393,12 @@ public class ContentController
         }
 
         return false;
+    }
+
+    public Transfer getTransfer( final StoreKey storeKey, final String path, final TransferOperation op )
+        throws AproxWorkflowException
+    {
+        return contentManager.getTransfer( storeKey, path, op );
     }
 
 }

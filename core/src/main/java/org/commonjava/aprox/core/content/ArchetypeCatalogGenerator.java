@@ -204,7 +204,7 @@ public class ArchetypeCatalogGenerator
             }
             catch ( final IOException e )
             {
-                throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR,
+                throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR.code(),
                                                   "Failed to delete one or more group files for: {}:{}. Reason: {}", e,
                                                   group.getKey(), path, e.getMessage() );
             }

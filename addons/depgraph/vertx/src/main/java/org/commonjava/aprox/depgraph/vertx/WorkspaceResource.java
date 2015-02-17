@@ -13,7 +13,6 @@ package org.commonjava.aprox.depgraph.vertx;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatCreatedResponse;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
-import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.setStatus;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_wsid;
 import static org.commonjava.aprox.util.ApplicationContent.application_json;
 import static org.commonjava.vertx.vabr.types.BuiltInParam._classContextUrl;
@@ -25,7 +24,6 @@ import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.vertx.util.VertXUriFormatter;
 import org.commonjava.aprox.depgraph.rest.WorkspaceController;
 import org.commonjava.aprox.model.core.dto.CreationDTO;
-import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
@@ -55,7 +53,9 @@ public class WorkspaceResource
         try
         {
             controller.delete( id );
-            setStatus( ApplicationStatus.OK, request ).end();
+            Respond.to( request )
+                   .ok()
+                   .send();
         }
         catch ( final AproxWorkflowException e )
         {
@@ -80,7 +80,9 @@ public class WorkspaceResource
             }
             else
             {
-                setStatus( ApplicationStatus.NOT_MODIFIED, request ).end();
+                Respond.to( request )
+                       .notModified()
+                       .send();
             }
         }
         catch ( final AproxWorkflowException e )
@@ -105,7 +107,9 @@ public class WorkspaceResource
             }
             else
             {
-                setStatus( ApplicationStatus.NOT_MODIFIED, request ).end();
+                Respond.to( request )
+                       .notModified()
+                       .send();
             }
         }
         catch ( final AproxWorkflowException e )
@@ -131,7 +135,9 @@ public class WorkspaceResource
             }
             else
             {
-                setStatus( ApplicationStatus.NOT_MODIFIED, request ).end();
+                Respond.to( request )
+                       .notModified()
+                       .send();
             }
         }
         catch ( final AproxWorkflowException e )
@@ -151,7 +157,9 @@ public class WorkspaceResource
             final String json = controller.get( id );
             if ( json == null )
             {
-                setStatus( ApplicationStatus.NOT_FOUND, request ).end();
+                Respond.to( request )
+                       .notFound()
+                       .send();
             }
             else
             {
@@ -183,7 +191,9 @@ public class WorkspaceResource
 
         if ( json == null )
         {
-            setStatus( ApplicationStatus.NOT_FOUND, request ).end();
+            Respond.to( request )
+                   .notFound()
+                   .send();
         }
         else
         {

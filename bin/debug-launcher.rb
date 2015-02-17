@@ -51,7 +51,7 @@ class Launcher
       rm_rf( launch_dir )
     end
 
-    glob = File.join( target, "aprox-launcher-#{launcher}-*-launcher.tar.gz" )
+    glob = File.join( target, "aprox-launcher-*-launcher.tar.gz" )
 
     puts "Looking for launcher archives: '#{glob}"
     archives = Dir.glob(glob)

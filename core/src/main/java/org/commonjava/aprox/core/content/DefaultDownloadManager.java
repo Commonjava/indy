@@ -332,13 +332,14 @@ public class DefaultDownloadManager
         if ( store.getKey()
                   .getType() == StoreType.group )
         {
+            //FIXME: Why is this null? Investigate.
             return null;
         }
 
         if ( store.getKey()
                   .getType() != StoreType.hosted )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST,
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
                                               "Cannot deploy to non-deploy point artifact store: {}.", store.getKey() );
         }
 
@@ -350,7 +351,7 @@ public class DefaultDownloadManager
             if ( !deploy.isAllowSnapshots() )
             {
                 logger.error( "Cannot store snapshot in non-snapshot deploy point: {}", deploy.getName() );
-                throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST,
+                throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
                                                   "Cannot store snapshot in non-snapshot deploy point: {}",
                                                   deploy.getName() );
             }
@@ -358,7 +359,7 @@ public class DefaultDownloadManager
         else if ( !deploy.isAllowReleases() )
         {
             logger.error( "Cannot store release in snapshot-only deploy point: {}", deploy.getName() );
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST,
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
                                               "Cannot store release in snapshot-only deploy point: {}",
                                               deploy.getName() );
         }
@@ -409,39 +410,18 @@ public class DefaultDownloadManager
         HostedRepository selected = null;
         for ( final ArtifactStore store : stores )
         {
-            if ( store instanceof HostedRepository )
+            if ( storeIsSuitableFor( store, pathInfo, op ) )
             {
-                //                logger.info( "Found deploy point: %s", store.getName() );
-                final HostedRepository dp = (HostedRepository) store;
-                if ( pathInfo == null )
-                {
-                    // probably not an artifact, most likely metadata instead...
-                    //                    logger.info( "Selecting it for non-artifact storage: {}", path );
-                    selected = dp;
-                    break;
-                }
-                else if ( pathInfo.isSnapshot() )
-                {
-                    if ( dp.isAllowSnapshots() )
-                    {
-                        //                        logger.info( "Selecting it for snapshot storage: {}", pathInfo );
-                        selected = dp;
-                        break;
-                    }
-                }
-                else if ( dp.isAllowReleases() )
-                {
-                    //                    logger.info( "Selecting it for release storage: {}", pathInfo );
-                    selected = dp;
-                    break;
-                }
+                selected = (HostedRepository) store;
+                break;
             }
         }
 
         if ( selected == null )
         {
             logger.warn( "Cannot deploy. No valid deploy points in group." );
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, "No deployment locations available." );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
+                                              "No deployment locations available." );
         }
 
         store( selected, path, stream, op );
@@ -466,7 +446,7 @@ public class DefaultDownloadManager
 
         if ( store == null )
         {
-            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "Cannot find store: {}", key );
+            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(), "Cannot find store: {}", key );
         }
 
         return transfers.getStoreRootDirectory( LocationUtils.toLocation( store ) );
@@ -476,6 +456,84 @@ public class DefaultDownloadManager
     public Transfer getStoreRootDirectory( final ArtifactStore store )
     {
         return transfers.getStoreRootDirectory( LocationUtils.toLocation( store ) );
+    }
+
+    @Override
+    public Transfer getStorageReference( final List<ArtifactStore> stores, final String path, final TransferOperation op )
+        throws AproxWorkflowException
+    {
+        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
+
+        ArtifactStore selected = null;
+        for ( final ArtifactStore store : stores )
+        {
+            if ( storeIsSuitableFor( store, pathInfo, op ) )
+            {
+                selected = store;
+                break;
+            }
+        }
+
+        if ( selected == null )
+        {
+            logger.warn( "No suitable stores in list." );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "No suitable store available." );
+        }
+
+        return getStorageReference( selected.getKey(), path );
+    }
+
+    private boolean storeIsSuitableFor( final ArtifactStore store, final ArtifactPathInfo pathInfo,
+                                        final TransferOperation op )
+    {
+        if ( TransferOperation.UPLOAD == op )
+        {
+            if ( store instanceof HostedRepository )
+            {
+                //                logger.info( "Found deploy point: %s", store.getName() );
+                final HostedRepository dp = (HostedRepository) store;
+                if ( pathInfo == null )
+                {
+                    // probably not an artifact, most likely metadata instead...
+                    //                    logger.info( "Selecting it for non-artifact storage: {}", path );
+                    return true;
+                }
+                else if ( pathInfo.isSnapshot() )
+                {
+                    if ( dp.isAllowSnapshots() )
+                    {
+                        //                        logger.info( "Selecting it for snapshot storage: {}", pathInfo );
+                        return true;
+                    }
+                }
+                else if ( dp.isAllowReleases() )
+                {
+                    //                    logger.info( "Selecting it for release storage: {}", pathInfo );
+                    return true;
+                }
+            }
+        }
+        else
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public Transfer getStorageReference( final ArtifactStore store, final String path, final TransferOperation op )
+        throws AproxWorkflowException
+    {
+        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
+        if ( storeIsSuitableFor( store, pathInfo, op ) )
+        {
+            return getStorageReference( store.getKey(), path );
+        }
+
+        logger.warn( "Store {} not suitable for: {}", store, op );
+        throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
+                                          "Store is not suitable for this operation." );
     }
 
     @Override
@@ -501,7 +559,7 @@ public class DefaultDownloadManager
 
         if ( store == null )
         {
-            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "Cannot find store: {}", key );
+            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(), "Cannot find store: {}", key );
         }
 
         return transfers.getCacheReference( new ConcreteResource( LocationUtils.toLocation( store ), path ) );

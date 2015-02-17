@@ -25,10 +25,5 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>aprox-api</artifactId>
     </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>compile</scope>
-    </dependency>
   </dependencies>
 </project>

@@ -21,10 +21,6 @@
 
   <name>AProx :: Add-Ons :: DepGraph (Cartographer Integration) :: Vert.X Bindings</name>
 
-  <properties>
-    <javaVersion>1.7</javaVersion>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>

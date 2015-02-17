@@ -116,4 +116,30 @@ public interface DownloadManager
     List<Transfer> listRecursively( StoreKey src, String startPath )
         throws AproxWorkflowException;
 
+    /**
+     * Retrieve a {@link Transfer} object suitable for use in the specified operation. This method handles the selection logic, and doesn't fire any 
+     * events (the returned {@link Transfer} object handles that in this case). The first suitable store is used to hold the Transfer.
+     * 
+     * @param stores The stores in which the Transfer should reside
+     * @param path The path of the Transfer inside the store
+     * @param op The operation we want to execute on the returned Transfer
+     * @return A suitable transfer object (not null; those cases result in an exception) NOTE: the returned transfer may not exist!
+     * @throws AproxWorkflowException in case no suitable storage location can be found
+     */
+    Transfer getStorageReference( List<ArtifactStore> stores, String path, TransferOperation op )
+        throws AproxWorkflowException;
+
+    /**
+     * Retrieve a {@link Transfer} object suitable for use in the specified operation. This method handles the selection logic in the event the store 
+     * is a {@link Group}, and doesn't fire any events (the returned {@link Transfer} object handles that in this case).
+     * 
+     * @param store The store in which the Transfer should reside
+     * @param path The path of the Transfer inside the store
+     * @param op The operation we want to execute on the returned Transfer
+     * @return A suitable transfer object (not null; those cases result in an exception) NOTE: the returned transfer may not exist!
+     * @throws AproxWorkflowException in case no suitable storage location can be found
+     */
+    Transfer getStorageReference( ArtifactStore store, String path, TransferOperation op )
+        throws AproxWorkflowException;
+
 }

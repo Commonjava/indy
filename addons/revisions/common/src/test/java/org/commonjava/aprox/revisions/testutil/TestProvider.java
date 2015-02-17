@@ -1,5 +1,7 @@
 package org.commonjava.aprox.revisions.testutil;
 
+import java.io.IOException;
+
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
@@ -16,6 +18,7 @@ import org.commonjava.maven.galley.maven.parse.XMLInfrastructure;
 import org.commonjava.maven.galley.maven.spi.type.TypeMapper;
 import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
+import org.junit.Assert;
 import org.junit.rules.TemporaryFolder;
 
 @ApplicationScoped
@@ -46,8 +49,16 @@ public class TestProvider
     @PostConstruct
     public void init()
     {
-        this.storageProviderConfig = new DefaultStorageProviderConfiguration( TEMP.newFolder( "storage" ) );
-        this.dataConfig = new DataFileConfiguration( TEMP.newFolder( "data" ), TEMP.newFolder( "work" ) );
+        try
+        {
+            this.storageProviderConfig = new DefaultStorageProviderConfiguration( TEMP.newFolder( "storage" ) );
+            this.dataConfig = new DataFileConfiguration( TEMP.newFolder( "data" ), TEMP.newFolder( "work" ) );
+        }
+        catch ( final IOException e )
+        {
+            e.printStackTrace();
+            Assert.fail( "Failed to setup temporary directory structures: " + e.getMessage() );
+        }
 
         this.nfc = new MemoryNotFoundCache();
         this.xmlInfra = new XMLInfrastructure();

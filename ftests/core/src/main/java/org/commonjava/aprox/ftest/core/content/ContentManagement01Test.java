@@ -22,8 +22,11 @@ public class ContentManagement01Test
         final InputStream stream = new ByteArrayInputStream( ( "This is a test: " + System.nanoTime() ).getBytes() );
 
         final String path = "/path/to/foo.class";
+        client.content()
+              .store( hosted, STORE, path, stream );
+
         final PathInfo result = client.content()
-                                      .store( hosted, STORE, path, stream );
+                                      .getInfo( hosted, STORE, path );
 
         System.out.println( result );
         assertThat( result, notNullValue() );

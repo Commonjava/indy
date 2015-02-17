@@ -40,16 +40,23 @@ public class AbstractContentManagementTest
                       .create( new RemoteRepository( CENTRAL, "http://repo.maven.apache.org/maven2/" ), changelog,
                                RemoteRepository.class );
         }
+        else
+        {
+            central = client.stores()
+                            .load( remote, CENTRAL, RemoteRepository.class );
+        }
 
         Group g;
         if ( client.stores()
                    .exists( group, PUBLIC ) )
         {
+            System.out.println( "Loading pre-existing public group." );
             g = client.stores()
                       .load( group, PUBLIC, Group.class );
         }
         else
         {
+            System.out.println( "Creating new group 'public'" );
             g = client.stores()
                       .create( new Group( PUBLIC ), changelog, Group.class );
         }

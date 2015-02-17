@@ -64,11 +64,10 @@ public class AproxContentClientModule
         return http.exists( contentPath( type, name, path ) );
     }
 
-    public PathInfo store( final StoreType type, final String name, final String path, final InputStream stream )
+    public void store( final StoreType type, final String name, final String path, final InputStream stream )
         throws AproxClientException
     {
         http.putWithStream( contentPath( type, name, path ), stream );
-        return getInfo( type, name, path );
     }
 
     public PathInfo getInfo( final StoreType type, final String name, final String path )

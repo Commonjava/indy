@@ -130,7 +130,8 @@ public class StatsController
         }
         catch ( final AproxDataException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR, "Failed to retrieve all endpoints: {}",
+            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR.code(),
+                                              "Failed to retrieve all endpoints: {}",
                                               e, e.getMessage() );
         }
 

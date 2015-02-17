@@ -26,6 +26,7 @@
     <module>common</module>
     <module>ftests</module>
     <module>vertx</module>
+    <module>jaxrs</module>
   </modules>
 
 </project>

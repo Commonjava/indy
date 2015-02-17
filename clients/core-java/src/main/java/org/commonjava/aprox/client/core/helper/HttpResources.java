@@ -1,6 +1,9 @@
 package org.commonjava.aprox.client.core.helper;
 
+import static org.apache.commons.io.IOUtils.closeQuietly;
+
 import java.io.Closeable;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -12,13 +15,13 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.AbstractExecutionAwareRequest;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.commonjava.aprox.client.core.AproxClientHttp;
-import org.commonjava.aprox.client.core.AproxClientModule;
-import org.commonjava.aprox.client.core.util.HttpResourcesManagingInputStream;
+import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Contains request, response, and client references, for passing back to a call from an {@link AproxClientModule} method. This allows the caller
- * to cleanly shutdown the associated resources after using a raw-request-style method in {@link AproxClientHttp}.
+ * Contains request, response, and client references, for passing raw data streams and the like back to the caller without losing track of the 
+ * resources that need to be closed when the caller is finished.
  * <br/>
  * <b>NOTE:</b> This class stores the response entity {@link InputStream}, and is NOT threadsafe!
  * 
@@ -31,7 +34,7 @@ public class HttpResources
 
     private final AbstractExecutionAwareRequest request;
 
-    private final CloseableHttpResponse response;
+    private CloseableHttpResponse response;
 
     private final CloseableHttpClient client;
 
@@ -43,6 +46,67 @@ public class HttpResources
         this.client = client;
         this.request = request;
         this.response = response;
+    }
+
+    public HttpResources( final AbstractExecutionAwareRequest request, final CloseableHttpClient client )
+    {
+        this.request = request;
+        this.client = client;
+    }
+
+    public void setResponse( final CloseableHttpResponse response )
+    {
+        this.response = response;
+    }
+
+    public static void cleanupResources( final HttpRequest request, final HttpResponse response,
+                                         final CloseableHttpClient client )
+    {
+        final Logger logger = LoggerFactory.getLogger( HttpResources.class );
+        logger.info( "CLEANING UP RESOURCES via: {}" + Thread.currentThread()
+                                                             .getStackTrace()[1] );
+
+        if ( response != null && response.getEntity() != null )
+        {
+            EntityUtils.consumeQuietly( response.getEntity() );
+
+            if ( response instanceof CloseableHttpResponse )
+            {
+                closeQuietly( (CloseableHttpResponse) response );
+            }
+        }
+
+        if ( request != null )
+        {
+            if ( request instanceof AbstractExecutionAwareRequest )
+            {
+                ( (AbstractExecutionAwareRequest) request ).reset();
+            }
+        }
+
+        if ( client != null )
+        {
+            closeQuietly( client );
+        }
+
+        logger.info( "DONE: CLEANING UP RESOURCES" );
+    }
+
+    public static String entityToString( final HttpResponse response )
+        throws IOException
+    {
+        InputStream stream = null;
+        try
+        {
+            stream = response.getEntity()
+                             .getContent();
+
+            return IOUtils.toString( stream );
+        }
+        finally
+        {
+            closeQuietly( stream );
+        }
     }
 
     public HttpClient getClient()
@@ -63,7 +127,7 @@ public class HttpResources
     public HttpResourcesManagingInputStream getResponseStream()
         throws IOException
     {
-        return new HttpResourcesManagingInputStream( this );
+        return new HttpResourcesManagingInputStream( this, getResponseEntityContent() );
     }
 
     @Override
@@ -76,20 +140,7 @@ public class HttpResources
             IOUtils.closeQuietly( responseEntityStream );
         }
 
-        if ( response != null )
-        {
-            response.close();
-        }
-
-        if ( request != null )
-        {
-            request.reset();
-        }
-
-        if ( client != null )
-        {
-            client.close();
-        }
+        cleanupResources( request, response, client );
     }
 
     public int getStatusCode()
@@ -115,4 +166,30 @@ public class HttpResources
         return responseEntityStream;
     }
 
+    public InputStream wrapRequestStream( final InputStream stream )
+    {
+        return new HttpResourcesManagingInputStream( this, stream );
+    }
+
+    private static final class HttpResourcesManagingInputStream
+        extends FilterInputStream
+    {
+
+        private final HttpResources resources;
+
+        HttpResourcesManagingInputStream( final HttpResources httpResources, final InputStream stream )
+        {
+            super( stream );
+            this.resources = httpResources;
+        }
+
+        @Override
+        public void close()
+            throws IOException
+        {
+            super.close();
+            IOUtils.closeQuietly( resources );
+        }
+
+    }
 }

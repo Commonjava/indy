@@ -80,7 +80,7 @@ public class ResolverController
                 String.format( "Invalid source format: '%s'. Use the form: '%s' instead.", from,
                                sourceManager.getFormatHint() );
             logger.warn( message );
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, message );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), message );
         }
 
         final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
@@ -131,7 +131,7 @@ public class ResolverController
                 String.format( "Invalid source format: '%s'. Use the form: '%s' instead.", from,
                                sourceManager.getFormatHint() );
             logger.warn( message );
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST, message );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), message );
         }
 
         final DefaultAggregatorOptions options = createAggregationOptions( params, source );

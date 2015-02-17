@@ -41,6 +41,48 @@ public interface ContentManager
         throws AproxWorkflowException;
 
     /**
+     * Retrieve a {@link Transfer} object suitable for use in the specified operation. This method handles the selection logic in the event the store 
+     * is a {@link Group}, and doesn't fire any events (the returned {@link Transfer} object handles that in this case).<br/>
+     * <b>No content generators are called in this method.</b>
+     * 
+     * @param store The store in which the Transfer should reside
+     * @param path The path of the Transfer inside the store
+     * @param op The operation we want to execute on the returned Transfer
+     * @return A suitable transfer object (not null; those cases result in an exception) NOTE: the returned transfer may not exist!
+     * @throws AproxWorkflowException in case no suitable storage location can be found
+     */
+    Transfer getTransfer( final ArtifactStore store, final String path, TransferOperation op )
+        throws AproxWorkflowException;
+
+    /**
+     * Retrieve a {@link Transfer} object suitable for use in the specified operation. This method handles the selection logic in the event the store 
+     * is a {@link Group}, and doesn't fire any events (the returned {@link Transfer} object handles that in this case).<br/>
+     * <b>No content generators are called in this method.</b>
+     * 
+     * @param storeKey The key to the store in which the Transfer should reside
+     * @param path The path of the Transfer inside the store
+     * @param op The operation we want to execute on the returned Transfer
+     * @return A suitable transfer object (not null; those cases result in an exception) NOTE: the returned transfer may not exist!
+     * @throws AproxWorkflowException in case no suitable storage location can be found
+     */
+    Transfer getTransfer( StoreKey storeKey, String path, TransferOperation op )
+        throws AproxWorkflowException;
+
+    /**
+     * Retrieve a {@link Transfer} object suitable for use in the specified operation. This method handles the selection logic, and doesn't fire any 
+     * events (the returned {@link Transfer} object handles that in this case). The first suitable store is used to hold the Transfer.<br/>
+     * <b>No content generators are called in this method.</b>
+     * 
+     * @param stores The stores in which the Transfer should reside
+     * @param path The path of the Transfer inside the store
+     * @param op The operation we want to execute on the returned Transfer
+     * @return A suitable transfer object (not null; those cases result in an exception) NOTE: the returned transfer may not exist!
+     * @throws AproxWorkflowException in case no suitable storage location can be found
+     */
+    Transfer getTransfer( final List<ArtifactStore> stores, final String path, TransferOperation op )
+        throws AproxWorkflowException;
+
+    /**
      * Store the content contained in the {@link InputStream} under the given path within the storage directory for the given {@link ArtifactStore}.
      * Use the given {@link TransferOperation} to trigger the appropriate tangential maintenance, etc. actions. Return the {@link Transfer} that 
      * references the stored content.
@@ -85,4 +127,5 @@ public interface ContentManager
 
     Map<ContentDigest, String> digest( StoreKey key, String path, ContentDigest... types )
         throws AproxWorkflowException;
+
 }

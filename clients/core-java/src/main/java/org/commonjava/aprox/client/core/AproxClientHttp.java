@@ -1,6 +1,7 @@
 package org.commonjava.aprox.client.core;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.commonjava.aprox.client.core.helper.HttpResources.cleanupResources;
+import static org.commonjava.aprox.client.core.helper.HttpResources.entityToString;
 import static org.commonjava.aprox.client.core.util.UrlUtils.buildUrl;
 
 import java.io.Closeable;
@@ -10,7 +11,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -97,65 +97,39 @@ public class AproxClientHttp
         throws AproxClientException
     {
         connect();
-        final ErrorHolder error = new ErrorHolder();
+
         HttpHead request = null;
+        CloseableHttpResponse response = null;
         CloseableHttpClient client = null;
+
         try
         {
             request = newHead( buildUrl( baseUrl, path ) );
             client = newClient();
+            response = client.execute( request );
 
-            final Map<String, String> headers = client.execute( request, new ResponseHandler<Map<String, String>>()
+            final StatusLine sl = response.getStatusLine();
+            if ( sl.getStatusCode() != responseCode )
             {
-
-                @Override
-                public Map<String, String> handleResponse( final HttpResponse response )
-                    throws ClientProtocolException, IOException
+                if ( sl.getStatusCode() == HttpStatus.SC_NOT_FOUND )
                 {
-                    try
-                    {
-                        final StatusLine sl = response.getStatusLine();
-                        if ( sl.getStatusCode() != responseCode )
-                        {
-                            if ( sl.getStatusCode() == HttpStatus.SC_NOT_FOUND )
-                            {
-                                return null;
-                            }
-
-                            error.setError( new AproxClientException(
-                                                                      "Error executing HEAD: %s. Status was: %d %s (%s)",
-                                                                      path, sl.getStatusCode(), sl.getReasonPhrase(),
-                                                                      sl.getProtocolVersion() ) );
-                        }
-
-                        final Map<String, String> headers = new HashMap<>();
-                        for ( final Header header : response.getAllHeaders() )
-                        {
-                            final String name = header.getName()
-                                                      .toLowerCase();
-
-                            if ( !headers.containsKey( name ) )
-                            {
-                                headers.put( name, header.getValue() );
-                            }
-                        }
-
-                        return headers;
-                    }
-                    finally
-                    {
-                        if ( response instanceof CloseableHttpResponse )
-                        {
-                            closeQuietly( (CloseableHttpResponse) response );
-                        }
-                    }
+                    return null;
                 }
 
-            } );
+                throw new AproxClientException( "Error executing HEAD: %s. Status was: %d %s (%s)", path,
+                                                sl.getStatusCode(), sl.getReasonPhrase(), sl.getProtocolVersion() );
+            }
 
-            if ( error.hasError() )
+            final Map<String, String> headers = new HashMap<>();
+            for ( final Header header : response.getAllHeaders() )
             {
-                throw error.getError();
+                final String name = header.getName()
+                                          .toLowerCase();
+
+                if ( !headers.containsKey( name ) )
+                {
+                    headers.put( name, header.getValue() );
+                }
             }
 
             return headers;
@@ -166,12 +140,7 @@ public class AproxClientHttp
         }
         finally
         {
-            if ( request != null )
-            {
-                request.reset();
-            }
-
-            closeQuietly( client );
+            cleanupResources( request, response, client );
         }
     }
 
@@ -180,45 +149,26 @@ public class AproxClientHttp
     {
         connect();
 
-        final ErrorHolder holder = new ErrorHolder();
-        T result = null;
         HttpGet request = null;
+        CloseableHttpResponse response = null;
         CloseableHttpClient client = null;
         try
         {
             client = newClient();
             request = newGet( buildUrl( baseUrl, path ) );
-            result = client.execute( request, new ResponseHandler<T>()
+            response = client.execute( request );
+
+            final StatusLine sl = response.getStatusLine();
+            if ( sl.getStatusCode() != 200 )
             {
-                @Override
-                public T handleResponse( final HttpResponse response )
-                    throws ClientProtocolException, IOException
-                {
-                    try
-                    {
-                        final StatusLine sl = response.getStatusLine();
-                        if ( sl.getStatusCode() != 200 )
-                        {
-                            holder.setError( new AproxClientException(
-                                                                       "Error retrieving %s from: %s. Status was: %d %s (%s)",
-                                                                       type.getSimpleName(), path, sl.getStatusCode(),
-                                                                       sl.getReasonPhrase(), sl.getProtocolVersion() ) );
-                            return null;
-                        }
+                throw new AproxClientException( "Error retrieving %s from: %s. Status was: %d %s (%s)",
+                                                type.getSimpleName(), path, sl.getStatusCode(), sl.getReasonPhrase(),
+                                                sl.getProtocolVersion() );
+            }
 
-                        final String json = entityToString( response );
-                        return objectMapper.readValue( json, type );
-                    }
-                    finally
-                    {
-                        if ( response instanceof CloseableHttpResponse )
-                        {
-                            closeQuietly( (CloseableHttpResponse) response );
-                        }
-                    }
-                }
-
-            } );
+            final String json = entityToString( response );
+            logger.info( "Got JSON:\n\n{}\n\n", json );
+            return objectMapper.readValue( json, type );
         }
         catch ( final IOException e )
         {
@@ -226,20 +176,8 @@ public class AproxClientHttp
         }
         finally
         {
-            if ( request != null )
-            {
-                request.reset();
-            }
-
-            closeQuietly( client );
+            cleanupResources( request, response, client );
         }
-
-        if ( holder.hasError() )
-        {
-            throw holder.getError();
-        }
-
-        return result;
     }
 
     public <T> T get( final String path, final TypeReference<T> typeRef )
@@ -247,47 +185,26 @@ public class AproxClientHttp
     {
         connect();
 
-        final ErrorHolder holder = new ErrorHolder();
-        T result = null;
         HttpGet request = null;
+        CloseableHttpResponse response = null;
         CloseableHttpClient client = null;
         try
         {
             client = newClient();
             request = newGet( buildUrl( baseUrl, path ) );
-            result = client.execute( request, new ResponseHandler<T>()
+            response = client.execute( request );
+            final StatusLine sl = response.getStatusLine();
+            if ( sl.getStatusCode() != 200 )
             {
-                @Override
-                public T handleResponse( final HttpResponse response )
-                    throws ClientProtocolException, IOException
-                {
-                    try
-                    {
-                        final StatusLine sl = response.getStatusLine();
-                        if ( sl.getStatusCode() != 200 )
-                        {
-                            holder.setError( new AproxClientException(
-                                                                       "Error retrieving %s from: %s. Status was: %d %s (%s)",
-                                                                       typeRef.getType(), path, sl.getStatusCode(),
-                                                                       sl.getReasonPhrase(), sl.getProtocolVersion() ) );
+                throw new AproxClientException( "Error retrieving %s from: %s. Status was: %d %s (%s)",
+                                                typeRef.getType(), path, sl.getStatusCode(), sl.getReasonPhrase(),
+                                                sl.getProtocolVersion() );
+            }
 
-                            return null;
-                        }
+            final String json = entityToString( response );
+            final T value = objectMapper.readValue( json, typeRef );
 
-                        final String json = entityToString( response );
-                        final T value = objectMapper.readValue( json, typeRef );
-
-                        return value;
-                    }
-                    finally
-                    {
-                        if ( response instanceof CloseableHttpResponse )
-                        {
-                            closeQuietly( (CloseableHttpResponse) response );
-                        }
-                    }
-                }
-            } );
+            return value;
         }
         catch ( final IOException e )
         {
@@ -295,20 +212,8 @@ public class AproxClientHttp
         }
         finally
         {
-            if ( request != null )
-            {
-                request.reset();
-            }
-
-            closeQuietly( client );
+            cleanupResources( request, response, client );
         }
-
-        if ( holder.hasError() )
-        {
-            throw holder.getError();
-        }
-
-        return result;
     }
 
     public HttpResources getRaw( final String path )
@@ -353,37 +258,43 @@ public class AproxClientHttp
     {
         connect();
 
-        CloseableHttpResponse response = null;
-        HttpPut put = null;
-        CloseableHttpClient client = null;
+        final HttpPut put = newRawPut( buildUrl( baseUrl, path ) );
+        final CloseableHttpClient client = newClient();
         try
         {
-            client = newClient();
-            put = newPut( buildUrl( baseUrl, path ) );
-
             put.setEntity( new InputStreamEntity( stream ) );
 
-            response = client.execute( put );
-            final StatusLine sl = response.getStatusLine();
-            if ( sl.getStatusCode() != responseCode )
+            client.execute( put, new ResponseHandler<Void>()
             {
-                throw new AproxClientException( "Error in response from: %s. Status was: %d %s (%s)", path,
-                                                sl.getStatusCode(), sl.getReasonPhrase(), sl.getProtocolVersion() );
-            }
+                @Override
+                public Void handleResponse( final HttpResponse response )
+                    throws ClientProtocolException, IOException
+                {
+                    try
+                    {
+                        final StatusLine sl = response.getStatusLine();
+                        if ( sl.getStatusCode() != responseCode )
+                        {
+                            throw new ClientProtocolException(
+                                                               String.format( "Error in response from: %s. Status was: %d %s (%s)",
+                                                                              path, sl.getStatusCode(),
+                                                                              sl.getReasonPhrase(),
+                                                                              sl.getProtocolVersion() ) );
+                        }
+
+                        return null;
+                    }
+                    finally
+                    {
+                        cleanupResources( put, response, client );
+                    }
+                }
+            } );
+            
         }
         catch ( final IOException e )
         {
             throw new AproxClientException( "AProx request failed: %s", e, e.getMessage() );
-        }
-        finally
-        {
-            closeQuietly( response );
-            if ( put != null )
-            {
-                put.reset();
-            }
-
-            closeQuietly( client );
         }
     }
 
@@ -398,8 +309,8 @@ public class AproxClientHttp
     {
         connect();
 
-        CloseableHttpResponse response = null;
         HttpPut put = null;
+        CloseableHttpResponse response = null;
         CloseableHttpClient client = null;
         try
         {
@@ -424,12 +335,7 @@ public class AproxClientHttp
         }
         finally
         {
-            closeQuietly( response );
-            if ( put != null )
-            {
-                put.reset();
-            }
-            closeQuietly( client );
+            cleanupResources( put, response, client );
         }
 
         return true;
@@ -446,9 +352,8 @@ public class AproxClientHttp
     {
         connect();
 
-        final ErrorHolder holder = new ErrorHolder();
-        T result = null;
         HttpPost post = null;
+        CloseableHttpResponse response = null;
         CloseableHttpClient client = null;
         try
         {
@@ -457,37 +362,18 @@ public class AproxClientHttp
 
             post.setEntity( new StringEntity( objectMapper.writeValueAsString( value ) ) );
 
-            result = client.execute( post, new ResponseHandler<T>()
+            response = client.execute( post );
+
+            final StatusLine sl = response.getStatusLine();
+            if ( sl.getStatusCode() != responseCode )
             {
-                @Override
-                public T handleResponse( final HttpResponse response )
-                    throws ClientProtocolException, IOException
-                {
-                    try
-                    {
-                        final StatusLine sl = response.getStatusLine();
-                        if ( sl.getStatusCode() != responseCode )
-                        {
-                            holder.setError( new AproxClientException(
-                                                                       "Error retrieving %s from: %s. Status was: %d %s (%s)",
-                                                                       type.getSimpleName(), path, sl.getStatusCode(),
-                                                                       sl.getReasonPhrase(), sl.getProtocolVersion() ) );
+                throw new AproxClientException( "Error retrieving %s from: %s. Status was: %d %s (%s)",
+                                                type.getSimpleName(), path, sl.getStatusCode(), sl.getReasonPhrase(),
+                                                sl.getProtocolVersion() );
+            }
 
-                            return null;
-                        }
-
-                        final String json = entityToString( response );
-                        return objectMapper.readValue( json, type );
-                    }
-                    finally
-                    {
-                        if ( response instanceof CloseableHttpResponse )
-                        {
-                            closeQuietly( (CloseableHttpResponse) response );
-                        }
-                    }
-                }
-            } );
+            final String json = entityToString( response );
+            return objectMapper.readValue( json, type );
         }
         catch ( final IOException e )
         {
@@ -495,20 +381,8 @@ public class AproxClientHttp
         }
         finally
         {
-            if ( post != null )
-            {
-                post.reset();
-            }
-
-            closeQuietly( client );
+            cleanupResources( post, response, client );
         }
-
-        if ( holder.hasError() )
-        {
-            throw holder.getError();
-        }
-
-        return result;
     }
 
     public <T> T postWithResponse( final String path, final Object value, final TypeReference<T> typeRef )
@@ -523,9 +397,8 @@ public class AproxClientHttp
     {
         connect();
 
-        final ErrorHolder holder = new ErrorHolder();
-        T result = null;
         HttpPost post = null;
+        CloseableHttpResponse response = null;
         CloseableHttpClient client = null;
         try
         {
@@ -534,37 +407,18 @@ public class AproxClientHttp
 
             post.setEntity( new StringEntity( objectMapper.writeValueAsString( value ) ) );
 
-            result = client.execute( post, new ResponseHandler<T>()
+            response = client.execute( post );
+
+            final StatusLine sl = response.getStatusLine();
+            if ( sl.getStatusCode() != responseCode )
             {
-                @Override
-                public T handleResponse( final HttpResponse response )
-                    throws ClientProtocolException, IOException
-                {
-                    try
-                    {
-                        final StatusLine sl = response.getStatusLine();
-                        if ( sl.getStatusCode() != responseCode )
-                        {
-                            holder.setError( new AproxClientException(
-                                                                       "Error retrieving %s from: %s. Status was: %d %s (%s)",
-                                                                       typeRef.getType(), path, sl.getStatusCode(),
-                                                                       sl.getReasonPhrase(), sl.getProtocolVersion() ) );
+                throw new AproxClientException( "Error retrieving %s from: %s. Status was: %d %s (%s)",
+                                                typeRef.getType(), path, sl.getStatusCode(), sl.getReasonPhrase(),
+                                                sl.getProtocolVersion() );
+            }
 
-                            return null;
-                        }
-
-                        final String json = entityToString( response );
-                        return objectMapper.readValue( json, typeRef );
-                    }
-                    finally
-                    {
-                        if ( response instanceof CloseableHttpResponse )
-                        {
-                            closeQuietly( (CloseableHttpResponse) response );
-                        }
-                    }
-                }
-            } );
+            final String json = entityToString( response );
+            return objectMapper.readValue( json, typeRef );
         }
         catch ( final IOException e )
         {
@@ -572,25 +426,14 @@ public class AproxClientHttp
         }
         finally
         {
-            if ( post != null )
-            {
-                post.reset();
-            }
-
-            closeQuietly( client );
+            cleanupResources( post, response, client );
         }
-
-        if ( holder.hasError() )
-        {
-            throw holder.getError();
-        }
-
-        return result;
     }
 
     @Override
     public void close()
     {
+        logger.info("Shutting down aprox client HTTP manager");
         connectionManager.reallyShutdown();
     }
 
@@ -605,8 +448,8 @@ public class AproxClientHttp
     {
         connect();
 
-        CloseableHttpResponse response = null;
         HttpDelete delete = null;
+        CloseableHttpResponse response = null;
         CloseableHttpClient client = null;
         try
         {
@@ -627,12 +470,7 @@ public class AproxClientHttp
         }
         finally
         {
-            closeQuietly( response );
-            if ( delete != null )
-            {
-                delete.reset();
-            }
-            closeQuietly( client );
+            cleanupResources( delete, response, client );
         }
     }
 
@@ -647,8 +485,8 @@ public class AproxClientHttp
     {
         connect();
 
-        CloseableHttpResponse response = null;
         HttpDelete delete = null;
+        CloseableHttpResponse response = null;
         CloseableHttpClient client = null;
         try
         {
@@ -670,12 +508,7 @@ public class AproxClientHttp
         }
         finally
         {
-            closeQuietly( response );
-            if ( delete != null )
-            {
-                delete.reset();
-            }
-            closeQuietly( client );
+            cleanupResources( delete, response, client );
         }
     }
 
@@ -690,8 +523,8 @@ public class AproxClientHttp
     {
         connect();
 
-        CloseableHttpResponse response = null;
         HttpHead request = null;
+        CloseableHttpResponse response = null;
         CloseableHttpClient client = null;
         try
         {
@@ -717,14 +550,7 @@ public class AproxClientHttp
         }
         finally
         {
-            closeQuietly( response );
-
-            if ( request != null )
-            {
-                request.reset();
-            }
-
-            closeQuietly( client );
+            cleanupResources( request, response, client );
         }
     }
 
@@ -780,48 +606,17 @@ public class AproxClientHttp
         return req;
     }
 
+    private HttpPut newRawPut( final String url )
+    {
+        final HttpPut req = new HttpPut( url );
+        return req;
+    }
+
     private HttpPost newPost( final String url )
     {
         final HttpPost req = new HttpPost( url );
         addJsonHeaders( req );
         return req;
-    }
-
-    private String entityToString( final HttpResponse response )
-        throws IOException
-    {
-        InputStream stream = null;
-        try
-        {
-            stream = response.getEntity()
-                             .getContent();
-
-            return IOUtils.toString( stream );
-        }
-        finally
-        {
-            closeQuietly( stream );
-        }
-    }
-
-    private static final class ErrorHolder
-    {
-        private AproxClientException error;
-
-        public AproxClientException getError()
-        {
-            return error;
-        }
-
-        public void setError( final AproxClientException error )
-        {
-            this.error = error;
-        }
-
-        public boolean hasError()
-        {
-            return error != null;
-        }
     }
 
 }

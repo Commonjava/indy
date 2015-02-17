@@ -12,7 +12,6 @@ package org.commonjava.aprox.depgraph.vertx;
 
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
-import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.setStatus;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_artifactId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_gav;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_groupId;
@@ -25,10 +24,10 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.rest.GraphController;
-import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
+import org.commonjava.vertx.vabr.util.Respond;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.MultiMap;
@@ -52,7 +51,9 @@ public class GraphResource
         try
         {
             controller.reindex( coord, getWorkspaceId( request ) );
-            setStatus( ApplicationStatus.OK, request );
+            Respond.to( request )
+                   .ok()
+                   .send();
         }
         catch ( final AproxWorkflowException e )
         {
@@ -75,7 +76,9 @@ public class GraphResource
             }
             else
             {
-                setStatus( ApplicationStatus.OK, request );
+                Respond.to( request )
+                       .ok()
+                       .send();
             }
         }
         catch ( final AproxWorkflowException e )
@@ -101,7 +104,9 @@ public class GraphResource
             }
             else
             {
-                setStatus( ApplicationStatus.OK, request );
+                Respond.to( request )
+                       .ok()
+                       .send();
             }
         }
         catch ( final AproxWorkflowException e )
@@ -127,7 +132,9 @@ public class GraphResource
             }
             else
             {
-                setStatus( ApplicationStatus.OK, request );
+                Respond.to( request )
+                       .ok()
+                       .send();
             }
         }
         catch ( final AproxWorkflowException e )
@@ -155,7 +162,9 @@ public class GraphResource
             }
             else
             {
-                setStatus( ApplicationStatus.OK, request );
+                Respond.to( request )
+                       .ok()
+                       .send();
             }
         }
         catch ( final AproxWorkflowException e )
@@ -184,7 +193,9 @@ public class GraphResource
             }
             else
             {
-                setStatus( ApplicationStatus.OK, request );
+                Respond.to( request )
+                       .ok()
+                       .send();
             }
         }
         catch ( final AproxWorkflowException e )
@@ -213,7 +224,9 @@ public class GraphResource
             }
             else
             {
-                setStatus( ApplicationStatus.OK, request );
+                Respond.to( request )
+                       .ok()
+                       .send();
             }
         }
         catch ( final AproxWorkflowException e )

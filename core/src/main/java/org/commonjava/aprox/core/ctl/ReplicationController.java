@@ -10,11 +10,9 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.ctl;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.maven.galley.util.UrlUtils.buildUrl;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -24,7 +22,6 @@ import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -50,6 +47,7 @@ import org.commonjava.aprox.model.core.dto.ReplicationAction.ActionType;
 import org.commonjava.aprox.model.core.dto.ReplicationDTO;
 import org.commonjava.aprox.model.core.dto.StoreListingDTO;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
+import org.commonjava.aprox.subsys.http.util.HttpResources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -228,17 +226,17 @@ public class ReplicationController
         final List<ArtifactStore> result = new ArrayList<ArtifactStore>();
 
         HttpGet req = newGet( remotesUrl, dto );
-
+        HttpResponse response = null;
         try
         {
-            final HttpResponse response = http.getClient()
-                                              .execute( req );
+            response = http.getClient()
+                           .execute( req );
 
             final StatusLine statusLine = response.getStatusLine();
             final int status = statusLine.getStatusCode();
             if ( status == HttpStatus.SC_OK )
             {
-                final String json = entityToString( response );
+                final String json = HttpResources.entityToString( response );
 
                 final StoreListingDTO<RemoteRepository> listing =
                     serializer.readValue( json,
@@ -271,22 +269,21 @@ public class ReplicationController
         }
         finally
         {
-            req.reset();
-            http.closeConnection();
+            HttpResources.cleanupResources( req, response, null, http );
         }
 
         req = newGet( groupsUrl, dto );
-
+        response = null;
         try
         {
-            final HttpResponse response = http.getClient()
-                                              .execute( req );
+            response = http.getClient()
+                           .execute( req );
 
             final StatusLine statusLine = response.getStatusLine();
             final int status = statusLine.getStatusCode();
             if ( status == HttpStatus.SC_OK )
             {
-                final String json = entityToString( response );
+                final String json = HttpResources.entityToString( response );
 
                 final StoreListingDTO<Group> listing =
                     serializer.readValue( json, serializer.getTypeFactory()
@@ -314,22 +311,21 @@ public class ReplicationController
         }
         finally
         {
-            req.reset();
-            http.closeConnection();
+            HttpResources.cleanupResources( req, response, null, http );
         }
 
         req = newGet( hostedUrl, dto );
-
+        response = null;
         try
         {
-            final HttpResponse response = http.getClient()
-                                              .execute( req );
+            response = http.getClient()
+                           .execute( req );
 
             final StatusLine statusLine = response.getStatusLine();
             final int status = statusLine.getStatusCode();
             if ( status == HttpStatus.SC_OK )
             {
-                final String json = entityToString( response );
+                final String json = HttpResources.entityToString( response );
 
                 final StoreListingDTO<HostedRepository> listing =
                     serializer.readValue( json,
@@ -359,8 +355,7 @@ public class ReplicationController
         }
         finally
         {
-            req.reset();
-            http.closeConnection();
+            HttpResources.cleanupResources( req, response, null, http );
         }
 
         return result;
@@ -406,17 +401,17 @@ public class ReplicationController
 
         //        logger.info( "\n\n\n\n\n[AutoProx] Checking URL: {} from:", new Throwable(), url );
         final HttpGet req = newGet( url, dto );
-
+        HttpResponse response = null;
         try
         {
-            final HttpResponse response = http.getClient()
-                                              .execute( req );
+            response = http.getClient()
+                           .execute( req );
 
             final StatusLine statusLine = response.getStatusLine();
             final int status = statusLine.getStatusCode();
             if ( status == HttpStatus.SC_OK )
             {
-                final String json = entityToString( response );
+                final String json = HttpResources.entityToString( response );
                 final EndpointViewListing listing = serializer.readValue( json, EndpointViewListing.class );
                 return listing.getItems();
             }
@@ -434,25 +429,7 @@ public class ReplicationController
         }
         finally
         {
-            req.reset();
-            http.closeConnection();
-        }
-    }
-
-    private String entityToString( final HttpResponse response )
-        throws IOException
-    {
-        InputStream stream = null;
-        try
-        {
-            stream = response.getEntity()
-                             .getContent();
-
-            return IOUtils.toString( stream );
-        }
-        finally
-        {
-            closeQuietly( stream );
+            HttpResources.cleanupResources( req, response, null, http );
         }
     }
 

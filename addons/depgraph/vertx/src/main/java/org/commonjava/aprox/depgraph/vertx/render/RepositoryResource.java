@@ -13,7 +13,6 @@ package org.commonjava.aprox.depgraph.vertx.render;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithEntity;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
-import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.setStatus;
 import static org.commonjava.aprox.util.ApplicationContent.application_json;
 import static org.commonjava.aprox.util.ApplicationContent.application_zip;
 import static org.commonjava.aprox.util.ApplicationContent.text_plain;
@@ -25,11 +24,11 @@ import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.vertx.util.VertXUriFormatter;
 import org.commonjava.aprox.depgraph.rest.RepositoryController;
 import org.commonjava.aprox.util.ApplicationContent;
-import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.commonjava.vertx.vabr.types.Method;
+import org.commonjava.vertx.vabr.util.Respond;
 import org.commonjava.vertx.vabr.util.VertXOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +57,9 @@ public class RepositoryResource
 
             if ( json == null )
             {
-                setStatus( ApplicationStatus.NO_CONTENT, request );
+                Respond.to( request )
+                       .noContent()
+                       .send();
             }
             else
             {
@@ -83,7 +84,9 @@ public class RepositoryResource
             final String downlog = controller.getDownloadLog( body.getString( 0, body.length() ), baseUri, new VertXUriFormatter() );
             if ( downlog == null )
             {
-                setStatus( ApplicationStatus.NO_CONTENT, request );
+                Respond.to( request )
+                       .noContent()
+                       .send();
             }
             else
             {
@@ -102,8 +105,10 @@ public class RepositoryResource
     {
         try
         {
+            request.response()
+                   .setStatusCode( 200 )
+                   .setStatusMessage( "OK" );
             controller.getZipRepository( body.getString( 0, body.length() ), new VertXOutputStream( request.response() ) );
-            setStatus( ApplicationStatus.OK, request );
         }
         catch ( final AproxWorkflowException e )
         {

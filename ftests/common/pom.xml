@@ -26,11 +26,6 @@
       <artifactId>aprox-client-core-java</artifactId>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-test-fixtures-core</artifactId>
       <scope>compile</scope>

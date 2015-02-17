@@ -20,10 +20,6 @@
   <artifactId>aprox-dot-maven-vertx</artifactId>
   <name>AProx :: Add-Ons :: Dot-Maven (.m2 WebDAV) :: Vert.X Bindings</name>
 
-  <properties>
-    <javaVersion>1.7</javaVersion>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>

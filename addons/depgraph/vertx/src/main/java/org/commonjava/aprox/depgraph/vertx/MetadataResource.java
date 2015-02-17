@@ -12,7 +12,6 @@ package org.commonjava.aprox.depgraph.vertx;
 
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
-import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.setStatus;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_artifactId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_groupId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_key;
@@ -24,11 +23,11 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.rest.MetadataController;
-import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
 import org.commonjava.vertx.vabr.types.Method;
+import org.commonjava.vertx.vabr.util.Respond;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.MultiMap;
@@ -53,7 +52,9 @@ public class MetadataResource
         {
             // FIXME: Figure out character encoding parse.
             controller.batchUpdate( body.getString( 0, body.length() ), getWorkspaceId( request ) );
-            setStatus( ApplicationStatus.OK, request );
+            Respond.to( request )
+                   .ok()
+                   .send();
         }
         catch ( final AproxWorkflowException e )
         {
@@ -83,7 +84,9 @@ public class MetadataResource
 
         if ( json == null )
         {
-            setStatus( ApplicationStatus.NOT_FOUND, request );
+            Respond.to( request )
+                   .notFound()
+                   .send();
         }
         else
         {
@@ -113,7 +116,9 @@ public class MetadataResource
 
         if ( json == null )
         {
-            setStatus( ApplicationStatus.NOT_FOUND, request );
+            Respond.to( request )
+                   .notFound()
+                   .send();
         }
         else
         {
@@ -140,7 +145,9 @@ public class MetadataResource
             formatResponse( e, request );
         }
 
-        setStatus( ApplicationStatus.OK, request );
+        Respond.to( request )
+               .ok()
+               .send();
     }
 
     @Route( path = "/collate", method = Method.POST )
@@ -160,7 +167,9 @@ public class MetadataResource
 
         if ( json == null )
         {
-            setStatus( ApplicationStatus.NOT_FOUND, request );
+            Respond.to( request )
+                   .notFound()
+                   .send();
         }
         else
         {

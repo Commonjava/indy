@@ -43,7 +43,4 @@
       <artifactId>aprox-api</artifactId>
     </dependency>
   </dependencies>
-  <properties>
-    <javaVersion>1.7</javaVersion>
-  </properties>
 </project>

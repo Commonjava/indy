@@ -12,7 +12,6 @@ package org.commonjava.aprox.depgraph.vertx.render;
 
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatOkResponseWithEntity;
 import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.formatResponse;
-import static org.commonjava.aprox.bind.vertx.util.ResponseUtils.setStatus;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_artifactId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_groupId;
 import static org.commonjava.aprox.depgraph.vertx.util.DepgraphParam.p_version;
@@ -32,10 +31,10 @@ import org.commonjava.aprox.bind.vertx.util.ResponseUtils;
 import org.commonjava.aprox.depgraph.rest.RenderingController;
 import org.commonjava.aprox.util.ApplicationContent;
 import org.commonjava.aprox.util.ApplicationHeader;
-import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.vertx.vabr.anno.Handles;
 import org.commonjava.vertx.vabr.anno.Route;
 import org.commonjava.vertx.vabr.helper.RequestHandler;
+import org.commonjava.vertx.vabr.util.Respond;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.MultiMap;
@@ -73,7 +72,9 @@ public class GraphRenderingResource
                                    body.getString( 0, body.length() ) );
             if ( out == null )
             {
-                setStatus( ApplicationStatus.NOT_FOUND, request );
+                Respond.to( request )
+                       .notFound()
+                       .send();
             }
             else
             {
@@ -96,7 +97,9 @@ public class GraphRenderingResource
             final String out = controller.bomFor( body.getString( 0, body.length() ) );
             if ( out == null )
             {
-                setStatus( ApplicationStatus.NOT_FOUND, request );
+                Respond.to( request )
+                       .notFound()
+                       .send();
             }
             else
             {
@@ -125,7 +128,9 @@ public class GraphRenderingResource
                 controller.dotfile( gid, aid, ver, getWorkspaceId( request ), parseQueryMap( request.query() ) );
             if ( out == null )
             {
-                setStatus( ApplicationStatus.NOT_FOUND, request );
+                Respond.to( request )
+                       .notFound()
+                       .send();
             }
             else
             {
@@ -147,7 +152,9 @@ public class GraphRenderingResource
             final File out = controller.tree( body.getString( 0, body.length() ) );
             if ( out == null )
             {
-                setStatus( ApplicationStatus.NOT_FOUND, request );
+                Respond.to( request )
+                       .notFound()
+                       .send();
             }
             else
             {

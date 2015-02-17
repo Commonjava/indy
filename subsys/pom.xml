@@ -29,6 +29,7 @@
     <module>http</module>
     <module>maven</module>
     <module>vertx</module>
+    <module>jaxrs</module>
   </modules>
   
 </project>

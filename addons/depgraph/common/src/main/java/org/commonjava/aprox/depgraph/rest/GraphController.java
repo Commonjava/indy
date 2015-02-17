@@ -215,7 +215,7 @@ public class GraphController
         }
         catch ( final InvalidVersionSpecificationException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST,
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
                                               "Invalid version in request: '{}'. Reason: {}", e, version,
                                               e.getMessage() );
         }
@@ -250,7 +250,7 @@ public class GraphController
         }
         catch ( final InvalidVersionSpecificationException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST,
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
                                               "Invalid version in request: '{}'. Reason: {}", e, version,
                                               e.getMessage() );
         }
@@ -281,7 +281,7 @@ public class GraphController
             }
             else
             {
-                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND, "Could not find graph: {}", ref );
+                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(), "Could not find graph: {}", ref );
             }
         }
         catch ( final CartoDataException e )
@@ -291,7 +291,7 @@ public class GraphController
         }
         catch ( final InvalidVersionSpecificationException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST,
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
                                               "Invalid version in request: '{}'. Reason: {}", e, version,
                                               e.getMessage() );
         }

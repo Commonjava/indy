@@ -97,6 +97,7 @@ public class HttpTestFixture
     }
 
     public File newFolder( final String... folderNames )
+        throws IOException
     {
         return folder.newFolder( folderNames );
     }

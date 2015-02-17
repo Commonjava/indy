@@ -5,14 +5,14 @@ import java.util.concurrent.TimeUnit;
 
 import javax.enterprise.context.ApplicationScoped;
 
-import org.apache.http.conn.ManagedClientConnection;
-import org.apache.http.impl.conn.PoolingClientConnectionManager;
+import org.apache.http.HttpClientConnection;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class AproxHttpConnectionManager
-    extends PoolingClientConnectionManager
+    extends PoolingHttpClientConnectionManager
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -21,7 +21,7 @@ public class AproxHttpConnectionManager
 
     protected AproxHttpConnectionManager()
     {
-        closeConnectionsOnRelease = false;
+        closeConnectionsOnRelease = true;
     }
 
     public AproxHttpConnectionManager( final boolean closeConnectionsOnRelease )
@@ -30,17 +30,18 @@ public class AproxHttpConnectionManager
     }
 
     @Override
-    public void releaseConnection( final ManagedClientConnection conn, final long keepalive, final TimeUnit tunit )
+    public void releaseConnection( final HttpClientConnection conn, final Object state, final long keepalive,
+                                   final TimeUnit tunit )
     {
         logger.info( "RELEASE: {}, keepalive: {}, tunit: {}", conn, keepalive, tunit );
 
-        super.releaseConnection( conn, 0, TimeUnit.MILLISECONDS );
+        super.releaseConnection( conn, state, 0, TimeUnit.MILLISECONDS );
         if ( closeConnectionsOnRelease )
         {
             try
             {
                 logger.info( "CLOSING: {}", conn );
-                conn.abortConnection();
+                conn.close();
             }
             catch ( final IOException e )
             {

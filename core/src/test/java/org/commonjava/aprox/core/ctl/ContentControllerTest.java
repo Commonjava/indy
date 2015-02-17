@@ -37,6 +37,7 @@ public class ContentControllerTest
 
     @Before
     public void setup()
+        throws Exception
     {
         fixture.initMissingComponents();
 

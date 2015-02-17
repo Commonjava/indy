@@ -21,10 +21,6 @@
 
   <name>AProx :: Add-Ons :: Folo Usage Tracker :: Vert.X Bindings</name>
 
-  <properties>
-    <javaVersion>1.7</javaVersion>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
@@ -81,6 +77,9 @@
             <annotationProcessors>
               <annotationProcessor>org.commonjava.vertx.vabr.anno.proc.RoutingAnnotationProcessor</annotationProcessor>
             </annotationProcessors>
+            <compilerArgs>
+              <arg>${vertxHandlerForkingArg}</arg>
+            </compilerArgs>
           </configuration>
         </plugin>
       </plugins>

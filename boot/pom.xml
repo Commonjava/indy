@@ -27,6 +27,7 @@
     <module>api</module>
     <module>vertx</module>
     <module>jarex</module>
+    <module>jaxrs</module>
   </modules>
   
 </project>
