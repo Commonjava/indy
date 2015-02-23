@@ -23,8 +23,6 @@ import java.util.Map;
 import java.util.Random;
 
 import org.apache.commons.io.IOUtils;
-import org.commonjava.vertx.vabr.types.ApplicationStatus;
-import org.commonjava.vertx.vabr.util.Respond;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -167,9 +165,11 @@ public class TestHttpServer
         {
             final String error = errors.get( wholePath );
             logger.error( "Returning registered error: {}", error );
-            Respond.to( req )
-                   .status( ApplicationStatus.SERVER_ERROR )
-                   .send();
+            req.resume()
+               .response()
+               .setStatusCode( 500 )
+               .setStatusMessage( "INTERNAL SERVER ERROR" )
+               .end();
 
             return;
         }
@@ -180,61 +180,28 @@ public class TestHttpServer
         {
             logger.info( "Responding via registered expectation: {}", expectation );
 
-            final Respond responder = Respond.to( req )
-                                             .status( ApplicationStatus.getStatus( expectation.code() ) );
+            req.resume()
+               .response()
+               .setStatusCode( expectation.code() );
 
             if ( expectation.body() != null )
             {
-                responder.entity( expectation.body() );
+                req.response()
+                   .end( expectation.body() );
             }
-
-            responder.send();
+            else
+            {
+                req.response()
+                   .end();
+            }
 
             return;
         }
 
-        Respond.to( req )
-               .notFound()
-               .send();
-
-        //            logger.info( "Looking for classpath resource: '{}'", path );
-        //
-        //            final URL url = Thread.currentThread()
-        //                                  .getContextClassLoader()
-        //                                  .getResource( path );
-        //
-        //            logger.info( "Classpath URL is: '{}'", url );
-        //
-        //            if ( url == null )
-        //            {
-        //                req.response()
-        //                   .setStatusCode( 404 )
-        //                   .setStatusMessage( "Not found" );
-        //
-        //                return;
-        //            }
-        //            else
-        //            {
-        //                final String method = req.method()
-        //                                         .toUpperCase();
-        //
-        //                logger.info( "Method: '{}'", method );
-        //                if ( "GET".equals( method ) )
-        //                {
-        //                    doGet( req, url );
-        //                }
-        //                else if ( "HEAD".equals( method ) )
-        //                {
-        //                    req.response()
-        //                       .setStatusCode( 200 );
-        //                }
-        //                else
-        //                {
-        //                    req.response()
-        //                       .setStatusCode( 400 )
-        //                       .setStatusMessage( "Method: " + method + " not supported by test fixture." );
-        //                }
-        //            }
+        req.resume()
+           .response()
+           .setStatusCode( 404 )
+           .end();
     }
 
     @SuppressWarnings( "unused" )

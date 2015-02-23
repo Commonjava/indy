@@ -37,11 +37,11 @@ public final class ResponseUtils
     {
     }
 
-    public static Response formatRedirect( final String url )
+    public static Response formatRedirect( final URI uri )
         throws URISyntaxException
     {
         return Response.status( Status.MOVED_PERMANENTLY )
-                       .location( new URI( url ) )
+                       .location( uri )
                        .build();
     }
 
@@ -52,6 +52,31 @@ public final class ResponseUtils
         final URI location = new URI( uriFormatter.formatAbsolutePathTo( baseUri, params ) );
         return Response.created( location )
                        .build();
+    }
+
+    public static Response formatCreatedResponseWithJsonEntity( final URI location, final Object dto,
+                                                                final ObjectMapper objectMapper )
+    {
+        if ( dto == null )
+        {
+            return Response.noContent()
+                           .build();
+        }
+
+        Response response;
+        try
+        {
+            response = Response.created( location )
+                               .entity( objectMapper.writeValueAsString( dto ) )
+                               .type( ApplicationContent.application_json )
+                               .build();
+        }
+        catch ( final JsonProcessingException e )
+        {
+            response = formatResponse( e, "Failed to serialize DTO to JSON: " + dto, true );
+        }
+
+        return response;
     }
 
     public static Response formatCreatedResponse( final String baseUri, final CreationDTO dto )
@@ -68,6 +93,12 @@ public final class ResponseUtils
 
     public static Response formatOkResponseWithJsonEntity( final Object dto, final ObjectMapper objectMapper )
     {
+        if ( dto == null )
+        {
+            return Response.noContent()
+                           .build();
+        }
+
         Response response;
         try
         {
@@ -82,11 +113,10 @@ public final class ResponseUtils
         return response;
     }
 
-    public static Response formatOkResponseWithEntity( final String output, final String contentType )
+    public static Response formatOkResponseWithEntity( final Object output, final String contentType )
     {
-        return Response.ok()
+        return Response.ok( output )
                        .type( contentType )
-                       .entity( output )
                        .build();
     }
 

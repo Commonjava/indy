@@ -36,7 +36,7 @@ import org.commonjava.aprox.util.ApplicationHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Path( "/ui/{path: (.+)}" )
+@Path( "/{path: (.+)}" )
 @UIApp
 public class UIHandler
     implements AproxResources

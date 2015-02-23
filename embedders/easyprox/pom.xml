@@ -26,7 +26,7 @@
   <dependencies>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-autoprox-vertx</artifactId>
+      <artifactId>aprox-autoprox-jaxrs</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
@@ -34,11 +34,11 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-dot-maven-vertx</artifactId>
+      <artifactId>aprox-dot-maven-jaxrs</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-setback-vertx</artifactId>
+      <artifactId>aprox-setback-jaxrs</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
@@ -46,7 +46,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-revisions-vertx</artifactId>
+      <artifactId>aprox-revisions-jaxrs</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>

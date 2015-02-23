@@ -23,7 +23,7 @@
   <dependencies>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-depgraph-vertx</artifactId>
+      <artifactId>aprox-depgraph-jaxrs</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>

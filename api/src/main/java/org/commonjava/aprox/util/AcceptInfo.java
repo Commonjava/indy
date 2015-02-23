@@ -1,17 +1,7 @@
 package org.commonjava.aprox.util;
 
-import static org.apache.commons.lang.StringUtils.join;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
 import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class AcceptInfo
 {
@@ -25,9 +15,9 @@ public class AcceptInfo
 
     private final String version;
 
-    public static AcceptInfoParser parser( final String appId, final String defaultVersion )
+    public static AcceptInfoParser parser()
     {
-        return new AcceptInfoParser( appId, defaultVersion );
+        return new AcceptInfoParser();
     }
 
     public AcceptInfo( final String raw, final String base, final String version )
@@ -119,96 +109,6 @@ public class AcceptInfo
     public String getVersion()
     {
         return version;
-    }
-
-    public static final class AcceptInfoParser
-    {
-
-        private final String appId;
-
-        private final String defaultVersion;
-
-        private AcceptInfoParser( final String appId, final String defaultVersion )
-        {
-            this.appId = appId;
-            this.defaultVersion = defaultVersion;
-        }
-
-        public List<AcceptInfo> parse( final String... accepts )
-        {
-            return parse( Arrays.asList( accepts ) );
-        }
-
-        public List<AcceptInfo> parse( final Collection<String> accepts )
-        {
-            final Logger logger = LoggerFactory.getLogger( AcceptInfo.class );
-
-            final List<String> raw = new ArrayList<String>();
-            for ( final String accept : accepts )
-            {
-                final String[] parts = accept.split( "\\s*,\\s*" );
-                if ( parts.length == 1 )
-                {
-                    logger.info( "adding atomic accept header: '{}'", accept );
-                    raw.add( accept );
-                }
-                else
-                {
-                    logger.info( "Adding split header values: '{}'", join( parts, "', '" ) );
-                    raw.addAll( Arrays.asList( parts ) );
-                }
-            }
-
-            logger.info( "Got raw ACCEPT header values:\n  {}", join( raw, "\n  " ) );
-
-            if ( raw == null || raw.isEmpty() )
-            {
-                return Collections.singletonList( new AcceptInfo( ACCEPT_ANY, ACCEPT_ANY, defaultVersion ) );
-            }
-
-            final List<AcceptInfo> acceptInfos = new ArrayList<AcceptInfo>();
-            for ( final String r : raw )
-            {
-                String cleaned = r.toLowerCase();
-                final int qIdx = cleaned.indexOf( ';' );
-                if ( qIdx > -1 )
-                {
-                    // FIXME: We shouldn't discard quality suffix...
-                    cleaned = cleaned.substring( 0, qIdx );
-                }
-
-                logger.info( "Cleaned up: {} to: {}", r, cleaned );
-
-                final String appPrefix = "application/" + appId + "-";
-
-                logger.info( "Checking for ACCEPT header starting with: '{}' and containing: '+' (header value is: '{}')",
-                             appPrefix, cleaned );
-                if ( cleaned.startsWith( appPrefix ) && cleaned.contains( "+" ) )
-                {
-                    final String[] acceptParts = cleaned.substring( appPrefix.length() )
-                                                        .split( "\\+" );
-
-                    acceptInfos.add( new AcceptInfo( cleaned, "application/" + acceptParts[1], acceptParts[0] ) );
-                }
-                else
-                {
-                    acceptInfos.add( new AcceptInfo( cleaned, cleaned, defaultVersion ) );
-                }
-            }
-
-            return acceptInfos;
-        }
-
-        public List<AcceptInfo> parse( final Enumeration<String> accepts )
-        {
-            return parse( Collections.list( accepts ) );
-        }
-
-        public String getDefaultVersion()
-        {
-            return defaultVersion;
-        }
-
     }
 
 }

@@ -7,7 +7,7 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 
 import org.commonjava.aprox.util.AcceptInfo;
-import org.commonjava.aprox.util.AcceptInfo.AcceptInfoParser;
+import org.commonjava.aprox.util.AcceptInfoParser;
 import org.commonjava.aprox.util.ApplicationContent;
 import org.commonjava.aprox.util.ApplicationHeader;
 

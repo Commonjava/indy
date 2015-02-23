@@ -57,7 +57,6 @@
  -->
     <test-forkCount>1C</test-forkCount>
     <test-redirectOutput>true</test-redirectOutput>
-    <vertxHandlerForkingArg>-ApreventHandlerForking=false</vertxHandlerForkingArg>
   </properties>
   
   <distributionManagement>
@@ -573,19 +572,18 @@
       </dependency>
       <dependency>
           <groupId>org.jboss.resteasy</groupId>
-          <artifactId>async-http-servlet-3.0</artifactId>
+          <artifactId>jaxrs-api</artifactId>
           <version>${resteasyVersion}</version>
       </dependency>
       <dependency>
           <groupId>org.jboss.resteasy</groupId>
-          <artifactId>resteasy-client</artifactId>
+          <artifactId>async-http-servlet-3.0</artifactId>
           <version>${resteasyVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.spec.javax.servlet</groupId>
         <artifactId>jboss-servlet-api_3.0_spec</artifactId>
         <version>1.0.1.Final</version>
-        <scope>provided</scope>
       </dependency>
       <!-- END: JAX-RS support -->
       

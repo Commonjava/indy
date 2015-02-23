@@ -5,8 +5,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 
+import org.commonjava.aprox.depgraph.jaxrs.util.JaxRsPresetParamParser;
 import org.commonjava.aprox.depgraph.util.PresetParameterParser;
-import org.commonjava.aprox.depgraph.vertx.util.VertXPresetParamParser;
 import org.commonjava.aprox.inject.TestData;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.maven.ArtifactManager;
@@ -59,7 +59,7 @@ public class TestProvider
     @PostConstruct
     public void init()
     {
-        presetParser = new VertXPresetParamParser();
+        presetParser = new JaxRsPresetParamParser();
         artifacts = new ArtifactManagerImpl( transfers, locations, mapper, versionResolver );
         pomReader = new MavenPomReader( xml, locations, artifacts, xpath, pluginDefaults, pluginImplications );
     }

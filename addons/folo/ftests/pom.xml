@@ -23,7 +23,7 @@
   <dependencies>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-folo-vertx</artifactId>
+      <artifactId>aprox-folo-jaxrs</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>

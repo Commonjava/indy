@@ -254,12 +254,12 @@ public class BootOptions
     {
         if ( contextPath == null )
         {
-            return null;
+            contextPath = "";
         }
 
-        if ( !contextPath.startsWith( "/" ) )
+        if ( contextPath.startsWith( "/" ) )
         {
-            contextPath = "/" + contextPath;
+            contextPath = contextPath.substring( 1 );
         }
 
         return contextPath;
@@ -267,7 +267,18 @@ public class BootOptions
 
     public void setContextPath( final String contextPath )
     {
-        this.contextPath = contextPath;
+        if ( contextPath == null )
+        {
+            this.contextPath = "";
+        }
+        else if ( contextPath.startsWith( "/" ) )
+        {
+            this.contextPath = contextPath.substring( 1 );
+        }
+        else
+        {
+            this.contextPath = contextPath;
+        }
     }
 
     public boolean parseArgs( final String[] args )

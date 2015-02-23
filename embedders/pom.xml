@@ -32,7 +32,7 @@
   <dependencies>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-bindings-vertx</artifactId>
+      <artifactId>aprox-bindings-jaxrs</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
@@ -52,7 +52,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox.boot</groupId>
-      <artifactId>aprox-booter-vertx</artifactId>
+      <artifactId>aprox-booter-jaxrs</artifactId>
     </dependency>
     
     <dependency>

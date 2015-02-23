@@ -60,6 +60,11 @@ public class FoloAdminTest
                       .create( new RemoteRepository( CENTRAL, "http://repo.maven.apache.org/maven2/" ), changelog,
                                RemoteRepository.class );
         }
+        else
+        {
+            central = client.stores()
+                            .load( remote, CENTRAL, RemoteRepository.class );
+        }
 
         Group g;
         if ( client.stores()

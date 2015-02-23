@@ -35,7 +35,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-bindings-vertx</artifactId>
+      <artifactId>aprox-bindings-jaxrs</artifactId>
       <scope>provided</scope>
     </dependency>
   </dependencies>

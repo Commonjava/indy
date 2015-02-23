@@ -45,15 +45,15 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.resteasy</groupId>
+      <artifactId>jaxrs-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.resteasy</groupId>
       <artifactId>resteasy-cdi</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jboss.resteasy</groupId>
       <artifactId>async-http-servlet-3.0</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>resteasy-client</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jboss.spec.javax.servlet</groupId>

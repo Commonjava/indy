@@ -59,18 +59,7 @@
     <resources>
       <resource>
         <directory>src/main/resources</directory>
-        <filtering>false</filtering>
-        <excludes>
-          <exclude>**/*.java</exclude>
-        </excludes>
-      </resource>
-      <resource>
-        <directory>src/main/resources</directory>
         <filtering>true</filtering>
-        <targetPath>../generated-sources/filtered</targetPath>
-        <includes>
-          <include>**/*.java</include>
-        </includes>
       </resource>
     </resources>
     <pluginManagement>
@@ -120,26 +109,9 @@
             </goals>
             <configuration>
               <shortRevisionLength>7</shortRevisionLength>
+              <revisionOnScmFailure>${user.name}-local</revisionOnScmFailure>
+              <useLastCommittedRevision>true</useLastCommittedRevision>
               <timestampFormat>{0,date,yyyy-MM-dd HH:mm Z}</timestampFormat>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>1.7</version>
-        <executions>
-          <execution>
-            <id>add-filtered-sources</id>
-            <phase>generate-resources</phase>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>${project.build.directory}/generated-sources/filtered</source>
-              </sources>
             </configuration>
           </execution>
         </executions>

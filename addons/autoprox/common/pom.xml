@@ -46,18 +46,13 @@
       <artifactId>aprox-subsys-groovy</artifactId>
     </dependency>
     <dependency>
-    	<groupId>io.vertx</groupId>
-    	<artifactId>vertx-core</artifactId>
-    	<scope>test</scope>
-    </dependency>
-    <dependency>
     	<groupId>junit</groupId>
     	<artifactId>junit</artifactId>
     	<scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.vertx</groupId>
-      <artifactId>vabr-api</artifactId>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-core</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

@@ -14,7 +14,7 @@ public class AcceptInfoTest
     public void singleAcceptHeader()
         throws Exception
     {
-        final List<AcceptInfo> accepts = AcceptInfo.parser( "app", "1" )
+        final List<AcceptInfo> accepts = AcceptInfo.parser()
                                                    .parse( "text/html" );
         assertThat( accepts.size(), equalTo( 1 ) );
 
@@ -27,7 +27,7 @@ public class AcceptInfoTest
         throws Exception
     {
         final List<AcceptInfo> infos =
-            AcceptInfo.parser( "app", "1" )
+            AcceptInfo.parser()
                       .parse( "text/html", "application/xhtml+xml", "application/xml;q=0.9", "*/*;q=0.8" );
 
         assertThat( infos.size(), equalTo( 4 ) );
@@ -38,7 +38,7 @@ public class AcceptInfoTest
         throws Exception
     {
         final List<AcceptInfo> infos =
-            AcceptInfo.parser( "app", "1" )
+            AcceptInfo.parser()
                       .parse( "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" );
 
         assertThat( infos.size(), equalTo( 4 ) );

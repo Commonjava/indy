@@ -23,7 +23,7 @@
   <dependencies>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-promote-vertx</artifactId>
+      <artifactId>aprox-promote-jaxrs</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>

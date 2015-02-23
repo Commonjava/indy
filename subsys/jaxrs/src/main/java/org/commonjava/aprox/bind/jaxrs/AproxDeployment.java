@@ -14,6 +14,7 @@ import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.FilterInfo;
 import io.undertow.servlet.api.ServletInfo;
+import io.undertow.servlet.handlers.DefaultServlet;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -24,13 +25,15 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
+import javax.servlet.DispatcherType;
+import javax.ws.rs.core.Application;
 
-import org.jboss.resteasy.cdi.CdiInjectorFactory;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.spi.ResteasyDeployment;
 
 @ApplicationScoped
 public class AproxDeployment
+    extends Application
 {
 
     private static Set<Class<?>> PROVIDER_CLASSES;
@@ -87,25 +90,41 @@ public class AproxDeployment
     {
         final ResteasyDeployment deployment = new ResteasyDeployment();
 
-        deployment.getActualResourceClasses()
-                  .addAll( resourceClasses );
+        //        deployment.getActualResourceClasses()
+        //                  .addAll( resourceClasses );
+        //
+        //        deployment.getActualProviderClasses()
+        //                  .addAll( providerClasses );
 
-        deployment.getActualProviderClasses()
-                  .addAll( providerClasses );
+        deployment.setApplication( this );
+        deployment.setInjectorFactoryClass( CdiInjectorFactoryImpl.class.getName() );
 
-        deployment.setInjectorFactoryClass( CdiInjectorFactory.class.getName() );
-
-        final ServletInfo resteasyServlet = Servlets.servlet( "ResteasyServlet", HttpServlet30Dispatcher.class )
+        final ServletInfo resteasyServlet = Servlets.servlet( "REST", HttpServlet30Dispatcher.class )
                                                     .setAsyncSupported( true )
                                                     .setLoadOnStartup( 1 )
-                                                    .addMapping( "/*" );
+                                                    .addMapping( "/api*" )
+                                                    .addMapping( "/api/*" );
+
+        final ServletInfo defServlet = Servlets.servlet( "Default", DefaultServlet.class )
+                                               .setAsyncSupported( true )
+                                               .setLoadOnStartup( 2 )
+                                               .addMapping( "/.html" )
+                                               .addMapping( "/" )
+                                               .addMapping( "/js/*" )
+                                               .addMapping( "/css/*" )
+                                               .addMapping( "/partials/*" );
+
+        final FilterInfo secFilter = Servlets.filter( "Security", SecurityFilter.class );
 
         final DeploymentInfo di =
-            new DeploymentInfo()
-            .setContextPath( contextRoot )
+            new DeploymentInfo().addListener( Servlets.listener( RequestScopeListener.class ) )
+                                .setContextPath( contextRoot )
                                 .addServletContextAttribute( ResteasyDeployment.class.getName(), deployment )
                                 .addServlet( resteasyServlet )
-                                .setDeploymentName( "ResteasyUndertow" )
+                                .addServlet( defServlet )
+                                .addFilter( secFilter )
+                                .addFilterUrlMapping( secFilter.getName(), "/api/*", DispatcherType.REQUEST )
+                                .setDeploymentName( "AProx" )
                                 .setClassLoader( ClassLoader.getSystemClassLoader() );
 
         if ( deploymentProviders != null )
@@ -136,6 +155,14 @@ public class AproxDeployment
         }
 
         return di;
+    }
+
+    @Override
+    public Set<Class<?>> getClasses()
+    {
+        final Set<Class<?>> classes = new HashSet<>( resourceClasses );
+        classes.addAll( providerClasses );
+        return classes;
     }
 
 }
