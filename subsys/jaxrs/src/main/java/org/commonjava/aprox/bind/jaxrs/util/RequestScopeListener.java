@@ -1,4 +1,4 @@
-package org.commonjava.aprox.bind.jaxrs;
+package org.commonjava.aprox.bind.jaxrs.util;
 
 import java.util.HashMap;
 import java.util.Map;

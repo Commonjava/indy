@@ -36,7 +36,6 @@ import javax.ws.rs.core.UriInfo;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.bind.jaxrs.util.JaxRsUriFormatter;
-import org.commonjava.aprox.core.bind.jaxrs.ContentAccessHandler;
 import org.commonjava.aprox.depgraph.rest.RepositoryController;
 import org.commonjava.aprox.util.ApplicationContent;
 import org.slf4j.Logger;
@@ -62,7 +61,7 @@ public class RepositoryResource
         try
         {
             final String baseUri = uriInfo.getAbsolutePathBuilder()
-                                          .path( ContentAccessHandler.class )
+                                          .path( "api" )
                                           .build()
                                           .toString();
 
@@ -96,7 +95,7 @@ public class RepositoryResource
         try
         {
             final String baseUri = uriInfo.getAbsolutePathBuilder()
-                                          .path( ContentAccessHandler.class )
+                                          .path( "api" )
                                           .build()
                                           .toString();
 

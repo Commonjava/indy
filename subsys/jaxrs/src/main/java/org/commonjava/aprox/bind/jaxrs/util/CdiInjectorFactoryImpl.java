@@ -1,4 +1,4 @@
-package org.commonjava.aprox.bind.jaxrs;
+package org.commonjava.aprox.bind.jaxrs.util;
 
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.CDI;

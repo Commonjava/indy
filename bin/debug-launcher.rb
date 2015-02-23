@@ -69,13 +69,13 @@ class Launcher
         ln_s( file, File.join(uibase, fname) )
       }
       
-      addon_base = File.join(uibase, "layover")
-      mkdir( addon_base ) unless File.directory?(addon_base)
+      addon_base = File.join(uibase, "layover/ui-addons")
+      mkdir_p( addon_base ) unless File.directory?(addon_base)
       
-      Dir["#{uibase}.bak/layover/*"].each{|addon_path|
+      Dir["#{uibase}.bak/layover/ui-addons/*"].each{|addon_path|
         addon = File.basename(addon_path)
         addon_target = File.join( addon_base, addon )
-        ln_s( "#{BASEDIR}/addons/#{addon}/common/src/main/ui/layover/#{addon}", addon_target )
+        ln_s( "#{BASEDIR}/addons/#{addon}/common/src/main/ui/layover/ui-addons/#{addon}", addon_target )
       }
     end
 

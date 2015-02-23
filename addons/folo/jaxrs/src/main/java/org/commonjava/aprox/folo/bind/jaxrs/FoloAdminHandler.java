@@ -86,7 +86,7 @@ public class FoloAdminHandler
     @Path( "/{id}/record/{type}/{name}" )
     @GET
     public Response getRecord( final @PathParam( "id" ) String id, final @PathParam( "type" ) String type,
-                               final @PathParam( "name" ) String name, @Context final UriInfo uriInfo )
+                               final @PathParam( "name" ) String name )
     {
         final StoreType st = StoreType.get( type );
 

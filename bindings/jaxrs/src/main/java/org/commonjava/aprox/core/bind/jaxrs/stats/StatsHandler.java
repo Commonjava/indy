@@ -27,7 +27,6 @@ import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
-import org.commonjava.aprox.core.bind.jaxrs.ContentAccessHandler;
 import org.commonjava.aprox.core.ctl.StatsController;
 import org.commonjava.aprox.model.core.dto.EndpointViewListing;
 import org.commonjava.aprox.util.ApplicationContent;
@@ -97,8 +96,8 @@ public class StatsHandler
         Response response;
         try
         {
-            final String baseUri = uriInfo.getAbsolutePathBuilder()
-                                          .path( ContentAccessHandler.class )
+            final String baseUri = uriInfo.getBaseUriBuilder()
+                                          .path( "api" )
                                           .build()
                                           .toString();
 

@@ -137,7 +137,7 @@ public class StoreAdminHandler
 
             if ( adminController.store( store, user, true ) )
             {
-                final URI uri = uriInfo.getAbsolutePathBuilder()
+                final URI uri = uriInfo.getBaseUriBuilder()
                                        .path( getClass() )
                                        .path( store.getName() )
                                        .build( store.getKey()

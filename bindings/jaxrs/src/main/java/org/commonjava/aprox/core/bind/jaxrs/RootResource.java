@@ -34,7 +34,7 @@ public class RootResource
         Response response;
         try
         {
-            response = formatRedirect( uriInfo.getAbsolutePathBuilder()
+            response = formatRedirect( uriInfo.getBaseUriBuilder()
                                               .path( "stats/version-info" )
                                               .build() );
         }

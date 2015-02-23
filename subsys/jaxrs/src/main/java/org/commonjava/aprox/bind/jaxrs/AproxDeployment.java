@@ -14,7 +14,6 @@ import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.FilterInfo;
 import io.undertow.servlet.api.ServletInfo;
-import io.undertow.servlet.handlers.DefaultServlet;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -28,6 +27,10 @@ import javax.inject.Inject;
 import javax.servlet.DispatcherType;
 import javax.ws.rs.core.Application;
 
+import org.commonjava.aprox.bind.jaxrs.ui.UIServlet;
+import org.commonjava.aprox.bind.jaxrs.util.AproxResteasyJsonProvider;
+import org.commonjava.aprox.bind.jaxrs.util.CdiInjectorFactoryImpl;
+import org.commonjava.aprox.bind.jaxrs.util.RequestScopeListener;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.spi.ResteasyDeployment;
 
@@ -105,14 +108,15 @@ public class AproxDeployment
                                                     .addMapping( "/api*" )
                                                     .addMapping( "/api/*" );
 
-        final ServletInfo defServlet = Servlets.servlet( "Default", DefaultServlet.class )
+        final ServletInfo uiServlet = Servlets.servlet( "UI", UIServlet.class )
                                                .setAsyncSupported( true )
                                                .setLoadOnStartup( 2 )
                                                .addMapping( "/.html" )
                                                .addMapping( "/" )
                                                .addMapping( "/js/*" )
                                                .addMapping( "/css/*" )
-                                               .addMapping( "/partials/*" );
+                                              .addMapping( "/partials/*" )
+                                              .addMapping( "/ui-addons/*" );
 
         final FilterInfo secFilter = Servlets.filter( "Security", SecurityFilter.class );
 
@@ -121,7 +125,7 @@ public class AproxDeployment
                                 .setContextPath( contextRoot )
                                 .addServletContextAttribute( ResteasyDeployment.class.getName(), deployment )
                                 .addServlet( resteasyServlet )
-                                .addServlet( defServlet )
+                                .addServlet( uiServlet )
                                 .addFilter( secFilter )
                                 .addFilterUrlMapping( secFilter.getName(), "/api/*", DispatcherType.REQUEST )
                                 .setDeploymentName( "AProx" )

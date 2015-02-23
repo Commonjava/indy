@@ -128,7 +128,7 @@ aprox.controllerProvider.register('AutoProxCalculatorCtl', ['$scope', '$routePar
   var routeType = $routeParams.type;
   var routeName = $routeParams.name;
   
-  alert( "Got route type: " + routeType + "\n and name: " + routeName );
+//  alert( "Got route type: " + routeType + "\n and name: " + routeName );
   
   if ( routeType !== undefined && routeName !== undefined ){
     $scope.form.type = routeType;

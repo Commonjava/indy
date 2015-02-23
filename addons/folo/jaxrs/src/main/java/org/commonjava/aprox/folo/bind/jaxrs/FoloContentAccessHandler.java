@@ -107,7 +107,8 @@ public class FoloContentAccessHandler
 
             final URI uri = uriInfo.getBaseUriBuilder()
                                    .path( getClass() )
-                                   .build( id, type, name, path );
+                                   .path( path )
+                                   .build( id, type, name );
 
             response = Response.created( uri )
                                .build();
@@ -143,7 +144,8 @@ public class FoloContentAccessHandler
         {
             final String baseUri = uriInfo.getBaseUriBuilder()
                                           .path( getClass() )
-                                          .build( id, type, name, path )
+                                          .path( path )
+                                          .build( id, type, name )
                                           .toString();
 
             if ( path == null || path.equals( "" ) || path.endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )
@@ -205,7 +207,8 @@ public class FoloContentAccessHandler
         {
             final String baseUri = uriInfo.getBaseUriBuilder()
                                           .path( getClass() )
-                                          .build( id, type, name, path )
+                                          .path( path )
+                                          .build( id, type, name )
                                           .toString();
 
             if ( path == null || path.equals( "" ) || path.endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )

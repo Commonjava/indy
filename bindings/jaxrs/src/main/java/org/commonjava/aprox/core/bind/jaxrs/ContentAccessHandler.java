@@ -92,7 +92,8 @@ public class ContentAccessHandler
 
             final URI uri = uriInfo.getBaseUriBuilder()
                                    .path( getClass() )
-                                   .build( type, name, path );
+                                   .path( path )
+                                   .build( type, name );
 
             response = Response.created( uri )
                                .build();
@@ -146,7 +147,8 @@ public class ContentAccessHandler
         {
             final String baseUri = uriInfo.getBaseUriBuilder()
                                           .path( getClass() )
-                                          .build( type, name, path )
+                                          .path( path )
+                                          .build( type, name )
                                           .toString();
 
             if ( path == null || path.equals( "" ) || path.endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )
@@ -209,7 +211,8 @@ public class ContentAccessHandler
         {
             final String baseUri = uriInfo.getBaseUriBuilder()
                                           .path( getClass() )
-                                          .build( type, name, path )
+                                          .path( path )
+                                          .build( type, name )
                                           .toString();
 
             if ( path == null || path.equals( "" ) || path.endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )

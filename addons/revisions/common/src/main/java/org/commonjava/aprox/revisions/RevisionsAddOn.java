@@ -28,9 +28,9 @@ public class RevisionsAddOn
         {
             id =
                 new AproxAddOnID().withName( "Revisions" )
-                                  .withInitJavascriptHref( "revisions/js/revisions.js" )
+                                  .withInitJavascriptHref( "ui-addons/revisions/js/revisions.js" )
                                   .withRoute( new UIRoute().withRoute( ROUTE_CHANGELOG )
-                                                           .withTemplateHref( "revisions/partials/store-changelog.html" ) )
+                                                           .withTemplateHref( "ui-addons/revisions/partials/store-changelog.html" ) )
                                   .withSection( new UISection().withName( "Store Changelogs" )
                                                                .withRoute( ROUTE_CHANGELOG ) );
         }
