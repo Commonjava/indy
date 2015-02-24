@@ -12,61 +12,43 @@ package org.commonjava.aprox.subsys.maven;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
 
-import org.apache.maven.mae.MAEException;
-import org.apache.maven.mae.boot.embed.MAEEmbedderBuilder;
-import org.apache.maven.mae.conf.CoreLibrary;
-import org.apache.maven.mae.conf.MAEConfiguration;
-import org.apache.maven.mae.internal.container.ComponentSelector;
-import org.apache.maven.mae.internal.container.MAEContainer;
+import org.codehaus.plexus.DefaultContainerConfiguration;
+import org.codehaus.plexus.DefaultPlexusContainer;
+import org.codehaus.plexus.PlexusContainer;
+import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.logging.LogEnabled;
 import org.commonjava.aprox.subsys.maven.plogger.Log4JLoggerManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class MavenComponentManager
 {
 
-    @Inject
-    private Instance<MavenComponentDefinitions> componentLists;
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private MAEContainer container;
+    private PlexusContainer container;
 
     private Log4JLoggerManager loggerManager;
 
     @PostConstruct
     public void startMAE()
-        throws MAEException
     {
-        final ComponentSelector selector = new ComponentSelector();
+        final DefaultContainerConfiguration cc = new DefaultContainerConfiguration();
 
-        for ( final MavenComponentDefinitions list : componentLists )
-        {
-            for ( final MavenComponentDefinition<?, ?> comp : list )
-            {
-                final String oldHint = comp.getOverriddenHint();
-                if ( oldHint == null )
-                {
-                    selector.setSelection( comp.getComponentClass(), comp.getHint() );
-                }
-                else
-                {
-                    selector.setSelection( comp.getComponentClass(), oldHint, comp.getHint() );
-                }
-            }
-        }
-
-        final MAEConfiguration config = new MAEConfiguration().withComponentSelections( selector )
-                                                              .withLibrary( new CoreLibrary() );
-
-        final MAEEmbedderBuilder builder = new MAEEmbedderBuilder().withConfiguration( config );
-
-        container = builder.container();
         loggerManager = new Log4JLoggerManager();
 
-        container.setLoggerManager( loggerManager );
+        try
+        {
+            container = new DefaultPlexusContainer( cc );
+        }
+        catch ( final PlexusContainerException e )
+        {
+            logger.error( String.format( "Cannot start plexus container for access to Maven components: %s",
+                                         e.getMessage() ), e );
+        }
     }
 
     public <I> I getComponent( final Class<I> role, final String hint )

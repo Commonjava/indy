@@ -92,4 +92,28 @@ public class Log4JLoggerManager
         }
     }
 
+    @Override
+    public void setThreshold( final String role, final int threshold )
+    {
+        getLoggerForComponent( role ).setThreshold( threshold );
+    }
+
+    @Override
+    public void setThreshold( final String role, final String roleHint, final int threshold )
+    {
+        getLoggerForComponent( role, roleHint ).setThreshold( threshold );
+    }
+
+    @Override
+    public int getThreshold( final String role )
+    {
+        return getLoggerForComponent( role ).getThreshold();
+    }
+
+    @Override
+    public int getThreshold( final String role, final String roleHint )
+    {
+        return getLoggerForComponent( role, roleHint ).getThreshold();
+    }
+
 }
