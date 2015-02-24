@@ -205,7 +205,9 @@ public class JaxRsBooter
         final AproxDeployment aproxDeployment = container.instance()
                                                          .select( AproxDeployment.class )
                                                          .get();
-        final DeploymentInfo di = aproxDeployment.getDeployment( bootOptions.getContextPath() );
+
+        final DeploymentInfo di = aproxDeployment.getDeployment( bootOptions.getContextPath() )
+                                                 .setContextPath( "/" );
 
         final DeploymentManager dm = Servlets.defaultContainer()
                                              .addDeployment( di );

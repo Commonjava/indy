@@ -45,11 +45,8 @@
     <cartoVersion>0.8.1</cartoVersion>
     <bomVersion>15-SNAPSHOT</bomVersion>
     <webdavVersion>3.1.2</webdavVersion>
-    <vabrVersion>1.13-SNAPSHOT</vabrVersion>
     <resteasyVersion>3.0.9.Final</resteasyVersion>
     <undertowVersion>1.1.2.Final</undertowVersion>
-    
-    <vertx.testtools.version>2.0.0-final</vertx.testtools.version>
     
 <!--
     <test-forkCount>1</test-forkCount>
@@ -139,11 +136,6 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-bindings-vertx</artifactId>
-        <version>0.18.6-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-bindings-jaxrs</artifactId>
         <version>0.18.6-SNAPSHOT</version>
       </dependency>
@@ -186,11 +178,6 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-depgraph-vertx</artifactId>
-        <version>0.18.6-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-depgraph-jaxrs</artifactId>
         <version>0.18.6-SNAPSHOT</version>
       </dependency>
@@ -199,11 +186,6 @@
         <artifactId>aprox-ftests-depgraph</artifactId>
         <version>0.18.6-SNAPSHOT</version>
         <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-autoprox-vertx</artifactId>
-        <version>0.18.6-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
@@ -249,11 +231,6 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-setback-vertx</artifactId>
-        <version>0.18.6-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-setback-jaxrs</artifactId>
         <version>0.18.6-SNAPSHOT</version>
       </dependency>
@@ -269,11 +246,6 @@
         <type>tar.gz</type>
         <classifier>dataset</classifier>
         <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-revisions-vertx</artifactId>
-        <version>0.18.6-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
@@ -313,11 +285,6 @@
         <type>tar.gz</type>
         <classifier>dataset</classifier>
         <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-dot-maven-vertx</artifactId>
-        <version>0.18.6-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
@@ -361,11 +328,6 @@
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-filer-default</artifactId>
-        <version>0.18.6-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-subsys-vertx</artifactId>
         <version>0.18.6-SNAPSHOT</version>
       </dependency>
       <dependency>
@@ -416,11 +378,6 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-folo-vertx</artifactId>
-        <version>0.18.6-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-folo-jaxrs</artifactId>
         <version>0.18.6-SNAPSHOT</version>
       </dependency>
@@ -460,11 +417,6 @@
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-promote-vertx</artifactId>
-        <version>0.18.6-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
@@ -514,40 +466,10 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox.boot</groupId>
-        <artifactId>aprox-booter-vertx</artifactId>
-        <version>0.18.6-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox.boot</groupId>
         <artifactId>aprox-booter-jaxrs</artifactId>
         <version>0.18.6-SNAPSHOT</version>
       </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox.boot</groupId>
-        <artifactId>aprox-booter-jarex</artifactId>
-        <version>0.18.6-SNAPSHOT</version>
-      </dependency>
       
-      
-      <!-- START: Vert.x support -->
-      <dependency>
-        <groupId>org.commonjava.vertx</groupId>
-        <artifactId>vabr-api</artifactId>
-        <version>${vabrVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.vertx</groupId>
-        <artifactId>vabr-processor</artifactId>
-        <version>${vabrVersion}</version>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.vertx</groupId>
-        <artifactId>vabr-tests</artifactId>
-        <version>${vabrVersion}</version>
-        <scope>test</scope>
-      </dependency>
-      <!-- END: Vert.x support -->
       
       <!-- START: JAX-RS support -->
       <dependency>
@@ -628,11 +550,6 @@
       <dependency>
         <groupId>org.commonjava.web</groupId>
         <artifactId>webdav-handler-common</artifactId>
-        <version>${webdavVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.web</groupId>
-        <artifactId>webdav-handler-vertx</artifactId>
         <version>${webdavVersion}</version>
       </dependency>
       <dependency>

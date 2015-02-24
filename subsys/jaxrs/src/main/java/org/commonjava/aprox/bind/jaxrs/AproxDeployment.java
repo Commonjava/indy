@@ -14,6 +14,7 @@ import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.FilterInfo;
 import io.undertow.servlet.api.ServletInfo;
+import io.undertow.servlet.util.ImmediateInstanceFactory;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -25,6 +26,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.servlet.DispatcherType;
+import javax.servlet.Servlet;
 import javax.ws.rs.core.Application;
 
 import org.commonjava.aprox.bind.jaxrs.ui.UIServlet;
@@ -55,6 +57,9 @@ public class AproxDeployment
     @Inject
     private Instance<AproxDeploymentProvider> deployments;
 
+    @Inject
+    private UIServlet ui;
+
     private Set<Class<?>> resourceClasses;
 
     private Set<Class<?>> providerClasses = PROVIDER_CLASSES;
@@ -65,10 +70,12 @@ public class AproxDeployment
     {
     }
 
-    public AproxDeployment( final Set<Class<?>> resourceClasses, final Set<AproxDeploymentProvider> deploymentProviders )
+    public AproxDeployment( final Set<Class<?>> resourceClasses,
+                            final Set<AproxDeploymentProvider> deploymentProviders, final UIServlet ui )
     {
         this.resourceClasses = resourceClasses;
         this.deploymentProviders = deploymentProviders;
+        this.ui = ui;
         this.providerClasses = Collections.emptySet();
     }
 
@@ -117,6 +124,8 @@ public class AproxDeployment
                                                .addMapping( "/css/*" )
                                               .addMapping( "/partials/*" )
                                               .addMapping( "/ui-addons/*" );
+
+        uiServlet.setInstanceFactory( new ImmediateInstanceFactory<Servlet>( ui ) );
 
         final FilterInfo secFilter = Servlets.filter( "Security", SecurityFilter.class );
 
