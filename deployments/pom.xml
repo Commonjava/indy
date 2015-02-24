@@ -25,6 +25,5 @@
   
   <modules>
     <module>launchers</module>
-    <module>jarex</module>
   </modules>
 </project>

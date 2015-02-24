@@ -25,7 +25,6 @@
     <module>common</module>
     <module>ftests</module>
     <module>model-java</module>
-    <module>vertx</module>
     <module>jaxrs</module>
   </modules>
 

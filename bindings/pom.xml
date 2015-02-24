@@ -25,7 +25,6 @@
   <name>AProx :: Bindings :: Parent</name>
   
   <modules>
-    <module>vertx</module>
     <module>jaxrs</module>
   </modules>
   
