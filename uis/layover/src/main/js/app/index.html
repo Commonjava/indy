@@ -64,11 +64,11 @@
 
 	<nav class="navbar navbar-default navbar-fixed-bottom" role="navigation" ng-controller="FooterCtl">
 	  <div class="container">
-      <span class="stat-label"><a target="_new" class="fa fa-btn" href="http://github.com/jdcasey/aprox">AProx @GitHub</a></span>
-      | <span class="stat-label"><a target="_new" class="fa fa-btn" href="http://github.com/jdcasey/aprox/issues">Issues</a></span>
+      <span class="stat-label"><a target="_new" class="fa fa-btn" href="http://github.com/{{stats['builder']}}/aprox">AProx @GitHub</a></span>
+      | <span class="stat-label"><a target="_new" class="fa fa-btn" href="http://github.com/{{stats['builder']}}/aprox/issues">Issues</a></span>
       | <span class="stat-label">Version:</span> <span class="stat-value">{{stats.version}}</span>
-      | <span class="stat-label">Commit ID:</span> <span class="stat-value"><a target="_new" class="fa fa-btn" href="http://github.com/{{stats.built_by}}/aprox/commit/{{stats.commit_id}}">{{stats.commit_id}}</a></span>
-      | <span class="stat-label">Built</span> <span class="stat-value">on {{stats.built_on}} by <a target="_new" class="fa fa-btn" href="http://github.com/{{stats.built_by}}">{{stats.built_by}}</a></span>
+      | <span class="stat-label">Commit ID:</span> <span class="stat-value"><a target="_new" class="fa fa-btn" href="http://github.com/{{stats['builder']}}/aprox/commit/{{stats['commit-id']}}">{{stats["commit-id"]}}</a></span>
+      | <span class="stat-label">Built</span> <span class="stat-value">on {{stats["timestamp"]}} by <a target="_new" class="fa fa-btn" href="http://github.com/{{stats['builder']}}">{{stats["builder"]}}</a></span>
 	  </div>
 	</nav>
 
