@@ -107,6 +107,9 @@
               <goal>extract-buildnumber</goal>
             </goals>
             <phase>initialize</phase>
+            <configuration>
+              <runOnlyAtExecutionRoot>false</runOnlyAtExecutionRoot>
+            </configuration>
           </execution>
         </executions>
       </plugin> 
