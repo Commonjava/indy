@@ -31,7 +31,14 @@ class Launcher
     }
 
     OptionParser.new{|opts|
-      opts.on('-d', '--debug=STYLE', 'setup java debug port 8000 (style: "y" or "n" for suspend style)'){|style| config[:debug] = style}
+      opts.on('-d', '--debug=STYLE', 'setup java debug port 8000 (style: "y" or "n" for suspend style)'){|style| 
+        if style == 'off'
+          config.delete(:debug)
+        else
+          config[:debug] = style
+        end
+      }
+      
       opts.on('-e', '--existing', 'keep existing unpacked directory if it exists'){config[:clean]=false}
       opts.on('-L', '--nolaunch', 'do not launch!'){config[:launch]=false}
       opts.on('-u', '--uidev', 'Link to the sources for the UI to enable live UI development' ){config[:uidev]=true}
@@ -103,9 +110,13 @@ class Launcher
     end
 
     if ( config[:launch] )
-      exec( "#{launch_dir}/bin/aprox.sh #{config[:args].join(' ')}" )
+      cmd = "#{launch_dir}/bin/aprox.sh #{config[:args].join(' ')}"
+      puts "Running: '#{cmd}'"
+      exec( cmd )
     else
-      exec("cd #{launch_dir}")
+      cmd="cd #{launch_dir}"
+      puts "Running: '#{cmd}'"
+      exec(cmd)
     end
   end
 end

@@ -97,6 +97,20 @@
     </pluginManagement>
     <plugins>
       <plugin>
+        <groupId>ru.concerteza.buildnumber</groupId>
+        <artifactId>maven-jgit-buildnumber-plugin</artifactId>
+        <version>1.2.9</version>
+        <executions>
+          <execution>
+            <id>git-buildnumber</id>
+            <goals>
+              <goal>extract-buildnumber</goal>
+            </goals>
+            <phase>initialize</phase>
+          </execution>
+        </executions>
+      </plugin> 
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>buildnumber-maven-plugin</artifactId>
         <version>1.1</version>
@@ -108,9 +122,6 @@
               <goal>create</goal>
             </goals>
             <configuration>
-              <shortRevisionLength>7</shortRevisionLength>
-              <revisionOnScmFailure>${user.name}-local</revisionOnScmFailure>
-              <useLastCommittedRevision>true</useLastCommittedRevision>
               <timestampFormat>{0,date,yyyy-MM-dd HH:mm Z}</timestampFormat>
             </configuration>
           </execution>
