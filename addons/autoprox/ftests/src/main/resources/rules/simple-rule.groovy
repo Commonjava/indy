@@ -16,7 +16,11 @@ class ProdFactory extends AbstractAutoProxRule
 
     HostedRepository createHostedRepository( final String named )
     {
-        new HostedRepository( named );
+        HostedRepository r = new HostedRepository( named );
+        r.setAllowSnapshots(true);
+        r.setAllowReleases(true);
+        
+        r
     }
 
     Group createGroup( final String named )
@@ -25,15 +29,15 @@ class ProdFactory extends AbstractAutoProxRule
         
         constituents.add( new StoreKey( StoreType.hosted, named ) );
         constituents.add( new StoreKey( StoreType.remote, named ) );
-        constituents.add( new StoreKey( StoreType.remote, "first" ) );
-        constituents.add( new StoreKey( StoreType.remote, "second" ) );
+        constituents.add( new StoreKey( StoreType.remote, "test-first" ) );
+        constituents.add( new StoreKey( StoreType.remote, "test-second" ) );
         
         new Group( named, constituents );
     }
 
     boolean matches( final String name )
     {
-        "test".equals( name );
+        name.startsWith( "test" );
     }
     
 }
