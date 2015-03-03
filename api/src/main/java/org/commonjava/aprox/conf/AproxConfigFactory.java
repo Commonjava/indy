@@ -10,6 +10,8 @@
  ******************************************************************************/
 package org.commonjava.aprox.conf;
 
+import java.io.File;
+
 import org.commonjava.web.config.ConfigurationException;
 
 /**
@@ -33,9 +35,22 @@ public interface AproxConfigFactory
 
     /**
      * Read all configurations and apply them to the different configuration-class instances available.
+     * <br/><b>NOTE:</b>If the main.conf doesn't exist, {@link #writeDefaultConfigs(File)} will be called.
+     * 
      * @param config Most commonly, a path to a configuration file.
      */
     void load( String config )
+        throws ConfigurationException;
+
+    /**
+     * Query all configuration modules for their default configuration files and content, and write them to the specified configuration directory
+     * structure. The given directory is equivalent to ${aprox.home}/etc/aprox, and configuration modules are allowed to return relative paths that
+     * include a subdirectory (like conf.d/foo.conf).
+     * 
+     * @param dir The directory into which default configurations should be written.
+     * @throws ConfigurationException
+     */
+    void writeDefaultConfigs( final File dir )
         throws ConfigurationException;
 
 }

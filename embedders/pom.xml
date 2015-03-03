@@ -103,6 +103,9 @@
                   <includes>
                     <include>org.commonjava*:*</include>
                   </includes>
+                  <excludes>
+                    <exclude>org.commonjava*:*ftest*</exclude>
+                  </excludes>
                 </artifactSet>
               </configuration>
             </execution>

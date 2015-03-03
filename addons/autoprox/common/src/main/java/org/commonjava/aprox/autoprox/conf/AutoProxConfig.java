@@ -10,59 +10,110 @@
  ******************************************************************************/
 package org.commonjava.aprox.autoprox.conf;
 
-import java.util.List;
+import java.io.InputStream;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
+import javax.enterprise.inject.Default;
+import javax.enterprise.inject.Produces;
+import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.commonjava.aprox.autoprox.data.RuleMapping;
+import org.commonjava.aprox.conf.AbstractAproxConfigInfo;
+import org.commonjava.aprox.conf.AbstractAproxFeatureConfig;
+import org.commonjava.aprox.conf.AproxConfigClassInfo;
+import org.commonjava.web.config.ConfigurationException;
+import org.commonjava.web.config.annotation.ConfigName;
+import org.commonjava.web.config.annotation.SectionName;
 
 @Alternative
-@Named( "dont-inject-directly" )
+@Named( "autoprox-config" )
+@SectionName( AutoProxConfig.SECTION )
 public class AutoProxConfig
 {
+    @javax.enterprise.context.ApplicationScoped
+    public static class FeatureConfig
+        extends AbstractAproxFeatureConfig<AutoProxConfig, AutoProxConfig>
+    {
+        @Inject
+        private ConfigInfo info;
 
-    private List<RuleMapping> factoryMappings;
+        public FeatureConfig()
+        {
+            super( AutoProxConfig.class );
+        }
+
+        @Produces
+        @Default
+        @ApplicationScoped
+        public AutoProxConfig getAutoProxConfig()
+            throws ConfigurationException
+        {
+            return getConfig();
+        }
+
+        @Override
+        public AproxConfigClassInfo getInfo()
+        {
+            return info;
+        }
+    }
+
+    @javax.enterprise.context.ApplicationScoped
+    public static class ConfigInfo
+        extends AbstractAproxConfigInfo
+    {
+        public ConfigInfo()
+        {
+            super( AutoProxConfig.class );
+        }
+
+        @Override
+        public String getDefaultConfigFileName()
+        {
+            return "conf.d/autoprox.conf";
+        }
+
+        @Override
+        public InputStream getDefaultConfig()
+        {
+            return Thread.currentThread()
+                         .getContextClassLoader()
+                         .getResourceAsStream( "default-autoprox.conf" );
+        }
+    }
+
+    public static final String SECTION = "autoprox";
+
+    public static final String DEFAULT_DIR = "autoprox";
+
+    public static final String BASEDIR_PARAM = "basedir";
+
+    public static final String ENABLED_PARAM = "enabled";
+
+    private String basedir;
 
     private boolean enabled;
 
-    private String dataDir;
-
-    public AutoProxConfig( final String dataDir, final boolean enabled, final List<RuleMapping> factoryMappings )
+    public AutoProxConfig()
     {
-        this.dataDir = dataDir;
-        this.factoryMappings = factoryMappings;
+    }
+
+    public AutoProxConfig( final String basedir, final boolean enabled )
+    {
+        this.basedir = basedir;
         this.enabled = enabled;
     }
 
-    public String getDataDir()
+    @ConfigName(AutoProxConfig.BASEDIR_PARAM)
+    public void setBasedir( final String basedir )
     {
-        return dataDir;
+        this.basedir = basedir;
     }
 
-    public void setDataDir( final String dataDir )
+    public String getBasedir()
     {
-        this.dataDir = dataDir;
-    }
-
-    public void setFactoryMappings( final List<RuleMapping> mappings )
-    {
-        this.factoryMappings = mappings;
-    }
-
-    /**
-     * Instead, store factory scripts in <aprox>/data/autoprox with names like:
-     * <ul>
-     *   <li>0001-foo-factory.groovy</li>
-     *   <li>0002-bar-factory.groovy</li>
-     * </ul>
-     * 
-     * Then, use the basedir configuration if you need to relocate these scripts elsewhere.
-     */
-    @Deprecated
-    public List<RuleMapping> getRuleMappings()
-    {
-        return factoryMappings;
+        return basedir == null ? DEFAULT_DIR : basedir;
     }
 
     public boolean isEnabled()
@@ -70,6 +121,7 @@ public class AutoProxConfig
         return enabled;
     }
 
+    @ConfigName(AutoProxConfig.ENABLED_PARAM)
     public void setEnabled( final boolean enabled )
     {
         this.enabled = enabled;

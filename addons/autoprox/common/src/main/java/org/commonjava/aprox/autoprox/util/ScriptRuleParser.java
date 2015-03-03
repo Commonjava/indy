@@ -7,9 +7,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.apache.commons.io.FileUtils;
-import org.commonjava.aprox.autoprox.conf.AutoProxFactory;
-import org.commonjava.aprox.autoprox.conf.AutoProxFactoryRuleAdapter;
 import org.commonjava.aprox.autoprox.data.AutoProxRule;
+import org.commonjava.aprox.autoprox.data.AutoProxRuleException;
 import org.commonjava.aprox.autoprox.data.RuleMapping;
 import org.commonjava.aprox.subsys.datafile.DataFile;
 import org.commonjava.aprox.subsys.template.AproxGroovyException;
@@ -17,7 +16,6 @@ import org.commonjava.aprox.subsys.template.ScriptEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings( "deprecation" )
 @ApplicationScoped
 public class ScriptRuleParser
 {
@@ -37,6 +35,7 @@ public class ScriptRuleParser
     }
 
     public RuleMapping parseRule( final DataFile script )
+        throws AutoProxRuleException
     {
         String spec = null;
         try
@@ -53,6 +52,7 @@ public class ScriptRuleParser
     }
 
     public RuleMapping parseRule( final File script )
+        throws AutoProxRuleException
     {
         String spec = null;
         try
@@ -69,6 +69,7 @@ public class ScriptRuleParser
     }
 
     public RuleMapping parseRule( final String spec, final String scriptName )
+        throws AutoProxRuleException
     {
         if ( spec == null )
         {
@@ -83,22 +84,10 @@ public class ScriptRuleParser
         }
         catch ( final AproxGroovyException e )
         {
-            logger.warn( "[AUTOPROX] Cannot load autoprox factory from: {} as an instance of: {}. Reason: {}\nTrying again with legacy interface: {}",
-                         scriptName, AutoProxRule.class.getSimpleName(), AutoProxFactory.class.getSimpleName(),
+            throw new AutoProxRuleException(
+                                             "[AUTOPROX] Cannot load autoprox factory from: {} as an instance of: {}. Reason: {}",
+                                             e, scriptName, AutoProxRule.class.getSimpleName(),
                          e.getMessage() );
-
-            try
-            {
-                final AutoProxFactory factory = scriptEngine.parseScriptInstance( spec, AutoProxFactory.class );
-
-                rule = new AutoProxFactoryRuleAdapter( factory );
-            }
-            catch ( final AproxGroovyException eInner )
-            {
-                logger.warn( String.format( "[AUTOPROX] Cannot load autoprox factory from: %s as an instance of: %s. Reason: %s",
-                                            scriptName, AutoProxFactory.class.getSimpleName(), eInner.getMessage() ),
-                             eInner );
-            }
         }
 
         if ( rule != null )

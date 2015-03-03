@@ -93,7 +93,7 @@ public class AproxClientHttp
         return head( path, HttpStatus.SC_OK );
     }
 
-    public Map<String, String> head( final String path, final int responseCode )
+    public Map<String, String> head( final String path, final int... responseCodes )
         throws AproxClientException
     {
         connect();
@@ -109,7 +109,7 @@ public class AproxClientHttp
             response = client.execute( request );
 
             final StatusLine sl = response.getStatusLine();
-            if ( sl.getStatusCode() != responseCode )
+            if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
                 if ( sl.getStatusCode() == HttpStatus.SC_NOT_FOUND )
                 {
@@ -161,6 +161,11 @@ public class AproxClientHttp
             final StatusLine sl = response.getStatusLine();
             if ( sl.getStatusCode() != 200 )
             {
+                if ( sl.getStatusCode() == 404 )
+                {
+                    return null;
+                }
+
                 throw new AproxClientException( "Error retrieving %s from: %s. Status was: %d %s (%s)",
                                                 type.getSimpleName(), path, sl.getStatusCode(), sl.getReasonPhrase(),
                                                 sl.getProtocolVersion() );
@@ -196,6 +201,11 @@ public class AproxClientHttp
             final StatusLine sl = response.getStatusLine();
             if ( sl.getStatusCode() != 200 )
             {
+                if ( sl.getStatusCode() == 404 )
+                {
+                    return null;
+                }
+
                 throw new AproxClientException( "Error retrieving %s from: %s. Status was: %d %s (%s)",
                                                 typeRef.getType(), path, sl.getStatusCode(), sl.getReasonPhrase(),
                                                 sl.getProtocolVersion() );
@@ -253,7 +263,7 @@ public class AproxClientHttp
         putWithStream( path, stream, HttpStatus.SC_CREATED );
     }
 
-    public void putWithStream( final String path, final InputStream stream, final int responseCode )
+    public void putWithStream( final String path, final InputStream stream, final int... responseCodes )
         throws AproxClientException
     {
         connect();
@@ -273,7 +283,7 @@ public class AproxClientHttp
                     try
                     {
                         final StatusLine sl = response.getStatusLine();
-                        if ( sl.getStatusCode() != responseCode )
+                        if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
                         {
                             throw new ClientProtocolException(
                                                                String.format( "Error in response from: %s. Status was: %d %s (%s)",
@@ -301,10 +311,10 @@ public class AproxClientHttp
     public boolean put( final String path, final Object value )
         throws AproxClientException
     {
-        return put( path, value, HttpStatus.SC_OK );
+        return put( path, value, HttpStatus.SC_OK, HttpStatus.SC_CREATED );
     }
 
-    public boolean put( final String path, final Object value, final int responseCode )
+    public boolean put( final String path, final Object value, final int... responseCodes )
         throws AproxClientException
     {
         connect();
@@ -321,7 +331,7 @@ public class AproxClientHttp
 
             response = client.execute( put );
             final StatusLine sl = response.getStatusLine();
-            if ( sl.getStatusCode() != responseCode )
+            if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
                 logger.error( "Error in response from: %s. Status was: %d %s (%s)", path, sl.getStatusCode(),
                               sl.getReasonPhrase(), sl.getProtocolVersion() );
@@ -347,7 +357,8 @@ public class AproxClientHttp
         return postWithResponse( path, value, type, HttpStatus.SC_CREATED );
     }
 
-    public <T> T postWithResponse( final String path, final Object value, final Class<T> type, final int responseCode )
+    public <T> T postWithResponse( final String path, final Object value, final Class<T> type,
+                                   final int... responseCodes )
         throws AproxClientException
     {
         connect();
@@ -365,7 +376,7 @@ public class AproxClientHttp
             response = client.execute( post );
 
             final StatusLine sl = response.getStatusLine();
-            if ( sl.getStatusCode() != responseCode )
+            if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
                 throw new AproxClientException( "Error retrieving %s from: %s. Status was: %d %s (%s)",
                                                 type.getSimpleName(), path, sl.getStatusCode(), sl.getReasonPhrase(),
@@ -385,6 +396,18 @@ public class AproxClientHttp
         }
     }
 
+    private boolean validResponseCode( final int statusCode, final int[] responseCodes )
+    {
+        for ( final int code : responseCodes )
+        {
+            if ( code == statusCode )
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public <T> T postWithResponse( final String path, final Object value, final TypeReference<T> typeRef )
         throws AproxClientException
     {
@@ -392,7 +415,7 @@ public class AproxClientHttp
     }
 
     public <T> T postWithResponse( final String path, final Object value, final TypeReference<T> typeRef,
-                                   final int responseCode )
+                                   final int... responseCodes )
         throws AproxClientException
     {
         connect();
@@ -410,7 +433,7 @@ public class AproxClientHttp
             response = client.execute( post );
 
             final StatusLine sl = response.getStatusLine();
-            if ( sl.getStatusCode() != responseCode )
+            if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
                 throw new AproxClientException( "Error retrieving %s from: %s. Status was: %d %s (%s)",
                                                 typeRef.getType(), path, sl.getStatusCode(), sl.getReasonPhrase(),
@@ -443,7 +466,7 @@ public class AproxClientHttp
         delete( path, HttpStatus.SC_NO_CONTENT );
     }
 
-    public void delete( final String path, final int responseCode )
+    public void delete( final String path, final int... responseCodes )
         throws AproxClientException
     {
         connect();
@@ -458,7 +481,7 @@ public class AproxClientHttp
 
             response = client.execute( delete );
             final StatusLine sl = response.getStatusLine();
-            if ( sl.getStatusCode() != responseCode )
+            if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
                 throw new AproxClientException( "Error deleting: %s. Status was: %d %s (%s)", path, sl.getStatusCode(),
                                                 sl.getReasonPhrase(), sl.getProtocolVersion() );
@@ -480,7 +503,7 @@ public class AproxClientHttp
         deleteWithChangelog( path, changelog, HttpStatus.SC_NO_CONTENT );
     }
 
-    public void deleteWithChangelog( final String path, final String changelog, final int responseCode )
+    public void deleteWithChangelog( final String path, final String changelog, final int... responseCodes )
         throws AproxClientException
     {
         connect();
@@ -496,7 +519,7 @@ public class AproxClientHttp
 
             response = client.execute( delete );
             final StatusLine sl = response.getStatusLine();
-            if ( sl.getStatusCode() != responseCode )
+            if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
                 throw new AproxClientException( "Error deleting: %s. Status was: %d %s (%s)", path, sl.getStatusCode(),
                                                 sl.getReasonPhrase(), sl.getProtocolVersion() );
@@ -518,7 +541,7 @@ public class AproxClientHttp
         return exists( path, HttpStatus.SC_OK );
     }
 
-    public boolean exists( final String path, final int responseCode )
+    public boolean exists( final String path, final int... responseCodes )
         throws AproxClientException
     {
         connect();
@@ -533,7 +556,7 @@ public class AproxClientHttp
 
             response = client.execute( request );
             final StatusLine sl = response.getStatusLine();
-            if ( sl.getStatusCode() == responseCode )
+            if ( validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
                 return true;
             }

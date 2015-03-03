@@ -99,11 +99,19 @@
       <dependencies>
         <dependency>
           <groupId>org.commonjava.aprox</groupId>
+          <artifactId>aprox-ftests-autoprox</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.commonjava.aprox</groupId>
           <artifactId>aprox-ftests-depgraph</artifactId>
         </dependency>
         <dependency>
           <groupId>org.commonjava.aprox</groupId>
           <artifactId>aprox-ftests-folo</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.commonjava.aprox</groupId>
+          <artifactId>aprox-ftests-promote</artifactId>
         </dependency>
       </dependencies>
       
@@ -117,9 +125,11 @@
                   <reuseForks>false</reuseForks>
                 <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
                   <dependenciesToScan>
+                    <dependency>org.commonjava.aprox:aprox-ftests-autoprox</dependency>
                     <dependency>org.commonjava.aprox:aprox-ftests-core</dependency>
                     <dependency>org.commonjava.aprox:aprox-ftests-folo</dependency>
                     <dependency>org.commonjava.aprox:aprox-ftests-depgraph</dependency>
+                    <dependency>org.commonjava.aprox:aprox-ftests-promote</dependency>
                   </dependenciesToScan> 
                 </configuration>
             </plugin>

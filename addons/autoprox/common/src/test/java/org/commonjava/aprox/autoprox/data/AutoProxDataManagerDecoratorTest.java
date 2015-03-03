@@ -17,16 +17,14 @@ import static org.junit.Assert.assertThat;
 
 import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.autoprox.conf.AutoProxConfig;
 import org.commonjava.aprox.autoprox.fixture.HttpTestFixture;
 import org.commonjava.aprox.autoprox.fixture.TestAutoProxFactory;
 import org.commonjava.aprox.autoprox.fixture.TestAutoProxyDataManager;
-import org.commonjava.aprox.autoprox.inject.AutoProxProvider;
 import org.commonjava.aprox.autoprox.util.ScriptRuleParser;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.Group;
@@ -39,6 +37,8 @@ import org.commonjava.aprox.subsys.template.ScriptEngine;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,41 +52,59 @@ public class AutoProxDataManagerDecoratorTest
     @Rule
     public final HttpTestFixture http = new HttpTestFixture( "server-targets" );
 
-    private final AutoProxCatalog catalog = new AutoProxCatalog( true, new ArrayList<RuleMapping>() );
+    @Rule
+    public final TestName name = new TestName();
 
-    private final StoreDataManager proxyManager = new TestAutoProxyDataManager( catalog, http.getHttp() );
+    @Rule
+    public final TemporaryFolder temp = new TemporaryFolder();
+
+    private AutoProxCatalogManager catalog;
+
+    private StoreDataManager proxyManager;
 
     private final ScriptRuleParser ruleParser = new ScriptRuleParser( new ScriptEngine() );
 
     private final ChangeSummary summary = new ChangeSummary( "test-user", "test" );
 
+    private File rootDir;
+
+    private File autoproxDataDir;
+
     @Before
     public final void setup()
         throws Exception
     {
+        rootDir = temp.newFolder( "aprox.root" );
+        autoproxDataDir = new File( rootDir, "data/autoprox" );
+        autoproxDataDir.mkdirs();
+
+        final DataFileManager dataFiles = new DataFileManager( rootDir, new DataFileEventManager() );
+
+        final AutoProxConfig aproxConfig = new AutoProxConfig( autoproxDataDir.getName(), true );
+
+        catalog = new AutoProxCatalogManager( dataFiles, aproxConfig, ruleParser );
+        proxyManager = new TestAutoProxyDataManager( catalog, http.getHttp() );
+
         proxyManager.install();
         proxyManager.clear( summary );
+
+        System.setProperty( "baseUrl", http.getBaseUri() );
     }
 
     @Test
     public void repositoryCreatedFromScannedDataDirRules()
         throws Exception
     {
-        final AutoProxConfig apConfig = new AutoProxConfig( "autoprox", true, Collections.<RuleMapping> emptyList() );
-
-        System.setProperty( "baseUrl", http.getBaseUri() );
-
         final URL u = Thread.currentThread()
                             .getContextClassLoader()
                             .getResource( "data/autoprox/simple-factory.groovy" );
-        File f = new File( u.getPath() );
-        f = f.getParentFile()
-             .getParentFile()
-             .getParentFile();
+        final File f = new File( u.getPath() );
 
-        final AutoProxCatalog catalog =
-            new AutoProxProvider( new DataFileManager( f, new DataFileEventManager() ), apConfig, ruleParser ).getCatalog();
-        final StoreDataManager proxyManager = new TestAutoProxyDataManager( catalog, http.getHttp() );
+        final File scriptFile = new File( autoproxDataDir, f.getName() );
+        FileUtils.copyFile( f, scriptFile );
+
+        System.out.println( "Parsing rules for: " + name.getMethodName() );
+        catalog.parseRules();
 
         final String testUrl = http.formatUrl( "target", "test" );
         http.get( testUrl, 404 );
@@ -109,21 +127,15 @@ public class AutoProxDataManagerDecoratorTest
     public void repositoryNOTCreatedFromScannedDataDirRulesWhenNameNotTest()
         throws Exception
     {
-        final AutoProxConfig apConfig = new AutoProxConfig( "autoprox", true, Collections.<RuleMapping> emptyList() );
-
-        System.setProperty( "baseUrl", http.getBaseUri() );
-
         final URL u = Thread.currentThread()
                             .getContextClassLoader()
                             .getResource( "data/autoprox/simple-factory.groovy" );
-        File f = new File( u.getPath() );
-        f = f.getParentFile()
-             .getParentFile()
-             .getParentFile();
+        final File f = new File( u.getPath() );
+        final File scriptFile = new File( autoproxDataDir, f.getName() );
+        FileUtils.copyFile( f, scriptFile );
 
-        final AutoProxCatalog catalog =
-            new AutoProxProvider( new DataFileManager( f, new DataFileEventManager() ), apConfig, ruleParser ).getCatalog();
-        final StoreDataManager proxyManager = new TestAutoProxyDataManager( catalog, http.getHttp() );
+        System.out.println( "Parsing rules for: " + name.getMethodName() );
+        catalog.parseRules();
 
         final String testUrl = http.formatUrl( "target", "test" );
         http.get( testUrl, 404 );

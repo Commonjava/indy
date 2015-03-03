@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.commonjava.aprox.audit.ChangeSummary;
-import org.commonjava.aprox.autoprox.data.AutoProxCatalog;
+import org.commonjava.aprox.autoprox.data.AutoProxCatalogManager;
 import org.commonjava.aprox.autoprox.data.AutoProxDataManagerDecorator;
 import org.commonjava.aprox.core.data.DefaultStoreEventDispatcher;
 import org.commonjava.aprox.data.AproxDataException;
@@ -25,7 +25,7 @@ public class TestAutoProxyDataManager
 
     private final StoreDataManager delegate;
 
-    public TestAutoProxyDataManager( final AutoProxCatalog catalog, final AproxHttpProvider http )
+    public TestAutoProxyDataManager( final AutoProxCatalogManager catalog, final AproxHttpProvider http )
     {
         super( new MemoryStoreDataManager( new DefaultStoreEventDispatcher() ), catalog, http );
         delegate = getDelegate();

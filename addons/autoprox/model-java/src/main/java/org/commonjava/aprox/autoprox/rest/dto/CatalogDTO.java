@@ -1,10 +1,9 @@
 package org.commonjava.aprox.autoprox.rest.dto;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import org.commonjava.aprox.autoprox.data.AutoProxCatalog;
-import org.commonjava.aprox.autoprox.data.RuleMapping;
+import org.apache.commons.lang.StringUtils;
 
 public class CatalogDTO
 {
@@ -17,21 +16,15 @@ public class CatalogDTO
     {
     }
 
-    public CatalogDTO( final AutoProxCatalog catalog )
+    public CatalogDTO( final boolean enabled, final List<RuleDTO> rules )
     {
-        enabled = catalog.isEnabled();
-        rules = new ArrayList<RuleDTO>();
-
-        final List<RuleMapping> mappings = catalog.getRuleMappings();
-        for ( final RuleMapping mapping : mappings )
-        {
-            rules.add( new RuleDTO( mapping ) );
-        }
+        this.enabled = enabled;
+        this.rules = rules;
     }
 
     public List<RuleDTO> getRules()
     {
-        return rules;
+        return rules == null ? Collections.<RuleDTO> emptyList() : rules;
     }
 
     public void setRules( final List<RuleDTO> rules )
@@ -47,6 +40,12 @@ public class CatalogDTO
     public void setEnabled( final boolean enabled )
     {
         this.enabled = enabled;
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format( "CatalogDTO [enabled=%s]:\n  ", enabled, StringUtils.join( rules, "\n  " ) );
     }
 
 }

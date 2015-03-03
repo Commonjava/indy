@@ -77,6 +77,11 @@ public class CoreServerFixture
         return status;
     }
 
+    public BootOptions getBootOptions()
+    {
+        return options;
+    }
+
     public boolean isStarted()
     {
         return status.isSuccess();

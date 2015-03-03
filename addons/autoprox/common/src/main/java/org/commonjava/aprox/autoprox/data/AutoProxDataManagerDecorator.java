@@ -53,7 +53,7 @@ public abstract class AutoProxDataManagerDecorator
     private StoreDataManager dataManager;
 
     @Inject
-    private AutoProxCatalog catalog;
+    private AutoProxCatalogManager catalog;
 
     @Inject
     private AproxHttpProvider http;
@@ -62,7 +62,8 @@ public abstract class AutoProxDataManagerDecorator
     {
     }
 
-    public AutoProxDataManagerDecorator( final MemoryStoreDataManager dataManager, final AutoProxCatalog catalog,
+    public AutoProxDataManagerDecorator( final MemoryStoreDataManager dataManager,
+                                         final AutoProxCatalogManager catalog,
                                          final AproxHttpProvider http )
     {
         this.dataManager = dataManager;

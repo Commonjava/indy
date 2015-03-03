@@ -10,6 +10,8 @@
  ******************************************************************************/
 package org.commonjava.aprox.autoprox.data;
 
+import org.commonjava.aprox.autoprox.rest.dto.RuleDTO;
+
 public final class RuleMapping
     implements Comparable<RuleMapping>
 {
@@ -46,6 +48,11 @@ public final class RuleMapping
         this.externalMatch = match;
         this.rule = ruleMapping.getRule();
         this.spec = ruleMapping.getSpecification();
+    }
+
+    public RuleDTO toDTO()
+    {
+        return new RuleDTO( scriptName, spec );
     }
 
     public String getScriptName()

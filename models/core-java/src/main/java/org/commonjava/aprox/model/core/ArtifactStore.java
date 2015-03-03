@@ -14,6 +14,13 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+@JsonTypeInfo( use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type" )
+@JsonSubTypes( { @Type( name = "remote", value = RemoteRepository.class ),
+    @Type( name = "hosted", value = HostedRepository.class ), @Type( name = "group", value = Group.class ) } )
 public abstract class ArtifactStore
     implements Serializable
 {

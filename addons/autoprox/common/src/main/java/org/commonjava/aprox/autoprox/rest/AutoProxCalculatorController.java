@@ -7,7 +7,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.autoprox.data.AutoProxCatalog;
+import org.commonjava.aprox.autoprox.data.AutoProxCatalogManager;
 import org.commonjava.aprox.autoprox.data.AutoProxRuleException;
 import org.commonjava.aprox.autoprox.data.RuleMapping;
 import org.commonjava.aprox.autoprox.rest.dto.AutoProxCalculation;
@@ -24,7 +24,7 @@ public class AutoProxCalculatorController
 {
 
     @Inject
-    private AutoProxCatalog catalog;
+    private AutoProxCatalogManager catalog;
 
     @Inject
     private StoreDataManager dataManager;
@@ -37,9 +37,9 @@ public class AutoProxCalculatorController
             final RemoteRepository store = catalog.createRemoteRepository( name );
             if ( store != null )
             {
-                final RuleMapping mapping = catalog.getRuleMappingFor( name );
+                final RuleMapping mapping = catalog.getRuleMappingMatching( name );
 
-                return new AutoProxCalculation( store, mapping );
+                return new AutoProxCalculation( store, mapping.getScriptName() );
             }
         }
         catch ( final AutoProxRuleException e )
@@ -60,9 +60,9 @@ public class AutoProxCalculatorController
             final HostedRepository store = catalog.createHostedRepository( name );
             if ( store != null )
             {
-                final RuleMapping mapping = catalog.getRuleMappingFor( name );
+                final RuleMapping mapping = catalog.getRuleMappingMatching( name );
 
-                return new AutoProxCalculation( store, mapping );
+                return new AutoProxCalculation( store, mapping.getScriptName() );
             }
         }
         catch ( final AutoProxRuleException e )
@@ -89,11 +89,11 @@ public class AutoProxCalculatorController
             }
             else
             {
-                final RuleMapping mapping = catalog.getRuleMappingFor( name );
+                final RuleMapping mapping = catalog.getRuleMappingMatching( name );
                 final List<ArtifactStore> supplemental = new ArrayList<ArtifactStore>();
                 evalSupplementalStores( store, supplemental );
 
-                return new AutoProxCalculation( store, supplemental, mapping );
+                return new AutoProxCalculation( store, supplemental, mapping.getScriptName() );
             }
         }
         catch ( final AutoProxRuleException e )

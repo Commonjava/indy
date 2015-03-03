@@ -106,15 +106,7 @@ public class DefaultAproxConfigFactory
                                                   dir );
             }
 
-            for ( final AproxConfigClassInfo section : configSections )
-            {
-                writeDefaultsFor( section, dir );
-            }
-
-            for ( final AbstractAproxMapConfig section : mapConfigs )
-            {
-                writeDefaultsFor( section, dir );
-            }
+            writeDefaultConfigs( dir );
         }
 
         InputStream stream = null;
@@ -135,6 +127,23 @@ public class DefaultAproxConfigFactory
 
         logger.info( "[CONFIG] AProx configuration complete for: '{}'.\n\n\n\n", Thread.currentThread()
                                                                                        .getName() );
+    }
+
+    @Override
+    public void writeDefaultConfigs( final File dir )
+        throws ConfigurationException
+    {
+        setSystemProperties();
+
+        for ( final AproxConfigClassInfo section : configSections )
+        {
+            writeDefaultsFor( section, dir );
+        }
+
+        for ( final AbstractAproxMapConfig section : mapConfigs )
+        {
+            writeDefaultsFor( section, dir );
+        }
     }
 
     private void writeDefaultsFor( final AproxConfigInfo section, final File dir )
@@ -179,7 +188,6 @@ public class DefaultAproxConfigFactory
 
     private void setSystemProperties()
     {
-        logger.info( "Verifying AProx system properties are set..." );
         /* Set config path */
         String confPath = System.getProperty( AproxConfigFactory.CONFIG_PATH_PROP );
         final String aproxHome = System.getProperty( "aprox.home" );

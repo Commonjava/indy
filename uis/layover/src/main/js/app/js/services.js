@@ -41,6 +41,7 @@ aproxServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
         scope.store.metadata={};
         self.promptForChangelog(scope, 'Save', function(changelog){
           scope.store.metadata['changelog'] = changelog;
+          scope.store.type = storeType;
           
           if ( fixups && fixups.save){
             fixups.save(scope);

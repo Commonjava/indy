@@ -21,6 +21,7 @@ public class StoreListingDTOTest
         /* @formatter:off */
         final String json = "{\n" + 
             "  \"items\" : [ {\n" + 
+            "    \"type\": \"hosted\",\n" + 
             "    \"key\" : \"hosted:eSPeEZPG\",\n" + 
             "    \"snapshotTimeoutSeconds\" : 0,\n" + 
             "    \"name\" : \"eSPeEZPG\",\n" + 
@@ -28,6 +29,7 @@ public class StoreListingDTOTest
             "    \"allow_snapshots\" : false,\n" + 
             "    \"allow_releases\" : true\n" + 
             "  }, {\n" + 
+            "    \"type\": \"hosted\",\n" + 
             "    \"key\" : \"hosted:qI3Cq2OZ\",\n" + 
             "    \"snapshotTimeoutSeconds\" : 0,\n" + 
             "    \"name\" : \"qI3Cq2OZ\",\n" + 
@@ -35,6 +37,7 @@ public class StoreListingDTOTest
             "    \"allow_snapshots\" : false,\n" + 
             "    \"allow_releases\" : true\n" + 
             "  }, {\n" + 
+            "    \"type\": \"hosted\",\n" + 
             "    \"key\" : \"hosted:local-deployments\",\n" + 
             "    \"snapshotTimeoutSeconds\" : 86400,\n" + 
             "    \"name\" : \"local-deployments\",\n" + 
@@ -42,6 +45,7 @@ public class StoreListingDTOTest
             "    \"allow_snapshots\" : true,\n" + 
             "    \"allow_releases\" : true\n" + 
             "  }, {\n" + 
+            "    \"type\": \"hosted\",\n" + 
             "    \"key\" : \"hosted:AFhJnQLW\",\n" + 
             "    \"snapshotTimeoutSeconds\" : 0,\n" + 
             "    \"name\" : \"AFhJnQLW\",\n" + 

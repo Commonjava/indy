@@ -67,4 +67,36 @@
       </plugin>
     </plugins>
   </build>
+  
+  <profiles>
+    <profile>
+      <id>run-its</id>
+      
+      <dependencies>
+        <dependency>
+          <groupId>org.commonjava.aprox</groupId>
+          <artifactId>aprox-ftests-autoprox</artifactId>
+        </dependency>
+      </dependencies>
+      
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                  <forkCount>${test-forkCount}</forkCount>
+                  <reuseForks>false</reuseForks>
+                <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
+                  <dependenciesToScan>
+                    <dependency>org.commonjava.aprox:aprox-ftests-autoprox</dependency>
+                    <dependency>org.commonjava.aprox:aprox-ftests-core</dependency>
+                  </dependenciesToScan> 
+                </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+  </profiles>
 </project>

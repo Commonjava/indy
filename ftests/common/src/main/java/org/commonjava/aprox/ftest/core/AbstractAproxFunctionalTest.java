@@ -30,7 +30,7 @@ public abstract class AbstractAproxFunctionalTest
 
     protected Aprox client;
 
-    private CoreServerFixture fixture;
+    protected CoreServerFixture fixture;
 
     @Rule
     public TestName name = new TestName();

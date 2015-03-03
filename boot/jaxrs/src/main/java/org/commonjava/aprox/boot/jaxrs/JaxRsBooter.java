@@ -99,11 +99,11 @@ public class JaxRsBooter
 
     private BootStatus status;
 
-    private void initialize( final BootOptions bootOptions )
-        throws AproxBootException
+    public boolean initialize( final BootOptions bootOptions )
     {
         this.bootOptions = bootOptions;
 
+        boolean initialized;
         try
         {
             bootOptions.setSystemProperties();
@@ -113,10 +113,167 @@ public class JaxRsBooter
 
             final BeanManager bmgr = container.getBeanManager();
             logger.info( "\n\n\nStarted BeanManager: {}\n\n\n", bmgr );
+            initialized = true;
         }
         catch ( final RuntimeException e )
         {
-            throw new AproxBootException( "Failed to initialize Booter: " + e.getMessage(), e );
+            logger.error( "Failed to initialize Booter: " + e.getMessage(), e );
+            exit = ERR_CANT_INIT_BOOTER;
+            status = new BootStatus( exit, e );
+            initialized = false;
+        }
+
+        return initialized;
+    }
+
+    public boolean loadConfiguration( final String config )
+    {
+        logger.info( "Booter running: " + this );
+
+        configFactory = container.instance()
+                                 .select( AproxConfigFactory.class )
+                                 .get();
+
+        boolean loaded;
+        try
+        {
+            logger.info( "\n\nLoading AProx configuration factory: {}\n", configFactory );
+            configFactory.load( bootOptions.getConfig() );
+            loaded = true;
+        }
+        catch ( final ConfigurationException e )
+        {
+            logger.error( "Failed to configure AProx: {}", e.getMessage() );
+            e.printStackTrace();
+            exit = ERR_CANT_CONFIGURE_APROX;
+            status = new BootStatus( exit, e );
+            loaded = false;
+        }
+
+        return loaded;
+    }
+
+    public boolean startLifecycle()
+    {
+        lifecycleManager = container.instance()
+                                    .select( AproxLifecycleManager.class )
+                                    .get();
+
+        boolean started;
+        try
+        {
+            lifecycleManager.start();
+            started = true;
+        }
+        catch ( final AproxLifecycleException e )
+        {
+            logger.error( "\n\nFailed to start AProx: " + e.getMessage(), e );
+
+            exit = ERR_CANT_START_APROX;
+            status = new BootStatus( exit, e );
+            started = false;
+        }
+
+        return started;
+    }
+
+    public boolean deploy()
+    {
+        boolean started;
+        final AproxDeployment aproxDeployment = container.instance()
+                                                         .select( AproxDeployment.class )
+                                                         .get();
+
+        final DeploymentInfo di = aproxDeployment.getDeployment( bootOptions.getContextPath() )
+                                                 .setContextPath( "/" );
+
+        final DeploymentManager dm = Servlets.defaultContainer()
+                                             .addDeployment( di );
+        dm.deploy();
+
+        status = new BootStatus();
+        try
+        {
+            server = Undertow.builder()
+                             .setHandler( dm.start() )
+                             .addHttpListener( bootOptions.getPort(), bootOptions.getBind() )
+                             .build();
+
+            server.start();
+            status.markSuccess();
+            started = true;
+
+            System.out.printf( "AProx listening on %s:%s\n\n", bootOptions.getBind(), bootOptions.getPort() );
+
+        }
+        catch ( ServletException | RuntimeException e )
+        {
+            status.markFailed( ERR_CANT_LISTEN, e );
+            started = false;
+        }
+
+        return started;
+    }
+
+    @Override
+    public WeldContainer getContainer()
+    {
+        return container;
+    }
+
+    @Override
+    public BootOptions getBootOptions()
+    {
+        return bootOptions;
+    }
+
+    /* (non-Javadoc)
+     * @see org.commonjava.aprox.bind.vertx.boot.BootInterface#start()
+     */
+    @Override
+    public BootStatus start( final BootOptions bootOptions )
+        throws AproxBootException
+    {
+        if ( !initialize( bootOptions ) )
+        {
+            return status;
+        }
+
+        if ( !loadConfiguration( bootOptions.getConfig() ) )
+        {
+            return status;
+        }
+
+        if ( !startLifecycle() )
+        {
+            return status;
+        }
+
+        deploy();
+
+        return status;
+    }
+
+    /* (non-Javadoc)
+     * @see org.commonjava.aprox.bind.vertx.boot.BootInterface#stop()
+     */
+    @Override
+    public void stop()
+    {
+        if ( container != null )
+        {
+            server.stop();
+
+            try
+            {
+                lifecycleManager.stop();
+            }
+            catch ( final AproxLifecycleException e )
+            {
+                logger.error( "Failed to run stop actions for lifecycle: " + e.getMessage(), e );
+            }
+
+            weld.shutdown();
         }
     }
 
@@ -144,108 +301,6 @@ public class JaxRsBooter
         }
 
         return exit;
-    }
-
-    @Override
-    public WeldContainer getContainer()
-    {
-        return container;
-    }
-
-    @Override
-    public BootOptions getBootOptions()
-    {
-        return bootOptions;
-    }
-
-    /* (non-Javadoc)
-     * @see org.commonjava.aprox.bind.vertx.boot.BootInterface#start()
-     */
-    @Override
-    public BootStatus start( final BootOptions bootOptions )
-        throws AproxBootException
-    {
-        initialize( bootOptions );
-        logger.info( "Booter running: " + this );
-
-        configFactory = container.instance()
-                                 .select( AproxConfigFactory.class )
-                                 .get();
-        try
-        {
-            logger.info( "\n\nLoading AProx configuration factory: {}\n", configFactory );
-            configFactory.load( bootOptions.getConfig() );
-        }
-        catch ( final ConfigurationException e )
-        {
-            logger.error( "Failed to configure AProx: {}", e.getMessage() );
-            e.printStackTrace();
-            exit = ERR_CANT_CONFIGURE_APROX;
-            status = new BootStatus( exit, e );
-            return status;
-        }
-
-        lifecycleManager = container.instance()
-                                    .select( AproxLifecycleManager.class )
-                                    .get();
-        try
-        {
-            lifecycleManager.start();
-        }
-        catch ( final AproxLifecycleException e )
-        {
-            logger.error( "\n\nFailed to start AProx: {}", e.getMessage() );
-            e.printStackTrace();
-
-            exit = ERR_CANT_START_APROX;
-            status = new BootStatus( exit, e );
-            return status;
-        }
-
-        final AproxDeployment aproxDeployment = container.instance()
-                                                         .select( AproxDeployment.class )
-                                                         .get();
-
-        final DeploymentInfo di = aproxDeployment.getDeployment( bootOptions.getContextPath() )
-                                                 .setContextPath( "/" );
-
-        final DeploymentManager dm = Servlets.defaultContainer()
-                                             .addDeployment( di );
-        dm.deploy();
-
-        status = new BootStatus();
-        try
-        {
-            server = Undertow.builder()
-                             .setHandler( dm.start() )
-                             .addHttpListener( bootOptions.getPort(), bootOptions.getBind() )
-                             .build();
-
-            server.start();
-            status.markSuccess();
-        }
-        catch ( ServletException | RuntimeException e )
-        {
-            status.markFailed( ERR_CANT_LISTEN, e );
-        }
-
-
-        System.out.printf( "AProx listening on %s:%s\n\n", bootOptions.getBind(), bootOptions.getPort() );
-
-        return status;
-    }
-
-    /* (non-Javadoc)
-     * @see org.commonjava.aprox.bind.vertx.boot.BootInterface#stop()
-     */
-    @Override
-    public void stop()
-    {
-        if ( container != null )
-        {
-            server.stop();
-            weld.shutdown();
-        }
     }
 
 }

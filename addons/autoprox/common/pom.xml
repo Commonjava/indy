@@ -65,6 +65,10 @@
       <artifactId>jboss-servlet-api_3.0_spec</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-autoprox-model-java</artifactId>
+    </dependency>
   </dependencies>
   
   <build>
