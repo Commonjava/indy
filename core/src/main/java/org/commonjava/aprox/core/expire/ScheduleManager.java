@@ -40,6 +40,7 @@ import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.commonjava.aprox.action.AproxLifecycleException;
 import org.commonjava.aprox.action.BootupAction;
+import org.commonjava.aprox.action.ShutdownAction;
 import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.core.conf.AproxSchedulerConfig;
@@ -77,7 +78,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 @ApplicationScoped
 public class ScheduleManager
-    implements BootupAction
+    implements BootupAction, ShutdownAction
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -154,6 +155,8 @@ public class ScheduleManager
                 scheduler.getListenerManager()
                          .addTriggerListener( new AproxTriggerListener( eventDispatcher ) );
             }
+
+            scheduler.start();
         }
         catch ( final SchedulerException e )
         {
@@ -710,6 +713,23 @@ public class ScheduleManager
     public int getPriority()
     {
         return 80;
+    }
+
+    @Override
+    public void stop()
+        throws AproxLifecycleException
+    {
+        if ( scheduler != null )
+        {
+            try
+            {
+                scheduler.shutdown();
+            }
+            catch ( final SchedulerException e )
+            {
+                throw new AproxLifecycleException( "Failed to shutdown scheduler: %s", e, e.getMessage() );
+            }
+        }
     }
 
 }
