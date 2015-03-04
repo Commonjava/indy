@@ -21,6 +21,7 @@ import org.commonjava.aprox.model.core.HostedRepository;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
+import org.commonjava.aprox.test.fixture.core.HttpTestFixture;
 
 public class TestAutoProxFactory
     implements AutoProxRule

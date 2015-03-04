@@ -1,10 +1,13 @@
 package org.commonjava.aprox.model.core.dto;
 
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.commonjava.aprox.model.core.ArtifactStore;
 
 public class StoreListingDTO<T extends ArtifactStore>
+    implements Iterable<T>
 {
 
     private List<T> items;
@@ -20,7 +23,7 @@ public class StoreListingDTO<T extends ArtifactStore>
 
     public List<T> getItems()
     {
-        return items;
+        return items == null ? Collections.<T> emptyList() : items;
     }
 
     public void setItems( final List<T> items )
@@ -48,6 +51,12 @@ public class StoreListingDTO<T extends ArtifactStore>
 
         sb.append( "\n]" );
         return sb.toString();
+    }
+
+    @Override
+    public Iterator<T> iterator()
+    {
+        return getItems().iterator();
     }
 
 }

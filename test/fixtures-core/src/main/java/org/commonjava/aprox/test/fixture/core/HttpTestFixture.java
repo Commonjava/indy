@@ -8,7 +8,7 @@
  * Contributors:
  *     Red Hat, Inc. - initial API and implementation
  ******************************************************************************/
-package org.commonjava.aprox.autoprox.fixture;
+package org.commonjava.aprox.test.fixture.core;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -141,10 +141,15 @@ public class HttpTestFixture
 
     public void registerException( final String url, final String error )
     {
-        server.registerException( url, error );
+        server.registerException( "GET", url, error );
     }
 
-    public Map<String, String> getRegisteredErrors()
+    public void registerException( final String method, final String url, final String error )
+    {
+        server.registerException( method, url, error );
+    }
+
+    public Map<String, ContentResponse> getRegisteredErrors()
     {
         return server.getRegisteredErrors();
     }
@@ -171,13 +176,27 @@ public class HttpTestFixture
     public void expect( final String testUrl, final int responseCode, final String body )
         throws Exception
     {
-        server.expect( testUrl, responseCode, body );
+        server.expect( "HEAD", testUrl, responseCode, body );
+        server.expect( "GET", testUrl, responseCode, body );
     }
 
     public void expect( final String testUrl, final int responseCode )
         throws Exception
     {
-        server.expect( testUrl, responseCode, null );
+        server.expect( "HEAD", testUrl, responseCode, null );
+        server.expect( "GET", testUrl, responseCode, null );
+    }
+
+    public void expect( final String method, final String testUrl, final int responseCode, final String body )
+        throws Exception
+    {
+        server.expect( testUrl, responseCode, body );
+    }
+
+    public void expect( final String method, final String testUrl, final int responseCode )
+        throws Exception
+    {
+        server.expect( method, testUrl, responseCode, null );
     }
 
 }

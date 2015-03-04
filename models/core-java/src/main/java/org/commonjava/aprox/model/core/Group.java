@@ -12,6 +12,7 @@ package org.commonjava.aprox.model.core;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class Group
@@ -40,7 +41,7 @@ public class Group
 
     public List<StoreKey> getConstituents()
     {
-        return constituents;
+        return constituents == null ? Collections.<StoreKey> emptyList() : constituents;
     }
 
     public boolean addConstituent( final ArtifactStore store )

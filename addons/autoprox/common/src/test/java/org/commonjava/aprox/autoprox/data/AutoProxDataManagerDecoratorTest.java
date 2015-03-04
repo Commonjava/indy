@@ -22,7 +22,6 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.autoprox.conf.AutoProxConfig;
-import org.commonjava.aprox.autoprox.fixture.HttpTestFixture;
 import org.commonjava.aprox.autoprox.fixture.TestAutoProxFactory;
 import org.commonjava.aprox.autoprox.fixture.TestAutoProxyDataManager;
 import org.commonjava.aprox.autoprox.util.ScriptRuleParser;
@@ -34,6 +33,7 @@ import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.subsys.datafile.DataFileManager;
 import org.commonjava.aprox.subsys.datafile.change.DataFileEventManager;
 import org.commonjava.aprox.subsys.template.ScriptEngine;
+import org.commonjava.aprox.test.fixture.core.HttpTestFixture;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -160,6 +160,7 @@ public class AutoProxDataManagerDecoratorTest
 
         final String testUrl = http.formatUrl( "target", "test" );
         http.get( testUrl, 404 );
+        http.expect( testUrl, 200 );
         http.expect( testUrl, 200 );
         //        targetResponder.approveTargets( "test" );
         http.get( testUrl, 200 );

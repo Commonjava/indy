@@ -8,7 +8,7 @@
  * Contributors:
  *     Red Hat, Inc. - initial API and implementation
  ******************************************************************************/
-package org.commonjava.aprox.autoprox.fixture;
+package org.commonjava.aprox.test.fixture.core;
 
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import io.undertow.Undertow;
@@ -142,11 +142,11 @@ public class TestHttpServer
 
         private final String baseResource;
 
-        private final Map<String, Expectation> expectations = new HashMap<String, Expectation>();
+        private final Map<String, ContentResponse> expectations = new HashMap<>();
 
-        private final Map<String, Integer> accessesByPath = new HashMap<String, Integer>();
+        private final Map<String, Integer> accessesByPath = new HashMap<>();
 
-        private final Map<String, String> errors = new HashMap<String, String>();
+        private final Map<String, ContentResponse> errors = new HashMap<>();
 
         public ExpectationServlet()
         {
@@ -164,7 +164,7 @@ public class TestHttpServer
             return accessesByPath;
         }
 
-        public Map<String, String> getRegisteredErrors()
+        public Map<String, ContentResponse> getRegisteredErrors()
         {
             return errors;
         }
@@ -174,23 +174,24 @@ public class TestHttpServer
             return baseResource;
         }
 
-        public void registerException( final String url, final String error )
+        public void registerException( final String method, final String path, final int code, final String error )
         {
-            this.errors.put( url, error );
+            logger.info( "Registering error: '{}', code: {}, body:\n{}", path, code, error );
+            this.errors.put( method.toUpperCase() + " " + path, new ContentResponse( method, path, code, error ) );
         }
 
-        public void expect( final String testUrl, final int responseCode, final String body )
+        public void expect( final String method, final String testUrl, final int responseCode, final String body )
             throws Exception
         {
             final URL url = new URL( testUrl );
             final String path = url.getPath();
 
             logger.info( "Registering expection: '{}', code: {}, body:\n{}", path, responseCode, body );
-            expectations.put( path, new Expectation( path, responseCode, body ) );
+            expectations.put( method.toUpperCase() + " " + path, new ContentResponse( method, path, responseCode, body ) );
         }
 
         @Override
-        protected void doGet( final HttpServletRequest req, final HttpServletResponse resp )
+        protected void service( final HttpServletRequest req, final HttpServletResponse resp )
             throws ServletException, IOException
         {
             String wholePath;
@@ -209,27 +210,38 @@ public class TestHttpServer
                 path = path.substring( 1 );
             }
 
-            final Integer i = accessesByPath.get( wholePath );
+            final String method = req.getMethod()
+                                     .toUpperCase();
+
+            final String key = method + " " + wholePath;
+
+            final Integer i = accessesByPath.get( key );
             if ( i == null )
             {
-                accessesByPath.put( wholePath, 1 );
+                accessesByPath.put( key, 1 );
             }
             else
             {
-                accessesByPath.put( wholePath, i + 1 );
+                accessesByPath.put( key, i + 1 );
             }
 
-            if ( errors.containsKey( wholePath ) )
+            if ( errors.containsKey( key ) )
             {
-                final String error = errors.get( wholePath );
+                final ContentResponse error = errors.get( key );
                 logger.error( "Returning registered error: {}", error );
-                resp.sendError( 500 );
+                resp.sendError( error.code() );
+
+                if ( error.body() != null )
+                {
+                    resp.getWriter()
+                        .write( error.body() );
+                }
 
                 return;
             }
 
-            logger.info( "Looking for expectation: '{}'", wholePath );
-            final Expectation expectation = expectations.get( wholePath );
+            logger.info( "Looking for expectation: '{}'", key );
+            final ContentResponse expectation = expectations.get( key );
             if ( expectation != null )
             {
                 logger.info( "Responding via registered expectation: {}", expectation );
@@ -271,52 +283,41 @@ public class TestHttpServer
         return servlet.getAccessesByPath();
     }
 
-    public Map<String, String> getRegisteredErrors()
+    public Map<String, ContentResponse> getRegisteredErrors()
     {
         return servlet.getRegisteredErrors();
     }
 
     public void registerException( final String url, final String error )
     {
-        servlet.registerException( url, error );
+        servlet.registerException( "GET", url, 500, error );
+    }
+
+    public void registerException( final String method, final String url, final String error )
+    {
+        servlet.registerException( method, url, 500, error );
+    }
+
+    public void registerException( final String url, final String error, final int responseCode )
+    {
+        servlet.registerException( "GET", url, responseCode, error );
+    }
+
+    public void registerException( final String method, final String url, final int responseCode, final String error )
+    {
+        servlet.registerException( method, url, responseCode, error );
     }
 
     public void expect( final String testUrl, final int responseCode, final String body )
         throws Exception
     {
-        servlet.expect( testUrl, responseCode, body );
+        servlet.expect( "GET", testUrl, responseCode, body );
     }
 
-    private static final class Expectation
+    public void expect( final String method, final String testUrl, final int responseCode, final String body )
+        throws Exception
     {
-        private final int code;
-
-        private final String body;
-
-        private final String url;
-
-        Expectation( final String url, final int code, final String body )
-        {
-            this.url = url;
-            this.code = code;
-            this.body = body;
-        }
-
-        int code()
-        {
-            return code;
-        }
-
-        String body()
-        {
-            return body;
-        }
-
-        @Override
-        public String toString()
-        {
-            return "Expect (" + url + "), and respond with code:" + code() + ", body:\n" + body();
-        }
+        servlet.expect( method, testUrl, responseCode, body );
     }
 
 }
