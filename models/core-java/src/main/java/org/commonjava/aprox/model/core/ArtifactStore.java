@@ -18,12 +18,16 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-@JsonTypeInfo( use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type" )
+@JsonTypeInfo( use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = ArtifactStore.TYPE_ATTR )
 @JsonSubTypes( { @Type( name = "remote", value = RemoteRepository.class ),
     @Type( name = "hosted", value = HostedRepository.class ), @Type( name = "group", value = Group.class ) } )
 public abstract class ArtifactStore
     implements Serializable
 {
+
+    public static final String TYPE_ATTR = "type";
+
+    public static final String KEY_ATTR = "key";
 
     public static final String METADATA_CHANGELOG = "changelog";
 

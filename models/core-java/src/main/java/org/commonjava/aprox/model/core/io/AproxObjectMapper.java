@@ -1,5 +1,6 @@
 package org.commonjava.aprox.model.core.io;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -10,13 +11,19 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.aprox.model.core.StoreKey;
+
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator.Feature;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Alternative
 @Named
@@ -99,6 +106,30 @@ public class AproxObjectMapper
                 }
             }
         }
+    }
+
+    public String patchLegacyStoreJson( final String json )
+        throws JsonProcessingException, IOException
+    {
+        final JsonNode tree = readTree( json );
+
+        final JsonNode keyNode = tree.get( ArtifactStore.KEY_ATTR );
+        final StoreKey key = StoreKey.fromString( keyNode.textValue() );
+        if ( key == null )
+        {
+            throw new AproxSerializationException( "Cannot patch store JSON. No StoreKey 'key' attribute found!", null );
+        }
+
+        final JsonNode field = tree.get( ArtifactStore.TYPE_ATTR );
+        if ( field == null )
+        {
+            ( (ObjectNode) tree ).put( ArtifactStore.TYPE_ATTR, key.getType()
+                                                                   .singularEndpointName() );
+
+            return writeValueAsString( tree );
+        }
+
+        return json;
     }
 
 }

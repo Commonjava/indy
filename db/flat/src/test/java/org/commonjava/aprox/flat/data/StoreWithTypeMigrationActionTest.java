@@ -38,7 +38,7 @@ public class StoreWithTypeMigrationActionTest
 
         final StoreEventDispatcher sed = new StoreEventDispatcherStub();
 
-        action = new StoreWithTypeMigrationAction( new DataFileStoreDataManager( dfm, mapper, sed ) );
+        action = new StoreWithTypeMigrationAction( new DataFileStoreDataManager( dfm, mapper, sed ), mapper );
     }
 
     @Test

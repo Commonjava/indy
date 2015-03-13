@@ -44,12 +44,11 @@ import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.model.core.dto.StoreListingDTO;
+import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.util.ApplicationContent;
 import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Path( "/api/admin/{type}" )
 public class StoreAdminHandler
@@ -62,7 +61,7 @@ public class StoreAdminHandler
     private AdminController adminController;
 
     @Inject
-    private ObjectMapper objectMapper;
+    private AproxObjectMapper objectMapper;
 
     public StoreAdminHandler()
     {
@@ -108,15 +107,35 @@ public class StoreAdminHandler
     {
         final StoreType st = StoreType.get( type );
 
-        ArtifactStore store = null;
         Response response = null;
+        String json = null;
         try
         {
-            store = objectMapper.readValue( request.getInputStream(), st.getStoreClass() );
+            json = IOUtils.toString( request.getInputStream() );
+            json = objectMapper.patchLegacyStoreJson( json );
         }
         catch ( final IOException e )
         {
             final String message = "Failed to read " + st.getStoreClass()
+                                                         .getSimpleName() + " from request body.";
+
+            logger.error( message, e );
+            response = formatResponse( e, message, true );
+        }
+
+        if ( response != null )
+        {
+            return response;
+        }
+
+        ArtifactStore store = null;
+        try
+        {
+            store = objectMapper.readValue( json, st.getStoreClass() );
+        }
+        catch ( final IOException e )
+        {
+            final String message = "Failed to parse " + st.getStoreClass()
                                                          .getSimpleName() + " from request body.";
 
             logger.error( message, e );
@@ -174,16 +193,37 @@ public class StoreAdminHandler
     {
         final StoreType st = StoreType.get( type );
 
-        ArtifactStore store = null;
         Response response = null;
+        String json = null;
         try
         {
-            store = objectMapper.readValue( request.getInputStream(), st.getStoreClass() );
+            json = IOUtils.toString( request.getInputStream() );
+            json = objectMapper.patchLegacyStoreJson( json );
         }
         catch ( final IOException e )
         {
             final String message = "Failed to read " + st.getStoreClass()
-                                                         .getSimpleName() + " from request body";
+                                                         .getSimpleName() + " from request body.";
+
+            logger.error( message, e );
+            response = formatResponse( e, message, true );
+        }
+
+        if ( response != null )
+        {
+            return response;
+        }
+
+        ArtifactStore store = null;
+        try
+        {
+            store = objectMapper.readValue( json, st.getStoreClass() );
+        }
+        catch ( final IOException e )
+        {
+            final String message = "Failed to parse " + st.getStoreClass()
+                                                          .getSimpleName() + " from request body.";
+
             logger.error( message, e );
             response = formatResponse( e, message, true );
         }

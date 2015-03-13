@@ -23,33 +23,32 @@ import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.HostedRepository;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreType;
+import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.subsys.datafile.DataFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Named( "store-with-type-migration" )
 public class StoreWithTypeMigrationAction
     implements MigrationAction
 {
 
-    private static final String TYPE_ATTR = "type";
-
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private StoreDataManager data;
 
+    @Inject
+    private AproxObjectMapper mapper;
+
     public StoreWithTypeMigrationAction()
     {
     }
 
-    public StoreWithTypeMigrationAction( final StoreDataManager data )
+    public StoreWithTypeMigrationAction( final StoreDataManager data, final AproxObjectMapper mapper )
     {
         this.data = data;
+        this.mapper = mapper;
     }
 
     @Override
@@ -84,7 +83,6 @@ public class StoreWithTypeMigrationAction
             new ChangeSummary( ChangeSummary.SYSTEM_USER,
                                "Migrating store definitions to incorporate new type attribute." );
 
-        final ObjectMapper om = new ObjectMapper();
         boolean changed = false;
         for ( final StoreType type : StoreType.values() )
         {
@@ -103,19 +101,12 @@ public class StoreWithTypeMigrationAction
                     try
                     {
                         logger.info( "Migrating definition {}", jsonFile.getPath() );
-                        String json = jsonFile.readString();
+                        final String json = jsonFile.readString();
 
-                        final JsonNode tree = om.readTree( json );
-                        final JsonNode field = tree.get( TYPE_ATTR );
-                        if ( field == null )
+                        final String migrated = mapper.patchLegacyStoreJson( json );
+                        if ( !json.equals( migrated ) )
                         {
-                            logger.info( "Patching store definition: {} with type attribute: {}", jsonFile.getPath(),
-                                         type.singularEndpointName() );
-
-                            ( (ObjectNode) tree ).put( TYPE_ATTR, type.singularEndpointName() );
-
-                            json = om.writeValueAsString( tree );
-                            jsonFile.writeString( json, summary );
+                            jsonFile.writeString( migrated, summary );
                             changed = true;
                         }
                     }
