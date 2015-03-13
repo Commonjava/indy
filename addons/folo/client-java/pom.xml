@@ -14,7 +14,7 @@
   <parent>
     <groupId>org.commonjava.aprox</groupId>
     <artifactId>aprox-folo</artifactId>
-    <version>0.20-SNAPSHOT</version>
+    <version>0.19.1</version>
   </parent>
   <artifactId>aprox-folo-client-java</artifactId>
   <name>AProx :: Add-Ons :: Folo Usage Tracker :: Java Client</name>

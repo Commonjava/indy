@@ -14,7 +14,7 @@
   <parent>
     <groupId>org.commonjava.aprox.embed.test</groupId>
     <artifactId>aprox-embedder-tests</artifactId>
-    <version>0.20-SNAPSHOT</version>
+    <version>0.19.1</version>
   </parent>
   
   <artifactId>aprox-embedder-test-min</artifactId>
