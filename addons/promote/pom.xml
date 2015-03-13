@@ -14,7 +14,7 @@
   <parent>
     <groupId>org.commonjava.aprox</groupId>
     <artifactId>aprox-addons</artifactId>
-    <version>0.19.1</version>
+    <version>0.19.2-SNAPSHOT</version>
   </parent>
   <artifactId>aprox-promote</artifactId>
   <name>AProx :: Add-Ons :: Artifact Promotion :: Parent</name>

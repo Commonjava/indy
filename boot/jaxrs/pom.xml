@@ -14,7 +14,7 @@
   <parent>
     <groupId>org.commonjava.aprox.boot</groupId>
     <artifactId>aprox-booters</artifactId>
-    <version>0.19.1</version>
+    <version>0.19.2-SNAPSHOT</version>
   </parent>
   
   <groupId>org.commonjava.aprox.boot</groupId>
