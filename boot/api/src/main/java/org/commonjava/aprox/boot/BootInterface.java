@@ -1,6 +1,22 @@
 package org.commonjava.aprox.boot;
 
-
+/**
+ * <p>Interface providing standardized methods and signals used to boot AProx.</p>
+ * 
+ * <p>Boot sequence (contained within {@link #start(BootOptions)} method):</p>
+ * <ol>
+ * <li>{@link #initialize(BootOptions)}</li>
+ * <li>{@link #loadConfiguration(String)}</li>
+ * <li>{@link #startLifecycle()}</li>
+ * <li>{@link #deploy()}</li>
+ * </ol>
+ * 
+ * <p>The {@link #runAndWait(BootOptions)} method calls {@link #start(BootOptions)} and then {@link #wait()} on the {@link BootInterface} instance 
+ * itself, such that {@link Thread#interrupt()} is necessary to make it return. This is the method normally used from the booter <tt>main()</tt> 
+ * method.</li>
+ * 
+ * @author jdcasey
+ */
 public interface BootInterface
 {
 
@@ -38,5 +54,13 @@ public interface BootInterface
     BootOptions getBootOptions();
 
     void stop();
+
+    boolean deploy();
+
+    boolean startLifecycle();
+
+    boolean loadConfiguration( final String config );
+
+    boolean initialize( final BootOptions bootOptions );
 
 }

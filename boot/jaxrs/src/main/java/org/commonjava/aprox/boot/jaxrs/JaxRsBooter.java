@@ -58,7 +58,7 @@ public class JaxRsBooter
             {
                 try
                 {
-                    final JaxRsBooter booter = new JaxRsBooter();
+                    final BootInterface booter = new JaxRsBooter();
 
                     System.out.println( "Starting AProx booter: " + booter );
                     final int result = booter.runAndWait( boot );
@@ -99,6 +99,7 @@ public class JaxRsBooter
 
     private BootStatus status;
 
+    @Override
     public boolean initialize( final BootOptions bootOptions )
     {
         this.bootOptions = bootOptions;
@@ -126,6 +127,7 @@ public class JaxRsBooter
         return initialized;
     }
 
+    @Override
     public boolean loadConfiguration( final String config )
     {
         logger.info( "Booter running: " + this );
@@ -153,6 +155,7 @@ public class JaxRsBooter
         return loaded;
     }
 
+    @Override
     public boolean startLifecycle()
     {
         lifecycleManager = container.instance()
@@ -177,6 +180,7 @@ public class JaxRsBooter
         return started;
     }
 
+    @Override
     public boolean deploy()
     {
         boolean started;

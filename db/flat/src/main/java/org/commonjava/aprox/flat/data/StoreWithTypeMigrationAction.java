@@ -43,6 +43,15 @@ public class StoreWithTypeMigrationAction
     @Inject
     private StoreDataManager data;
 
+    public StoreWithTypeMigrationAction()
+    {
+    }
+
+    public StoreWithTypeMigrationAction( final StoreDataManager data )
+    {
+        this.data = data;
+    }
+
     @Override
     public String getId()
     {
@@ -54,6 +63,8 @@ public class StoreWithTypeMigrationAction
     {
         if ( !( data instanceof DataFileStoreDataManager ) )
         {
+            logger.info( "Store manager: {} is not based on DataFile's. Skipping migration.", data.getClass()
+                                                                                                  .getName() );
             return true;
         }
 
@@ -64,6 +75,8 @@ public class StoreWithTypeMigrationAction
 
         if ( !basedir.exists() )
         {
+            logger.info( "Base directory: {} does not exist. Skipping store type-attribute migration.",
+                         basedir.getPath() );
             return false;
         }
 
@@ -76,6 +89,12 @@ public class StoreWithTypeMigrationAction
         for ( final StoreType type : StoreType.values() )
         {
             final DataFile dir = basedir.getChild( type.singularEndpointName() );
+            if ( !dir.exists() )
+            {
+                continue;
+            }
+
+            logger.info( "Scanning {} for definitions to migrate...", dir.getPath() );
             for ( final String fname : dir.list() )
             {
                 if ( fname.endsWith( ".json" ) )
@@ -83,6 +102,7 @@ public class StoreWithTypeMigrationAction
                     final DataFile jsonFile = dir.getChild( fname );
                     try
                     {
+                        logger.info( "Migrating definition {}", jsonFile.getPath() );
                         String json = jsonFile.readString();
 
                         final JsonNode tree = om.readTree( json );
@@ -93,11 +113,11 @@ public class StoreWithTypeMigrationAction
                                          type.singularEndpointName() );
 
                             ( (ObjectNode) tree ).put( TYPE_ATTR, type.singularEndpointName() );
-                        }
 
-                        json = om.writeValueAsString( tree );
-                        jsonFile.writeString( json, summary );
-                        changed = true;
+                            json = om.writeValueAsString( tree );
+                            jsonFile.writeString( json, summary );
+                            changed = true;
+                        }
                     }
                     catch ( final IOException e )
                     {
