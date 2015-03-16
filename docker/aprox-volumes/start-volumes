@@ -1,7 +1,0 @@
-#!/usr/bin/python
-
-import time
-
-print "Ready to serve AProx volume data."
-while True:
-  time.sleep(1)
