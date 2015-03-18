@@ -15,7 +15,7 @@ import java.util.Map;
 
 import org.commonjava.aprox.model.core.HostedRepository;
 import org.commonjava.aprox.model.core.StoreKey;
-import org.commonjava.maven.galley.spi.cache.CacheProvider;
+import org.commonjava.maven.galley.model.Location;
 
 public class CacheOnlyLocation
     implements KeyedLocation
@@ -32,7 +32,7 @@ public class CacheOnlyLocation
         this.repo = repo;
         if ( repo.getStorage() != null )
         {
-            attributes.put( CacheProvider.ATTR_ALT_STORAGE_LOCATION, repo.getStorage() );
+            attributes.put( Location.ATTR_ALT_STORAGE_LOCATION, repo.getStorage() );
         }
 
         this.key = repo.getKey();
@@ -80,12 +80,6 @@ public class CacheOnlyLocation
     }
 
     @Override
-    public int getTimeoutSeconds()
-    {
-        return 0;
-    }
-
-    @Override
     public Map<String, Object> getAttributes()
     {
         return attributes;
@@ -94,8 +88,14 @@ public class CacheOnlyLocation
     @Override
     public <T> T getAttribute( final String key, final Class<T> type )
     {
+        return getAttribute( key, type, null );
+    }
+
+    @Override
+    public <T> T getAttribute( final String key, final Class<T> type, final T defaultValue )
+    {
         final Object value = attributes.get( key );
-        return value == null ? null : type.cast( value );
+        return value == null ? defaultValue : type.cast( value );
     }
 
     @Override

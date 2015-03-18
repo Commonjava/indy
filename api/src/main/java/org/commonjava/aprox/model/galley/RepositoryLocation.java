@@ -15,6 +15,7 @@ import java.util.Map;
 
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
+import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.transport.htcli.model.HttpLocation;
 
 public class RepositoryLocation
@@ -33,6 +34,16 @@ public class RepositoryLocation
         if ( repository.getNfcTimeoutSeconds() > 0 )
         {
             attributes.put( ATTR_NFC_TIMEOUT_SECONDS, repository.getNfcTimeoutSeconds() );
+        }
+
+        if ( repository.getTimeoutSeconds() > 0 )
+        {
+            attributes.put( Location.CONNECTION_TIMEOUT_SECONDS, repository.getTimeoutSeconds() );
+        }
+
+        if ( repository.getCacheTimeoutSeconds() > 0 )
+        {
+            attributes.put( Location.CACHE_TIMEOUT_SECONDS, repository.getCacheTimeoutSeconds() );
         }
     }
 
@@ -67,12 +78,6 @@ public class RepositoryLocation
     }
 
     @Override
-    public int getTimeoutSeconds()
-    {
-        return repository.getTimeoutSeconds();
-    }
-
-    @Override
     public Map<String, Object> getAttributes()
     {
         return attributes;
@@ -81,8 +86,14 @@ public class RepositoryLocation
     @Override
     public <T> T getAttribute( final String key, final Class<T> type )
     {
+        return getAttribute( key, type, null );
+    }
+
+    @Override
+    public <T> T getAttribute( final String key, final Class<T> type, final T defaultValue )
+    {
         final Object value = attributes.get( key );
-        return value == null ? null : type.cast( value );
+        return value == null ? defaultValue : type.cast( value );
     }
 
     @Override

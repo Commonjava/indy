@@ -22,7 +22,7 @@ import org.commonjava.aprox.util.ApplicationContent;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@Path( "/api/api/nfc" )
+@Path( "/api/nfc" )
 public class NfcResource
     implements AproxResources
 {
