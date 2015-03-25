@@ -186,6 +186,12 @@ public class IndexHandler
 
         logger.info( "Updating indexes as a result of ExpirationEvent." );
         final StoreKey storeKey = StoreKey.fromString( event.getPayload() );
+        if ( storeKey == null )
+        {
+            logger.warn( "No StoreKey found in payload of: {}.", event );
+            return;
+        }
+
         executor.execute( new IndexExpirationRunnable( storeKey ) );
     }
 
@@ -197,7 +203,8 @@ public class IndexHandler
 
     private boolean isIndexable( final String path )
     {
-        if ( path.endsWith( ".sha1" ) || path.endsWith( ".md5" ) || path.endsWith( "maven-metadata.xml" ) || path.endsWith( "archetype-catalog.xml" ) )
+        if ( path.endsWith( ".sha1" ) || path.endsWith( ".md5" ) || path.endsWith( "maven-metadata.xml" )
+            || path.endsWith( "archetype-catalog.xml" ) )
         {
             return false;
         }
@@ -267,7 +274,8 @@ public class IndexHandler
             final List<Exception> exceptions = result.getExceptions();
             if ( exceptions != null && !exceptions.isEmpty() )
             {
-                logger.error( "{}. While scanning: {}, encountered errors:\n\n  {}", store.getKey(), new JoinString( "\n\n  ", exceptions ) );
+                logger.error( "{}. While scanning: {}, encountered errors:\n\n  {}", store.getKey(),
+                              new JoinString( "\n\n  ", exceptions ) );
             }
             else
             {
@@ -276,7 +284,8 @@ public class IndexHandler
         }
         catch ( final IOException e )
         {
-            logger.error( String.format( "Failed to commit changes to: %s. Reason: %s", store.getKey(), e.getMessage() ), e );
+            logger.error( String.format( "Failed to commit changes to: %s. Reason: %s", store.getKey(), e.getMessage() ),
+                          e );
         }
         finally
         {
@@ -286,12 +295,14 @@ public class IndexHandler
             }
             catch ( final IOException e )
             {
-                logger.error( String.format( "Failed to close index for: %s. Reason: %s", store.getKey(), e.getMessage() ), e );
+                logger.error( String.format( "Failed to close index for: %s. Reason: %s", store.getKey(),
+                                             e.getMessage() ), e );
             }
         }
     }
 
-    private void updateGroupsFor( final StoreKey storeKey, final Set<ArtifactStore> updated, final boolean updateRepositoryIndexes )
+    private void updateGroupsFor( final StoreKey storeKey, final Set<ArtifactStore> updated,
+                                  final boolean updateRepositoryIndexes )
     {
         try
         {
@@ -313,11 +324,13 @@ public class IndexHandler
         }
         catch ( final AproxDataException e )
         {
-            logger.error( String.format( "Failed to retrieve groups that contain: %s. Reason: %s", storeKey, e.getMessage() ), e );
+            logger.error( String.format( "Failed to retrieve groups that contain: %s. Reason: %s", storeKey,
+                                         e.getMessage() ), e );
         }
     }
 
-    private void updateMergedIndex( final Group group, final Set<ArtifactStore> updated, final boolean updateRepositoryIndexes )
+    private void updateMergedIndex( final Group group, final Set<ArtifactStore> updated,
+                                    final boolean updateRepositoryIndexes )
     {
         final StoreKey groupKey = group.getKey();
         if ( !lock( groupKey ) )
@@ -397,8 +410,8 @@ public class IndexHandler
                         }
                         catch ( final IOException e )
                         {
-                            logger.error( String.format( "Failed to merge index from: %s into group index: %s. Reason: %s", key, group.getKey(),
-                                                         e.getMessage() ), e );
+                            logger.error( String.format( "Failed to merge index from: %s into group index: %s. Reason: %s",
+                                                         key, group.getKey(), e.getMessage() ), e );
                         }
                     }
                     finally
@@ -412,7 +425,8 @@ public class IndexHandler
                             }
                             catch ( final IOException e )
                             {
-                                logger.error( String.format( "Failed to close context for: %s. Reason: %s", key, e.getMessage() ), e );
+                                logger.error( String.format( "Failed to close context for: %s. Reason: %s", key,
+                                                             e.getMessage() ), e );
                             }
                         }
 
@@ -426,12 +440,14 @@ public class IndexHandler
                 }
                 catch ( final IOException e )
                 {
-                    logger.error( String.format( "Failed to commit index updates for group: %s. Reason: %s", group.getKey(), e.getMessage() ), e );
+                    logger.error( String.format( "Failed to commit index updates for group: %s. Reason: %s",
+                                                 group.getKey(), e.getMessage() ), e );
                 }
             }
             catch ( final AproxDataException e )
             {
-                logger.error( String.format( "Failed to retrieve concrete stores in group: %s. Reason: %s", groupKey, e.getMessage() ), e );
+                logger.error( String.format( "Failed to retrieve concrete stores in group: %s. Reason: %s", groupKey,
+                                             e.getMessage() ), e );
                 return;
             }
             finally
@@ -492,8 +508,8 @@ public class IndexHandler
             }
             else
             {
-                logger.info( "INCREMENTAL index update completed for: {} to cover period: {} - {}", key, centralContextCurrentTimestamp,
-                             updateResult.getTimestamp() );
+                logger.info( "INCREMENTAL index update completed for: {} to cover period: {} - {}", key,
+                             centralContextCurrentTimestamp, updateResult.getTimestamp() );
             }
 
             return updateResult;
@@ -552,26 +568,31 @@ public class IndexHandler
             at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615) [rt.jar:1.7.0_25]
             at java.lang.Thread.run(Thread.java:724) [rt.jar:1.7.0_25]
              */
-            final IndexingContext context = indexer.createIndexingContext( id, id, rootDir, indexDir, id, null, true, true, indexers );
+            final IndexingContext context =
+                indexer.createIndexingContext( id, id, rootDir, indexDir, id, null, true, true, indexers );
 
             return context;
         }
         catch ( final LockReleaseFailedException e )
         {
             //            logger.error( String.format( "Failed to create indexing context for: %s. Reason: %s", store.getKey(), e.getMessage() ), e );
-            logger.error( String.format( "Failed to create indexing context for: %s. Reason: %s", store.getKey(), e.getMessage() ) );
+            logger.error( String.format( "Failed to create indexing context for: %s. Reason: %s", store.getKey(),
+                                         e.getMessage() ) );
         }
         catch ( final ExistingLuceneIndexMismatchException e )
         {
-            logger.error( String.format( "Failed to create indexing context for: %s. Reason: %s", store.getKey(), e.getMessage() ), e );
+            logger.error( String.format( "Failed to create indexing context for: %s. Reason: %s", store.getKey(),
+                                         e.getMessage() ), e );
         }
         catch ( final IllegalArgumentException e )
         {
-            logger.error( String.format( "Failed to create indexing context for: %s. Reason: %s", store.getKey(), e.getMessage() ), e );
+            logger.error( String.format( "Failed to create indexing context for: %s. Reason: %s", store.getKey(),
+                                         e.getMessage() ), e );
         }
         catch ( final IOException e )
         {
-            logger.error( String.format( "Failed to create indexing context for: %s. Reason: %s", store.getKey(), e.getMessage() ), e );
+            logger.error( String.format( "Failed to create indexing context for: %s. Reason: %s", store.getKey(),
+                                         e.getMessage() ), e );
         }
 
         return null;
@@ -590,6 +611,11 @@ public class IndexHandler
         @Override
         public void run()
         {
+            if ( key == null )
+            {
+                return;
+            }
+
             final StoreType type = key.getType();
 
             ArtifactStore store;

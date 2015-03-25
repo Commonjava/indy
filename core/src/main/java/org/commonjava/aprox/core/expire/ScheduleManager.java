@@ -91,7 +91,6 @@ public class ScheduleManager
 
     private static final String JOB_TYPE = "JOB_TYPE";
 
-
     @Inject
     private DownloadManager fileManager;
 
@@ -258,8 +257,7 @@ public class ScheduleManager
         }
     }
 
-    public void scheduleForStore( final StoreKey key, final String jobType, final String jobName,
- final Object payload,
+    public void scheduleForStore( final StoreKey key, final String jobType, final String jobName, final Object payload,
                                   final int startSeconds, final int repeatSeconds )
         throws AproxSchedulerException
     {
@@ -290,10 +288,9 @@ public class ScheduleManager
 
             final long startMillis = TimeUnit.MILLISECONDS.convert( startSeconds, TimeUnit.SECONDS );
 
-            final TriggerBuilder<Trigger> tb =
-                TriggerBuilder.newTrigger()
-                              .withIdentity( jk.getName(), jk.getGroup() )
-                              .forJob( detail )
+            final TriggerBuilder<Trigger> tb = TriggerBuilder.newTrigger()
+                                                             .withIdentity( jk.getName(), jk.getGroup() )
+                                                             .forJob( detail )
                                                              .startAt( new Date( startMillis ) );
 
             if ( repeatSeconds > -1 )
@@ -641,7 +638,8 @@ public class ScheduleManager
             final Set<TriggerKey> keys = scheduler.getTriggerKeys( matcher );
             if ( keys != null && !keys.isEmpty() )
             {
-                return keys.iterator().next();
+                return keys.iterator()
+                           .next();
             }
         }
         catch ( final SchedulerException e )

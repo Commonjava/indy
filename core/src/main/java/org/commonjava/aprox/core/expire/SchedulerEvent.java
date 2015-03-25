@@ -31,4 +31,10 @@ public class SchedulerEvent
         return payload;
     }
 
+    @Override
+    public String toString()
+    {
+        return String.format( "SchedulerEvent [eventType=%s, jobType=%s, payload=%s]", eventType, jobType, payload );
+    }
+
 }

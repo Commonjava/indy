@@ -5,7 +5,7 @@ module Depgraph
   class Http
     include Net
     
-    DG_BASEPATH = 'api/1.0/depgraph'
+    DG_BASEPATH = 'api/depgraph'
   
     def initialize( host, port, context_path=CONTEXT_PATH )
       @host = host
