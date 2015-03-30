@@ -19,6 +19,10 @@ import org.commonjava.aprox.util.PathUtils;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.spi.io.PathGenerator;
 
+/**
+ * {@link PathGenerator} implementation that assumes the locations it sees will be {@link KeyedLocation}, and translates them into storage locations
+ * on disk for related content.
+ */
 @Default
 @ApplicationScoped
 public class KeyBasedPathGenerator

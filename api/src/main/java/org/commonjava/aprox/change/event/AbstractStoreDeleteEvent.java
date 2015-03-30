@@ -7,7 +7,11 @@ import java.util.Map;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.maven.galley.model.Transfer;
 
-public class AbstractStoreDeleteEvent
+/**
+ * Abstract event triggered when one or more {@link ArtifactStore} definitions are deleted. Includes references to the root of their storage locations, 
+ * to allow cleanup of cached/stored content.
+ */
+public abstract class AbstractStoreDeleteEvent
     implements AproxStoreEvent
 {
 

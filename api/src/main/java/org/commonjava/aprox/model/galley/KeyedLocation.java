@@ -13,6 +13,9 @@ package org.commonjava.aprox.model.galley;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.maven.galley.model.Location;
 
+/**
+ * {@link Location} that references a particular {@link StoreKey}, bridging Galley transfer management with the store definitions of AProx.
+ */
 public interface KeyedLocation
     extends Location
 {

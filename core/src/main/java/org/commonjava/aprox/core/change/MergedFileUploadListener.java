@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
-import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.change.event.AproxFileEventManager;
@@ -54,7 +53,8 @@ public class MergedFileUploadListener
     @ExecutorConfig( daemon = true, priority = 7, named = "aprox-events" )
     private Executor executor;
 
-    public void reMergeUploaded( @Observes final FileEvent event )
+    // NOTE: Disabling @Observes on this because I'm pretty sure the ContentManager is handling it now.
+    public void reMergeUploaded( /*@Observes*/final FileEvent event )
     {
         executor.execute( new Runnable()
         {

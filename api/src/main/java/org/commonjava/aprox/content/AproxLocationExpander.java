@@ -112,7 +112,7 @@ public class AproxLocationExpander
                                                  e, gl, e.getMessage() );
                 }
             }
-            else if ( location instanceof CacheOnlyLocation && !( (CacheOnlyLocation) location ).hasDeployPoint() )
+            else if ( location instanceof CacheOnlyLocation && !( (CacheOnlyLocation) location ).isHostedRepository() )
             {
                 final StoreKey key = ( (KeyedLocation) location ).getKey();
                 try

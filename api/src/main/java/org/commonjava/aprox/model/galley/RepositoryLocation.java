@@ -18,6 +18,10 @@ import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.transport.htcli.model.HttpLocation;
 
+/**
+ * {@link KeyedLocation} implementation that represents a {@link RemoteRepository} AProx store, and bridges the handling of {@link RemoteRepository}
+ * attributes such as the various timeout types (not-found-cache, connection, and cache timeouts) to expose them via the {@link Location} API.
+ */
 public class RepositoryLocation
     implements HttpLocation, KeyedLocation
 {

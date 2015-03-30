@@ -13,6 +13,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.promote.data.PromotionException;
@@ -47,7 +48,9 @@ public class PromoteResource
         Response response = null;
         try
         {
-            req = mapper.readValue( request.getInputStream(), PromoteRequest.class );
+            final String json = IOUtils.toString( request.getInputStream() );
+            logger.info( "Got promotion request:\n{}", json );
+            req = mapper.readValue( json, PromoteRequest.class );
         }
         catch ( final IOException e )
         {

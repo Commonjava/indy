@@ -18,7 +18,7 @@ import java.util.Iterator;
 import org.commonjava.aprox.model.core.ArtifactStore;
 
 /**
- * Currently just a marker interface to denote an event that was generated from AProx.
+ * Base class for events related to changes in AProx {@link ArtifactStore} definitions.
  */
 public class AbstractAproxEvent
     implements AproxStoreEvent

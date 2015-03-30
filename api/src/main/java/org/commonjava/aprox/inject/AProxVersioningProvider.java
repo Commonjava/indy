@@ -23,6 +23,10 @@ import org.commonjava.aprox.stats.AProxVersioning;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Producer class that reads a properties file off the classpath containing version info for AProx, and assembles an instance of {@link AProxVersioning},
+ * which this component then provides for injecting into other components.
+ */
 @Singleton
 public class AProxVersioningProvider
 {

@@ -1,5 +1,9 @@
 package org.commonjava.aprox.content;
 
+/**
+ * Types of checksums commonly used for Maven artifacts and metadata, which may be generated via a {@link ContentGenerator} when, say, metadata files
+ * are merged in a group.
+ */
 public enum ContentDigest
 {
 

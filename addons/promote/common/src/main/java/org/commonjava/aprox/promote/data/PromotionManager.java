@@ -237,6 +237,9 @@ public class PromotionManager
             logger.error( error, e );
         }
 
+        logger.info( "Running promotions from: {} (key: {})\n  to: {} (key: {})", sourceStore, request.getSource(),
+                     targetStore, request.getTarget() );
+
         if ( error == null )
         {
             final boolean purgeSource = request.isPurgeSource();

@@ -23,6 +23,10 @@ import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.ConfigNames;
 import org.commonjava.web.config.annotation.SectionName;
 
+/**
+ * Configuration class that tells AProx where its UI files are. These are static resources that are served up via servlet or similar, and which are
+ * designed to be the default UI for AProx (talking to its REST resources).
+ */
 @SectionName( "ui" )
 @Alternative
 @Named( "unused" )

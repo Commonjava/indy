@@ -2,6 +2,11 @@ package org.commonjava.aprox.conf;
 
 import java.io.InputStream;
 
+/**
+ * Registration helper for the configuration subsystem, which tells the {@link AproxConfigFactory} which section of the configuration file belongs to
+ * the conifguration class associated with implemenetations of this helper. It also provides information for writing out default configuration files
+ * in case no config is available, in order to setup a config directory that can be managed.
+ */
 public interface AproxConfigInfo
 {
     String APPEND_DEFAULTS_TO_MAIN_CONF = "main.conf";

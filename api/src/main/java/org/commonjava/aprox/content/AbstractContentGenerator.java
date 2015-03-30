@@ -7,6 +7,10 @@ import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.Group;
 import org.commonjava.maven.galley.model.Transfer;
 
+/**
+ * Convenience abstract class for {@link ContentGenerator} implementations to extend. This allows content generators to only implement the methods
+ * they care about.
+ */
 public abstract class AbstractContentGenerator
     implements ContentGenerator
 {

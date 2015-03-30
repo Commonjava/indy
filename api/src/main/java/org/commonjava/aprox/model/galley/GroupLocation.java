@@ -10,9 +10,13 @@
  ******************************************************************************/
 package org.commonjava.aprox.model.galley;
 
+import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 
+/**
+ * {@link KeyedLocation} implementation that represents an AProx {@link Group} store.
+ */
 public class GroupLocation
     extends CacheOnlyLocation
     implements KeyedLocation

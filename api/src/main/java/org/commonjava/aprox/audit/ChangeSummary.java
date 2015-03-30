@@ -2,6 +2,10 @@ package org.commonjava.aprox.audit;
 
 import java.util.Date;
 
+/**
+ * Describes the reason for a particular change to the system, usually in terms of store definitions, templates, add-on configurations, almost 
+ * anything stored in the AProx data directory (persistent system-wide state), along with the user that generated the change.
+ */
 public class ChangeSummary
 {
     public static final String SYSTEM_USER = "system";

@@ -13,10 +13,15 @@ package org.commonjava.aprox.model.galley;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.commonjava.aprox.content.AproxLocationExpander;
 import org.commonjava.aprox.model.core.HostedRepository;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.maven.galley.model.Location;
 
+/**
+ * {@link KeyedLocation} implementation that only knows about locally hosted/cached content. During Galley's handling, it can be converted into other 
+ * store-related {@link KeyedLocation} types, assuming it's not referencing a {@link HostedRepository}, via the {@link AproxLocationExpander} component.
+ */
 public class CacheOnlyLocation
     implements KeyedLocation
 {
@@ -44,7 +49,7 @@ public class CacheOnlyLocation
         this.key = key;
     }
 
-    public boolean hasDeployPoint()
+    public boolean isHostedRepository()
     {
         return repo != null;
     }
