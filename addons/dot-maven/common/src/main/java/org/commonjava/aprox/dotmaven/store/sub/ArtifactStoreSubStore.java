@@ -14,7 +14,6 @@ import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.apache.commons.io.IOUtils.copy;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -247,8 +246,7 @@ public class ArtifactStoreSubStore
 
             copy( content, writer );
 
-            return item.getDetachedFile()
-                       .length();
+            return item.length();
         }
         catch ( final IOException e )
         {
@@ -379,8 +377,7 @@ public class ArtifactStoreSubStore
             final Transfer item = getTransfer( matcher );
             if ( item != null )
             {
-                return item.getDetachedFile()
-                           .length();
+                return item.length();
             }
 
         }
@@ -434,11 +431,10 @@ public class ArtifactStoreSubStore
                 return null;
             }
 
-            final File f = item.getDetachedFile();
-            so.setCreationDate( new Date( f.lastModified() ) );
-            so.setLastModified( new Date( f.lastModified() ) );
-            so.setFolder( f.isDirectory() );
-            so.setResourceLength( f.length() );
+            so.setCreationDate( new Date( item.lastModified() ) );
+            so.setLastModified( new Date( item.lastModified() ) );
+            so.setFolder( item.isDirectory() );
+            so.setResourceLength( item.length() );
         }
         else
         {

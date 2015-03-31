@@ -33,6 +33,7 @@ import javax.ws.rs.core.UriInfo;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.bind.jaxrs.util.JaxRsRequestHelper;
+import org.commonjava.aprox.core.bind.jaxrs.util.TransferStreamingOutput;
 import org.commonjava.aprox.core.ctl.ContentController;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
@@ -173,11 +174,9 @@ public class ContentAccessHandler
                 response =
                     Response.ok()
                             .header( ApplicationHeader.content_type.key(), contentType )
-                            .header( ApplicationHeader.content_length.key(), Long.toString( item.getDetachedFile()
-                                                                                                .length() ) )
+                            .header( ApplicationHeader.content_length.key(), Long.toString( item.length() ) )
                             .header( ApplicationHeader.last_modified.key(),
-                                     HttpUtils.formatDateHeader( item.getDetachedFile()
-                                                                     .lastModified() ) )
+                                     HttpUtils.formatDateHeader( item.lastModified() ) )
                             .build();
             }
         }
@@ -244,7 +243,7 @@ public class ContentAccessHandler
 
                     item.touch();
 
-                    response = Response.ok( item.getDetachedFile() )
+                    response = Response.ok( new TransferStreamingOutput( item ) )
                                        .header( ApplicationHeader.content_type.key(), contentType )
                                        .build();
                 }

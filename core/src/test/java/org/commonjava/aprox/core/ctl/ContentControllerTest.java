@@ -4,9 +4,11 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import groovy.text.GStringTemplateEngine;
 
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.Collections;
 
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.content.ContentGenerator;
 import org.commonjava.aprox.content.ContentManager;
 import org.commonjava.aprox.content.DownloadManager;
@@ -22,6 +24,7 @@ import org.commonjava.aprox.subsys.template.TemplatingEngine;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.SimpleLocation;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.testing.core.CoreFixture;
 import org.junit.Before;
 import org.junit.Rule;
@@ -64,8 +67,19 @@ public class ContentControllerTest
         final Transfer tx = fixture.getCache()
                                    .getTransfer( res );
 
-        FileUtils.write( tx.getDetachedFile(), "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n"
-            + "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">" );
+        PrintWriter writer = null;
+        try
+        {
+            writer = new PrintWriter( new OutputStreamWriter( tx.openOutputStream( TransferOperation.GENERATE ) ) );
+            writer.print( "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n"
+                + "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">" );
+
+            writer.flush();
+        }
+        finally
+        {
+            IOUtils.closeQuietly( writer );
+        }
 
         assertThat( content.isHtmlContent( tx ), equalTo( true ) );
     }
@@ -78,7 +92,18 @@ public class ContentControllerTest
         final Transfer tx = fixture.getCache()
                                    .getTransfer( res );
 
-        FileUtils.write( tx.getDetachedFile(), "<html>" );
+        PrintWriter writer = null;
+        try
+        {
+            writer = new PrintWriter( new OutputStreamWriter( tx.openOutputStream( TransferOperation.GENERATE ) ) );
+            writer.print( "<html>" );
+
+            writer.flush();
+        }
+        finally
+        {
+            IOUtils.closeQuietly( writer );
+        }
 
         assertThat( content.isHtmlContent( tx ), equalTo( true ) );
     }
@@ -91,7 +116,18 @@ public class ContentControllerTest
         final Transfer tx = fixture.getCache()
                                    .getTransfer( res );
 
-        FileUtils.write( tx.getDetachedFile(), "<html ng-app=\"foo\"" );
+        PrintWriter writer = null;
+        try
+        {
+            writer = new PrintWriter( new OutputStreamWriter( tx.openOutputStream( TransferOperation.GENERATE ) ) );
+            writer.print( "<html ng-app=\"foo\"" );
+
+            writer.flush();
+        }
+        finally
+        {
+            IOUtils.closeQuietly( writer );
+        }
 
         assertThat( content.isHtmlContent( tx ), equalTo( true ) );
     }
@@ -104,7 +140,18 @@ public class ContentControllerTest
         final Transfer tx = fixture.getCache()
                                    .getTransfer( res );
 
-        FileUtils.write( tx.getDetachedFile(), "    <html>" );
+        PrintWriter writer = null;
+        try
+        {
+            writer = new PrintWriter( new OutputStreamWriter( tx.openOutputStream( TransferOperation.GENERATE ) ) );
+            writer.print( "    <html>" );
+
+            writer.flush();
+        }
+        finally
+        {
+            IOUtils.closeQuietly( writer );
+        }
 
         assertThat( content.isHtmlContent( tx ), equalTo( true ) );
     }
@@ -117,7 +164,18 @@ public class ContentControllerTest
         final Transfer tx = fixture.getCache()
                                    .getTransfer( res );
 
-        FileUtils.write( tx.getDetachedFile(), "<html><body><h1>FOO</h1>" );
+        PrintWriter writer = null;
+        try
+        {
+            writer = new PrintWriter( new OutputStreamWriter( tx.openOutputStream( TransferOperation.GENERATE ) ) );
+            writer.print( "<html><body><h1>FOO</h1>" );
+
+            writer.flush();
+        }
+        finally
+        {
+            IOUtils.closeQuietly( writer );
+        }
 
         assertThat( content.isHtmlContent( tx ), equalTo( true ) );
     }

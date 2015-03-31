@@ -10,7 +10,10 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.inject;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -33,6 +36,9 @@ import org.commonjava.maven.galley.spi.io.TransferDecorator;
 public class GalleyProvider
 {
 
+    private static final Set<String> UNDECORATED_FILE_ENDINGS =
+        Collections.unmodifiableSet( new HashSet<String>( Arrays.asList( new String[] { ".sha1", ".md5", ".info" } ) ) );
+
     private TransferDecorator decorator;
 
     @Inject
@@ -47,6 +53,7 @@ public class GalleyProvider
     {
         decorator =
             new ChecksummingTransferDecorator( Collections.singleton( TransferOperation.GENERATE ),
+                                               UNDECORATED_FILE_ENDINGS,
                                                new Md5GeneratorFactory(), new Sha1GeneratorFactory() );
         pluginDefaults = new StandardMaven304PluginDefaults();
         pluginImplications = new StandardMavenPluginImplications( xml );
