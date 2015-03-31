@@ -187,6 +187,7 @@ public class PromotionManager
                             stream = transfer.openInputStream( true );
                             final String path = transfer.getPath();
                             contentManager.store( source, path, stream, TransferOperation.UPLOAD );
+                            stream.close();
                         }
 
                         transfer.delete( true );
@@ -253,6 +254,8 @@ public class PromotionManager
                     contentManager.store( targetStore, path, stream, TransferOperation.UPLOAD );
                     pending.remove( path );
                     complete.add( path );
+
+                    stream.close();
 
                     if ( purgeSource )
                     {

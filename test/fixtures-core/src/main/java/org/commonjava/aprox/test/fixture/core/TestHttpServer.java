@@ -19,6 +19,7 @@ import io.undertow.servlet.api.ServletInfo;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.URI;
@@ -176,8 +177,9 @@ public class TestHttpServer
 
         public void registerException( final String method, final String path, final int code, final String error )
         {
-            logger.info( "Registering error: '{}', code: {}, body:\n{}", path, code, error );
-            this.errors.put( method.toUpperCase() + " " + path, new ContentResponse( method, path, code, error ) );
+            final String key = method.toUpperCase() + " " + path;
+            logger.info( "Registering error: {}, code: {}, body:\n{}", key, code, error );
+            this.errors.put( key, new ContentResponse( method, path, code, error ) );
         }
 
         public void expect( final String method, final String testUrl, final int responseCode, final String body )
@@ -186,8 +188,22 @@ public class TestHttpServer
             final URL url = new URL( testUrl );
             final String path = url.getPath();
 
-            logger.info( "Registering expection: '{}', code: {}, body:\n{}", path, responseCode, body );
-            expectations.put( method.toUpperCase() + " " + path, new ContentResponse( method, path, responseCode, body ) );
+            final String key = method.toUpperCase() + " " + path;
+            logger.info( "Registering expectation: {}, code: {}, body:\n{}", key, responseCode, body );
+            expectations.put( key, new ContentResponse( method, path, responseCode, body ) );
+        }
+
+        public void expect( final String method, final String testUrl, final int responseCode,
+                            final InputStream bodyStream )
+            throws Exception
+        {
+            final URL url = new URL( testUrl );
+            final String path = url.getPath();
+
+            final String key = method.toUpperCase() + " " + path;
+            logger.info( "Registering expectation: {}, code: {}, body stream:\n{}", key, responseCode, bodyStream );
+            expectations.put( key, new ContentResponse( method, path, responseCode,
+                                                                                      bodyStream ) );
         }
 
         @Override
@@ -214,6 +230,8 @@ public class TestHttpServer
                                      .toUpperCase();
 
             final String key = method + " " + wholePath;
+
+            logger.info( "Looking up expectation for: {}", key );
 
             final Integer i = accessesByPath.get( key );
             if ( i == null )
@@ -252,6 +270,10 @@ public class TestHttpServer
                 {
                     resp.getWriter()
                         .write( expectation.body() );
+                }
+                else if ( expectation.bodyStream() != null )
+                {
+                    IOUtils.copy( expectation.bodyStream(), resp.getOutputStream() );
                 }
 
                 return;
@@ -312,12 +334,26 @@ public class TestHttpServer
         throws Exception
     {
         servlet.expect( "GET", testUrl, responseCode, body );
+        servlet.expect( "HEAD", testUrl, responseCode, (String) null );
     }
 
     public void expect( final String method, final String testUrl, final int responseCode, final String body )
         throws Exception
     {
         servlet.expect( method, testUrl, responseCode, body );
+    }
+
+    public void expect( final String testUrl, final int responseCode, final InputStream bodyStream )
+        throws Exception
+    {
+        servlet.expect( "GET", testUrl, responseCode, bodyStream );
+        servlet.expect( "HEAD", testUrl, responseCode, (String) null );
+    }
+
+    public void expect( final String method, final String testUrl, final int responseCode, final InputStream bodyStream )
+        throws Exception
+    {
+        servlet.expect( method, testUrl, responseCode, bodyStream );
     }
 
 }

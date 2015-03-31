@@ -11,27 +11,45 @@
 package org.commonjava.aprox.filer.def;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
-import org.commonjava.maven.galley.cache.FileCacheProviderConfig;
+import org.commonjava.maven.galley.cache.partyline.PartyLineCacheProvider;
+import org.commonjava.maven.galley.cache.partyline.PartyLineCacheProviderConfig;
+import org.commonjava.maven.galley.io.ChecksummingTransferDecorator;
+import org.commonjava.maven.galley.io.checksum.Md5GeneratorFactory;
+import org.commonjava.maven.galley.io.checksum.Sha1GeneratorFactory;
+import org.commonjava.maven.galley.model.TransferOperation;
+import org.commonjava.maven.galley.spi.event.FileEventManager;
+import org.commonjava.maven.galley.spi.io.PathGenerator;
+import org.commonjava.maven.galley.spi.io.TransferDecorator;
 
 public class GalleyStorageProvider
 {
 
+    private static final Set<String> UNDECORATED_FILE_ENDINGS =
+        Collections.unmodifiableSet( new HashSet<String>( Arrays.asList( new String[] { ".sha1", ".md5", ".info" } ) ) );
+
     @Inject
     private DefaultStorageProviderConfiguration config;
 
-    private FileCacheProviderConfig cacheProviderConfig;
+    @Inject
+    private FileEventManager fileEventManager;
 
-    //    private KeyBasedPathGenerator pathGen;
+    @Inject
+    private PathGenerator pathGenerator;
 
-    //    private NoOpTransferDecorator transferDecorator;
+    private TransferDecorator transferDecorator;
 
-    //    private AproxFileEventManager fileEvents;
+    private PartyLineCacheProvider cacheProvider;
 
     public GalleyStorageProvider()
     {
@@ -46,33 +64,29 @@ public class GalleyStorageProvider
     @PostConstruct
     public void setup()
     {
-        //        this.pathGen = new KeyBasedPathGenerator();
-        //        this.transferDecorator = new NoOpTransferDecorator();
-        //        this.fileEvents = new AproxFileEventManager();
-        this.cacheProviderConfig = new FileCacheProviderConfig( config.getStorageRootDirectory() );
+        transferDecorator =
+            new ChecksummingTransferDecorator( Collections.singleton( TransferOperation.GENERATE ),
+                                               UNDECORATED_FILE_ENDINGS, new Md5GeneratorFactory(),
+                                               new Sha1GeneratorFactory() );
+
+        final PartyLineCacheProviderConfig cacheProviderConfig =
+            new PartyLineCacheProviderConfig( config.getStorageRootDirectory() );
+
+        this.cacheProvider =
+            new PartyLineCacheProvider( cacheProviderConfig, pathGenerator, fileEventManager, transferDecorator );
     }
 
-    //    @Produces
-    //    public KeyBasedPathGenerator getPathGenerator()
-    //    {
-    //        return pathGen;
-    //    }
-
-    //    @Produces
-    //    public TransferDecorator getTransferDecorator()
-    //    {
-    //        return transferDecorator;
-    //    }
-
-    //    @Produces
-    //    public FileEventManager getFileEventManager()
-    //    {
-    //        return fileEvents;
-    //    }
+    @Produces
+    @Default
+    public TransferDecorator getTransferDecorator()
+    {
+        return transferDecorator;
+    }
 
     @Produces
-    public FileCacheProviderConfig getCacheProviderConfig()
+    @Default
+    public PartyLineCacheProvider getCacheProvider()
     {
-        return cacheProviderConfig;
+        return cacheProvider;
     }
 }

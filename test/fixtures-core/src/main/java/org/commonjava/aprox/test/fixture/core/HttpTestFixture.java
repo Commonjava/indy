@@ -183,8 +183,8 @@ public class HttpTestFixture
     public void expect( final String testUrl, final int responseCode )
         throws Exception
     {
-        server.expect( "HEAD", testUrl, responseCode, null );
-        server.expect( "GET", testUrl, responseCode, null );
+        server.expect( "HEAD", testUrl, responseCode, (String) null );
+        server.expect( "GET", testUrl, responseCode, (String) null );
     }
 
     public void expect( final String method, final String testUrl, final int responseCode, final String body )
@@ -196,7 +196,7 @@ public class HttpTestFixture
     public void expect( final String method, final String testUrl, final int responseCode )
         throws Exception
     {
-        server.expect( method, testUrl, responseCode, null );
+        server.expect( method, testUrl, responseCode, (String) null );
     }
 
 }

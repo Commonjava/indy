@@ -16,7 +16,7 @@ public class ContentManagement09Test
 {
 
     @Test
-    public void storeAndVerifyPathInfo_20Times()
+    public void storeAndVerifyPathInfo_10Times()
         throws Exception
     {
         final InputStream stream = new ByteArrayInputStream( ( "This is a test: " + System.nanoTime() ).getBytes() );

@@ -25,6 +25,11 @@ public class AbstractContentManagementTest
     public void before()
         throws Exception
     {
+        if ( !createStandardTestStructures() )
+        {
+            return;
+        }
+
         final String changelog = "Create test structures";
 
         final HostedRepository hosted =
@@ -64,6 +69,11 @@ public class AbstractContentManagementTest
         g.setConstituents( Arrays.asList( hosted.getKey(), central.getKey() ) );
         client.stores()
               .update( g, changelog );
+    }
+
+    protected boolean createStandardTestStructures()
+    {
+        return true;
     }
 
 }

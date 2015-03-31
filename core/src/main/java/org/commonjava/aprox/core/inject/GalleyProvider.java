@@ -10,36 +10,20 @@
  ******************************************************************************/
 package org.commonjava.aprox.core.inject;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
-import org.commonjava.maven.galley.io.ChecksummingTransferDecorator;
-import org.commonjava.maven.galley.io.checksum.Md5GeneratorFactory;
-import org.commonjava.maven.galley.io.checksum.Sha1GeneratorFactory;
 import org.commonjava.maven.galley.maven.internal.defaults.StandardMaven304PluginDefaults;
 import org.commonjava.maven.galley.maven.internal.defaults.StandardMavenPluginImplications;
 import org.commonjava.maven.galley.maven.parse.XMLInfrastructure;
 import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginDefaults;
 import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginImplications;
-import org.commonjava.maven.galley.model.TransferOperation;
-import org.commonjava.maven.galley.spi.io.TransferDecorator;
 
 @ApplicationScoped
 public class GalleyProvider
 {
-
-    private static final Set<String> UNDECORATED_FILE_ENDINGS =
-        Collections.unmodifiableSet( new HashSet<String>( Arrays.asList( new String[] { ".sha1", ".md5", ".info" } ) ) );
-
-    private TransferDecorator decorator;
 
     @Inject
     private XMLInfrastructure xml;
@@ -51,19 +35,8 @@ public class GalleyProvider
     @PostConstruct
     public void setup()
     {
-        decorator =
-            new ChecksummingTransferDecorator( Collections.singleton( TransferOperation.GENERATE ),
-                                               UNDECORATED_FILE_ENDINGS,
-                                               new Md5GeneratorFactory(), new Sha1GeneratorFactory() );
         pluginDefaults = new StandardMaven304PluginDefaults();
         pluginImplications = new StandardMavenPluginImplications( xml );
-    }
-
-    @Produces
-    @Default
-    public TransferDecorator getTransferDecorator()
-    {
-        return decorator;
     }
 
     @Produces

@@ -24,8 +24,8 @@ public class AproxStoresClientModule
     {
         value.setMetadata( ArtifactStore.METADATA_CHANGELOG, changelog );
         return http.postWithResponse( UrlUtils.buildUrl( "admin", value.getKey()
-                                                                                        .getType()
-                                                                                        .singularEndpointName() ),
+                                                                       .getType()
+                                                                       .singularEndpointName() ),
                                       value, type );
     }
 
