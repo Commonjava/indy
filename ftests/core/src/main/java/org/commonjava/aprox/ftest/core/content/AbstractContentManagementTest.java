@@ -10,6 +10,8 @@ import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.HostedRepository;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestName;
 
 public class AbstractContentManagementTest
     extends AbstractAproxFunctionalTest
@@ -20,6 +22,18 @@ public class AbstractContentManagementTest
     protected static final String CENTRAL = "central";
 
     protected static final String PUBLIC = "public";
+
+    @Rule
+    public TestName name = new TestName();
+
+    protected Thread newThread( final String named, final Runnable runnable )
+    {
+        final Thread t = new Thread( runnable );
+        t.setDaemon( true );
+        t.setName( name.getMethodName() + " :: " + named );
+
+        return t;
+    }
 
     @Before
     public void before()
