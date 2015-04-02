@@ -58,9 +58,9 @@
   
   <distributionManagement>
     <snapshotRepository>
-      <id>local-snapshots</id>
-      <name>Local Snapshots</name>
-      <url>${repo.snapshots}</url>
+      <id>sonatype-nexus-staging</id>
+      <name>Sonatype Nexus</name>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
     </snapshotRepository>
   </distributionManagement>
   
