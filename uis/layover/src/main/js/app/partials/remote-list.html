@@ -1,6 +1,9 @@
 <div class="container-fluid" ng-controller="RemoteListCtl">
     <div class="control-panel">
       <div class="cp-row">
+        <button ng-click="createNew()">New...</button>
+      </div>
+      <div class="cp-row">
         Search: <input ng-model="query" />
       </div>
       <div class="cp-row">
@@ -10,16 +13,13 @@
           <option value="url">Remote URL</option>
         </select>
       </div>
-      <div class="cp-row">
-          <a class="btn btn-default" href="#/remote/new">New...</a>
-      </div>
       <div class="cp-row cp-debug">
         <input type="checkbox" ng-model="enableDebug" ng-init="checked=false" /> Debug Data
       </div>
     </div>
     <div class="content-panel">
       <div class="store-listing">
-        <div class="listing-item" ng-repeat="store in listing.items | filter:query | orderBy:orderProp" class="list-item store-listing-item listing-item-start">
+        <div ng-repeat="store in listing.items | filter:query | orderBy:orderProp" class="listing-item list-item store-listing-item listing-item-start">
           <div class="fieldset-caption"><a href="#/remote/view/{{storeUtils.nameFromKey(store.key)}}">{{store.name}}</a></div>
           <div class="fieldset two-col">
             <div class="two-col">

@@ -11,7 +11,7 @@ aproxServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
       scope.raw.confirmLabel=confirmLabel;
       scope.raw.changelog='';
       
-      console.log('Confirm label: ' + scope.raw.confirmLabel);
+//      console.log('Confirm label: ' + scope.raw.confirmLabel);
       
       ngDialog.openConfirm({template: 'partials/dialogs/changelog-dialog.html', scope: scope }).then(function(data){
         if ( !scope.raw.changelog || scope.raw.changelog.length < 1 ){
@@ -24,6 +24,13 @@ aproxServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
       function(data){
         console.log(scope.confirmLabel + ": cancelled");
       });
+    },
+    
+    addListingControlHrefs: function(scope, location){
+      scope.createNew = function(){
+        location.path(location.path() + '/new');
+      }
+      
     },
     
     addControlHrefs: function(scope, storeType, storeName, mode){
@@ -151,6 +158,14 @@ aproxServices.factory('StoreUtilSvc', function(){
     editHref: function(key){
       var parts = key.split(':');
       return "#/" + parts[0] + "/edit/" + parts[1];
+    },
+    
+    hostedOptionLegend: function(){
+      return [
+        {icon: 'S', title: 'Snapshots allowed'},
+        {icon: 'R', title: 'Releases allowed'},
+        {icon: 'D', title: 'Deployment allowed'}
+      ];
     },
 
     hostedOptions: function(store){

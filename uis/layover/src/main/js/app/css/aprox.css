@@ -224,12 +224,12 @@ div.sidebyside{
   display: inline;
   padding: 0px;
   margin: -1px;
-  cursor: help;
+  /*cursor: help;*/
 }
 
 span.option{
   font-style: italic;
-  cursor: help;
+  /*cursor: help;*/
 }
 
 li.option{
@@ -327,6 +327,11 @@ li.detail-edit-list{
 	padding-bottom: 0px;
   border-bottom: 1px solid #ddd;
   margin-bottom: 1%;
+}
+
+.legend{
+	border: 1px solid #333;
+	padding: 1px;
 }
 
 label, .fieldset-caption, .label, .detail-label{

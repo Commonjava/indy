@@ -27,13 +27,13 @@
 	</div>
   <ol ng-if="!error && supplemental">
     <div class="section">Also created: <span class="hint">(click for details)</span></div>
-    <li ng-repeat="store in supplemental" ng-controller="AutoProxCalcConstituentCtl">
+    <li ng-repeat-start="store in supplemental" ng-controller="AutoProxCalcConstituentCtl">
       <a ng-if="!display" href="" ng-click="displayConstituent()">{{store.key}}</a>
       <div class="content-panel item-expanded subsection" ng-if="display">
         <div class="subsection-caption">{{store.key}} [<a href="" ng-click="hideConstituent()">Hide</a>]</div>
         <div ng-include="'partials/includes/' + store.type + '-view.html'"></div>
       </div>
-    </li>
+    </li ng-repeat-end>
   </ol>
   
     <div ng-if="enableDebug" class="debug">

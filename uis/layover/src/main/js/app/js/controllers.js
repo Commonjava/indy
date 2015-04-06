@@ -4,6 +4,13 @@
 
 var aproxControllers = angular.module('aprox.controllers', []);
 
+aproxControllers.controller('DisplayHtmlCtl', ['$scope', '$element', function($scope, $element) {
+  console.log($element);
+  $scope.showHtml = function() {
+      alert($element.html());
+  };
+}]);
+
 aproxControllers.controller('NavCtl', ['$scope', function($scope){
   $scope.addon_navs = [];
   if ( addons !== undefined ){
@@ -17,7 +24,9 @@ aproxControllers.controller('NavCtl', ['$scope', function($scope){
   }
 }]);
 
-aproxControllers.controller('RemoteListCtl', ['$scope', 'RemoteSvc', 'StoreUtilSvc', function($scope, RemoteSvc, StoreUtilSvc) {
+aproxControllers.controller('RemoteListCtl', ['$scope', '$location', 'RemoteSvc', 'StoreUtilSvc', 'ControlSvc', function($scope, $location, RemoteSvc, StoreUtilSvc, ControlSvc) {
+    ControlSvc.addListingControlHrefs($scope, $location);
+  
     $scope.listing = RemoteSvc.resource.query({}, function(listing){
       for(var i=0; i<listing.items.length; i++){
         var item = listing.items[i];
@@ -117,7 +126,11 @@ aproxControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location',
 
 }]);
 
-aproxControllers.controller('HostedListCtl', ['$scope', 'HostedSvc', 'StoreUtilSvc', function($scope, HostedSvc, StoreUtilSvc) {
+aproxControllers.controller('HostedListCtl', ['$scope', '$location', 'HostedSvc', 'StoreUtilSvc', 'ControlSvc', function($scope, $location, HostedSvc, StoreUtilSvc, ControlSvc) {
+    ControlSvc.addListingControlHrefs($scope, $location);
+    
+    $scope.hostedOptionLegend = StoreUtilSvc.hostedOptionLegend();
+  
     $scope.listing = HostedSvc.resource.query({}, function(listing){
       for(var i=0; i<listing.items.length; i++){
         var item = listing.items[i];
@@ -194,16 +207,50 @@ aproxControllers.controller('HostedCtl', ['$scope', '$routeParams', '$location',
   }
 }]);
 
-aproxControllers.controller('GroupListCtl', ['$scope', 'GroupSvc', 'StoreUtilSvc', function($scope, GroupSvc, StoreUtilSvc) {
+aproxControllers.controller('GroupListCtl', ['$scope', '$location', 'GroupSvc', 'StoreUtilSvc', 'ControlSvc', function($scope, $location, GroupSvc, StoreUtilSvc, ControlSvc) {
+    ControlSvc.addListingControlHrefs($scope, $location);
+    
     $scope.listing = GroupSvc.resource.query({}, function(listing){
       for(var i=0; i<listing.items.length; i++){
         var item = listing.items[i];
         item.detailHref = StoreUtilSvc.detailHref(item.key);
         item.storeHref = StoreUtilSvc.storeHref(item.key);
+        item.type = StoreUtilSvc.typeFromKey( item.key );
         item.name = StoreUtilSvc.nameFromKey(item.key);
         item.description = StoreUtilSvc.defaultDescription(item.description);
+        
+        item.display = false;
+        
+        var oldConstituents = item.constituents;
+        item.constituents = [oldConstituents.length];
+        for( var j=0; j<oldConstituents.length; j++ ){
+          var key = oldConstituents[j];
+          var c = {
+              key: oldConstituents[j],
+              detailHref: StoreUtilSvc.detailHref(key),
+              storeHref: StoreUtilSvc.storeHref(key),
+              type: StoreUtilSvc.typeFromKey( key ),
+              name: StoreUtilSvc.nameFromKey(key),
+          }
+          item.constituents[j] = c;
+        }
       }
     });
+    
+    $scope.displayConstituents = function(item){
+      item.display = true;
+    };
+    
+    $scope.hideConstituents = function(item){
+      item.display = false;
+    };
+    
+    $scope.hideAll = function(){
+      for(var i=0; i<$scope.listing.items.length; i++){
+        var item = $scope.listing.items[i];
+        $scope.hideConstituents(item);
+      }
+    }
 
     $scope.storeUtils = StoreUtilSvc;
     $scope.orderProp = 'key';

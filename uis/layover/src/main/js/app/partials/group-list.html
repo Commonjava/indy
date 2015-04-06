@@ -1,7 +1,8 @@
 <div class="container-fluid" ng-controller="GroupListCtl">
     <div class="control-panel">
         <div class="cp-row">
-            <a class="new-button cp-button" href="#/group/new">New...</a>
+            <button ng-click="createNew()">New...</button>
+            <button ng-click="hideAll()">Hide All</button>
         </div>
       <div class="cp-row">
         Search: <input ng-model="query" />
@@ -21,22 +22,40 @@
     <div class="content-panel">
       <div class="store-listing">
         <div ng-repeat="store in listing.items | filter:query | orderBy:orderProp" class="list-item store-listing-item listing-item-start">
-          <div class="fieldset-caption">
-              <a href="#/group/view/{{storeUtils.nameFromKey(store.key)}}">{{storeUtils.nameFromKey(store.key)}}</a>
-          </div>
-          <div class="fieldset">
-            <div class="two-col">
-              <div class="field left-half">
-                <label>Local URL:</label>
-                <a href="{{storeUtils.storeHref(store.key)}}" target="_new">{{storeUtils.storeHref(store.key)}}</a>
-              </div>
-              <div class="options-field field right-half">
-                <label>Constituents:</label>
-                <span class="option" title="{{store.constituents.join('\n')}}">(mouse over to view)</span>
-              </div>
-            </div>
-          <div class="description field"><ap-listing-description></ap-listing-description></div>
-          </div>
+					<div class="fieldset-caption">
+					    <a href="#/group/view/{{store.name}}">{{store.name}}</a>
+					</div>
+					<div class="fieldset">
+					  <div class="two-col">
+					    <div class="field left-half">
+					      <label>Local URL:</label>
+					      <a href="{{store.storeHref}}" target="_new">{{store.storeHref}}</a>
+					    </div>
+					    <div class="options-field field right-half">
+                <div class="inline-label">
+                  {{store.constituents.length}} Constituent(s) [
+                  <!-- span class="option">
+                    <a href="" ng-if="!store.display" ng-click="displayConstituents(store)">View</a>
+                    <a href="" ng-if="store.display" ng-click="hideConstituents(store)">Hide</a>
+                  </span -->
+                  <span class="option">
+                    <a href="" ng-if="!store.display" ng-click="displayConstituents(store)">+</a>
+                    <a href="" ng-if="store.display" ng-click="hideConstituents(store)">-</a>
+                  </span>
+                  ]
+                </div>
+					      <ol ng-if="store.display" class="content-panel item-expanded subsection">
+					        <li ng-repeat="item in store.constituents">
+					          <a href="#/{{item.type}}/view/{{item.name}}">{{item.key}}</a>
+					          <div ng-if="item.type == 'remote'" class="subfields">
+					           <span class="description field">(Remote URL: <a target="_new" href="{{item.storeHref}}">{{item.storeHref}}</a>)</span>
+					          </div>
+					        </li>
+					      </ol>
+					    </div>
+					  </div>
+					  <div class="description field"><ap-listing-description></ap-listing-description></div>
+					</div>
         </div>
       </div>
     </div>
