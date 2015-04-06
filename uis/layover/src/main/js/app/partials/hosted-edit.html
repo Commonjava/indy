@@ -26,7 +26,7 @@
       <div class="fieldset-caption">Capabilities</div>
       <div class="fieldset">
         <div class="detail-field">
-          <span>{{allowUploads(store) | checkmark}}</span>
+          <span>{{(store.allow_releases || store.allow_snapshots) | checkmark}}</span>
           <label>Allow Uploads</label>
         </div>
         <div class="detail-field">

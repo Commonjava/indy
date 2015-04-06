@@ -53,7 +53,7 @@ aproxControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location',
   $scope.controls = function( store ){
     $scope.store = store;
     
-    ControlSvc.addControlHrefs($scope, 'remote', $scope.raw.name, $scope.mode);
+    ControlSvc.addControlHrefs($scope, 'remote', $scope.raw.name, $scope.mode, $location);
     ControlSvc.addStoreControls($scope, $location, 'remote', RemoteSvc, StoreUtilSvc, {
       save: function(scope){
         if ( scope.is_passthrough ){
@@ -155,18 +155,18 @@ aproxControllers.controller('HostedCtl', ['$scope', '$routeParams', '$location',
     snapshot_timeout_seconds: '',
   };
   
-  $scope.showSnapshotTimeout = function(store){
-    return store.allow_snapshots;
+  $scope.showSnapshotTimeout = function(){
+    return $scope.store.allow_snapshots;
   };
   
-  $scope.allowUploads = function(store){
-    return store.allow_snapshots || store.allow_releases;
+  $scope.allowUploads = function(){
+    return $scope.store.allow_snapshots || $scope.store.allow_releases;
   };
   
   $scope.controls = function( store ){
     $scope.store = store;
     
-    ControlSvc.addControlHrefs($scope, 'hosted', $scope.raw.name, $scope.mode);
+    ControlSvc.addControlHrefs($scope, 'hosted', $scope.raw.name, $scope.mode, $location);
     ControlSvc.addStoreControls($scope, $location, 'hosted', HostedSvc, StoreUtilSvc, {
       save: function(scope){
         if (!$scope.store.allow_snapshots){
@@ -183,6 +183,7 @@ aproxControllers.controller('HostedCtl', ['$scope', '$routeParams', '$location',
     HostedSvc.resource.get({name: $routeParams.name}, function(store){
       $scope.raw.name = $scope.storeUtils.nameFromKey(store.key);
       $scope.raw.snapshotTimeoutSeconds = StoreUtilSvc.secondsToDuration(store.snapshotTimeoutSeconds);
+      
       
       $scope.controls( store );
     });
@@ -273,7 +274,7 @@ aproxControllers.controller('GroupCtl', ['$scope', '$routeParams', '$location', 
       $scope.raw.available = StoreUtilSvc.sortEndpoints( listing.items );
     });
 
-    ControlSvc.addControlHrefs($scope, 'group', $scope.raw.name, $scope.mode);
+    ControlSvc.addControlHrefs($scope, 'group', $scope.raw.name, $scope.mode, $location);
     ControlSvc.addStoreControls($scope, $location, 'group', GroupSvc, StoreUtilSvc);
   };
 

@@ -22,7 +22,7 @@ aproxServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
         callback(scope.raw.changelog);
       }, 
       function(data){
-        console.log(scope.confirmLabel + ": cancelled");
+        console.log("cancelled");
       });
     },
     
@@ -30,14 +30,19 @@ aproxServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
       scope.createNew = function(){
         location.path(location.path() + '/new');
       }
-      
     },
     
-    addControlHrefs: function(scope, storeType, storeName, mode){
-      scope.raw.backHref='#/' + storeType;
-      if (mode == 'view'){
-        scope.raw.newHref='#/' + storeType + '/new';
-        scope.raw.editHref='#/' + storeType + '/edit/' + storeName;
+    addControlHrefs: function(scope, storeType, storeName, mode, location){
+      scope.back = function(){
+        location.path('/' + storeType);
+      }
+      
+      scope.edit = function(){
+        location.path('/' + storeType + '/edit/' + storeName);
+      }
+      
+      scope.createNew = function(){
+        location.path('/' + storeType + '/new');
       }
     },
     
