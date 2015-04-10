@@ -12,6 +12,7 @@ package org.commonjava.aprox.model.core.dto;
 
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.StoreKey;
+import org.commonjava.aprox.model.core.StoreType;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -22,12 +23,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public final class EndpointView
     implements Comparable<EndpointView>
 {
-    private final String name;
+    private String name;
 
-    private final String type;
+    private String type;
 
     @JsonProperty( "resource_uri" )
-    private final String resourceUri;
+    private String resourceUri;
+
+    public EndpointView()
+    {
+    }
 
     public EndpointView( final ArtifactStore store, final String resourceUri )
     {
@@ -51,9 +56,19 @@ public final class EndpointView
         return type;
     }
 
-    public final String getResourceURI()
+    public final String getResourceUri()
     {
         return resourceUri;
+    }
+
+    public StoreType getStoreType()
+    {
+        return StoreType.get( type );
+    }
+
+    public StoreKey getStoreKey()
+    {
+        return new StoreKey( StoreType.get( type ), name );
     }
 
     public final String getKey()
@@ -104,5 +119,20 @@ public final class EndpointView
             return false;
         }
         return true;
+    }
+
+    public void setResourceUri( final String resourceUri )
+    {
+        this.resourceUri = resourceUri;
+    }
+
+    public void setName( final String name )
+    {
+        this.name = name;
+    }
+
+    public void setType( final String type )
+    {
+        this.type = type;
     }
 }

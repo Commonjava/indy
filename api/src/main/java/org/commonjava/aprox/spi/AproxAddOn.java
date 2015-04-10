@@ -1,6 +1,6 @@
 package org.commonjava.aprox.spi;
 
-import org.commonjava.aprox.spi.model.AproxAddOnID;
+import org.commonjava.aprox.model.spi.AproxAddOnID;
 
 /**
  * Component that describes an add-on to AProx. This is currently most useful when the add-on provides UI elements, and is the only way to get new

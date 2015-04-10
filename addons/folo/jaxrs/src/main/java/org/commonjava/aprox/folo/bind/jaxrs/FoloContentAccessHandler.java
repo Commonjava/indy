@@ -31,6 +31,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.AproxWorkflowException;
+import org.commonjava.aprox.bind.jaxrs.AproxDeployment;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.bind.jaxrs.util.JaxRsRequestHelper;
 import org.commonjava.aprox.core.bind.jaxrs.ContentAccessHandler;
@@ -62,6 +63,8 @@ import org.slf4j.LoggerFactory;
 public class FoloContentAccessHandler
     implements AproxResources
 {
+
+    private static final String BASE_PATH = AproxDeployment.API_PREFIX + "/folo/track";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -144,9 +147,9 @@ public class FoloContentAccessHandler
         try
         {
             final String baseUri = uriInfo.getBaseUriBuilder()
-                                          .path( getClass() )
-                                          .path( path )
-                                          .build( id, type, name )
+                                          .path( BASE_PATH )
+                                          .path( id )
+                                          .build()
                                           .toString();
 
             if ( path == null || path.equals( "" ) || path.endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )
@@ -205,9 +208,9 @@ public class FoloContentAccessHandler
         try
         {
             final String baseUri = uriInfo.getBaseUriBuilder()
-                                          .path( getClass() )
-                                          .path( path )
-                                          .build( id, type, name )
+                                          .path( BASE_PATH )
+                                          .path( id )
+                                          .build()
                                           .toString();
 
             if ( path == null || path.equals( "" ) || path.endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )

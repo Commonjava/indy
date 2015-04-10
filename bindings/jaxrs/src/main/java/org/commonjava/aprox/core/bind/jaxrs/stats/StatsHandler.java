@@ -26,6 +26,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.AproxWorkflowException;
+import org.commonjava.aprox.bind.jaxrs.AproxDeployment;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.core.ctl.StatsController;
 import org.commonjava.aprox.model.core.dto.EndpointViewListing;
@@ -97,7 +98,7 @@ public class StatsHandler
         try
         {
             final String baseUri = uriInfo.getBaseUriBuilder()
-                                          .path( "api" )
+                                          .path( AproxDeployment.API_PREFIX )
                                           .build()
                                           .toString();
 

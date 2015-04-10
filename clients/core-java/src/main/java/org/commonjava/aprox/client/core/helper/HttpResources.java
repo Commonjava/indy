@@ -40,8 +40,8 @@ public class HttpResources
 
     private InputStream responseEntityStream;
 
-    public HttpResources( final CloseableHttpClient client, final AbstractExecutionAwareRequest request,
-                          final CloseableHttpResponse response )
+    public HttpResources( final AbstractExecutionAwareRequest request, final CloseableHttpResponse response,
+                          final CloseableHttpClient client )
     {
         this.client = client;
         this.request = request;

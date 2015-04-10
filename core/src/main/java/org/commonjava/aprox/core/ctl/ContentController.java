@@ -41,6 +41,7 @@ import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.model.core.dto.DirectoryListingDTO;
+import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.subsys.template.AproxGroovyException;
 import org.commonjava.aprox.subsys.template.TemplatingEngine;
 import org.commonjava.aprox.util.ApplicationContent;
@@ -49,6 +50,8 @@ import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -56,6 +59,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @ApplicationScoped
 public class ContentController
 {
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public static final String LISTING_HTML_FILE = "index.html";
 
@@ -291,10 +296,17 @@ public class ContentController
         final List<String> sources = new ArrayList<String>();
         for ( final ConcreteResource res : listed )
         {
-            final String uri = normalize( res.getLocation()
-                                             .getUri(), path );
+            // KeyedLocation is all we use in AProx.
+            logger.debug( "Formatting sources URL for: {}", res );
+            final KeyedLocation kl = (KeyedLocation) res.getLocation();
+
+            final String uri = uriFormatter.formatAbsolutePathTo( serviceUrl, kl.getKey()
+                                                                              .getType()
+                                                                                .singularEndpointName(), kl.getKey()
+                                                                                                           .getName() );
             if ( !sources.contains( uri ) )
             {
+                logger.debug( "adding source URI: '{}'", uri );
                 sources.add( uri );
             }
         }

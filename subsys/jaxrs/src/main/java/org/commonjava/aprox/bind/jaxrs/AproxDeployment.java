@@ -41,6 +41,8 @@ public class AproxDeployment
     extends Application
 {
 
+    public static final String API_PREFIX = "api";
+
     private static Set<Class<?>> PROVIDER_CLASSES;
 
     static

@@ -39,5 +39,9 @@
       <groupId>org.commonjava.aprox.boot</groupId>
       <artifactId>aprox-booter-api</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.jsoup</groupId>
+      <artifactId>jsoup</artifactId>
+    </dependency>
   </dependencies>
 </project>

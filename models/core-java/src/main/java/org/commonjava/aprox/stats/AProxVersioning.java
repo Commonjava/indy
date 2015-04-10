@@ -1,19 +1,28 @@
 package org.commonjava.aprox.stats;
 
+import javax.enterprise.inject.Alternative;
+import javax.inject.Named;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public final class AProxVersioning
+@Alternative
+@Named
+public class AProxVersioning
 {
 
-    private final String version;
+    private String version;
 
-    private final String builder;
+    private String builder;
 
     @JsonProperty( "commit-id" )
-    private final String commitId;
+    private String commitId;
 
-    private final String timestamp;
+    private String timestamp;
+
+    public AProxVersioning()
+    {
+    }
 
     @JsonCreator
     public AProxVersioning( @JsonProperty( value = "version" ) final String version,
@@ -45,6 +54,26 @@ public final class AProxVersioning
     public String getTimestamp()
     {
         return timestamp;
+    }
+
+    public void setVersion( final String version )
+    {
+        this.version = version;
+    }
+
+    public void setBuilder( final String builder )
+    {
+        this.builder = builder;
+    }
+
+    public void setCommitId( final String commitId )
+    {
+        this.commitId = commitId;
+    }
+
+    public void setTimestamp( final String timestamp )
+    {
+        this.timestamp = timestamp;
     }
 
 }

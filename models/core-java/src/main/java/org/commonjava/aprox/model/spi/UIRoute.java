@@ -1,4 +1,4 @@
-package org.commonjava.aprox.spi.model;
+package org.commonjava.aprox.model.spi;
 
 /**
  * Describes a "route" in the UI, mainly useful for add-ons to register UI additions. This specifies a route (path) and template href, which corresponds

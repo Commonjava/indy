@@ -11,6 +11,7 @@
 package org.commonjava.aprox.model.core.dto;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -24,9 +25,14 @@ import java.util.List;
  */
 
 public class EndpointViewListing
+    implements Iterable<EndpointView>
 {
 
-    private final List<EndpointView> items;
+    private List<EndpointView> items;
+
+    public EndpointViewListing()
+    {
+    }
 
     public EndpointViewListing( final List<EndpointView> items )
     {
@@ -37,6 +43,18 @@ public class EndpointViewListing
     public List<EndpointView> getItems()
     {
         return items;
+    }
+
+    @Override
+    public Iterator<EndpointView> iterator()
+    {
+        return items == null ? Collections.<EndpointView> emptySet()
+                                          .iterator() : items.iterator();
+    }
+
+    public void setItems( final List<EndpointView> items )
+    {
+        this.items = items;
     }
 
 }

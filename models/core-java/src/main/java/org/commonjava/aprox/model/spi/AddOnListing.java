@@ -8,7 +8,7 @@
  * Contributors:
  *     Red Hat, Inc. - initial API and implementation
  ******************************************************************************/
-package org.commonjava.aprox.spi.model;
+package org.commonjava.aprox.model.spi;
 
 import java.util.Collections;
 import java.util.List;
@@ -24,7 +24,11 @@ import java.util.List;
 public class AddOnListing
 {
 
-    private final List<AproxAddOnID> items;
+    private List<AproxAddOnID> items;
+
+    public AddOnListing()
+    {
+    }
 
     public AddOnListing( final List<AproxAddOnID> addOnNames )
     {
@@ -35,6 +39,11 @@ public class AddOnListing
     public List<AproxAddOnID> getItems()
     {
         return items;
+    }
+
+    public void setItems( final List<AproxAddOnID> items )
+    {
+        this.items = items;
     }
 
 }

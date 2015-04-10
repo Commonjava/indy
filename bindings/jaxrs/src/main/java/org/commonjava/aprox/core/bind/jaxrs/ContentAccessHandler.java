@@ -31,6 +31,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.AproxWorkflowException;
+import org.commonjava.aprox.bind.jaxrs.AproxDeployment;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.bind.jaxrs.util.JaxRsRequestHelper;
 import org.commonjava.aprox.core.bind.jaxrs.util.TransferStreamingOutput;
@@ -147,10 +148,10 @@ public class ContentAccessHandler
         try
         {
             final String baseUri = uriInfo.getBaseUriBuilder()
-                                          .path( getClass() )
-                                          .path( path )
-                                          .build( type, name )
+                                          .path( AproxDeployment.API_PREFIX )
+                                          .build()
                                           .toString();
+
 
             if ( path == null || path.equals( "" ) || path.endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )
             {
@@ -209,9 +210,8 @@ public class ContentAccessHandler
         try
         {
             final String baseUri = uriInfo.getBaseUriBuilder()
-                                          .path( getClass() )
-                                          .path( path )
-                                          .build( type, name )
+                                          .path( AproxDeployment.API_PREFIX )
+                                          .build()
                                           .toString();
 
             if ( path == null || path.equals( "" ) || path.endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )

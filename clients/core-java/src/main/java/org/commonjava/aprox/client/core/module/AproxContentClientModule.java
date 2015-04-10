@@ -18,26 +18,39 @@ public class AproxContentClientModule
     extends AproxClientModule
 {
 
-    public String contentUrl( final StoreType type, final String name, final String path )
+    public String contentUrl( final StoreType type, final String name, final String... path )
     {
-        return UrlUtils.buildUrl( http.getBaseUrl(), type.singularEndpointName(), name, path );
+        return UrlUtils.buildUrl( http.getBaseUrl(), aggregatePathParts( type, name, path ) );
     }
 
-    public String contentUrl( final StoreKey key, final String path )
+    private String[] aggregatePathParts( final StoreKey key, final String... path )
     {
-        return UrlUtils.buildUrl( http.getBaseUrl(), key.getType()
-                                                        .singularEndpointName(), key.getName(), path );
+        return aggregatePathParts( key.getType(), key.getName(), path );
     }
 
-    public String contentPath( final StoreType type, final String name, final String path )
+    private String[] aggregatePathParts( final StoreType type, final String name, final String... path )
     {
-        return UrlUtils.buildUrl( type.singularEndpointName(), name, path );
+        final String[] parts = new String[path.length + 2];
+        parts[0] = type.singularEndpointName();
+        parts[1] = name;
+        System.arraycopy( path, 0, parts, 2, path.length );
+
+        return parts;
     }
 
-    public String contentPath( final StoreKey key, final String path )
+    public String contentUrl( final StoreKey key, final String... path )
     {
-        return UrlUtils.buildUrl( key.getType()
-                                     .singularEndpointName(), key.getName(), path );
+        return UrlUtils.buildUrl( http.getBaseUrl(), aggregatePathParts( key, path ) );
+    }
+
+    public String contentPath( final StoreType type, final String name, final String... path )
+    {
+        return UrlUtils.buildUrl( null, aggregatePathParts( type, name, path ) );
+    }
+
+    public String contentPath( final StoreKey key, final String... path )
+    {
+        return UrlUtils.buildUrl( null, aggregatePathParts( key, path ) );
     }
 
     public DirectoryListingDTO listContents( final StoreType type, final String name, final String path )

@@ -1,4 +1,4 @@
-package org.commonjava.aprox.spi.model;
+package org.commonjava.aprox.model.spi;
 
 /**
  * Describes a section of the UI, to allow add-ons to auto-register UI additions. This corresponds to a menu title (name) and a UI route (path) for

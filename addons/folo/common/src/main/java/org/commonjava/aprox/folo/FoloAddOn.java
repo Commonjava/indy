@@ -1,7 +1,7 @@
 package org.commonjava.aprox.folo;
 
+import org.commonjava.aprox.model.spi.AproxAddOnID;
 import org.commonjava.aprox.spi.AproxAddOn;
-import org.commonjava.aprox.spi.model.AproxAddOnID;
 
 public class FoloAddOn
     implements AproxAddOn

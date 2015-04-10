@@ -1,4 +1,4 @@
-package org.commonjava.aprox.spi.model;
+package org.commonjava.aprox.model.spi;
 
 import java.util.ArrayList;
 import java.util.List;

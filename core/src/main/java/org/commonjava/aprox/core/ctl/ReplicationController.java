@@ -125,12 +125,12 @@ public class ReplicationController
                             final StoreKey sk = new StoreKey( StoreType.remote, key );
                             if ( overwrite || !data.hasArtifactStore( sk ) )
                             {
-                                final RemoteRepository repo = new RemoteRepository( key, view.getResourceURI() );
+                                final RemoteRepository repo = new RemoteRepository( key, view.getResourceUri() );
                                 setProxyAttributes( repo, action );
 
                                 data.storeRemoteRepository( repo, new ChangeSummary( user,
                                                                                      "REPLICATION: Proxying remote aprox repository: "
-                                                                                         + view.getResourceURI() ) );
+                                                                                         + view.getResourceUri() ) );
                                 replicated.add( repo.getKey() );
                             }
                         }

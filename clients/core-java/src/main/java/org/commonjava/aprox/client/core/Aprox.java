@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.commonjava.aprox.client.core.module.AproxContentClientModule;
+import org.commonjava.aprox.client.core.module.AproxStatsClientModule;
 import org.commonjava.aprox.client.core.module.AproxStoresClientModule;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.stats.AProxVersioning;
@@ -28,6 +29,7 @@ public class Aprox
         final Set<AproxClientModule> standardModules = new HashSet<>();
         standardModules.add( new AproxStoresClientModule() );
         standardModules.add( new AproxContentClientModule() );
+        standardModules.add( new AproxStatsClientModule() );
 
         for ( final AproxClientModule module : standardModules )
         {
@@ -100,6 +102,12 @@ public class Aprox
         throws AproxClientException
     {
         return module( AproxContentClientModule.class );
+    }
+
+    public AproxStatsClientModule stats()
+        throws AproxClientException
+    {
+        return module( AproxStatsClientModule.class );
     }
 
     public <T extends AproxClientModule> T module( final Class<T> type )

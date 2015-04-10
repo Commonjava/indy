@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.http.Header;
+import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
@@ -104,7 +105,7 @@ public class AproxClientHttp
 
         try
         {
-            request = newHead( buildUrl( baseUrl, path ) );
+            request = newJsonHead( buildUrl( baseUrl, path ) );
             client = newClient();
             response = client.execute( request );
 
@@ -155,7 +156,7 @@ public class AproxClientHttp
         try
         {
             client = newClient();
-            request = newGet( buildUrl( baseUrl, path ) );
+            request = newJsonGet( buildUrl( baseUrl, path ) );
             response = client.execute( request );
 
             final StatusLine sl = response.getStatusLine();
@@ -196,7 +197,7 @@ public class AproxClientHttp
         try
         {
             client = newClient();
-            request = newGet( buildUrl( baseUrl, path ) );
+            request = newJsonGet( buildUrl( baseUrl, path ) );
             response = client.execute( request );
             final StatusLine sl = response.getStatusLine();
             if ( sl.getStatusCode() != 200 )
@@ -244,7 +245,7 @@ public class AproxClientHttp
             final CloseableHttpClient client = newClient();
 
             response = client.execute( req );
-            return new HttpResources( client, req, response );
+            return new HttpResources( req, response, client );
         }
         catch ( final IOException e )
         {
@@ -300,7 +301,7 @@ public class AproxClientHttp
                     }
                 }
             } );
-            
+
         }
         catch ( final IOException e )
         {
@@ -325,7 +326,7 @@ public class AproxClientHttp
         try
         {
             client = newClient();
-            put = newPut( buildUrl( baseUrl, path ) );
+            put = newJsonPut( buildUrl( baseUrl, path ) );
 
             put.setEntity( new StringEntity( objectMapper.writeValueAsString( value ) ) );
 
@@ -369,7 +370,7 @@ public class AproxClientHttp
         try
         {
             client = newClient();
-            post = newPost( buildUrl( baseUrl, path ) );
+            post = newJsonPost( buildUrl( baseUrl, path ) );
 
             post.setEntity( new StringEntity( objectMapper.writeValueAsString( value ) ) );
 
@@ -396,7 +397,7 @@ public class AproxClientHttp
         }
     }
 
-    private boolean validResponseCode( final int statusCode, final int[] responseCodes )
+    public boolean validResponseCode( final int statusCode, final int[] responseCodes )
     {
         for ( final int code : responseCodes )
         {
@@ -426,7 +427,7 @@ public class AproxClientHttp
         try
         {
             client = newClient();
-            post = newPost( buildUrl( baseUrl, path ) );
+            post = newJsonPost( buildUrl( baseUrl, path ) );
 
             post.setEntity( new StringEntity( objectMapper.writeValueAsString( value ) ) );
 
@@ -456,7 +457,7 @@ public class AproxClientHttp
     @Override
     public void close()
     {
-        logger.info("Shutting down aprox client HTTP manager");
+        logger.info( "Shutting down aprox client HTTP manager" );
         connectionManager.reallyShutdown();
     }
 
@@ -552,7 +553,7 @@ public class AproxClientHttp
         try
         {
             client = newClient();
-            request = newHead( buildUrl( baseUrl, path ) );
+            request = newJsonHead( buildUrl( baseUrl, path ) );
 
             response = client.execute( request );
             final StatusLine sl = response.getStatusLine();
@@ -577,12 +578,22 @@ public class AproxClientHttp
         }
     }
 
+    public void cleanup( final HttpRequest request, final HttpResponse response, final CloseableHttpClient client )
+    {
+        cleanupResources( request, response, client );
+    }
+
+    public String toAproxUrl( final String path )
+    {
+        return buildUrl( baseUrl, path );
+    }
+
     public String getBaseUrl()
     {
         return baseUrl;
     }
 
-    private CloseableHttpClient newClient()
+    public CloseableHttpClient newClient()
     {
         //        return HttpClients.createDefault();
         return HttpClients.custom()
@@ -590,52 +601,52 @@ public class AproxClientHttp
                           .build();
     }
 
-    private HttpGet newRawGet( final String url )
+    public HttpGet newRawGet( final String url )
     {
         final HttpGet req = new HttpGet( url );
         return req;
     }
 
-    private HttpGet newGet( final String url )
+    public HttpGet newJsonGet( final String url )
     {
         final HttpGet req = new HttpGet( url );
         addJsonHeaders( req );
         return req;
     }
 
-    private HttpHead newHead( final String url )
+    public HttpHead newJsonHead( final String url )
     {
         final HttpHead req = new HttpHead( url );
         addJsonHeaders( req );
         return req;
     }
 
-    private void addJsonHeaders( final HttpUriRequest req )
+    public void addJsonHeaders( final HttpUriRequest req )
     {
         req.addHeader( "Accept", "application/json" );
         req.addHeader( "Content-Type", "application/json" );
     }
 
-    private HttpDelete newDelete( final String url )
+    public HttpDelete newDelete( final String url )
     {
         final HttpDelete req = new HttpDelete( url );
         return req;
     }
 
-    private HttpPut newPut( final String url )
+    public HttpPut newJsonPut( final String url )
     {
         final HttpPut req = new HttpPut( url );
         addJsonHeaders( req );
         return req;
     }
 
-    private HttpPut newRawPut( final String url )
+    public HttpPut newRawPut( final String url )
     {
         final HttpPut req = new HttpPut( url );
         return req;
     }
 
-    private HttpPost newPost( final String url )
+    public HttpPost newJsonPost( final String url )
     {
         final HttpPost req = new HttpPost( url );
         addJsonHeaders( req );

@@ -68,4 +68,26 @@ public class AproxFoloContentClientModule
         }
     }
 
+    public String contentUrl( final String trackingId, final StoreType type, final String name, final String... path )
+    {
+        return UrlUtils.buildUrl( http.getBaseUrl(), aggregatePathParts( trackingId, type, name, path ) );
+    }
+
+    public String contentPath( final String trackingId, final StoreType type, final String name, final String... path )
+    {
+        return UrlUtils.buildUrl( null, aggregatePathParts( trackingId, type, name, path ) );
+    }
+
+    private String[] aggregatePathParts( final String trackingId, final StoreType type, final String name,
+                                         final String... path )
+    {
+        final String[] parts = new String[path.length + 3];
+        parts[0] = trackingId;
+        parts[1] = type.singularEndpointName();
+        parts[2] = name;
+        System.arraycopy( path, 0, parts, 2, path.length );
+
+        return parts;
+    }
+
 }
