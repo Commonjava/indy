@@ -90,6 +90,40 @@ public class RepositoryResource
         return response;
     }
 
+    @Path( "/paths" )
+    @POST
+    @Consumes( application_json )
+    @Produces( application_json )
+    public Response getPaths( final @Context UriInfo uriInfo, final @Context HttpServletRequest request )
+    {
+        Response response = null;
+        try
+        {
+            final String baseUri = uriInfo.getAbsolutePathBuilder()
+                                          .path( "api" )
+                                          .build()
+                                          .toString();
+
+            final String json = controller.getPaths( request.getInputStream(), new JaxRsUriFormatter() );
+
+            if ( json == null )
+            {
+                response = Response.noContent()
+                                   .build();
+            }
+            else
+            {
+                response = formatOkResponseWithJsonEntity( json );
+            }
+        }
+        catch ( final AproxWorkflowException | IOException e )
+        {
+            logger.error( e.getMessage(), e );
+            response = formatResponse( e, true );
+        }
+        return response;
+    }
+
     @Path( "/downlog" )
     @POST
     @Consumes( application_json )
