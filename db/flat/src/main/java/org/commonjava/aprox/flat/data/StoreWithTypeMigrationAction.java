@@ -146,7 +146,7 @@ public class StoreWithTypeMigrationAction
     }
 
     @Override
-    public int getPriority()
+    public int getMigrationPriority()
     {
         return 86;
     }

@@ -708,9 +708,15 @@ public class ScheduleManager
     }
 
     @Override
-    public int getPriority()
+    public int getBootPriority()
     {
-        return 80;
+        return 20;
+    }
+
+    @Override
+    public int getShutdownPriority()
+    {
+        return 95;
     }
 
     @Override

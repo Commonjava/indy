@@ -41,7 +41,7 @@ public class FoloLifecycleParticipant
     }
 
     @Override
-    public int getPriority()
+    public int getStartupPriority()
     {
         return 40;
     }

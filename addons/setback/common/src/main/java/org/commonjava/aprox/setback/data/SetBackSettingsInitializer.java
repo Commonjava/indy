@@ -83,7 +83,7 @@ public class SetBackSettingsInitializer
     }
 
     @Override
-    public int getPriority()
+    public int getStartupPriority()
     {
         return 40;
     }

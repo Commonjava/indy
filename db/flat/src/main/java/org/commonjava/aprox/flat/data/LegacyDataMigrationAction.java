@@ -124,7 +124,7 @@ public class LegacyDataMigrationAction
     }
 
     @Override
-    public int getPriority()
+    public int getMigrationPriority()
     {
         return 85;
     }

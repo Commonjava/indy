@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -52,9 +53,15 @@ public class DatabaseLifecycleActions
     }
 
     @Override
-    public int getPriority()
+    public int getBootPriority()
     {
         return 95;
+    }
+
+    @Override
+    public int getShutdownPriority()
+    {
+        return 15;
     }
 
     @Override
@@ -276,6 +283,16 @@ public class DatabaseLifecycleActions
             {
                 logger.debug( "Failed to close database connection: " + url, e );
             }
+        }
+
+        try
+        {
+            final Driver driver = DriverManager.getDriver( url );
+            DriverManager.deregisterDriver( driver );
+        }
+        catch ( final SQLException e )
+        {
+            logger.debug( "Failed to deregister database driver for: " + url, e );
         }
     }
 

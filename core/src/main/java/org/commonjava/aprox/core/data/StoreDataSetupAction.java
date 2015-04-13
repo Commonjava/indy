@@ -32,7 +32,7 @@ public class StoreDataSetupAction
     }
 
     @Override
-    public int getPriority()
+    public int getMigrationPriority()
     {
         return 95;
     }

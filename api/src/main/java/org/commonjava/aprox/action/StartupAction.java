@@ -23,4 +23,10 @@ public interface StartupAction
     void start()
         throws AproxLifecycleException;
 
+    /**
+     * Used to sort the actions, with highest priority executing first.
+     * Priority should generally be between 1-100.
+     */
+    int getStartupPriority();
+
 }

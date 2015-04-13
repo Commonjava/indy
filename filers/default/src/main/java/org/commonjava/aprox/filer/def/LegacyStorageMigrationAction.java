@@ -86,7 +86,7 @@ public class LegacyStorageMigrationAction
     }
 
     @Override
-    public int getPriority()
+    public int getMigrationPriority()
     {
         return 88;
     }
