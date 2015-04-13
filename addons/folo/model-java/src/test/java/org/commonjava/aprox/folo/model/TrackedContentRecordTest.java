@@ -7,9 +7,6 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Map;
 
-import org.commonjava.aprox.folo.model.AffectedStoreRecord;
-import org.commonjava.aprox.folo.model.TrackedContentRecord;
-import org.commonjava.aprox.folo.model.TrackingKey;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
@@ -103,10 +100,8 @@ public class TrackedContentRecordTest
     private TrackedContentRecord newRecord()
     {
         final String id = "adsfadsfadsfadsfads";
-        final StoreType type = StoreType.group;
-        final String name = "test-group";
 
-        final TrackingKey key = new TrackingKey( id, new StoreKey( type, name ) );
+        final TrackingKey key = new TrackingKey( id );
 
         return new TrackedContentRecord( key );
     }

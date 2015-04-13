@@ -54,8 +54,8 @@ public class AffectedStoreRecordTest
         final String name = "test-group";
 
         final AffectedStoreRecord record = new AffectedStoreRecord( new StoreKey( type, name ) );
-        record.add( "/path/one", StoreEffect.DONWLOAD );
-        record.add( "/path/two", StoreEffect.DONWLOAD );
+        record.add( "/path/one", StoreEffect.DOWNLOAD );
+        record.add( "/path/two", StoreEffect.DOWNLOAD );
 
         final String json = mapper.writeValueAsString( record );
         System.out.println( json );
@@ -98,7 +98,7 @@ public class AffectedStoreRecordTest
         final String name = "test-group";
 
         final AffectedStoreRecord record = new AffectedStoreRecord( new StoreKey( type, name ) );
-        record.add( "/path/one", StoreEffect.DONWLOAD );
+        record.add( "/path/one", StoreEffect.DOWNLOAD );
         record.add( "/path/two", StoreEffect.UPLOAD );
 
         final String json = mapper.writeValueAsString( record );
@@ -120,8 +120,8 @@ public class AffectedStoreRecordTest
         final String name = "test-group";
 
         final AffectedStoreRecord record = new AffectedStoreRecord( new StoreKey( type, name ) );
-        record.add( "/path/one", StoreEffect.DONWLOAD );
-        record.add( "/path/one", StoreEffect.DONWLOAD );
+        record.add( "/path/one", StoreEffect.DOWNLOAD );
+        record.add( "/path/one", StoreEffect.DOWNLOAD );
 
         assertThat( record.getDownloadedPaths()
                           .size(), equalTo( 1 ) );
@@ -150,8 +150,8 @@ public class AffectedStoreRecordTest
         final String name = "test-group";
 
         final AffectedStoreRecord record = new AffectedStoreRecord( new StoreKey( type, name ) );
-        record.add( "/path/two", StoreEffect.DONWLOAD );
-        record.add( "/path/one", StoreEffect.DONWLOAD );
+        record.add( "/path/two", StoreEffect.DOWNLOAD );
+        record.add( "/path/one", StoreEffect.DOWNLOAD );
 
         assertThat( record.getDownloadedPaths()
                           .iterator()
@@ -182,7 +182,7 @@ public class AffectedStoreRecordTest
         final String name = "test-group";
 
         final AffectedStoreRecord record = new AffectedStoreRecord( new StoreKey( type, name ) );
-        record.add( null, StoreEffect.DONWLOAD );
+        record.add( null, StoreEffect.DOWNLOAD );
 
         assertThat( record.getDownloadedPaths(), nullValue() );
     }

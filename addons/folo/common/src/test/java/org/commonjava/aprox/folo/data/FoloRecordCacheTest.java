@@ -11,8 +11,6 @@ import java.util.concurrent.TimeUnit;
 import org.commonjava.aprox.folo.conf.FoloConfig;
 import org.commonjava.aprox.folo.model.TrackedContentRecord;
 import org.commonjava.aprox.folo.model.TrackingKey;
-import org.commonjava.aprox.model.core.StoreKey;
-import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.subsys.datafile.DataFileManager;
 import org.commonjava.aprox.subsys.datafile.change.DataFileEventManager;
@@ -241,10 +239,8 @@ public class FoloRecordCacheTest
     private TrackingKey newKey()
     {
         final String id = "track";
-        final StoreType type = StoreType.group;
-        final String name = "test";
 
-        return new TrackingKey( id, new StoreKey( type, name ) );
+        return new TrackingKey( id );
     }
 
     private TrackedContentRecord newRecord()

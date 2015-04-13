@@ -50,7 +50,7 @@ public class AffectedStoreRecord
             return;
         }
 
-        if ( type == StoreEffect.DONWLOAD )
+        if ( type == StoreEffect.DOWNLOAD )
         {
             if ( downloadedPaths == null )
             {

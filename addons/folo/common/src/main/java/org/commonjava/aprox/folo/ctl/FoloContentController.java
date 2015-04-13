@@ -26,7 +26,8 @@ import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.maven.galley.model.Transfer;
-import org.commonjava.maven.galley.model.TransferOperation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Wrapper around {@link ContentController} that accepts {@link TrackingKey} in place of {@link StoreKey}, and uses the extra tracking ID it contains 
@@ -37,6 +38,8 @@ import org.commonjava.maven.galley.model.TransferOperation;
 @ApplicationScoped
 public class FoloContentController
 {
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private ContentController contentController;
@@ -80,15 +83,16 @@ public class FoloContentController
         return recordManager.hasRecord( key );
     }
 
-    public Transfer get( final TrackingKey tracking, final String path )
+    public Transfer get( final TrackingKey tracking, final StoreKey key, final String path )
         throws AproxWorkflowException
     {
-        final Transfer item = contentController.get( tracking.getTrackedStore(), path );
+        final Transfer item = contentController.get( key, path );
 
         final StoreKey affectedKey = LocationUtils.getKey( item );
         try
         {
-            recordManager.recordArtifact( tracking, affectedKey, path, StoreEffect.DONWLOAD );
+            logger.debug( "Tracking download of: {} from: {} in report: {}", path, key, tracking );
+            recordManager.recordArtifact( tracking, affectedKey, path, StoreEffect.DOWNLOAD );
         }
         catch ( final FoloContentException e )
         {
@@ -98,14 +102,15 @@ public class FoloContentController
         return item;
     }
 
-    public Transfer store( final TrackingKey tracking, final String path, final InputStream stream )
+    public Transfer store( final TrackingKey tracking, final StoreKey key, final String path, final InputStream stream )
         throws AproxWorkflowException
     {
-        final Transfer item = contentController.store( tracking.getTrackedStore(), path, stream );
+        final Transfer item = contentController.store( key, path, stream );
 
         final StoreKey affectedKey = LocationUtils.getKey( item );
         try
         {
+            logger.debug( "Tracking upload of: {} to: {} in report: {}", path, key, tracking );
             recordManager.recordArtifact( tracking, affectedKey, path, StoreEffect.UPLOAD );
         }
         catch ( final FoloContentException e )
@@ -121,11 +126,12 @@ public class FoloContentController
         return contentController.getContentType( path );
     }
 
-    public String renderListing( final String standardAccept, final TrackingKey tk, final String path,
+    public String renderListing( final String standardAccept, final TrackingKey tk, final StoreKey key,
+                                 final String path,
                                  final String baseUri, final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
-        return contentController.renderListing( standardAccept, tk.getTrackedStore(), path, baseUri, uriFormatter );
+        return contentController.renderListing( standardAccept, key, path, baseUri, uriFormatter );
     }
 
     public boolean isHtmlContent( final Transfer item )
@@ -134,22 +140,23 @@ public class FoloContentController
         return contentController.isHtmlContent( item );
     }
 
-    public Transfer getTransfer( final TrackingKey trackingKey, final String path, final TransferOperation op )
-        throws AproxWorkflowException
-    {
-        final Transfer item = contentController.getTransfer( trackingKey.getTrackedStore(), path, op );
-
-        final StoreKey affectedKey = LocationUtils.getKey( item );
-        try
-        {
-            recordManager.recordArtifact( trackingKey, affectedKey, path, StoreEffect.UPLOAD );
-        }
-        catch ( final FoloContentException e )
-        {
-            throw new AproxWorkflowException( "Failed to record upload: %s. Reason: %s", e, path, e.getMessage() );
-        }
-
-        return item;
-    }
+    //    public Transfer getTransfer( final TrackingKey tracking, final String path, final TransferOperation op )
+    //        throws AproxWorkflowException
+    //    {
+    //        final Transfer item = contentController.getTransfer( tracking.getTrackedStore(), path, op );
+    //
+    //        final StoreKey affectedKey = LocationUtils.getKey( item );
+    //        try
+    //        {
+    //            logger.debug( "Tracking upload of: {} to: {} in report: {}", path, tracking.getTrackedStore(), tracking.getId() );
+    //            recordManager.recordArtifact( tracking, affectedKey, path, StoreEffect.UPLOAD );
+    //        }
+    //        catch ( final FoloContentException e )
+    //        {
+    //            throw new AproxWorkflowException( "Failed to record upload: %s. Reason: %s", e, path, e.getMessage() );
+    //        }
+    //
+    //        return item;
+    //    }
 
 }

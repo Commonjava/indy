@@ -137,10 +137,7 @@ public class FoloRecordCache
 
     protected File getFile( final TrackingKey key )
     {
-        final String fname = String.format( "%s-%s-%s.json", key.getTrackedStore()
-                                                                .getType()
-                                                                .singularEndpointName(), key.getTrackedStore()
-                                                                                            .getName(), key.getId() );
+        final String fname = String.format( "%s.json", key.getId() );
 
         final DataFile dataFile = dataFileManager.getDataFile( DATA_DIR, fname );
 

@@ -64,7 +64,7 @@ public class FoloRecordManagerTest
         assertThat( recordManager.hasRecord( key ), equalTo( false ) );
 
         final TrackedContentRecord record =
-            recordManager.recordArtifact( key, new StoreKey( StoreType.remote, "foo" ), "/path", StoreEffect.DONWLOAD );
+            recordManager.recordArtifact( key, new StoreKey( StoreType.remote, "foo" ), "/path", StoreEffect.DOWNLOAD );
 
         assertThat( record, notNullValue() );
         assertThat( recordManager.hasRecord( key ), equalTo( true ) );
@@ -78,7 +78,7 @@ public class FoloRecordManagerTest
         assertThat( recordManager.hasRecord( key ), equalTo( false ) );
 
         final TrackedContentRecord record =
-            recordManager.recordArtifact( key, new StoreKey( StoreType.remote, "foo" ), "/path", StoreEffect.DONWLOAD );
+            recordManager.recordArtifact( key, new StoreKey( StoreType.remote, "foo" ), "/path", StoreEffect.DOWNLOAD );
 
         assertThat( record, notNullValue() );
         assertThat( recordManager.hasRecord( key ), equalTo( true ) );
@@ -107,10 +107,8 @@ public class FoloRecordManagerTest
     private TrackingKey newKey()
     {
         final String id = "track";
-        final StoreType type = StoreType.group;
-        final String name = "test";
 
-        return new TrackingKey( id, new StoreKey( type, name ) );
+        return new TrackingKey( id );
     }
 
 }

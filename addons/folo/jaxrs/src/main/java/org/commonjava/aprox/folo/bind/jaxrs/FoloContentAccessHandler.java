@@ -97,14 +97,15 @@ public class FoloContentAccessHandler
     {
         final StoreType st = StoreType.get( type );
 
-        final TrackingKey tk = new TrackingKey( id, new StoreKey( st, name ) );
+        final TrackingKey tk = new TrackingKey( id );
+        final StoreKey sk = new StoreKey( st, name );
 
         Response response = null;
         Transfer transfer;
         try
         {
             final ServletInputStream inputStream = request.getInputStream();
-            transfer = contentController.store( tk, path, inputStream );
+            transfer = contentController.store( tk, sk, path, inputStream );
 
             final StoreKey storageKey = LocationUtils.getKey( transfer );
             logger.info( "Key for storage location: {}", storageKey );
@@ -139,7 +140,8 @@ public class FoloContentAccessHandler
     {
         final StoreType st = StoreType.get( type );
 
-        final TrackingKey tk = new TrackingKey( id, new StoreKey( st, name ) );
+        final TrackingKey tk = new TrackingKey( id );
+        final StoreKey sk = new StoreKey( st, name );
 
         final AcceptInfo acceptInfo = jaxRsRequestHelper.findAccept( request, ApplicationContent.text_html );
 
@@ -156,7 +158,7 @@ public class FoloContentAccessHandler
             {
                 logger.info( "Getting listing at: {}", path );
                 final String content =
-                    contentController.renderListing( acceptInfo.getBaseAccept(), tk, path, baseUri, uriFormatter );
+                    contentController.renderListing( acceptInfo.getBaseAccept(), tk, sk, path, baseUri, uriFormatter );
 
                 response =
                     Response.ok()
@@ -167,7 +169,7 @@ public class FoloContentAccessHandler
             }
             else
             {
-                final Transfer item = contentController.get( tk, path );
+                final Transfer item = contentController.get( tk, sk, path );
 
                 final String contentType = contentController.getContentType( path );
 
@@ -197,7 +199,8 @@ public class FoloContentAccessHandler
     {
         final StoreType st = StoreType.get( type );
 
-        final TrackingKey tk = new TrackingKey( id, new StoreKey( st, name ) );
+        final TrackingKey tk = new TrackingKey( id );
+        final StoreKey sk = new StoreKey( st, name );
 
         final AcceptInfo acceptInfo = jaxRsRequestHelper.findAccept( request, ApplicationContent.text_html );
 
@@ -222,13 +225,13 @@ public class FoloContentAccessHandler
                 //            {
                 logger.info( "Getting listing at: {}", path );
                 final String content =
-                    contentController.renderListing( acceptInfo.getBaseAccept(), tk, path, baseUri, uriFormatter );
+                    contentController.renderListing( acceptInfo.getBaseAccept(), tk, sk, path, baseUri, uriFormatter );
 
                 response = formatOkResponseWithEntity( content, acceptInfo.getRawAccept() );
             }
             else
             {
-                final Transfer item = contentController.get( tk, path );
+                final Transfer item = contentController.get( tk, sk, path );
                 if ( item.isDirectory()
                     || ( path.lastIndexOf( '.' ) < path.lastIndexOf( '/' ) && contentController.isHtmlContent( item ) ) )
                 {
@@ -236,7 +239,7 @@ public class FoloContentAccessHandler
 
                     logger.info( "Getting listing at: {}", path + "/" );
                     final String content =
-                        contentController.renderListing( acceptInfo.getBaseAccept(), tk, path + "/", baseUri,
+                        contentController.renderListing( acceptInfo.getBaseAccept(), tk, sk, path + "/", baseUri,
                                                          uriFormatter );
 
                     response = formatOkResponseWithEntity( content, acceptInfo.getRawAccept() );

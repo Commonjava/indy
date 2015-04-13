@@ -20,8 +20,6 @@ import org.commonjava.aprox.folo.ctl.FoloAdminController;
 import org.commonjava.aprox.folo.dto.TrackedContentDTO;
 import org.commonjava.aprox.folo.model.TrackedContentRecord;
 import org.commonjava.aprox.folo.model.TrackingKey;
-import org.commonjava.aprox.model.core.StoreKey;
-import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,13 +38,10 @@ public class FoloAdminHandler
     @Inject
     private FoloAdminController controller;
 
-    @Path( "/{id}/report/{type}/{name}" )
+    @Path( "/{id}/report" )
     @GET
-    public Response getReport( final @PathParam( "id" ) String id, final @PathParam( "type" ) String type,
-                               final @PathParam( "name" ) String name, @Context final UriInfo uriInfo )
+    public Response getReport( final @PathParam( "id" ) String id, @Context final UriInfo uriInfo )
     {
-        final StoreType st = StoreType.get( type );
-
         Response response;
         try
         {
@@ -59,7 +54,7 @@ public class FoloAdminHandler
             //                                          .build( st.singularEndpointName(), name )
             //                                          .toString();
             
-            final TrackedContentDTO report = controller.renderReport( st, name, id, baseUrl );
+            final TrackedContentDTO report = controller.renderReport( id, baseUrl );
 
             if ( report == null )
             {
@@ -73,7 +68,7 @@ public class FoloAdminHandler
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( String.format( "Failed to serialize tracking report for: %s:%s/%s. Reason: %s", st, name, id,
+            logger.error( String.format( "Failed to serialize tracking report for: %s. Reason: %s", id,
                                          e.getMessage() ),
                           e );
 
@@ -83,19 +78,16 @@ public class FoloAdminHandler
         return response;
     }
 
-    @Path( "/{id}/record/{type}/{name}" )
+    @Path( "/{id}/record" )
     @GET
-    public Response getRecord( final @PathParam( "id" ) String id, final @PathParam( "type" ) String type,
-                               final @PathParam( "name" ) String name )
+    public Response getRecord( final @PathParam( "id" ) String id )
     {
-        final StoreType st = StoreType.get( type );
-
-        final TrackingKey tk = new TrackingKey( id, new StoreKey( st, name ) );
+        final TrackingKey tk = new TrackingKey( id );
 
         Response response;
         try
         {
-            final TrackedContentRecord record = controller.getRecord( st, name, id );
+            final TrackedContentRecord record = controller.getRecord( id );
             if ( record == null )
             {
                 response = Response.status( Status.NOT_FOUND )
@@ -117,14 +109,11 @@ public class FoloAdminHandler
         return response;
     }
 
-    @Path( "/{id}/record/{type}/{name}" )
+    @Path( "/{id}/record" )
     @DELETE
-    public Response clearRecord( final @PathParam( "id" ) String id, final @PathParam( "type" ) String type,
-                                 final @PathParam( "name" ) String name )
+    public Response clearRecord( final @PathParam( "id" ) String id )
     {
-        final StoreType st = StoreType.get( type );
-
-        controller.clearRecord( st, name, id );
+        controller.clearRecord( id );
         return Response.status( Status.NO_CONTENT )
                        .build();
     }

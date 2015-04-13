@@ -26,10 +26,14 @@ import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.util.UrlUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class FoloAdminController
 {
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private FoloRecordManager recordManager;
@@ -53,14 +57,20 @@ public class FoloAdminController
         this.downloadManager = downloadManager;
     }
 
-    public TrackedContentDTO renderReport( final StoreType type, final String name, final String id,
-                                           final String apiBaseUrl )
+    public TrackedContentDTO renderReport( final String id, final String apiBaseUrl )
         throws AproxWorkflowException
     {
-        final TrackingKey tk = new TrackingKey( id, new StoreKey( type, name ) );
+        final TrackingKey tk = new TrackingKey( id );
         try
         {
+            logger.debug( "Retrieving tracking record for: {}", tk );
             final TrackedContentRecord record = recordManager.getRecord( tk );
+            logger.debug( "Got: {}", record );
+
+            if ( record == null )
+            {
+                throw new AproxWorkflowException( "No tracking record available for: %s", tk );
+            }
 
             final Set<TrackedContentEntryDTO> uploads = new TreeSet<>();
             final Set<TrackedContentEntryDTO> downloads = new TreeSet<>();
@@ -141,10 +151,10 @@ public class FoloAdminController
         }
     }
 
-    public TrackedContentRecord getRecord( final StoreType type, final String name, final String id )
+    public TrackedContentRecord getRecord( final String id )
         throws AproxWorkflowException
     {
-        final TrackingKey tk = new TrackingKey( id, new StoreKey( type, name ) );
+        final TrackingKey tk = new TrackingKey( id );
         try
         {
             return recordManager.getRecord( tk );
@@ -155,9 +165,9 @@ public class FoloAdminController
         }
     }
 
-    public void clearRecord( final StoreType type, final String name, final String id )
+    public void clearRecord( final String id )
     {
-        final TrackingKey tk = new TrackingKey( id, new StoreKey( type, name ) );
+        final TrackingKey tk = new TrackingKey( id );
         recordManager.clearRecord( tk );
     }
 
