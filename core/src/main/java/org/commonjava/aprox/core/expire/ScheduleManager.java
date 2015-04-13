@@ -710,7 +710,7 @@ public class ScheduleManager
     @Override
     public int getBootPriority()
     {
-        return 20;
+        return 80;
     }
 
     @Override

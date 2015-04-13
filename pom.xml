@@ -40,9 +40,9 @@
     <jbossas-version>7.1.1.Final</jbossas-version>
     <arquillian-version>1.0.1.Final</arquillian-version>
     <qarqas-version>0.3</qarqas-version>
-    <atlasVersion>0.13.8-SNAPSHOT</atlasVersion>
-    <galleyVersion>0.6.11-SNAPSHOT</galleyVersion>
-    <cartoVersion>0.8.2-SNAPSHOT</cartoVersion>
+    <atlasVersion>0.13.8</atlasVersion>
+    <galleyVersion>0.7</galleyVersion>
+    <cartoVersion>0.8.2</cartoVersion>
     <bomVersion>15</bomVersion>
     <webdavVersion>3.1.2</webdavVersion>
     <resteasyVersion>3.0.9.Final</resteasyVersion>
