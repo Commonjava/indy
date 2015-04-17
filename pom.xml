@@ -14,7 +14,7 @@
   <parent>
     <groupId>org.commonjava</groupId>
     <artifactId>commonjava</artifactId>
-    <version>5</version>
+    <version>6-SNAPSHOT</version>
   </parent>
   
   <groupId>org.commonjava.aprox</groupId>
@@ -24,6 +24,7 @@
   <packaging>pom</packaging>
   
   <name>AProx :: Project Root</name>
+  <inceptionYear>2011</inceptionYear>
   
   <scm>
     <connection>scm:git:http://jdcasey@github.com/jdcasey/aprox.git</connection>
@@ -33,25 +34,21 @@
   </scm>
   
   <properties>
+    <projectOwner>Red Hat, Inc.</projectOwner>
+    
     <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
     <javaVersion>1.7</javaVersion>
     <qarqas.clientKey>aprox</qarqas.clientKey>
     <slf4j-version>1.6.1</slf4j-version>
     <jbossas-version>7.1.1.Final</jbossas-version>
-    <arquillian-version>1.0.1.Final</arquillian-version>
-    <qarqas-version>0.3</qarqas-version>
-    <atlasVersion>0.13.8</atlasVersion>
-    <galleyVersion>0.7</galleyVersion>
-    <cartoVersion>0.8.2</cartoVersion>
-    <bomVersion>15</bomVersion>
-    <webdavVersion>3.1.2</webdavVersion>
+    <atlasVersion>0.13.9-SNAPSHOT</atlasVersion>
+    <galleyVersion>0.8-SNAPSHOT</galleyVersion>
+    <cartoVersion>0.8.3-SNAPSHOT</cartoVersion>
+    <bomVersion>16-SNAPSHOT</bomVersion>
+    <webdavVersion>3.1.3-SNAPSHOT</webdavVersion>
     <resteasyVersion>3.0.9.Final</resteasyVersion>
     <undertowVersion>1.1.2.Final</undertowVersion>
     
-<!--
-    <test-forkCount>1</test-forkCount>
-    <test-redirectOutput>false</test-redirectOutput>
- -->
     <test-forkCount>1C</test-forkCount>
     <test-redirectOutput>true</test-redirectOutput>
   </properties>
