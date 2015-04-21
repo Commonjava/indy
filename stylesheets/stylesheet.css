@@ -227,18 +227,30 @@ Full-Width Styles
 
 #navlinks, #navlink_wrap {
   padding: 0px 0px 0px 10px;
+  background-color: #fff;
+}
+
+#navlinks,
+#navlinks a {
+  color: #212121;
 }
 
 .headerlink {
-  padding: 3px;
+  padding: 5px;
 }
 
-.headerlink:hover {
-  background-color: #777;
+.headerlink.inactive:hover, 
+.headerlink.active {
+  background-color: #f2f2f2;
+}
+
+.headerlink.active {
+  padding-top: 8px;
 }
 
 .headerlink a:hover {
   text-decoration: none;
+  background: #f2f2f2;
 }
 
 #forkme_banner {
@@ -274,7 +286,7 @@ Full-Width Styles
 
 #project_tagline {
   color: #fff;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 300;
   font-style: italic;
   text-align: right;
@@ -282,6 +294,20 @@ Full-Width Styles
   margin: 0px;
   background: none;
   text-shadow: #111 0px 0px 10px;
+}
+
+#pagetitle_wrap {
+  background-color: #f2f2f2;
+}
+
+#pagetitle_wrap .inner {
+  background-color: #f2f2f2;
+  padding: 0px;
+  text-align: right;
+}
+
+#pagetitle_wrap h3 {
+  color: #212121;
 }
 
 #downloads {
@@ -330,7 +356,7 @@ Full-Width Styles
 }
 
 #main_content {
-  padding-top: 40px;
+  padding-top: 20px;
 }
 
 #footer_wrap {
