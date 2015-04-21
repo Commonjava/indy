@@ -274,7 +274,7 @@ Full-Width Styles
 
 #project_tagline {
   color: #fff;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 300;
   font-style: italic;
   text-align: right;
@@ -282,6 +282,15 @@ Full-Width Styles
   margin: 0px;
   background: none;
   text-shadow: #111 0px 0px 10px;
+}
+
+#pagetitle_wrap .inner {
+  padding: 0px;
+  text-align: right;
+}
+
+#pagetitle_wrap h3 {
+  color: #fff;
 }
 
 #downloads {
