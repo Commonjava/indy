@@ -22,3 +22,13 @@
           <h2 id="project_tagline">{{site.tagline}}</h2>
         </header>
     </div>
+    <div id="navlink_wrap" class="outer">
+        {% if site.data.navlinks %}
+        <div id="navlinks" class="headerlinks inner">
+          {% for link in site.data.navlinks %}
+            <span class="headerlink"><a href="{{link.url}}">{{link.name}}</a></span>
+          {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+

@@ -82,7 +82,8 @@ footer a {
   text-decoration: underline;
 }
 
-header a {
+header a,
+#navlinks a {
   color: #fff;
 }
 
@@ -221,6 +222,22 @@ Full-Width Styles
   margin: 0 auto;
 }
 
+#navlinks, #navlink_wrap {
+  padding: 0px 0px 0px 10px;
+}
+
+.headerlink {
+  padding: 3px;
+}
+
+.headerlink:hover {
+  background-color: #777;
+}
+
+.headerlink a:hover {
+  text-decoration: none;
+}
+
 #forkme_banner {
   display: block;
   position: absolute;
@@ -241,7 +258,7 @@ Full-Width Styles
 }
 
 #header_wrap .inner {
-  padding: 50px 10px 30px 10px;
+  padding: 10px;
 }
 
 #project_title {
@@ -254,8 +271,12 @@ Full-Width Styles
 
 #project_tagline {
   color: #fff;
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 300;
+  font-style: italic;
+  text-align: right;
+  padding: 0px;
+  margin: 0px;
   background: none;
   text-shadow: #111 0px 0px 10px;
 }
