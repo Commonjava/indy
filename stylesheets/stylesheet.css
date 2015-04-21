@@ -82,6 +82,10 @@ footer a {
   text-decoration: underline;
 }
 
+header a {
+  color: #fff;
+}
+
 em {
   font-style: italic;
 }
