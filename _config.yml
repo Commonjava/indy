@@ -1,0 +1,13 @@
+safe: true
+defaults:
+  -
+    scope:
+      path: ""
+    values:
+      layout: "slate"
+
+siteTitle: "Commonjava"
+projectTitle: "@GitHub"
+tagline: "Documentation for Commonjava projects available on GitHub"
+owner: "John Casey"
+ownerEmail: jdcasey@commonjava.org
