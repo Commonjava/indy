@@ -7,7 +7,7 @@ defaults:
       layout: "slate"
 
 siteTitle: "Commonjava"
-projectTitle: "@GitHub"
-tagline: "Documentation for Commonjava projects available on GitHub"
+projectTitle: " :: AProx"
+tagline: "Management Platform for Maven-Style Artifacts and Repositories"
 owner: "John Casey"
 ownerEmail: jdcasey@commonjava.org
