@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="chrome=1" />
     <meta name="description" content="{{page.tagline}}" />
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="{{base}}/stylesheets/stylesheet.css">
 
     <title>{{site.title}}</title>
   </head>
@@ -25,10 +25,21 @@
     <div id="navlink_wrap" class="outer">
         {% if site.data.navlinks %}
         <div id="navlinks" class="headerlinks inner">
+          {% if page.nav %}
+            <span class="headerlink"><a href="..">back</a></span>
+          {% endif %}
           {% for link in site.data.navlinks %}
+            {% if link.name != page.nav %}
             <span class="headerlink"><a href="{{link.url}}">{{link.name}}</a></span>
+            {% endif %}
           {% endfor %}
         </div>
         {% endif %}
     </div>
+    {% if page.title != "" %}
+    <div id="pagetitle_wrap" class="outer">
+      <h3 id="pagetitle" class="inner">{{page.title}}</h3>
+    </div>
+    {% endif %}
+
 
