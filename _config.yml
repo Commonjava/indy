@@ -1,0 +1,13 @@
+safe: true
+defaults:
+  -
+    scope:
+      path: ""
+    values:
+      layout: "slate"
+
+siteTitle: "Commonjava"
+projectTitle: " :: AProx"
+tagline: "Management Platform for Maven-Style Artifacts and Repositories"
+owner: "John Casey"
+ownerEmail: jdcasey@commonjava.org

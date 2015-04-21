@@ -1,8 +1,0 @@
-{
-  "allow_snapshots":true,
-  "allow_releases":true,
-  "snapshotTimeoutSeconds":86400,
-  "type": "hosted",
-  "key":"hosted:local-deployments",
-  "storage":"/tmp/local-deployments"
-}
