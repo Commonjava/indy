@@ -6,8 +6,8 @@ defaults:
     values:
       layout: "slate"
 
-siteTitle: "Commonjava"
-projectTitle: "@GitHub"
+siteTitle: "Commonjava@GitHub"
+projectTitle: ""
 tagline: "Documentation for Commonjava projects available on GitHub"
 owner: "John Casey"
 ownerEmail: jdcasey@commonjava.org
