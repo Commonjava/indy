@@ -1,10 +1,11 @@
 safe: true
 defaults:
-  -
+  - 
     scope:
       path: ""
     values:
       layout: "slate"
+      title: ""
 
 siteTitle: "Commonjava"
 projectTitle: " :: AProx"
