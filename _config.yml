@@ -5,9 +5,14 @@ defaults:
       path: ""
     values:
       layout: "slate"
+      author: "John Casey"
 
 siteTitle: "Commonjava@GitHub"
 projectTitle: ""
 tagline: "Documentation for Commonjava projects available on GitHub"
 owner: "John Casey"
 ownerEmail: jdcasey@commonjava.org
+
+markdown: redcarpet
+redcarpet:
+  extensions: ["tables", "autolink", "strikethrough", "space_after_headers", "with_toc_data", "fenced_code_blocks"]
