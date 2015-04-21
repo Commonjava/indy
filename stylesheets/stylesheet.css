@@ -67,6 +67,9 @@ p {
 
 footer p {
   color: #f2f2f2;
+  font-size: 10px;
+  padding-top: 2px;
+  margin: 0px;
 }
 
 a {
