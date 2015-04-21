@@ -1,0 +1,8 @@
+savantUrl: http://repo.maven.apache.org/maven2/org/commonjava/aprox/launch/aprox-launcher-savant/0.19.2/aprox-launcher-savant-0.19.2-launcher.tar.gz
+centralUrl: http://repo.maven.apache.org/maven2/
+centralProxyUrl: http://localhost:8080/api/remote/central/
+localDeployUrl: http://localhost:8080/api/hosted/local-deployments/
+publicUrl: http://localhost:8080/api/group/public/
+publicSettingsUrl: http://localhost:8080/mavdav/settings/group/settings-public.xml
+
+uiUrl: http://localhost:8080/

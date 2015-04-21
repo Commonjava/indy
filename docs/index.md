@@ -1,5 +1,5 @@
 ---
-title: Documentation
+title: "Documentation Contents"
 nav: Documentation
 ---
 
@@ -13,6 +13,8 @@ nav: Documentation
 
 * [Simple Docker Deployment](docker-simple.html)
 * [Docker Deployment with a Volume Container](docker-vols.html)
+* [Traditional Installation](traditional-install.html)
+* [Embedding](embedding.html)
 
 ### Features and Add-Ons
 

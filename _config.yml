@@ -6,9 +6,14 @@ defaults:
     values:
       layout: "slate"
       title: ""
+  - 
+    scope:
+      path: "docs"
+    values:
+      nav: "Documentation"
 
 siteTitle: "Commonjava"
-projectTitle: " :: AProx"
+projectTitle: "AProx"
 tagline: "Management Platform for Maven-Style Artifacts and Repositories"
 owner: "John Casey"
 ownerEmail: jdcasey@commonjava.org
