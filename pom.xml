@@ -14,7 +14,7 @@
   <parent>
     <groupId>org.commonjava</groupId>
     <artifactId>commonjava</artifactId>
-    <version>6-SNAPSHOT</version>
+    <version>7-SNAPSHOT</version>
   </parent>
   
   <groupId>org.commonjava.aprox</groupId>
@@ -44,7 +44,7 @@
     <atlasVersion>0.13.9-SNAPSHOT</atlasVersion>
     <galleyVersion>0.8-SNAPSHOT</galleyVersion>
     <cartoVersion>0.8.3-SNAPSHOT</cartoVersion>
-    <bomVersion>16-SNAPSHOT</bomVersion>
+    <bomVersion>16</bomVersion>
     <webdavVersion>3.2.1-SNAPSHOT</webdavVersion>
     <resteasyVersion>3.0.9.Final</resteasyVersion>
     <undertowVersion>1.1.2.Final</undertowVersion>
@@ -52,14 +52,6 @@
     <test-forkCount>1C</test-forkCount>
     <test-redirectOutput>true</test-redirectOutput>
   </properties>
-  
-  <distributionManagement>
-    <snapshotRepository>
-      <id>sonatype-nexus-staging</id>
-      <name>Sonatype Nexus</name>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
-  </distributionManagement>
   
   <modules>
     <module>models</module>
