@@ -138,4 +138,4 @@ Another nice feature common to all store types is revision storage. All data fil
 
 ### Notes
 
-[^1] AProx state is distinct from configuration files that determine what ports AProx uses and things like that, and from artifact caches which store the artifacts themselves.
+[^1]: AProx state is distinct from configuration files that determine what ports AProx uses and things like that, and from artifact caches which store the artifacts themselves.
