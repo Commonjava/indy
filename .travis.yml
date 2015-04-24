@@ -1,0 +1,15 @@
+sudo: required
+
+language: java
+jdk:
+   - oraclejdk7
+
+cache:
+   directories:
+     - '$HOME/.m2/repository'
+
+before_install:
+  - curl http://repository.commonjava.org/mavdav/settings/group/settings-ci.xml > $HOME/.m2/settings.xml
+  - sudo rm /etc/mavenrc
+install: /bin/true
+script: mvn clean deploy -V -Prun-its -q -B -e 
