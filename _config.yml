@@ -6,6 +6,7 @@ defaults:
     values:
       layout: "slate"
       title: ""
+      author: "John Casey"
   - 
     scope:
       path: "docs"
@@ -17,3 +18,5 @@ projectTitle: "AProx"
 tagline: "Management Platform for Maven-Style Artifacts and Repositories"
 owner: "John Casey"
 ownerEmail: jdcasey@commonjava.org
+
+markdown: kramdown
