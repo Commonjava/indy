@@ -124,7 +124,7 @@ public class HttpResources
         return response;
     }
 
-    public HttpResourcesManagingInputStream getResponseStream()
+    public InputStream getResponseStream()
         throws IOException
     {
         return new HttpResourcesManagingInputStream( this, getResponseEntityContent() );

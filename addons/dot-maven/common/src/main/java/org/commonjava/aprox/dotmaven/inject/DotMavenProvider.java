@@ -22,10 +22,14 @@ import net.sf.webdav.spi.WebdavConfig;
 import org.commonjava.aprox.dotmaven.store.DotMavenStore;
 import org.commonjava.aprox.dotmaven.webctl.DotMavenService;
 import org.commonjava.aprox.dotmaven.webctl.RequestInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class DotMavenProvider
 {
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private WebdavConfig config;
 
@@ -47,6 +51,7 @@ public class DotMavenProvider
             service = new DotMavenService( getConfig(), store, getMimeTyper(), requestInfo );
         }
 
+        logger.info( "Returning WebDAV service: {}", service );
         return service;
     }
 

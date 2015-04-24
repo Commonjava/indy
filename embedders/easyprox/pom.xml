@@ -77,6 +77,10 @@
           <groupId>org.commonjava.aprox</groupId>
           <artifactId>aprox-ftests-autoprox</artifactId>
         </dependency>
+        <dependency>
+          <groupId>org.commonjava.aprox</groupId>
+          <artifactId>aprox-ftests-dot-maven</artifactId>
+        </dependency>
       </dependencies>
       
       <build>
@@ -91,6 +95,7 @@
                   <dependenciesToScan>
                     <dependency>org.commonjava.aprox:aprox-ftests-autoprox</dependency>
                     <dependency>org.commonjava.aprox:aprox-ftests-core</dependency>
+                    <dependency>org.commonjava.aprox:aprox-ftests-dot-maven</dependency>
                   </dependenciesToScan> 
                 </configuration>
             </plugin>

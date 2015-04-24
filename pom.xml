@@ -45,7 +45,7 @@
     <galleyVersion>0.8-SNAPSHOT</galleyVersion>
     <cartoVersion>0.8.3-SNAPSHOT</cartoVersion>
     <bomVersion>16-SNAPSHOT</bomVersion>
-    <webdavVersion>3.1.3-SNAPSHOT</webdavVersion>
+    <webdavVersion>3.2.1-SNAPSHOT</webdavVersion>
     <resteasyVersion>3.0.9.Final</resteasyVersion>
     <undertowVersion>1.1.2.Final</undertowVersion>
     
@@ -300,6 +300,11 @@
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-dot-maven-jaxrs</artifactId>
+        <version>0.19.3-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-ftests-dot-maven</artifactId>
         <version>0.19.3-SNAPSHOT</version>
       </dependency>
       <dependency>

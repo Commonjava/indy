@@ -22,9 +22,13 @@ import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.subsys.template.AproxGroovyException;
 import org.commonjava.aprox.subsys.template.TemplatingEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SettingsTemplate
 {
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public static final String TYPE_KEY = "type";
 
@@ -63,10 +67,10 @@ public class SettingsTemplate
 
     public byte[] getContent()
         throws WebdavException
-        {
+    {
         formatSettings();
         return content;
-        }
+    }
 
     private void formatSettings()
         throws WebdavException
@@ -81,12 +85,15 @@ public class SettingsTemplate
 
         final StringBuilder url = new StringBuilder();
         url.append( requestInfo.getBaseUrl() );
+
+        logger.debug( "settings base-url is: '{}'", url );
+
         if ( url.charAt( url.length() - 1 ) != '/' )
         {
             url.append( '/' );
         }
 
-        url.append( "api/1.0/" );
+        url.append( "api/" );
         url.append( type.singularEndpointName() )
            .append( '/' )
            .append( name );
@@ -111,8 +118,8 @@ public class SettingsTemplate
         }
         catch ( final AproxGroovyException e )
         {
-            throw new WebdavException( String.format( "Failed to render settings.xml template for: '%s'. Reason: %s", key,
-                                       e.getMessage() ), e );
+            throw new WebdavException( String.format( "Failed to render settings.xml template for: '%s'. Reason: %s",
+                                                      key, e.getMessage() ), e );
         }
     }
 

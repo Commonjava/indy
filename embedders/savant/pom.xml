@@ -107,6 +107,10 @@
         </dependency>
         <dependency>
           <groupId>org.commonjava.aprox</groupId>
+          <artifactId>aprox-ftests-dot-maven</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.commonjava.aprox</groupId>
           <artifactId>aprox-ftests-folo</artifactId>
         </dependency>
         <dependency>
@@ -129,6 +133,7 @@
                     <dependency>org.commonjava.aprox:aprox-ftests-core</dependency>
                     <dependency>org.commonjava.aprox:aprox-ftests-folo</dependency>
                     <dependency>org.commonjava.aprox:aprox-ftests-depgraph</dependency>
+                    <dependency>org.commonjava.aprox:aprox-ftests-dot-maven</dependency>
                     <dependency>org.commonjava.aprox:aprox-ftests-promote</dependency>
                   </dependenciesToScan> 
                 </configuration>
