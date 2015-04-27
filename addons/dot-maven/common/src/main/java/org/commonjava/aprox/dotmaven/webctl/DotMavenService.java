@@ -23,11 +23,16 @@ import net.sf.webdav.spi.WebdavConfig;
 import net.sf.webdav.spi.WebdavRequest;
 import net.sf.webdav.spi.WebdavResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Alternative
 @Named
 public class DotMavenService
     extends WebdavService
 {
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
     public static final String NAME = "mavdav";
 
     //    @Inject
@@ -44,6 +49,8 @@ public class DotMavenService
     public void service( final WebdavRequest request, final WebdavResponse response )
         throws WebdavException, IOException
     {
+        logger.debug( "Setting request in RequestInfo: {}", requestInfo );
+
         //        final String mount = request.getParameter( RequestInfo.MOUNT_POINT );
         requestInfo.setRequest( request );
 

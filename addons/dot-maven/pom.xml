@@ -24,6 +24,7 @@
   <modules>
     <module>common</module>
     <module>jaxrs</module>
+    <module>ftests</module>
   </modules>
   
 </project>

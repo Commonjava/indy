@@ -44,6 +44,7 @@ public class RequestInfo
     {
         if ( request == null )
         {
+            logger.error( "ERROR: request has NOT been set in WebDAV RequestInfo: {}", this );
             return null;
         }
 

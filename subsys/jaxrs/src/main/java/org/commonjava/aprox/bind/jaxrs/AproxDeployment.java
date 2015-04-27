@@ -35,11 +35,15 @@ import org.commonjava.aprox.bind.jaxrs.util.CdiInjectorFactoryImpl;
 import org.commonjava.aprox.bind.jaxrs.util.RequestScopeListener;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.spi.ResteasyDeployment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class AproxDeployment
     extends Application
 {
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public static final String API_PREFIX = "api";
 
@@ -94,6 +98,7 @@ public class AproxDeployment
         deploymentProviders = new HashSet<>();
         for ( final AproxDeploymentProvider fac : deployments )
         {
+            logger.info( "Found deployment provider: {}", fac );
             deploymentProviders.add( fac );
         }
     }
@@ -117,18 +122,6 @@ public class AproxDeployment
                                                     .addMapping( "/api*" )
                                                     .addMapping( "/api/*" );
 
-        final ServletInfo uiServlet = Servlets.servlet( "UI", UIServlet.class )
-                                               .setAsyncSupported( true )
-                                               .setLoadOnStartup( 2 )
-                                               .addMapping( "/.html" )
-                                               .addMapping( "/" )
-                                               .addMapping( "/js/*" )
-                                               .addMapping( "/css/*" )
-                                              .addMapping( "/partials/*" )
-                                              .addMapping( "/ui-addons/*" );
-
-        uiServlet.setInstanceFactory( new ImmediateInstanceFactory<Servlet>( ui ) );
-
         final FilterInfo secFilter = Servlets.filter( "Security", SecurityFilter.class );
 
         final DeploymentInfo di =
@@ -136,7 +129,6 @@ public class AproxDeployment
                                 .setContextPath( contextRoot )
                                 .addServletContextAttribute( ResteasyDeployment.class.getName(), deployment )
                                 .addServlet( resteasyServlet )
-                                .addServlet( uiServlet )
                                 .addFilter( secFilter )
                                 .addFilterUrlMapping( secFilter.getName(), "/api/*", DispatcherType.REQUEST )
                                 .setDeploymentName( "AProx" )
@@ -146,6 +138,8 @@ public class AproxDeployment
         {
             for ( final AproxDeploymentProvider deploymentFactory : deploymentProviders )
             {
+                logger.info( "Adding deployments from: {}" + deploymentFactory.getClass()
+                                                                              .getName() );
                 final DeploymentInfo info = deploymentFactory.getDeploymentInfo();
                 final Map<String, ServletInfo> servletInfos = info.getServlets();
                 if ( servletInfos != null )
@@ -168,6 +162,20 @@ public class AproxDeployment
                 // TODO: More comprehensive merge...
             }
         }
+
+        // Add UI servlet at the end so its mappings don't obscure any from add-ons.
+        final ServletInfo uiServlet = Servlets.servlet( "UI", UIServlet.class )
+                                              .setAsyncSupported( true )
+                                              .setLoadOnStartup( 99 )
+                                              .addMapping( "/*.html" )
+                                              .addMapping( "/" )
+                                              .addMapping( "/js/*" )
+                                              .addMapping( "/css/*" )
+                                              .addMapping( "/partials/*" )
+                                              .addMapping( "/ui-addons/*" );
+
+        uiServlet.setInstanceFactory( new ImmediateInstanceFactory<Servlet>( ui ) );
+        di.addServlet( uiServlet );
 
         return di;
     }

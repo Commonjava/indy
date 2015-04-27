@@ -227,6 +227,30 @@ public class AproxClientHttp
         }
     }
 
+    public HttpResources getRaw( final HttpGet req )
+        throws AproxClientException
+    {
+        connect();
+
+        CloseableHttpResponse response = null;
+        try
+        {
+            final CloseableHttpClient client = newClient();
+
+            response = client.execute( req );
+            return new HttpResources( req, response, client );
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxClientException( "AProx request failed: %s", e, e.getMessage() );
+        }
+        finally
+        {
+            // DO NOT CLOSE!!!! We're handing off control of the response to the caller!
+            //            closeQuietly( response );
+        }
+    }
+
     public HttpResources getRaw( final String path )
         throws AproxClientException
     {
@@ -583,7 +607,7 @@ public class AproxClientHttp
         cleanupResources( request, response, client );
     }
 
-    public String toAproxUrl( final String path )
+    public String toAproxUrl( final String... path )
     {
         return buildUrl( baseUrl, path );
     }

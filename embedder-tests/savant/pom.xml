@@ -45,6 +45,10 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-ftests-dot-maven</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-ftests-common</artifactId>
     </dependency>
   </dependencies>
@@ -63,6 +67,7 @@
               <dependency>org.commonjava.aprox:aprox-ftests-autoprox</dependency>
               <dependency>org.commonjava.aprox:aprox-ftests-depgraph</dependency>
               <dependency>org.commonjava.aprox:aprox-ftests-promote</dependency>
+              <dependency>org.commonjava.aprox:aprox-ftests-dot-maven</dependency>
             </dependenciesToScan> 
           </configuration>
       </plugin>
