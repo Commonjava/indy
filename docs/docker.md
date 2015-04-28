@@ -12,6 +12,10 @@ title: "Docker Deployment"
 * [Getting Started](#getting-started)
 * [Persistent Deployment](#persistent-deployment)
 * [Advanced Deployment Options](#advanced-options)
+  * [Host-Side Storage](#host-side-storage)
+  * [SSH, Git, and the `etc` URL](#ssh-git-etc)
+  * [Dev Mode](#devmode)
+* [Using a Volume Container](#aprox-volumes)
 * [Upgrading Your AProx Deployment](#upgrading-your-aprox-deployment)
 * [Auto-Deployment](#autodeploy)
 
@@ -212,6 +216,7 @@ We can do things having deeper effects, yet which are still essentially simple, 
 Or, to explore the rabbit hole a little deeper still, read on.
 
 #### Host-Side Storage
+<a name="host-side-storage"></a>
 
 One maintenance task you're probably not thinking about yet is upgrading AProx. As with many such tasks, it pays to plan ahead to make sure your AProx deployment can be upgraded without data loss.
 
@@ -252,6 +257,8 @@ Or, if we're using a networked filesystem mount, we might prefer this:
 The initialization command will add Docker volume mounts for each of these, so AProx has access to thim. When the AProx server container boots, it will expand the appropriate files from the distribution binary into these locations. Later, if we need to upgrade AProx, we can have confidence that these files won't be erased when the old container is replaced.
 
 #### SSH, Git, and the `etc` URL
+<a name="ssh-git-etc"></a>
+
 
 One core practice of the DevOps movement is keeping revision history on configurations as well as code and management scripts. Without a version history for your application's configuration, how will you recover to a known-good state if someone changes your application's configuration and something goes wrong? This is a very common problem in complex server deployments. Not having a revision history can wreck your rollback process and leave services dead in the water while you scramble to guess at what was in that file before, when everything was working.
 
