@@ -16,7 +16,7 @@ title: "Docker Deployment"
 * [Auto-Deployment](#autodeploy)
 
 ### Getting Started
-<a name="getting-started></a>
+<a name="getting-started"></a>
 
 If you have a Linux machine with Docker installed, the quickest way to try AProx is to instantiate a container from the [buildchimp/aprox](https://registry.hub.docker.com/u/buildchimp/aprox/) image. This image has a **lot** of available options, as we'll explore below. However, you can try a simple deployment by issuing a single command:
 
@@ -316,6 +316,26 @@ These configuration changes should be minimal since we go to great lengths to gi
 
 Still, it's worth remembering.
 
+#### Dev Mode
+<a name="devmode"></a>
+
+If you're interested in hacking on AProx, or if you're using file-based autodeployment (see [Auto-Deployment](#autodeploy), below), you'll probably be interested in the devmode option:
+
+      -d DEVDIR, --devdir=DEVDIR
+                            Directory to mount for devmode deployment
+                            (default: disabled, to use released version 
+                            from URL)
+
+If you build your own AProx binary and want to deploy it to a Docker container for testing, you can upload the launcher tarball to some directory (eg. `/tmp/aprox-dev/`), then restart your AProx server container with something like this:
+
+    $ ./init-aprox-server.py -d /tmp/aprox-dev/ <your-custom-options>
+
+Alternatively, if you wanted to, you could expand your binary into a directory structure (eg. `/tmp/aprox-dev/aprox/`) and start in devmode using the expanded directory:
+
+    $ ./init-aprox-server.py -d /tmp/aprox-dev/aprox/ <your-custom-options>
+
+This way, you don't have to reference a remote URL for downloading the AProx binary you want to deploy.
+
 ### Using a Volume Container
 <a name="aprox-volumes"></a>
 
@@ -354,6 +374,47 @@ Also note that if you're using a Docker volume container, you don't need to do a
 ### Auto-Deployment
 <a name="autodeploy"></a>
 
-#### A file appears
+Using Docker containers, it's possible to boil down the upgrade process to the mechanical execution of a few commands, or even to script it completely. Having done that, why not set it up as a cron job that checks some location for an updated version and auto-deploys it? By controlling the source of that updated version information you still have complete control over when the server updates itself.
 
-#### Or, keep an eye on that Maven repository
+The aprox-docker utilities project comes with two scripts to help with this:
+
+#### The `autodeploy-file.py` script
+
+This script watches one directory for a new AProx launcher tarball to appear. When it detects a new version to deploy, it copies it to a **devmode** directory and restarts the AProx Docker container, referencing that devmode directory. (See [Dev Mode](#devmode), above).
+
+For example, you might watch a directory of `/tmp/aprox-next` and use a devmode directory of `/tmp/aprox-deployed` using a cron job like this:
+
+    */5 * * * * root /root/aprox-docker/utils/autodeploy-file.py \
+      -s aprox-server \
+      -w /tmp/aprox-next \
+      -d /tmp/aprox-deployed \
+      /root/aprox-docker-utils/init-aprox-server.py \
+      -d /tmp/aprox-deployed -p 80 -q
+
+When a new file appears in `/tmp/aprox-next`, this script will detect it. When it does, it removes anything in `/tmp/aprox-deployed` and moves the new file in. Then, it removes the existing AProx server container and reinitializes it with the new devmode tarball.
+
+#### The `autodeploy-url.py` script
+
+This script watches a `maven-metadata.xml` file on some remote URL (given as an option value to the script) for either SNAPSHOT or release version updates. When it sees one, it restarts the AProx Docker container, referencing the new URL for the updated version.
+
+This approach can be very useful if you're developing against a snapshot version of AProx (perhaps developing a new AProx feature in concert with another application that uses the Java client API). In such a situation, you might use a crontab entry similar to this:
+
+    */5 * * * * root /root/aprox-docker-utils/autodeploy-url.py \
+      -s aprox-server \
+      -u https://oss.sonatype.org/content/repositories/snapshots/org/commonjava/aprox/launch/aprox-launcher-savant/0.19.3-SNAPSHOT/maven-metadata.xml \
+      /root/aprox-docker-utils/init-aprox-server \
+      -U {url} -p 80 -q
+
+The above uses the `{url}` placeholder to inject the calculated URL to the new snapshot tarball when one appears. This placeholder is populated before calling `/root/aprox-docker-utils/init-aprox-server`.
+
+If instead you want to publish release versions of AProx somewhere, you could manage your own maven-metadata.xml file alongside it, and use an entry like this:
+
+    0 */4 * * * root /root/aprox-docker-utils/autodeploy-url.py \
+      -s aprox-server \
+      -r \
+      -v \
+       -u http://my.server.org/aprox-deploy/maven-metadata.xml \
+       /root/aprox-docker-utils/init-aprox-server \
+       -U {url} -p 80 -q
+
+This approach (using `r` tells the script to look for a release version) will cause the script to look for a version directory that's a sibling of the `maven-metadata.xml` file, which contains the new launcher tarball. Again, notice the `{url}` placeholder that's populated before calling `/root/aprox-docker-utils/init-aprox-server`.
