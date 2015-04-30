@@ -115,10 +115,10 @@ public class UIServlet
                 }
 
                 final File uiDir = config.getUIDir();
-                logger.info( "UI basedir: '{}'", uiDir );
+                logger.debug( "UI basedir: '{}'", uiDir );
 
                 final File resource = new File( uiDir, path );
-                logger.info( "Trying to send file: " + resource );
+                logger.debug( "Trying to send file: " + resource );
                 sendFile( response, resource, method );
                 return;
             }
@@ -202,7 +202,7 @@ public class UIServlet
 
     private void sendFile( final HttpServletResponse response, final File resource, final String method )
     {
-        logger.info( "Checking for existence of: '{}'", resource );
+        logger.debug( "Checking for existence of: '{}'", resource );
         if ( resource.exists() )
         {
             if ( method == "GET" )

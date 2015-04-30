@@ -31,6 +31,11 @@ class AproxScheduleListener
     @Override
     public void jobScheduled( final Trigger trigger )
     {
+        if ( trigger == null )
+        {
+            return;
+        }
+
         final JobKey key = trigger.getJobKey();
         try
         {

@@ -16,6 +16,7 @@ import static org.commonjava.aprox.util.LocationUtils.getKey;
 import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -52,6 +53,7 @@ public class ArchetypeCatalogMerger
         final ArchetypeCatalog master = new ArchetypeCatalog();
         final ArchetypeCatalogXpp3Reader reader = new ArchetypeCatalogXpp3Reader();
         final FileReader fr = null;
+        InputStream stream = null;
 
         boolean merged = false;
 
@@ -60,7 +62,8 @@ public class ArchetypeCatalogMerger
         {
             try
             {
-                final ArchetypeCatalog catalog = reader.read( src.openInputStream(), false );
+                stream = src.openInputStream();
+                final ArchetypeCatalog catalog = reader.read( stream, false );
 
                 for ( final Archetype arch : catalog.getArchetypes() )
                 {
