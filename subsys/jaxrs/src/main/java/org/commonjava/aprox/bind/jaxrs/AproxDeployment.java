@@ -66,6 +66,9 @@ public class AproxDeployment
     @Inject
     private UIServlet ui;
 
+    @Inject
+    private ResourceManagementFilter resourceManagementFilter;
+
     private Set<Class<?>> resourceClasses;
 
     private Set<Class<?>> providerClasses = PROVIDER_CLASSES;
@@ -124,6 +127,10 @@ public class AproxDeployment
 
         final FilterInfo secFilter = Servlets.filter( "Security", SecurityFilter.class );
 
+        final FilterInfo nameFilter =
+            Servlets.filter( "Naming", ResourceManagementFilter.class,
+                             new ImmediateInstanceFactory<ResourceManagementFilter>( resourceManagementFilter ) );
+
         final DeploymentInfo di =
             new DeploymentInfo().addListener( Servlets.listener( RequestScopeListener.class ) )
                                 .setContextPath( contextRoot )
@@ -131,6 +138,8 @@ public class AproxDeployment
                                 .addServlet( resteasyServlet )
                                 .addFilter( secFilter )
                                 .addFilterUrlMapping( secFilter.getName(), "/api/*", DispatcherType.REQUEST )
+                                .addFilter( nameFilter )
+                                .addFilterUrlMapping( nameFilter.getName(), "/api/*", DispatcherType.REQUEST )
                                 .setDeploymentName( "AProx" )
                                 .setClassLoader( ClassLoader.getSystemClassLoader() );
 

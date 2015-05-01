@@ -97,6 +97,11 @@ public class AproxContentClientModule
 
         if ( resources.getStatusCode() != 200 )
         {
+            if ( resources.getStatusCode() == 404 )
+            {
+                return null;
+            }
+
             IOUtils.closeQuietly( resources );
             throw new AproxClientException( "Response returned status: %s.", resources.getStatusLine() );
         }

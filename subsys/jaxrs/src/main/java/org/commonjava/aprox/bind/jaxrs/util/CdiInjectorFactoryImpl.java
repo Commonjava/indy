@@ -10,6 +10,10 @@ public class CdiInjectorFactoryImpl
     extends CdiInjectorFactory
 {
 
+    public CdiInjectorFactoryImpl()
+    {
+    }
+
     @Override
     protected BeanManager lookupBeanManager()
     {

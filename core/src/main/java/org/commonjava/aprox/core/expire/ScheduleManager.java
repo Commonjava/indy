@@ -559,6 +559,11 @@ public class ScheduleManager
             for ( final TriggerKey key : keys )
             {
                 final Trigger trigger = scheduler.getTrigger( key );
+                if ( trigger == null )
+                {
+                    continue;
+                }
+
                 final Date nextFire = trigger.getFireTimeAfter( new Date() );
                 if ( !nextFire.after( to ) )
                 {
@@ -615,7 +620,10 @@ public class ScheduleManager
                     for ( final TriggerKey tk : unscheduled )
                     {
                         final Trigger trigger = scheduler.getTrigger( tk );
-                        scheduler.deleteJob( trigger.getJobKey() );
+                        if ( trigger != null )
+                        {
+                            scheduler.deleteJob( trigger.getJobKey() );
+                        }
                     }
                 }
 
