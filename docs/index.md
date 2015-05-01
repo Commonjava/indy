@@ -16,9 +16,9 @@ title: "Documentation Contents"
 
 ### Features and Add-Ons
 
-* [Repository Mutual SSL Configuration](repo-mutual-ssl.html)
 * [Autoprox Automatic Proxy Add-On](autoprox.html)
-* [DotMaven WebDAV Add-On](dot-maven.html)
+* [DotMaven WebDAV and Settings Generator Add-On](dot-maven.html)
+* [Folo Content-Tracking Add-On](folo.html)
 
 ### Client APIs
 
