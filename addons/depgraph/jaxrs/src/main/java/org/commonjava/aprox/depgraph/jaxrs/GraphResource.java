@@ -24,6 +24,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang.StringUtils;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.depgraph.rest.GraphController;
@@ -40,14 +41,14 @@ public class GraphResource
     @Inject
     private GraphController controller;
 
-    @Path( "/reindex{gav: ([^/]+/[^/]+/[^/]+)?}" )
+    @Path( "/reindex{gav: (/[^/]+/[^/]+/[^/]+)?}" )
     @GET
     public Response reindex( final @PathParam( "gav" ) String coord, @QueryParam( "wsid" ) final String wsid )
     {
         Response response = null;
         try
         {
-            controller.reindex( coord, wsid );
+            controller.reindex( coordToGav( coord ), wsid );
             response = Response.ok()
                                .build();
         }
@@ -59,14 +60,14 @@ public class GraphResource
         return response;
     }
 
-    @Path( "/errors{gav: ([^/]+/[^/]+/[^/]+)?}" )
+    @Path( "/errors{gav: (/[^/]+/[^/]+/[^/]+)?}" )
     @GET
     public Response errors( final @PathParam( "gav" ) String coord, @QueryParam( "wsid" ) final String wsid )
     {
         Response response = null;
         try
         {
-            final String json = controller.errors( coord, wsid );
+            final String json = controller.errors( coordToGav( coord ), wsid );
             if ( json != null )
             {
                 response = formatOkResponseWithJsonEntity( json );
@@ -85,7 +86,7 @@ public class GraphResource
         return response;
     }
 
-    @Path( "/incomplete{gav: ([^/]+/[^/]+/[^/]+)?}" )
+    @Path( "/incomplete{gav: (/[^/]+/[^/]+/[^/]+)?}" )
     @GET
     public Response incomplete( final @PathParam( "gav" ) String coord, @QueryParam( "wsid" ) final String wsid,
                             @Context final HttpServletRequest request )
@@ -93,7 +94,7 @@ public class GraphResource
         Response response = null;
         try
         {
-            final String json = controller.incomplete( coord, wsid, parseQueryMap( request.getQueryString() ) );
+            final String json = controller.incomplete( coordToGav( coord ), wsid, parseQueryMap( request.getQueryString() ) );
 
             if ( json != null )
             {
@@ -113,7 +114,7 @@ public class GraphResource
         return response;
     }
 
-    @Path( "/variable{gav: ([^/]+/[^/]+/[^/]+)?}" )
+    @Path( "/variable{gav: (/[^/]+/[^/]+/[^/]+)?}" )
     @GET
     public Response variable( final @PathParam( "gav" ) String coord, @QueryParam( "wsid" ) final String wsid,
                               @Context final HttpServletRequest request )
@@ -121,7 +122,7 @@ public class GraphResource
         Response response = null;
         try
         {
-            final String json = controller.variable( coord, wsid, parseQueryMap( request.getQueryString() ) );
+            final String json = controller.variable( coordToGav( coord ), wsid, parseQueryMap( request.getQueryString() ) );
 
             if ( json != null )
             {
@@ -139,6 +140,34 @@ public class GraphResource
             response = formatResponse( e, true );
         }
         return response;
+    }
+
+    /**
+     * Converts the coordination info from URL path into GAV. The coord format is
+     * &quot;/{groupId}/{artifactId}/{version}&quot;. The target format is
+     * &quot;{groupId}:{artifactId}:{version}&quot;.
+     * 
+     * @param coord the coordination info, can be {@code null}
+     * @return {@code null} if the passed input is empty, otherwise input converted into GAV format
+     */
+    private String coordToGav( final String coord )
+    {
+        final String result;
+        if ( StringUtils.isEmpty( coord ) )
+        {
+            result = null;
+        }
+        else
+        {
+            String[] parts = coord.split( "/" );
+            if ( parts.length != 4 || parts[0].length() > 0 )
+            {
+                throw new IllegalArgumentException( "Cannot parse the coordination info \"" + coord 
+                                                    + "\". The expected format is \"/{groupId}/{artifactId}/{version}\"." );
+            }
+            result = parts[1] + ':' + parts[2] + ':' + parts[3];
+        }
+        return result;
     }
 
     @Path( "/ancestry/{groupId}/{artifactId}/{version}" )
