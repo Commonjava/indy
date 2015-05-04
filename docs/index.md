@@ -12,7 +12,7 @@ title: "Documentation Contents"
 
 * [Deployment via Docker](docker.html)
 * [Traditional Installation](traditional-install.html)
-* [Embedding](embedding.html)
+<!-- * [Embedding](embedding.html) -->
 
 ### Features and Add-Ons
 
