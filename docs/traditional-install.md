@@ -163,4 +163,7 @@ If you use a moving `current` symlink for the AProx installation itself, that ma
 
 ### Versioning Your Data
 
-**TODO:** Describe configuration of the revisions add-on for keeping data-file revisions in Git.
+Since we're talking about preserving your AProx data, you should know that AProx also has a [Revisions add-on](revisions-addon.html) (available in the default `savant` distribution flavor), which knows about using Git to manage the contents of the `data` directory (the place where repository definitions, etc. are stored). You can tell AProx (via its configuration) to clone another Git repository for its data directory if you have a remote Git repository you want to use, or you can simply let AProx initialize a local Git repository. If you allow AProx to initialize its own local Git repository, you will have the option later to push it to a remote location and get an instant, versioned backup of your data directory.
+
+Once enabled, the Revisions add-on will store each modification to a store definition, each change to a content template, changes to almost anything that gets stored in the `var/lib/aprox/data` directory, to Git. You can even tell it to push any changes to a remote Git repository using the same configuration!
+

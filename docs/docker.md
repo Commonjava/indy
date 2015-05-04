@@ -291,37 +291,7 @@ Then, use the option to add your new SSH configuration directory *and* the etc U
 
 Before the AProx container boots, the initialization script will call the SELinux command `chcon -Rt svirt_sandbox_file_t $HOME/aprox-ssh` to allow Docker access to the aprox-ssh directory, then create the container with a mounted volume for the SSH configuration. When the container boots, it will copy the mounted SSH config volume to `/root/.ssh` to make it available for Git commands to use.
 
-AProx itself doesn't know about using Git to manage its `etc` directory; managing that directory is considered out of scope for AProx. However, AProx does have an add-on (available in the default `savant` distribution flavor), which knows about using Git to manage the contents of the `data` directory (the place where repository definitions, etc. are stored). If you use the above method to clone your AProx configuration from Git, you can also tell AProx (via its configuration) to clone another Git repository for its data directory. You can even tell it to push any changes to a remote Git repository using the same configuration!
-
-The magic file is `etc/aprox/conf.d/revisions.conf`, and you can enable a remote Git data repository by making it to look something like this:
-
-    [revisions]
-    # 'push.enabled' determines whether changes get pushed back to the 
-    # origin git repository.
-    # Values: true|false
-    push.enabled=true
-    
-    # 'conflict.action' determines what to do with changes that conflict 
-    # with local configuration files.
-    # Values:
-    #   * merge - attempt a git merge
-    #   * overwrite - keep the copy from the origin repository
-    #   * keep - keep the local copy
-    #
-    conflict.action=keep
-    
-    # 'data.upstream.url' determines the origin-repository URL for 
-    # cloning/pulling and pushing changes.
-    #
-    data.upstream.url=ssh://secretsauce.myco.com/git/aprox-data.git
-
-One thing to note about managing AProx configuration and data directories via Git:
-
-    Once you take over for the defaults provided in the AProx distribution, you're in charge of merging in new configurations, content templates, and so forth for any version upgrades.
-
-These configuration changes should be minimal since we go to great lengths to give AProx sensible default configuration values, and to make things like configuration backward compatible.
-
-Still, it's worth remembering.
+AProx itself doesn't know about using Git to manage its `etc` directory; managing that directory is considered out of scope for AProx. However, AProx does have a [Revisions add-on](revisions-addon.html) (available in the default `savant` distribution flavor), which knows about using Git to manage the contents of the `data` directory (the place where repository definitions, etc. are stored). If you use the above method to clone your AProx configuration from Git, you can also tell AProx (via its configuration) to clone another Git repository for its data directory. You can even tell it to push any changes to a remote Git repository using the same configuration!
 
 #### Dev Mode
 <a name="devmode"></a>

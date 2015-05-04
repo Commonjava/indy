@@ -16,9 +16,10 @@ title: "Documentation Contents"
 
 ### Features and Add-Ons
 
-* [Autoprox Automatic Proxy Add-On](autoprox.html)
-* [DotMaven WebDAV and Settings Generator Add-On](dot-maven.html)
-* [Folo Content-Tracking Add-On](folo.html)
+* [Autoprox Automatic Proxy Add-On](autoprox-addon.html)
+* [DotMaven WebDAV and Settings Generator Add-On](dot-maven-addon.html)
+* [Folo Content-Tracking Add-On](folo-addon.html)
+* [Revisions Data-Versioning Add-On](revisions-addon.html)
 
 ### Client APIs
 
