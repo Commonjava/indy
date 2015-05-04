@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Copyright (c) 2014 Red Hat, Inc..
-  All rights reserved. This program and the accompanying materials
-  are made available under the terms of the GNU Public License v3.0
-  which accompanies this distribution, and is available at
-  http://www.gnu.org/licenses/gpl.html
-  
-  Contributors:
-      Red Hat, Inc. - initial API and implementation
+
+    Copyright (C) 2011 Red Hat, Inc. (jdcasey@commonjava.org)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
@@ -27,9 +34,9 @@
   <inceptionYear>2011</inceptionYear>
   
   <scm>
-    <connection>scm:git:http://jdcasey@github.com/jdcasey/aprox.git</connection>
-    <developerConnection>scm:git:git@github.com:jdcasey/aprox.git</developerConnection>
-    <url>http://github.com/jdcasey/aprox</url>
+    <connection>scm:git:https://github.com/Commonjava/aprox.git</connection>
+    <developerConnection>scm:git:git@github.com:Commonjava/aprox.git</developerConnection>
+    <url>http://github.com/Commonjava/aprox</url>
     <tag>HEAD</tag>
   </scm>
   
@@ -41,11 +48,11 @@
     <qarqas.clientKey>aprox</qarqas.clientKey>
     <slf4j-version>1.6.1</slf4j-version>
     <jbossas-version>7.1.1.Final</jbossas-version>
-    <atlasVersion>0.13.9-SNAPSHOT</atlasVersion>
-    <galleyVersion>0.8-SNAPSHOT</galleyVersion>
-    <cartoVersion>0.8.3-SNAPSHOT</cartoVersion>
+    <atlasVersion>0.14.0</atlasVersion>
+    <galleyVersion>0.8</galleyVersion>
+    <cartoVersion>0.9</cartoVersion>
     <bomVersion>16</bomVersion>
-    <webdavVersion>3.2.1-SNAPSHOT</webdavVersion>
+    <webdavVersion>3.2.1</webdavVersion>
     <resteasyVersion>3.0.9.Final</resteasyVersion>
     <undertowVersion>1.1.2.Final</undertowVersion>
     
