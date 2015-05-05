@@ -12,9 +12,9 @@ Why a platform? In addition to its core functionality, AProx provides a framewor
 Some of the more interesting features provided by AProx are:
 
 * Hosted repositories with configurable / combined release and snapshot storage
-* Remote repositories with individually configurable mutual SSL and server SSL certificate
-* Logical repository grouping with content merging for known file types that require it
-* `settings.xml` file generation tuned to work with each repository and group, with local repository separation
-* WebDAV access to cached / stored repository content **and** generated settings.xml files
-* Repository / Group definition change tracking with changelogs, stored in Git
-* Ability to synchronize all repository / group definition changes to a remote Git repository
+* Remote repositories with individually configurable client/server SSL options
+* Logical repository grouping with metadata/index merging
+* Auto-generated Maven `settings.xml` files tuned for each repository and group
+* WebDAV access to cached / stored repository content
+* Repository / Group revision tracking with changelogs
+* Data file sync to remote Git repository (eg. repo/group definitions)
