@@ -11,17 +11,17 @@ defaults:
     scope:
       path: "user"
     values:
-      nav: "Users"
+      nav: "user"
   - 
     scope:
       path: "dev"
     values:
-      nav: "Developers"
+      nav: "dev"
   - 
     scope:
       path: "ref"
     values:
-      nav: "Reference"
+      nav: "ref"
 
 title: "AProx Artifact Repository"
 siteTitle: "Commonjava"

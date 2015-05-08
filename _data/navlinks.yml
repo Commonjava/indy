@@ -1,5 +1,5 @@
 - name: "User's Guide"
-  nav: "users"
+  nav: "user"
   url: user/index.html
 #- name: "Developer's Guide"
 #  nav: "dev"
