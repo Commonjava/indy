@@ -27,7 +27,7 @@
         <div id="navlinks" class="headerlinks inner">
           {% for link in site.data.navlinks %}
             {% if link.name != page.nav %}
-            <span class="headerlink inactive"><a href="{{base}}{{link.url}}">{{link.name}}</a></span>
+            <span class="headerlink inactive"><a href="{{base}}/{{link.url}}">{{link.name}}</a></span>
             {% else %}
             <span class="headerlink active">{{link.name}}</span>
             {% endif %}
