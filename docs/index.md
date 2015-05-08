@@ -7,6 +7,8 @@ title: "Documentation Contents"
 
 * [Quick Start](quickstart.html)
 * [Repositories and Groups](repos-groups.html)
+* [Java Client API](java-client-basics.html)
+* [REST API](rest-client-basics.html)
 
 ### Deployment Options
 
@@ -22,7 +24,3 @@ title: "Documentation Contents"
 * [Promote Content-Relocation Add-On](promote-addon.html)
 * [Revisions Data-Versioning Add-On](revisions-addon.html)
 
-### Client APIs
-
-* [Basic REST API](rest-client-basics.html)
-* [Java Client API](java-client-basics.html)
