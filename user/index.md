@@ -1,5 +1,5 @@
 ---
-title: "Documentation Contents"
+title: "AProx User's Guide"
 ---
 
 ### Basics

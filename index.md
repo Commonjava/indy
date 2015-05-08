@@ -1,4 +1,5 @@
 ---
+title: "AProx Documentation"
 ---
 
 ### AProx (Approximately A Proxy)

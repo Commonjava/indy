@@ -9,10 +9,21 @@ defaults:
       author: "John Casey"
   - 
     scope:
-      path: "docs"
+      path: "user"
     values:
-      nav: "Documentation"
+      nav: "Users"
+  - 
+    scope:
+      path: "dev"
+    values:
+      nav: "Developers"
+  - 
+    scope:
+      path: "ref"
+    values:
+      nav: "Reference"
 
+title: "AProx Artifact Repository"
 siteTitle: "Commonjava"
 projectTitle: "AProx"
 tagline: "Management Platform for Maven-Style Artifacts and Repositories"
