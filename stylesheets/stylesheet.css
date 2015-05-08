@@ -239,6 +239,10 @@ Full-Width Styles
   padding: 5px;
 }
 
+.headerlink.inactive{
+  background-color: #fafafa;
+}
+
 .headerlink.inactive:hover, 
 .headerlink.active {
   background-color: #f2f2f2;
