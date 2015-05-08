@@ -32,7 +32,8 @@ Like AProx itself, the Java client API consists of a core of functionality, seen
 
 Each of the above modules has its own convenience accessor method in the `org.commonjava.aprox.client.core.Aprox` class. 
 
-#### Stores Module
+### Stores Module
+<a name="stores"></a>
 
 To manage store definitions (repositories and groups), you can use the `AproxStoresClientModule` module via the `stores()` convenience method:
 
@@ -71,7 +72,8 @@ To manage store definitions (repositories and groups), you can use the `AproxSto
     
     aprox.stores().delete(StoreType.group, group.getName())
 
-#### Content Module
+### Content Module
+<a name="content"></a>
 
 To access or manage content available within an artifact store, you can use the `AproxContentClientModule` module via the `content()` convenience method:
 
@@ -127,7 +129,8 @@ To access or manage content available within an artifact store, you can use the 
     aprox.content().delete(type, repo, dir);
 
 
-#### Stats Module
+### Stats Module
+<a name="stats"></a>
 
 Or, if you want very general information about AProx itself, you can use the `AproxStatsClientModule` via the `stats()` convenience method:
 
@@ -157,7 +160,7 @@ Or, if you want very general information about AProx itself, you can use the `Ap
                           store.getResourceUri());
     }
 
-#### Add-On Modules
+### Add-On Modules
 
 Additionally, client modules for accessing the functions of various add-ons can be initialized when the Aprox client is initialized, then accessed via the `module(..)` method:
 
@@ -175,5 +178,7 @@ Additionally, client modules for accessing the functions of various add-ons can 
 
 Yes, you could have used a separate field for the Folo content module, and used that (after having passed it into the Aprox client to initialize it). However, using the `module(..)` method allows you to pass around the Aprox client instance without having to manage the module instances separately.
 
+### Further Reading
 
+Each AProx add-on can expose as many of its own client API modules as makes sense, in addition to those of the AProx client's core API (the Folo content module above is one example). Documentation for these add-ons will detail the corresponding Java client API modules (along with pertinent REST API operations).
 
