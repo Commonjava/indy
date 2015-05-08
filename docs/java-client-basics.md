@@ -10,11 +10,13 @@ AProx provides a Java client API that wraps AProx REST calls with a fluent API a
 
 If you're using Apache Maven to build, you can add the client API to your project with a single dependency:
 
+```xml
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-client-core-java</artifactId>
       <version>0.20.0</version>
     </dependency>
+```
 
 Once you have the dependency added to your project, you'll need to setup a new instance of `org.commonjava.aprox.client.core.Aprox` in order to talk to your AProx server. Something like this should get you started:
 
