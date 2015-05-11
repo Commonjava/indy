@@ -6,7 +6,7 @@ title: "dotMaven WebDAV/Settings Add-On"
 
 You can mount the dotMaven view of your AProx server using the URL:
 
-    dav://localhost:8080/mavdav
+    http://localhost:8080/mavdav
 
 (`mavdav` is the old name for dotMaven, which has just sort of stuck around.)
 
@@ -14,6 +14,10 @@ This gives you two subdirectories:
 
 * [settings](#settings)
 * [storage](#storage)
+
+Using the Linux `davfs2` package, you can mount dotMaven with a command like this:
+
+    $ mount -t davfs http://localhost:8080/mavdav /mnt/dotmaven
 
 <a name="settings"></a>
 
