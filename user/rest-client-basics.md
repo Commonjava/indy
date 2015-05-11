@@ -48,8 +48,8 @@ The main divergence from these is in the artifact-store content resource, where 
 AProx's core functionality supports CRUD++ operations (augmenting basic CRUD with things like listing and existence) for artifact stores and store content. It also supports some inspection operations, such as returning version and build information for the AProx instance. More specifically, the core supports the following three categories of operations:
 
 * [Stores](rest/stores.html) - Access and manage artifact store (repository and group) definitions.
-* [Content](#content) - Access and manage artifact content (files) within stores on the system.
-* [Stats](#stats) - Access information about the AProx server version and build info, along with information about the add-ons that are available.
+* [Content](rest/content.html) - Access and manage artifact content (files) within stores on the system.
+* [Stats](rest/stats.html) - Access information about the AProx server version and build info, along with information about the add-ons that are available.
 
 ### Further Reading
 
