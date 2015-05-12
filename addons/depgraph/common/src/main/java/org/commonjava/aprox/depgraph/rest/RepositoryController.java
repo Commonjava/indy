@@ -43,6 +43,7 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
+import org.commonjava.aprox.depgraph.dto.PathsDTO;
 import org.commonjava.aprox.depgraph.dto.WebOperationConfigDTO;
 import org.commonjava.aprox.depgraph.util.ConfigDTOHelper;
 import org.commonjava.aprox.model.core.StoreKey;
@@ -50,6 +51,7 @@ import org.commonjava.aprox.model.galley.CacheOnlyLocation;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.UriFormatter;
+import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.data.CartoDataException;
@@ -94,6 +96,7 @@ public class RepositoryController
 
     @Inject
     private ConfigDTOHelper configHelper;
+
 
     public String getUrlMap( final InputStream configStream, final String baseUri, final UriFormatter uriFormatter )
         throws AproxWorkflowException
@@ -156,6 +159,90 @@ public class RepositoryController
         catch ( final MalformedURLException e )
         {
             throw new AproxWorkflowException( "Failed to generate runtime repository. Reason: {}", e, e.getMessage() );
+        }
+
+        try
+        {
+            return serializer.writeValueAsString( result );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to serialize to JSON: %s", e, e.getMessage() );
+        }
+    }
+
+    public String getPaths( final InputStream configStream, final UriFormatter uriFormatter)
+        throws AproxWorkflowException
+    {
+        final PathsDTO dto = configHelper.readPathsDTO( configStream );
+        return getPaths( dto, uriFormatter );
+    }
+
+    public String getPaths( final String json, final UriFormatter uriFormatter )
+        throws AproxWorkflowException
+    {
+        final PathsDTO dto = configHelper.readPathsDTO( json );
+        return getPaths( dto, uriFormatter );
+    }
+
+    private String getPaths( final PathsDTO dto, final UriFormatter uriFormatter )
+        throws AproxWorkflowException
+    {
+        final List<List<ProjectRelationship<ProjectVersionRef>>> paths;
+
+        paths = resolvePaths( dto );
+
+        Collections.sort( paths, new Comparator<List<ProjectRelationship<ProjectVersionRef>>>()
+                {
+
+                    @Override
+                    public int compare( final List<ProjectRelationship<ProjectVersionRef>> o1,
+                            final List<ProjectRelationship<ProjectVersionRef>> o2 )
+                    {
+                        int result = 0;
+
+                        int i = 0;
+                        ProjectVersionRefComparator cmp = new ProjectVersionRefComparator();
+                        while ( result == 0 && i < o1.size() && i < o2.size() )
+                        {
+                            ProjectRelationship<ProjectVersionRef> rel1 = o1.get( i );
+                            ProjectRelationship<ProjectVersionRef> rel2 = o2.get( i );
+                            i++;
+
+                            result = cmp.compare( rel1.getDeclaring(), rel2.getDeclaring() );
+                            if ( result == 0 )
+                            {
+                                result = cmp.compare( rel1.getTarget(), rel2.getTarget() );
+                            }
+                        }
+
+                        if ( result == 0 )
+                        {
+                            if ( o1.size() < o2.size() )
+                            {
+                                result = -1;
+                            }
+                            else if ( o1.size() > o2.size() )
+                            {
+                                result = 1;
+                            }
+                        }
+
+                        return result;
+                    }
+
+                });
+
+        Map<ProjectVersionRef, List<List<ProjectRelationship<ProjectVersionRef>>>> result = new HashMap<>();
+        for ( List<ProjectRelationship<ProjectVersionRef>> path : paths )
+        {
+            final ProjectVersionRef leaf = path.get( path.size() - 1 ).getTarget().asProjectVersionRef();
+            if ( !result.containsKey( leaf ) )
+            {
+                result.put( leaf, new ArrayList<List<ProjectRelationship<ProjectVersionRef>>>() );
+            }
+            List<List<ProjectRelationship<ProjectVersionRef>>> pathList = result.get( leaf );
+            pathList.add( path );
         }
 
         try
@@ -384,6 +471,38 @@ public class RepositoryController
         }
 
         return contents;
+    }
+
+    private List<List<ProjectRelationship<ProjectVersionRef>>> resolvePaths( PathsDTO dto )
+        throws AproxWorkflowException
+    {
+        if ( dto == null )
+        {
+            logger.warn( "Repository archive configuration is missing." );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "JSON configuration not supplied" );
+        }
+
+        // TODO implement for more than one graph
+        dto.resolveFilters( presets, config.getDefaultWebFilterPreset() );
+
+        if ( !dto.isValid() )
+        {
+            logger.warn( "Repository archive configuration is invalid: {}", dto );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid configuration: {}", dto );
+        }
+
+        final List<List<ProjectRelationship<ProjectVersionRef>>> discoveredPaths;
+        try
+        {
+            discoveredPaths = ops.resolvePaths( dto, dto.getTargets() );
+        }
+        catch ( final CartoDataException ex )
+        {
+            logger.error( String.format( "Failed to resolve paths for: %s. Reason: %s", dto, ex.getMessage() ), ex );
+            throw new AproxWorkflowException( "Failed to resolve paths for: {}. Reason: {}", ex, dto, ex.getMessage() );
+        }
+
+        return discoveredPaths;
     }
 
 }
