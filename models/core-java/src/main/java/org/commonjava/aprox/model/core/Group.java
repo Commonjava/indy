@@ -61,9 +61,19 @@ public class Group
 
     public synchronized boolean addConstituent( final StoreKey repository )
     {
+        if ( repository == null )
+        {
+            return false;
+        }
+
         if ( constituents == null )
         {
             constituents = new ArrayList<StoreKey>();
+        }
+
+        if ( !constituents.contains( repository ) )
+        {
+            return false;
         }
 
         return constituents.add( repository );

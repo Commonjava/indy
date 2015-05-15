@@ -265,4 +265,9 @@ public interface StoreDataManager
      */
     boolean hasArtifactStore( StoreKey key );
 
+    /**
+     * Find a remote repository with a URL that matches the given one, and return it...or null.
+     */
+    RemoteRepository findRemoteRepository( String url );
+
 }

@@ -261,4 +261,10 @@ public class TestAutoProxyDataManager
         return delegate.hasArtifactStore( key );
     }
 
+    @Override
+    public RemoteRepository findRemoteRepository( final String url )
+    {
+        return delegate.findRemoteRepository( url );
+    }
+
 }

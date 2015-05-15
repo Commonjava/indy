@@ -102,7 +102,7 @@ public class DefaultContentManager
         Transfer txfr = null;
         for ( final ArtifactStore store : stores )
         {
-            txfr = retrieve( store, path );
+            txfr = doRetrieve( store, path );
             if ( txfr != null )
             {
                 break;
@@ -150,7 +150,7 @@ public class DefaultContentManager
                     for ( final ArtifactStore member : members )
                     {
                         // NOTE: This is only safe to call because we're concrete ordered stores, so anything passing through here is concrete.
-                        final Transfer txfr = retrieve( member, path );
+                        final Transfer txfr = doRetrieve( member, path );
                         if ( txfr != null )
                         {
                             storeTransfers.add( txfr );
@@ -163,7 +163,7 @@ public class DefaultContentManager
             else
             {
                 // NOTE: This is only safe to call because we're doing the group check up front, so anything passing through here is concrete.
-                final Transfer txfr = retrieve( store, path );
+                final Transfer txfr = doRetrieve( store, path );
                 if ( txfr != null )
                 {
                     txfrs.add( txfr );
@@ -205,23 +205,38 @@ public class DefaultContentManager
 
             if ( item == null )
             {
-                item = retrieveFirst( members, path );
-            }
-        }
-        else
-        {
-            logger.info( "Attempting to retrieve: {} from: {}", path, store.getKey() );
-            item = downloadManager.retrieve( store, path );
-
-            if ( item == null )
-            {
-                for ( final ContentGenerator generator : contentGenerators )
+                for ( final ArtifactStore member : members )
                 {
-                    item = generator.generateFileContent( store, path );
+                    item = doRetrieve( member, path );
                     if ( item != null )
                     {
                         break;
                     }
+                }
+            }
+        }
+        else
+        {
+            item = doRetrieve( store, path );
+        }
+
+        return item;
+    }
+
+    private Transfer doRetrieve( final ArtifactStore store, final String path )
+        throws AproxWorkflowException
+    {
+        logger.info( "Attempting to retrieve: {} from: {}", path, store.getKey() );
+        Transfer item = downloadManager.retrieve( store, path );
+
+        if ( item == null )
+        {
+            for ( final ContentGenerator generator : contentGenerators )
+            {
+                item = generator.generateFileContent( store, path );
+                if ( item != null )
+                {
+                    break;
                 }
             }
         }
