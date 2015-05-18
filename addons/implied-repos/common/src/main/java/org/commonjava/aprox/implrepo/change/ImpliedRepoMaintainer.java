@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.aprox.implrepo;
+package org.commonjava.aprox.implrepo.change;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -27,6 +27,9 @@ import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
 import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.implrepo.ImpliedReposException;
+import org.commonjava.aprox.implrepo.conf.ImpliedRepoConfig;
+import org.commonjava.aprox.implrepo.data.ImpliedRepoMetadataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.StoreKey;
@@ -45,11 +48,32 @@ public class ImpliedRepoMaintainer
     @Inject
     private ImpliedRepoMetadataManager metadataManager;
 
+    @Inject
+    private ImpliedRepoConfig config;
+
+    protected ImpliedRepoMaintainer()
+    {
+    }
+
+    public ImpliedRepoMaintainer( final StoreDataManager storeManager,
+                                  final ImpliedRepoMetadataManager metadataManager, final ImpliedRepoConfig config )
+    {
+        this.storeManager = storeManager;
+        this.metadataManager = metadataManager;
+        this.config = config;
+    }
+
     // FIXME: How to tell whether a repo that is implied by other repos was added manually??? 
     // That, vs. just left there after the repo that implied it was removed???
     // We cannot currently remove formerly implied repos because we can't distinguish between the above states.
     public void updateImpliedStores( @Observes final ArtifactStoreUpdateEvent event )
     {
+        if ( !config.isEnabled() )
+        {
+            logger.debug( "Implied-repository processing is not enabled." );
+            return;
+        }
+
         for ( final ArtifactStore store : event )
         {
             if ( !( store instanceof Group ) )
@@ -111,6 +135,11 @@ public class ImpliedRepoMaintainer
                     catch ( final ImpliedReposException e )
                     {
                         logger.error( "Failed to retrieve implied-store metadata for: " + member.getKey(), e );
+                        continue;
+                    }
+
+                    if ( implied == null || implied.isEmpty() )
+                    {
                         continue;
                     }
 

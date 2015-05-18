@@ -71,7 +71,7 @@ public class Group
             constituents = new ArrayList<StoreKey>();
         }
 
-        if ( !constituents.contains( repository ) )
+        if ( constituents.contains( repository ) )
         {
             return false;
         }

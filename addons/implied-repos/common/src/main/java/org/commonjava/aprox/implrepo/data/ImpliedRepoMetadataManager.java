@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.aprox.implrepo;
+package org.commonjava.aprox.implrepo.data;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,6 +22,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.commonjava.aprox.implrepo.ImpliedReposException;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
@@ -38,7 +39,16 @@ public class ImpliedRepoMetadataManager
     @Inject
     private AproxObjectMapper mapper;
 
-    public void addImpliedMetadata( final ArtifactStore origin, final ArrayList<ArtifactStore> implied )
+    protected ImpliedRepoMetadataManager()
+    {
+    }
+
+    public ImpliedRepoMetadataManager( final AproxObjectMapper mapper )
+    {
+        this.mapper = mapper;
+    }
+
+    public void addImpliedMetadata( final ArtifactStore origin, final List<ArtifactStore> implied )
         throws ImpliedReposException
     {
         try

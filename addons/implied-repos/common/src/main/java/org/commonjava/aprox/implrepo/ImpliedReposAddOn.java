@@ -13,34 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.aprox.depgraph.dto;
+package org.commonjava.aprox.implrepo;
 
-import java.util.Set;
+import org.commonjava.aprox.model.spi.AproxAddOnID;
+import org.commonjava.aprox.spi.AproxAddOn;
 
-import org.commonjava.maven.atlas.ident.ref.ProjectRef;
-
-public class PathsDTO 
-    extends WebOperationConfigDTO
+public class ImpliedReposAddOn
+    implements AproxAddOn
 {
 
-    /** The target artifacts which we want collect paths to. */
-    private Set<ProjectRef> targets;
+    private final AproxAddOnID id = new AproxAddOnID().withName( "Implied Repos" );
 
-    /**
-     * @return the target artifacts which we want collect paths to
-     */
-    public Set<ProjectRef> getTargets()
+    @Override
+    public AproxAddOnID getId()
     {
-        return targets;
-    }
-
-    /**
-     * @param targets
-     *            the target artifacts which we want collect paths to
-     */
-    public void setTargets( final Set<ProjectRef> targets )
-    {
-        this.targets = targets;
+        return id;
     }
 
 }

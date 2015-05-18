@@ -466,6 +466,13 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-implied-repos-common</artifactId>
+        <version>0.20.1-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>confset</classifier>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-ftests-implied-repos</artifactId>
         <version>0.20.1-SNAPSHOT</version>
       </dependency>
