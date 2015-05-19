@@ -29,7 +29,7 @@ import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 import org.junit.Test;
 
-public class PomWithRepoAddsRepoToGroupTest
+public class PomWithPluginRepoAddsRepoToGroupTest
     extends AbstractSkimFunctionalTest
 {
 
@@ -38,7 +38,8 @@ public class PomWithRepoAddsRepoToGroupTest
     @Test
     public void skimPomForRepoAndAddIt() throws Exception
     {
-        final PomRef ref = loadPom( "one-repo", Collections.singletonMap( "one-repo.url", server.formatUrl( REPO ) ) );
+        final PomRef ref =
+            loadPom( "one-plugin-repo", Collections.singletonMap( "one-repo.url", server.formatUrl( REPO ) ) );
         
         server.expect( server.formatUrl( TEST_REPO, ref.path ), 200, ref.pom );
 

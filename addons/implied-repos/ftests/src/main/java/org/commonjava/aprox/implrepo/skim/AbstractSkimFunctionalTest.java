@@ -16,18 +16,24 @@
 package org.commonjava.aprox.implrepo.skim;
 
 import static org.commonjava.aprox.model.core.StoreType.group;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.boot.AproxBootException;
 import org.commonjava.aprox.ftest.core.AbstractAproxFunctionalTest;
 import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.test.fixture.core.CoreServerFixture;
 import org.commonjava.aprox.test.fixture.core.TestHttpServer;
+import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.galley.maven.parse.PomPeek;
 import org.junit.Before;
 import org.junit.Rule;
 import org.slf4j.Logger;
@@ -93,5 +99,53 @@ public class AbstractSkimFunctionalTest
         FileUtils.write( confFile, "[implied-repos]\nenabled=true" );
 
         return fixture;
+    }
+
+    protected PomRef loadPom( final String name, final Map<String, String> substitutions )
+    {
+        try
+        {
+            final InputStream stream = Thread.currentThread()
+                                             .getContextClassLoader()
+                                             .getResourceAsStream( name + ".pom" );
+
+            String pom = IOUtils.toString( stream );
+            IOUtils.closeQuietly( stream );
+
+            for ( final Map.Entry<String, String> entry : substitutions.entrySet() )
+            {
+                pom = pom.replace( "@" + entry.getKey() + "@", entry.getValue() );
+            }
+
+            final PomPeek peek = new PomPeek( pom, false );
+            final ProjectVersionRef gav = peek.getKey();
+
+            final String path =
+                String.format( "%s/%s/%s/%s-%s.pom", gav.getGroupId()
+                                                        .replace( '.', '/' ), gav.getArtifactId(),
+                               gav.getVersionString(), gav.getArtifactId(), gav.getVersionString() );
+
+            return new PomRef( pom, path );
+        }
+        catch ( final Exception e )
+        {
+            e.printStackTrace();
+            fail( "Failed to read POM from: " + name );
+        }
+
+        return null;
+    }
+
+    protected static final class PomRef
+    {
+        PomRef( final String pom, final String path )
+        {
+            this.pom = pom;
+            this.path = path;
+        }
+
+        protected final String pom;
+
+        protected final String path;
     }
 }
