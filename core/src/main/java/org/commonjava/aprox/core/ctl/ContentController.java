@@ -112,7 +112,7 @@ public class ContentController
         final ArtifactStore store = getStore( key );
 
         final boolean deleted = contentManager.delete( store, path );
-        return deleted ? ApplicationStatus.OK : ApplicationStatus.NOT_FOUND;
+        return deleted ? ApplicationStatus.NO_CONTENT : ApplicationStatus.NOT_FOUND;
     }
 
     public Transfer get( final StoreType type, final String name, final String path )

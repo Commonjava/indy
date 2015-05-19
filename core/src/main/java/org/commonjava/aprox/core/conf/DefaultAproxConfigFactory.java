@@ -159,9 +159,16 @@ public class DefaultAproxConfigFactory
         {
             final String fname = section.getDefaultConfigFileName();
             final File file = new File( dir, fname );
+            if ( !"main.conf".equals( fname ) && file.exists() )
+            {
+                logger.info( "NOT writing default configuration to: {}. That file already exists.", file );
+                return;
+            }
+
             file.getParentFile()
                 .mkdirs();
 
+            logger.info( "Writing defaults for: {} to: {}", section.getSectionName(), file );
             FileOutputStream out = null;
             try
             {

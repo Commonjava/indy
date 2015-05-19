@@ -49,6 +49,8 @@ public class MemoryStoreDataManager
 
     private final Map<StoreKey, ArtifactStore> stores = new HashMap<StoreKey, ArtifactStore>();
 
+    private final Map<String, RemoteRepository> byRemoteUrl = new HashMap<String, RemoteRepository>();
+
     //    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
@@ -118,17 +120,18 @@ public class MemoryStoreDataManager
     public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
         throws AproxDataException
     {
-        return getGroupOrdering( groupName, false );
+        return getGroupOrdering( groupName, false, true );
     }
 
     @Override
     public List<ArtifactStore> getOrderedStoresInGroup( final String groupName )
         throws AproxDataException
     {
-        return getGroupOrdering( groupName, true );
+        return getGroupOrdering( groupName, true, false );
     }
 
-    private List<ArtifactStore> getGroupOrdering( final String groupName, final boolean includeGroups )
+    private List<ArtifactStore> getGroupOrdering( final String groupName, final boolean includeGroups,
+                                                  final boolean recurseGroups )
         throws AproxDataException
     {
         final Group master = (Group) stores.get( new StoreKey( StoreType.group, groupName ) );
@@ -138,13 +141,13 @@ public class MemoryStoreDataManager
         }
 
         final List<ArtifactStore> result = new ArrayList<ArtifactStore>();
-        recurseGroup( master, result, includeGroups );
+        recurseGroup( master, result, includeGroups, recurseGroups );
 
         return result;
     }
 
     private synchronized void recurseGroup( final Group master, final List<ArtifactStore> result,
-                                            final boolean includeGroups )
+                                            final boolean includeGroups, final boolean recurseGroups )
     {
         if ( master == null )
         {
@@ -159,9 +162,10 @@ public class MemoryStoreDataManager
         for ( final StoreKey key : master.getConstituents() )
         {
             final StoreType type = key.getType();
-            if ( type == StoreType.group )
+            if ( recurseGroups && type == StoreType.group )
             {
-                recurseGroup( (Group) stores.get( key ), result, includeGroups );
+                // if we're here, we're definitely recursing groups...
+                recurseGroup( (Group) stores.get( key ), result, includeGroups, true );
             }
             else
             {
@@ -244,7 +248,12 @@ public class MemoryStoreDataManager
     public boolean storeRemoteRepository( final RemoteRepository repository, final ChangeSummary summary )
         throws AproxDataException
     {
-        return store( repository, summary, false );
+        final boolean result = store( repository, summary, false );
+        if ( result )
+        {
+            byRemoteUrl.put( repository.getUrl(), repository );
+        }
+        return result;
     }
 
     @Override
@@ -256,6 +265,11 @@ public class MemoryStoreDataManager
         dispatcher.updating( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, repository );
 
         final boolean result = store( repository, summary, skipIfExists );
+        if ( result )
+        {
+            byRemoteUrl.put( repository.getUrl(), repository );
+        }
+
         return result;
     }
 
@@ -282,7 +296,14 @@ public class MemoryStoreDataManager
     public boolean storeArtifactStore( final ArtifactStore store, final ChangeSummary summary )
         throws AproxDataException
     {
-        return store( store, summary, false );
+        final boolean result = store( store, summary, false );
+        if ( result && ( store instanceof RemoteRepository ) )
+        {
+            final RemoteRepository repository = (RemoteRepository) store;
+            byRemoteUrl.put( repository.getUrl(), repository );
+        }
+
+        return result;
     }
 
     @Override
@@ -294,6 +315,11 @@ public class MemoryStoreDataManager
         dispatcher.updating( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, store );
 
         final boolean result = store( store, summary, skipIfExists );
+        if ( result && ( store instanceof RemoteRepository ) )
+        {
+            final RemoteRepository repository = (RemoteRepository) store;
+            byRemoteUrl.put( repository.getUrl(), repository );
+        }
 
         return result;
     }
@@ -514,6 +540,12 @@ public class MemoryStoreDataManager
     public void reload()
         throws AproxDataException
     {
+    }
+
+    @Override
+    public RemoteRepository findRemoteRepository( final String url )
+    {
+        return byRemoteUrl.get( url );
     }
 
 }

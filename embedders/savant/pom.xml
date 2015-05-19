@@ -87,6 +87,10 @@
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-promote-common</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-implied-repos-common</artifactId>
+    </dependency>
   </dependencies>
   
   <build>
@@ -122,6 +126,10 @@
         </dependency>
         <dependency>
           <groupId>org.commonjava.aprox</groupId>
+          <artifactId>aprox-ftests-implied-repos</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.commonjava.aprox</groupId>
           <artifactId>aprox-ftests-promote</artifactId>
         </dependency>
       </dependencies>
@@ -141,6 +149,7 @@
                     <dependency>org.commonjava.aprox:aprox-ftests-folo</dependency>
                     <dependency>org.commonjava.aprox:aprox-ftests-depgraph</dependency>
                     <dependency>org.commonjava.aprox:aprox-ftests-dot-maven</dependency>
+                    <dependency>org.commonjava.aprox:aprox-ftests-implied-repos</dependency>
                     <dependency>org.commonjava.aprox:aprox-ftests-promote</dependency>
                   </dependenciesToScan> 
                 </configuration>

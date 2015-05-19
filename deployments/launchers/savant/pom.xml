@@ -117,6 +117,12 @@
       <type>tar.gz</type>
       <classifier>confset</classifier>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-implied-repos-common</artifactId>
+      <type>tar.gz</type>
+      <classifier>confset</classifier>
+    </dependency>
   </dependencies>
   
   <build>

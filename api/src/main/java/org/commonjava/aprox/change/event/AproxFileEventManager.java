@@ -24,6 +24,8 @@ import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileErrorEvent;
 import org.commonjava.maven.galley.event.FileNotFoundEvent;
 import org.commonjava.maven.galley.event.FileStorageEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Helper class to provide simple methods to handle null-checking, etc. around the firing of AProx filesystem events.
@@ -32,6 +34,8 @@ import org.commonjava.maven.galley.event.FileStorageEvent;
 public class AproxFileEventManager
     implements org.commonjava.maven.galley.spi.event.FileEventManager
 {
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private Event<FileStorageEvent> storageEvent;
@@ -80,9 +84,15 @@ public class AproxFileEventManager
 
     private <T> void doFire( final Event<T> eventQ, final T evt )
     {
+        logger.info( "Firing {} event: {}", evt.getClass()
+                                               .getSimpleName(), evt );
         if ( eventQ != null )
         {
             eventQ.fire( evt );
+        }
+        else
+        {
+            logger.warn( "ERROR: No event queue available for firing: {}", evt );
         }
     }
 }

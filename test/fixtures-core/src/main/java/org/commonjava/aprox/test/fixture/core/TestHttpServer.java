@@ -107,6 +107,7 @@ public class TestHttpServer
         if ( server != null )
         {
             server.stop();
+            logger.info( "STOPPED Test HTTP Server on 127.0.0.1:" + port );
         }
     }
 
@@ -137,6 +138,7 @@ public class TestHttpServer
                          .build();
 
         server.start();
+        logger.info( "STARTED Test HTTP Server on 127.0.0.1:" + port );
     }
 
     public static final class ExpectationServlet

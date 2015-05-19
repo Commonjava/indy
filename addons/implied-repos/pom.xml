@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <!--
 
     Copyright (C) 2011 Red Hat, Inc. (jdcasey@commonjava.org)
@@ -18,27 +18,18 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
   <parent>
     <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-parent</artifactId>
+    <artifactId>aprox-addons</artifactId>
     <version>0.20.1-SNAPSHOT</version>
   </parent>
-  
-  <artifactId>aprox-addons</artifactId>
+  <artifactId>aprox-implied-repos</artifactId>
+  <name>AProx :: Add-Ons :: Implied Repositories :: Parent</name>
   <packaging>pom</packaging>
 
-  <name>AProx :: Add-Ons :: Parent</name>
-  
   <modules>
-    <module>autoprox</module>
-    <module>depgraph</module>
-    <module>dot-maven</module>
-    <module>folo</module>
-    <module>implied-repos</module>
-    <module>indexer</module>
-    <module>promote</module>
-    <module>revisions</module>
-    <module>setback</module>
+    <module>ftests</module>
+    <module>common</module>
   </modules>
+
 </project>

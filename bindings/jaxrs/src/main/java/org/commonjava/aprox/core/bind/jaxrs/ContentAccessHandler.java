@@ -250,6 +250,8 @@ public class ContentAccessHandler
 
                     response = Response.ok( new TransferStreamingOutput( item ) )
                                        .header( ApplicationHeader.content_type.key(), contentType )
+                                .header( ApplicationHeader.last_modified.key(),
+                                         HttpUtils.formatDateHeader( item.lastModified() ) )
                                        .build();
                 }
             }

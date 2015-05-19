@@ -135,6 +135,7 @@ public class IndexHandler
 
     public void onStorage( @Observes final FileStorageEvent event )
     {
+        logger.info( "Handling storage event: {}", event );
         final Transfer item = event.getTransfer();
         final StoreKey key = LocationUtils.getKey( item );
         final String path = item.getPath();
