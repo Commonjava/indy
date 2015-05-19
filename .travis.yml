@@ -10,4 +10,4 @@ cache:
 
 install: /bin/true
 script: 
-  - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && mvn -s ./travis-settings.xml -Prun-its -q -B -e install || mvn deploy -s ./travis-settings.xml -V -Prun-its -q -B -e' 
+  - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && mvn deploy  -s ./travis-settings.xml -V -Prun-its -q -B -e|| mvn install -s ./travis-settings.xml -V -Prun-its -q -B -e' 
