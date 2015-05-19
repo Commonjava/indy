@@ -9,4 +9,4 @@ cache:
      - '$HOME/.m2/repository'
 
 install: /bin/true
-script: mvn deploy -V -Prun-its -q -B -e 
+script: mvn deploy -s ./travis-settings.xml -V -Prun-its -q -B -e 
