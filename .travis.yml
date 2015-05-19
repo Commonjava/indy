@@ -1,0 +1,12 @@
+sudo: required
+
+language: java
+jdk:
+   - oraclejdk7
+
+cache:
+   directories:
+     - '$HOME/.m2/repository'
+
+install: /bin/true
+script: mvn deploy -V -Prun-its -q -B -e 
