@@ -15,9 +15,7 @@
  */
 
 import org.commonjava.aprox.autoprox.data.*;
-
 import java.net.MalformedURLException;
-
 import org.commonjava.aprox.model.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
