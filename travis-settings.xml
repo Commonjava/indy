@@ -5,4 +5,5 @@
       <username>${env.SONATYPE_USER}</username>
       <password>${env.SONATYPE_PASS}</password>
     </server>
+  </servers>
 </settings>
