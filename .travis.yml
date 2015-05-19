@@ -9,4 +9,5 @@ cache:
      - '$HOME/.m2/repository'
 
 install: /bin/true
-script: mvn deploy -s ./travis-settings.xml -V -Prun-its -q -B -e 
+script: 
+  - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && mvn -s ./travis-settings.xml -Prun-its -q -B -e install || mvn deploy -s ./travis-settings.xml -V -Prun-its -q -B -e' 
