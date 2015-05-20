@@ -1,13 +1,3 @@
-sudo: required
-
 language: java
-jdk:
-   - oraclejdk7
-
-cache:
-   directories:
-     - '$HOME/.m2/repository'
-
-install: /bin/true
 script: 
   - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && mvn deploy  -s ./travis-settings.xml -V -Prun-its -q -B -e|| mvn install -s ./travis-settings.xml -V -Prun-its -q -B -e' 
