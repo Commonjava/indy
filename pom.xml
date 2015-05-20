@@ -904,6 +904,12 @@
         -->
       </modules>
     </profile>
+    <profile>
+      <id>travis</id>
+      <properties>
+        <test-forkCount>1</test-forkCount>
+      </properties>
+    </profile>
   </profiles>
   
 </project>
