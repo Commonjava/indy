@@ -57,5 +57,9 @@
       <artifactId>hamcrest-core</artifactId>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-implied-repos-client-java</artifactId>
+    </dependency>
   </dependencies>
 </project>

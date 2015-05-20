@@ -20,10 +20,14 @@ import static org.commonjava.aprox.model.core.StoreType.group;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 
 import org.apache.commons.io.FileUtils;
 import org.commonjava.aprox.boot.AproxBootException;
+import org.commonjava.aprox.client.core.AproxClientModule;
 import org.commonjava.aprox.ftest.core.AbstractAproxFunctionalTest;
+import org.commonjava.aprox.implrepo.client.ImpliedRepoClientModule;
 import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.test.fixture.core.CoreServerFixture;
@@ -93,5 +97,11 @@ public class AbstractMaintFunctionalTest
         FileUtils.write( confFile, "[implied-repos]\nenabled=true" );
 
         return fixture;
+    }
+
+    @Override
+    protected Collection<AproxClientModule> getAdditionalClientModules()
+    {
+        return Collections.<AproxClientModule> singleton( new ImpliedRepoClientModule() );
     }
 }
