@@ -473,6 +473,16 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-implied-repos-model-java</artifactId>
+        <version>0.20.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-implied-repos-client-java</artifactId>
+        <version>0.20.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-ftests-implied-repos</artifactId>
         <version>0.20.1-SNAPSHOT</version>
       </dependency>

@@ -15,19 +15,34 @@
  */
 package org.commonjava.aprox.client.core;
 
+import org.commonjava.aprox.model.core.io.AproxObjectMapper;
+
 public abstract class AproxClientModule
 {
 
     protected AproxClientHttp http;
 
-    protected void setup( final AproxClientHttp http )
+    protected Aprox client;
+
+    protected void setup( final Aprox client, final AproxClientHttp http )
     {
+        this.client = client;
         this.http = http;
+    }
+
+    protected Aprox getClient()
+    {
+        return client;
     }
 
     protected AproxClientHttp getHttp()
     {
         return http;
+    }
+
+    protected AproxObjectMapper getObjectMapper()
+    {
+        return http.getObjectMapper();
     }
 
     @Override

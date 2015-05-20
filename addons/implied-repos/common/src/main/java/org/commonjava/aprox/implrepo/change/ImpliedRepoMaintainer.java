@@ -130,7 +130,7 @@ public class ImpliedRepoMaintainer
                     List<StoreKey> implied;
                     try
                     {
-                        implied = metadataManager.getImpliedMetadata( member );
+                        implied = metadataManager.getStoresImpliedBy( member );
                     }
                     catch ( final ImpliedReposException e )
                     {

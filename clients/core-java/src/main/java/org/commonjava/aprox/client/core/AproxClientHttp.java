@@ -692,4 +692,9 @@ public class AproxClientHttp
         return req;
     }
 
+    public AproxObjectMapper getObjectMapper()
+    {
+        return objectMapper;
+    }
+
 }
