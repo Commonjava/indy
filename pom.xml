@@ -908,7 +908,6 @@
       <id>travis</id>
       <properties>
         <test-forkCount>1</test-forkCount>
-        <test-redirectOutput>false</test-redirectOutput>
       </properties>
     </profile>
   </profiles>
