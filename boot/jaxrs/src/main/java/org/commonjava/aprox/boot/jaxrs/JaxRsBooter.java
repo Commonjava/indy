@@ -227,9 +227,17 @@ public class JaxRsBooter
                                                          .select( AproxDeployment.class )
                                                          .get();
 
-        final DeploymentInfo di = aproxDeployment.getDeployment( bootOptions.getContextPath() )
+        DeploymentInfo di = aproxDeployment.getDeployment( bootOptions.getContextPath() )
                                                  .setContextPath( "/" );
-
+        
+        if(bootOptions.isSecure()) {
+        	System.out.println(">>> Using Aprox secure mode <<<");
+        	System.out.println(">>> secure config: " + bootOptions.getSecureConfig());
+        	System.out.println(">>> secure realm: " + bootOptions.getRealm());
+        	di = aproxDeployment.addKeycloakAdapterToDeployment(di, bootOptions.getSecureConfig(), bootOptions.getRealm());
+        	// TODO define proper roles here & possibly read them from boot configuration as well 
+        	di = aproxDeployment.addSecurityConstraintToDeployment(di, "admin", "/api/*");
+        }
         final DeploymentManager dm = Servlets.defaultContainer()
                                              .addDeployment( di );
         dm.deploy();

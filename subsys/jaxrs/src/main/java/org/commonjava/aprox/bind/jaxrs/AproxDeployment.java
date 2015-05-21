@@ -18,7 +18,10 @@ package org.commonjava.aprox.bind.jaxrs;
 import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.FilterInfo;
+import io.undertow.servlet.api.LoginConfig;
+import io.undertow.servlet.api.SecurityConstraint;
 import io.undertow.servlet.api.ServletInfo;
+import io.undertow.servlet.api.WebResourceCollection;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
 
 import java.util.Arrays;
@@ -126,6 +129,25 @@ public class AproxDeployment
             deploymentProviders.add( fac );
         }
     }
+    
+    public DeploymentInfo addSecurityConstraintToDeployment(DeploymentInfo di, String role, String constraintUrl) {
+        SecurityConstraint constraint = new SecurityConstraint();
+        WebResourceCollection collection = new WebResourceCollection();
+        collection.addUrlPattern(constraintUrl);
+        constraint.addWebResourceCollection(collection);
+        constraint.addRoleAllowed(role);
+        di.addSecurityConstraint(constraint);
+        return di;
+    }
+    
+    public DeploymentInfo addKeycloakAdapterToDeployment(DeploymentInfo di, String adapterConfigPath, String realm) {
+        di.addInitParameter("keycloak.config.file", adapterConfigPath);
+        LoginConfig loginConfig = new LoginConfig("KEYCLOAK", realm, null, null);
+        di.setLoginConfig(loginConfig);
+        return di;
+
+    }
+    
 
     public DeploymentInfo getDeployment( final String contextRoot )
     {
@@ -166,7 +188,6 @@ public class AproxDeployment
         final FilterInfo nameFilter =
             Servlets.filter( "Naming", ResourceManagementFilter.class,
                              new ImmediateInstanceFactory<ResourceManagementFilter>( resourceManagementFilter ) );
-
         final DeploymentInfo di =
             new DeploymentInfo().addListener( Servlets.listener( RequestScopeListener.class ) )
                                 //                                .addInitParameter( "resteasy.scan", Boolean.toString( true ) )
