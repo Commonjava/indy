@@ -252,6 +252,7 @@ public class StoreAdminHandler
             final String user = (String) request.getSession( true )
                                                 .getAttribute( SecurityParam.user.key() );
 
+            logger.info( "Storing: {}", store );
             if ( adminController.store( store, user, false ) )
             {
                 response = Response.ok()
@@ -259,6 +260,7 @@ public class StoreAdminHandler
             }
             else
             {
+                logger.warn( "{} NOT modified!", store );
                 response = Response.notModified()
                                    .build();
             }

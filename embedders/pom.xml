@@ -31,9 +31,9 @@
   <name>AProx :: Embedders :: Parent</name>
   
   <modules>
+    <module>savant</module>
     <module>rest-min</module>
     <module>easyprox</module>
-    <module>savant</module>
   </modules>
   
   <dependencies>

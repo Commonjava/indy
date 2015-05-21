@@ -15,7 +15,6 @@
  */
 package org.commonjava.aprox.change.event;
 
-import java.util.Arrays;
 import java.util.Collection;
 
 import org.commonjava.aprox.model.core.ArtifactStore;
@@ -23,39 +22,20 @@ import org.commonjava.aprox.model.core.ArtifactStore;
 /**
  * Event signaling that one or more specified {@link ArtifactStore} instances' configurations were changed. The {@link ArtifactStoreUpdateType}
  * gives more information about the nature of the update.
+ * <br/>
+ * This event is fired <b>AFTER</b> the updated {@link ArtifactStore} is actually persisted.
  */
-public abstract class ArtifactStoreUpdateEvent
-    extends AbstractAproxEvent
+public class ArtifactStorePostUpdateEvent
+    extends ArtifactStoreUpdateEvent
 {
 
-    private final ArtifactStoreUpdateType type;
-
-    protected ArtifactStoreUpdateEvent( final ArtifactStoreUpdateType type, final Collection<ArtifactStore> changes )
+    public ArtifactStorePostUpdateEvent( final ArtifactStoreUpdateType type, final Collection<ArtifactStore> changes )
     {
-        super( changes );
-        this.type = type;
+        super( type, changes );
     }
 
-    protected ArtifactStoreUpdateEvent( final ArtifactStoreUpdateType type, final ArtifactStore... changes )
+    public ArtifactStorePostUpdateEvent( final ArtifactStoreUpdateType type, final ArtifactStore... changes )
     {
-        super( Arrays.asList( changes ) );
-        this.type = type;
+        super( type, changes );
     }
-
-    /**
-     * Return the type of update that took place.
-     */
-    public ArtifactStoreUpdateType getType()
-    {
-        return type;
-    }
-
-    /**
-     * Return the changed {@link ArtifactStore}'s specified in this event.
-     */
-    public Collection<ArtifactStore> getChanges()
-    {
-        return getStores();
-    }
-
 }

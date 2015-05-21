@@ -72,7 +72,6 @@
     <module>test</module>
     <module>tools</module>
     <module>addons</module>
-    <module>deployments</module>
     <module>embedders</module>
     <module>uis</module>
     <module>ftests</module>
@@ -80,6 +79,7 @@
     
     <!-- TODO: put in profile, figure out why release version-adjustment isn't working in profile -->
     <module>embedder-tests</module>
+    <module>deployments</module>
   </modules>
   
   <dependencyManagement>

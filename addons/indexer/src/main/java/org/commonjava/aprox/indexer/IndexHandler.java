@@ -44,6 +44,7 @@ import org.apache.maven.index.updater.IndexUpdateResult;
 import org.apache.maven.index.updater.IndexUpdater;
 import org.apache.maven.index.updater.ResourceFetcher;
 import org.commonjava.aprox.change.event.AbstractStoreDeleteEvent;
+import org.commonjava.aprox.change.event.ArtifactStorePostUpdateEvent;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
 import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.core.expire.AproxSchedulerException;
@@ -201,7 +202,7 @@ public class IndexHandler
         executor.execute( new IndexExpirationRunnable( storeKey ) );
     }
 
-    public void onAdd( @Observes final ArtifactStoreUpdateEvent event )
+    public void onAdd( @Observes final ArtifactStorePostUpdateEvent event )
     {
         logger.info( "Updating indexes as a result of ArtifactStoreUpdateEvent." );
         executor.execute( new AdditionRunnable( event ) );

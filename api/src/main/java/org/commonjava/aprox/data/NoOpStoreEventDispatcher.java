@@ -13,13 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.aprox.core.data.testutil;
+package org.commonjava.aprox.data;
+
+import javax.enterprise.inject.Alternative;
+import javax.inject.Named;
 
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateType;
-import org.commonjava.aprox.data.StoreEventDispatcher;
 import org.commonjava.aprox.model.core.ArtifactStore;
 
-public class StoreEventDispatcherStub
+@Alternative
+@Named
+public class NoOpStoreEventDispatcher
     implements StoreEventDispatcher
 {
 

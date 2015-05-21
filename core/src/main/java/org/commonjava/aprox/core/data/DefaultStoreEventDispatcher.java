@@ -23,19 +23,28 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.change.event.ArtifactStoreDeletePostEvent;
 import org.commonjava.aprox.change.event.ArtifactStoreDeletePreEvent;
-import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
+import org.commonjava.aprox.change.event.ArtifactStorePostUpdateEvent;
+import org.commonjava.aprox.change.event.ArtifactStorePreUpdateEvent;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateType;
 import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.data.StoreEventDispatcher;
 import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.maven.galley.model.Transfer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DefaultStoreEventDispatcher
     implements StoreEventDispatcher
 {
 
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
     @Inject
-    private Event<ArtifactStoreUpdateEvent> storeEvent;
+    private Event<ArtifactStorePreUpdateEvent> updatePreEvent;
+
+    @Inject
+    private Event<ArtifactStorePostUpdateEvent> updatePostEvent;
 
     @Inject
     private Event<ArtifactStoreDeletePreEvent> preDelEvent;
@@ -95,10 +104,24 @@ public class DefaultStoreEventDispatcher
     @Override
     public void updating( final ArtifactStoreUpdateType type, final ArtifactStore... stores )
     {
-        if ( storeEvent != null )
+        logger.debug( "Trying to fire pre-update event for: {}", new JoinString( ", ", stores ) );
+        if ( updatePreEvent != null )
         {
-            final ArtifactStoreUpdateEvent event = new ArtifactStoreUpdateEvent( type, stores );
-            storeEvent.fire( event );
+            final ArtifactStorePreUpdateEvent event = new ArtifactStorePreUpdateEvent( type, stores );
+            logger.debug( "Firing pre-update event: {} (for: {}) via:\n  {}", event, new JoinString( ", ", stores ),
+                          new JoinString( "\n  ", Thread.currentThread()
+                                                        .getStackTrace() ) );
+            updatePreEvent.fire( event );
+        }
+    }
+
+    @Override
+    public void updated( final ArtifactStoreUpdateType type, final ArtifactStore... stores )
+    {
+        if ( updatePostEvent != null )
+        {
+            final ArtifactStorePostUpdateEvent event = new ArtifactStorePostUpdateEvent( type, stores );
+            updatePostEvent.fire( event );
         }
     }
 

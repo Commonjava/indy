@@ -19,7 +19,6 @@ import static org.commonjava.aprox.model.core.StoreType.group;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -31,9 +30,7 @@ import org.commonjava.aprox.implrepo.client.ImpliedRepoClientModule;
 import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.test.fixture.core.CoreServerFixture;
-import org.commonjava.aprox.test.fixture.core.TestHttpServer;
 import org.junit.Before;
-import org.junit.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,44 +38,35 @@ public class AbstractMaintFunctionalTest
     extends AbstractAproxFunctionalTest
 {
 
-    protected static final String TEST_REPO = "test";
-
     protected static final String PUBLIC = "public";
 
     protected final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    @Rule
-    public TestHttpServer server = new TestHttpServer( "repos" );
+    protected RemoteRepository testRepo;
+
+    protected Group pubGroup;
+
+    protected String setupChangelog;
 
     @Before
     public void setupTestStores()
         throws Exception
     {
-        final String changelog = "Create test structures";
+        setupChangelog = "Create test structures";
 
-        final String url = server.formatUrl( TEST_REPO );
-        final RemoteRepository testRepo =
-            client.stores()
-                  .create( new RemoteRepository( TEST_REPO, url ), changelog, RemoteRepository.class );
-
-        Group g;
         if ( client.stores()
                    .exists( group, PUBLIC ) )
         {
             System.out.println( "Loading pre-existing public group." );
-            g = client.stores()
+            pubGroup = client.stores()
                       .load( group, PUBLIC, Group.class );
         }
         else
         {
             System.out.println( "Creating new group 'public'" );
-            g = client.stores()
-                      .create( new Group( PUBLIC ), changelog, Group.class );
+            pubGroup = client.stores()
+                             .create( new Group( PUBLIC ), setupChangelog, Group.class );
         }
-
-        g.setConstituents( Arrays.asList( testRepo.getKey() ) );
-        client.stores()
-              .update( g, changelog );
     }
 
     @Override

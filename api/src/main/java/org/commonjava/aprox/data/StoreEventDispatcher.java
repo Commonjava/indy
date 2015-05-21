@@ -31,4 +31,6 @@ public interface StoreEventDispatcher
     void deleted( final ArtifactStore... stores );
 
     void updating( final ArtifactStoreUpdateType type, final ArtifactStore... stores );
+
+    void updated( final ArtifactStoreUpdateType type, final ArtifactStore... stores );
 }

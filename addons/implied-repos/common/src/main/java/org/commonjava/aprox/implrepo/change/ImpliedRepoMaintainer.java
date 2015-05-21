@@ -17,14 +17,14 @@ package org.commonjava.aprox.implrepo.change;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.audit.ChangeSummary;
-import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
+import org.commonjava.aprox.change.event.ArtifactStorePreUpdateEvent;
 import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.implrepo.ImpliedReposException;
@@ -66,7 +66,7 @@ public class ImpliedRepoMaintainer
     // FIXME: How to tell whether a repo that is implied by other repos was added manually??? 
     // That, vs. just left there after the repo that implied it was removed???
     // We cannot currently remove formerly implied repos because we can't distinguish between the above states.
-    public void updateImpliedStores( @Observes final ArtifactStoreUpdateEvent event )
+    public void updateImpliedStores( @Observes final ArtifactStorePreUpdateEvent event )
     {
         if ( !config.isEnabled() )
         {
@@ -76,121 +76,198 @@ public class ImpliedRepoMaintainer
 
         for ( final ArtifactStore store : event )
         {
-            if ( !( store instanceof Group ) )
+            final ImpliedRepoMaintJob job = new ImpliedRepoMaintJob( store );
+            if ( !initJob( job ) )
             {
                 continue;
             }
 
-            final Group group = (Group) store;
-
-            List<ArtifactStore> members = null;
-            List<ArtifactStore> reachableMembers = null;
-            try
+            if ( processImpliedRepos( job ) )
             {
-                members = storeManager.getOrderedStoresInGroup( store.getName() );
-                reachableMembers = storeManager.getOrderedConcreteStoresInGroup( store.getName() );
+                logger.info( "Group: {} updated with {} implied repositories.", job.group.getKey(), job.added.size() );
+
+                // Since we're getting in ahead of persistence, we shouldn't need to store anything in a store that was in the event.
+                //                final String message =
+                //                    String.format( "On update of group: %s, implied membership was recalculated.\n\nAdded:"
+                //                        + "\n  %s\n\nNOTE: This update may have resulted in stores that were previously "
+                //                        + "implied by another member persisting as members even after the store that implied "
+                //                        + "them was removed.", store.getName(), new JoinString( "\n  ", job.added ) );
+                //
+                //                final ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, message );
+                //                try
+                //                {
+                //                    storeManager.storeArtifactStore( job.store, summary );
+                //                }
+                //                catch ( final AproxDataException e )
+                //                {
+                //                    logger.error( "Failed to store implied-membership changes to: " + store.getKey(), e );
+                //                }
             }
-            catch ( final AproxDataException e )
-            {
-                logger.error( "Failed to retrieve member stores for group: " + store.getName(), e );
-            }
+        }
+    }
 
-            if ( members == null )
-            {
-                continue;
-            }
+    private boolean processImpliedRepos( final ImpliedRepoMaintJob job )
+    {
+        final Set<StoreKey> processed = new HashSet<>();
 
-            final Set<StoreKey> processed = new HashSet<>();
+        // pre-load all existing reachable members to processed list, to prevent re-adding them via 
+        // implications. Reachable means they could be in nested groups.
+        for ( final ArtifactStore member : job.reachableMembers )
+        {
+            processed.add( member.getKey() );
+        }
 
-            // pre-load all existing reachable members to processed list, to prevent re-adding them via 
-            // implications. Reachable means they could be in nested groups.
-            for ( final ArtifactStore member : reachableMembers )
+        logger.debug( "Preset processed-implications to reachable members:\n  {}", new JoinString( "\n  ", processed ) );
+
+        int lastLen = 0;
+        boolean changed = false;
+        job.added = new ArrayList<>();
+
+        // iterate through group membership looking for implied stores that aren't already members.
+        // For each implied store:
+        //  1. load the store
+        //  2. add the implied store's key to the processed list
+        //  3. add the implied store's key to the group's membership
+        //  4. add the implied store to the members list
+        // As soon as we go an iteration without adding a new member, we've captured everything.
+        do
+        {
+            lastLen = job.members.size();
+
+            for ( final ArtifactStore member : new ArrayList<>( job.members ) )
             {
+                logger.debug( "Processing member: {} for implied repos within group: {}", member.getKey(),
+                              job.group.getKey() );
                 processed.add( member.getKey() );
-            }
-
-            int lastLen = 0;
-            boolean changed = false;
-            final List<StoreKey> added = new ArrayList<>();
-
-            // iterate through group membership looking for implied stores that aren't already members.
-            // For each implied store:
-            //  1. load the store
-            //  2. add the implied store's key to the processed list
-            //  3. add the implied store's key to the group's membership
-            //  4. add the implied store to the members list
-            // As soon as we go an iteration without adding a new member, we've captured everything.
-            do
-            {
-                lastLen = members.size();
-
-                for ( final ArtifactStore member : members )
-                {
-                    processed.add( member.getKey() );
-                    List<StoreKey> implied;
-                    try
-                    {
-                        implied = metadataManager.getStoresImpliedBy( member );
-                    }
-                    catch ( final ImpliedReposException e )
-                    {
-                        logger.error( "Failed to retrieve implied-store metadata for: " + member.getKey(), e );
-                        continue;
-                    }
-
-                    if ( implied == null || implied.isEmpty() )
-                    {
-                        continue;
-                    }
-
-                    implied.removeAll( processed );
-
-                    for ( final StoreKey key : implied )
-                    {
-                        if ( processed.contains( key ) )
-                        {
-                            continue;
-                        }
-
-                        ArtifactStore impliedStore;
-                        try
-                        {
-                            impliedStore = storeManager.getArtifactStore( key );
-                        }
-                        catch ( final AproxDataException e )
-                        {
-                            logger.error( "Failed to retrieve store: " + key + " implied by: " + member.getKey(), e );
-                            continue;
-                        }
-
-                        processed.add( key );
-                        added.add( key );
-                        group.addConstituent( key );
-                        members.add( impliedStore );
-                        changed = true;
-                    }
-                }
-            }
-            while ( members.size() > lastLen );
-
-            if ( changed )
-            {
-                final String message =
-                    String.format( "On update of group: %s, implied membership was recalculated.\n\nAdded:"
-                        + "\n  %s\n\nNOTE: This update may have resulted in stores that were previously "
-                        + "implied by another member persisting as members even after the store that implied "
-                        + "them was removed.", store.getName(), new JoinString( "\n  ", added ) );
-
-                final ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, message );
+                List<StoreKey> implied;
                 try
                 {
-                    storeManager.storeGroup( group, summary );
+                    implied = metadataManager.getStoresImpliedBy( member );
                 }
-                catch ( final AproxDataException e )
+                catch ( final ImpliedReposException e )
                 {
-                    logger.error( "Failed to store implied-membership changes to: " + store.getKey(), e );
+                    logger.error( "Failed to retrieve implied-store metadata for: " + member.getKey(), e );
+                    continue;
+                }
+
+                if ( implied == null || implied.isEmpty() )
+                {
+                    continue;
+                }
+
+                implied.removeAll( processed );
+
+                for ( final StoreKey key : implied )
+                {
+                    logger.debug( "Found implied store: {} not already in group: {}", key, job.group.getKey() );
+                    ArtifactStore impliedStore;
+                    try
+                    {
+                        impliedStore = storeManager.getArtifactStore( key );
+                    }
+                    catch ( final AproxDataException e )
+                    {
+                        logger.error( "Failed to retrieve store: " + key + " implied by: " + member.getKey(), e );
+                        continue;
+                    }
+
+                    logger.info( "Adding: {} to group: {} (implied by POMs in: {})", key, job.group.getKey(),
+                                 member.getKey() );
+
+                    processed.add( key );
+                    job.added.add( key );
+                    job.group.addConstituent( key );
+                    job.members.add( impliedStore );
+                    changed = true;
                 }
             }
+        }
+        while ( job.members.size() > lastLen );
+
+        return changed;
+    }
+
+    private boolean initJob( final ImpliedRepoMaintJob job )
+    {
+        // TODO: Regardless of whether it's a group, look for implied repo metadata. If found, find the
+        // groups this store belongs to and update them. If we use a pre/post event pair like with delete,
+        // we might be able to fix the repo-removal problem too.
+        if ( !( job.store instanceof Group ) )
+        {
+            logger.debug( "ImpliedRepoMaint: Ignoring non-group: {}", job.store.getKey() );
+            return false;
+        }
+
+        logger.debug( "Processing group: {} for stores implied by membership which are not yet in the membership",
+                      job.store.getName() );
+        job.group = (Group) job.store;
+
+        try
+        {
+            // getOrderedStoresInGroup(), but we can't use persisted info...
+            job.members = loadMemberStores( job.group );
+
+            // getOrderedConcreteStores(), but we can't use the persisted info...
+            final LinkedHashSet<ArtifactStore> reachable = new LinkedHashSet<>();
+            for ( final ArtifactStore member : job.members )
+            {
+                if ( member instanceof Group )
+                {
+                    reachable.addAll( loadMemberStores( (Group) member ) );
+                }
+                else
+                {
+                    reachable.add( member );
+                }
+            }
+
+            job.reachableMembers = new ArrayList<>( reachable );
+
+            logger.debug( "For group: {}\n Members: {}\n  Reachable Concrete Members: {}", job.group.getKey(),
+                          job.members, job.reachableMembers );
+        }
+        catch ( final AproxDataException e )
+        {
+            logger.error( "Failed to retrieve member stores for group: " + job.group.getName(), e );
+        }
+
+        if ( job.members == null )
+        {
+            logger.debug( "ImpliedRepoMaint: Group: {} has no membership", job.store.getKey() );
+            return false;
+        }
+
+        return true;
+    }
+
+    private List<ArtifactStore> loadMemberStores( final Group group )
+        throws AproxDataException
+    {
+        final List<ArtifactStore> members = new ArrayList<>( group.getConstituents()
+                                                                  .size() );
+        for ( final StoreKey memberKey : group.getConstituents() )
+        {
+            members.add( storeManager.getArtifactStore( memberKey ) );
+        }
+
+        return members;
+    }
+
+    public static final class ImpliedRepoMaintJob
+    {
+        List<StoreKey> added;
+
+        Group group;
+
+        List<ArtifactStore> reachableMembers;
+
+        List<ArtifactStore> members;
+
+        final ArtifactStore store;
+
+        public ImpliedRepoMaintJob( final ArtifactStore store )
+        {
+            this.store = store;
         }
     }
 

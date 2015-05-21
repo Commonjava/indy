@@ -29,10 +29,14 @@ import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.util.ApplicationStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class AdminController
 {
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
     @Inject
     private StoreDataManager storeManager;
 
@@ -64,6 +68,7 @@ public class AdminController
 
             final ChangeSummary summary = new ChangeSummary( user, changelog );
 
+            logger.info( "Persisting artifact store: {} using: {}", store, storeManager );
             return storeManager.storeArtifactStore( store, summary, skipExisting );
         }
         catch ( final AproxDataException e )
