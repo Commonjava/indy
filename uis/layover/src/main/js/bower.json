@@ -14,6 +14,7 @@
     "html5-boilerplate": "~4.3.0",
     "ngDialog": "~0.2.14",
     "components-font-awesome": "4.2.0",
-    "bootstrap": "3.2.0"
+    "bootstrap": "3.2.0",
+    "keycloak": "1.1.0"
   }
 }
