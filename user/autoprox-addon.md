@@ -217,6 +217,23 @@ If the creation of that group would trigger any further groups or repositories t
 
 From here, you have the option to create the resulting structure using the `Create` button. This functions as a sort of save button for the tested store name, and will have the same effect as if you had simply started using a URL to that store name. Autoprox will create the stores, and they will be available for immediate use.
 
+#### Getting Started: Apache Maven
+
+If you use Apache Maven, you'll need the following dependencies in order to use the Java client API for this add-on:
+
+    <!-- The core of the AProx client API -->
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-client-core-java</artifactId>
+      <version>${aproxVersion}</version>
+    </dependency>
+    <!-- AProx client API module for autoprox -->
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-autoprox-client-java</artifactId>
+      <version>${aproxVersion}</version>
+    </dependency>
+
 #### Administering Rules
 
 While not yet available via the web UI, the REST and Java client APIs both support management of Autoprox template files (rules). You have full CRUD + listing access via these apis.

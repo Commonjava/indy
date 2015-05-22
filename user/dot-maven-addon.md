@@ -70,3 +70,8 @@ For example:
 
 The dotMaven AProx add-on aims to give you a filesystem mount that you can browse to see what content AProx has cached (or is hosting). Sometimes this can be a convenient way to quickly look at what a certain POM or metadata file contains, in your native text editor. This is a read-only view of the content AProx manages, and as such there really isn't too much to add.
 
+### Client APIs
+
+Since its functionality is implemented via on-demand file and directory-listing generators, the dotMaven add-on currently doesn't have a client API.
+
+

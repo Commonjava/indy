@@ -93,6 +93,23 @@ Once we're done with the report, we can remove it with a simple DELETE call to t
     Date: Tue, 05 May 2015 22:00:10 GMT
 
 
+#### Getting Started: Apache Maven
+
+If you use Apache Maven, you'll need the following dependencies in order to use this add-on via the Java client API:
+
+    <!-- The core of the AProx client API -->
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-client-core-java</artifactId>
+      <version>${aproxVersion}</version>
+    </dependency>
+    <!-- AProx client API module for folo -->
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-folo-client-java</artifactId>
+      <version>${aproxVersion}</version>
+    </dependency>
+
 #### Java Client API
 
 Now, let's try the same example using Java:

@@ -54,7 +54,7 @@ The AProx web UI prompts users for changelog details whenever they modify a repo
 
 ### Java Client
 
-The Java client API requires a changelog String parameter for any update to a repository or group definition. You can leave this null or empty if you want AProx to use its default, canned changelog entry. But again, it's a good idea to version these files, and it doesn't take much extra effort to add a reason to the update call. 
+The core Java client API requires a changelog String parameter for any update to a repository or group definition. You can leave this null or empty if you want AProx to use its default, canned changelog entry. But again, it's a good idea to version these files, and it doesn't take much extra effort to add a reason to the update call. 
 
 ### REST API
 

@@ -38,6 +38,23 @@ The Promote add-on currently has no web UI, or plans to create one. If you have 
 
 This leaves the Java client API and the REST API. In both cases, the user interacts with the add-on by submitting a serialized configuration (DTO for Java, JSON for REST), and receiving a result containing a list of successfully promoted files, a list of pending files, and potentially an error message (along with the original request configuration). In the case of the `resume` and `rollback` operations, the configuration submitted is actually a result object from a previous promotion call (or a configuration constructed to look like a previous result).
 
+#### Getting Started: Apache Maven
+
+If you use Apache Maven, you'll need the following dependencies in order to use this add-on:
+
+    <!-- The core of the AProx client API -->
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-client-core-java</artifactId>
+      <version>${aproxVersion}</version>
+    </dependency>
+    <!-- AProx client API module for promote -->
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-promote-client-java</artifactId>
+      <version>${aproxVersion}</version>
+    </dependency>
+
 #### Promote a single file
 
 In Java:
