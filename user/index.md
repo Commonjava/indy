@@ -18,9 +18,13 @@ title: "AProx User's Guide"
 
 ### Features and Add-Ons
 
-* [Autoprox Automatic Proxy Add-On](autoprox-addon.html)
-* [DotMaven WebDAV and Settings Generator Add-On](dot-maven-addon.html)
-* [Folo Content-Tracking Add-On](folo-addon.html)
-* [Promote Content-Relocation Add-On](promote-addon.html)
-* [Revisions Data-Versioning Add-On](revisions-addon.html)
+* [Autoprox Automatic Proxy](autoprox-addon.html)
+* [DotMaven WebDAV and Settings Generator](dot-maven-addon.html)
+* [Folo Content-Tracking](folo-addon.html)
+* [Promote Content-Relocation](promote-addon.html)
+* [Revisions Data-Versioning](revisions-addon.html)
+
+### Experimental Features and Add-Ons
+
+* [Implied Repositories](implied-repos-addon.html)
 
