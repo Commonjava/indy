@@ -49,11 +49,11 @@ angular.element(document).ready(function () {
 
 });
 
-app.factory('Auth', function () {
+aprox.factory('Auth', function () {
   return auth;
 });
 
-app.factory('authInterceptor', function ($q, $log, Auth) {
+aprox.factory('authInterceptor', function ($q, $log, Auth) {
   return {
     request: function (config) {
       var deferred = $q.defer();
@@ -73,7 +73,7 @@ app.factory('authInterceptor', function ($q, $log, Auth) {
   };
 });
 
-app.config(function ($httpProvider) {
+aprox.config(function ($httpProvider) {
   $httpProvider.interceptors.push('authInterceptor');
 });
 
@@ -109,6 +109,7 @@ aprox.config(['$routeProvider', '$controllerProvider', '$compileProvider', '$fil
   $routeProvider.when('/nfc/view/all', {templateUrl: 'partials/nfc.html'});
   $routeProvider.when('/nfc/view/:type/:name', {templateUrl: 'partials/nfc.html'});
 
+  
   if ( addons !== undefined ){
     addons.items.each( function(addon){
       if( addon.routes !== undefined ){
