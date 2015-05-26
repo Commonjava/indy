@@ -65,7 +65,7 @@ public class PromotionManagerTest
         throws Exception
     {
         galleyParts = new GalleyFixture( temp.newFolder( "storage" ) );
-        storeManager = new MemoryStoreDataManager();
+        storeManager = new MemoryStoreDataManager(true);
 
         downloadManager =
             new DefaultDownloadManager( storeManager, galleyParts.getTransfers(),

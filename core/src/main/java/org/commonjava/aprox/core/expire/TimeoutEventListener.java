@@ -27,7 +27,7 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.change.event.AbstractStoreDeleteEvent;
-import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
+import org.commonjava.aprox.change.event.ArtifactStorePostUpdateEvent;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateType;
 import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
@@ -266,7 +266,7 @@ public class TimeoutEventListener
         } );
     }
 
-    public void onStoreUpdate( @Observes final ArtifactStoreUpdateEvent event )
+    public void onStoreUpdate( @Observes final ArtifactStorePostUpdateEvent event )
     {
         executor.execute( new Runnable()
         {

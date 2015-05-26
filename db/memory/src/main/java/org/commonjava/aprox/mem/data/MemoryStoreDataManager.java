@@ -32,6 +32,7 @@ import javax.inject.Inject;
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateType;
 import org.commonjava.aprox.data.AproxDataException;
+import org.commonjava.aprox.data.NoOpStoreEventDispatcher;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.data.StoreEventDispatcher;
 import org.commonjava.aprox.model.core.ArtifactStore;
@@ -40,12 +41,15 @@ import org.commonjava.aprox.model.core.HostedRepository;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 @Alternative
 public class MemoryStoreDataManager
     implements StoreDataManager
 {
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private final Map<StoreKey, ArtifactStore> stores = new HashMap<StoreKey, ArtifactStore>();
 
@@ -56,8 +60,13 @@ public class MemoryStoreDataManager
     @Inject
     private StoreEventDispatcher dispatcher;
 
-    public MemoryStoreDataManager()
+    protected MemoryStoreDataManager()
     {
+    }
+
+    public MemoryStoreDataManager( final boolean unitTestUsage )
+    {
+        this.dispatcher = new NoOpStoreEventDispatcher();
     }
 
     public MemoryStoreDataManager( final StoreEventDispatcher dispatcher )
@@ -284,9 +293,6 @@ public class MemoryStoreDataManager
     public boolean storeGroup( final Group group, final ChangeSummary summary, final boolean skipIfExists )
         throws AproxDataException
     {
-        final boolean exists = stores.containsKey( group.getKey() );
-        dispatcher.updating( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, group );
-
         final boolean result = store( group, summary, skipIfExists );
 
         return result;
@@ -311,9 +317,6 @@ public class MemoryStoreDataManager
                                        final boolean skipIfExists )
         throws AproxDataException
     {
-        final boolean exists = stores.containsKey( store.getKey() );
-        dispatcher.updating( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, store );
-
         final boolean result = store( store, summary, skipIfExists );
         if ( result && ( store instanceof RemoteRepository ) )
         {
@@ -326,14 +329,38 @@ public class MemoryStoreDataManager
 
     private synchronized boolean store( final ArtifactStore store, final ChangeSummary summary,
                                         final boolean skipIfExists )
+        throws AproxDataException
     {
-        if ( !skipIfExists || !stores.containsKey( store.getKey() ) )
+        final boolean exists = stores.containsKey( store.getKey() );
+        if ( !skipIfExists || !exists )
         {
-            stores.put( store.getKey(), store );
-            return true;
+            preStore( store, summary, exists );
+            final ArtifactStore old = stores.put( store.getKey(), store );
+            try
+            {
+                postStore( store, summary, exists );
+                return true;
+            }
+            catch ( final AproxDataException e )
+            {
+                logger.error( "postStore() failed for: {}. Rolling back to old value: {}", store, old );
+                stores.put( old.getKey(), old );
+            }
         }
 
         return false;
+    }
+
+    protected void preStore( final ArtifactStore store, final ChangeSummary summary, final boolean exists )
+        throws AproxDataException
+    {
+        dispatcher.updating( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, store );
+    }
+
+    protected void postStore( final ArtifactStore store, final ChangeSummary summary, final boolean exists )
+        throws AproxDataException
+    {
+        dispatcher.updated( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, store );
     }
 
     @Override

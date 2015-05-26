@@ -34,6 +34,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import javax.enterprise.context.ApplicationScoped;
+
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.eclipse.jgit.api.AddCommand;
@@ -69,6 +71,7 @@ import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@ApplicationScoped
 public class GitManager
 {
 

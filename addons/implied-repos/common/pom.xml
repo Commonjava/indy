@@ -29,6 +29,10 @@
   <dependencies>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-implied-repos-model-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-api</artifactId>
     </dependency>
     <dependency>

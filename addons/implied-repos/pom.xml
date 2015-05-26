@@ -30,6 +30,8 @@
   <modules>
     <module>ftests</module>
     <module>common</module>
+    <module>client-java</module>
+    <module>model-java</module>
   </modules>
 
 </project>

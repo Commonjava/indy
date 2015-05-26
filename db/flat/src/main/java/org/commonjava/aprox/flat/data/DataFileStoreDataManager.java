@@ -169,10 +169,6 @@ public class DataFileStoreDataManager
         throws AproxDataException
     {
         final boolean result = super.storeHostedRepository( deploy, summary );
-        if ( result )
-        {
-            store( false, summary, deploy );
-        }
 
         return result;
     }
@@ -183,10 +179,6 @@ public class DataFileStoreDataManager
         throws AproxDataException
     {
         final boolean result = super.storeHostedRepository( deploy, summary, skipIfExists );
-        if ( result )
-        {
-            store( skipIfExists, summary, deploy );
-        }
 
         return result;
     }
@@ -196,10 +188,6 @@ public class DataFileStoreDataManager
         throws AproxDataException
     {
         final boolean result = super.storeRemoteRepository( proxy, summary );
-        if ( result )
-        {
-            store( false, summary, proxy );
-        }
 
         return result;
     }
@@ -210,10 +198,6 @@ public class DataFileStoreDataManager
         throws AproxDataException
     {
         final boolean result = super.storeRemoteRepository( repository, summary, skipIfExists );
-        if ( result )
-        {
-            store( skipIfExists, summary, repository );
-        }
 
         return result;
     }
@@ -223,10 +207,6 @@ public class DataFileStoreDataManager
         throws AproxDataException
     {
         final boolean result = super.storeGroup( group, summary );
-        if ( result )
-        {
-            store( false, summary, group );
-        }
 
         return result;
     }
@@ -236,10 +216,6 @@ public class DataFileStoreDataManager
         throws AproxDataException
     {
         final boolean result = super.storeGroup( group, summary, skipIfExists );
-        if ( result )
-        {
-            store( false, summary, group );
-        }
 
         return result;
     }
@@ -314,7 +290,9 @@ public class DataFileStoreDataManager
 
             try
             {
-                f.writeString( serializer.writeValueAsString( store ), "UTF-8", summary );
+                final String json = serializer.writeValueAsString( store );
+                f.writeString( json, "UTF-8", summary );
+                logger.debug( "Persisted {} to disk at: {}\n{}", store, f, json );
             }
             catch ( final IOException e )
             {
@@ -365,10 +343,6 @@ public class DataFileStoreDataManager
         throws AproxDataException
     {
         final boolean result = super.storeArtifactStore( store, summary );
-        if ( result )
-        {
-            store( false, summary, store );
-        }
 
         return result;
     }
@@ -378,13 +352,16 @@ public class DataFileStoreDataManager
                                        final boolean skipIfExists )
         throws AproxDataException
     {
-        final boolean result = super.storeArtifactStore( store, summary );
-        if ( result )
-        {
-            store( false, summary, store );
-        }
+        final boolean result = super.storeArtifactStore( store, summary, skipIfExists );
 
         return result;
+    }
+
+    @Override
+    protected void postStore( final ArtifactStore store, final ChangeSummary summary, final boolean exists )
+        throws AproxDataException
+    {
+        store( false, summary, store );
     }
 
     @Override

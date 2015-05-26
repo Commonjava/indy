@@ -6,7 +6,7 @@ import static org.junit.Assert.assertThat;
 import java.util.Arrays;
 
 import org.commonjava.aprox.audit.ChangeSummary;
-import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
+import org.commonjava.aprox.change.event.ArtifactStorePreUpdateEvent;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateType;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.implrepo.conf.ImpliedRepoConfig;
@@ -33,7 +33,7 @@ public class ImpliedRepoMaintainerTest
     @Before
     public void setup()
     {
-        storeDataManager = new MemoryStoreDataManager();
+        storeDataManager = new MemoryStoreDataManager(true);
         metadataManager = new ImpliedRepoMetadataManager( new AproxObjectMapper( true ) );
 
         final ImpliedRepoConfig config = new ImpliedRepoConfig();
@@ -60,7 +60,7 @@ public class ImpliedRepoMaintainerTest
 
         g.addConstituent( repo1 );
 
-        final ArtifactStoreUpdateEvent event = new ArtifactStoreUpdateEvent( ArtifactStoreUpdateType.UPDATE, g );
+        final ArtifactStorePreUpdateEvent event = new ArtifactStorePreUpdateEvent( ArtifactStoreUpdateType.UPDATE, g );
         maintainer.updateImpliedStores( event );
 
         assertThat( g.getConstituents()
@@ -86,7 +86,7 @@ public class ImpliedRepoMaintainerTest
         // event observers would see.
         g.addConstituent( repo2 );
 
-        final ArtifactStoreUpdateEvent event = new ArtifactStoreUpdateEvent( ArtifactStoreUpdateType.UPDATE, g );
+        final ArtifactStorePreUpdateEvent event = new ArtifactStorePreUpdateEvent( ArtifactStoreUpdateType.UPDATE, g );
         maintainer.updateImpliedStores( event );
 
         assertThat( g.getConstituents()

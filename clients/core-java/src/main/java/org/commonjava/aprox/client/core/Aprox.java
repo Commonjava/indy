@@ -48,7 +48,7 @@ public class Aprox
 
         for ( final AproxClientModule module : standardModules )
         {
-            module.setup( http );
+            module.setup( this, http );
             moduleRegistry.add( module );
         }
     }
@@ -61,7 +61,7 @@ public class Aprox
         setupStandardModules();
         for ( final AproxClientModule module : modules )
         {
-            module.setup( http );
+            module.setup( this, http );
             moduleRegistry.add( module );
         }
     }
@@ -79,14 +79,14 @@ public class Aprox
         setupStandardModules();
         for ( final AproxClientModule module : modules )
         {
-            module.setup( http );
+            module.setup( this, http );
             moduleRegistry.add( module );
         }
     }
 
     public void setupExternal( final AproxClientModule module )
     {
-        module.setup( http );
+        module.setup( this, http );
     }
 
     public Aprox connect()

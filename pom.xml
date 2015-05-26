@@ -72,7 +72,6 @@
     <module>test</module>
     <module>tools</module>
     <module>addons</module>
-    <module>deployments</module>
     <module>embedders</module>
     <module>uis</module>
     <module>ftests</module>
@@ -80,6 +79,7 @@
     
     <!-- TODO: put in profile, figure out why release version-adjustment isn't working in profile -->
     <module>embedder-tests</module>
+    <module>deployments</module>
   </modules>
   
   <dependencyManagement>
@@ -470,6 +470,16 @@
         <version>0.20.1-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-implied-repos-model-java</artifactId>
+        <version>0.20.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-implied-repos-client-java</artifactId>
+        <version>0.20.1-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
@@ -893,6 +903,12 @@
         <module>embedder-tests</module>
         -->
       </modules>
+    </profile>
+    <profile>
+      <id>travis</id>
+      <properties>
+        <test-forkCount>1</test-forkCount>
+      </properties>
     </profile>
   </profiles>
   

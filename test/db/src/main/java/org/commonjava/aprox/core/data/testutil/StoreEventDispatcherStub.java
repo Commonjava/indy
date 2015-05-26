@@ -38,4 +38,9 @@ public class StoreEventDispatcherStub
     {
     }
 
+    @Override
+    public void updated( final ArtifactStoreUpdateType type, final ArtifactStore... stores )
+    {
+    }
+
 }

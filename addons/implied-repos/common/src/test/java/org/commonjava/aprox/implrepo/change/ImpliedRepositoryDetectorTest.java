@@ -53,7 +53,7 @@ public class ImpliedRepositoryDetectorTest
     {
         fixture.initMissingComponents();
 
-        storeManager = new MemoryStoreDataManager();
+        storeManager = new MemoryStoreDataManager(true);
 
         metadataManager =
             new ImpliedRepoMetadataManager( new AproxObjectMapper( true ) );

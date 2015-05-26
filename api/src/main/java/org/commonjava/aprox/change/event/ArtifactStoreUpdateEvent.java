@@ -24,19 +24,19 @@ import org.commonjava.aprox.model.core.ArtifactStore;
  * Event signaling that one or more specified {@link ArtifactStore} instances' configurations were changed. The {@link ArtifactStoreUpdateType}
  * gives more information about the nature of the update.
  */
-public class ArtifactStoreUpdateEvent
+public abstract class ArtifactStoreUpdateEvent
     extends AbstractAproxEvent
 {
 
     private final ArtifactStoreUpdateType type;
 
-    public ArtifactStoreUpdateEvent( final ArtifactStoreUpdateType type, final Collection<ArtifactStore> changes )
+    protected ArtifactStoreUpdateEvent( final ArtifactStoreUpdateType type, final Collection<ArtifactStore> changes )
     {
         super( changes );
         this.type = type;
     }
 
-    public ArtifactStoreUpdateEvent( final ArtifactStoreUpdateType type, final ArtifactStore... changes )
+    protected ArtifactStoreUpdateEvent( final ArtifactStoreUpdateType type, final ArtifactStore... changes )
     {
         super( Arrays.asList( changes ) );
         this.type = type;

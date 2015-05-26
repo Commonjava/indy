@@ -19,6 +19,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.io.InputStream;
+import java.util.Collections;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.implrepo.data.ImpliedRepoMetadataManager;
@@ -26,8 +27,6 @@ import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
-import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.galley.maven.parse.PomPeek;
 import org.junit.Test;
 
 public class PomWithRepoAddsRepoToGroupTest
@@ -39,25 +38,16 @@ public class PomWithRepoAddsRepoToGroupTest
     @Test
     public void skimPomForRepoAndAddIt() throws Exception
     {
-        InputStream stream = Thread.currentThread()
-                                   .getContextClassLoader()
-                                   .getResourceAsStream( "one-repo.pom" );
-        String pom = IOUtils.toString( stream );
-        IOUtils.closeQuietly( stream );
-        pom = pom.replace( "@one-repo.url@", server.formatUrl( REPO ) );
+        final PomRef ref = loadPom( "one-repo", Collections.singletonMap( "one-repo.url", server.formatUrl( REPO ) ) );
         
-        final PomPeek peek = new PomPeek( pom, false );
-        final ProjectVersionRef gav = peek.getKey();
-        
-        final String path = String.format( "%s/%s/%s/%s-%s.pom", gav.getGroupId().replace('.', '/'), gav.getArtifactId(), gav.getVersionString(), gav.getArtifactId(), gav.getVersionString() );
-        
-        server.expect( server.formatUrl( TEST_REPO, path ), 200, pom );
+        server.expect( server.formatUrl( TEST_REPO, ref.path ), 200, ref.pom );
 
-        stream = client.content().get( StoreType.group, PUBLIC, path );
+        final InputStream stream = client.content()
+                                         .get( StoreType.group, PUBLIC, ref.path );
         final String downloaded = IOUtils.toString( stream );
         IOUtils.closeQuietly( stream );
         
-        assertThat( "SANITY: downloaded POM is wrong!", downloaded, equalTo( pom ) );
+        assertThat( "SANITY: downloaded POM is wrong!", downloaded, equalTo( ref.pom ) );
         
         // sleep while event observer runs...
         System.out.println( "Waiting 5s for events to run." );

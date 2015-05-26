@@ -30,7 +30,7 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.change.event.AbstractStoreDeleteEvent;
-import org.commonjava.aprox.change.event.ArtifactStoreUpdateEvent;
+import org.commonjava.aprox.change.event.ArtifactStorePostUpdateEvent;
 import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
@@ -124,7 +124,7 @@ public class SetBackSettingsManager
         return false;
     }
 
-    public void updateSettingsOnEvent( @Observes final ArtifactStoreUpdateEvent event )
+    public void updateSettingsOnEvent( @Observes final ArtifactStorePostUpdateEvent event )
     {
         final Collection<ArtifactStore> stores = event.getChanges();
         for ( final ArtifactStore store : stores )

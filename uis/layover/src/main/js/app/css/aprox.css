@@ -426,7 +426,7 @@ label, .label{
 }
 
 .listing-text{
-  height: 47em;
+  height: 30em;
   width: 90em;
   white-space: nowrap;
   overflow: auto;

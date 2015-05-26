@@ -20,7 +20,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.inject.Inject;
+import javax.enterprise.inject.Alternative;
+import javax.inject.Named;
 
 import org.commonjava.aprox.implrepo.ImpliedReposException;
 import org.commonjava.aprox.model.core.ArtifactStore;
@@ -29,6 +30,8 @@ import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+@Alternative
+@Named
 public class ImpliedRepoMetadataManager
 {
 
@@ -36,18 +39,14 @@ public class ImpliedRepoMetadataManager
 
     public static final String IMPLIED_BY_STORES = "implied_by_stores";
 
-    @Inject
-    private AproxObjectMapper mapper;
-
-    protected ImpliedRepoMetadataManager()
-    {
-    }
+    private final AproxObjectMapper mapper;
 
     public ImpliedRepoMetadataManager( final AproxObjectMapper mapper )
     {
         this.mapper = mapper;
     }
 
+    // TODO: Need to deal with pre-existing implications.
     public void addImpliedMetadata( final ArtifactStore origin, final List<ArtifactStore> implied )
         throws ImpliedReposException
     {
@@ -113,7 +112,7 @@ public class ImpliedRepoMetadataManager
 
     }
 
-    public List<StoreKey> getImpliedMetadata( final ArtifactStore origin )
+    public List<StoreKey> getStoresImpliedBy( final ArtifactStore origin )
         throws ImpliedReposException
     {
         final String metadata = origin.getMetadata( IMPLIED_STORES );
@@ -131,6 +130,27 @@ public class ImpliedRepoMetadataManager
         {
             throw new ImpliedReposException( "Failed to de-serialize implied stores from: %s\nJSON: %s\nError: %s", e,
                                              origin.getKey(), metadata, e.getMessage() );
+        }
+    }
+
+    public List<StoreKey> getStoresImplying( final ArtifactStore store )
+        throws ImpliedReposException
+    {
+        final String metadata = store.getMetadata( IMPLIED_BY_STORES );
+        if ( metadata == null )
+        {
+            return null;
+        }
+
+        try
+        {
+            final ImpliedRemotesWrapper wrapper = mapper.readValue( metadata, ImpliedRemotesWrapper.class );
+            return wrapper.getItems();
+        }
+        catch ( final IOException e )
+        {
+            throw new ImpliedReposException( "Failed to de-serialize implied stores from: %s\nJSON: %s\nError: %s", e,
+                                             store.getKey(), metadata, e.getMessage() );
         }
     }
 

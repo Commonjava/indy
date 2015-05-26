@@ -15,9 +15,7 @@
  */
 
 import org.commonjava.aprox.autoprox.data.*;
-
 import java.net.MalformedURLException;
-
 import org.commonjava.aprox.model.core.*;
 
 class RedHatRule extends AbstractAutoProxRule
@@ -29,12 +27,11 @@ class RedHatRule extends AbstractAutoProxRule
     RemoteRepository createRemoteRepository( String named )
         throws MalformedURLException
     {
-        if ( named == "RH-all" ){
+        if ( named == "RH-all" || named == "RH-techpreview" ){
           new RemoteRepository( name: named, url: "http://maven.repository.redhat.com/techpreview/all/" )
         }
-        else{
-          def match = (named =~ /RH-([^0-9]+)([0-9])(.+)/)[0]
-          new RemoteRepository( name: named, url: "http://maven.repository.redhat.com/techpreview/${match[1] + match[2]}/${match[2] + match[3]}/maven-repository/" )
+        else if ( named == "RH-earlyaccess" ){
+          new RemoteRepository( name: named, url: "http://maven.repository.redhat.com/earlyaccess/all/" )
         }
     }
 
