@@ -62,7 +62,7 @@ public class DataFileStoreDataManagerTest
     {
         final String name = "foo";
         final boolean success =
-            mgr.storeRemoteRepository( new RemoteRepository( name, "http://www.foo.com/" ),
+            mgr.storeArtifactStore( new RemoteRepository( name, "http://www.foo.com/" ),
                                        new ChangeSummary( "test-user", "init" ) );
 
         assertThat( success, equalTo( true ) );

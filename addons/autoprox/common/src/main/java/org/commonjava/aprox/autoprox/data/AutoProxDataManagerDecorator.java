@@ -258,7 +258,7 @@ public abstract class AutoProxDataManagerDecorator
                     }
 
                     final RemoteRepository remote = repo;
-                    dataManager.storeRemoteRepository( remote, new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                    dataManager.storeArtifactStore( remote, new ChangeSummary( ChangeSummary.SYSTEM_USER,
                                                                                   "AUTOPROX: Creating remote repository for: '"
                                                                                       + name + "'" ) );
                 }
@@ -305,7 +305,7 @@ public abstract class AutoProxDataManagerDecorator
             if ( repo != null )
             {
                 final HostedRepository hosted = repo;
-                dataManager.storeHostedRepository( hosted, new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                dataManager.storeArtifactStore( hosted, new ChangeSummary( ChangeSummary.SYSTEM_USER,
                                                                               "AUTOPROX: Creating remote repository for: '"
                                                                                   + name + "'" ) );
             }

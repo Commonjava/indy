@@ -35,11 +35,11 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.content.AbstractContentGenerator;
 import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.content.StoreResource;
 import org.commonjava.aprox.core.content.group.GroupMergeHelper;
 import org.commonjava.aprox.core.content.group.MavenMetadataMerger;
+import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.StoreType;
@@ -61,7 +61,7 @@ import org.w3c.dom.Element;
 
 @ApplicationScoped
 public class MavenMetadataGenerator
-    extends AbstractContentGenerator
+    extends AbstractMergedContentGenerator
 {
 
     private static final String ARTIFACT_ID = "artifactId";
@@ -104,16 +104,10 @@ public class MavenMetadataGenerator
     } );
 
     @Inject
-    private DownloadManager fileManager;
-
-    @Inject
     private XMLInfrastructure xml;
 
     @Inject
     private TypeMapper typeMapper;
-
-    @Inject
-    private GroupMergeHelper helper;
 
     @Inject
     private MavenMetadataMerger merger;
@@ -122,15 +116,14 @@ public class MavenMetadataGenerator
     {
     }
 
-    public MavenMetadataGenerator( final DownloadManager fileManager, final XMLInfrastructure xml,
-                                  final TypeMapper typeMapper, final MavenMetadataMerger merger,
-                                  final GroupMergeHelper mergeHelper )
+    public MavenMetadataGenerator( final DownloadManager fileManager, final StoreDataManager storeManager,
+                                   final XMLInfrastructure xml, final TypeMapper typeMapper,
+                                   final MavenMetadataMerger merger, final GroupMergeHelper mergeHelper )
     {
-        this.fileManager = fileManager;
+        super( fileManager, storeManager, mergeHelper );
         this.xml = xml;
         this.typeMapper = typeMapper;
         this.merger = merger;
-        helper = mergeHelper;
     }
 
     @Override
@@ -153,8 +146,7 @@ public class MavenMetadataGenerator
 
         // TODO: Generation of plugin metadata files (groupId-level) is harder, and requires cracking open the jar file
         // This is because that's the only place the plugin prefix can be reliably retrieved from.
-        
-        
+
         // regardless, we will need this first level of listings. What we do with it will depend on the logic below...
         final String parentPath = Paths.get( path )
                                        .getParent()
@@ -169,20 +161,21 @@ public class MavenMetadataGenerator
         }
 
         ArtifactPathInfo snapshotPomInfo = null;
-        
+
         if ( parentPath.endsWith( SnapshotUtils.LOCAL_SNAPSHOT_VERSION_PART ) )
         {
             // If we're in a version directory, first-level listing should include a .pom file
             for ( final StoreResource resource : firstLevel )
             {
-                if ( resource.getPath().endsWith( ".pom" ) )
+                if ( resource.getPath()
+                             .endsWith( ".pom" ) )
                 {
                     snapshotPomInfo = ArtifactPathInfo.parse( resource.getPath() );
                     break;
                 }
             }
         }
-        
+
         if ( snapshotPomInfo != null )
         {
             generated = writeSnapshotMetadata( snapshotPomInfo, firstLevel, store, toGenPath );
@@ -334,67 +327,17 @@ public class MavenMetadataGenerator
     }
 
     @Override
-    public void handleContentStorage( final ArtifactStore store, final String path, final Transfer result )
-        throws AproxWorkflowException
+    protected String getMergedMetadataName()
     {
-        if ( StoreType.group == store.getKey()
-                                     .getType() && path.endsWith( MavenMetadataMerger.METADATA_NAME ) )
-        {
-            final Group group = (Group) store;
-
-            // delete so it'll be recomputed.
-            final Transfer target = fileManager.getStorageReference( group, path );
-            try
-            {
-                target.delete();
-                helper.deleteChecksumsAndMergeInfo( group, path );
-            }
-            catch ( final IOException e )
-            {
-                throw new AproxWorkflowException(
-
-                "Failed to delete generated file (to allow re-generation on demand: {}. Error: {}", e,
-                                                  target.getFullPath(), e.getMessage() );
-            }
-        }
+        return MavenMetadataMerger.METADATA_NAME;
     }
 
-    @Override
-    public void handleContentDeletion( final ArtifactStore store, final String path )
-        throws AproxWorkflowException
-    {
-        if ( StoreType.group == store.getKey()
-                                     .getType() && path.endsWith( MavenMetadataMerger.METADATA_NAME ) )
-        {
-            final Group group = (Group) store;
-
-            // delete so it'll be recomputed.
-            final Transfer target = fileManager.getStorageReference( group, path );
-            try
-            {
-                if ( target.exists() )
-                {
-                    target.delete();
-                }
-
-                helper.deleteChecksumsAndMergeInfo( group, path );
-            }
-            catch ( final IOException e )
-            {
-                throw new AproxWorkflowException(
-
-                "Failed to delete generated file (to allow re-generation on demand: {}. Error: {}", e,
-                                                  target.getFullPath(), e.getMessage() );
-            }
-        }
-    }
-
-    private boolean writeVersionMetadata( final List<StoreResource> firstLevelFiles,
-                                           final ArtifactStore store, final String path )
+    private boolean writeVersionMetadata( final List<StoreResource> firstLevelFiles, final ArtifactStore store,
+                                          final String path )
         throws AproxWorkflowException
     {
         ArtifactPathInfo samplePomInfo = null;
-        
+
         // first level will contain version directories...for each directory, we need to verify the presence of a .pom file before including 
         // as a valid version
         final List<SingleVersion> versions = new ArrayList<SingleVersion>();
@@ -414,7 +357,7 @@ public class MavenMetadataGenerator
                         {
                             samplePomInfo = ArtifactPathInfo.parse( fileResource.getPath() );
                         }
-                        
+
                         continue nextTopResource;
                     }
                 }
@@ -501,7 +444,7 @@ public class MavenMetadataGenerator
     }
 
     private boolean writeSnapshotMetadata( final ArtifactPathInfo info, final List<StoreResource> files,
-                                            final ArtifactStore store, final String path )
+                                           final ArtifactStore store, final String path )
         throws AproxWorkflowException
     {
         // first level will contain files that have the timestamp-buildnumber version suffix...for each, we need to parse this info.
@@ -614,4 +557,131 @@ public class MavenMetadataGenerator
         return true;
     }
 
+    // Parking this here, transplanted from ScheduleManager, because this is where it belongs. It might be
+    // covered elsewhere, but in case it's not, we can use this as a reference...
+    //    public void updateSnapshotVersions( final StoreKey key, final String path )
+    //    {
+    //        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
+    //        if ( pathInfo == null )
+    //        {
+    //            return;
+    //        }
+    //
+    //        final ArtifactStore store;
+    //        try
+    //        {
+    //            store = dataManager.getArtifactStore( key );
+    //        }
+    //        catch ( final AproxDataException e )
+    //        {
+    //            logger.error( String.format( "Failed to update metadata after snapshot deletion. Reason: {}",
+    //                                         e.getMessage() ), e );
+    //            return;
+    //        }
+    //
+    //        if ( store == null )
+    //        {
+    //            logger.error( "Failed to update metadata after snapshot deletion in: {}. Reason: Cannot find corresponding ArtifactStore",
+    //                          key );
+    //            return;
+    //        }
+    //
+    //        final Transfer item = fileManager.getStorageReference( store, path );
+    //        if ( item.getParent() == null || item.getParent()
+    //                                             .getParent() == null )
+    //        {
+    //            return;
+    //        }
+    //
+    //        final Transfer metadata = fileManager.getStorageReference( store, item.getParent()
+    //                                                                              .getParent()
+    //                                                                              .getPath(), "maven-metadata.xml" );
+    //
+    //        if ( metadata.exists() )
+    //        {
+    //            //            logger.info( "[UPDATE VERSIONS] Updating snapshot versions for path: {} in store: {}", path, key.getName() );
+    //            Reader reader = null;
+    //            Writer writer = null;
+    //            try
+    //            {
+    //                reader = new InputStreamReader( metadata.openInputStream() );
+    //                final Metadata md = new MetadataXpp3Reader().read( reader );
+    //
+    //                final Versioning versioning = md.getVersioning();
+    //                final List<String> versions = versioning.getVersions();
+    //
+    //                final String version = pathInfo.getVersion();
+    //                String replacement = null;
+    //
+    //                final int idx = versions.indexOf( version );
+    //                if ( idx > -1 )
+    //                {
+    //                    if ( idx > 0 )
+    //                    {
+    //                        replacement = versions.get( idx - 1 );
+    //                    }
+    //
+    //                    versions.remove( idx );
+    //                }
+    //
+    //                if ( version.equals( md.getVersion() ) )
+    //                {
+    //                    md.setVersion( replacement );
+    //                }
+    //
+    //                if ( version.equals( versioning.getLatest() ) )
+    //                {
+    //                    versioning.setLatest( replacement );
+    //                }
+    //
+    //                final SnapshotPart si = pathInfo.getSnapshotInfo();
+    //                if ( si != null )
+    //                {
+    //                    final SnapshotPart siRepl = SnapshotUtils.extractSnapshotVersionPart( replacement );
+    //                    final Snapshot snapshot = versioning.getSnapshot();
+    //
+    //                    final String siTstamp = SnapshotUtils.generateSnapshotTimestamp( si.getTimestamp() );
+    //                    if ( si.isRemoteSnapshot() && siTstamp.equals( snapshot.getTimestamp() )
+    //                        && si.getBuildNumber() == snapshot.getBuildNumber() )
+    //                    {
+    //                        if ( siRepl != null )
+    //                        {
+    //                            if ( siRepl.isRemoteSnapshot() )
+    //                            {
+    //                                snapshot.setTimestamp( SnapshotUtils.generateSnapshotTimestamp( siRepl.getTimestamp() ) );
+    //                                snapshot.setBuildNumber( siRepl.getBuildNumber() );
+    //                            }
+    //                            else
+    //                            {
+    //                                snapshot.setLocalCopy( true );
+    //                            }
+    //                        }
+    //                        else
+    //                        {
+    //                            versioning.setSnapshot( null );
+    //                        }
+    //                    }
+    //                }
+    //
+    //                writer = new OutputStreamWriter( metadata.openOutputStream( TransferOperation.GENERATE, true ) );
+    //                new MetadataXpp3Writer().write( writer, md );
+    //            }
+    //            catch ( final IOException e )
+    //            {
+    //                logger.error( "Failed to update metadata after snapshot deletion.\n  Snapshot: {}\n  Metadata: {}\n  Reason: {}",
+    //                              e, item.getFullPath(), metadata, e.getMessage() );
+    //            }
+    //            catch ( final XmlPullParserException e )
+    //            {
+    //                logger.error( "Failed to update metadata after snapshot deletion.\n  Snapshot: {}\n  Metadata: {}\n  Reason: {}",
+    //                              e, item.getFullPath(), metadata, e.getMessage() );
+    //            }
+    //            finally
+    //            {
+    //                closeQuietly( reader );
+    //                closeQuietly( writer );
+    //            }
+    //        }
+    //    }
+    //
 }

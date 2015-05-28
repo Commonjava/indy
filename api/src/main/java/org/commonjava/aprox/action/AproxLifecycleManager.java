@@ -22,9 +22,11 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Event;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
+import org.commonjava.aprox.change.event.AproxLifecycleEvent;
 import org.commonjava.aprox.stats.AProxVersioning;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,81 +40,6 @@ import org.slf4j.LoggerFactory;
 @ApplicationScoped
 public class AproxLifecycleManager
 {
-    private static final Comparator<BootupAction> BOOT_PRIORITY_COMPARATOR = new Comparator<BootupAction>()
-    {
-        @Override
-        public int compare( final BootupAction first, final BootupAction second )
-        {
-            final int comp = first.getBootPriority() - second.getBootPriority();
-            if ( comp < 0 )
-            {
-                return 1;
-            }
-            else if ( comp > 0 )
-            {
-                return -1;
-            }
-
-            return 0;
-        }
-    };
-
-    private static final Comparator<MigrationAction> MIGRATION_PRIORITY_COMPARATOR = new Comparator<MigrationAction>()
-    {
-        @Override
-        public int compare( final MigrationAction first, final MigrationAction second )
-        {
-            final int comp = first.getMigrationPriority() - second.getMigrationPriority();
-            if ( comp < 0 )
-            {
-                return 1;
-            }
-            else if ( comp > 0 )
-            {
-                return -1;
-            }
-
-            return 0;
-        }
-    };
-
-    private static final Comparator<StartupAction> START_PRIORITY_COMPARATOR = new Comparator<StartupAction>()
-    {
-        @Override
-        public int compare( final StartupAction first, final StartupAction second )
-        {
-            final int comp = first.getStartupPriority() - second.getStartupPriority();
-            if ( comp < 0 )
-            {
-                return 1;
-            }
-            else if ( comp > 0 )
-            {
-                return -1;
-            }
-
-            return 0;
-        }
-    };
-
-    private static final Comparator<ShutdownAction> SHUTDOWN_PRIORITY_COMPARATOR = new Comparator<ShutdownAction>()
-    {
-        @Override
-        public int compare( final ShutdownAction first, final ShutdownAction second )
-        {
-            final int comp = first.getShutdownPriority() - second.getShutdownPriority();
-            if ( comp < 0 )
-            {
-                return 1;
-            }
-            else if ( comp > 0 )
-            {
-                return -1;
-            }
-
-            return 0;
-        }
-    };
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -130,6 +57,9 @@ public class AproxLifecycleManager
 
     @Inject
     private Instance<ShutdownAction> shutdownActionInstances;
+
+    @Inject
+    private Event<AproxLifecycleEvent> lifecycleEvents;
 
     private List<BootupAction> bootupActions;
 
@@ -212,6 +142,16 @@ public class AproxLifecycleManager
         runStartupActions();
 
         logger.info( "...done. AProx is ready to run." );
+
+        if ( lifecycleEvents == null )
+        {
+            logger.error( "Cannot fire AproxLifecycleEvent::started! Event manager is null. Did you construct this {} instance by hand?",
+                          getClass().getSimpleName() );
+        }
+        else
+        {
+            lifecycleEvents.fire( new AproxLifecycleEvent( AproxLifecycleEvent.Type.started ) );
+        }
     }
 
     /**
@@ -309,4 +249,79 @@ public class AproxLifecycleManager
         };
     }
 
+    private static final Comparator<BootupAction> BOOT_PRIORITY_COMPARATOR = new Comparator<BootupAction>()
+    {
+        @Override
+        public int compare( final BootupAction first, final BootupAction second )
+        {
+            final int comp = first.getBootPriority() - second.getBootPriority();
+            if ( comp < 0 )
+            {
+                return 1;
+            }
+            else if ( comp > 0 )
+            {
+                return -1;
+            }
+
+            return 0;
+        }
+    };
+
+    private static final Comparator<MigrationAction> MIGRATION_PRIORITY_COMPARATOR = new Comparator<MigrationAction>()
+    {
+        @Override
+        public int compare( final MigrationAction first, final MigrationAction second )
+        {
+            final int comp = first.getMigrationPriority() - second.getMigrationPriority();
+            if ( comp < 0 )
+            {
+                return 1;
+            }
+            else if ( comp > 0 )
+            {
+                return -1;
+            }
+
+            return 0;
+        }
+    };
+
+    private static final Comparator<StartupAction> START_PRIORITY_COMPARATOR = new Comparator<StartupAction>()
+    {
+        @Override
+        public int compare( final StartupAction first, final StartupAction second )
+        {
+            final int comp = first.getStartupPriority() - second.getStartupPriority();
+            if ( comp < 0 )
+            {
+                return 1;
+            }
+            else if ( comp > 0 )
+            {
+                return -1;
+            }
+
+            return 0;
+        }
+    };
+
+    private static final Comparator<ShutdownAction> SHUTDOWN_PRIORITY_COMPARATOR = new Comparator<ShutdownAction>()
+    {
+        @Override
+        public int compare( final ShutdownAction first, final ShutdownAction second )
+        {
+            final int comp = first.getShutdownPriority() - second.getShutdownPriority();
+            if ( comp < 0 )
+            {
+                return 1;
+            }
+            else if ( comp > 0 )
+            {
+                return -1;
+            }
+
+            return 0;
+        }
+    };
 }

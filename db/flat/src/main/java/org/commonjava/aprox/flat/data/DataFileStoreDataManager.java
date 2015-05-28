@@ -54,6 +54,8 @@ public class DataFileStoreDataManager
     @Inject
     private ObjectMapper serializer;
 
+    private boolean started;
+
     protected DataFileStoreDataManager()
     {
     }
@@ -85,14 +87,14 @@ public class DataFileStoreDataManager
                     try
                     {
                         final String json = f.readString();
-                        final HostedRepository dp = serializer.readValue( json, HostedRepository.class );
-                        if ( dp == null )
+                        final HostedRepository h = serializer.readValue( json, HostedRepository.class );
+                        if ( h == null )
                         {
                             f.delete( summary );
                         }
                         else
                         {
-                            storeHostedRepository( dp, summary );
+                            storeArtifactStore( h, summary, false, false );
                         }
                     }
                     catch ( final IOException e )
@@ -120,7 +122,7 @@ public class DataFileStoreDataManager
                         }
                         else
                         {
-                            storeRemoteRepository( r, summary );
+                            storeArtifactStore( r, summary, false, false );
                         }
                     }
                     catch ( final IOException e )
@@ -148,7 +150,7 @@ public class DataFileStoreDataManager
                         }
                         else
                         {
-                            storeGroup( g, summary );
+                            storeArtifactStore( g, summary, false, false );
                         }
                     }
                     catch ( final IOException e )
@@ -157,67 +159,13 @@ public class DataFileStoreDataManager
                     }
                 }
             }
+
+            started = true;
         }
         catch ( final AproxDataException e )
         {
             throw new IllegalStateException( "Failed to start store data manager: " + e.getMessage(), e );
         }
-    }
-
-    @Override
-    public boolean storeHostedRepository( final HostedRepository deploy, final ChangeSummary summary )
-        throws AproxDataException
-    {
-        final boolean result = super.storeHostedRepository( deploy, summary );
-
-        return result;
-    }
-
-    @Override
-    public boolean storeHostedRepository( final HostedRepository deploy, final ChangeSummary summary,
-                                          final boolean skipIfExists )
-        throws AproxDataException
-    {
-        final boolean result = super.storeHostedRepository( deploy, summary, skipIfExists );
-
-        return result;
-    }
-
-    @Override
-    public boolean storeRemoteRepository( final RemoteRepository proxy, final ChangeSummary summary )
-        throws AproxDataException
-    {
-        final boolean result = super.storeRemoteRepository( proxy, summary );
-
-        return result;
-    }
-
-    @Override
-    public boolean storeRemoteRepository( final RemoteRepository repository, final ChangeSummary summary,
-                                          final boolean skipIfExists )
-        throws AproxDataException
-    {
-        final boolean result = super.storeRemoteRepository( repository, summary, skipIfExists );
-
-        return result;
-    }
-
-    @Override
-    public boolean storeGroup( final Group group, final ChangeSummary summary )
-        throws AproxDataException
-    {
-        final boolean result = super.storeGroup( group, summary );
-
-        return result;
-    }
-
-    @Override
-    public boolean storeGroup( final Group group, final ChangeSummary summary, final boolean skipIfExists )
-        throws AproxDataException
-    {
-        final boolean result = super.storeGroup( group, summary, skipIfExists );
-
-        return result;
     }
 
     @Override
@@ -339,29 +287,12 @@ public class DataFileStoreDataManager
     }
 
     @Override
-    public boolean storeArtifactStore( final ArtifactStore store, final ChangeSummary summary )
-        throws AproxDataException
-    {
-        final boolean result = super.storeArtifactStore( store, summary );
-
-        return result;
-    }
-
-    @Override
-    public boolean storeArtifactStore( final ArtifactStore store, final ChangeSummary summary,
-                                       final boolean skipIfExists )
-        throws AproxDataException
-    {
-        final boolean result = super.storeArtifactStore( store, summary, skipIfExists );
-
-        return result;
-    }
-
-    @Override
-    protected void postStore( final ArtifactStore store, final ChangeSummary summary, final boolean exists )
+    protected void postStore( final ArtifactStore store, final ChangeSummary summary, final boolean exists,
+                              final boolean fireEvents )
         throws AproxDataException
     {
         store( false, summary, store );
+        super.postStore( store, summary, exists, fireEvents );
     }
 
     @Override
@@ -398,10 +329,11 @@ public class DataFileStoreDataManager
         {
             final ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, "Initializing defaults" );
 
-            storeRemoteRepository( new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" ), summary,
-                                   true );
+            storeArtifactStore( new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" ), summary,
+                                true, false );
 
-            storeGroup( new Group( "public", new StoreKey( StoreType.remote, "central" ) ), summary, true );
+            storeArtifactStore( new Group( "public", new StoreKey( StoreType.remote, "central" ) ), summary, true,
+                                false );
         }
     }
 
@@ -423,6 +355,12 @@ public class DataFileStoreDataManager
     public DataFileManager getFileManager()
     {
         return manager;
+    }
+
+    @Override
+    public boolean isStarted()
+    {
+        return started ? super.isStarted() : false;
     }
 
 }

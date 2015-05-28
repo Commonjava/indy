@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2011 Red Hat, Inc. (jdcasey@commonjava.org)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.commonjava.aprox.implrepo.change;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -48,13 +63,13 @@ public class ImpliedRepoMaintainerTest
         throws Exception
     {
         final Group g = new Group( "test" );
-        storeDataManager.storeGroup( g, summary );
+        storeDataManager.storeArtifactStore( g, summary );
 
         final RemoteRepository repo1 = new RemoteRepository( "one", "http://www.foo.com/repo" );
-        storeDataManager.storeRemoteRepository( repo1, summary );
+        storeDataManager.storeArtifactStore( repo1, summary );
 
         final RemoteRepository repo2 = new RemoteRepository( "one", "http://www.foo.com/repo" );
-        storeDataManager.storeRemoteRepository( repo2, summary );
+        storeDataManager.storeArtifactStore( repo2, summary );
 
         metadataManager.addImpliedMetadata( repo1, Arrays.<ArtifactStore> asList( repo2 ) );
 
@@ -72,13 +87,13 @@ public class ImpliedRepoMaintainerTest
         throws Exception
     {
         final Group g = new Group( "test" );
-        storeDataManager.storeGroup( g, summary );
+        storeDataManager.storeArtifactStore( g, summary );
 
         final RemoteRepository repo1 = new RemoteRepository( "one", "http://www.foo.com/repo" );
-        storeDataManager.storeRemoteRepository( repo1, summary );
+        storeDataManager.storeArtifactStore( repo1, summary );
 
         final RemoteRepository repo2 = new RemoteRepository( "one", "http://www.foo.com/repo" );
-        storeDataManager.storeRemoteRepository( repo2, summary );
+        storeDataManager.storeArtifactStore( repo2, summary );
 
         metadataManager.addImpliedMetadata( repo1, Arrays.<ArtifactStore> asList( repo2 ) );
 

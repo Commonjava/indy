@@ -32,22 +32,20 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.content.AbstractContentGenerator;
 import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.content.StoreResource;
 import org.commonjava.aprox.core.content.group.ArchetypeCatalogMerger;
 import org.commonjava.aprox.core.content.group.GroupMergeHelper;
+import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.Group;
-import org.commonjava.aprox.model.core.StoreType;
-import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 
 @ApplicationScoped
 public class ArchetypeCatalogGenerator
-    extends AbstractContentGenerator
+    extends AbstractMergedContentGenerator
 {
 
     private static final Set<String> HANDLED_FILENAMES = Collections.unmodifiableSet( new HashSet<String>()
@@ -64,22 +62,17 @@ public class ArchetypeCatalogGenerator
     } );
 
     @Inject
-    private GroupMergeHelper helper;
-
-    @Inject
-    private DownloadManager fileManager;
-
-    @Inject
     private ArchetypeCatalogMerger merger;
 
     protected ArchetypeCatalogGenerator()
     {
     }
 
-    public ArchetypeCatalogGenerator( final DownloadManager downloadManager, final ArchetypeCatalogMerger merger,
+    public ArchetypeCatalogGenerator( final DownloadManager downloadManager, final StoreDataManager storeManager,
+                                      final ArchetypeCatalogMerger merger,
                                       final GroupMergeHelper mergeHelper )
     {
-        this.fileManager = downloadManager;
+        super( downloadManager, storeManager, mergeHelper );
         this.merger = merger;
         this.helper = mergeHelper;
     }
@@ -163,57 +156,9 @@ public class ArchetypeCatalogGenerator
     }
 
     @Override
-    public void handleContentStorage( final ArtifactStore store, final String path, final Transfer result )
-        throws AproxWorkflowException
+    protected String getMergedMetadataName()
     {
-        if ( StoreType.group == store.getKey()
-                                     .getType() && path.endsWith( ArchetypeCatalogMerger.CATALOG_NAME ) )
-        {
-            final Group group = (Group) store;
-
-            // delete so it'll be recomputed.
-            final Transfer target = fileManager.getStorageReference( group, path );
-            try
-            {
-                target.delete();
-                helper.deleteChecksumsAndMergeInfo( group, path );
-            }
-            catch ( final IOException e )
-            {
-                throw new AproxWorkflowException( "Failed to delete generated file (to allow re-generation on demand: {}. Error: {}", e,
-                                                  target.getFullPath(), e.getMessage() );
-            }
-        }
-    }
-
-    @Override
-    public void handleContentDeletion( final ArtifactStore store, final String path )
-        throws AproxWorkflowException
-    {
-        if ( StoreType.group == store.getKey()
-                                     .getType() )
-        {
-            final Group group = (Group) store;
-            final Transfer target = fileManager.getStorageReference( group, path );
-
-            if ( target == null )
-            {
-                return;
-            }
-
-            try
-            {
-                target.delete();
-
-                helper.deleteChecksumsAndMergeInfo( group, path );
-            }
-            catch ( final IOException e )
-            {
-                throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR.code(),
-                                                  "Failed to delete one or more group files for: {}:{}. Reason: {}", e,
-                                                  group.getKey(), path, e.getMessage() );
-            }
-        }
+        return ArchetypeCatalogMerger.CATALOG_NAME;
     }
 
 }

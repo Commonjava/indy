@@ -55,6 +55,7 @@
     <webdavVersion>3.2.1</webdavVersion>
     <resteasyVersion>3.0.9.Final</resteasyVersion>
     <undertowVersion>1.1.2.Final</undertowVersion>
+    <partylineVersion>1.4-SNAPSHOT</partylineVersion>
     
     <test-forkCount>1C</test-forkCount>
     <test-redirectOutput>true</test-redirectOutput>
@@ -580,6 +581,13 @@
         <groupId>org.commonjava.maven.cartographer</groupId>
         <artifactId>cartographer</artifactId>
         <version>${cartoVersion}</version>
+      </dependency>
+      
+      <!-- override galley-cache-partyline dep -->
+      <dependency>
+        <groupId>org.commonjava.util.partyline</groupId>
+        <artifactId>partyline</artifactId>
+        <version>${partylineVersion}</version>
       </dependency>
       
       <dependency>

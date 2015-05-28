@@ -15,39 +15,23 @@
  */
 package org.commonjava.aprox.core.expire;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
-
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
-import org.apache.maven.artifact.repository.metadata.Metadata;
-import org.apache.maven.artifact.repository.metadata.Snapshot;
-import org.apache.maven.artifact.repository.metadata.Versioning;
-import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
-import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.commonjava.aprox.action.AproxLifecycleException;
 import org.commonjava.aprox.action.BootupAction;
 import org.commonjava.aprox.action.ShutdownAction;
 import org.commonjava.aprox.conf.AproxConfiguration;
-import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.core.conf.AproxSchedulerConfig;
 import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
@@ -60,10 +44,6 @@ import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
-import org.commonjava.maven.atlas.ident.util.SnapshotUtils;
-import org.commonjava.maven.atlas.ident.version.part.SnapshotPart;
-import org.commonjava.maven.galley.model.Transfer;
-import org.commonjava.maven.galley.model.TransferOperation;
 import org.quartz.JobBuilder;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -95,9 +75,6 @@ public class ScheduleManager
     static final String CONTENT_JOB_TYPE = "CONTENT";
 
     private static final String JOB_TYPE = "JOB_TYPE";
-
-    @Inject
-    private DownloadManager fileManager;
 
     @Inject
     @ExecutorConfig( daemon = true, priority = 7, named = "aprox-events" )
@@ -191,6 +168,7 @@ public class ScheduleManager
         {
             final Set<TriggerKey> canceled =
                 cancelAllBefore( new StoreKeyMatcher( deploy.getKey(), CONTENT_JOB_TYPE ), timeout );
+
             for ( final TriggerKey key : canceled )
             {
                 final String path = key.getName();
@@ -291,7 +269,7 @@ public class ScheduleManager
                                    .build();
             }
 
-            final long startMillis = TimeUnit.MILLISECONDS.convert( startSeconds, TimeUnit.SECONDS );
+            final long startMillis = System.currentTimeMillis() + ( startSeconds * 1000 );
 
             final TriggerBuilder<Trigger> tb = TriggerBuilder.newTrigger()
                                                              .withIdentity( jk.getName(), jk.getGroup() )
@@ -315,6 +293,7 @@ public class ScheduleManager
     public void scheduleContentExpiration( final StoreKey key, final String path, final int timeoutSeconds )
         throws AproxSchedulerException
     {
+        logger.info( "Scheduling timeout for: {} in: {} in: {} seconds.", path, key, timeoutSeconds );
         scheduleForStore( key, CONTENT_JOB_TYPE, path, new ContentExpiration( key, path ), timeoutSeconds, -1 );
     }
 
@@ -391,168 +370,6 @@ public class ScheduleManager
         return null;
     }
 
-    public void cleanMetadata( final StoreKey key, final String path )
-        throws AproxSchedulerException
-    {
-        if ( path.endsWith( "maven-metadata.xml" ) )
-        {
-            try
-            {
-                final Set<Group> groups = dataManager.getGroupsContaining( key );
-                for ( final Group group : groups )
-                {
-                    //                    logger.info( "[CLEAN] Cleaning metadata path: {} in group: {}", path, group.getName() );
-
-                    cancel( new StoreKeyMatcher( key, CONTENT_JOB_TYPE ), path );
-
-                    final Transfer item = fileManager.getStorageReference( group, path );
-                    if ( item.exists() )
-                    {
-                        try
-                        {
-                            item.delete();
-                        }
-                        catch ( final IOException e )
-                        {
-                            logger.error( "Failed to delete: {}. Error: {}",
-                                          fileManager.getStorageReference( group, path ), e.getMessage() );
-                        }
-                    }
-                }
-            }
-            catch ( final AproxDataException e )
-            {
-                logger.error( String.format( "Attempting to update groups for metadata change; Failed to retrieve groups containing store: {}. Error: {}",
-                                             key, e.getMessage() ), e );
-            }
-        }
-    }
-
-    public void updateSnapshotVersions( final StoreKey key, final String path )
-    {
-        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
-        if ( pathInfo == null )
-        {
-            return;
-        }
-
-        final ArtifactStore store;
-        try
-        {
-            store = dataManager.getArtifactStore( key );
-        }
-        catch ( final AproxDataException e )
-        {
-            logger.error( String.format( "Failed to update metadata after snapshot deletion. Reason: {}",
-                                         e.getMessage() ), e );
-            return;
-        }
-
-        if ( store == null )
-        {
-            logger.error( "Failed to update metadata after snapshot deletion in: {}. Reason: Cannot find corresponding ArtifactStore",
-                          key );
-            return;
-        }
-
-        final Transfer item = fileManager.getStorageReference( store, path );
-        if ( item.getParent() == null || item.getParent()
-                                             .getParent() == null )
-        {
-            return;
-        }
-
-        final Transfer metadata = fileManager.getStorageReference( store, item.getParent()
-                                                                              .getParent()
-                                                                              .getPath(), "maven-metadata.xml" );
-
-        if ( metadata.exists() )
-        {
-            //            logger.info( "[UPDATE VERSIONS] Updating snapshot versions for path: {} in store: {}", path, key.getName() );
-            Reader reader = null;
-            Writer writer = null;
-            try
-            {
-                reader = new InputStreamReader( metadata.openInputStream() );
-                final Metadata md = new MetadataXpp3Reader().read( reader );
-
-                final Versioning versioning = md.getVersioning();
-                final List<String> versions = versioning.getVersions();
-
-                final String version = pathInfo.getVersion();
-                String replacement = null;
-
-                final int idx = versions.indexOf( version );
-                if ( idx > -1 )
-                {
-                    if ( idx > 0 )
-                    {
-                        replacement = versions.get( idx - 1 );
-                    }
-
-                    versions.remove( idx );
-                }
-
-                if ( version.equals( md.getVersion() ) )
-                {
-                    md.setVersion( replacement );
-                }
-
-                if ( version.equals( versioning.getLatest() ) )
-                {
-                    versioning.setLatest( replacement );
-                }
-
-                final SnapshotPart si = pathInfo.getSnapshotInfo();
-                if ( si != null )
-                {
-                    final SnapshotPart siRepl = SnapshotUtils.extractSnapshotVersionPart( replacement );
-                    final Snapshot snapshot = versioning.getSnapshot();
-
-                    final String siTstamp = SnapshotUtils.generateSnapshotTimestamp( si.getTimestamp() );
-                    if ( si.isRemoteSnapshot() && siTstamp.equals( snapshot.getTimestamp() )
-                        && si.getBuildNumber() == snapshot.getBuildNumber() )
-                    {
-                        if ( siRepl != null )
-                        {
-                            if ( siRepl.isRemoteSnapshot() )
-                            {
-                                snapshot.setTimestamp( SnapshotUtils.generateSnapshotTimestamp( siRepl.getTimestamp() ) );
-                                snapshot.setBuildNumber( siRepl.getBuildNumber() );
-                            }
-                            else
-                            {
-                                snapshot.setLocalCopy( true );
-                            }
-                        }
-                        else
-                        {
-                            versioning.setSnapshot( null );
-                        }
-                    }
-                }
-
-                writer = new OutputStreamWriter( metadata.openOutputStream( TransferOperation.GENERATE, true ) );
-                new MetadataXpp3Writer().write( writer, md );
-            }
-            catch ( final IOException e )
-            {
-                logger.error( "Failed to update metadata after snapshot deletion.\n  Snapshot: {}\n  Metadata: {}\n  Reason: {}",
-                              e, item.getFullPath(), metadata, e.getMessage() );
-            }
-            catch ( final XmlPullParserException e )
-            {
-                logger.error( "Failed to update metadata after snapshot deletion.\n  Snapshot: {}\n  Metadata: {}\n  Reason: {}",
-                              e, item.getFullPath(), metadata, e.getMessage() );
-            }
-            finally
-            {
-                closeQuietly( reader );
-                closeQuietly( writer );
-            }
-        }
-    }
-
     public Set<TriggerKey> cancelAllBefore( final GroupMatcher<TriggerKey> matcher, final long timeout )
         throws AproxSchedulerException
     {
@@ -560,7 +377,7 @@ public class ScheduleManager
         try
         {
             final Set<TriggerKey> keys = scheduler.getTriggerKeys( matcher );
-            final Date to = new Date( TimeUnit.MILLISECONDS.convert( timeout, TimeUnit.SECONDS ) );
+            final Date to = new Date( System.currentTimeMillis() + ( timeout * 1000 ) );
             for ( final TriggerKey key : keys )
             {
                 final Trigger trigger = scheduler.getTrigger( key );

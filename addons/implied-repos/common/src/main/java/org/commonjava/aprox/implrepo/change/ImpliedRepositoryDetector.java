@@ -15,9 +15,11 @@
  */
 package org.commonjava.aprox.implrepo.change;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -202,7 +204,7 @@ public class ImpliedRepositoryDetector
 
                     if ( changed )
                     {
-                        storeManager.storeGroup( group, summary );
+                        storeManager.storeArtifactStore( group, summary, false, false );
                     }
                 }
             }
@@ -245,12 +247,14 @@ public class ImpliedRepositoryDetector
 
             for ( final RepositoryView repo : repos )
             {
+                logger.debug( "Detected POM-declared repository: {}", repo );
                 RemoteRepository rr = storeManager.findRemoteRepository( repo.getUrl() );
                 if ( rr == null )
                 {
+                    logger.debug( "Creating new RemoteRepository for: {}", repo );
                     final ProjectVersionRef gav = job.pathInfo.getProjectId();
 
-                    rr = new RemoteRepository( repo.getId(), repo.getUrl() );
+                    rr = new RemoteRepository( formatId( repo ), repo.getUrl() );
                     rr.setDescription( "Implicitly created repo for: " + repo.getName() + " (" + repo.getId()
                         + ") from repository declaration in POM: " + gav );
 
@@ -263,7 +267,8 @@ public class ImpliedRepositoryDetector
                     final ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, changelog );
                     try
                     {
-                        storeManager.storeRemoteRepository( rr, summary );
+                        final boolean result = storeManager.storeArtifactStore( rr, summary, true, false );
+                        logger.debug( "Stored new RemoteRepository: {}. (successful? {})", rr, result );
                         job.implied.add( rr );
                     }
                     catch ( final AproxDataException e )
@@ -272,8 +277,23 @@ public class ImpliedRepositoryDetector
                                                      repo.getUrl(), gav, job.transfer ), e );
                     }
                 }
+                else
+                {
+                    logger.debug( "Found existing RemoteRepository: {}", rr );
+                }
             }
         }
+    }
+
+    private String formatId( final RepositoryView repo )
+    {
+        //        return "implied-" + repo.getId() + "-" + formatNow();
+        return repo.getId();
+    }
+
+    private String formatNow()
+    {
+        return new SimpleDateFormat( "yyyyMMdd_HHmm" ).format( new Date() );
     }
 
     public class ImplicationsJob

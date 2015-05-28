@@ -133,7 +133,7 @@ public class ReplicationController
                                 final RemoteRepository repo = new RemoteRepository( key, view.getResourceUri() );
                                 setProxyAttributes( repo, action );
 
-                                data.storeRemoteRepository( repo, new ChangeSummary( user,
+                                data.storeArtifactStore( repo, new ChangeSummary( user,
                                                                                      "REPLICATION: Proxying remote aprox repository: "
                                                                                          + view.getResourceUri() ) );
                                 replicated.add( repo.getKey() );

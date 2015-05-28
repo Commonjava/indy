@@ -51,9 +51,10 @@ public class GroupConsistencyListener
             for ( final Group group : groups )
             {
                 group.removeConstituent( key );
-                proxyDataManager.storeGroup( group, new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                proxyDataManager.storeArtifactStore( group, new ChangeSummary( ChangeSummary.SYSTEM_USER,
                                                                        "Auto-update groups containing: " + key
-                                                                           + " (to maintain consistency)" ) );
+                                                                                   + " (to maintain consistency)" ),
+                                                     false, false );
             }
 
             changeSync.setChanged();

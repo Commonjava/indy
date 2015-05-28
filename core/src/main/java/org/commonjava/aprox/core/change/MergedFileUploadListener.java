@@ -33,6 +33,7 @@ import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileEvent;
 import org.commonjava.maven.galley.model.Transfer;
@@ -61,52 +62,54 @@ public class MergedFileUploadListener
     // NOTE: Disabling @Observes on this because I'm pretty sure the ContentManager is handling it now.
     public void reMergeUploaded( /*@Observes*/final FileEvent event )
     {
-        executor.execute( new Runnable()
+        if ( event instanceof FileAccessEvent )
         {
-            @Override
-            public void run()
+            return;
+        }
+
+        final String path = event.getTransfer()
+                                 .getPath();
+
+        final StoreKey key = getKey( event );
+
+        if ( !path.endsWith( MavenMetadataMerger.METADATA_NAME )
+            && !path.endsWith( ArchetypeCatalogMerger.CATALOG_NAME ) )
+        {
+            return;
+        }
+
+        try
+        {
+            final Set<? extends Group> groups = dataManager.getGroupsContaining( key );
+
+            if ( groups != null )
             {
-                final String path = event.getTransfer()
-                                         .getPath();
-
-                final StoreKey key = getKey( event );
-
-                if ( !path.endsWith( MavenMetadataMerger.METADATA_NAME ) && !path.endsWith( ArchetypeCatalogMerger.CATALOG_NAME ) )
+                for ( final Group group : groups )
                 {
-                    return;
-                }
-
-                try
-                {
-                    final Set<? extends Group> groups = dataManager.getGroupsContaining( key );
-
-                    if ( groups != null )
+                    try
                     {
-                        for ( final Group group : groups )
-                        {
-                            try
-                            {
-                                reMerge( group, path );
-                            }
-                            catch ( final IOException e )
-                            {
-                                logger.error( String.format( "Failed to delete: %s from group: %s. Error: %s", path, group, e.getMessage() ), e );
-                            }
-                        }
+                        reMerge( group, path );
+                    }
+                    catch ( final IOException e )
+                    {
+                        logger.error( String.format( "Failed to delete: %s from group: %s. Error: %s", path, group,
+                                                     e.getMessage() ), e );
                     }
                 }
-                catch ( final AproxDataException e )
-                {
-                    logger.warn( "Failed to regenerate maven-metadata.xml for groups after deployment to: {}"
-                        + "\nCannot retrieve associated groups: {}", e, key, e.getMessage() );
-                }
             }
-        } );
+        }
+        catch ( final AproxDataException e )
+        {
+            logger.warn( "Failed to regenerate maven-metadata.xml for groups after deployment to: {}"
+                + "\nCannot retrieve associated groups: {}", e, key, e.getMessage() );
+        }
     }
 
     private void reMerge( final Group group, final String path )
         throws IOException
     {
+        logger.debug( "Updating merged metadata file: {} in group: {}", path, group.getKey() );
+
         final Transfer[] toDelete =
             { fileManager.getStorageReference( group, path ),
                 fileManager.getStorageReference( group, path + GroupMergeHelper.MERGEINFO_SUFFIX ),
@@ -115,12 +118,16 @@ public class MergedFileUploadListener
 
         for ( final Transfer item : toDelete )
         {
+            logger.debug( "Attempting to delete: {}", item );
+
             if ( item.exists() )
             {
-                item.delete();
+                final boolean result = item.delete();
+                logger.debug( "Deleted: {} (success? {})", item, result );
 
                 if ( fileEvent != null )
                 {
+                    logger.debug( "Firing deletion event for: {}", item );
                     fileEvent.fire( new FileDeletionEvent( item ) );
                 }
             }

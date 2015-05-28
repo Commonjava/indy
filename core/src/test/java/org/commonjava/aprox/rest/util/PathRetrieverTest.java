@@ -71,7 +71,7 @@ public class PathRetrieverTest
         throws Exception
     {
         final RemoteRepository repo = new RemoteRepository( "central", "http://repo.maven.apache.org/maven2/" );
-        data.storeRemoteRepository( repo, summary );
+        data.storeArtifactStore( repo, summary );
 
         final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
 
@@ -88,8 +88,8 @@ public class PathRetrieverTest
         final RemoteRepository repo = new RemoteRepository( "dummy", "http://www.nowhere.com/" );
         final RemoteRepository repo2 = new RemoteRepository( "central", "http://repo.maven.apache.org/maven2/" );
 
-        data.storeRemoteRepository( repo, summary );
-        data.storeRemoteRepository( repo2, summary );
+        data.storeArtifactStore( repo, summary );
+        data.storeArtifactStore( repo2, summary );
 
         final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
 
