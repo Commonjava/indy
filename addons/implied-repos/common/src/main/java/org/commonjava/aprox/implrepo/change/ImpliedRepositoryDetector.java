@@ -15,11 +15,9 @@
  */
 package org.commonjava.aprox.implrepo.change;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -247,6 +245,12 @@ public class ImpliedRepositoryDetector
 
             for ( final RepositoryView repo : repos )
             {
+                if ( !config.isIncludeSnapshotRepos() && !repo.isReleasesEnabled() )
+                {
+                    logger.debug( "Discarding snapshot repository: {}", repo );
+                    continue;
+                }
+
                 logger.debug( "Detected POM-declared repository: {}", repo );
                 RemoteRepository rr = storeManager.findRemoteRepository( repo.getUrl() );
                 if ( rr == null )
@@ -291,10 +295,10 @@ public class ImpliedRepositoryDetector
         return repo.getId();
     }
 
-    private String formatNow()
-    {
-        return new SimpleDateFormat( "yyyyMMdd_HHmm" ).format( new Date() );
-    }
+    //    private String formatNow()
+    //    {
+    //        return new SimpleDateFormat( "yyyyMMdd_HHmm" ).format( new Date() );
+    //    }
 
     public class ImplicationsJob
     {

@@ -913,7 +913,7 @@
       </modules>
     </profile>
     <profile>
-      <id>travis</id>
+      <id>ci</id>
       <properties>
         <test-forkCount>1</test-forkCount>
       </properties>
