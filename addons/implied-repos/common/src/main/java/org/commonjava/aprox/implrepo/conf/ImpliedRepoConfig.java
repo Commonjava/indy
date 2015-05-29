@@ -65,7 +65,11 @@ public class ImpliedRepoConfig
 
     public static final boolean DEFAULT_ENABLED = false;
 
+    public static final boolean DEFAULT_INCLUDE_SNAPSHOT_REPOS = false;
+
     private Boolean enabled;
+
+    private Boolean includeSnapshotRepos;
 
     public ImpliedRepoConfig()
     {
@@ -80,6 +84,17 @@ public class ImpliedRepoConfig
     public void setEnabled( final Boolean enabled )
     {
         this.enabled = enabled;
+    }
+
+    public boolean isIncludeSnapshotRepos()
+    {
+        return includeSnapshotRepos == null ? DEFAULT_INCLUDE_SNAPSHOT_REPOS : includeSnapshotRepos;
+    }
+
+    @ConfigName( "include.snapshots" )
+    public void setIncludeSnapshotRepos( final Boolean includeSnapshotRepos )
+    {
+        this.includeSnapshotRepos = includeSnapshotRepos;
     }
 
     @javax.enterprise.context.ApplicationScoped

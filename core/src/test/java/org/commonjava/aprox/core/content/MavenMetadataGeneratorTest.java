@@ -90,7 +90,7 @@ public class MavenMetadataGeneratorTest
         final MavenMetadataMerger merger = new MavenMetadataMerger();
         final GroupMergeHelper helper = new GroupMergeHelper( downloads );
 
-        generator = new MavenMetadataGenerator( downloads, xml, types, merger, helper );
+        generator = new MavenMetadataGenerator( downloads, stores, xml, types, merger, helper );
 
         metadataReader = new MavenMetadataReader( xml, locations, fixture.getMetadata(), fixture.getXpathManager() );
     }

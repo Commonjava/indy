@@ -69,7 +69,7 @@ public class StoreDataSetupAction
                 final RemoteRepository central =
                     new RemoteRepository( "central", "http://repo.maven.apache.org/maven2/" );
                 central.setCacheTimeoutSeconds( 86400 );
-                storeManager.storeRemoteRepository( central, summary, true );
+                storeManager.storeArtifactStore( central, summary, true, true );
                 changed = true;
             }
 
@@ -80,7 +80,7 @@ public class StoreDataSetupAction
                 local.setAllowSnapshots( true );
                 local.setSnapshotTimeoutSeconds( 86400 );
 
-                storeManager.storeHostedRepository( local, summary, true );
+                storeManager.storeArtifactStore( local, summary, true, true );
                 changed = true;
             }
 
@@ -90,7 +90,7 @@ public class StoreDataSetupAction
                 pub.addConstituent( new StoreKey( StoreType.remote, "central" ) );
                 pub.addConstituent( new StoreKey( StoreType.hosted, "local-deployments" ) );
 
-                storeManager.storeGroup( pub, summary, true );
+                storeManager.storeArtifactStore( pub, summary, true, true );
                 changed = true;
             }
         }

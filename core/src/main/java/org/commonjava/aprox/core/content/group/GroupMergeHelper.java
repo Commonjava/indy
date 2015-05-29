@@ -65,16 +65,19 @@ public class GroupMergeHelper
 
         if ( targetSha != null )
         {
+            logger.debug( "Deleting: {}", targetSha );
             targetSha.delete();
         }
 
         if ( targetMd5 != null )
         {
+            logger.debug( "Deleting: {}", targetMd5 );
             targetMd5.delete();
         }
 
         if ( targetInfo != null )
         {
+            logger.debug( "Deleting: {}", targetInfo );
             targetInfo.delete();
         }
     }

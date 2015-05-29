@@ -131,13 +131,13 @@ public class StoreWithTypeMigrationAction
             final List<HostedRepository> hosted = data.getAllHostedRepositories();
             for ( final HostedRepository repo : hosted )
             {
-                data.storeHostedRepository( repo, summary );
+                data.storeArtifactStore( repo, summary, false, true );
             }
 
             final List<RemoteRepository> remotes = data.getAllRemoteRepositories();
             for ( final RemoteRepository repo : remotes )
             {
-                data.storeRemoteRepository( repo, summary );
+                data.storeArtifactStore( repo, summary, false, true );
             }
 
             data.reload();

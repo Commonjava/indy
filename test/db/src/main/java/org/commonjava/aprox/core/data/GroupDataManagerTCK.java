@@ -63,9 +63,9 @@ public abstract class GroupDataManagerTCK
     {
         manager = getFixtureProvider().getDataManager();
 
-        manager.storeRemoteRepository( new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" ),
+        manager.storeArtifactStore( new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" ),
                                        summary );
-        manager.storeRemoteRepository( new RemoteRepository( "repo2", "http://repo1.maven.org/maven2/" ), summary );
+        manager.storeArtifactStore( new RemoteRepository( "repo2", "http://repo1.maven.org/maven2/" ), summary );
     }
 
     @Test
@@ -102,7 +102,7 @@ public abstract class GroupDataManagerTCK
     {
         for ( final Group group : groups )
         {
-            manager.storeGroup( group, summary );
+            manager.storeArtifactStore( group, summary );
         }
     }
 

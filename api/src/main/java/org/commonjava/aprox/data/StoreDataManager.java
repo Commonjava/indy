@@ -123,50 +123,6 @@ public interface StoreDataManager
         throws AproxDataException;
 
     /**
-     * Store a modified or new {@link HostedRepository} instance. This is equivalent to 
-     * {@link StoreDataManager#storeHostedRepository(HostedRepository, boolean)} with skip flag <code>false</code>
-     */
-    boolean storeHostedRepository( final HostedRepository deploy, final ChangeSummary summary )
-        throws AproxDataException;
-
-    /**
-     * Store a modified or new {@link HostedRepository} instance. If the store already exists, and <code>skipIfExists</code> is true, abort the
-     * operation.
-     */
-    boolean storeHostedRepository( final HostedRepository deploy, final ChangeSummary summary,
-                                   final boolean skipIfExists )
-        throws AproxDataException;
-
-    /**
-     * Store a modified or new {@link RemoteRepository} instance. This is equivalent to 
-     * {@link StoreDataManager#storeRemoteRepository(RemoteRepository, boolean)} with skip flag <code>false</code>
-     */
-    boolean storeRemoteRepository( final RemoteRepository proxy, final ChangeSummary summary )
-        throws AproxDataException;
-
-    /**
-     * Store a modified or new {@link RemoteRepository} instance. If the store already exists, and <code>skipIfExists</code> is true, abort the
-     * operation.
-     */
-    boolean storeRemoteRepository( final RemoteRepository repository, final ChangeSummary summary,
-                                   final boolean skipIfExists )
-        throws AproxDataException;
-
-    /**
-     * Store a modified or new {@link Group} instance. This is equivalent to 
-     * {@link StoreDataManager#storeGroup(Group, boolean)} with skip flag <code>false</code>
-     */
-    boolean storeGroup( final Group group, final ChangeSummary summary )
-        throws AproxDataException;
-
-    /**
-     * Store a modified or new {@link Group} instance. If the store already exists, and <code>skipIfExists</code> is true, abort the
-     * operation.
-     */
-    boolean storeGroup( final Group group, final ChangeSummary summary, final boolean skipIfExists )
-        throws AproxDataException;
-
-    /**
      * Store a modified or new {@link ArtifactStore} instance. This is equivalent to 
      * {@link StoreDataManager#storeArtifactStore(ArtifactStore, boolean)} with skip flag <code>false</code>
      */
@@ -178,6 +134,13 @@ public interface StoreDataManager
      * operation.
      */
     boolean storeArtifactStore( ArtifactStore key, final ChangeSummary summary, boolean skipIfExists )
+        throws AproxDataException;
+
+    /**
+     * Store a modified or new {@link ArtifactStore} instance. If the store already exists, and <code>skipIfExists</code> is true, abort the
+     * operation.
+     */
+    boolean storeArtifactStore( ArtifactStore key, final ChangeSummary summary, boolean skipIfExists, boolean fireEvents )
         throws AproxDataException;
 
     /**
@@ -269,5 +232,10 @@ public interface StoreDataManager
      * Find a remote repository with a URL that matches the given one, and return it...or null.
      */
     RemoteRepository findRemoteRepository( String url );
+
+    /**
+     * Return true once any post-construction code runs.
+     */
+    boolean isStarted();
 
 }

@@ -16,14 +16,17 @@
 package org.commonjava.aprox.implrepo.change;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
+import org.commonjava.aprox.change.event.AproxLifecycleEvent;
 import org.commonjava.aprox.change.event.ArtifactStorePreUpdateEvent;
 import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
@@ -63,47 +66,99 @@ public class ImpliedRepoMaintainer
         this.config = config;
     }
 
+    public void scanAtStart( @Observes final AproxLifecycleEvent event )
+    {
+        if ( event.getType() != AproxLifecycleEvent.Type.started )
+        {
+            return;
+        }
+
+        try
+        {
+            final Map<StoreKey, ArtifactStore> stores = mapStores( storeManager.getAllArtifactStores() );
+
+            if ( stores != null )
+            {
+                for ( final ArtifactStore store : stores.values() )
+                {
+                    processStore( store, stores );
+                }
+            }
+        }
+        catch ( final AproxDataException e )
+        {
+            logger.error( "Failed to retrieve all known stores.", e );
+        }
+
+    }
+
     // FIXME: How to tell whether a repo that is implied by other repos was added manually??? 
     // That, vs. just left there after the repo that implied it was removed???
     // We cannot currently remove formerly implied repos because we can't distinguish between the above states.
     public void updateImpliedStores( @Observes final ArtifactStorePreUpdateEvent event )
     {
+        if ( !storeManager.isStarted() )
+        {
+            return;
+        }
+
         if ( !config.isEnabled() )
         {
             logger.debug( "Implied-repository processing is not enabled." );
             return;
         }
 
+        final Map<StoreKey, ArtifactStore> currentStores = mapStores( event );
+
         for ( final ArtifactStore store : event )
         {
-            final ImpliedRepoMaintJob job = new ImpliedRepoMaintJob( store );
-            if ( !initJob( job ) )
-            {
-                continue;
-            }
+            processStore( store, currentStores );
+        }
+    }
 
-            if ( processImpliedRepos( job ) )
-            {
-                logger.info( "Group: {} updated with {} implied repositories.", job.group.getKey(), job.added.size() );
+    private void processStore( final ArtifactStore store, final Map<StoreKey, ArtifactStore> currentStores )
+    {
+        final ImpliedRepoMaintJob job = new ImpliedRepoMaintJob( store, currentStores );
+        if ( !initJob( job ) )
+        {
+            return;
+        }
 
-                // Since we're getting in ahead of persistence, we shouldn't need to store anything in a store that was in the event.
-                //                final String message =
-                //                    String.format( "On update of group: %s, implied membership was recalculated.\n\nAdded:"
-                //                        + "\n  %s\n\nNOTE: This update may have resulted in stores that were previously "
-                //                        + "implied by another member persisting as members even after the store that implied "
-                //                        + "them was removed.", store.getName(), new JoinString( "\n  ", job.added ) );
-                //
-                //                final ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, message );
-                //                try
-                //                {
-                //                    storeManager.storeArtifactStore( job.store, summary );
-                //                }
-                //                catch ( final AproxDataException e )
-                //                {
-                //                    logger.error( "Failed to store implied-membership changes to: " + store.getKey(), e );
-                //                }
+        if ( processImpliedRepos( job ) )
+        {
+            logger.info( "Group: {} updated with {} implied repositories.", job.group.getKey(), job.added.size() );
+
+            // Since we're getting in ahead of persistence, we shouldn't need to store anything in a store that was in the event.
+            //                final String message =
+            //                    String.format( "On update of group: %s, implied membership was recalculated.\n\nAdded:"
+            //                        + "\n  %s\n\nNOTE: This update may have resulted in stores that were previously "
+            //                        + "implied by another member persisting as members even after the store that implied "
+            //                        + "them was removed.", store.getName(), new JoinString( "\n  ", job.added ) );
+            //
+            //                final ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, message );
+            //                try
+            //                {
+            //                    storeManager.storeArtifactStore( job.store, summary );
+            //                }
+            //                catch ( final AproxDataException e )
+            //                {
+            //                    logger.error( "Failed to store implied-membership changes to: " + store.getKey(), e );
+            //                }
+        }
+    }
+
+    private Map<StoreKey, ArtifactStore> mapStores( final Iterable<ArtifactStore> stores )
+    {
+        final Map<StoreKey, ArtifactStore> result = new HashMap<>();
+        if ( stores != null )
+        {
+            for ( final ArtifactStore store : stores )
+            {
+                result.put( store.getKey(), store );
             }
         }
+
+        return result;
     }
 
     private boolean processImpliedRepos( final ImpliedRepoMaintJob job )
@@ -205,7 +260,7 @@ public class ImpliedRepoMaintainer
         try
         {
             // getOrderedStoresInGroup(), but we can't use persisted info...
-            job.members = loadMemberStores( job.group );
+            job.members = loadMemberStores( job.group, job );
 
             // getOrderedConcreteStores(), but we can't use the persisted info...
             final LinkedHashSet<ArtifactStore> reachable = new LinkedHashSet<>();
@@ -213,7 +268,7 @@ public class ImpliedRepoMaintainer
             {
                 if ( member instanceof Group )
                 {
-                    reachable.addAll( loadMemberStores( (Group) member ) );
+                    reachable.addAll( loadMemberStores( (Group) member, job ) );
                 }
                 else
                 {
@@ -240,14 +295,26 @@ public class ImpliedRepoMaintainer
         return true;
     }
 
-    private List<ArtifactStore> loadMemberStores( final Group group )
+    private List<ArtifactStore> loadMemberStores( final Group group, final ImpliedRepoMaintJob job )
         throws AproxDataException
     {
         final List<ArtifactStore> members = new ArrayList<>( group.getConstituents()
                                                                   .size() );
         for ( final StoreKey memberKey : group.getConstituents() )
         {
-            members.add( storeManager.getArtifactStore( memberKey ) );
+            ArtifactStore store = job.currentStores.get( memberKey );
+            if ( store == null )
+            {
+                store = storeManager.getArtifactStore( memberKey );
+            }
+
+            if ( store == null )
+            {
+                logger.warn( "Store not found for key: {} (member of: {})", memberKey, group.getKey() );
+                continue;
+            }
+
+            members.add( store );
         }
 
         return members;
@@ -265,9 +332,12 @@ public class ImpliedRepoMaintainer
 
         final ArtifactStore store;
 
-        public ImpliedRepoMaintJob( final ArtifactStore store )
+        final Map<StoreKey, ArtifactStore> currentStores;
+
+        public ImpliedRepoMaintJob( final ArtifactStore store, final Map<StoreKey, ArtifactStore> currentStores )
         {
             this.store = store;
+            this.currentStores = currentStores;
         }
     }
 

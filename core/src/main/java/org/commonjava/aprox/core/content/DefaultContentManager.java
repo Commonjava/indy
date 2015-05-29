@@ -256,7 +256,9 @@ public class DefaultContentManager
             {
                 final List<ArtifactStore> allMembers = storeManager.getOrderedConcreteStoresInGroup( store.getName() );
 
-                return store( allMembers, path, stream, op );
+                final Transfer txfr = store( allMembers, path, stream, op );
+                logger.info( "Stored: {} for group: {} in: {}", path, store.getKey(), txfr );
+                return txfr;
             }
             catch ( final AproxDataException e )
             {
@@ -266,6 +268,7 @@ public class DefaultContentManager
         }
 
         final Transfer txfr = downloadManager.store( store, path, stream, op );
+        logger.info( "Stored: {} for: {} in: {}", path, store.getKey(), txfr );
         if ( txfr != null )
         {
             final KeyedLocation kl = (KeyedLocation) txfr.getLocation();
@@ -319,6 +322,7 @@ public class DefaultContentManager
 
             for ( final ContentGenerator generator : contentGenerators )
             {
+                logger.info( "{} Handling content storage of: {} in: {}", generator, path, transferStore.getKey() );
                 generator.handleContentStorage( transferStore, path, txfr );
             }
         }

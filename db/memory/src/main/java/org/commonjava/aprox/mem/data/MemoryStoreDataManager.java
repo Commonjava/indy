@@ -234,82 +234,10 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public boolean storeHostedRepository( final HostedRepository repo, final ChangeSummary summary )
-        throws AproxDataException
-    {
-        return store( repo, summary, false );
-    }
-
-    @Override
-    public boolean storeHostedRepository( final HostedRepository repo, final ChangeSummary summary,
-                                          final boolean skipIfExists )
-        throws AproxDataException
-    {
-        final boolean exists = stores.containsKey( repo.getKey() );
-        dispatcher.updating( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, repo );
-
-        final boolean result = store( repo, summary, skipIfExists );
-
-        return result;
-    }
-
-    @Override
-    public boolean storeRemoteRepository( final RemoteRepository repository, final ChangeSummary summary )
-        throws AproxDataException
-    {
-        final boolean result = store( repository, summary, false );
-        if ( result )
-        {
-            byRemoteUrl.put( repository.getUrl(), repository );
-        }
-        return result;
-    }
-
-    @Override
-    public boolean storeRemoteRepository( final RemoteRepository repository, final ChangeSummary summary,
-                                          final boolean skipIfExists )
-        throws AproxDataException
-    {
-        final boolean exists = stores.containsKey( repository.getKey() );
-        dispatcher.updating( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, repository );
-
-        final boolean result = store( repository, summary, skipIfExists );
-        if ( result )
-        {
-            byRemoteUrl.put( repository.getUrl(), repository );
-        }
-
-        return result;
-    }
-
-    @Override
-    public boolean storeGroup( final Group group, final ChangeSummary summary )
-        throws AproxDataException
-    {
-        return store( group, summary, false );
-    }
-
-    @Override
-    public boolean storeGroup( final Group group, final ChangeSummary summary, final boolean skipIfExists )
-        throws AproxDataException
-    {
-        final boolean result = store( group, summary, skipIfExists );
-
-        return result;
-    }
-
-    @Override
     public boolean storeArtifactStore( final ArtifactStore store, final ChangeSummary summary )
         throws AproxDataException
     {
-        final boolean result = store( store, summary, false );
-        if ( result && ( store instanceof RemoteRepository ) )
-        {
-            final RemoteRepository repository = (RemoteRepository) store;
-            byRemoteUrl.put( repository.getUrl(), repository );
-        }
-
-        return result;
+        return storeArtifactStore( store, summary, false, true );
     }
 
     @Override
@@ -317,7 +245,15 @@ public class MemoryStoreDataManager
                                        final boolean skipIfExists )
         throws AproxDataException
     {
-        final boolean result = store( store, summary, skipIfExists );
+        return storeArtifactStore( store, summary, skipIfExists, true );
+    }
+
+    @Override
+    public boolean storeArtifactStore( final ArtifactStore store, final ChangeSummary summary,
+                                       final boolean skipIfExists, final boolean fireEvents )
+        throws AproxDataException
+    {
+        final boolean result = store( store, summary, skipIfExists, fireEvents );
         if ( result && ( store instanceof RemoteRepository ) )
         {
             final RemoteRepository repository = (RemoteRepository) store;
@@ -328,17 +264,17 @@ public class MemoryStoreDataManager
     }
 
     private synchronized boolean store( final ArtifactStore store, final ChangeSummary summary,
-                                        final boolean skipIfExists )
+                                        final boolean skipIfExists, final boolean fireEvents )
         throws AproxDataException
     {
         final boolean exists = stores.containsKey( store.getKey() );
         if ( !skipIfExists || !exists )
         {
-            preStore( store, summary, exists );
+            preStore( store, summary, exists, fireEvents );
             final ArtifactStore old = stores.put( store.getKey(), store );
             try
             {
-                postStore( store, summary, exists );
+                postStore( store, summary, exists, fireEvents );
                 return true;
             }
             catch ( final AproxDataException e )
@@ -351,16 +287,24 @@ public class MemoryStoreDataManager
         return false;
     }
 
-    protected void preStore( final ArtifactStore store, final ChangeSummary summary, final boolean exists )
+    protected void preStore( final ArtifactStore store, final ChangeSummary summary, final boolean exists,
+                             final boolean fireEvents )
         throws AproxDataException
     {
-        dispatcher.updating( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, store );
+        if ( isStarted() && fireEvents )
+        {
+            dispatcher.updating( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, store );
+        }
     }
 
-    protected void postStore( final ArtifactStore store, final ChangeSummary summary, final boolean exists )
+    protected void postStore( final ArtifactStore store, final ChangeSummary summary, final boolean exists,
+                              final boolean fireEvents )
         throws AproxDataException
     {
-        dispatcher.updated( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, store );
+        if ( isStarted() && fireEvents )
+        {
+            dispatcher.updated( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, store );
+        }
     }
 
     @Override
@@ -573,6 +517,12 @@ public class MemoryStoreDataManager
     public RemoteRepository findRemoteRepository( final String url )
     {
         return byRemoteUrl.get( url );
+    }
+
+    @Override
+    public boolean isStarted()
+    {
+        return true;
     }
 
 }

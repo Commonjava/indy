@@ -124,50 +124,6 @@ public class TestAutoProxyDataManager
     }
 
     @Override
-    public boolean storeHostedRepository( final HostedRepository deploy, final ChangeSummary summary )
-        throws AproxDataException
-    {
-        return delegate.storeHostedRepository( deploy, summary );
-    }
-
-    @Override
-    public boolean storeHostedRepository( final HostedRepository deploy, final ChangeSummary summary,
-                                          final boolean skipIfExists )
-        throws AproxDataException
-    {
-        return delegate.storeHostedRepository( deploy, summary, skipIfExists );
-    }
-
-    @Override
-    public boolean storeRemoteRepository( final RemoteRepository proxy, final ChangeSummary summary )
-        throws AproxDataException
-    {
-        return delegate.storeRemoteRepository( proxy, summary );
-    }
-
-    @Override
-    public boolean storeRemoteRepository( final RemoteRepository repository, final ChangeSummary summary,
-                                          final boolean skipIfExists )
-        throws AproxDataException
-    {
-        return delegate.storeRemoteRepository( repository, summary, skipIfExists );
-    }
-
-    @Override
-    public boolean storeGroup( final Group group, final ChangeSummary summary )
-        throws AproxDataException
-    {
-        return delegate.storeGroup( group, summary );
-    }
-
-    @Override
-    public boolean storeGroup( final Group group, final ChangeSummary summary, final boolean skipIfExists )
-        throws AproxDataException
-    {
-        return delegate.storeGroup( group, summary, skipIfExists );
-    }
-
-    @Override
     public boolean storeArtifactStore( final ArtifactStore key, final ChangeSummary summary )
         throws AproxDataException
     {
@@ -179,6 +135,14 @@ public class TestAutoProxyDataManager
         throws AproxDataException
     {
         return delegate.storeArtifactStore( key, summary, skipIfExists );
+    }
+
+    @Override
+    public boolean storeArtifactStore( final ArtifactStore key, final ChangeSummary summary,
+                                       final boolean skipIfExists, final boolean fireEvents )
+        throws AproxDataException
+    {
+        return delegate.storeArtifactStore( key, summary, skipIfExists, fireEvents );
     }
 
     @Override
@@ -265,6 +229,12 @@ public class TestAutoProxyDataManager
     public RemoteRepository findRemoteRepository( final String url )
     {
         return delegate.findRemoteRepository( url );
+    }
+
+    @Override
+    public boolean isStarted()
+    {
+        return delegate.isStarted();
     }
 
 }

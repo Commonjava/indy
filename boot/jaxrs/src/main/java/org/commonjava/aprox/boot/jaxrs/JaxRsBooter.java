@@ -20,6 +20,9 @@ import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
 
+import java.lang.Thread.UncaughtExceptionHandler;
+import java.lang.reflect.InvocationTargetException;
+
 import javax.enterprise.inject.spi.BeanManager;
 import javax.servlet.ServletException;
 
@@ -45,6 +48,31 @@ public class JaxRsBooter
 {
     public static void main( final String[] args )
     {
+        Thread.currentThread()
+              .setUncaughtExceptionHandler( new UncaughtExceptionHandler()
+              {
+                  @Override
+                  public void uncaughtException( final Thread thread, final Throwable error )
+                  {
+                      if ( error instanceof InvocationTargetException )
+                      {
+                          final InvocationTargetException ite = (InvocationTargetException) error;
+                          System.err.println( "In: " + thread.getName() + "(" + thread.getId()
+                              + "), caught InvocationTargetException:" );
+                          ite.getTargetException()
+                             .printStackTrace();
+
+                          System.err.println( "...via:" );
+                          error.printStackTrace();
+                      }
+                      else
+                      {
+                          System.err.println( "In: " + thread.getName() + "(" + thread.getId() + ") Uncaught error:" );
+                          error.printStackTrace();
+                      }
+                  }
+              } );
+
         BootOptions boot;
         try
         {
