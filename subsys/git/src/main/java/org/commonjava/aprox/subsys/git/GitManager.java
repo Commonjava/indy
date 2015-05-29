@@ -661,4 +661,5 @@ public class GitManager
 
         return this;
     }
+
 }

@@ -30,6 +30,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.io.FileUtils;
 import org.commonjava.aprox.audit.ChangeSummary;
+import org.commonjava.aprox.change.event.AproxLifecycleEvent;
 import org.commonjava.aprox.flat.data.DataFileStoreDataManager;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.revisions.conf.RevisionsConfig;
@@ -52,6 +53,8 @@ public class RevisionsManager
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private GitManager dataFileGit;
+
+    private boolean started;
 
     @Inject
     private RevisionsConfig revisionsConfig;
@@ -92,15 +95,6 @@ public class RevisionsManager
                                                                                     .setUserEmail( revisionsConfig.getUserEmail() );
 
             dataFileGit = new GitManager( dataConf );
-
-            final ChangeSummary summary =
-                new ChangeSummary( ChangeSummary.SYSTEM_USER, "Committing files modified outside of the AProx UI." );
-            dataFileGit.commitModifiedFiles( summary );
-
-            if ( revisionsConfig.isPushEnabled() )
-            {
-                dataFileGit.pushUpdates();
-            }
         }
         catch ( GitSubsystemException | IOException e )
         {
@@ -111,8 +105,39 @@ public class RevisionsManager
         }
     }
 
+    public void onLifecycleEvent( @Observes final AproxLifecycleEvent event )
+    {
+        if ( AproxLifecycleEvent.Type.started == event.getType() )
+        {
+            started = true;
+
+            try
+            {
+                final ChangeSummary summary =
+                    new ChangeSummary( ChangeSummary.SYSTEM_USER, "Committing files modified outside of the AProx UI." );
+                dataFileGit.commitModifiedFiles( summary );
+
+                if ( revisionsConfig.isPushEnabled() )
+                {
+                    dataFileGit.pushUpdates();
+                }
+            }
+            catch ( final GitSubsystemException e )
+            {
+                logger.error( "Failed to commit pre-existing uncommitted changes in revisions manager: "
+                                  + e.getMessage(), e );
+            }
+        }
+    }
+
     public void onDataFileEvent( @Observes final DataFileEvent event )
     {
+        if ( !started )
+        {
+            logger.debug( "AProx system is not marked as started. Skipping data file events in revisions manager." );
+            return;
+        }
+
         try
         {
             if ( event.getType() == DataFileEventType.accessed )
