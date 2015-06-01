@@ -18,8 +18,6 @@ package org.commonjava.aprox.rest.util;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,27 +27,30 @@ import org.commonjava.aprox.content.AproxLocationExpander;
 import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.core.content.DefaultDownloadManager;
 import org.commonjava.aprox.core.data.DefaultStoreEventDispatcher;
-import org.commonjava.aprox.fixture.GalleyFixture;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.RemoteRepository;
+import org.commonjava.aprox.model.galley.RepositoryLocation;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.testing.core.ApiFixture;
+import org.commonjava.maven.galley.testing.core.transport.job.TestDownload;
+import org.commonjava.maven.galley.testing.maven.GalleyMavenFixture;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class PathRetrieverTest
+public class DownloadManagerTest
 {
 
     private DownloadManager downloader;
 
-    private File repoRoot;
-
     @Rule
     public final TemporaryFolder tempFolder = new TemporaryFolder();
 
-    private GalleyFixture fixture;
+    @Rule
+    public GalleyMavenFixture fixture = new GalleyMavenFixture( new ApiFixture( tempFolder ) );
 
     private MemoryStoreDataManager data;
 
@@ -57,11 +58,10 @@ public class PathRetrieverTest
 
     @Before
     public void setupTest()
-        throws IOException
+        throws Exception
     {
-        repoRoot = tempFolder.newFolder( "repository" );
-        fixture = new GalleyFixture( repoRoot );
         data = new MemoryStoreDataManager( new DefaultStoreEventDispatcher() );
+        fixture.initMissingComponents();
 
         downloader = new DefaultDownloadManager( data, fixture.getTransfers(), new AproxLocationExpander( data ) );
     }
@@ -70,15 +70,20 @@ public class PathRetrieverTest
     public void downloadOnePOMFromSingleRepository()
         throws Exception
     {
-        final RemoteRepository repo = new RemoteRepository( "central", "http://repo.maven.apache.org/maven2/" );
+        final String content = "This is a test";
+        final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
+        
+        final RemoteRepository repo = new RemoteRepository( "central", "http://repo.maven.apache.org/maven2" );
+        fixture.getTransport()
+               .registerDownload( new ConcreteResource( new RepositoryLocation( repo ), path ),
+                                  new TestDownload( content.getBytes() ) );
+
         data.storeArtifactStore( repo, summary );
 
-        final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
-
         final Transfer stream = downloader.retrieve( repo, path );
-        final String pom = IOUtils.toString( stream.openInputStream() );
+        final String downloaded = IOUtils.toString( stream.openInputStream() );
 
-        assertThat( pom.contains( "<artifactId>maven-model</artifactId>" ), equalTo( true ) );
+        assertThat( downloaded, equalTo( content ) );
     }
 
     @Test
@@ -86,21 +91,28 @@ public class PathRetrieverTest
         throws Exception
     {
         final RemoteRepository repo = new RemoteRepository( "dummy", "http://www.nowhere.com/" );
-        final RemoteRepository repo2 = new RemoteRepository( "central", "http://repo.maven.apache.org/maven2/" );
+
+        final String content = "This is a test";
+        final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
+
+        final RemoteRepository repo2 = new RemoteRepository( "central", "http://repo.maven.apache.org/maven2" );
+
+        fixture.getTransport()
+               .registerDownload( new ConcreteResource( new RepositoryLocation( repo2 ), path ),
+                                  new TestDownload( content.getBytes() ) );
+
 
         data.storeArtifactStore( repo, summary );
         data.storeArtifactStore( repo2, summary );
-
-        final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
 
         final List<ArtifactStore> repos = new ArrayList<ArtifactStore>();
         repos.add( repo );
         repos.add( repo2 );
 
         final Transfer stream = downloader.retrieveFirst( repos, path );
-        final String pom = IOUtils.toString( stream.openInputStream() );
+        final String downloaded = IOUtils.toString( stream.openInputStream() );
 
-        assertThat( pom.contains( "<artifactId>maven-model</artifactId>" ), equalTo( true ) );
+        assertThat( downloaded, equalTo( content ) );
     }
 
 }

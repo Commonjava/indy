@@ -29,7 +29,6 @@ import javax.inject.Inject;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpHead;
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.data.AproxDataException;
@@ -111,6 +110,7 @@ public abstract class AutoProxDataManagerDecorator
 
             if ( g != null )
             {
+                logger.info( "Validating group: {}", g );
                 if ( !checkValidity( name ) )
                 {
                     return null;
@@ -168,6 +168,7 @@ public abstract class AutoProxDataManagerDecorator
                 final RemoteRepository validationRepo = catalog.createValidationRemote( name );
                 if ( validationRepo == null )
                 {
+                    logger.info( "No validation repository was created: assuming {} is valid.", name );
                     return true;
                 }
 
@@ -198,16 +199,13 @@ public abstract class AutoProxDataManagerDecorator
 
                     if ( !result )
                     {
-                        logger.warn( "Invalid repository URL: {}", validationRepo.getUrl() );
+                        logger.warn( "Invalid repository URL: {} (status: {})", validationRepo.getUrl(), statusLine );
                     }
-                }
-                catch ( final ClientProtocolException e )
-                {
-                    logger.warn( "[AutoProx] Cannot connect to target repository: '{}'.", url );
                 }
                 catch ( final IOException e )
                 {
                     logger.warn( "[AutoProx] Cannot connect to target repository: '{}'.", url );
+                    logger.debug( "exception from validation attempt", e );
                 }
                 finally
                 {

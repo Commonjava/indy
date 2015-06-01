@@ -130,6 +130,10 @@
       <artifactId>aprox-subsys-flatfile</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-test-utils</artifactId>
+    </dependency>
   </dependencies>
   
   <build>

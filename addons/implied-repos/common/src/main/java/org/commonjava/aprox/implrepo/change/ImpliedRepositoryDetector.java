@@ -17,7 +17,6 @@ package org.commonjava.aprox.implrepo.change;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -38,6 +37,7 @@ import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
+import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.maven.galley.event.FileStorageEvent;
 import org.commonjava.maven.galley.maven.GalleyMavenException;
 import org.commonjava.maven.galley.maven.model.view.MavenPomView;
@@ -85,7 +85,7 @@ public class ImpliedRepositoryDetector
             return;
         }
 
-        logger.info( "Processing: {}", event );
+        logger.debug( "STARTED Processing: {}", event );
         final ImplicationsJob job = new ImplicationsJob( event );
         if ( !initJob( job ) )
         {
@@ -108,6 +108,8 @@ public class ImpliedRepositoryDetector
                 return;
             }
         }
+
+        logger.debug( "FINISHED Processing: {}", event );
     }
 
     private boolean initJob( final ImplicationsJob job )
@@ -161,9 +163,9 @@ public class ImpliedRepositoryDetector
 
         try
         {
-            job.pomView =
-                pomReader.read( job.pathInfo.getProjectId(), transfer,
-                                Collections.singletonList( transfer.getLocation() ), MavenPomView.ALL_PROFILES );
+            logger.debug( "Parsing: {}", transfer );
+
+            job.pomView = pomReader.readLocalPom( job.pathInfo.getProjectId(), transfer, MavenPomView.ALL_PROFILES );
         }
         catch ( final GalleyMavenException e )
         {
@@ -184,6 +186,7 @@ public class ImpliedRepositoryDetector
         final StoreKey key = job.store.getKey();
         try
         {
+            logger.debug( "Looking for groups that contain: {}", key );
             final Set<Group> groups = storeManager.getGroupsContaining( key );
             if ( groups != null )
             {
@@ -219,6 +222,7 @@ public class ImpliedRepositoryDetector
     {
         try
         {
+            logger.debug( "Adding implied-repo metadata to: {} and {}", job.store, new JoinString( ", ", job.implied ) );
             metadataManager.addImpliedMetadata( job.store, job.implied );
             return true;
         }
@@ -234,8 +238,12 @@ public class ImpliedRepositoryDetector
     {
         job.implied = new ArrayList<ArtifactStore>();
 
+        logger.debug( "Retrieving repository/pluginRepository declarations from:\n  ",
+                     new JoinString( "\n  ", job.pomView.getDocRefStack() ) );
+
         final List<List<RepositoryView>> repoLists =
             Arrays.asList( job.pomView.getAllRepositories(), job.pomView.getAllPluginRepositories() );
+
         for ( final List<RepositoryView> repos : repoLists )
         {
             if ( repos == null || repos.isEmpty() )

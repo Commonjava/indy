@@ -22,11 +22,9 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Event;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.change.event.AproxLifecycleEvent;
 import org.commonjava.aprox.stats.AProxVersioning;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +57,7 @@ public class AproxLifecycleManager
     private Instance<ShutdownAction> shutdownActionInstances;
 
     @Inject
-    private Event<AproxLifecycleEvent> lifecycleEvents;
+    private AproxLifecycleEventManager lifecycleEvents;
 
     private List<BootupAction> bootupActions;
 
@@ -150,7 +148,7 @@ public class AproxLifecycleManager
         }
         else
         {
-            lifecycleEvents.fire( new AproxLifecycleEvent( AproxLifecycleEvent.Type.started ) );
+            lifecycleEvents.fireStarted();
         }
     }
 

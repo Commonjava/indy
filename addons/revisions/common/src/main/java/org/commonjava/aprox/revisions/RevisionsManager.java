@@ -113,6 +113,8 @@ public class RevisionsManager
 
             try
             {
+                logger.info( "Aprox started; committing externally changed files." );
+
                 final ChangeSummary summary =
                     new ChangeSummary( ChangeSummary.SYSTEM_USER, "Committing files modified outside of the AProx UI." );
                 dataFileGit.commitModifiedFiles( summary );
