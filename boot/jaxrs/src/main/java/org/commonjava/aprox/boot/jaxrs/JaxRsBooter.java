@@ -236,7 +236,13 @@ public class JaxRsBooter
         	System.out.println(">>> secure realm: " + bootOptions.getRealm());
         	di = aproxDeployment.addKeycloakAdapterToDeployment(di, bootOptions.getSecureConfig(), bootOptions.getRealm());
         	// TODO define proper roles here & possibly read them from boot configuration as well 
-        	di = aproxDeployment.addSecurityConstraintToDeployment(di, "admin", "/api/*");
+        	// not authorized access
+//        	di = aproxDeployment.addSecurityConstraintToDeployment(di, null, "/api/stats/addons",null);
+//        	// not authorized access
+//        	di = aproxDeployment.addSecurityConstraintToDeployment(di, null, "/api/stats/addons/*",null);
+        	// authorized access to admin role
+        	System.out.println(">>> secure ALL  except GET methods <<< ");
+        	di = aproxDeployment.addSecurityConstraintToDeployment(di, "admin", "/api/*",new String[] {"POST,DELETE,PUT,HEAD,TRACE,OPTIONS"});
         }
         final DeploymentManager dm = Servlets.defaultContainer()
                                              .addDeployment( di );

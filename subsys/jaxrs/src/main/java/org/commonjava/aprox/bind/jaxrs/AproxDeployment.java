@@ -130,12 +130,17 @@ public class AproxDeployment
         }
     }
     
-    public DeploymentInfo addSecurityConstraintToDeployment(DeploymentInfo di, String role, String constraintUrl) {
+    public DeploymentInfo addSecurityConstraintToDeployment(DeploymentInfo di, String role, String constraintUrl, String... httpMethods) {
         SecurityConstraint constraint = new SecurityConstraint();
         WebResourceCollection collection = new WebResourceCollection();
         collection.addUrlPattern(constraintUrl);
+        if(httpMethods != null) { 
+        	collection.addHttpMethods(httpMethods);
+        }
         constraint.addWebResourceCollection(collection);
-        constraint.addRoleAllowed(role);
+        if(role != null) {
+        	constraint.addRoleAllowed(role);
+        }
         di.addSecurityConstraint(constraint);
         return di;
     }
