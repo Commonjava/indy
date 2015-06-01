@@ -74,6 +74,7 @@ aprox.config(['$routeProvider', '$controllerProvider', '$compileProvider', '$fil
 }]);
 
 //Declare Auth for Keycloak
+/* ${enable.security.start.js}
 
 var auth = {};
 
@@ -124,5 +125,6 @@ aprox.config(function ($httpProvider) {
   $httpProvider.interceptors.push('authInterceptor');
 });
 
+${enable.security.end.js} */
 
 // >>> end auth
