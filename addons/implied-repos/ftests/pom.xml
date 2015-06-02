@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.aprox</groupId>
     <artifactId>aprox-implied-repos</artifactId>
-    <version>0.21.0</version>
+    <version>0.22.0-SNAPSHOT</version>
   </parent>
   
   <artifactId>aprox-ftests-implied-repos</artifactId>
