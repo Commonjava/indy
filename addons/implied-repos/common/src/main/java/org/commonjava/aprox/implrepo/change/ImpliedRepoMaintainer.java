@@ -73,6 +73,7 @@ public class ImpliedRepoMaintainer
             return;
         }
 
+        logger.info( "Scanning for unincorporated repository implications." );
         try
         {
             final Map<StoreKey, ArtifactStore> stores = mapStores( storeManager.getAllArtifactStores() );

@@ -24,6 +24,8 @@ public final class AproxAddOnID
 
     private String name;
 
+    private String description;
+
     private List<UIRoute> routes;
 
     private List<UISection> sections;
@@ -155,5 +157,15 @@ public final class AproxAddOnID
             return false;
         }
         return true;
+    }
+
+    public String getDescription()
+    {
+        return description;
+    }
+
+    public void setDescription( final String description )
+    {
+        this.description = description;
     }
 }

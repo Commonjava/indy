@@ -29,7 +29,6 @@ import org.commonjava.aprox.change.event.ArtifactStoreUpdateType;
 import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.data.StoreEventDispatcher;
 import org.commonjava.aprox.model.core.ArtifactStore;
-import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,13 +103,13 @@ public class DefaultStoreEventDispatcher
     @Override
     public void updating( final ArtifactStoreUpdateType type, final ArtifactStore... stores )
     {
-        logger.debug( "Trying to fire pre-update event for: {}", new JoinString( ", ", stores ) );
+        //        logger.debug( "Trying to fire pre-update event for: {}", new JoinString( ", ", stores ) );
         if ( updatePreEvent != null )
         {
             final ArtifactStorePreUpdateEvent event = new ArtifactStorePreUpdateEvent( type, stores );
-            logger.debug( "Firing pre-update event: {} (for: {}) via:\n  {}", event, new JoinString( ", ", stores ),
-                          new JoinString( "\n  ", Thread.currentThread()
-                                                        .getStackTrace() ) );
+            //            logger.debug( "Firing pre-update event: {} (for: {}) via:\n  {}", event, new JoinString( ", ", stores ),
+            //                          new JoinString( "\n  ", Thread.currentThread()
+            //                                                        .getStackTrace() ) );
             updatePreEvent.fire( event );
         }
     }

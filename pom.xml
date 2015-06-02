@@ -915,7 +915,7 @@
     <profile>
       <id>ci</id>
       <properties>
-        <test-forkCount>1</test-forkCount>
+        <test-forkCount>4</test-forkCount>
       </properties>
     </profile>
   </profiles>

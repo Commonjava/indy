@@ -27,6 +27,7 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 
+import org.commonjava.aprox.action.AproxLifecycleEventManager;
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.revisions.testutil.TestProvider;
 import org.commonjava.aprox.subsys.datafile.DataFile;
@@ -74,6 +75,11 @@ public class RevisionsManagerTest
         listener = container.instance()
                             .select( DataFileTestEventListener.class )
                             .get();
+
+        final AproxLifecycleEventManager lcEvents = container.instance()
+                                                             .select( AproxLifecycleEventManager.class )
+                                                             .get();
+        lcEvents.fireStarted();
     }
 
     @Test

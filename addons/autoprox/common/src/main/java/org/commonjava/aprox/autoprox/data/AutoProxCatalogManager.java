@@ -167,6 +167,7 @@ public class AutoProxCatalogManager
             logger.info( "Checking rule: '{}' for applicability to name: '{}'", mapping.getScriptName(), name );
             if ( mapping.matchesName( name ) )
             {
+                logger.info( "Using rule: '{}'", mapping.getScriptName() );
                 return mapping;
             }
         }
