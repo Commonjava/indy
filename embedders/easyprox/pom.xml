@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.aprox.embed</groupId>
     <artifactId>aprox-embedders</artifactId>
-    <version>0.20.1-SNAPSHOT</version>
+    <version>0.21.0</version>
   </parent>
   
   <artifactId>aprox-embedder-easyprox</artifactId>
