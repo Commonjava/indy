@@ -23,54 +23,61 @@
 
 PROG=aprox
 APROX_HOME=/opt/aprox
-LOCKFILE=/var/lock/subsys/$PROG
-EXEC=$APROX_HOME/bin/aprox.sh
+#LOCKFILE=/var/lock/subsys/$PROG
+EXEC="cd $APROX_HOME && bin/aprox.sh > /dev/null & echo \$!"
 RETVAL=0
+RUNAS=aprox
+PIDFILE=/var/run/aprox.pid
 
 start() {
-    PID=$(pgrep -f aprox)
-    if [ "x$PID" == "x" ]; then
-      echo -n $"Starting $PROG: "
-      $EXEC > /dev/null 2>&1 &
-      [ $RETVAL -eq 0 ] && success || failure
-      echo
-      [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$PROG
+    if [ -f $PIDFILE ] && [ "x$(cat $PIDFILE)" != "x" ] && kill -0 $(cat $PIDFILE) 2> /dev/null; then
+        echo "$PROG (pid $(cat $PIDFILE)) already running" >&2
+        REtVAL=1
     else
-      echo "aprox (pid ${PID}) already running"
-      REtVAL=0
+        echo -n $"Starting $PROG: " >&2
+        su -c "$EXEC" $RUNAS > $PIDFILE
+        REtVAL=$?
+        [ $RETVAL -eq 0 ] && success || failure
+        echo
+        #[ $RETVAL -eq 0 ] && touch $LOCKFILE
     fi
+    return $RETVAL
 }
 stop() {
-    PID=$(pgrep -f aprox)
-    echo -n $"Shutting down $PROG: "
+    if [ -f $PIDFILE ] && [ "x$(cat $PIDFILE)" != "x" ] && kill -0 $(cat $PIDFILE) 2> /dev/null; then
+        APROXPID=$(cat $PIDFILE)
+        JAVAPID=$(pgrep -P $APROXPID)
 
-    if [ "x$PID" == "x" ]; then
-      echo "not running"
-      RETVAL=0
+        if [ "x$JAVAPID" == "x" ]; then
+            echo -n $"Shutting down $PROG: " >&2
+            kill -15 $APROXPID &> /dev/null && rm -f "$PIDFILE"
+            RETVAL=$?
+        else
+            echo -n $"Shutting down java started by $PROG: " >&2
+            kill -15 $JAVAPID &> /dev/null && rm -f "$PIDFILE"
+            RETVAL=$?
+       fi
+
+        [ $RETVAL -eq 0 ] && success || failure
+        echo
+        #[ $RETVAL -eq 0 ] && rm -f $LOCKFILE $PIDFILE
     else
-      echo ""
-      for pid in ${PID}; do
-        echo "Stopping $pid"
-        /bin/kill -15 ${pid}
-      done
-      RETVAL=$?
-      [ $RETVAL -eq 0 ] && success || failure
-      echo
-      [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$PROG
+        echo "$PROG not running" >&2
+        return 1
     fi
 }
 restart() {
     stop
-    echo "Waiting 10s for old process to stop"
+    echo "Waiting 10s for old process to stop" >&2
     sleep 10
     start
 }
 status() {
-    if [ ! -f /var/lock/subsys/$PROG ]; then
-        echo "$PROG is stopped"
+    if [ -f $PIDFILE ] && [ "x$(cat $PIDFILE)" != "x" ] && kill -0 $(cat $PIDFILE) 2> /dev/null; then
+        PID=$(cat $PIDFILE)
+        echo "$PROG (pid  ${PID}) is running..." >&2
     else
-        PID=$(pgrep -f aprox)
-        echo "$PROG (pid  ${PID}) is running..."
+        echo "$PROG is stopped" >&2
     fi
 }
 
@@ -78,15 +85,17 @@ status() {
 case "$1" in
   start)
     start
+    RETVAL=$?
     ;;
   stop)
     stop
+    RETVAL=$?
     ;;
   restart)
     restart
     ;;
   condrestart)
-        [ -e /var/lock/subsys/$PROG ] && restart
+    [ -f $PIDFILE ] && [ "x$(cat $PIDFILE)" != "x" ] && kill -0 $(cat $PIDFILE) 2> /dev/null && restart
     RETVAL=$?
     ;;
   status)
