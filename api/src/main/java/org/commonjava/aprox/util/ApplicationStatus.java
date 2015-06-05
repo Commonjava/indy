@@ -32,6 +32,8 @@ public enum ApplicationStatus
     
     NOT_FOUND( 404, "Not Found" ), 
     
+    METHOD_NOT_ALLOWED(405, "Method Not Allowed" ),
+    
     CONFLICT( 409, "Conflict" ),
     
     SERVER_ERROR( 500, "Internal Server Error" );
