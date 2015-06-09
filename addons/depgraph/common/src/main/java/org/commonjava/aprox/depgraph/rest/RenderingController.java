@@ -33,7 +33,7 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
-import org.commonjava.aprox.depgraph.dto.WebBomDTO;
+import org.commonjava.aprox.depgraph.dto.WebPomDTO;
 import org.commonjava.aprox.depgraph.dto.WebOperationConfigDTO;
 import org.commonjava.aprox.depgraph.util.ConfigDTOHelper;
 import org.commonjava.aprox.depgraph.util.PresetParameterParser;
@@ -177,53 +177,53 @@ public class RenderingController
     }
 
     @Deprecated
-    public String bomFor( final String groupId, final String artifactId, final String version,
+    public String pomFor( final String groupId, final String artifactId, final String version,
                           final String workspaceId, final Map<String, String[]> params, final InputStream configStream )
         throws AproxWorkflowException
     {
-        final WebBomDTO config = configHelper.readBomDTO( configStream );
-        return bomFor( groupId, artifactId, version, workspaceId, params, config );
+        final WebPomDTO config = configHelper.readPomDTO( configStream );
+        return pomFor( groupId, artifactId, version, workspaceId, params, config );
     }
 
     @Deprecated
-    public String bomFor( final String groupId, final String artifactId, final String version,
+    public String pomFor( final String groupId, final String artifactId, final String version,
                           final String workspaceId, final Map<String, String[]> params, final String configJson )
         throws AproxWorkflowException
     {
-        final WebBomDTO config = configHelper.readBomDTO( configJson );
-        return bomFor( groupId, artifactId, version, workspaceId, params, config );
+        final WebPomDTO config = configHelper.readPomDTO( configJson );
+        return pomFor( groupId, artifactId, version, workspaceId, params, config );
     }
 
     @Deprecated
-    public String bomFor( final String groupId, final String artifactId, final String version,
-                          final String workspaceId, final Map<String, String[]> params, final WebBomDTO config )
+    public String pomFor( final String groupId, final String artifactId, final String version,
+                          final String workspaceId, final Map<String, String[]> params, final WebPomDTO config )
         throws AproxWorkflowException
     {
         final ProjectVersionRef pvr = new ProjectVersionRef( groupId, artifactId, version );
         config.setOutput( pvr );
-        return bomFor( config );
+        return pomFor( config );
     }
 
-    public String bomFor( final InputStream configStream )
+    public String pomFor( final InputStream configStream )
         throws AproxWorkflowException
     {
-        final WebBomDTO config = configHelper.readBomDTO( configStream );
-        return bomFor( config );
+        final WebPomDTO config = configHelper.readPomDTO( configStream );
+        return pomFor( config );
     }
 
-    public String bomFor( final String configJson )
+    public String pomFor( final String configJson )
         throws AproxWorkflowException
     {
-        final WebBomDTO config = configHelper.readBomDTO( configJson );
-        return bomFor( config );
+        final WebPomDTO config = configHelper.readPomDTO( configJson );
+        return pomFor( config );
     }
 
-    public String bomFor( final WebBomDTO config )
+    public String pomFor( final WebPomDTO config )
         throws AproxWorkflowException
     {
         try
         {
-            final Model model = ops.generateBOM( config );
+            final Model model = ops.generatePOM( config );
 
             final StringWriter writer = new StringWriter();
             new MavenXpp3Writer().write( writer, model );
@@ -232,13 +232,13 @@ public class RenderingController
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Failed to render BOM: {}", e,
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Failed to render POM: {}", e,
                                               e.getMessage() );
         }
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR.code(),
-                                              "Failed to generate BOM for: {} using config: {}. Reason: {}", e, config,
+                                              "Failed to generate POM for: {} using config: {}. Reason: {}", e, config,
                                               e.getMessage() );
         }
     }

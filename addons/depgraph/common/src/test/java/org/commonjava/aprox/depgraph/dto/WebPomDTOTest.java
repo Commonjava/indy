@@ -33,7 +33,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class WebBomDTOTest
+public class WebPomDTOTest
 {
 
     @Test
@@ -50,11 +50,12 @@ public class WebBomDTOTest
 
         final GraphComposition comp = new GraphComposition( null, Collections.singletonList( desc ) );
 
-        final WebBomDTO dto = new WebBomDTO();
+        final WebPomDTO dto = new WebPomDTO();
         dto.setGraphComposition( comp );
         dto.setSource( new StoreKey( StoreType.remote, "central" ) );
         dto.setOutput( new ProjectVersionRef( "org.foo", "bar-bom", "1.0" ) );
         dto.setWorkspaceId( "bar" );
+        dto.setGraphToManagedDeps( true );
         dto.setResolve( true );
         dto.setMetas( Collections.<String> emptySet() );
 
@@ -62,7 +63,7 @@ public class WebBomDTOTest
 
         System.out.println( json );
 
-        final WebBomDTO out = serializer.readValue( json, WebBomDTO.class );
+        final WebPomDTO out = serializer.readValue( json, WebPomDTO.class );
 
         System.out.println( out.getOutput() );
 
@@ -74,6 +75,7 @@ public class WebBomDTOTest
         assertThat( outComp, equalTo( comp ) );
 
         assertThat( out.isResolve(), equalTo( true ) );
+        assertThat( out.isGraphToManagedDeps(), equalTo( true ) );
         assertThat( out.getSource(), equalTo( dto.getSource() ) );
         assertThat( out.getOutput(), equalTo( dto.getOutput() ) );
         assertThat( out.getWorkspaceId(), equalTo( dto.getWorkspaceId() ) );
