@@ -56,11 +56,11 @@ public class GraphRenderingResource
     @Inject
     private RenderingController controller;
 
-    @Path( "/bom/{groupId}/{artifactId}/{version}" )
+    @Path( "/pom/{groupId}/{artifactId}/{version}" )
     @POST
     @Produces( application_xml )
     @Deprecated
-    public Response bomFor( final @PathParam( "groupId" ) String gid, @PathParam( "artifactId" ) final String aid,
+    public Response pomFor( final @PathParam( "groupId" ) String gid, @PathParam( "artifactId" ) final String aid,
                             @PathParam( "version" ) final String ver, @QueryParam( "wsid" ) final String wsid,
                             @Context final HttpServletRequest request )
     {
@@ -69,7 +69,7 @@ public class GraphRenderingResource
         try
         {
             final String out =
-                controller.bomFor( gid, aid, ver, wsid, parseQueryMap( request.getQueryString() ),
+                controller.pomFor( gid, aid, ver, wsid, parseQueryMap( request.getQueryString() ),
                                    request.getInputStream() );
             if ( out == null )
             {
@@ -90,15 +90,15 @@ public class GraphRenderingResource
         return response;
     }
 
-    @Path( "/bom" )
+    @Path( "/pom" )
     @POST
     @Produces( application_xml )
-    public Response bomForDTO( @Context final HttpServletRequest request )
+    public Response pomForDTO( @Context final HttpServletRequest request )
     {
         Response response = null;
         try
         {
-            final String out = controller.bomFor( request.getInputStream() );
+            final String out = controller.pomFor( request.getInputStream() );
             if ( out == null )
             {
                 response = Response.status( Status.NOT_FOUND )
