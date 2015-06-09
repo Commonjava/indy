@@ -30,11 +30,6 @@
   <dependencies>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-httprox-jaxrs</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-httprox-common</artifactId>
       <scope>provided</scope>
     </dependency>
