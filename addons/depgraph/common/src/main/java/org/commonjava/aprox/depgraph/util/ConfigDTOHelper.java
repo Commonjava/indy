@@ -27,7 +27,7 @@ import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.aprox.depgraph.dto.MetadataCollationDTO;
 import org.commonjava.aprox.depgraph.dto.PathsDTO;
-import org.commonjava.aprox.depgraph.dto.WebBomDTO;
+import org.commonjava.aprox.depgraph.dto.WebPomDTO;
 import org.commonjava.aprox.depgraph.dto.WebOperationConfigDTO;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.cartographer.dto.GraphComposition;
@@ -234,28 +234,28 @@ public class ConfigDTOHelper
         return dto;
     }
 
-    public WebBomDTO readBomDTO( final InputStream stream )
+    public WebPomDTO readPomDTO( final InputStream stream )
         throws AproxWorkflowException
     {
         try
         {
             final String json = IOUtils.toString( stream );
-            return readBomDTO( json );
+            return readPomDTO( json );
         }
         catch ( final IOException e )
         {
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                              "Cannot read WebBomDTO JSON from stream: {}", e, e.getMessage() );
+                                              "Cannot read WebPomDTO JSON from stream: {}", e, e.getMessage() );
         }
     }
 
-    public WebBomDTO readBomDTO( final String json )
+    public WebPomDTO readPomDTO( final String json )
         throws AproxWorkflowException
     {
-        WebBomDTO dto;
+        WebPomDTO dto;
         try
         {
-            dto = serializer.readValue( json, WebBomDTO.class );
+            dto = serializer.readValue( json, WebPomDTO.class );
         }
         catch ( final IOException e )
         {
@@ -265,7 +265,7 @@ public class ConfigDTOHelper
         if ( dto == null )
         {
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                              "No BOM configuration found in request body!" );
+                                              "No POM configuration found in request body!" );
         }
 
         dto.resolveFilters( presets, config.getDefaultWebFilterPreset() );

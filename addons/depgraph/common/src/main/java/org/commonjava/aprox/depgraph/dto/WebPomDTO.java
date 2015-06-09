@@ -20,14 +20,14 @@ import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.util.LocationUtils;
-import org.commonjava.maven.cartographer.dto.BomRecipe;
+import org.commonjava.maven.cartographer.dto.PomRecipe;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.spi.transport.LocationExpander;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class WebBomDTO
-    extends BomRecipe
+public class WebPomDTO
+    extends PomRecipe
 {
 
     private StoreKey source;
