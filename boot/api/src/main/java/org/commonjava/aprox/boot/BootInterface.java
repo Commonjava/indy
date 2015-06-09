@@ -41,6 +41,7 @@ public interface BootInterface
     
     String BOOT_SECURE_CONFIG = "aprox.boot.secure.config";
     String BOOT_SECURE_REALM = "aprox.boot.secure.realm";
+    String BOOT_SECURITY_CONSTRAINT_CONFIG_PATH = "aprox.boot.security.constraint.config.path";
 
     // FIXME: These two are duplicated from AproxConfigFactory!
     String CONFIG_PATH_PROP = "aprox.config";

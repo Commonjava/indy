@@ -58,7 +58,7 @@
     <undertowVersion>1.1.2.Final</undertowVersion>
     <xnioVersion>3.3.0.Final</xnioVersion>
     <partylineVersion>1.4</partylineVersion>
-    <keycloakVersion>1.1.0.Final</keycloakVersion>
+    <keycloakVersion>1.2.0.Final</keycloakVersion>
     
     <test-forkCount>1C</test-forkCount>
     <test-redirectOutput>true</test-redirectOutput>

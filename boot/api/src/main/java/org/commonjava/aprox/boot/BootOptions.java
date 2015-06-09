@@ -71,6 +71,10 @@ public class BootOptions
     @Option( name = "-R", aliases = { "--secure-realm" }, usage = "Specify security realm" )
     private String secureRealm;
     
+    @Option( name = "-x", aliases = { "--secure-constraint-config-path" }, usage = "Specify config path of security constraint file" )
+    private String secureConstraintConfig;
+    
+    
     private StringSearchInterpolator interp;
 
     private Properties bootProps;
@@ -154,13 +158,22 @@ public class BootOptions
         
     	String secureConfig = bootProps.getProperty(BootInterface.BOOT_SECURE_CONFIG);
     	String secureRealm = bootProps.getProperty(BootInterface.BOOT_SECURE_REALM);
+    	secureConstraintConfig = bootProps.getProperty(BootInterface.BOOT_SECURITY_CONSTRAINT_CONFIG_PATH);
+    	
     	
         File secureConfigFile = null;
+        File secureConstraintConfigFile = null;
         if ( secureConfig != null )
         {
             secureConfigFile = new File( secureConfig );
         }
-        if ( secureConfigFile != null && secureConfigFile.exists() && secureRealm != null && !secureRealm.equals("")) {
+        if ( secureConstraintConfig != null )
+        {
+            secureConstraintConfigFile = new File( secureConstraintConfig );
+        }
+        if ( secureConstraintConfigFile != null && secureConstraintConfigFile.exists() 
+        		&& secureConfigFile != null && secureConfigFile.exists() 
+        		&& secureRealm != null && !secureRealm.equals("")) {
         	this.secure = true;
         }
         
@@ -397,6 +410,10 @@ public class BootOptions
 
 	public void setSecure(boolean secure) {
 		this.secure = secure;
+	}
+
+	public String getSecureConstraintConfig() {
+		return secureConstraintConfig;
 	}
 
 }
