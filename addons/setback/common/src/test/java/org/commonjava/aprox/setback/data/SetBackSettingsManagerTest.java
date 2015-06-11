@@ -41,6 +41,7 @@ import org.commonjava.aprox.subsys.datafile.DataFileManager;
 import org.commonjava.aprox.subsys.datafile.change.DataFileEventManager;
 import org.commonjava.aprox.subsys.datafile.conf.DataFileConfiguration;
 import org.commonjava.aprox.subsys.template.TemplatingEngine;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -206,7 +207,7 @@ public class SetBackSettingsManagerTest
     private void store( final ArtifactStore store )
         throws Exception
     {
-        storeManager.storeArtifactStore( store, summary );
+        storeManager.storeArtifactStore( store, summary, new EventMetadata() );
     }
 
     private List<String> readSettings( final StoreKey key, final boolean expectExistence )

@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 
 /**
@@ -32,9 +33,17 @@ public abstract class AbstractStoreDeleteEvent
 
     protected final Map<ArtifactStore, Transfer> storeRoots;
 
-    public AbstractStoreDeleteEvent( final Map<ArtifactStore, Transfer> storeRoots )
+    private final EventMetadata eventMetadata;
+
+    protected AbstractStoreDeleteEvent( final EventMetadata eventMetadata, final Map<ArtifactStore, Transfer> storeRoots )
     {
+        this.eventMetadata = eventMetadata;
         this.storeRoots = storeRoots == null ? Collections.<ArtifactStore, Transfer> emptyMap() : storeRoots;
+    }
+
+    public final EventMetadata getEventMetadata()
+    {
+        return eventMetadata;
     }
 
     @Override

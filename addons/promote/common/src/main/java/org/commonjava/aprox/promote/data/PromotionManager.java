@@ -37,6 +37,7 @@ import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.promote.model.PromoteRequest;
 import org.commonjava.aprox.promote.model.PromoteResult;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.slf4j.Logger;
@@ -201,7 +202,7 @@ public class PromotionManager
                         {
                             stream = transfer.openInputStream( true );
                             final String path = transfer.getPath();
-                            contentManager.store( source, path, stream, TransferOperation.UPLOAD );
+                            contentManager.store( source, path, stream, TransferOperation.UPLOAD, new EventMetadata() );
                             stream.close();
                         }
 
@@ -266,7 +267,7 @@ public class PromotionManager
                 {
                     stream = transfer.openInputStream( true );
                     final String path = transfer.getPath();
-                    contentManager.store( targetStore, path, stream, TransferOperation.UPLOAD );
+                    contentManager.store( targetStore, path, stream, TransferOperation.UPLOAD, new EventMetadata() );
                     pending.remove( path );
                     complete.add( path );
 
@@ -274,7 +275,7 @@ public class PromotionManager
 
                     if ( purgeSource )
                     {
-                        contentManager.delete( sourceStore, path );
+                        contentManager.delete( sourceStore, path, new EventMetadata() );
                     }
                 }
                 catch ( final IOException e )

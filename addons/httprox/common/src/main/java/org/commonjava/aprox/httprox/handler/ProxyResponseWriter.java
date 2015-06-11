@@ -21,6 +21,8 @@ import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.core.ctl.ContentController;
 import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.folo.ctl.FoloConstants;
+import org.commonjava.aprox.folo.model.TrackingKey;
 import org.commonjava.aprox.httprox.conf.HttproxConfig;
 import org.commonjava.aprox.httprox.util.UserPass;
 import org.commonjava.aprox.model.core.RemoteRepository;
@@ -28,6 +30,7 @@ import org.commonjava.aprox.model.util.HttpUtils;
 import org.commonjava.aprox.util.ApplicationHeader;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.UrlInfo;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,7 +93,7 @@ public final class ProxyResponseWriter
                         {
                             final URL url = new URL( parts[1] );
                             final RemoteRepository repo = getRepository( url );
-                            transfer( channel, repo, url.getPath(), GET_METHOD.equals( method ) );
+                            transfer( channel, repo, url.getPath(), GET_METHOD.equals( method ), proxyUserPass );
 
                             break;
                         }
@@ -150,7 +153,8 @@ public final class ProxyResponseWriter
     }
 
     private void transfer( final ConduitStreamSinkChannel sinkChannel, final RemoteRepository repo,
-                           final String path, final boolean writeBody )
+ final String path,
+                           final boolean writeBody, final UserPass proxyUserPass )
         throws AproxWorkflowException, IOException
     {
         if ( sinkChannel == null || !sinkChannel.isOpen() )
@@ -158,7 +162,13 @@ public final class ProxyResponseWriter
             throw new IOException( "Sink channel already closed (or null)!" );
         }
 
-        final Transfer txfr = contentController.get( repo.getKey(), path );
+        final EventMetadata eventMetadata = new EventMetadata();
+        if ( writeBody )
+        {
+            eventMetadata.set( FoloConstants.TRACKING_KEY, new TrackingKey( proxyUserPass.getUser() ) );
+        }
+
+        final Transfer txfr = contentController.get( repo.getKey(), path, eventMetadata );
         if ( txfr != null && txfr.exists() )
         {
             final ReadableByteChannel channel = null;
@@ -221,7 +231,7 @@ public final class ProxyResponseWriter
 
             storeManager.storeArtifactStore( remote,
                                              new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                "Creating HTTProx proxy for: " + info.getUrl() ) );
+                                                                "Creating HTTProx proxy for: " + info.getUrl() ), new EventMetadata() );
         }
 
         return remote;
@@ -259,9 +269,8 @@ public final class ProxyResponseWriter
         return this;
     }
 
-    public void setError( final IOException e )
+    public void setError( final Throwable error )
     {
-        // TODO Auto-generated method stub
-
+        this.error = error;
     }
 }

@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.maven.galley.event.EventMetadata;
 
 /**
  * Base class for events related to changes in AProx {@link ArtifactStore} definitions.
@@ -31,9 +32,19 @@ public class AbstractAproxEvent
 
     protected final Collection<ArtifactStore> stores;
 
-    protected AbstractAproxEvent( final Collection<ArtifactStore> stores )
+    private final EventMetadata eventMetadata;
+
+    protected AbstractAproxEvent( final EventMetadata eventMetadata, final Collection<ArtifactStore> stores )
     {
+        this.eventMetadata = eventMetadata;
         this.stores = stores == null ? Collections.<ArtifactStore> emptySet() : clearNulls( stores );
+    }
+
+    protected AbstractAproxEvent( final EventMetadata eventMetadata, final ArtifactStore... stores )
+    {
+        this.eventMetadata = eventMetadata;
+        this.stores =
+            stores == null || stores.length == 0 ? Collections.<ArtifactStore> emptySet() : Arrays.asList( stores );
     }
 
     private Collection<ArtifactStore> clearNulls( final Collection<ArtifactStore> stores )
@@ -50,10 +61,9 @@ public class AbstractAproxEvent
         return stores;
     }
 
-    protected AbstractAproxEvent( final ArtifactStore... stores )
+    public final EventMetadata getEventMetadata()
     {
-        this.stores =
-            stores == null || stores.length == 0 ? Collections.<ArtifactStore> emptySet() : Arrays.asList( stores );
+        return eventMetadata;
     }
 
     public final Collection<ArtifactStore> getStores()

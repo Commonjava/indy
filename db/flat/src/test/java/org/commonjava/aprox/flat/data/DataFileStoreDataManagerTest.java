@@ -30,6 +30,7 @@ import org.commonjava.aprox.subsys.datafile.DataFile;
 import org.commonjava.aprox.subsys.datafile.DataFileManager;
 import org.commonjava.aprox.subsys.datafile.change.DataFileEventManager;
 import org.commonjava.aprox.subsys.datafile.conf.DataFileConfiguration;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -63,7 +64,7 @@ public class DataFileStoreDataManagerTest
         final String name = "foo";
         final boolean success =
             mgr.storeArtifactStore( new RemoteRepository( name, "http://www.foo.com/" ),
-                                       new ChangeSummary( "test-user", "init" ) );
+                                       new ChangeSummary( "test-user", "init" ), new EventMetadata() );
 
         assertThat( success, equalTo( true ) );
 

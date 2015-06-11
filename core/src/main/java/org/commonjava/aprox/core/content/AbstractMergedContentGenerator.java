@@ -29,6 +29,7 @@ import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.StoreType;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +61,8 @@ public abstract class AbstractMergedContentGenerator
     }
 
     @Override
-    public final void handleContentDeletion( final ArtifactStore store, final String path )
+    public final void handleContentDeletion( final ArtifactStore store, final String path,
+                                             final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
         if ( path.endsWith( getMergedMetadataName() ) )
@@ -70,7 +72,8 @@ public abstract class AbstractMergedContentGenerator
     }
 
     @Override
-    public final void handleContentStorage( final ArtifactStore store, final String path, final Transfer result )
+    public final void handleContentStorage( final ArtifactStore store, final String path, final Transfer result,
+                                            final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
         if ( path.endsWith( getMergedMetadataName() ) )

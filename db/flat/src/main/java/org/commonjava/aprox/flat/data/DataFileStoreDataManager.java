@@ -24,6 +24,7 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.data.AproxDataException;
+import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.data.StoreEventDispatcher;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
@@ -34,6 +35,7 @@ import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.subsys.datafile.DataFile;
 import org.commonjava.aprox.subsys.datafile.DataFileManager;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +47,8 @@ public class DataFileStoreDataManager
     extends MemoryStoreDataManager
 {
     public static final String APROX_STORE = "aprox";
+
+    public static final String LOAD_FROM_DISK = "load-from-disk";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -94,7 +98,8 @@ public class DataFileStoreDataManager
                         }
                         else
                         {
-                            storeArtifactStore( h, summary, false, false );
+                            storeArtifactStore( h, summary, false, false,
+                                                new EventMetadata().set( StoreDataManager.EVENT_ORIGIN, LOAD_FROM_DISK ) );
                         }
                     }
                     catch ( final IOException e )
@@ -122,7 +127,8 @@ public class DataFileStoreDataManager
                         }
                         else
                         {
-                            storeArtifactStore( r, summary, false, false );
+                            storeArtifactStore( r, summary, false, false,
+                                                new EventMetadata().set( StoreDataManager.EVENT_ORIGIN, LOAD_FROM_DISK ) );
                         }
                     }
                     catch ( final IOException e )
@@ -150,7 +156,8 @@ public class DataFileStoreDataManager
                         }
                         else
                         {
-                            storeArtifactStore( g, summary, false, false );
+                            storeArtifactStore( g, summary, false, false,
+                                                new EventMetadata().set( StoreDataManager.EVENT_ORIGIN, LOAD_FROM_DISK ) );
                         }
                     }
                     catch ( final IOException e )
@@ -166,54 +173,6 @@ public class DataFileStoreDataManager
         {
             throw new IllegalStateException( "Failed to start store data manager: " + e.getMessage(), e );
         }
-    }
-
-    @Override
-    public void deleteHostedRepository( final HostedRepository deploy, final ChangeSummary summary )
-        throws AproxDataException
-    {
-        super.deleteHostedRepository( deploy, summary );
-        delete( summary, deploy );
-    }
-
-    @Override
-    public void deleteHostedRepository( final String name, final ChangeSummary summary )
-        throws AproxDataException
-    {
-        super.deleteHostedRepository( name, summary );
-        delete( StoreType.hosted, name, summary );
-    }
-
-    @Override
-    public void deleteRemoteRepository( final RemoteRepository repo, final ChangeSummary summary )
-        throws AproxDataException
-    {
-        super.deleteRemoteRepository( repo, summary );
-        delete( summary, repo );
-    }
-
-    @Override
-    public void deleteRemoteRepository( final String name, final ChangeSummary summary )
-        throws AproxDataException
-    {
-        super.deleteRemoteRepository( name, summary );
-        delete( StoreType.remote, name, summary );
-    }
-
-    @Override
-    public void deleteGroup( final Group group, final ChangeSummary summary )
-        throws AproxDataException
-    {
-        super.deleteGroup( group, summary );
-        delete( summary, group );
-    }
-
-    @Override
-    public void deleteGroup( final String name, final ChangeSummary summary )
-        throws AproxDataException
-    {
-        super.deleteGroup( name, summary );
-        delete( StoreType.group, name, summary );
     }
 
     private void store( final boolean skipIfExists, final ChangeSummary summary, final ArtifactStore... stores )
@@ -250,27 +209,6 @@ public class DataFileStoreDataManager
         }
     }
 
-    private void delete( final ChangeSummary summary, final ArtifactStore... stores )
-        throws AproxDataException
-    {
-        for ( final ArtifactStore store : stores )
-        {
-            final DataFile f =
-                manager.getDataFile( APROX_STORE, store.getKey()
-                                                       .getType()
-                                                       .singularEndpointName(), store.getName() + ".json" );
-            try
-            {
-                f.delete( summary );
-            }
-            catch ( final IOException e )
-            {
-                throw new AproxDataException( "Cannot delete store definition: {} in file: {}. Reason: {}", e, store,
-                                              f, e.getMessage() );
-            }
-        }
-    }
-
     private void delete( final StoreType type, final String name, final ChangeSummary summary )
         throws AproxDataException
     {
@@ -288,19 +226,21 @@ public class DataFileStoreDataManager
 
     @Override
     protected void postStore( final ArtifactStore store, final ChangeSummary summary, final boolean exists,
-                              final boolean fireEvents )
+                              final boolean fireEvents, final EventMetadata eventMetadata )
         throws AproxDataException
     {
         store( false, summary, store );
-        super.postStore( store, summary, exists, fireEvents );
+        super.postStore( store, summary, exists, fireEvents, eventMetadata );
     }
 
     @Override
-    public void deleteArtifactStore( final StoreKey key, final ChangeSummary summary )
+    protected void postDelete( final ArtifactStore store, final ChangeSummary summary, final boolean fireEvents,
+                               final EventMetadata eventMetadata )
         throws AproxDataException
     {
-        super.deleteArtifactStore( key, summary );
-        delete( key.getType(), key.getName(), summary );
+        delete( store.getKey()
+                     .getType(), store.getName(), summary );
+        super.postDelete( store, summary, fireEvents, eventMetadata );
     }
 
     @Override
@@ -330,10 +270,10 @@ public class DataFileStoreDataManager
             final ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, "Initializing defaults" );
 
             storeArtifactStore( new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" ), summary,
-                                true, false );
+                                true, false, new EventMetadata() );
 
             storeArtifactStore( new Group( "public", new StoreKey( StoreType.remote, "central" ) ), summary, true,
-                                false );
+                                false, new EventMetadata() );
         }
     }
 

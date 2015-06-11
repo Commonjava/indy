@@ -52,6 +52,7 @@ import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferManager;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.ListingResult;
@@ -228,11 +229,19 @@ public class DefaultDownloadManager
     public Transfer retrieveFirst( final List<? extends ArtifactStore> stores, final String path )
         throws AproxWorkflowException
     {
+        return retrieveFirst( stores, path, new EventMetadata() );
+    }
+
+    @Override
+    public Transfer retrieveFirst( final List<? extends ArtifactStore> stores, final String path,
+                                   final EventMetadata eventMetadata )
+        throws AproxWorkflowException
+    {
         try
         {
             return transfers.retrieveFirst( locationExpander.expand( new VirtualResource(
                                                                                           LocationUtils.toLocations( stores ),
-                                                                                          path ) ) );
+                                                                                          path ) ), eventMetadata );
         }
         catch ( final TransferException e )
         {
@@ -250,12 +259,23 @@ public class DefaultDownloadManager
     public List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path )
         throws AproxWorkflowException
     {
+        return retrieveAll( stores, path, new EventMetadata() );
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.commonjava.aprox.core.rest.util.FileManager#downloadAll(java.util.List, java.lang.String)
+     */
+    @Override
+    public List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores , final String path , final EventMetadata eventMetadata  )
+        throws AproxWorkflowException
+    {
         try
         {
             // FIXME: Needs to be a list?
             return transfers.retrieveAll( locationExpander.expand( new VirtualResource(
                                                                                         LocationUtils.toLocations( stores ),
-                                                                                        path ) ) );
+                                                                                        path ) ), eventMetadata );
         }
         catch ( final TransferException e )
         {
@@ -274,10 +294,23 @@ public class DefaultDownloadManager
     public Transfer retrieve( final ArtifactStore store, final String path )
         throws AproxWorkflowException
     {
-        return retrieve( store, path, false );
+        return retrieve( store, path, new EventMetadata() );
     }
 
-    private Transfer retrieve( final ArtifactStore store, final String path, final boolean suppressFailures )
+    /*
+     * (non-Javadoc)
+     * @see org.commonjava.aprox.core.rest.util.FileManager#download(org.commonjava.aprox.core.model.ArtifactStore,
+     * java.lang.String)
+     */
+    @Override
+    public Transfer retrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
+        throws AproxWorkflowException
+    {
+        return retrieve( store, path, false, eventMetadata );
+    }
+
+    private Transfer retrieve( final ArtifactStore store, final String path, final boolean suppressFailures,
+                               final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
         if ( store.getKey()
@@ -292,7 +325,7 @@ public class DefaultDownloadManager
             final ConcreteResource res = new ConcreteResource( LocationUtils.toLocation( store ), path );
             if ( store instanceof RemoteRepository )
             {
-                target = transfers.retrieve( res );
+                target = transfers.retrieve( res, suppressFailures, eventMetadata );
             }
             else
             {
@@ -332,6 +365,19 @@ public class DefaultDownloadManager
     @Override
     public Transfer store( final ArtifactStore store, final String path, final InputStream stream,
                            final TransferOperation op )
+        throws AproxWorkflowException
+    {
+        return store( store, path, stream, op, new EventMetadata() );
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.commonjava.aprox.core.rest.util.FileManager#upload(org.commonjava.aprox.core.model.DeployPoint,
+     * java.lang.String, java.io.InputStream)
+     */
+    @Override
+    public Transfer store( final ArtifactStore store, final String path, final InputStream stream,
+                           final TransferOperation op, final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
         if ( store.getKey()
@@ -381,7 +427,7 @@ public class DefaultDownloadManager
         OutputStream out = null;
         try
         {
-            out = target.openOutputStream( op, false );
+            out = target.openOutputStream( op, true, eventMetadata );
             copy( stream, out );
         }
         catch ( final IOException e )
@@ -410,6 +456,19 @@ public class DefaultDownloadManager
                            final TransferOperation op )
         throws AproxWorkflowException
     {
+        return store( stores, path, stream, op, new EventMetadata() );
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.commonjava.aprox.core.rest.util.FileManager#upload(java.util.List, java.lang.String,
+     * java.io.InputStream)
+     */
+    @Override
+    public Transfer store( final List<? extends ArtifactStore> stores , final String path , final InputStream stream ,
+                           final TransferOperation op , final EventMetadata eventMetadata  )
+        throws AproxWorkflowException
+    {
         final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
 
         HostedRepository selected = null;
@@ -429,7 +488,7 @@ public class DefaultDownloadManager
                                               "No deployment locations available." );
         }
 
-        store( selected, path, stream, op );
+        store( selected, path, stream, op, eventMetadata );
 
         return getStorageReference( selected.getKey(), path );
     }
@@ -577,7 +636,7 @@ public class DefaultDownloadManager
         boolean result = false;
         for ( final ArtifactStore store : stores )
         {
-            result = delete( store, path ) || result;
+            result = delete( store, path, new EventMetadata() ) || result;
         }
 
         return result;
@@ -587,6 +646,13 @@ public class DefaultDownloadManager
     public boolean delete( final ArtifactStore store, final String path )
         throws AproxWorkflowException
     {
+        return delete( store, path, new EventMetadata() );
+    }
+
+    @Override
+    public boolean delete( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
+        throws AproxWorkflowException
+    {
         if ( store.getKey()
                   .getType() == StoreType.group )
         {
@@ -594,15 +660,15 @@ public class DefaultDownloadManager
         }
 
         final Transfer item = getStorageReference( store, path == null ? ROOT_PATH : path );
-        return doDelete( item );
+        return doDelete( item, eventMetadata );
     }
 
-    private Boolean doDelete( final Transfer item )
+    private Boolean doDelete( final Transfer item, final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
         try
         {
-            transfers.delete( item.getResource() );
+            transfers.delete( item.getResource(), eventMetadata );
         }
         catch ( final TransferException e )
         {
@@ -616,9 +682,16 @@ public class DefaultDownloadManager
     public void rescanAll( final List<? extends ArtifactStore> stores )
         throws AproxWorkflowException
     {
+        rescanAll( stores, new EventMetadata() );
+    }
+
+    @Override
+    public void rescanAll( final List<? extends ArtifactStore> stores, final EventMetadata eventMetadata )
+        throws AproxWorkflowException
+    {
         for ( final ArtifactStore store : stores )
         {
-            rescan( store );
+            rescan( store, eventMetadata );
         }
     }
 
@@ -626,9 +699,16 @@ public class DefaultDownloadManager
     public void rescan( final ArtifactStore store )
         throws AproxWorkflowException
     {
+        rescan( store, new EventMetadata() );
+    }
+
+    @Override
+    public void rescan( final ArtifactStore store, final EventMetadata eventMetadata )
+        throws AproxWorkflowException
+    {
         executor.execute( new Rescanner( store, getStorageReference( store.getKey() ), rescansInProgress,
                                          fileEventManager,
-                                         rescanEvent ) );
+ rescanEvent, eventMetadata ) );
     }
 
     private static final class Rescanner
@@ -648,15 +728,18 @@ public class DefaultDownloadManager
 
         private final ArtifactStore store;
 
+        private final EventMetadata eventMetadata;
+
         public Rescanner( final ArtifactStore store, final Transfer start, final Map<StoreKey, Byte> rescansInProgress,
                           final AproxFileEventManager fileEventManager,
-                          final Event<ArtifactStoreRescanEvent> rescanEvent )
+                          final Event<ArtifactStoreRescanEvent> rescanEvent, final EventMetadata eventMetadata )
         {
             this.store = store;
             this.start = start;
             this.rescansInProgress = rescansInProgress;
             this.fileEventManager = fileEventManager;
             this.rescanEvent = rescanEvent;
+            this.eventMetadata = eventMetadata;
         }
 
         @Override
@@ -677,7 +760,7 @@ public class DefaultDownloadManager
             {
                 if ( rescanEvent != null )
                 {
-                    rescanEvent.fire( new ArtifactStoreRescanEvent( store ) );
+                    rescanEvent.fire( new ArtifactStoreRescanEvent( eventMetadata, store ) );
                 }
 
                 doRescan( start );
@@ -714,7 +797,7 @@ public class DefaultDownloadManager
                 }
             }
 
-            fileEventManager.fire( new FileAccessEvent( item ) );
+            fileEventManager.fire( new FileAccessEvent( item, eventMetadata ) );
         }
 
     }

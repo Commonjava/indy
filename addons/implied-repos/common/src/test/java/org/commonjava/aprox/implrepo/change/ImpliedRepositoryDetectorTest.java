@@ -34,6 +34,7 @@ import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.model.galley.RepositoryLocation;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.event.FileStorageEvent;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
@@ -83,8 +84,8 @@ public class ImpliedRepositoryDetectorTest
         remote = new RemoteRepository( "test", "http://www.foo.com/repo" );
         group = new Group( "group", remote.getKey() );
 
-        storeManager.storeArtifactStore( remote, summary );
-        storeManager.storeArtifactStore( group, summary );
+        storeManager.storeArtifactStore( remote, summary, new EventMetadata() );
+        storeManager.storeArtifactStore( group, summary, new EventMetadata() );
     }
 
     @Test
@@ -103,7 +104,7 @@ public class ImpliedRepositoryDetectorTest
         IOUtils.closeQuietly( in );
         IOUtils.closeQuietly( out );
 
-        final FileStorageEvent event = new FileStorageEvent( TransferOperation.DOWNLOAD, txfr );
+        final FileStorageEvent event = new FileStorageEvent( TransferOperation.DOWNLOAD, txfr, new EventMetadata() );
         detector.detectRepos( event );
 
         assertThat( storeManager.getRemoteRepository( "repo-one" ), notNullValue() );
@@ -128,7 +129,7 @@ public class ImpliedRepositoryDetectorTest
         IOUtils.closeQuietly( in );
         IOUtils.closeQuietly( out );
 
-        final FileStorageEvent event = new FileStorageEvent( TransferOperation.DOWNLOAD, txfr );
+        final FileStorageEvent event = new FileStorageEvent( TransferOperation.DOWNLOAD, txfr, new EventMetadata() );
         detector.detectRepos( event );
 
         assertThat( storeManager.getRemoteRepository( "repo-one" ), notNullValue() );

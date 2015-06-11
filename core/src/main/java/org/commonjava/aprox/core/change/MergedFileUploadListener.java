@@ -33,6 +33,7 @@ import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileEvent;
@@ -128,7 +129,7 @@ public class MergedFileUploadListener
                 if ( fileEvent != null )
                 {
                     logger.debug( "Firing deletion event for: {}", item );
-                    fileEvent.fire( new FileDeletionEvent( item ) );
+                    fileEvent.fire( new FileDeletionEvent( item, new EventMetadata() ) );
                 }
             }
         }

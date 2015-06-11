@@ -41,6 +41,7 @@ import org.commonjava.aprox.model.core.HostedRepository;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -237,7 +238,15 @@ public class MemoryStoreDataManager
     public boolean storeArtifactStore( final ArtifactStore store, final ChangeSummary summary )
         throws AproxDataException
     {
-        return storeArtifactStore( store, summary, false, true );
+        return storeArtifactStore( store, summary, new EventMetadata() );
+    }
+
+    @Override
+    public boolean storeArtifactStore( final ArtifactStore store, final ChangeSummary summary,
+                                       final EventMetadata eventMetadata )
+        throws AproxDataException
+    {
+        return storeArtifactStore( store, summary, false, true, new EventMetadata() );
     }
 
     @Override
@@ -245,7 +254,15 @@ public class MemoryStoreDataManager
                                        final boolean skipIfExists )
         throws AproxDataException
     {
-        return storeArtifactStore( store, summary, skipIfExists, true );
+        return storeArtifactStore( store, summary, skipIfExists, new EventMetadata() );
+    }
+
+    @Override
+    public boolean storeArtifactStore( final ArtifactStore store, final ChangeSummary summary,
+                                       final boolean skipIfExists, final EventMetadata eventMetadata )
+        throws AproxDataException
+    {
+        return storeArtifactStore( store, summary, skipIfExists, true, new EventMetadata() );
     }
 
     @Override
@@ -253,7 +270,16 @@ public class MemoryStoreDataManager
                                        final boolean skipIfExists, final boolean fireEvents )
         throws AproxDataException
     {
-        final boolean result = store( store, summary, skipIfExists, fireEvents );
+        return storeArtifactStore( store, summary, skipIfExists, fireEvents, new EventMetadata() );
+    }
+
+    @Override
+    public boolean storeArtifactStore( final ArtifactStore store, final ChangeSummary summary,
+                                       final boolean skipIfExists, final boolean fireEvents,
+                                       final EventMetadata eventMetadata )
+        throws AproxDataException
+    {
+        final boolean result = store( store, summary, skipIfExists, fireEvents, eventMetadata );
         if ( result && ( store instanceof RemoteRepository ) )
         {
             final RemoteRepository repository = (RemoteRepository) store;
@@ -264,17 +290,18 @@ public class MemoryStoreDataManager
     }
 
     private synchronized boolean store( final ArtifactStore store, final ChangeSummary summary,
-                                        final boolean skipIfExists, final boolean fireEvents )
+                                        final boolean skipIfExists, final boolean fireEvents,
+                                        final EventMetadata eventMetadata )
         throws AproxDataException
     {
         final boolean exists = stores.containsKey( store.getKey() );
         if ( !skipIfExists || !exists )
         {
-            preStore( store, summary, exists, fireEvents );
+            preStore( store, summary, exists, fireEvents, eventMetadata );
             final ArtifactStore old = stores.put( store.getKey(), store );
             try
             {
-                postStore( store, summary, exists, fireEvents );
+                postStore( store, summary, exists, fireEvents, eventMetadata );
                 return true;
             }
             catch ( final AproxDataException e )
@@ -288,128 +315,70 @@ public class MemoryStoreDataManager
     }
 
     protected void preStore( final ArtifactStore store, final ChangeSummary summary, final boolean exists,
-                             final boolean fireEvents )
+                             final boolean fireEvents, final EventMetadata eventMetadata )
         throws AproxDataException
     {
         if ( isStarted() && fireEvents )
         {
-            dispatcher.updating( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, store );
+            dispatcher.updating( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, eventMetadata,
+                                 store );
         }
     }
 
     protected void postStore( final ArtifactStore store, final ChangeSummary summary, final boolean exists,
-                              final boolean fireEvents )
+                              final boolean fireEvents, final EventMetadata eventMetadata )
         throws AproxDataException
     {
         if ( isStarted() && fireEvents )
         {
-            dispatcher.updated( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, store );
+            dispatcher.updated( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, eventMetadata,
+                                store );
         }
     }
 
-    @Override
-    public synchronized void deleteHostedRepository( final HostedRepository repo, final ChangeSummary summary )
+    protected void preDelete( final ArtifactStore store, final ChangeSummary summary, final boolean fireEvents,
+                              final EventMetadata eventMetadata )
         throws AproxDataException
     {
-        if ( !stores.containsKey( repo.getKey() ) )
+        if ( isStarted() && fireEvents )
         {
-            return;
+            dispatcher.deleting( eventMetadata, store );
         }
-
-        dispatcher.deleting( repo );
-        stores.remove( repo.getKey() );
-        dispatcher.deleted( repo );
     }
 
-    @Override
-    public synchronized void deleteHostedRepository( final String name, final ChangeSummary summary )
+    protected void postDelete( final ArtifactStore store, final ChangeSummary summary, final boolean fireEvents,
+                               final EventMetadata eventMetadata )
         throws AproxDataException
     {
-        final ArtifactStore store = stores.get( new StoreKey( StoreType.hosted, name ) );
-        if ( store == null )
+        if ( isStarted() && fireEvents )
         {
-            return;
+            dispatcher.deleted( eventMetadata, store );
         }
-        dispatcher.deleting( store );
-        stores.remove( new StoreKey( StoreType.hosted, name ) );
-        dispatcher.deleted( store );
-    }
-
-    @Override
-    public synchronized void deleteRemoteRepository( final RemoteRepository repo, final ChangeSummary summary )
-        throws AproxDataException
-    {
-        if ( !stores.containsKey( repo.getKey() ) )
-        {
-            return;
-        }
-
-        dispatcher.deleting( repo );
-
-        stores.remove( repo.getKey() );
-        dispatcher.deleted( repo );
-    }
-
-    @Override
-    public synchronized void deleteRemoteRepository( final String name, final ChangeSummary summary )
-        throws AproxDataException
-    {
-        final StoreKey key = new StoreKey( StoreType.remote, name );
-        final ArtifactStore store = stores.get( key );
-        if ( store == null )
-        {
-            return;
-        }
-        dispatcher.deleting( store );
-
-        stores.remove( key );
-        dispatcher.deleted( store );
-    }
-
-    @Override
-    public synchronized void deleteGroup( final Group group, final ChangeSummary summary )
-        throws AproxDataException
-    {
-        if ( !stores.containsKey( group.getKey() ) )
-        {
-            return;
-        }
-        dispatcher.deleting( group );
-
-        stores.remove( group.getKey() );
-        dispatcher.deleted( group );
-    }
-
-    @Override
-    public synchronized void deleteGroup( final String name, final ChangeSummary summary )
-        throws AproxDataException
-    {
-        final StoreKey key = new StoreKey( StoreType.group, name );
-        final ArtifactStore store = stores.get( key );
-        if ( store == null )
-        {
-            return;
-        }
-        dispatcher.deleting( store );
-
-        stores.remove( key );
-        dispatcher.deleted( store );
     }
 
     @Override
     public synchronized void deleteArtifactStore( final StoreKey key, final ChangeSummary summary )
         throws AproxDataException
     {
+        deleteArtifactStore( key, summary, new EventMetadata() );
+    }
+
+    @Override
+    public synchronized void deleteArtifactStore( final StoreKey key, final ChangeSummary summary,
+                                                  final EventMetadata eventMetadata )
+        throws AproxDataException
+    {
         final ArtifactStore store = stores.get( key );
         if ( store == null )
         {
             return;
         }
 
-        dispatcher.deleting( store );
+        preDelete( store, summary, true, eventMetadata );
 
         stores.remove( key );
-        dispatcher.deleted( store );
+
+        postDelete( store, summary, true, eventMetadata );
     }
 
     @Override

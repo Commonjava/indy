@@ -37,6 +37,7 @@ import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileStorageEvent;
@@ -94,7 +95,7 @@ public class TimeoutEventListener
             final ArtifactStore store = storeManager.getArtifactStore( key );
 
             logger.info( "[EXPIRED; DELETE] {}:{}", key, path );
-            deleted = fileManager.delete( store, path );
+            deleted = fileManager.delete( store, path, new EventMetadata() );
         }
         catch ( final AproxWorkflowException | AproxDataException e )
         {

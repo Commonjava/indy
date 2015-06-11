@@ -53,6 +53,7 @@ import org.commonjava.aprox.model.core.dto.ReplicationDTO;
 import org.commonjava.aprox.model.core.dto.StoreListingDTO;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
 import org.commonjava.aprox.subsys.http.util.HttpResources;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,6 +62,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @ApplicationScoped
 public class ReplicationController
 {
+    private static final String REPLICATION_ORIGIN = "replication";
+
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
@@ -135,7 +138,9 @@ public class ReplicationController
 
                                 data.storeArtifactStore( repo, new ChangeSummary( user,
                                                                                      "REPLICATION: Proxying remote aprox repository: "
-                                                                                         + view.getResourceUri() ) );
+                                                                                      + view.getResourceUri() ),
+                                                         new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
+                                                                                  REPLICATION_ORIGIN ) );
                                 replicated.add( repo.getKey() );
                             }
                         }
@@ -164,7 +169,9 @@ public class ReplicationController
 
                                 data.storeArtifactStore( store, new ChangeSummary( user,
                                                                                    "REPLICATION: Mirroring remote aprox store: "
-                                                                                       + store.getKey() ) );
+                                                                                       + store.getKey() ),
+                                                         new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
+                                                                                  REPLICATION_ORIGIN ) );
                                 replicated.add( store.getKey() );
                             }
                         }

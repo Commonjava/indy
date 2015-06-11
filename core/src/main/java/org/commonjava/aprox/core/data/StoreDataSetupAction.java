@@ -28,6 +28,7 @@ import org.commonjava.aprox.model.core.HostedRepository;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +36,8 @@ import org.slf4j.LoggerFactory;
 public class StoreDataSetupAction
     implements MigrationAction
 {
+    public static final String DEFAULT_SETUP = "default-setup";
+
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
@@ -69,7 +72,8 @@ public class StoreDataSetupAction
                 final RemoteRepository central =
                     new RemoteRepository( "central", "http://repo.maven.apache.org/maven2/" );
                 central.setCacheTimeoutSeconds( 86400 );
-                storeManager.storeArtifactStore( central, summary, true, true );
+                storeManager.storeArtifactStore( central, summary, true, true,
+                                                 new EventMetadata().set( StoreDataManager.EVENT_ORIGIN, DEFAULT_SETUP ) );
                 changed = true;
             }
 
@@ -80,7 +84,8 @@ public class StoreDataSetupAction
                 local.setAllowSnapshots( true );
                 local.setSnapshotTimeoutSeconds( 86400 );
 
-                storeManager.storeArtifactStore( local, summary, true, true );
+                storeManager.storeArtifactStore( local, summary, true, true,
+                                                 new EventMetadata().set( StoreDataManager.EVENT_ORIGIN, DEFAULT_SETUP ) );
                 changed = true;
             }
 
@@ -90,7 +95,8 @@ public class StoreDataSetupAction
                 pub.addConstituent( new StoreKey( StoreType.remote, "central" ) );
                 pub.addConstituent( new StoreKey( StoreType.hosted, "local-deployments" ) );
 
-                storeManager.storeArtifactStore( pub, summary, true, true );
+                storeManager.storeArtifactStore( pub, summary, true, true,
+                                                 new EventMetadata().set( StoreDataManager.EVENT_ORIGIN, DEFAULT_SETUP ) );
                 changed = true;
             }
         }

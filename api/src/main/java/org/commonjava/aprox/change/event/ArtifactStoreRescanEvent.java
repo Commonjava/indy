@@ -18,6 +18,7 @@ package org.commonjava.aprox.change.event;
 import java.util.Collection;
 
 import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.maven.galley.event.EventMetadata;
 
 /**
  * Event to signal that the rescanning of a particular artifact store has started.
@@ -26,14 +27,14 @@ public class ArtifactStoreRescanEvent
     extends AbstractAproxEvent
 {
 
-    public ArtifactStoreRescanEvent( final ArtifactStore store )
+    public ArtifactStoreRescanEvent( final EventMetadata eventMetadata, final ArtifactStore store )
     {
-        super( store );
+        super( eventMetadata, store );
     }
 
-    public ArtifactStoreRescanEvent( final Collection<ArtifactStore> stores )
+    public ArtifactStoreRescanEvent( final EventMetadata eventMetadata, final Collection<ArtifactStore> stores )
     {
-        super( stores );
+        super( eventMetadata, stores );
     }
 
 }

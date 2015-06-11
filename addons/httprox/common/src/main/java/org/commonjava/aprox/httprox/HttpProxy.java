@@ -12,7 +12,6 @@ import org.commonjava.aprox.action.StartupAction;
 import org.commonjava.aprox.boot.BootOptions;
 import org.commonjava.aprox.core.ctl.ContentController;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.folo.ctl.FoloContentController;
 import org.commonjava.aprox.httprox.conf.HttproxConfig;
 import org.commonjava.aprox.httprox.handler.ProxyRequestReader;
 import org.commonjava.aprox.httprox.handler.ProxyResponseWriter;
@@ -45,9 +44,6 @@ public class HttpProxy
 
     @Inject
     private ContentController contentController;
-
-    @Inject
-    private FoloContentController foloContentController;
 
     private AcceptingChannel<StreamConnection> server;
 

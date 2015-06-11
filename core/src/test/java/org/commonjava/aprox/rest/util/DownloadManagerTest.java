@@ -31,6 +31,7 @@ import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.galley.RepositoryLocation;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.testing.core.ApiFixture;
@@ -78,9 +79,9 @@ public class DownloadManagerTest
                .registerDownload( new ConcreteResource( new RepositoryLocation( repo ), path ),
                                   new TestDownload( content.getBytes() ) );
 
-        data.storeArtifactStore( repo, summary );
+        data.storeArtifactStore( repo, summary, new EventMetadata() );
 
-        final Transfer stream = downloader.retrieve( repo, path );
+        final Transfer stream = downloader.retrieve( repo, path, new EventMetadata() );
         final String downloaded = IOUtils.toString( stream.openInputStream() );
 
         assertThat( downloaded, equalTo( content ) );
@@ -102,14 +103,14 @@ public class DownloadManagerTest
                                   new TestDownload( content.getBytes() ) );
 
 
-        data.storeArtifactStore( repo, summary );
-        data.storeArtifactStore( repo2, summary );
+        data.storeArtifactStore( repo, summary, new EventMetadata() );
+        data.storeArtifactStore( repo2, summary, new EventMetadata() );
 
         final List<ArtifactStore> repos = new ArrayList<ArtifactStore>();
         repos.add( repo );
         repos.add( repo2 );
 
-        final Transfer stream = downloader.retrieveFirst( repos, path );
+        final Transfer stream = downloader.retrieveFirst( repos, path, new EventMetadata() );
         final String downloaded = IOUtils.toString( stream.openInputStream() );
 
         assertThat( downloaded, equalTo( content ) );

@@ -18,28 +18,31 @@ package org.commonjava.aprox.core.data.testutil;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateType;
 import org.commonjava.aprox.data.StoreEventDispatcher;
 import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.maven.galley.event.EventMetadata;
 
 public class StoreEventDispatcherStub
     implements StoreEventDispatcher
 {
 
     @Override
-    public void deleting( final ArtifactStore... stores )
+    public void deleting( final EventMetadata metadata, final ArtifactStore... stores )
     {
     }
 
     @Override
-    public void deleted( final ArtifactStore... stores )
+    public void deleted( final EventMetadata metadata, final ArtifactStore... stores )
     {
     }
 
     @Override
-    public void updating( final ArtifactStoreUpdateType type, final ArtifactStore... stores )
+    public void updating( final ArtifactStoreUpdateType type, final EventMetadata metadata,
+                          final ArtifactStore... stores )
     {
     }
 
     @Override
-    public void updated( final ArtifactStoreUpdateType type, final ArtifactStore... stores )
+    public void updated( final ArtifactStoreUpdateType type, final EventMetadata metadata,
+                         final ArtifactStore... stores )
     {
     }
 

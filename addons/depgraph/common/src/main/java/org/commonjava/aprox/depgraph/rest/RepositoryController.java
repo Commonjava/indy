@@ -60,6 +60,7 @@ import org.commonjava.maven.cartographer.preset.PresetSelector;
 import org.commonjava.maven.cartographer.util.ProjectVersionRefComparator;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferManager;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferBatch;
@@ -202,11 +203,11 @@ public class RepositoryController
                         int result = 0;
 
                         int i = 0;
-                        ProjectVersionRefComparator cmp = new ProjectVersionRefComparator();
+                        final ProjectVersionRefComparator cmp = new ProjectVersionRefComparator();
                         while ( result == 0 && i < o1.size() && i < o2.size() )
                         {
-                            ProjectRelationship<ProjectVersionRef> rel1 = o1.get( i );
-                            ProjectRelationship<ProjectVersionRef> rel2 = o2.get( i );
+                            final ProjectRelationship<ProjectVersionRef> rel1 = o1.get( i );
+                            final ProjectRelationship<ProjectVersionRef> rel2 = o2.get( i );
                             i++;
 
                             result = cmp.compare( rel1.getDeclaring(), rel2.getDeclaring() );
@@ -233,15 +234,15 @@ public class RepositoryController
 
                 });
 
-        Map<ProjectVersionRef, List<List<ProjectRelationship<ProjectVersionRef>>>> result = new HashMap<>();
-        for ( List<ProjectRelationship<ProjectVersionRef>> path : paths )
+        final Map<ProjectVersionRef, List<List<ProjectRelationship<ProjectVersionRef>>>> result = new HashMap<>();
+        for ( final List<ProjectRelationship<ProjectVersionRef>> path : paths )
         {
             final ProjectVersionRef leaf = path.get( path.size() - 1 ).getTarget().asProjectVersionRef();
             if ( !result.containsKey( leaf ) )
             {
                 result.put( leaf, new ArrayList<List<ProjectRelationship<ProjectVersionRef>>>() );
             }
-            List<List<ProjectRelationship<ProjectVersionRef>>> pathList = result.get( leaf );
+            final List<List<ProjectRelationship<ProjectVersionRef>>> pathList = result.get( leaf );
             pathList.add( path );
         }
 
@@ -352,7 +353,7 @@ public class RepositoryController
 
             logger.info( "Starting batch retrieval of {} artifacts.", entries.size() );
             TransferBatch batch = new TransferBatch( entries );
-            batch = transferManager.batchRetrieve( batch );
+            batch = transferManager.batchRetrieve( batch, new EventMetadata() );
 
             logger.info( "Retrieved {} artifacts. Creating zip.", batch.getTransfers()
                                                                        .size() );
@@ -473,7 +474,7 @@ public class RepositoryController
         return contents;
     }
 
-    private List<List<ProjectRelationship<ProjectVersionRef>>> resolvePaths( PathsDTO dto )
+    private List<List<ProjectRelationship<ProjectVersionRef>>> resolvePaths( final PathsDTO dto )
         throws AproxWorkflowException
     {
         if ( dto == null )
