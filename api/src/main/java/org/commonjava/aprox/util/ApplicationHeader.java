@@ -26,7 +26,9 @@ public enum ApplicationHeader
     deprecated( "Deprecated-Use-Alt" ),
     accept( "Accept" ),
     allow( "Allow" ),
-    authorization( "Authorization" );
+    authorization( "Authorization" ),
+    proxy_authenticate( "Proxy-Authenticate" ),
+    proxy_authorization( "Proxy-Authorization" );
 
     private final String key;
 

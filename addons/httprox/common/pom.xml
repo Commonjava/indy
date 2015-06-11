@@ -64,5 +64,9 @@
       <artifactId>aprox-filer-default</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-folo-common</artifactId>
+    </dependency>
   </dependencies>
 </project>

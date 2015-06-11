@@ -34,6 +34,8 @@ public enum ApplicationStatus
     
     METHOD_NOT_ALLOWED(405, "Method Not Allowed" ),
     
+    PROXY_AUTHENTICATION_REQUIRED( 407, "Proxy Authentication Required"),
+    
     CONFLICT( 409, "Conflict" ),
     
     SERVER_ERROR( 500, "Internal Server Error" );

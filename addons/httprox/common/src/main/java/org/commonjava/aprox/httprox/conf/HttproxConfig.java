@@ -28,6 +28,10 @@ public class HttproxConfig
 
     private static final boolean DEFAULT_ENABLED = false;
 
+    private static final String DEFAULT_PROXY_REALM = "httprox";
+
+    private String proxyRealm;
+
     private Boolean enabled;
 
     private Integer port;
@@ -52,6 +56,17 @@ public class HttproxConfig
     public void setPort( final Integer port )
     {
         this.port = port;
+    }
+
+    public String getProxyRealm()
+    {
+        return proxyRealm == null ? DEFAULT_PROXY_REALM : proxyRealm;
+    }
+
+    @ConfigName( "proxy.realm" )
+    public void setProxyRealm( final String proxyRealm )
+    {
+        this.proxyRealm = proxyRealm;
     }
 
     @javax.enterprise.context.ApplicationScoped
@@ -105,4 +120,5 @@ public class HttproxConfig
             return info;
         }
     }
+
 }
