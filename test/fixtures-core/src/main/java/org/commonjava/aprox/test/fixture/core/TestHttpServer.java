@@ -30,6 +30,7 @@ import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -41,6 +42,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.commonjava.maven.galley.util.UrlUtils;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +62,11 @@ public class TestHttpServer
     private final ExpectationServlet servlet;
 
     private Undertow server;
+
+    public TestHttpServer()
+    {
+        this( null );
+    }
 
     public TestHttpServer( final String baseResource )
     {
@@ -164,7 +171,7 @@ public class TestHttpServer
 
         public ExpectationServlet( final String baseResource )
         {
-            this.baseResource = baseResource;
+            this.baseResource = baseResource == null ? "/" : baseResource;
         }
 
         public Map<String, Integer> getAccessesByPath()
@@ -293,12 +300,27 @@ public class TestHttpServer
 
     public String formatUrl( final String... subpath )
     {
-        return String.format( "http://127.0.0.1:%s/%s/%s", port, servlet.getBaseResource(), normalize( subpath ) );
+        try
+        {
+            return UrlUtils.buildUrl( "http://127.0.0.1:" + port,
+                                      normalize( servlet.getBaseResource(), normalize( subpath ) ) );
+        }
+        catch ( final MalformedURLException e )
+        {
+            throw new IllegalArgumentException( "Failed to build url to: " + Arrays.toString( subpath ), e );
+        }
     }
 
     public String getBaseUri()
     {
-        return String.format( "http://127.0.0.1:%s/%s", port, servlet.getBaseResource() );
+        try
+        {
+            return UrlUtils.buildUrl( "http://127.0.0.1:" + port, servlet.getBaseResource() );
+        }
+        catch ( final MalformedURLException e )
+        {
+            throw new IllegalArgumentException( "Failed to build base-URI.", e );
+        }
     }
 
     public String getUrlPath( final String url )

@@ -35,7 +35,6 @@ import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xnio.ChannelListener;
-import org.xnio.IoUtils;
 import org.xnio.channels.Channels;
 import org.xnio.conduits.ConduitStreamSinkChannel;
 
@@ -48,14 +47,17 @@ public final class ProxyResponseWriter
     private List<String> headerLines;
 
     private Throwable error;
-    
+
     private final HttproxConfig config;
-    
+
     private final ContentController contentController;
-    
+
     private final StoreDataManager storeManager;
-    
-    public ProxyResponseWriter( final HttproxConfig config, final StoreDataManager storeManager, final ContentController contentController )
+
+    private boolean transferred;
+
+    public ProxyResponseWriter( final HttproxConfig config, final StoreDataManager storeManager,
+                                final ContentController contentController )
     {
         this.config = config;
         this.contentController = contentController;
@@ -65,6 +67,7 @@ public final class ProxyResponseWriter
     @Override
     public void handleEvent( final ConduitStreamSinkChannel channel )
     {
+        logger.info( "\n\n\n>>>>>>> Handle write\n\n\n\n\n" );
         if ( error == null )
         {
             try
@@ -110,15 +113,11 @@ public final class ProxyResponseWriter
                     }
                 }
 
-                Channels.flushBlocking( channel );
-                channel.close();
+                logger.info( "Response complete." );
             }
             catch ( IOException | AproxWorkflowException | AproxDataException e )
             {
                 error = e;
-            }
-            finally
-            {
             }
         }
 
@@ -141,8 +140,9 @@ public final class ProxyResponseWriter
 
                     writeError( channel, error );
 
-                    Channels.flushBlocking( channel );
-                    channel.close();
+                    logger.info( "Response error complete." );
+                    //                    Channels.flushBlocking( channel );
+                    //                    channel.close();
                 }
             }
             catch ( final IOException closeException )
@@ -150,13 +150,30 @@ public final class ProxyResponseWriter
                 logger.error( "Failed to close httprox request: " + error.getMessage(), error );
             }
         }
+
+        try
+        {
+            channel.shutdownWrites();
+            Channels.flushBlocking( channel );
+        }
+        catch ( final IOException e )
+        {
+            logger.error( "Failed to flush/shutdown response.", e );
+        }
+
+        //        IOUtils.closeQuietly( channel );
     }
 
-    private void transfer( final ConduitStreamSinkChannel sinkChannel, final RemoteRepository repo,
- final String path,
+    private void transfer( final ConduitStreamSinkChannel sinkChannel, final RemoteRepository repo, final String path,
                            final boolean writeBody, final UserPass proxyUserPass )
         throws AproxWorkflowException, IOException
     {
+        if ( transferred )
+        {
+            return;
+        }
+
+        transferred = true;
         if ( sinkChannel == null || !sinkChannel.isOpen() )
         {
             throw new IOException( "Sink channel already closed (or null)!" );
@@ -175,9 +192,6 @@ public final class ProxyResponseWriter
             InputStream stream = null;
             try
             {
-                stream = txfr.openInputStream();
-                java.nio.channels.Channels.newChannel( stream );
-
                 writeStatus( sinkChannel, ApplicationStatus.OK );
                 writeHeader( sinkChannel, ApplicationHeader.content_length, Long.toString( txfr.length() ) );
                 writeHeader( sinkChannel, ApplicationHeader.content_type, contentController.getContentType( path ) );
@@ -186,7 +200,17 @@ public final class ProxyResponseWriter
 
                 if ( writeBody )
                 {
-                    IoUtils.transfer( channel, txfr.length(), ByteBuffer.allocate( 4096 ), sinkChannel );
+                    sinkChannel.write( ByteBuffer.wrap( "\r\n".getBytes() ) );
+
+                    stream = txfr.openInputStream();
+                    final byte[] bytes = new byte[4096];
+                    int read = -1;
+                    while ( ( read = stream.read( bytes ) ) > -1 )
+                    {
+                        final ByteBuffer buf = ByteBuffer.wrap( bytes, 0, read );
+                        sinkChannel.write( buf );
+                    }
+                    //                    IoUtils.transfer( channel, txfr.length(), ByteBuffer.allocate( 4096 ), sinkChannel );
                 }
             }
             finally
@@ -231,7 +255,8 @@ public final class ProxyResponseWriter
 
             storeManager.storeArtifactStore( remote,
                                              new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                "Creating HTTProx proxy for: " + info.getUrl() ), new EventMetadata() );
+                                                                "Creating HTTProx proxy for: " + info.getUrl() ),
+                                             new EventMetadata() );
         }
 
         return remote;
@@ -258,7 +283,7 @@ public final class ProxyResponseWriter
     private void writeStatus( final ConduitStreamSinkChannel sinkChannel, final ApplicationStatus status )
         throws IOException
     {
-        final ByteBuffer b = ByteBuffer.wrap( String.format( "%d %s\r\n", status.code(), status.message() )
+        final ByteBuffer b = ByteBuffer.wrap( String.format( "HTTP/1.1 %d %s\r\n", status.code(), status.message() )
                                                     .getBytes() );
         sinkChannel.write( b );
     }

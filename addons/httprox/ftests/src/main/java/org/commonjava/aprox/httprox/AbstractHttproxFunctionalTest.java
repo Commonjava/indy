@@ -24,6 +24,16 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.conn.routing.HttpRoutePlanner;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.commonjava.aprox.boot.AproxBootException;
 import org.commonjava.aprox.boot.PortFinder;
 import org.commonjava.aprox.ftest.core.AbstractAproxFunctionalTest;
@@ -39,12 +49,33 @@ public class AbstractHttproxFunctionalTest
     extends AbstractAproxFunctionalTest
 {
 
+    private static final String HOST = "127.0.0.1";
+
     protected final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Rule
-    public TestHttpServer server = new TestHttpServer( "repos" );
-    
+    public TestHttpServer server = new TestHttpServer();
+
     protected int proxyPort;
+
+    protected HttpClientContext proxyContext( final String user, final String pass )
+    {
+        final CredentialsProvider creds = new BasicCredentialsProvider();
+        creds.setCredentials( new AuthScope( HOST, proxyPort ), new UsernamePasswordCredentials( user, pass ) );
+        final HttpClientContext ctx = HttpClientContext.create();
+        ctx.setCredentialsProvider( creds );
+
+        return ctx;
+    }
+
+    protected CloseableHttpClient proxiedHttp()
+        throws Exception
+    {
+        final HttpRoutePlanner planner = new DefaultProxyRoutePlanner( new HttpHost( HOST, proxyPort ) );
+        return HttpClients.custom()
+                          .setRoutePlanner( planner )
+                          .build();
+    }
 
     @Override
     protected CoreServerFixture newServerFixture()
@@ -72,7 +103,7 @@ public class AbstractHttproxFunctionalTest
         {
             final InputStream stream = Thread.currentThread()
                                              .getContextClassLoader()
-                                             .getResourceAsStream( name + ".pom" );
+                                             .getResourceAsStream( name.endsWith( ".pom" ) ? name : name + ".pom" );
 
             String pom = IOUtils.toString( stream );
             IOUtils.closeQuietly( stream );

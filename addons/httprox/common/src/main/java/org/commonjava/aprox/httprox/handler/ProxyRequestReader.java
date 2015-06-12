@@ -64,6 +64,15 @@ public final class ProxyRequestReader
         if ( sendResponse )
         {
             sinkChannel.resumeWrites();
+            try
+            {
+                channel.shutdownReads();
+            }
+            catch ( final IOException e )
+            {
+                logger.debug( "failed to shutdown proxy request reads.", e );
+            }
+            //            IOUtils.closeQuietly( channel );
         }
     }
 

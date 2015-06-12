@@ -6,6 +6,7 @@ import java.net.InetSocketAddress;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.action.AproxLifecycleException;
 import org.commonjava.aprox.action.ShutdownAction;
 import org.commonjava.aprox.action.StartupAction;
@@ -64,13 +65,26 @@ public class HttpProxy
     public void start()
         throws AproxLifecycleException
     {
+        if ( !config.isEnabled() )
+        {
+            logger.info( "HTTProx proxy is disabled." );
+            return;
+        }
+
         XnioWorker worker;
         try
         {
             worker = Xnio.getInstance()
                          .createWorker( OptionMap.EMPTY );
 
-            final InetSocketAddress addr = new InetSocketAddress( bootOptions.getBind(), config.getPort() );
+            String bind = bootOptions.getBind();
+            if ( bind == null )
+            {
+                bind = "0.0.0.0";
+            }
+
+            logger.info( "Starting HTTProx proxy on: {}:{}", bind, config.getPort() );
+            final InetSocketAddress addr = new InetSocketAddress( bind, config.getPort() );
             server = worker.createStreamConnectionServer( addr, this, OptionMap.EMPTY );
 
             server.resumeAccepts();
@@ -85,15 +99,18 @@ public class HttpProxy
     @Override
     public void stop()
     {
-        try
+        if ( server != null )
         {
-            logger.info( "stopping server" );
-            server.suspendAccepts();
-            server.close();
-        }
-        catch ( final IOException e )
-        {
-            logger.error( "Failed to stop: " + e.getMessage(), e );
+            try
+            {
+                logger.info( "stopping server" );
+                server.suspendAccepts();
+                server.close();
+            }
+            catch ( final IOException e )
+            {
+                logger.error( "Failed to stop: " + e.getMessage(), e );
+            }
         }
     }
 
@@ -120,6 +137,16 @@ public class HttpProxy
                 logger.debug( "Setting writer: {}", writer );
                 sink.getWriteSetter()
                     .set( writer );
+
+                accepted.getCloseSetter()
+                        .set( new ChannelListener<StreamConnection>()
+                        {
+                            @Override
+                            public void handleEvent( final StreamConnection channel )
+                            {
+                                IOUtils.closeQuietly( channel );
+                            }
+                        } );
 
                 source.resumeReads();
             }

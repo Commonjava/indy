@@ -91,8 +91,11 @@ public class HttpResources
             closeQuietly( client );
         }
 
-        http.clearRepositoryCredentials();
-        http.closeConnection();
+        if ( http != null )
+        {
+            http.clearRepositoryCredentials();
+            http.closeConnection();
+        }
     }
 
     public static String entityToString( final HttpResponse response )
