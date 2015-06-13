@@ -27,6 +27,7 @@ import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
+import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 
 /**
  * High-level interface for retrieving, storing, etc. content which includes both produced (i.e. generated) content as well as downloaded and stored
@@ -206,6 +207,12 @@ public interface ContentManager
         throws AproxWorkflowException;
 
     Map<ContentDigest, String> digest( StoreKey key, String path, ContentDigest... types )
+        throws AproxWorkflowException;
+
+    HttpExchangeMetadata getHttpMetadata( Transfer txfr )
+        throws AproxWorkflowException;
+
+    HttpExchangeMetadata getHttpMetadata( StoreKey storeKey, String path )
         throws AproxWorkflowException;
 
 }

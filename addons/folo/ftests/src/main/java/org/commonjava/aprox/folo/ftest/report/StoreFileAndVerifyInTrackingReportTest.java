@@ -68,7 +68,7 @@ public class StoreFileAndVerifyInTrackingReportTest
         assertThat( sha256, equalTo( DigestUtils.sha256Hex( bytes ) ) );
 
         final TrackedContentDTO report = client.module( AproxFoloAdminClientModule.class )
-                                               .getTrackingReport( trackingId, hosted, STORE );
+                                               .getTrackingReport( trackingId );
         assertThat( report, notNullValue() );
 
         final Set<TrackedContentEntryDTO> uploads = report.getUploads();

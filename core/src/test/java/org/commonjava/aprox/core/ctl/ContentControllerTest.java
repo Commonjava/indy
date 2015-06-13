@@ -36,6 +36,7 @@ import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.subsys.datafile.DataFileManager;
 import org.commonjava.aprox.subsys.datafile.change.DataFileEventManager;
 import org.commonjava.aprox.subsys.template.TemplatingEngine;
+import org.commonjava.aprox.util.MimeTyper;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.SimpleLocation;
 import org.commonjava.maven.galley.model.Transfer;
@@ -64,14 +65,17 @@ public class ContentControllerTest
             new DefaultDownloadManager( storeManager, fixture.getTransfers(), fixture.getLocations() );
 
         final ContentManager contentManager =
-            new DefaultContentManager( storeManager, fileManager, Collections.<ContentGenerator> emptySet() );
+            new DefaultContentManager( storeManager, fileManager, new AproxObjectMapper( true ),
+                                       Collections.<ContentGenerator> emptySet() );
 
         final TemplatingEngine templates =
             new TemplatingEngine( new GStringTemplateEngine(), new DataFileManager( fixture.getTemp()
                                                                                            .newFolder( "aprox-home" ),
                                                                                     new DataFileEventManager() ) );
 
-        content = new ContentController( storeManager, contentManager, templates, new AproxObjectMapper( true ) );
+        content =
+            new ContentController( storeManager, contentManager, templates, new AproxObjectMapper( true ),
+                                   new MimeTyper() );
     }
 
     @Test

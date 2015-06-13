@@ -78,8 +78,8 @@ public class HttpResources
                                          final CloseableHttpClient client )
     {
         final Logger logger = LoggerFactory.getLogger( HttpResources.class );
-        logger.info( "CLEANING UP RESOURCES via: {}" + Thread.currentThread()
-                                                             .getStackTrace()[1] );
+        logger.info( "CLEANING UP RESOURCES via: {}", Thread.currentThread()
+                                                            .getStackTrace()[2] );
 
         if ( response != null && response.getEntity() != null )
         {

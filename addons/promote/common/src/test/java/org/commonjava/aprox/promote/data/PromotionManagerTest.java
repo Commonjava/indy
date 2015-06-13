@@ -34,6 +34,7 @@ import org.commonjava.aprox.core.content.DefaultDownloadManager;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.core.HostedRepository;
+import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.promote.fixture.GalleyFixture;
 import org.commonjava.aprox.promote.model.PromoteRequest;
 import org.commonjava.aprox.promote.model.PromoteResult;
@@ -73,7 +74,8 @@ public class PromotionManagerTest
                                         new AproxLocationExpander( storeManager ) );
 
         contentManager =
-            new DefaultContentManager( storeManager, downloadManager, Collections.<ContentGenerator> emptySet() );
+            new DefaultContentManager( storeManager, downloadManager, new AproxObjectMapper( true ),
+                                       Collections.<ContentGenerator> emptySet() );
 
         manager = new PromotionManager( contentManager, downloadManager, storeManager );
     }

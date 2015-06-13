@@ -46,11 +46,13 @@ import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
+import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
+import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,15 +73,20 @@ public class DefaultContentManager
     @Inject
     private DownloadManager downloadManager;
 
+    @Inject
+    private AproxObjectMapper mapper;
+
     protected DefaultContentManager()
     {
     }
 
     public DefaultContentManager( final StoreDataManager storeManager, final DownloadManager downloadManager,
+                                  final AproxObjectMapper mapper,
                                   final Set<ContentGenerator> contentProducers )
     {
         this.storeManager = storeManager;
         this.downloadManager = downloadManager;
+        this.mapper = mapper;
         this.contentGenerators = contentProducers == null ? new HashSet<ContentGenerator>() : contentProducers;
     }
 
@@ -669,6 +676,47 @@ public class DefaultContentManager
         throws AproxWorkflowException
     {
         return downloadManager.getStorageReference( stores, path, op );
+    }
+
+    @Override
+    public HttpExchangeMetadata getHttpMetadata( final Transfer txfr )
+        throws AproxWorkflowException
+    {
+        final Transfer meta = txfr.getSiblingMeta( HttpExchangeMetadata.FILE_EXTENSION );
+        return readExchangeMetadata( meta );
+    }
+
+    @Override
+    public HttpExchangeMetadata getHttpMetadata( final StoreKey key, final String path )
+        throws AproxWorkflowException
+    {
+        final Transfer meta = getTransfer( key, path + HttpExchangeMetadata.FILE_EXTENSION, TransferOperation.DOWNLOAD );
+        return readExchangeMetadata( meta );
+    }
+
+    private HttpExchangeMetadata readExchangeMetadata( final Transfer meta )
+        throws AproxWorkflowException
+    {
+        if ( meta != null && meta.exists() )
+        {
+            InputStream stream = null;
+            try
+            {
+                stream = meta.openInputStream( false );
+                return mapper.readValue( stream, HttpExchangeMetadata.class );
+            }
+            catch ( final IOException e )
+            {
+                throw new AproxWorkflowException( "HTTP exchange metadata appears to be damaged: %s. Reason: %s", e,
+                                                  meta, e.getMessage() );
+            }
+            finally
+            {
+                IOUtils.closeQuietly( stream );
+            }
+        }
+
+        return null;
     }
 
 }

@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
@@ -60,7 +59,6 @@ import org.commonjava.maven.galley.model.TypeMapping;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-@ApplicationScoped
 public class MavenMetadataGenerator
     extends AbstractMergedContentGenerator
 {

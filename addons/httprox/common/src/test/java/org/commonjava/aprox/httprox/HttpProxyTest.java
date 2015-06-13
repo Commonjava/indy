@@ -6,12 +6,14 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import groovy.text.GStringTemplateEngine;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpHost;
+import org.apache.http.HttpStatus;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
@@ -39,9 +41,9 @@ import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.subsys.datafile.DataFileManager;
 import org.commonjava.aprox.subsys.datafile.change.DataFileEventManager;
-import org.commonjava.aprox.subsys.http.util.HttpResources;
 import org.commonjava.aprox.subsys.template.TemplatingEngine;
 import org.commonjava.aprox.test.fixture.core.TestHttpServer;
+import org.commonjava.aprox.util.MimeTyper;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.galley.auth.MemoryPasswordManager;
 import org.commonjava.maven.galley.maven.parse.PomPeek;
@@ -50,14 +52,13 @@ import org.commonjava.maven.galley.testing.core.CoreFixture;
 import org.commonjava.maven.galley.transport.TransportManagerImpl;
 import org.commonjava.maven.galley.transport.htcli.HttpClientTransport;
 import org.commonjava.maven.galley.transport.htcli.HttpImpl;
+import org.commonjava.maven.galley.transport.htcli.util.HttpUtil;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class HttpProxyTest
 {
@@ -106,18 +107,18 @@ public class HttpProxyTest
 
         storeManager = new MemoryStoreDataManager( true );
 
+        final AproxObjectMapper mapper = new AproxObjectMapper( true );
+
         final DownloadManager downloadManager =
             new DefaultDownloadManager( storeManager, core.getTransfers(), core.getLocations() );
         final ContentManager contentManager =
-            new DefaultContentManager( storeManager, downloadManager, Collections.<ContentGenerator> emptySet() );
+            new DefaultContentManager( storeManager, downloadManager, mapper, Collections.<ContentGenerator> emptySet() );
 
         final TemplatingEngine templates =
             new TemplatingEngine( new GStringTemplateEngine(), new DataFileManager( temp.newFolder(),
                                                                                     new DataFileEventManager() ) );
-        final ObjectMapper mapper = new AproxObjectMapper( true );
-
         final ContentController contentController =
-            new ContentController( storeManager, contentManager, templates, mapper );
+            new ContentController( storeManager, contentManager, templates, mapper, new MimeTyper() );
 
         proxy = new HttpProxy( config, bootOpts, storeManager, contentController );
         proxy.start();
@@ -158,7 +159,72 @@ public class HttpProxyTest
         finally
         {
             IOUtils.closeQuietly( stream );
-            HttpResources.cleanupResources( get, response, client, null );
+            HttpUtil.cleanupResources( client, get, response );
+        }
+
+        final RemoteRepository remoteRepo =
+            (RemoteRepository) storeManager.getArtifactStore( new StoreKey( StoreType.remote, "httprox_127-0-0-1" ) );
+
+        assertThat( remoteRepo, notNullValue() );
+        assertThat( remoteRepo.getUrl(), equalTo( server.getBaseUri() ) );
+    }
+
+    @Test
+    public void proxy404()
+        throws Exception
+    {
+        final String testRepo = "test";
+        final PomRef pom = loadPom( "simple.pom", Collections.<String, String> emptyMap() );
+        final String url = server.formatUrl( testRepo, pom.path );
+
+        final HttpGet get = new HttpGet( url );
+        final CloseableHttpClient client = proxiedHttp();
+        CloseableHttpResponse response = null;
+
+        final InputStream stream = null;
+        try
+        {
+            response = client.execute( get, proxyContext( USER, PASS ) );
+            assertThat( response.getStatusLine()
+                                .getStatusCode(), equalTo( HttpStatus.SC_NOT_FOUND ) );
+        }
+        finally
+        {
+            IOUtils.closeQuietly( stream );
+            HttpUtil.cleanupResources( client, get, response );
+        }
+
+        final RemoteRepository remoteRepo =
+            (RemoteRepository) storeManager.getArtifactStore( new StoreKey( StoreType.remote, "httprox_127-0-0-1" ) );
+
+        assertThat( remoteRepo, notNullValue() );
+        assertThat( remoteRepo.getUrl(), equalTo( server.getBaseUri() ) );
+    }
+
+    @Test
+    public void proxy500As502()
+        throws Exception
+    {
+        final String testRepo = "test";
+        final PomRef pom = loadPom( "simple.pom", Collections.<String, String> emptyMap() );
+        final String url = server.formatUrl( testRepo, pom.path );
+        server.registerException( new File( "/" + testRepo, pom.path ).getPath(), "Expected exception", 500 );
+
+        final HttpGet get = new HttpGet( url );
+        final CloseableHttpClient client = proxiedHttp();
+        CloseableHttpResponse response = null;
+
+        final InputStream stream = null;
+        try
+        {
+            response = client.execute( get, proxyContext( USER, PASS ) );
+            assertThat( response.getStatusLine()
+                                .getStatusCode(), equalTo( HttpStatus.SC_BAD_GATEWAY ) );
+        }
+        finally
+        {
+            IOUtils.closeQuietly( stream );
+            HttpUtil.cleanupResources( client, get, response );
         }
 
         final RemoteRepository remoteRepo =

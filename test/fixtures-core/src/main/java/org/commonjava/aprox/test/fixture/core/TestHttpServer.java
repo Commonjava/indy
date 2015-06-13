@@ -191,17 +191,31 @@ public class TestHttpServer
 
         public void registerException( final String method, final String path, final int code, final String error )
         {
-            final String key = method.toUpperCase() + " " + path;
+            final String realPath = getPath( path );
+            final String key = method.toUpperCase() + " " + realPath;
             logger.info( "Registering error: {}, code: {}, body:\n{}", key, code, error );
-            this.errors.put( key, new ContentResponse( method, path, code, error ) );
+            this.errors.put( key, new ContentResponse( method, realPath, code, error ) );
+        }
+
+        private String getPath( final String path )
+        {
+            String realPath = path;
+            try
+            {
+                final URL u = new URL( path );
+                realPath = u.getPath();
+            }
+            catch ( final MalformedURLException e )
+            {
+            }
+
+            return realPath;
         }
 
         public void expect( final String method, final String testUrl, final int responseCode, final String body )
             throws Exception
         {
-            final URL url = new URL( testUrl );
-            final String path = url.getPath();
-
+            final String path = getPath( testUrl );
             final String key = method.toUpperCase() + " " + path;
             logger.info( "Registering expectation: {}, code: {}, body:\n{}", key, responseCode, body );
             expectations.put( key, new ContentResponse( method, path, responseCode, body ) );
@@ -211,8 +225,7 @@ public class TestHttpServer
                             final InputStream bodyStream )
             throws Exception
         {
-            final URL url = new URL( testUrl );
-            final String path = url.getPath();
+            final String path = getPath( testUrl );
 
             final String key = method.toUpperCase() + " " + path;
             logger.info( "Registering expectation: {}, code: {}, body stream:\n{}", key, responseCode, bodyStream );
@@ -257,6 +270,7 @@ public class TestHttpServer
                 accessesByPath.put( key, i + 1 );
             }
 
+            logger.info( "Looking for error: '{}' in:\n{}", key, errors );
             if ( errors.containsKey( key ) )
             {
                 final ContentResponse error = errors.get( key );

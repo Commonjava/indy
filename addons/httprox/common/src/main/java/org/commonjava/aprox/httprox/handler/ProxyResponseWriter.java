@@ -13,6 +13,7 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -30,8 +31,10 @@ import org.commonjava.aprox.model.util.HttpUtils;
 import org.commonjava.aprox.util.ApplicationHeader;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.UrlInfo;
+import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xnio.ChannelListener;
@@ -166,7 +169,7 @@ public final class ProxyResponseWriter
 
     private void transfer( final ConduitStreamSinkChannel sinkChannel, final RemoteRepository repo, final String path,
                            final boolean writeBody, final UserPass proxyUserPass )
-        throws AproxWorkflowException, IOException
+        throws IOException, AproxWorkflowException
     {
         if ( transferred )
         {
@@ -185,9 +188,23 @@ public final class ProxyResponseWriter
             eventMetadata.set( FoloConstants.TRACKING_KEY, new TrackingKey( proxyUserPass.getUser() ) );
         }
 
-        final Transfer txfr = contentController.get( repo.getKey(), path, eventMetadata );
+        Transfer txfr = null;
+        try
+        {
+            txfr = contentController.get( repo.getKey(), path, eventMetadata );
+        }
+        catch ( final AproxWorkflowException e )
+        {
+            // block TransferException to allow handling below.
+            if ( !( e.getCause() instanceof TransferException ) )
+            {
+                throw e;
+            }
+        }
+
         if ( txfr != null && txfr.exists() )
         {
+            logger.debug( "Valid transfer found." );
             final ReadableByteChannel channel = null;
             InputStream stream = null;
             try
@@ -221,7 +238,44 @@ public final class ProxyResponseWriter
         }
         else
         {
-            writeStatus( sinkChannel, ApplicationStatus.NOT_FOUND );
+            logger.debug( "No transfer found." );
+            final HttpExchangeMetadata metadata = contentController.getHttpMetadata( repo.getKey(), path );
+            if ( metadata == null )
+            {
+                logger.debug( "No transfer metadata." );
+                writeStatus( sinkChannel, ApplicationStatus.NOT_FOUND );
+            }
+            else
+            {
+                logger.debug( "Writing metadata from http exchange with upstream." );
+                if ( metadata.getResponseStatusCode() == 500 )
+                {
+                    logger.debug( "Translating 500 error upstream into 502" );
+                    writeStatus( sinkChannel, 502, "Bad Gateway" );
+                }
+                else
+                {
+                    logger.debug( "Passing through upstream status: " + metadata.getResponseStatusCode() );
+                    writeStatus( sinkChannel, metadata.getResponseStatusCode(), metadata.getResponseStatusMessage() );
+                }
+
+                writeHeader( sinkChannel, ApplicationHeader.content_type, contentController.getContentType( path ) );
+                for ( final Map.Entry<String, List<String>> headerSet : metadata.getResponseHeaders()
+                                                                                .entrySet() )
+                {
+                    final String key = headerSet.getKey();
+                    if ( ApplicationHeader.content_type.upperKey()
+                                                       .equals( key ) )
+                    {
+                        continue;
+                    }
+
+                    for ( final String value : headerSet.getValue() )
+                    {
+                        writeHeader( sinkChannel, headerSet.getKey(), value );
+                    }
+                }
+            }
         }
     }
 
@@ -280,10 +334,26 @@ public final class ProxyResponseWriter
         sinkChannel.write( b );
     }
 
+    private void writeHeader( final ConduitStreamSinkChannel sinkChannel, final String header, final String value )
+        throws IOException
+    {
+        final ByteBuffer b = ByteBuffer.wrap( String.format( "%s: %s\r\n", header, value )
+                                                    .getBytes() );
+        sinkChannel.write( b );
+    }
+
     private void writeStatus( final ConduitStreamSinkChannel sinkChannel, final ApplicationStatus status )
         throws IOException
     {
         final ByteBuffer b = ByteBuffer.wrap( String.format( "HTTP/1.1 %d %s\r\n", status.code(), status.message() )
+                                                    .getBytes() );
+        sinkChannel.write( b );
+    }
+
+    private void writeStatus( final ConduitStreamSinkChannel sinkChannel, final int code, final String message )
+        throws IOException
+    {
+        final ByteBuffer b = ByteBuffer.wrap( String.format( "HTTP/1.1 %d %s\r\n", code, message )
                                                     .getBytes() );
         sinkChannel.write( b );
     }

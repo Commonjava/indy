@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import javax.activation.MimetypesFileTypeMap;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -51,11 +50,13 @@ import org.commonjava.aprox.subsys.template.AproxGroovyException;
 import org.commonjava.aprox.subsys.template.TemplatingEngine;
 import org.commonjava.aprox.util.ApplicationContent;
 import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.aprox.util.MimeTyper;
 import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
+import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,17 +89,21 @@ public class ContentController
     @Inject
     private ObjectMapper mapper;
 
+    @Inject
+    private MimeTyper mimeTyper;
+
     protected ContentController()
     {
     }
 
     public ContentController( final StoreDataManager storeManager, final ContentManager contentManager,
-                              final TemplatingEngine templates, final ObjectMapper mapper )
+                              final TemplatingEngine templates, final ObjectMapper mapper, final MimeTyper mimeTyper )
     {
         this.storeManager = storeManager;
         this.contentManager = contentManager;
         this.templates = templates;
         this.mapper = mapper;
+        this.mimeTyper = mimeTyper;
     }
 
     public ApplicationStatus delete( final StoreType type, final String name, final String path )
@@ -129,18 +134,6 @@ public class ContentController
         return deleted ? ApplicationStatus.NO_CONTENT : ApplicationStatus.NOT_FOUND;
     }
 
-    public Transfer get( final StoreType type, final String name, final String path )
-        throws AproxWorkflowException
-    {
-        return get( new StoreKey( type, name ), path, new EventMetadata() );
-    }
-
-    public Transfer get( final StoreType type, final String name, final String path, final EventMetadata eventMetadata )
-        throws AproxWorkflowException
-    {
-        return get( new StoreKey( type, name ), path, eventMetadata );
-    }
-
     public Transfer get( final StoreKey key, final String path )
         throws AproxWorkflowException
     {
@@ -153,18 +146,12 @@ public class ContentController
         final ArtifactStore store = getStore( key );
         final Transfer item = contentManager.retrieve( store, path, eventMetadata );
 
-        if ( item == null )
-        {
-            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(), "{}",
-                                              ( path + ( item == null ? " was not found." : "is a directory" ) ) );
-        }
-
         return item;
     }
 
     public String getContentType( final String path )
     {
-        return new MimetypesFileTypeMap().getContentType( path );
+        return mimeTyper.getContentType( path );
     }
 
     public Transfer store( final StoreType type, final String name, final String path, final InputStream stream )
@@ -469,6 +456,18 @@ public class ContentController
         throws AproxWorkflowException
     {
         return contentManager.getTransfer( storeKey, path, op );
+    }
+
+    public HttpExchangeMetadata getHttpMetadata( final StoreKey storeKey, final String path )
+        throws AproxWorkflowException
+    {
+        return contentManager.getHttpMetadata( storeKey, path );
+    }
+
+    public HttpExchangeMetadata getHttpMetadata( final Transfer txfr )
+        throws AproxWorkflowException
+    {
+        return contentManager.getHttpMetadata( txfr );
     }
 
 }

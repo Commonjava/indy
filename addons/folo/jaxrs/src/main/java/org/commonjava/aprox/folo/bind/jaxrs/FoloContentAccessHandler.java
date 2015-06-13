@@ -17,6 +17,8 @@ package org.commonjava.aprox.folo.bind.jaxrs;
 
 import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatOkResponseWithEntity;
 import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatResponse;
+import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatResponseFromMetadata;
+import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.setInfoHeaders;
 import static org.commonjava.aprox.core.ctl.ContentController.LISTING_HTML_FILE;
 
 import java.io.IOException;
@@ -33,6 +35,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.AproxWorkflowException;
@@ -54,6 +58,7 @@ import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -153,7 +158,7 @@ public class FoloContentAccessHandler
 
         final AcceptInfo acceptInfo = jaxRsRequestHelper.findAccept( request, ApplicationContent.text_html );
 
-        Response response;
+        Response response = null;
         try
         {
             final String baseUri = uriInfo.getBaseUriBuilder()
@@ -180,15 +185,30 @@ public class FoloContentAccessHandler
                 final Transfer item =
                     contentController.get( sk, path, new EventMetadata().set( FoloConstants.TRACKING_KEY, tk ) );
 
-                final String contentType = contentController.getContentType( path );
+                if ( item == null )
+                {
+                    if ( StoreType.remote == st )
+                    {
+                        final HttpExchangeMetadata metadata = contentController.getHttpMetadata( sk, path );
+                        if ( metadata != null )
+                        {
+                            response = formatResponseFromMetadata( metadata );
+                        }
+                    }
 
-                response =
-                    Response.ok()
-                            .header( ApplicationHeader.content_type.key(), contentType )
-                            .header( ApplicationHeader.content_length.key(), Long.toString( item.length() ) )
-                            .header( ApplicationHeader.last_modified.key(),
-                                     HttpUtils.formatDateHeader( item.lastModified() ) )
-                            .build();
+                    if ( response == null )
+                    {
+                        response = Response.status( Status.NOT_FOUND )
+                                           .build();
+                    }
+                }
+                else
+                {
+                    final ResponseBuilder builder = Response.ok();
+                    setInfoHeaders( builder, item, sk, path, false, contentController.getContentType( path ),
+                                    contentController.getHttpMetadata( sk, path ) );
+                    response = builder.build();
+                }
             }
         }
         catch ( final AproxWorkflowException e )
@@ -216,7 +236,7 @@ public class FoloContentAccessHandler
         logger.info( "User asked for: {}\nStandard accept header for that is: {}", acceptInfo.getRawAccept(),
                      acceptInfo.getBaseAccept() );
 
-        Response response;
+        Response response = null;
         try
         {
             final String baseUri = uriInfo.getBaseUriBuilder()
@@ -242,7 +262,24 @@ public class FoloContentAccessHandler
             {
                 final Transfer item =
                     contentController.get( sk, path, new EventMetadata().set( FoloConstants.TRACKING_KEY, tk ) );
-                if ( item.isDirectory()
+                if ( item == null )
+                {
+                    if ( StoreType.remote == st )
+                    {
+                        final HttpExchangeMetadata metadata = contentController.getHttpMetadata( sk, path );
+                        if ( metadata != null )
+                        {
+                            response = formatResponseFromMetadata( metadata );
+                        }
+                    }
+
+                    if ( response == null )
+                    {
+                        response = Response.status( Status.NOT_FOUND )
+                                           .build();
+                    }
+                }
+                else if ( item.isDirectory()
                     || ( path.lastIndexOf( '.' ) < path.lastIndexOf( '/' ) && contentController.isHtmlContent( item ) ) )
                 {
                     item.delete( false );

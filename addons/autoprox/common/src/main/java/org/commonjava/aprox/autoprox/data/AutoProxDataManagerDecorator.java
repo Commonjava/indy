@@ -26,10 +26,11 @@ import javax.decorator.Delegate;
 import javax.enterprise.inject.Any;
 import javax.inject.Inject;
 
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpHead;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
@@ -194,14 +195,15 @@ public abstract class AutoProxDataManagerDecorator
 
                 logger.debug( "\n\n\n\n\n[AutoProx] Checking URL: {}", url );
                 final HttpHead head = new HttpHead( url );
-
-                http.bindRepositoryCredentialsTo( validationRepo, head );
+                CloseableHttpClient client = null;
+                CloseableHttpResponse response = null;
 
                 boolean result = false;
                 try
                 {
-                    final HttpResponse response = http.getClient()
-                                                      .execute( head );
+                    client = http.createClient( validationRepo );
+                    response = client.execute( head, http.createContext( validationRepo ) );
+
                     final StatusLine statusLine = response.getStatusLine();
                     final int status = statusLine.getStatusCode();
                     logger.debug( "[AutoProx] HTTP Status: {}", statusLine );
@@ -219,10 +221,7 @@ public abstract class AutoProxDataManagerDecorator
                 }
                 finally
                 {
-                    head.reset();
-
-                    http.clearRepositoryCredentials();
-                    http.closeConnection();
+                    http.cleanup( client, head, response );
                 }
 
                 return result;
