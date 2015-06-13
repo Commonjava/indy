@@ -28,6 +28,7 @@ import org.commonjava.aprox.model.core.HostedRepository;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.subsys.datafile.DataFile;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +40,8 @@ public class LegacyDataMigrationAction
     private static final String LEGACY_HOSTED_REPO_PREFIX = "deploy_point";
 
     private static final String LEGACY_REMOTE_REPO_PREFIX = "repository";
+
+    public static final String LEGACY_MIGRATION = "legacy-migration";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -109,13 +112,15 @@ public class LegacyDataMigrationAction
             final List<HostedRepository> hosted = data.getAllHostedRepositories();
             for ( final HostedRepository repo : hosted )
             {
-                data.storeArtifactStore( repo, summary, false, true );
+                data.storeArtifactStore( repo, summary, false, true,
+                                         new EventMetadata().set( StoreDataManager.EVENT_ORIGIN, LEGACY_MIGRATION ) );
             }
 
             final List<RemoteRepository> remotes = data.getAllRemoteRepositories();
             for ( final RemoteRepository repo : remotes )
             {
-                data.storeArtifactStore( repo, summary, false, true );
+                data.storeArtifactStore( repo, summary, false, true,
+                                         new EventMetadata().set( StoreDataManager.EVENT_ORIGIN, LEGACY_MIGRATION ) );
             }
 
             data.reload();

@@ -24,7 +24,11 @@ public enum ApplicationHeader
     content_length( "Content-Length" ),
     last_modified( "Last-Modified" ),
     deprecated( "Deprecated-Use-Alt" ),
-    accept( "Accept" );
+    accept( "Accept" ),
+    allow( "Allow" ),
+    authorization( "Authorization" ),
+    proxy_authenticate( "Proxy-Authenticate" ),
+    proxy_authorization( "Proxy-Authorization" );
 
     private final String key;
 
@@ -36,6 +40,11 @@ public enum ApplicationHeader
     public String key()
     {
         return key;
+    }
+
+    public String upperKey()
+    {
+        return key.toUpperCase();
     }
 
 }

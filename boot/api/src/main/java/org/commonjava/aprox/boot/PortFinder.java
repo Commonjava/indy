@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.aprox.bind.jaxrs.testutil;
+package org.commonjava.aprox.boot;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -23,17 +23,15 @@ import org.apache.commons.io.IOUtils;
 
 public final class PortFinder
 {
-    private static final int TRIES = 4;
-
     private static final Random RANDOM = new Random();
 
     private PortFinder()
     {
     }
 
-    public static int findOpenPort()
+    public static int findOpenPort( final int maxTries )
     {
-        for ( int i = 0; i < TRIES; i++ )
+        for ( int i = 0; i < maxTries; i++ )
         {
             final int port = 1024 + ( Math.abs( RANDOM.nextInt() ) % 30000 );
             ServerSocket sock = null;
@@ -51,7 +49,7 @@ public final class PortFinder
             }
         }
 
-        throw new IllegalStateException( "Cannot find open port after " + TRIES + " attempts." );
+        throw new IllegalStateException( "Cannot find open port after " + maxTries + " attempts." );
     }
 
 }

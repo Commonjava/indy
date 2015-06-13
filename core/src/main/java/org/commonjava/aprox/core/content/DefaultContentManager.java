@@ -46,10 +46,13 @@ import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
+import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
+import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,15 +73,20 @@ public class DefaultContentManager
     @Inject
     private DownloadManager downloadManager;
 
+    @Inject
+    private AproxObjectMapper mapper;
+
     protected DefaultContentManager()
     {
     }
 
     public DefaultContentManager( final StoreDataManager storeManager, final DownloadManager downloadManager,
+                                  final AproxObjectMapper mapper,
                                   final Set<ContentGenerator> contentProducers )
     {
         this.storeManager = storeManager;
         this.downloadManager = downloadManager;
+        this.mapper = mapper;
         this.contentGenerators = contentProducers == null ? new HashSet<ContentGenerator>() : contentProducers;
     }
 
@@ -99,10 +107,18 @@ public class DefaultContentManager
     public Transfer retrieveFirst( final List<? extends ArtifactStore> stores, final String path )
         throws AproxWorkflowException
     {
+        return retrieveFirst( stores, path, new EventMetadata() );
+    }
+
+    @Override
+    public Transfer retrieveFirst( final List<? extends ArtifactStore> stores, final String path,
+                                   final EventMetadata eventMetadata )
+        throws AproxWorkflowException
+    {
         Transfer txfr = null;
         for ( final ArtifactStore store : stores )
         {
-            txfr = doRetrieve( store, path );
+            txfr = doRetrieve( store, path, eventMetadata );
             if ( txfr != null )
             {
                 break;
@@ -114,6 +130,14 @@ public class DefaultContentManager
 
     @Override
     public List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path )
+        throws AproxWorkflowException
+    {
+        return retrieveAll( stores, path, new EventMetadata() );
+    }
+
+    @Override
+    public List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path,
+                                       final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
         final List<Transfer> txfrs = new ArrayList<Transfer>();
@@ -136,7 +160,8 @@ public class DefaultContentManager
                 final List<Transfer> storeTransfers = new ArrayList<Transfer>();
                 for ( final ContentGenerator generator : contentGenerators )
                 {
-                    final Transfer txfr = generator.generateGroupFileContent( (Group) store, members, path );
+                    final Transfer txfr =
+                        generator.generateGroupFileContent( (Group) store, members, path, eventMetadata );
                     if ( txfr != null )
                     {
                         storeTransfers.add( txfr );
@@ -150,7 +175,7 @@ public class DefaultContentManager
                     for ( final ArtifactStore member : members )
                     {
                         // NOTE: This is only safe to call because we're concrete ordered stores, so anything passing through here is concrete.
-                        final Transfer txfr = doRetrieve( member, path );
+                        final Transfer txfr = doRetrieve( member, path, eventMetadata );
                         if ( txfr != null )
                         {
                             storeTransfers.add( txfr );
@@ -163,7 +188,7 @@ public class DefaultContentManager
             else
             {
                 // NOTE: This is only safe to call because we're doing the group check up front, so anything passing through here is concrete.
-                final Transfer txfr = doRetrieve( store, path );
+                final Transfer txfr = doRetrieve( store, path, eventMetadata );
                 if ( txfr != null )
                 {
                     txfrs.add( txfr );
@@ -176,6 +201,13 @@ public class DefaultContentManager
 
     @Override
     public Transfer retrieve( final ArtifactStore store, final String path )
+        throws AproxWorkflowException
+    {
+        return retrieve( store, path, new EventMetadata() );
+    }
+
+    @Override
+    public Transfer retrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
         Transfer item;
@@ -196,7 +228,7 @@ public class DefaultContentManager
             item = null;
             for ( final ContentGenerator generator : contentGenerators )
             {
-                item = generator.generateGroupFileContent( (Group) store, members, path );
+                item = generator.generateGroupFileContent( (Group) store, members, path, eventMetadata );
                 if ( item != null )
                 {
                     break;
@@ -207,7 +239,7 @@ public class DefaultContentManager
             {
                 for ( final ArtifactStore member : members )
                 {
-                    item = doRetrieve( member, path );
+                    item = doRetrieve( member, path, eventMetadata );
                     if ( item != null )
                     {
                         break;
@@ -217,23 +249,23 @@ public class DefaultContentManager
         }
         else
         {
-            item = doRetrieve( store, path );
+            item = doRetrieve( store, path, eventMetadata );
         }
 
         return item;
     }
 
-    private Transfer doRetrieve( final ArtifactStore store, final String path )
+    private Transfer doRetrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
         logger.info( "Attempting to retrieve: {} from: {}", path, store.getKey() );
-        Transfer item = downloadManager.retrieve( store, path );
+        Transfer item = downloadManager.retrieve( store, path, eventMetadata );
 
         if ( item == null )
         {
             for ( final ContentGenerator generator : contentGenerators )
             {
-                item = generator.generateFileContent( store, path );
+                item = generator.generateFileContent( store, path, eventMetadata );
                 if ( item != null )
                 {
                     break;
@@ -249,6 +281,14 @@ public class DefaultContentManager
                            final TransferOperation op )
         throws AproxWorkflowException
     {
+        return store( store, path, stream, op, new EventMetadata() );
+    }
+
+    @Override
+    public Transfer store( final ArtifactStore store , final String path , final InputStream stream ,
+                           final TransferOperation op , final EventMetadata eventMetadata  )
+        throws AproxWorkflowException
+    {
         if ( StoreType.group == store.getKey()
                                      .getType() )
         {
@@ -256,7 +296,7 @@ public class DefaultContentManager
             {
                 final List<ArtifactStore> allMembers = storeManager.getOrderedConcreteStoresInGroup( store.getName() );
 
-                final Transfer txfr = store( allMembers, path, stream, op );
+                final Transfer txfr = store( allMembers, path, stream, op, eventMetadata );
                 logger.info( "Stored: {} for group: {} in: {}", path, store.getKey(), txfr );
                 return txfr;
             }
@@ -267,7 +307,7 @@ public class DefaultContentManager
             }
         }
 
-        final Transfer txfr = downloadManager.store( store, path, stream, op );
+        final Transfer txfr = downloadManager.store( store, path, stream, op, eventMetadata );
         logger.info( "Stored: {} for: {} in: {}", path, store.getKey(), txfr );
         if ( txfr != null )
         {
@@ -285,14 +325,14 @@ public class DefaultContentManager
 
             for ( final ContentGenerator generator : contentGenerators )
             {
-                generator.handleContentStorage( transferStore, path, txfr );
+                generator.handleContentStorage( transferStore, path, txfr, eventMetadata );
             }
 
             if ( !store.equals( transferStore ) )
             {
                 for ( final ContentGenerator generator : contentGenerators )
                 {
-                    generator.handleContentStorage( transferStore, path, txfr );
+                    generator.handleContentStorage( transferStore, path, txfr, eventMetadata );
                 }
             }
         }
@@ -305,7 +345,15 @@ public class DefaultContentManager
                            final TransferOperation op )
         throws AproxWorkflowException
     {
-        final Transfer txfr = downloadManager.store( stores, path, stream, op );
+        return store( stores, path, stream, op, new EventMetadata() );
+    }
+
+    @Override
+    public Transfer store( final List<? extends ArtifactStore> stores , final String path , final InputStream stream ,
+                           final TransferOperation op , final EventMetadata eventMetadata  )
+        throws AproxWorkflowException
+    {
+        final Transfer txfr = downloadManager.store( stores, path, stream, op, new EventMetadata() );
         if ( txfr != null )
         {
             final KeyedLocation kl = (KeyedLocation) txfr.getLocation();
@@ -323,7 +371,7 @@ public class DefaultContentManager
             for ( final ContentGenerator generator : contentGenerators )
             {
                 logger.info( "{} Handling content storage of: {} in: {}", generator, path, transferStore.getKey() );
-                generator.handleContentStorage( transferStore, path, txfr );
+                generator.handleContentStorage( transferStore, path, txfr, eventMetadata );
             }
         }
 
@@ -332,6 +380,13 @@ public class DefaultContentManager
 
     @Override
     public boolean delete( final ArtifactStore store, final String path )
+        throws AproxWorkflowException
+    {
+        return delete( store, path, new EventMetadata() );
+    }
+
+    @Override
+    public boolean delete( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
         boolean result = false;
@@ -351,12 +406,12 @@ public class DefaultContentManager
 
             for ( final ArtifactStore member : members )
             {
-                if ( downloadManager.delete( member, path ) )
+                if ( downloadManager.delete( member, path, eventMetadata ) )
                 {
                     result = true;
                     for ( final ContentGenerator generator : contentGenerators )
                     {
-                        generator.handleContentDeletion( member, path );
+                        generator.handleContentDeletion( member, path, eventMetadata );
                     }
                 }
             }
@@ -365,18 +420,18 @@ public class DefaultContentManager
             {
                 for ( final ContentGenerator generator : contentGenerators )
                 {
-                    generator.handleContentDeletion( store, path );
+                    generator.handleContentDeletion( store, path, eventMetadata );
                 }
             }
         }
         else
         {
-            if ( downloadManager.delete( store, path ) )
+            if ( downloadManager.delete( store, path, eventMetadata ) )
             {
                 result = true;
                 for ( final ContentGenerator generator : contentGenerators )
                 {
-                    generator.handleContentDeletion( store, path );
+                    generator.handleContentDeletion( store, path, eventMetadata );
                 }
             }
         }
@@ -388,10 +443,17 @@ public class DefaultContentManager
     public boolean deleteAll( final List<? extends ArtifactStore> stores, final String path )
         throws AproxWorkflowException
     {
+        return deleteAll( stores, path, new EventMetadata() );
+    }
+
+    @Override
+    public boolean deleteAll( final List<? extends ArtifactStore> stores , final String path , final EventMetadata eventMetadata  )
+        throws AproxWorkflowException
+    {
         boolean result = false;
         for ( final ArtifactStore store : stores )
         {
-            result = delete( store, path ) || result;
+            result = delete( store, path, eventMetadata ) || result;
         }
 
         return result;
@@ -401,18 +463,39 @@ public class DefaultContentManager
     public void rescan( final ArtifactStore store )
         throws AproxWorkflowException
     {
-        downloadManager.rescan( store );
+        rescan( store, new EventMetadata() );
+    }
+
+    @Override
+    public void rescan( final ArtifactStore store , final EventMetadata eventMetadata  )
+        throws AproxWorkflowException
+    {
+        downloadManager.rescan( store, eventMetadata );
     }
 
     @Override
     public void rescanAll( final List<? extends ArtifactStore> stores )
         throws AproxWorkflowException
     {
-        downloadManager.rescanAll( stores );
+        rescanAll( stores, new EventMetadata() );
+    }
+
+    @Override
+    public void rescanAll( final List<? extends ArtifactStore> stores , final EventMetadata eventMetadata  )
+        throws AproxWorkflowException
+    {
+        downloadManager.rescanAll( stores, eventMetadata );
     }
 
     @Override
     public List<StoreResource> list( final ArtifactStore store, final String path )
+        throws AproxWorkflowException
+    {
+        return list( store, path, new EventMetadata() );
+    }
+
+    @Override
+    public List<StoreResource> list( final ArtifactStore store , final String path , final EventMetadata eventMetadata  )
         throws AproxWorkflowException
     {
         List<StoreResource> listed;
@@ -434,7 +517,7 @@ public class DefaultContentManager
             for ( final ContentGenerator generator : contentGenerators )
             {
                 final List<StoreResource> generated =
-                    generator.generateGroupDirectoryContent( (Group) store, members, path );
+                    generator.generateGroupDirectoryContent( (Group) store, members, path, eventMetadata );
                 if ( generated != null )
                 {
                     listed.addAll( generated );
@@ -443,7 +526,7 @@ public class DefaultContentManager
 
             for ( final ArtifactStore member : members )
             {
-                final List<StoreResource> storeListing = list( member, path );
+                final List<StoreResource> storeListing = list( member, path, eventMetadata );
                 if ( storeListing != null )
                 {
                     listed.addAll( storeListing );
@@ -456,7 +539,8 @@ public class DefaultContentManager
 
             for ( final ContentGenerator producer : contentGenerators )
             {
-                final List<StoreResource> produced = producer.generateDirectoryContent( store, path, listed );
+                final List<StoreResource> produced =
+                    producer.generateDirectoryContent( store, path, listed, eventMetadata );
                 if ( produced != null )
                 {
                     listed.addAll( produced );
@@ -474,7 +558,7 @@ public class DefaultContentManager
         final List<StoreResource> listed = new ArrayList<StoreResource>();
         for ( final ArtifactStore store : stores )
         {
-            final List<StoreResource> storeListing = list( store, path );
+            final List<StoreResource> storeListing = list( store, path, new EventMetadata() );
             if ( storeListing != null )
             {
                 listed.addAll( storeListing );
@@ -592,6 +676,47 @@ public class DefaultContentManager
         throws AproxWorkflowException
     {
         return downloadManager.getStorageReference( stores, path, op );
+    }
+
+    @Override
+    public HttpExchangeMetadata getHttpMetadata( final Transfer txfr )
+        throws AproxWorkflowException
+    {
+        final Transfer meta = txfr.getSiblingMeta( HttpExchangeMetadata.FILE_EXTENSION );
+        return readExchangeMetadata( meta );
+    }
+
+    @Override
+    public HttpExchangeMetadata getHttpMetadata( final StoreKey key, final String path )
+        throws AproxWorkflowException
+    {
+        final Transfer meta = getTransfer( key, path + HttpExchangeMetadata.FILE_EXTENSION, TransferOperation.DOWNLOAD );
+        return readExchangeMetadata( meta );
+    }
+
+    private HttpExchangeMetadata readExchangeMetadata( final Transfer meta )
+        throws AproxWorkflowException
+    {
+        if ( meta != null && meta.exists() )
+        {
+            InputStream stream = null;
+            try
+            {
+                stream = meta.openInputStream( false );
+                return mapper.readValue( stream, HttpExchangeMetadata.class );
+            }
+            catch ( final IOException e )
+            {
+                throw new AproxWorkflowException( "HTTP exchange metadata appears to be damaged: %s. Reason: %s", e,
+                                                  meta, e.getMessage() );
+            }
+            finally
+            {
+                IOUtils.closeQuietly( stream );
+            }
+        }
+
+        return null;
     }
 
 }

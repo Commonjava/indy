@@ -31,6 +31,7 @@ import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -63,19 +64,20 @@ public class ImpliedRepoMaintainerTest
         throws Exception
     {
         final Group g = new Group( "test" );
-        storeDataManager.storeArtifactStore( g, summary );
+        storeDataManager.storeArtifactStore( g, summary, new EventMetadata() );
 
         final RemoteRepository repo1 = new RemoteRepository( "one", "http://www.foo.com/repo" );
-        storeDataManager.storeArtifactStore( repo1, summary );
+        storeDataManager.storeArtifactStore( repo1, summary, new EventMetadata() );
 
         final RemoteRepository repo2 = new RemoteRepository( "one", "http://www.foo.com/repo" );
-        storeDataManager.storeArtifactStore( repo2, summary );
+        storeDataManager.storeArtifactStore( repo2, summary, new EventMetadata() );
 
         metadataManager.addImpliedMetadata( repo1, Arrays.<ArtifactStore> asList( repo2 ) );
 
         g.addConstituent( repo1 );
 
-        final ArtifactStorePreUpdateEvent event = new ArtifactStorePreUpdateEvent( ArtifactStoreUpdateType.UPDATE, g );
+        final ArtifactStorePreUpdateEvent event =
+            new ArtifactStorePreUpdateEvent( ArtifactStoreUpdateType.UPDATE, new EventMetadata(), g );
         maintainer.updateImpliedStores( event );
 
         assertThat( g.getConstituents()
@@ -87,13 +89,13 @@ public class ImpliedRepoMaintainerTest
         throws Exception
     {
         final Group g = new Group( "test" );
-        storeDataManager.storeArtifactStore( g, summary );
+        storeDataManager.storeArtifactStore( g, summary, new EventMetadata() );
 
         final RemoteRepository repo1 = new RemoteRepository( "one", "http://www.foo.com/repo" );
-        storeDataManager.storeArtifactStore( repo1, summary );
+        storeDataManager.storeArtifactStore( repo1, summary, new EventMetadata() );
 
         final RemoteRepository repo2 = new RemoteRepository( "one", "http://www.foo.com/repo" );
-        storeDataManager.storeArtifactStore( repo2, summary );
+        storeDataManager.storeArtifactStore( repo2, summary, new EventMetadata() );
 
         metadataManager.addImpliedMetadata( repo1, Arrays.<ArtifactStore> asList( repo2 ) );
 
@@ -101,7 +103,8 @@ public class ImpliedRepoMaintainerTest
         // event observers would see.
         g.addConstituent( repo2 );
 
-        final ArtifactStorePreUpdateEvent event = new ArtifactStorePreUpdateEvent( ArtifactStoreUpdateType.UPDATE, g );
+        final ArtifactStorePreUpdateEvent event =
+            new ArtifactStorePreUpdateEvent( ArtifactStoreUpdateType.UPDATE, new EventMetadata(), g );
         maintainer.updateImpliedStores( event );
 
         assertThat( g.getConstituents()

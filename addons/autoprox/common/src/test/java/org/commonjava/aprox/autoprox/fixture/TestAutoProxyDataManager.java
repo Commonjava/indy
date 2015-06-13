@@ -32,6 +32,7 @@ import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
+import org.commonjava.maven.galley.event.EventMetadata;
 
 public class TestAutoProxyDataManager
     extends AutoProxDataManagerDecorator
@@ -127,14 +128,28 @@ public class TestAutoProxyDataManager
     public boolean storeArtifactStore( final ArtifactStore key, final ChangeSummary summary )
         throws AproxDataException
     {
-        return delegate.storeArtifactStore( key, summary );
+        return storeArtifactStore( key, summary, new EventMetadata() );
+    }
+
+    @Override
+    public boolean storeArtifactStore( final ArtifactStore key , final ChangeSummary summary , final EventMetadata eventMetadata  )
+        throws AproxDataException
+    {
+        return delegate.storeArtifactStore( key, summary, new EventMetadata() );
     }
 
     @Override
     public boolean storeArtifactStore( final ArtifactStore key, final ChangeSummary summary, final boolean skipIfExists )
         throws AproxDataException
     {
-        return delegate.storeArtifactStore( key, summary, skipIfExists );
+        return storeArtifactStore( key, summary, skipIfExists, new EventMetadata() );
+    }
+
+    @Override
+    public boolean storeArtifactStore( final ArtifactStore key , final ChangeSummary summary , final boolean skipIfExists , final EventMetadata eventMetadata  )
+        throws AproxDataException
+    {
+        return delegate.storeArtifactStore( key, summary, skipIfExists, new EventMetadata() );
     }
 
     @Override
@@ -142,56 +157,29 @@ public class TestAutoProxyDataManager
                                        final boolean skipIfExists, final boolean fireEvents )
         throws AproxDataException
     {
-        return delegate.storeArtifactStore( key, summary, skipIfExists, fireEvents );
+        return storeArtifactStore( key, summary, skipIfExists, fireEvents, new EventMetadata() );
     }
 
     @Override
-    public void deleteHostedRepository( final HostedRepository deploy, final ChangeSummary summary )
+    public boolean storeArtifactStore( final ArtifactStore key , final ChangeSummary summary ,
+                                       final boolean skipIfExists , final boolean fireEvents , final EventMetadata eventMetadata  )
         throws AproxDataException
     {
-        delegate.deleteHostedRepository( deploy, summary );
-    }
-
-    @Override
-    public void deleteHostedRepository( final String name, final ChangeSummary summary )
-        throws AproxDataException
-    {
-        delegate.deleteHostedRepository( name, summary );
-    }
-
-    @Override
-    public void deleteRemoteRepository( final RemoteRepository repo, final ChangeSummary summary )
-        throws AproxDataException
-    {
-        delegate.deleteRemoteRepository( repo, summary );
-    }
-
-    @Override
-    public void deleteRemoteRepository( final String name, final ChangeSummary summary )
-        throws AproxDataException
-    {
-        delegate.deleteRemoteRepository( name, summary );
-    }
-
-    @Override
-    public void deleteGroup( final Group group, final ChangeSummary summary )
-        throws AproxDataException
-    {
-        delegate.deleteGroup( group, summary );
-    }
-
-    @Override
-    public void deleteGroup( final String name, final ChangeSummary summary )
-        throws AproxDataException
-    {
-        delegate.deleteGroup( name, summary );
+        return delegate.storeArtifactStore( key, summary, skipIfExists, fireEvents, new EventMetadata() );
     }
 
     @Override
     public void deleteArtifactStore( final StoreKey key, final ChangeSummary summary )
         throws AproxDataException
     {
-        delegate.deleteArtifactStore( key, summary );
+        deleteArtifactStore( key, summary, new EventMetadata() );
+    }
+
+    @Override
+    public void deleteArtifactStore( final StoreKey key , final ChangeSummary summary , final EventMetadata eventMetadata  )
+        throws AproxDataException
+    {
+        delegate.deleteArtifactStore( key, summary, new EventMetadata() );
     }
 
     @Override

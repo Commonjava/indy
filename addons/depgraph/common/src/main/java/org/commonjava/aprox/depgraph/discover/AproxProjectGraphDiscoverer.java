@@ -38,6 +38,7 @@ import org.commonjava.maven.cartographer.discover.DiscoveryConfig;
 import org.commonjava.maven.cartographer.discover.DiscoveryResult;
 import org.commonjava.maven.cartographer.discover.ProjectRelationshipDiscoverer;
 import org.commonjava.maven.galley.TransferException;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.maven.ArtifactManager;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
@@ -120,7 +121,7 @@ public class AproxProjectGraphDiscoverer
 
             final Transfer retrieved;
 
-            retrieved = artifactManager.retrieveFirst( discoveryConfig.getLocations(), pomRef );
+            retrieved = artifactManager.retrieveFirst( discoveryConfig.getLocations(), pomRef, new EventMetadata() );
 
             if ( retrieved != null )
             {
@@ -174,7 +175,7 @@ public class AproxProjectGraphDiscoverer
 
         try
         {
-            return artifactManager.resolveVariableVersion( discoveryConfig.getLocations(), ref );
+            return artifactManager.resolveVariableVersion( discoveryConfig.getLocations(), ref, new EventMetadata() );
         }
         catch ( final TransferException e )
         {

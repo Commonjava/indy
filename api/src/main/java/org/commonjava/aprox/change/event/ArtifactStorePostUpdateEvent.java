@@ -18,6 +18,7 @@ package org.commonjava.aprox.change.event;
 import java.util.Collection;
 
 import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.maven.galley.event.EventMetadata;
 
 /**
  * Event signaling that one or more specified {@link ArtifactStore} instances' configurations were changed. The {@link ArtifactStoreUpdateType}
@@ -29,13 +30,15 @@ public class ArtifactStorePostUpdateEvent
     extends ArtifactStoreUpdateEvent
 {
 
-    public ArtifactStorePostUpdateEvent( final ArtifactStoreUpdateType type, final Collection<ArtifactStore> changes )
+    public ArtifactStorePostUpdateEvent( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata,
+                                         final Collection<ArtifactStore> changes )
     {
-        super( type, changes );
+        super( type, eventMetadata, changes );
     }
 
-    public ArtifactStorePostUpdateEvent( final ArtifactStoreUpdateType type, final ArtifactStore... changes )
+    public ArtifactStorePostUpdateEvent( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata,
+                                         final ArtifactStore... changes )
     {
-        super( type, changes );
+        super( type, eventMetadata, changes );
     }
 }

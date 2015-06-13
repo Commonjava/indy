@@ -189,7 +189,11 @@ public class AproxClientHttp
 
             final String json = entityToString( response );
             logger.info( "Got JSON:\n\n{}\n\n", json );
-            return objectMapper.readValue( json, type );
+            final T value = objectMapper.readValue( json, type );
+
+            logger.debug( "Got result object: {}", value );
+
+            return value;
         }
         catch ( final IOException e )
         {

@@ -34,9 +34,11 @@ import org.commonjava.aprox.core.content.DefaultDownloadManager;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.core.HostedRepository;
+import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.promote.fixture.GalleyFixture;
 import org.commonjava.aprox.promote.model.PromoteRequest;
 import org.commonjava.aprox.promote.model.PromoteResult;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.junit.Before;
@@ -72,7 +74,8 @@ public class PromotionManagerTest
                                         new AproxLocationExpander( storeManager ) );
 
         contentManager =
-            new DefaultContentManager( storeManager, downloadManager, Collections.<ContentGenerator> emptySet() );
+            new DefaultContentManager( storeManager, downloadManager, new AproxObjectMapper( true ),
+                                       Collections.<ContentGenerator> emptySet() );
 
         manager = new PromotionManager( contentManager, downloadManager, storeManager );
     }
@@ -82,18 +85,18 @@ public class PromotionManagerTest
         throws Exception
     {
         final HostedRepository source = new HostedRepository( "source" );
-        storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ) );
+        storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ), new EventMetadata() );
         
         final String first = "/first/path";
         final String second = "/second/path";
         contentManager.store( source, first, new ByteArrayInputStream( "This is a test".getBytes() ),
-                              TransferOperation.UPLOAD );
+                              TransferOperation.UPLOAD, new EventMetadata() );
         
         contentManager.store( source, second, new ByteArrayInputStream( "This is a test".getBytes() ),
-                              TransferOperation.UPLOAD );
+                              TransferOperation.UPLOAD, new EventMetadata() );
         
         final HostedRepository target = new HostedRepository("target");
-        storeManager.storeArtifactStore( target, new ChangeSummary(ChangeSummary.SYSTEM_USER, "test setup") );
+        storeManager.storeArtifactStore( target, new ChangeSummary(ChangeSummary.SYSTEM_USER, "test setup"), new EventMetadata() );
         
         final PromoteResult result = manager.promote( new PromoteRequest( source.getKey(), target.getKey() ) );
         
@@ -123,18 +126,18 @@ public class PromotionManagerTest
         throws Exception
     {
         final HostedRepository source = new HostedRepository( "source" );
-        storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ) );
+        storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ), new EventMetadata() );
 
         final String first = "/first/path";
         final String second = "/second/path";
         contentManager.store( source, first, new ByteArrayInputStream( "This is a test".getBytes() ),
-                              TransferOperation.UPLOAD );
+                              TransferOperation.UPLOAD, new EventMetadata() );
 
         contentManager.store( source, second, new ByteArrayInputStream( "This is a test".getBytes() ),
-                              TransferOperation.UPLOAD );
+                              TransferOperation.UPLOAD, new EventMetadata() );
 
         final HostedRepository target = new HostedRepository( "target" );
-        storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ) );
+        storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ), new EventMetadata() );
 
         final PromoteResult result =
             manager.promote( new PromoteRequest( source.getKey(), target.getKey() ).setDryRun( true ) );
@@ -165,18 +168,18 @@ public class PromotionManagerTest
         throws Exception
     {
         final HostedRepository source = new HostedRepository( "source" );
-        storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ) );
+        storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ), new EventMetadata() );
 
         final String first = "/first/path";
         final String second = "/second/path";
         contentManager.store( source, first, new ByteArrayInputStream( "This is a test".getBytes() ),
-                              TransferOperation.UPLOAD );
+                              TransferOperation.UPLOAD, new EventMetadata() );
 
         contentManager.store( source, second, new ByteArrayInputStream( "This is a test".getBytes() ),
-                              TransferOperation.UPLOAD );
+                              TransferOperation.UPLOAD, new EventMetadata() );
 
         final HostedRepository target = new HostedRepository( "target" );
-        storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ) );
+        storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ), new EventMetadata() );
 
         final PromoteResult result =
             manager.promote( new PromoteRequest( source.getKey(), target.getKey() ).setPurgeSource( true ) );
@@ -214,18 +217,18 @@ public class PromotionManagerTest
         throws Exception
     {
         final HostedRepository source = new HostedRepository( "source" );
-        storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ) );
+        storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ), new EventMetadata() );
 
         final String first = "/first/path";
         final String second = "/second/path";
         contentManager.store( source, first, new ByteArrayInputStream( "This is a test".getBytes() ),
-                              TransferOperation.UPLOAD );
+                              TransferOperation.UPLOAD, new EventMetadata() );
 
         contentManager.store( source, second, new ByteArrayInputStream( "This is a test".getBytes() ),
-                              TransferOperation.UPLOAD );
+                              TransferOperation.UPLOAD, new EventMetadata() );
 
         final HostedRepository target = new HostedRepository( "target" );
-        storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ) );
+        storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ), new EventMetadata() );
 
         PromoteResult result = manager.promote( new PromoteRequest( source.getKey(), target.getKey() ) );
 
@@ -271,18 +274,18 @@ public class PromotionManagerTest
         throws Exception
     {
         final HostedRepository source = new HostedRepository( "source" );
-        storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ) );
+        storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ), new EventMetadata() );
 
         final String first = "/first/path";
         final String second = "/second/path";
         contentManager.store( source, first, new ByteArrayInputStream( "This is a test".getBytes() ),
-                              TransferOperation.UPLOAD );
+                              TransferOperation.UPLOAD, new EventMetadata() );
 
         contentManager.store( source, second, new ByteArrayInputStream( "This is a test".getBytes() ),
-                              TransferOperation.UPLOAD );
+                              TransferOperation.UPLOAD, new EventMetadata() );
 
         final HostedRepository target = new HostedRepository( "target" );
-        storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ) );
+        storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ), new EventMetadata() );
 
         PromoteResult result =
             manager.promote( new PromoteRequest( source.getKey(), target.getKey() ).setPurgeSource( true ) );

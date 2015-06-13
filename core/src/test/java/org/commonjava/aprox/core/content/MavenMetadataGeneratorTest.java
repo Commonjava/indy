@@ -40,6 +40,7 @@ import org.commonjava.maven.atlas.ident.util.SnapshotUtils;
 import org.commonjava.maven.atlas.ident.util.VersionUtils;
 import org.commonjava.maven.atlas.ident.version.SingleVersion;
 import org.commonjava.maven.atlas.ident.version.part.SnapshotPart;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.maven.internal.type.StandardTypeMapper;
 import org.commonjava.maven.galley.maven.model.view.meta.LatestSnapshotView;
 import org.commonjava.maven.galley.maven.model.view.meta.MavenMetadataView;
@@ -100,15 +101,18 @@ public class MavenMetadataGeneratorTest
         throws Exception
     {
         final StoreResource resource = setupSnapshotDirWith2Snapshots();
+        final EventMetadata emd = new EventMetadata();
+
         final Transfer transfer =
             generator.generateFileContent( stores.getArtifactStore( resource.getStoreKey() ),
-                                           ( (ConcreteResource) resource.getChild( "maven-metadata.xml" ) ).getPath() );
+                                           ( (ConcreteResource) resource.getChild( "maven-metadata.xml" ) ).getPath(),
+                                           emd );
 
         assertThat( transfer, notNullValue() );
 
         final MavenMetadataView metadata =
             metadataReader.readMetadata( new ProjectVersionRef( "org.group", "artifact", "1.0-SNAPSHOT" ),
-                                         Collections.singletonList( transfer ) );
+                                         Collections.singletonList( transfer ), emd );
 
         assertThat( metadata, notNullValue() );
 
@@ -145,10 +149,11 @@ public class MavenMetadataGeneratorTest
         throws Exception
     {
         final StoreResource resource = setupSnapshotDirWith2Snapshots();
+        final EventMetadata emd = new EventMetadata();
 
         final List<StoreResource> result =
             generator.generateDirectoryContent( stores.getArtifactStore( resource.getStoreKey() ), resource.getPath(),
-                                                Collections.<StoreResource> emptyList() );
+                                                Collections.<StoreResource> emptyList(), emd );
 
         System.out.println( StringUtils.join( result, "\n" ) );
 
@@ -175,13 +180,14 @@ public class MavenMetadataGeneratorTest
         final ConcreteResource metadataFile = (ConcreteResource) resource.getChild( "maven-metadata.xml" );
 
         final Transfer transfer =
-            generator.generateFileContent( stores.getArtifactStore( resource.getStoreKey() ), metadataFile.getPath() );
+            generator.generateFileContent( stores.getArtifactStore( resource.getStoreKey() ), metadataFile.getPath(),
+                                           new EventMetadata() );
 
         assertThat( transfer, notNullValue() );
 
         final MavenMetadataView metadata =
             metadataReader.readMetadata( new ProjectVersionRef( "org.group", "artifact", "1.0-SNAPSHOT" ),
-                                         Collections.singletonList( transfer ) );
+                                         Collections.singletonList( transfer ), new EventMetadata() );
 
         assertThat( metadata, notNullValue() );
 
@@ -209,7 +215,7 @@ public class MavenMetadataGeneratorTest
 
         final List<StoreResource> result =
             generator.generateDirectoryContent( stores.getArtifactStore( resource.getStoreKey() ), resource.getPath(),
-                                                Collections.<StoreResource> emptyList() );
+                                                Collections.<StoreResource> emptyList(), new EventMetadata() );
 
         System.out.println( StringUtils.join( result, "\n" ) );
 
@@ -232,7 +238,7 @@ public class MavenMetadataGeneratorTest
         throws Exception
     {
         final RemoteRepository store = new RemoteRepository( "testrepo", "http://foo.bar" );
-        stores.storeArtifactStore( store, summary );
+        stores.storeArtifactStore( store, summary, new EventMetadata() );
 
         final String path = "org/group/artifact";
 
@@ -262,7 +268,7 @@ public class MavenMetadataGeneratorTest
         throws Exception
     {
         final RemoteRepository store = new RemoteRepository( "testrepo", "http://foo.bar" );
-        stores.storeArtifactStore( store, summary );
+        stores.storeArtifactStore( store, summary, new EventMetadata() );
 
         final String path = "org/group/artifact/1.0-SNAPSHOT";
 

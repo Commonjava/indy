@@ -15,14 +15,13 @@
  */
 package org.commonjava.aprox.test.fixture.core;
 
+import static org.commonjava.aprox.boot.PortFinder.findOpenPort;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.util.Properties;
-import java.util.Random;
 
-import org.apache.commons.io.IOUtils;
 import org.codehaus.plexus.interpolation.InterpolationException;
 import org.commonjava.aprox.boot.AproxBootException;
 import org.commonjava.aprox.boot.BootFinder;
@@ -167,7 +166,7 @@ public class CoreServerFixture
         try
         {
             final BootOptions options = new BootOptions( bootDefaults, aproxHome );
-            options.setPort( generatePort() );
+            options.setPort( findOpenPort( MAX_PORTGEN_TRIES ) );
 
             return options;
         }
@@ -187,36 +186,9 @@ public class CoreServerFixture
             System.setProperties( properties );
         }
 
-        options.setPort( generatePort() );
+        options.setPort( findOpenPort( MAX_PORTGEN_TRIES ) );
 
         return options;
-    }
-
-    private static int generatePort()
-    {
-        final Random rand = new Random();
-        int tries = 0;
-        while ( tries < MAX_PORTGEN_TRIES )
-        {
-            final int port = Math.abs( rand.nextInt() ) % 32000;
-            ServerSocket ss = null;
-            try
-            {
-                ss = new ServerSocket( port );
-                return port;
-            }
-            catch ( final IOException | IllegalArgumentException e )
-            {
-            }
-            finally
-            {
-                IOUtils.closeQuietly( ss );
-            }
-
-            tries++;
-        }
-
-        throw new IllegalStateException( "Cannot find an open port after " + MAX_PORTGEN_TRIES + " tries. Giving up." );
     }
 
 }

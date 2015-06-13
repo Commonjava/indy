@@ -28,12 +28,13 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.aprox.AproxException;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.audit.ChangeSummary;
@@ -53,6 +54,7 @@ import org.commonjava.aprox.model.core.dto.ReplicationDTO;
 import org.commonjava.aprox.model.core.dto.StoreListingDTO;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
 import org.commonjava.aprox.subsys.http.util.HttpResources;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,6 +63,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @ApplicationScoped
 public class ReplicationController
 {
+    private static final String REPLICATION_ORIGIN = "replication";
+
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
@@ -135,7 +139,9 @@ public class ReplicationController
 
                                 data.storeArtifactStore( repo, new ChangeSummary( user,
                                                                                      "REPLICATION: Proxying remote aprox repository: "
-                                                                                         + view.getResourceUri() ) );
+                                                                                      + view.getResourceUri() ),
+                                                         new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
+                                                                                  REPLICATION_ORIGIN ) );
                                 replicated.add( repo.getKey() );
                             }
                         }
@@ -164,7 +170,9 @@ public class ReplicationController
 
                                 data.storeArtifactStore( store, new ChangeSummary( user,
                                                                                    "REPLICATION: Mirroring remote aprox store: "
-                                                                                       + store.getKey() ) );
+                                                                                       + store.getKey() ),
+                                                         new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
+                                                                                  REPLICATION_ORIGIN ) );
                                 replicated.add( store.getKey() );
                             }
                         }
@@ -230,12 +238,24 @@ public class ReplicationController
         //        logger.info( "\n\n\n\n\n[AutoProx] Checking URL: {} from:", new Throwable(), url );
         final List<ArtifactStore> result = new ArrayList<ArtifactStore>();
 
-        HttpGet req = newGet( remotesUrl, dto );
-        HttpResponse response = null;
+        addStoresFrom( result, remotesUrl, dto, RemoteRepository.class );
+        addStoresFrom( result, groupsUrl, dto, Group.class );
+        addStoresFrom( result, hostedUrl, dto, HostedRepository.class );
+
+        return result;
+    }
+
+    private <T extends ArtifactStore> void addStoresFrom( final List<ArtifactStore> result, final String remotesUrl,
+                                                          final ReplicationDTO dto, final Class<T> type )
+        throws AproxWorkflowException
+    {
+        final HttpGet req = newGet( remotesUrl, dto );
+        CloseableHttpClient client = null;
+        CloseableHttpResponse response = null;
         try
         {
-            response = http.getClient()
-                           .execute( req );
+            client = http.createClient();
+            response = client.execute( req, http.createContext() );
 
             final StatusLine statusLine = response.getStatusLine();
             final int status = statusLine.getStatusCode();
@@ -243,15 +263,15 @@ public class ReplicationController
             {
                 final String json = HttpResources.entityToString( response );
 
-                final StoreListingDTO<RemoteRepository> listing =
+                final StoreListingDTO<T> listing =
                     serializer.readValue( json,
                                           serializer.getTypeFactory()
                                                     .constructParametricType( StoreListingDTO.class,
-                                                                              RemoteRepository.class ) );
+ type ) );
 
                 if ( listing != null )
                 {
-                    for ( final RemoteRepository store : listing.getItems() )
+                    for ( final T store : listing.getItems() )
                     {
                         result.add( store );
                     }
@@ -274,96 +294,8 @@ public class ReplicationController
         }
         finally
         {
-            HttpResources.cleanupResources( req, response, null, http );
+            http.cleanup( client, req, response );
         }
-
-        req = newGet( groupsUrl, dto );
-        response = null;
-        try
-        {
-            response = http.getClient()
-                           .execute( req );
-
-            final StatusLine statusLine = response.getStatusLine();
-            final int status = statusLine.getStatusCode();
-            if ( status == HttpStatus.SC_OK )
-            {
-                final String json = HttpResources.entityToString( response );
-
-                final StoreListingDTO<Group> listing =
-                    serializer.readValue( json, serializer.getTypeFactory()
-                                                          .constructParametricType( StoreListingDTO.class, Group.class ) );
-
-                for ( final Group store : listing.getItems() )
-                {
-                    result.add( store );
-                }
-            }
-            else
-            {
-                throw new AproxWorkflowException( status, "Request: {} failed: {}", groupsUrl, statusLine );
-            }
-        }
-        catch ( final ClientProtocolException e )
-        {
-            throw new AproxWorkflowException( "Failed to retrieve endpoints from: {}. Reason: {}", e, groupsUrl,
-                                              e.getMessage() );
-        }
-        catch ( final IOException e )
-        {
-            throw new AproxWorkflowException( "Failed to read endpoints from: {}. Reason: {}", e, groupsUrl,
-                                              e.getMessage() );
-        }
-        finally
-        {
-            HttpResources.cleanupResources( req, response, null, http );
-        }
-
-        req = newGet( hostedUrl, dto );
-        response = null;
-        try
-        {
-            response = http.getClient()
-                           .execute( req );
-
-            final StatusLine statusLine = response.getStatusLine();
-            final int status = statusLine.getStatusCode();
-            if ( status == HttpStatus.SC_OK )
-            {
-                final String json = HttpResources.entityToString( response );
-
-                final StoreListingDTO<HostedRepository> listing =
-                    serializer.readValue( json,
-                                          serializer.getTypeFactory()
-                                                    .constructParametricType( StoreListingDTO.class,
-                                                                              HostedRepository.class ) );
-
-                for ( final HostedRepository store : listing.getItems() )
-                {
-                    result.add( store );
-                }
-            }
-            else
-            {
-                throw new AproxWorkflowException( status, "Request: %s failed: %s", hostedUrl, statusLine );
-            }
-        }
-        catch ( final ClientProtocolException e )
-        {
-            throw new AproxWorkflowException( "Failed to retrieve endpoints from: %s. Reason: %s", e, hostedUrl,
-                                              e.getMessage() );
-        }
-        catch ( final IOException e )
-        {
-            throw new AproxWorkflowException( "Failed to read endpoints from: %s. Reason: %s", e, hostedUrl,
-                                              e.getMessage() );
-        }
-        finally
-        {
-            HttpResources.cleanupResources( req, response, null, http );
-        }
-
-        return result;
     }
 
     private HttpGet newGet( final String url, final ReplicationDTO dto )
@@ -404,13 +336,13 @@ public class ReplicationController
                                               e, apiUrl, e.getMessage() );
         }
 
-        //        logger.info( "\n\n\n\n\n[AutoProx] Checking URL: {} from:", new Throwable(), url );
         final HttpGet req = newGet( url, dto );
-        HttpResponse response = null;
+        CloseableHttpClient client = null;
+        CloseableHttpResponse response = null;
         try
         {
-            response = http.getClient()
-                           .execute( req );
+            client = http.createClient();
+            response = client.execute( req, http.createContext() );
 
             final StatusLine statusLine = response.getStatusLine();
             final int status = statusLine.getStatusCode();
@@ -434,7 +366,7 @@ public class ReplicationController
         }
         finally
         {
-            HttpResources.cleanupResources( req, response, null, http );
+            http.cleanup( client, req, response );
         }
     }
 

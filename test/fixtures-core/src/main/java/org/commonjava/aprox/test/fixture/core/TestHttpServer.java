@@ -30,6 +30,7 @@ import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -41,6 +42,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.commonjava.maven.galley.util.UrlUtils;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +62,11 @@ public class TestHttpServer
     private final ExpectationServlet servlet;
 
     private Undertow server;
+
+    public TestHttpServer()
+    {
+        this( null );
+    }
 
     public TestHttpServer( final String baseResource )
     {
@@ -164,7 +171,7 @@ public class TestHttpServer
 
         public ExpectationServlet( final String baseResource )
         {
-            this.baseResource = baseResource;
+            this.baseResource = baseResource == null ? "/" : baseResource;
         }
 
         public Map<String, Integer> getAccessesByPath()
@@ -184,17 +191,31 @@ public class TestHttpServer
 
         public void registerException( final String method, final String path, final int code, final String error )
         {
-            final String key = method.toUpperCase() + " " + path;
+            final String realPath = getPath( path );
+            final String key = method.toUpperCase() + " " + realPath;
             logger.info( "Registering error: {}, code: {}, body:\n{}", key, code, error );
-            this.errors.put( key, new ContentResponse( method, path, code, error ) );
+            this.errors.put( key, new ContentResponse( method, realPath, code, error ) );
+        }
+
+        private String getPath( final String path )
+        {
+            String realPath = path;
+            try
+            {
+                final URL u = new URL( path );
+                realPath = u.getPath();
+            }
+            catch ( final MalformedURLException e )
+            {
+            }
+
+            return realPath;
         }
 
         public void expect( final String method, final String testUrl, final int responseCode, final String body )
             throws Exception
         {
-            final URL url = new URL( testUrl );
-            final String path = url.getPath();
-
+            final String path = getPath( testUrl );
             final String key = method.toUpperCase() + " " + path;
             logger.info( "Registering expectation: {}, code: {}, body:\n{}", key, responseCode, body );
             expectations.put( key, new ContentResponse( method, path, responseCode, body ) );
@@ -204,8 +225,7 @@ public class TestHttpServer
                             final InputStream bodyStream )
             throws Exception
         {
-            final URL url = new URL( testUrl );
-            final String path = url.getPath();
+            final String path = getPath( testUrl );
 
             final String key = method.toUpperCase() + " " + path;
             logger.info( "Registering expectation: {}, code: {}, body stream:\n{}", key, responseCode, bodyStream );
@@ -250,6 +270,7 @@ public class TestHttpServer
                 accessesByPath.put( key, i + 1 );
             }
 
+            logger.info( "Looking for error: '{}' in:\n{}", key, errors );
             if ( errors.containsKey( key ) )
             {
                 final ContentResponse error = errors.get( key );
@@ -293,12 +314,27 @@ public class TestHttpServer
 
     public String formatUrl( final String... subpath )
     {
-        return String.format( "http://127.0.0.1:%s/%s/%s", port, servlet.getBaseResource(), normalize( subpath ) );
+        try
+        {
+            return UrlUtils.buildUrl( "http://127.0.0.1:" + port,
+                                      normalize( servlet.getBaseResource(), normalize( subpath ) ) );
+        }
+        catch ( final MalformedURLException e )
+        {
+            throw new IllegalArgumentException( "Failed to build url to: " + Arrays.toString( subpath ), e );
+        }
     }
 
     public String getBaseUri()
     {
-        return String.format( "http://127.0.0.1:%s/%s", port, servlet.getBaseResource() );
+        try
+        {
+            return UrlUtils.buildUrl( "http://127.0.0.1:" + port, servlet.getBaseResource() );
+        }
+        catch ( final MalformedURLException e )
+        {
+            throw new IllegalArgumentException( "Failed to build base-URI.", e );
+        }
     }
 
     public String getUrlPath( final String url )

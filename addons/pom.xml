@@ -35,6 +35,7 @@
     <module>depgraph</module>
     <module>dot-maven</module>
     <module>folo</module>
+    <module>httprox</module>
     <module>implied-repos</module>
     <module>indexer</module>
     <module>promote</module>

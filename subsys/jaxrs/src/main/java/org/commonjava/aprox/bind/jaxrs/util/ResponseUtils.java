@@ -19,6 +19,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -26,11 +28,15 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
 import org.commonjava.aprox.AproxWorkflowException;
+import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.dto.CreationDTO;
+import org.commonjava.aprox.model.util.HttpUtils;
 import org.commonjava.aprox.util.ApplicationContent;
 import org.commonjava.aprox.util.ApplicationHeader;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.UriFormatter;
+import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -116,6 +122,79 @@ public final class ResponseUtils
         }
 
         return response;
+    }
+
+    public static ResponseBuilder setInfoHeaders( final ResponseBuilder builder, final Transfer item,
+                                                  final StoreKey sk, final String path,
+                                                  final boolean includeContentLength, final String contentType,
+                                                  final HttpExchangeMetadata exchangeMetadata )
+        throws AproxWorkflowException
+    {
+        // I don't think we want to use the result from upstream; it's often junk...we should retain control of this.
+        builder.header( ApplicationHeader.content_type.key(), contentType );
+
+        boolean lastModSet = false;
+        boolean lenSet = false;
+
+        if ( exchangeMetadata != null )
+        {
+            for ( final Map.Entry<String, List<String>> headerSet : exchangeMetadata.getResponseHeaders()
+                                                                                    .entrySet() )
+            {
+                final String key = headerSet.getKey();
+                if ( ApplicationHeader.content_type.upperKey()
+                                                   .equals( key ) )
+                {
+                    continue;
+                }
+                else if ( ApplicationHeader.last_modified.upperKey()
+                                                         .equals( key ) )
+                {
+                    lastModSet = true;
+                }
+                else if ( ApplicationHeader.content_length.upperKey()
+                                                          .equals( key ) )
+                {
+                    lenSet = true;
+                    if ( !includeContentLength )
+                    {
+                        continue;
+                    }
+                }
+
+                for ( final String value : headerSet.getValue() )
+                {
+                    builder.header( key, value );
+                }
+            }
+        }
+
+        if ( !lastModSet )
+        {
+            builder.header( ApplicationHeader.last_modified.key(), HttpUtils.formatDateHeader( item.lastModified() ) );
+        }
+
+        if ( includeContentLength && !lenSet )
+        {
+            builder.header( ApplicationHeader.content_length.key(), item.length() );
+        }
+
+        return builder;
+    }
+
+    public static Response formatResponseFromMetadata( final HttpExchangeMetadata metadata )
+    {
+        final ResponseBuilder builder = Response.status( metadata.getResponseStatusCode() );
+        for ( final Map.Entry<String, List<String>> headerSet : metadata.getResponseHeaders()
+                                                                        .entrySet() )
+        {
+            for ( final String value : headerSet.getValue() )
+            {
+                builder.header( headerSet.getKey(), value );
+            }
+        }
+
+        return builder.build();
     }
 
     public static Response formatOkResponseWithEntity( final Object output, final String contentType )

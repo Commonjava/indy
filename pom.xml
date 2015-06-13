@@ -49,12 +49,13 @@
     <slf4j-version>1.6.1</slf4j-version>
     <jbossas-version>7.1.1.Final</jbossas-version>
     <atlasVersion>0.14.0</atlasVersion>
-    <galleyVersion>0.8.1</galleyVersion>
+    <galleyVersion>0.8.2-SNAPSHOT</galleyVersion>
     <cartoVersion>0.9.2-SNAPSHOT</cartoVersion>
     <bomVersion>16</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <resteasyVersion>3.0.9.Final</resteasyVersion>
     <undertowVersion>1.1.2.Final</undertowVersion>
+    <xnioVersion>3.3.0.Final</xnioVersion>
     <partylineVersion>1.4</partylineVersion>
     
     <test-forkCount>1C</test-forkCount>
@@ -309,6 +310,24 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-httprox-common</artifactId>
+        <version>0.22.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-httprox-common</artifactId>
+        <version>0.22.0-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>confset</classifier>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-ftests-httprox</artifactId>
+        <version>0.22.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-indexer</artifactId>
         <version>0.22.0-SNAPSHOT</version>
       </dependency>
@@ -511,6 +530,13 @@
         <groupId>org.commonjava.aprox.boot</groupId>
         <artifactId>aprox-booter-jaxrs</artifactId>
         <version>0.22.0-SNAPSHOT</version>
+      </dependency>
+
+
+      <dependency>
+          <groupId>org.jboss.xnio</groupId>
+          <artifactId>xnio-nio</artifactId>
+          <version>${xnioVersion}</version>
       </dependency>
       
       

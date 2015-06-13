@@ -28,7 +28,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
@@ -40,10 +39,10 @@ import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.util.LocationUtils;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 
-@ApplicationScoped
 public class ArchetypeCatalogGenerator
     extends AbstractMergedContentGenerator
 {
@@ -91,7 +90,8 @@ public class ArchetypeCatalogGenerator
     }
 
     @Override
-    public Transfer generateGroupFileContent( final Group group, final List<ArtifactStore> members, final String path )
+    public Transfer generateGroupFileContent( final Group group, final List<ArtifactStore> members, final String path,
+                                              final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
         if ( !canProcess( path ) )
@@ -109,14 +109,14 @@ public class ArchetypeCatalogGenerator
                 toMergePath = normalize( normalize( parentPath( toMergePath ) ), ArchetypeCatalogMerger.CATALOG_NAME );
             }
 
-            final List<Transfer> sources = fileManager.retrieveAll( members, toMergePath );
+            final List<Transfer> sources = fileManager.retrieveAll( members, toMergePath, new EventMetadata() );
             final byte[] merged = merger.merge( sources, group, toMergePath );
             if ( merged != null )
             {
                 OutputStream fos = null;
                 try
                 {
-                    fos = target.openOutputStream( TransferOperation.GENERATE, true );
+                    fos = target.openOutputStream( TransferOperation.GENERATE, true, eventMetadata );
                     fos.write( merged );
                 }
                 catch ( final IOException e )
@@ -142,7 +142,7 @@ public class ArchetypeCatalogGenerator
 
     @Override
     public List<StoreResource> generateGroupDirectoryContent( final Group group, final List<ArtifactStore> members,
-                                                              final String path )
+                                                              final String path, final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
         final List<StoreResource> result = new ArrayList<StoreResource>();

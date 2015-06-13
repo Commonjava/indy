@@ -168,6 +168,19 @@ public class BootOptions
         contextPath = bootProps.getProperty( CONTEXT_PATH_PROP, contextPath );
     }
 
+    public void copyFrom( final BootOptions options )
+    {
+        this.help = options.help;
+        this.bind = options.bind;
+        this.port = options.port;
+        this.config = options.config;
+        this.workers = options.workers;
+        this.contextPath = options.contextPath;
+        this.interp = options.interp;
+        this.bootProps = options.bootProps;
+        this.aproxHome = options.aproxHome;
+    }
+
     public String resolve( final String value )
         throws InterpolationException
     {

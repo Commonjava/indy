@@ -27,6 +27,7 @@ import java.util.List;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.RemoteRepository;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -90,7 +91,7 @@ public abstract class RepositoryDataManagerTCK
     }
 
     @Test
-    public void createAndDeleteCentralRepoProxy_ByName()
+    public void createAndDeleteCentralRepoProxy()
         throws Exception
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
@@ -98,23 +99,7 @@ public abstract class RepositoryDataManagerTCK
         final RemoteRepository repo = new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" );
         storeRemoteRepository( repo, false );
 
-        manager.deleteRemoteRepository( repo.getName(), summary );
-
-        final ArtifactStore result = manager.getRemoteRepository( repo.getName() );
-
-        assertThat( result, nullValue() );
-    }
-
-    @Test
-    public void createAndDeleteCentralRepoProxy_ByObject()
-        throws Exception
-    {
-        final StoreDataManager manager = getFixtureProvider().getDataManager();
-
-        final RemoteRepository repo = new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" );
-        storeRemoteRepository( repo, false );
-
-        manager.deleteRemoteRepository( repo, summary );
+        manager.deleteArtifactStore( repo.getKey(), summary );
 
         final ArtifactStore result = manager.getRemoteRepository( repo.getName() );
 
@@ -159,13 +144,13 @@ public abstract class RepositoryDataManagerTCK
     private void storeRemoteRepository( final RemoteRepository repo )
         throws Exception
     {
-        manager.storeArtifactStore( repo, summary );
+        manager.storeArtifactStore( repo, summary, new EventMetadata() );
     }
 
     private void storeRemoteRepository( final RemoteRepository repo, final boolean skipIfExists )
         throws Exception
     {
-        manager.storeArtifactStore( repo, summary, skipIfExists );
+        manager.storeArtifactStore( repo, summary, skipIfExists, new EventMetadata() );
     }
 
 }

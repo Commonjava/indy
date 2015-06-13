@@ -30,6 +30,7 @@ import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.subsys.datafile.DataFile;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +38,8 @@ import org.slf4j.LoggerFactory;
 public class StoreWithTypeMigrationAction
     implements MigrationAction
 {
+
+    public static final String STORE_TYPE_MIGRATION = "store-type-migration";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -131,13 +134,15 @@ public class StoreWithTypeMigrationAction
             final List<HostedRepository> hosted = data.getAllHostedRepositories();
             for ( final HostedRepository repo : hosted )
             {
-                data.storeArtifactStore( repo, summary, false, true );
+                data.storeArtifactStore( repo, summary, false, true,
+                                         new EventMetadata().set( StoreDataManager.EVENT_ORIGIN, STORE_TYPE_MIGRATION ) );
             }
 
             final List<RemoteRepository> remotes = data.getAllRemoteRepositories();
             for ( final RemoteRepository repo : remotes )
             {
-                data.storeArtifactStore( repo, summary, false, true );
+                data.storeArtifactStore( repo, summary, false, true,
+                                         new EventMetadata().set( StoreDataManager.EVENT_ORIGIN, STORE_TYPE_MIGRATION ) );
             }
 
             data.reload();

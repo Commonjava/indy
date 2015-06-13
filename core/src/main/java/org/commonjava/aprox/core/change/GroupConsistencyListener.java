@@ -28,12 +28,15 @@ import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.util.ChangeSynchronizer;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @javax.enterprise.context.ApplicationScoped
 public class GroupConsistencyListener
 {
+
+    public static final String GROUP_CONSISTENCY_ORIGIN = "group-consistency";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -54,7 +57,9 @@ public class GroupConsistencyListener
                 proxyDataManager.storeArtifactStore( group, new ChangeSummary( ChangeSummary.SYSTEM_USER,
                                                                        "Auto-update groups containing: " + key
                                                                                    + " (to maintain consistency)" ),
-                                                     false, false );
+                                                     false, false,
+                                                     new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
+                                                                              GROUP_CONSISTENCY_ORIGIN ) );
             }
 
             changeSync.setChanged();

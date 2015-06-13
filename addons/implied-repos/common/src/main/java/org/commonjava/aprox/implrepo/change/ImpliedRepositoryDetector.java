@@ -38,6 +38,7 @@ import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 import org.commonjava.maven.atlas.ident.util.JoinString;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.event.FileStorageEvent;
 import org.commonjava.maven.galley.maven.GalleyMavenException;
 import org.commonjava.maven.galley.maven.model.view.MavenPomView;
@@ -50,6 +51,12 @@ import org.slf4j.LoggerFactory;
 
 public class ImpliedRepositoryDetector
 {
+    public static final String IMPLIED_REPOS_DETECTION = "implied-repos-detector";
+
+    public static final String IMPLIED_BY_POM_TRANSFER = "pom-transfer";
+
+    public static final String IMPLIED_REPOS = "implied-repositories";
+
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
@@ -205,7 +212,13 @@ public class ImpliedRepositoryDetector
 
                     if ( changed )
                     {
-                        storeManager.storeArtifactStore( group, summary, false, false );
+                        storeManager.storeArtifactStore( group,
+                                                         summary,
+                                                         false,
+                                                         false,
+                                                         new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
+                                                                                  IMPLIED_REPOS_DETECTION )
+                                                                            .set( IMPLIED_REPOS, job.implied ) );
                     }
                 }
             }
@@ -239,7 +252,7 @@ public class ImpliedRepositoryDetector
         job.implied = new ArrayList<ArtifactStore>();
 
         logger.debug( "Retrieving repository/pluginRepository declarations from:\n  ",
-                     new JoinString( "\n  ", job.pomView.getDocRefStack() ) );
+                      new JoinString( "\n  ", job.pomView.getDocRefStack() ) );
 
         final List<List<RepositoryView>> repoLists =
             Arrays.asList( job.pomView.getAllRepositories(), job.pomView.getAllPluginRepositories() );
@@ -279,7 +292,16 @@ public class ImpliedRepositoryDetector
                     final ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, changelog );
                     try
                     {
-                        final boolean result = storeManager.storeArtifactStore( rr, summary, true, false );
+                        final boolean result =
+                            storeManager.storeArtifactStore( rr,
+                                                             summary,
+                                                             true,
+                                                             false,
+                                                             new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
+                                                                                      IMPLIED_REPOS_DETECTION )
+                                                                                .set( IMPLIED_BY_POM_TRANSFER,
+                                                                                      job.transfer ) );
+
                         logger.debug( "Stored new RemoteRepository: {}. (successful? {})", rr, result );
                         job.implied.add( rr );
                     }

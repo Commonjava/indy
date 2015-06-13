@@ -29,6 +29,7 @@ import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +70,7 @@ public class AdminController
             final ChangeSummary summary = new ChangeSummary( user, changelog );
 
             logger.info( "Persisting artifact store: {} using: {}", store, storeManager );
-            return storeManager.storeArtifactStore( store, summary, skipExisting );
+            return storeManager.storeArtifactStore( store, summary, skipExisting, new EventMetadata() );
         }
         catch ( final AproxDataException e )
         {
@@ -111,7 +112,7 @@ public class AdminController
     {
         try
         {
-            storeManager.deleteArtifactStore( key, new ChangeSummary( user, changelog ) );
+            storeManager.deleteArtifactStore( key, new ChangeSummary( user, changelog ), new EventMetadata() );
         }
         catch ( final AproxDataException e )
         {

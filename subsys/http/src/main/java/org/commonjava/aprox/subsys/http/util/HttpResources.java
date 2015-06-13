@@ -27,10 +27,9 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.AbstractExecutionAwareRequest;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
 
 /**
@@ -46,7 +45,7 @@ public class HttpResources
     implements Closeable
 {
 
-    private final AbstractExecutionAwareRequest request;
+    private final HttpUriRequest request;
 
     private final CloseableHttpResponse response;
 
@@ -56,43 +55,13 @@ public class HttpResources
 
     private final AproxHttpProvider http;
 
-    public HttpResources( final CloseableHttpClient client, final AbstractExecutionAwareRequest request,
+    public HttpResources( final CloseableHttpClient client, final HttpUriRequest request,
                           final CloseableHttpResponse response, final AproxHttpProvider http )
     {
         this.client = client;
         this.request = request;
         this.response = response;
         this.http = http;
-    }
-
-    public static void cleanupResources( final HttpRequest request, final HttpResponse response,
-                                         final CloseableHttpClient client, final AproxHttpProvider http )
-    {
-        if ( response != null && response.getEntity() != null )
-        {
-            EntityUtils.consumeQuietly( response.getEntity() );
-
-            if ( response instanceof CloseableHttpResponse )
-            {
-                closeQuietly( (CloseableHttpResponse) response );
-            }
-        }
-
-        if ( request != null )
-        {
-            if ( request instanceof AbstractExecutionAwareRequest )
-            {
-                ( (AbstractExecutionAwareRequest) request ).reset();
-            }
-        }
-
-        if ( client != null )
-        {
-            closeQuietly( client );
-        }
-
-        http.clearRepositoryCredentials();
-        http.closeConnection();
     }
 
     public static String entityToString( final HttpResponse response )
@@ -143,7 +112,7 @@ public class HttpResources
             IOUtils.closeQuietly( responseEntityStream );
         }
 
-        cleanupResources( request, response, client, http );
+        http.cleanup( client, request, response );
     }
 
     public int getStatusCode()

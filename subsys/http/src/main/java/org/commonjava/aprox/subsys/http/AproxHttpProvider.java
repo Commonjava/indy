@@ -17,17 +17,18 @@ package org.commonjava.aprox.subsys.http;
 
 import static org.commonjava.aprox.util.LocationUtils.toLocation;
 
+import java.io.IOException;
+
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
 
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.client.HttpClient;
-import org.apache.http.conn.params.ConnRoutePNames;
-import org.commonjava.aprox.content.DownloadManager;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.maven.galley.auth.AttributePasswordManager;
 import org.commonjava.maven.galley.spi.auth.PasswordManager;
@@ -39,7 +40,7 @@ import org.commonjava.maven.galley.transport.htcli.model.HttpLocation;
 public class AproxHttpProvider
 {
 
-    private HttpImpl http;
+    private Http http;
 
     private PasswordManager passwordManager;
 
@@ -80,50 +81,32 @@ public class AproxHttpProvider
         return http;
     }
 
-    @Produces
-    @Default
-    @Singleton
-    public HttpClient getClient()
+    public HttpClientContext createContext()
     {
-        return http.getClient();
+        return http.createContext();
     }
 
-    public void bindRepositoryCredentialsTo( final RemoteRepository repository, final HttpRequest request )
+    public HttpClientContext createContext( final RemoteRepository repository )
     {
-        http.bindCredentialsTo( (HttpLocation) toLocation( repository ), request );
-
-        if ( repository.getProxyHost() != null )
-        {
-            //            logger.info( "Using proxy: {}:{} for repository: {}", repository.getProxyHost(),
-            //                         repository.getProxyPort() < 1 ? 80 : repository.getProxyPort(), repository.getName() );
-
-            final int proxyPort = repository.getProxyPort();
-            HttpHost proxy;
-            if ( proxyPort < 1 )
-            {
-                proxy = new HttpHost( repository.getProxyHost(), -1, "http" );
-            }
-            else
-            {
-                proxy = new HttpHost( repository.getProxyHost(), repository.getProxyPort(), "http" );
-            }
-
-            request.getParams()
-                   .setParameter( ConnRoutePNames.DEFAULT_PROXY, proxy );
-        }
-
-        request.getParams()
-               .setParameter( DownloadManager.HTTP_PARAM_REPO, repository );
+        return http.createContext( (HttpLocation) toLocation( repository ) );
     }
 
-    public void clearRepositoryCredentials()
+    public CloseableHttpClient createClient()
+        throws IOException
     {
-        http.clearAllBoundCredentials();
+        return http.createClient();
     }
 
-    public void closeConnection()
+    public CloseableHttpClient createClient( final RemoteRepository validationRepo )
+        throws IOException
     {
-        http.closeConnection();
+        return http.createClient( (HttpLocation) toLocation( validationRepo ) );
+    }
+
+    public void cleanup( final CloseableHttpClient client, final HttpUriRequest request,
+                         final CloseableHttpResponse response )
+    {
+        http.cleanup( client, request, response );
     }
 
 }

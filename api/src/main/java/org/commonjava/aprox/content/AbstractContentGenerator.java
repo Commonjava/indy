@@ -20,6 +20,7 @@ import java.util.List;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.Group;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 
 /**
@@ -35,19 +36,20 @@ public abstract class AbstractContentGenerator
     }
 
     @Override
-    public void handleContentStorage( final ArtifactStore store, final String path, final Transfer result )
+    public void handleContentStorage( final ArtifactStore store, final String path, final Transfer result,
+                                      final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
     }
 
     @Override
-    public void handleContentDeletion( final ArtifactStore store, final String path )
+    public void handleContentDeletion( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
     }
 
     @Override
-    public Transfer generateFileContent( final ArtifactStore store, final String path )
+    public Transfer generateFileContent( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
         return null;
@@ -55,14 +57,16 @@ public abstract class AbstractContentGenerator
 
     @Override
     public List<StoreResource> generateDirectoryContent( final ArtifactStore store, final String path,
-                                                         final List<StoreResource> existing )
+                                                         final List<StoreResource> existing,
+                                                         final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
         return null;
     }
 
     @Override
-    public Transfer generateGroupFileContent( final Group group, final List<ArtifactStore> members, final String path )
+    public Transfer generateGroupFileContent( final Group group, final List<ArtifactStore> members, final String path,
+                                              final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
         return null;
@@ -70,7 +74,7 @@ public abstract class AbstractContentGenerator
 
     @Override
     public List<StoreResource> generateGroupDirectoryContent( final Group group, final List<ArtifactStore> members,
-                                                              final String path )
+                                                              final String path, final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
         return null;

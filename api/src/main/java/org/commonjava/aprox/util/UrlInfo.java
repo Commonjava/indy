@@ -32,7 +32,7 @@ public final class UrlInfo
 
     private final String rawUrl;
 
-    UrlInfo( final String u )
+    public UrlInfo( final String u )
     {
         this.rawUrl = u;
         String resultUrl = u;

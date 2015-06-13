@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
@@ -50,6 +49,7 @@ import org.commonjava.maven.atlas.ident.util.SnapshotUtils;
 import org.commonjava.maven.atlas.ident.util.VersionUtils;
 import org.commonjava.maven.atlas.ident.version.SingleVersion;
 import org.commonjava.maven.atlas.ident.version.part.SnapshotPart;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.maven.parse.GalleyMavenXMLException;
 import org.commonjava.maven.galley.maven.parse.XMLInfrastructure;
 import org.commonjava.maven.galley.maven.spi.type.TypeMapper;
@@ -59,7 +59,6 @@ import org.commonjava.maven.galley.model.TypeMapping;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-@ApplicationScoped
 public class MavenMetadataGenerator
     extends AbstractMergedContentGenerator
 {
@@ -127,7 +126,7 @@ public class MavenMetadataGenerator
     }
 
     @Override
-    public Transfer generateFileContent( final ArtifactStore store, final String path )
+    public Transfer generateFileContent( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
         // metadata merging is something else...don't handle it here.
@@ -178,11 +177,11 @@ public class MavenMetadataGenerator
 
         if ( snapshotPomInfo != null )
         {
-            generated = writeSnapshotMetadata( snapshotPomInfo, firstLevel, store, toGenPath );
+            generated = writeSnapshotMetadata( snapshotPomInfo, firstLevel, store, toGenPath, eventMetadata );
         }
         else
         {
-            generated = writeVersionMetadata( firstLevel, store, toGenPath );
+            generated = writeVersionMetadata( firstLevel, store, toGenPath, eventMetadata );
         }
 
         return generated ? fileManager.getStorageReference( store, path ) : null;
@@ -190,7 +189,8 @@ public class MavenMetadataGenerator
 
     @Override
     public List<StoreResource> generateDirectoryContent( final ArtifactStore store, final String path,
-                                                         final List<StoreResource> existing )
+                                                         final List<StoreResource> existing,
+                                                         final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
         final StoreResource mdResource =
@@ -254,7 +254,8 @@ public class MavenMetadataGenerator
     }
 
     @Override
-    public Transfer generateGroupFileContent( final Group group, final List<ArtifactStore> members, final String path )
+    public Transfer generateGroupFileContent( final Group group, final List<ArtifactStore> members, final String path,
+                                              final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
         if ( !canProcess( path ) )
@@ -272,14 +273,14 @@ public class MavenMetadataGenerator
                 toMergePath = normalize( normalize( parentPath( toMergePath ) ), MavenMetadataMerger.METADATA_NAME );
             }
 
-            final List<Transfer> sources = fileManager.retrieveAll( members, toMergePath );
+            final List<Transfer> sources = fileManager.retrieveAll( members, toMergePath, new EventMetadata() );
             final byte[] merged = merger.merge( sources, group, toMergePath );
             if ( merged != null )
             {
                 OutputStream fos = null;
                 try
                 {
-                    fos = target.openOutputStream( TransferOperation.GENERATE, true );
+                    fos = target.openOutputStream( TransferOperation.GENERATE, true, eventMetadata );
                     fos.write( merged );
 
                 }
@@ -320,10 +321,10 @@ public class MavenMetadataGenerator
 
     @Override
     public List<StoreResource> generateGroupDirectoryContent( final Group group, final List<ArtifactStore> members,
-                                                              final String path )
+                                                              final String path, final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
-        return generateDirectoryContent( group, path, Collections.<StoreResource> emptyList() );
+        return generateDirectoryContent( group, path, Collections.<StoreResource> emptyList(), eventMetadata );
     }
 
     @Override
@@ -333,7 +334,7 @@ public class MavenMetadataGenerator
     }
 
     private boolean writeVersionMetadata( final List<StoreResource> firstLevelFiles, final ArtifactStore store,
-                                          final String path )
+                                          final String path, final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
         ArtifactPathInfo samplePomInfo = null;
@@ -422,7 +423,7 @@ public class MavenMetadataGenerator
             }
 
             final String xmlStr = xml.toXML( doc, true );
-            stream = metadataFile.openOutputStream( TransferOperation.GENERATE );
+            stream = metadataFile.openOutputStream( TransferOperation.GENERATE, true, eventMetadata );
             stream.write( xmlStr.getBytes( "UTF-8" ) );
         }
         catch ( final GalleyMavenXMLException e )
@@ -444,7 +445,8 @@ public class MavenMetadataGenerator
     }
 
     private boolean writeSnapshotMetadata( final ArtifactPathInfo info, final List<StoreResource> files,
-                                           final ArtifactStore store, final String path )
+                                           final ArtifactStore store, final String path,
+                                           final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
         // first level will contain files that have the timestamp-buildnumber version suffix...for each, we need to parse this info.
@@ -536,7 +538,7 @@ public class MavenMetadataGenerator
             }
 
             final String xmlStr = xml.toXML( doc, true );
-            stream = metadataFile.openOutputStream( TransferOperation.GENERATE );
+            stream = metadataFile.openOutputStream( TransferOperation.GENERATE, true, eventMetadata );
             stream.write( xmlStr.getBytes( "UTF-8" ) );
         }
         catch ( final GalleyMavenXMLException e )

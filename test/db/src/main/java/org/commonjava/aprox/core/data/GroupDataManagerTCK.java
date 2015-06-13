@@ -32,6 +32,7 @@ import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Before;
@@ -64,8 +65,8 @@ public abstract class GroupDataManagerTCK
         manager = getFixtureProvider().getDataManager();
 
         manager.storeArtifactStore( new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" ),
-                                       summary );
-        manager.storeArtifactStore( new RemoteRepository( "repo2", "http://repo1.maven.org/maven2/" ), summary );
+                                       summary, new EventMetadata() );
+        manager.storeArtifactStore( new RemoteRepository( "repo2", "http://repo1.maven.org/maven2/" ), summary, new EventMetadata() );
     }
 
     @Test
@@ -102,12 +103,12 @@ public abstract class GroupDataManagerTCK
     {
         for ( final Group group : groups )
         {
-            manager.storeArtifactStore( group, summary );
+            manager.storeArtifactStore( group, summary, new EventMetadata() );
         }
     }
 
     @Test
-    public void createAndDeleteGroup_ByName()
+    public void createAndDeleteGroup()
         throws Exception
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
@@ -115,24 +116,7 @@ public abstract class GroupDataManagerTCK
         final Group grp = new Group( "test" );
         store( grp );
 
-        manager.deleteGroup( grp.getName(), summary );
-
-        final Group result = manager.getGroup( grp.getName() );
-
-        assertThat( result, nullValue() );
-    }
-
-    @Test
-    public void createAndDeleteGroup_ByObject()
-        throws Exception
-    {
-        final StoreDataManager manager = getFixtureProvider().getDataManager();
-
-        final Group grp = new Group( "test" );
-
-        store( grp );
-
-        manager.deleteGroup( grp, summary );
+        manager.deleteArtifactStore( grp.getKey(), summary );
 
         final Group result = manager.getGroup( grp.getName() );
 

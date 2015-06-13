@@ -27,6 +27,7 @@ import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,7 +86,7 @@ public class AproxResourceFetcher
         try
         {
             logger.info( "Retrieving: '{}' from store: {}", path, store.getKey() );
-            final Transfer item = fileManager.retrieve( store, path );
+            final Transfer item = fileManager.retrieve( store, path, new EventMetadata() );
 
             if ( item == null || !item.exists() )
             {

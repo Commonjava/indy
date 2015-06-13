@@ -26,10 +26,11 @@ import javax.decorator.Delegate;
 import javax.enterprise.inject.Any;
 import javax.inject.Inject;
 
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpHead;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
@@ -41,6 +42,7 @@ import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,8 +69,7 @@ public abstract class AutoProxDataManagerDecorator
     }
 
     public AutoProxDataManagerDecorator( final MemoryStoreDataManager dataManager,
-                                         final AutoProxCatalogManager catalog,
-                                         final AproxHttpProvider http )
+                                         final AutoProxCatalogManager catalog, final AproxHttpProvider http )
     {
         this.dataManager = dataManager;
         this.catalog = catalog;
@@ -82,6 +83,12 @@ public abstract class AutoProxDataManagerDecorator
 
     @Override
     public Group getGroup( final String name )
+        throws AproxDataException
+    {
+        return getGroup( name, null );
+    }
+
+    private Group getGroup( final String name, final StoreKey impliedBy )
         throws AproxDataException
     {
         logger.debug( "DECORATED (getGroup: {})", name );
@@ -118,7 +125,7 @@ public abstract class AutoProxDataManagerDecorator
 
                 for ( final StoreKey key : new ArrayList<StoreKey>( g.getConstituents() ) )
                 {
-                    final ArtifactStore store = getArtifactStore( key );
+                    final ArtifactStore store = getArtifactStore( key, impliedBy == null ? g.getKey() : impliedBy );
                     if ( store == null )
                     {
                         g.removeConstituent( key );
@@ -132,9 +139,13 @@ public abstract class AutoProxDataManagerDecorator
                 }
 
                 final Group group = g;
-                dataManager.storeArtifactStore( group, new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                          "AUTOPROX: Creating group for: '" + name
-                                                                              + "'" ) );
+                dataManager.storeArtifactStore( group,
+                                                new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                   "AUTOPROX: Creating group for: '" + name + "'" ),
+                                                new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
+                                                                         AutoProxConstants.STORE_ORIGIN )
+                                                                   .set( AutoProxConstants.ORIGINATING_STORE,
+                                                                         impliedBy == null ? g.getKey() : impliedBy ) );
             }
         }
 
@@ -184,14 +195,15 @@ public abstract class AutoProxDataManagerDecorator
 
                 logger.debug( "\n\n\n\n\n[AutoProx] Checking URL: {}", url );
                 final HttpHead head = new HttpHead( url );
-
-                http.bindRepositoryCredentialsTo( validationRepo, head );
+                CloseableHttpClient client = null;
+                CloseableHttpResponse response = null;
 
                 boolean result = false;
                 try
                 {
-                    final HttpResponse response = http.getClient()
-                                                      .execute( head );
+                    client = http.createClient( validationRepo );
+                    response = client.execute( head, http.createContext( validationRepo ) );
+
                     final StatusLine statusLine = response.getStatusLine();
                     final int status = statusLine.getStatusCode();
                     logger.debug( "[AutoProx] HTTP Status: {}", statusLine );
@@ -209,10 +221,7 @@ public abstract class AutoProxDataManagerDecorator
                 }
                 finally
                 {
-                    head.reset();
-
-                    http.clearRepositoryCredentials();
-                    http.closeConnection();
+                    http.cleanup( client, head, response );
                 }
 
                 return result;
@@ -230,6 +239,12 @@ public abstract class AutoProxDataManagerDecorator
 
     @Override
     public RemoteRepository getRemoteRepository( final String name )
+        throws AproxDataException
+    {
+        return getRemoteRepository( name, null );
+    }
+
+    private RemoteRepository getRemoteRepository( final String name, final StoreKey impliedBy )
         throws AproxDataException
     {
         logger.debug( "DECORATED (getRemoteRepository: {})", name );
@@ -256,9 +271,15 @@ public abstract class AutoProxDataManagerDecorator
                     }
 
                     final RemoteRepository remote = repo;
-                    dataManager.storeArtifactStore( remote, new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                                  "AUTOPROX: Creating remote repository for: '"
-                                                                                      + name + "'" ) );
+                    dataManager.storeArtifactStore( remote,
+                                                    new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                       "AUTOPROX: Creating remote repository for: '"
+                                                                           + name + "'" ),
+                                                    new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
+                                                                             AutoProxConstants.STORE_ORIGIN )
+                                                                       .set( AutoProxConstants.ORIGINATING_STORE,
+                                                                             impliedBy == null ? repo.getKey()
+                                                                                             : impliedBy ) );
                 }
             }
             catch ( final AutoProxRuleException e )
@@ -274,6 +295,12 @@ public abstract class AutoProxDataManagerDecorator
 
     @Override
     public HostedRepository getHostedRepository( final String name )
+        throws AproxDataException
+    {
+        return getHostedRepository( name, null );
+    }
+
+    private HostedRepository getHostedRepository( final String name, final StoreKey impliedBy )
         throws AproxDataException
     {
         logger.debug( "DECORATED (getHostedRepository: {})", name );
@@ -303,9 +330,14 @@ public abstract class AutoProxDataManagerDecorator
             if ( repo != null )
             {
                 final HostedRepository hosted = repo;
-                dataManager.storeArtifactStore( hosted, new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                              "AUTOPROX: Creating remote repository for: '"
-                                                                                  + name + "'" ) );
+                dataManager.storeArtifactStore( hosted,
+                                                new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                   "AUTOPROX: Creating remote repository for: '" + name
+                                                                       + "'" ),
+                                                new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
+                                                                         AutoProxConstants.STORE_ORIGIN )
+                                                                   .set( AutoProxConstants.ORIGINATING_STORE,
+                                                                         impliedBy == null ? repo.getKey() : impliedBy ) );
             }
         }
 
@@ -316,6 +348,12 @@ public abstract class AutoProxDataManagerDecorator
     public ArtifactStore getArtifactStore( final StoreKey key )
         throws AproxDataException
     {
+        return getArtifactStore( key, null );
+    }
+
+    private ArtifactStore getArtifactStore( final StoreKey key, final StoreKey impliedBy )
+        throws AproxDataException
+    {
         if ( key == null )
         {
             return null;
@@ -323,15 +361,15 @@ public abstract class AutoProxDataManagerDecorator
 
         if ( key.getType() == StoreType.group )
         {
-            return getGroup( key.getName() );
+            return getGroup( key.getName(), impliedBy );
         }
         else if ( key.getType() == StoreType.remote )
         {
-            return getRemoteRepository( key.getName() );
+            return getRemoteRepository( key.getName(), impliedBy );
         }
         else
         {
-            return getHostedRepository( key.getName() );
+            return getHostedRepository( key.getName(), impliedBy );
         }
     }
 

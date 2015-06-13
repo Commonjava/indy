@@ -25,6 +25,7 @@ import org.commonjava.aprox.model.core.HostedRepository;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
+import org.commonjava.maven.galley.event.EventMetadata;
 
 /**
  * Data manager used to access and manipulate the configurations for {@link ArtifactStore} instances.
@@ -33,6 +34,8 @@ import org.commonjava.aprox.model.core.StoreType;
  */
 public interface StoreDataManager
 {
+
+    String EVENT_ORIGIN = "event-origin";
 
     /**
      * Return the {@link HostedRepository} instance corresponding to the given name.
@@ -130,10 +133,26 @@ public interface StoreDataManager
         throws AproxDataException;
 
     /**
+     * Store a modified or new {@link ArtifactStore} instance. This is equivalent to 
+     * {@link StoreDataManager#storeArtifactStore(ArtifactStore, boolean, EventMetadata)} with skip flag <code>false</code>
+     * @param eventMetadata TODO
+     */
+    boolean storeArtifactStore( ArtifactStore key , final ChangeSummary summary , EventMetadata eventMetadata  )
+        throws AproxDataException;
+
+    /**
      * Store a modified or new {@link ArtifactStore} instance. If the store already exists, and <code>skipIfExists</code> is true, abort the
      * operation.
      */
     boolean storeArtifactStore( ArtifactStore key, final ChangeSummary summary, boolean skipIfExists )
+        throws AproxDataException;
+
+    /**
+     * Store a modified or new {@link ArtifactStore} instance. If the store already exists, and <code>skipIfExists</code> is true, abort the
+     * operation.
+     * @param eventMetadata TODO
+     */
+    boolean storeArtifactStore( ArtifactStore key , final ChangeSummary summary , boolean skipIfExists , EventMetadata eventMetadata  )
         throws AproxDataException;
 
     /**
@@ -144,45 +163,24 @@ public interface StoreDataManager
         throws AproxDataException;
 
     /**
-     * Delete the given {@link HostedRepository}.
+     * Store a modified or new {@link ArtifactStore} instance. If the store already exists, and <code>skipIfExists</code> is true, abort the
+     * operation.
+     * @param eventMetadata TODO
      */
-    void deleteHostedRepository( final HostedRepository deploy, final ChangeSummary summary )
-        throws AproxDataException;
-
-    /**
-     * Delete the {@link HostedRepository} corresponding to the given name.
-     */
-    void deleteHostedRepository( final String name, final ChangeSummary summary )
-        throws AproxDataException;
-
-    /**
-     * Delete the given {@link RemoteRepository}.
-     */
-    void deleteRemoteRepository( final RemoteRepository repo, final ChangeSummary summary )
-        throws AproxDataException;
-
-    /**
-     * Delete the {@link RemoteRepository} corresponding to the given name.
-     */
-    void deleteRemoteRepository( final String name, final ChangeSummary summary )
-        throws AproxDataException;
-
-    /**
-     * Delete the given {@link Group}.
-     */
-    void deleteGroup( final Group group, final ChangeSummary summary )
-        throws AproxDataException;
-
-    /**
-     * Delete the {@link Group} corresponding to the given name.
-     */
-    void deleteGroup( final String name, final ChangeSummary summary )
+    boolean storeArtifactStore( ArtifactStore key , final ChangeSummary summary , boolean skipIfExists , boolean fireEvents , EventMetadata eventMetadata  )
         throws AproxDataException;
 
     /**
      * Delete the {@link ArtifactStore} corresponding to the given {@link StoreKey}. If the store doesn't exist, simply return (don't fail).
      */
     void deleteArtifactStore( StoreKey key, final ChangeSummary summary )
+        throws AproxDataException;
+
+    /**
+     * Delete the {@link ArtifactStore} corresponding to the given {@link StoreKey}. If the store doesn't exist, simply return (don't fail).
+     * @param eventMetadata TODO
+     */
+    void deleteArtifactStore( StoreKey key , final ChangeSummary summary , EventMetadata eventMetadata  )
         throws AproxDataException;
 
     /**

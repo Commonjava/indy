@@ -23,9 +23,10 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Map;
 
-import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
 import org.commonjava.maven.galley.auth.MemoryPasswordManager;
 import org.junit.rules.ExternalResource;
@@ -163,10 +164,12 @@ public class HttpTestFixture
         throws Exception
     {
         final HttpGet get = new HttpGet( testUrl );
+        CloseableHttpClient client = null;
+        CloseableHttpResponse response = null;
         try
         {
-            final HttpResponse response = http.getClient()
-                                              .execute( get );
+            client = http.createClient();
+            response = client.execute( get, http.createContext() );
 
             final StatusLine sl = response.getStatusLine();
 
@@ -174,7 +177,7 @@ public class HttpTestFixture
         }
         finally
         {
-            get.reset();
+            http.cleanup( client, get, response );
         }
     }
 

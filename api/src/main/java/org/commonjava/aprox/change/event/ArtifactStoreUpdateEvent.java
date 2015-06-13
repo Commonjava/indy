@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.maven.galley.event.EventMetadata;
 
 /**
  * Event signaling that one or more specified {@link ArtifactStore} instances' configurations were changed. The {@link ArtifactStoreUpdateType}
@@ -30,15 +31,17 @@ public abstract class ArtifactStoreUpdateEvent
 
     private final ArtifactStoreUpdateType type;
 
-    protected ArtifactStoreUpdateEvent( final ArtifactStoreUpdateType type, final Collection<ArtifactStore> changes )
+    protected ArtifactStoreUpdateEvent( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata,
+                                        final Collection<ArtifactStore> changes )
     {
-        super( changes );
+        super( eventMetadata, changes );
         this.type = type;
     }
 
-    protected ArtifactStoreUpdateEvent( final ArtifactStoreUpdateType type, final ArtifactStore... changes )
+    protected ArtifactStoreUpdateEvent( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata,
+                                        final ArtifactStore... changes )
     {
-        super( Arrays.asList( changes ) );
+        super( eventMetadata, Arrays.asList( changes ) );
         this.type = type;
     }
 

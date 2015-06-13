@@ -20,6 +20,7 @@ import javax.inject.Named;
 
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateType;
 import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.maven.galley.event.EventMetadata;
 
 @Alternative
 @Named
@@ -28,22 +29,24 @@ public class NoOpStoreEventDispatcher
 {
 
     @Override
-    public void deleting( final ArtifactStore... stores )
+    public void deleting( final EventMetadata eventMetadata, final ArtifactStore... stores )
     {
     }
 
     @Override
-    public void deleted( final ArtifactStore... stores )
+    public void deleted( final EventMetadata eventMetadata, final ArtifactStore... stores )
     {
     }
 
     @Override
-    public void updating( final ArtifactStoreUpdateType type, final ArtifactStore... stores )
+    public void updating( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata,
+                          final ArtifactStore... stores )
     {
     }
 
     @Override
-    public void updated( final ArtifactStoreUpdateType type, final ArtifactStore... stores )
+    public void updated( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata,
+                         final ArtifactStore... stores )
     {
     }
 

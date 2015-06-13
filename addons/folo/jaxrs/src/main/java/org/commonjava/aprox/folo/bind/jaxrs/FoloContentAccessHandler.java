@@ -17,6 +17,8 @@ package org.commonjava.aprox.folo.bind.jaxrs;
 
 import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatOkResponseWithEntity;
 import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatResponse;
+import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatResponseFromMetadata;
+import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.setInfoHeaders;
 import static org.commonjava.aprox.core.ctl.ContentController.LISTING_HTML_FILE;
 
 import java.io.IOException;
@@ -33,6 +35,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.AproxWorkflowException;
@@ -42,7 +46,7 @@ import org.commonjava.aprox.bind.jaxrs.util.JaxRsRequestHelper;
 import org.commonjava.aprox.core.bind.jaxrs.ContentAccessHandler;
 import org.commonjava.aprox.core.bind.jaxrs.util.TransferStreamingOutput;
 import org.commonjava.aprox.core.ctl.ContentController;
-import org.commonjava.aprox.folo.ctl.FoloContentController;
+import org.commonjava.aprox.folo.ctl.FoloConstants;
 import org.commonjava.aprox.folo.model.TrackingKey;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
@@ -52,7 +56,9 @@ import org.commonjava.aprox.util.ApplicationContent;
 import org.commonjava.aprox.util.ApplicationHeader;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.aprox.util.UriFormatter;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +80,7 @@ public class FoloContentAccessHandler
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private FoloContentController contentController;
+    private ContentController contentController;
 
     @Inject
     private UriFormatter uriFormatter;
@@ -86,7 +92,7 @@ public class FoloContentAccessHandler
     {
     }
 
-    public FoloContentAccessHandler( final FoloContentController controller, final UriFormatter uriFormatter,
+    public FoloContentAccessHandler( final ContentController controller, final UriFormatter uriFormatter,
                                      final JaxRsRequestHelper jaxRsRequestHelper )
     {
         this.contentController = controller;
@@ -110,7 +116,9 @@ public class FoloContentAccessHandler
         try
         {
             final ServletInputStream inputStream = request.getInputStream();
-            transfer = contentController.store( tk, sk, path, inputStream );
+            transfer =
+                contentController.store( sk, path, inputStream,
+                                         new EventMetadata().set( FoloConstants.TRACKING_KEY, tk ) );
 
             final StoreKey storageKey = LocationUtils.getKey( transfer );
             logger.info( "Key for storage location: {}", storageKey );
@@ -150,7 +158,7 @@ public class FoloContentAccessHandler
 
         final AcceptInfo acceptInfo = jaxRsRequestHelper.findAccept( request, ApplicationContent.text_html );
 
-        Response response;
+        Response response = null;
         try
         {
             final String baseUri = uriInfo.getBaseUriBuilder()
@@ -163,7 +171,7 @@ public class FoloContentAccessHandler
             {
                 logger.info( "Getting listing at: {}", path );
                 final String content =
-                    contentController.renderListing( acceptInfo.getBaseAccept(), tk, sk, path, baseUri, uriFormatter );
+                    contentController.renderListing( acceptInfo.getBaseAccept(), sk, path, baseUri, uriFormatter );
 
                 response =
                     Response.ok()
@@ -174,17 +182,33 @@ public class FoloContentAccessHandler
             }
             else
             {
-                final Transfer item = contentController.get( tk, sk, path );
+                final Transfer item =
+                    contentController.get( sk, path, new EventMetadata().set( FoloConstants.TRACKING_KEY, tk ) );
 
-                final String contentType = contentController.getContentType( path );
+                if ( item == null )
+                {
+                    if ( StoreType.remote == st )
+                    {
+                        final HttpExchangeMetadata metadata = contentController.getHttpMetadata( sk, path );
+                        if ( metadata != null )
+                        {
+                            response = formatResponseFromMetadata( metadata );
+                        }
+                    }
 
-                response =
-                    Response.ok()
-                            .header( ApplicationHeader.content_type.key(), contentType )
-                            .header( ApplicationHeader.content_length.key(), Long.toString( item.length() ) )
-                            .header( ApplicationHeader.last_modified.key(),
-                                     HttpUtils.formatDateHeader( item.lastModified() ) )
-                            .build();
+                    if ( response == null )
+                    {
+                        response = Response.status( Status.NOT_FOUND )
+                                           .build();
+                    }
+                }
+                else
+                {
+                    final ResponseBuilder builder = Response.ok();
+                    setInfoHeaders( builder, item, sk, path, false, contentController.getContentType( path ),
+                                    contentController.getHttpMetadata( sk, path ) );
+                    response = builder.build();
+                }
             }
         }
         catch ( final AproxWorkflowException e )
@@ -212,7 +236,7 @@ public class FoloContentAccessHandler
         logger.info( "User asked for: {}\nStandard accept header for that is: {}", acceptInfo.getRawAccept(),
                      acceptInfo.getBaseAccept() );
 
-        Response response;
+        Response response = null;
         try
         {
             final String baseUri = uriInfo.getBaseUriBuilder()
@@ -230,21 +254,39 @@ public class FoloContentAccessHandler
                 //            {
                 logger.info( "Getting listing at: {}", path );
                 final String content =
-                    contentController.renderListing( acceptInfo.getBaseAccept(), tk, sk, path, baseUri, uriFormatter );
+                    contentController.renderListing( acceptInfo.getBaseAccept(), sk, path, baseUri, uriFormatter );
 
                 response = formatOkResponseWithEntity( content, acceptInfo.getRawAccept() );
             }
             else
             {
-                final Transfer item = contentController.get( tk, sk, path );
-                if ( item.isDirectory()
+                final Transfer item =
+                    contentController.get( sk, path, new EventMetadata().set( FoloConstants.TRACKING_KEY, tk ) );
+                if ( item == null )
+                {
+                    if ( StoreType.remote == st )
+                    {
+                        final HttpExchangeMetadata metadata = contentController.getHttpMetadata( sk, path );
+                        if ( metadata != null )
+                        {
+                            response = formatResponseFromMetadata( metadata );
+                        }
+                    }
+
+                    if ( response == null )
+                    {
+                        response = Response.status( Status.NOT_FOUND )
+                                           .build();
+                    }
+                }
+                else if ( item.isDirectory()
                     || ( path.lastIndexOf( '.' ) < path.lastIndexOf( '/' ) && contentController.isHtmlContent( item ) ) )
                 {
                     item.delete( false );
 
                     logger.info( "Getting listing at: {}", path + "/" );
                     final String content =
-                        contentController.renderListing( acceptInfo.getBaseAccept(), tk, sk, path + "/", baseUri,
+                        contentController.renderListing( acceptInfo.getBaseAccept(), sk, path + "/", baseUri,
                                                          uriFormatter );
 
                     response = formatOkResponseWithEntity( content, acceptInfo.getRawAccept() );

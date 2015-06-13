@@ -145,6 +145,12 @@ public class JaxRsBooter
             weld = new Weld();
             container = weld.initialize();
 
+            // injectable version.
+            final BootOptions cdiOptions = container.instance()
+                                                    .select( BootOptions.class )
+                                                    .get();
+            cdiOptions.copyFrom( bootOptions );
+
             final BeanManager bmgr = container.getBeanManager();
             logger.info( "\n\n\nStarted BeanManager: {}\n\n\n", bmgr );
             initialized = true;

@@ -18,6 +18,7 @@ package org.commonjava.aprox.change.event;
 import java.util.Map;
 
 import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 
 /**
@@ -28,9 +29,10 @@ public class ArtifactStoreDeletePostEvent
     extends AbstractStoreDeleteEvent
 {
 
-    public ArtifactStoreDeletePostEvent( final Map<ArtifactStore, Transfer> storeRoots )
+    public ArtifactStoreDeletePostEvent( final EventMetadata eventMetadata,
+                                         final Map<ArtifactStore, Transfer> storeRoots )
     {
-        super( storeRoots );
+        super( eventMetadata, storeRoots );
     }
 
 }

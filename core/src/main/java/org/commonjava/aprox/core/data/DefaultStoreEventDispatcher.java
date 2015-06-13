@@ -29,15 +29,14 @@ import org.commonjava.aprox.change.event.ArtifactStoreUpdateType;
 import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.data.StoreEventDispatcher;
 import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DefaultStoreEventDispatcher
     implements StoreEventDispatcher
 {
 
-    private final Logger logger = LoggerFactory.getLogger( getClass() );
+    //    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private Event<ArtifactStorePreUpdateEvent> updatePreEvent;
@@ -55,7 +54,7 @@ public class DefaultStoreEventDispatcher
     private DownloadManager fileManager;
 
     @Override
-    public void deleting( final ArtifactStore... stores )
+    public void deleting( final EventMetadata eventMetadata, final ArtifactStore... stores )
     {
         if ( preDelEvent != null )
         {
@@ -71,14 +70,14 @@ public class DefaultStoreEventDispatcher
                 storeRoots.put( store, root );
             }
 
-            final ArtifactStoreDeletePreEvent event = new ArtifactStoreDeletePreEvent( storeRoots );
+            final ArtifactStoreDeletePreEvent event = new ArtifactStoreDeletePreEvent( eventMetadata, storeRoots );
 
             preDelEvent.fire( event );
         }
     }
 
     @Override
-    public void deleted( final ArtifactStore... stores )
+    public void deleted( final EventMetadata eventMetadata, final ArtifactStore... stores )
     {
         if ( postDelEvent != null )
         {
@@ -94,19 +93,20 @@ public class DefaultStoreEventDispatcher
                 storeRoots.put( store, root );
             }
 
-            final ArtifactStoreDeletePostEvent event = new ArtifactStoreDeletePostEvent( storeRoots );
+            final ArtifactStoreDeletePostEvent event = new ArtifactStoreDeletePostEvent( eventMetadata, storeRoots );
 
             postDelEvent.fire( event );
         }
     }
 
     @Override
-    public void updating( final ArtifactStoreUpdateType type, final ArtifactStore... stores )
+    public void updating( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata,
+                          final ArtifactStore... stores )
     {
         //        logger.debug( "Trying to fire pre-update event for: {}", new JoinString( ", ", stores ) );
         if ( updatePreEvent != null )
         {
-            final ArtifactStorePreUpdateEvent event = new ArtifactStorePreUpdateEvent( type, stores );
+            final ArtifactStorePreUpdateEvent event = new ArtifactStorePreUpdateEvent( type, eventMetadata, stores );
             //            logger.debug( "Firing pre-update event: {} (for: {}) via:\n  {}", event, new JoinString( ", ", stores ),
             //                          new JoinString( "\n  ", Thread.currentThread()
             //                                                        .getStackTrace() ) );
@@ -115,11 +115,12 @@ public class DefaultStoreEventDispatcher
     }
 
     @Override
-    public void updated( final ArtifactStoreUpdateType type, final ArtifactStore... stores )
+    public void updated( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata,
+                         final ArtifactStore... stores )
     {
         if ( updatePostEvent != null )
         {
-            final ArtifactStorePostUpdateEvent event = new ArtifactStorePostUpdateEvent( type, stores );
+            final ArtifactStorePostUpdateEvent event = new ArtifactStorePostUpdateEvent( type, eventMetadata, stores );
             updatePostEvent.fire( event );
         }
     }
