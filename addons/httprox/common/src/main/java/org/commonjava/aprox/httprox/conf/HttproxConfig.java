@@ -30,11 +30,35 @@ public class HttproxConfig
 
     private static final String DEFAULT_PROXY_REALM = "httprox";
 
+    private static final boolean DEFAULT_SECURED = true;
+
+    private static final String DEFAULT_TRACKING_TYPE = TrackingType.SUFFIX.name();
+
     private String proxyRealm;
 
     private Boolean enabled;
 
+    private Boolean secured;
+
     private Integer port;
+
+    private String trackingType;
+
+    public TrackingType getTrackingType()
+    {
+        return TrackingType.valueOf( trackingType == null ? DEFAULT_TRACKING_TYPE : trackingType.toUpperCase() );
+    }
+
+    @ConfigName( "tracking.type" )
+    public void setTrackingType( final String option )
+    {
+        this.trackingType = option;
+    }
+
+    public void setTrackingType( final TrackingType type )
+    {
+        this.trackingType = type.name();
+    }
 
     public boolean isEnabled()
     {
@@ -45,6 +69,17 @@ public class HttproxConfig
     public void setEnabled( final Boolean enabled )
     {
         this.enabled = enabled;
+    }
+
+    public boolean isSecured()
+    {
+        return secured == null ? DEFAULT_SECURED : secured;
+    }
+
+    @ConfigName( "secured" )
+    public void setSecured( final Boolean secured )
+    {
+        this.secured = secured;
     }
 
     public Integer getPort()
