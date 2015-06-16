@@ -13,6 +13,7 @@ import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.event.FileStorageEvent;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.model.TransferOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,24 +31,30 @@ public class FoloTrackingListener
                                                            .get( FoloConstants.TRACKING_KEY );
         if ( trackingKey == null )
         {
+            logger.debug( "No tracking key for access to: {}", event.getTransfer() );
             return;
         }
 
         final Transfer transfer = event.getTransfer();
         if ( transfer == null )
         {
+            logger.debug( "No transfer: {}", event );
             return;
         }
 
         final Location location = transfer.getLocation();
         if ( !( location instanceof KeyedLocation ) )
         {
+            logger.debug( "Not in a keyed location: {}", event.getTransfer() );
             return;
         }
 
         try
         {
             final KeyedLocation keyedLocation = (KeyedLocation) location;
+            logger.debug( "Tracking report: {} += {} in {} (DOWNLOAD)", trackingKey, transfer.getPath(),
+                          keyedLocation.getKey() );
+
             recordManager.recordArtifact( trackingKey, keyedLocation.getKey(), transfer.getPath(), StoreEffect.DOWNLOAD );
         }
         catch ( final FoloContentException e )
@@ -77,10 +84,34 @@ public class FoloTrackingListener
             return;
         }
 
+        final TransferOperation op = event.getType();
+        StoreEffect effect = null;
+        switch ( op )
+        {
+            case DOWNLOAD:
+            {
+                effect = StoreEffect.DOWNLOAD;
+                break;
+            }
+            case UPLOAD:
+            {
+                effect = StoreEffect.UPLOAD;
+                break;
+            }
+            default:
+            {
+                logger.debug( "Ignoring transfer operation: {} for: {}", op, transfer );
+                return;
+            }
+        }
+
         try
         {
             final KeyedLocation keyedLocation = (KeyedLocation) location;
-            recordManager.recordArtifact( trackingKey, keyedLocation.getKey(), transfer.getPath(), StoreEffect.UPLOAD );
+            logger.debug( "Tracking report: {} += {} in {} ({})", trackingKey, transfer.getPath(),
+                          keyedLocation.getKey(), effect );
+
+            recordManager.recordArtifact( trackingKey, keyedLocation.getKey(), transfer.getPath(), effect );
         }
         catch ( final FoloContentException e )
         {

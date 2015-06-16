@@ -25,6 +25,7 @@ import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.folo.ctl.FoloConstants;
 import org.commonjava.aprox.folo.model.TrackingKey;
 import org.commonjava.aprox.httprox.conf.HttproxConfig;
+import org.commonjava.aprox.httprox.conf.TrackingType;
 import org.commonjava.aprox.httprox.util.UserPass;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.util.HttpUtils;
@@ -44,6 +45,8 @@ import org.xnio.conduits.ConduitStreamSinkChannel;
 public final class ProxyResponseWriter
     implements ChannelListener<ConduitStreamSinkChannel>
 {
+
+    private static final String TRACKED_USER_SUFFIX = "+tracking";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -77,7 +80,7 @@ public final class ProxyResponseWriter
             {
                 final UserPass proxyUserPass =
                     UserPass.parse( ApplicationHeader.proxy_authorization, headerLines, null );
-                if ( proxyUserPass == null )
+                if ( ( config.isSecured() || TrackingType.ALWAYS == config.getTrackingType() ) && proxyUserPass == null )
                 {
                     writeStatus( channel, ApplicationStatus.PROXY_AUTHENTICATION_REQUIRED );
                     writeHeader( channel, ApplicationHeader.proxy_authenticate,
@@ -185,7 +188,47 @@ public final class ProxyResponseWriter
         final EventMetadata eventMetadata = new EventMetadata();
         if ( writeBody )
         {
-            eventMetadata.set( FoloConstants.TRACKING_KEY, new TrackingKey( proxyUserPass.getUser() ) );
+            TrackingKey tk = null;
+            switch ( config.getTrackingType() )
+            {
+                case ALWAYS:
+                {
+                    if ( proxyUserPass == null )
+                    {
+                        writeStatus( sinkChannel, ApplicationStatus.BAD_REQUEST );
+                        return;
+                    }
+                    break;
+                }
+                case SUFFIX:
+                {
+                    String user = proxyUserPass.getUser();
+                    if ( user.endsWith( TRACKED_USER_SUFFIX ) && user.length() > TRACKED_USER_SUFFIX.length() )
+                    {
+                        user = user.substring( 0, user.length() - TRACKED_USER_SUFFIX.length() );
+                        tk = new TrackingKey( user );
+                    }
+
+                    break;
+                }
+                default:
+                {
+                }
+            }
+
+            if ( tk != null )
+            {
+                logger.debug( "TRACKING {} in {} (KEY: {})", path, repo, tk );
+                eventMetadata.set( FoloConstants.TRACKING_KEY, tk );
+            }
+            else
+            {
+                logger.info( "NOT TRACKING: {} in {}", path, repo );
+            }
+        }
+        else
+        {
+            logger.debug( "NOT TRACKING non-body request: {} in {}", path, repo );
         }
 
         Transfer txfr = null;
@@ -200,6 +243,7 @@ public final class ProxyResponseWriter
             {
                 throw e;
             }
+            logger.debug( "Suppressed exception for further handling inside proxy logic:", e );
         }
 
         if ( txfr != null && txfr.exists() )
@@ -286,17 +330,21 @@ public final class ProxyResponseWriter
         final String name = PROXY_REPO_PREFIX + url.getHost()
                                                    .replace( '.', '-' );
 
-        RemoteRepository remote = storeManager.findRemoteRepository( url.toExternalForm() );
+        final String baseUrl = String.format( "%s://%s:%s/", url.getProtocol(), url.getHost(), url.getPort() );
+
+        RemoteRepository remote = storeManager.findRemoteRepository( baseUrl );
         if ( remote == null )
         {
+            logger.debug( "Looking for remote repo with name: {}", name );
             remote = storeManager.getRemoteRepository( name );
         }
 
         if ( remote == null )
         {
+            logger.debug( "Creating remote repository for HTTProx request: {}", url );
+
             final UrlInfo info = new UrlInfo( url.toExternalForm() );
 
-            final String baseUrl = String.format( "%s://%s:%s/", url.getProtocol(), url.getHost(), url.getPort() );
             remote = new RemoteRepository( name, baseUrl );
             remote.setDescription( "HTTProx proxy based on: " + info.getUrl() );
 
