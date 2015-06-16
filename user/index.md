@@ -27,4 +27,5 @@ title: "AProx User's Guide"
 ### Experimental Features and Add-Ons
 
 * [Implied Repositories](implied-repos-addon.html)
+* [HTTProx Generic Content Proxy](httprox-addon.html)
 
