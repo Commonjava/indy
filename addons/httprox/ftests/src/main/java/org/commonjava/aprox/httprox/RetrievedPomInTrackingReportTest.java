@@ -27,9 +27,7 @@ public class RetrievedPomInTrackingReportTest
     extends AbstractHttproxFunctionalTest
 {
 
-    private static final String TID = "user";
-
-    private static final String USER = TID + "+tracking";
+    private static final String USER = "user+tracking";
 
     private static final String PASS = "password";
 
@@ -65,7 +63,7 @@ public class RetrievedPomInTrackingReportTest
 
         final String repoName = "httprox_127-0-0-1";
         final TrackedContentRecord record = this.client.module( AproxFoloAdminClientModule.class )
-                                                       .getRawTrackingRecord( TID );
+                                                       .getRawTrackingRecord( USER );
         assertThat( record, notNullValue() );
 
         final Map<StoreKey, AffectedStoreRecord> affectedStores = record.getAffectedStores();

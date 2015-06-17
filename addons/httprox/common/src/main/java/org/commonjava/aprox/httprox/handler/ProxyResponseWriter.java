@@ -202,10 +202,9 @@ public final class ProxyResponseWriter
                 }
                 case SUFFIX:
                 {
-                    String user = proxyUserPass.getUser();
+                    final String user = proxyUserPass.getUser();
                     if ( user.endsWith( TRACKED_USER_SUFFIX ) && user.length() > TRACKED_USER_SUFFIX.length() )
                     {
-                        user = user.substring( 0, user.length() - TRACKED_USER_SUFFIX.length() );
                         tk = new TrackingKey( user );
                     }
 
