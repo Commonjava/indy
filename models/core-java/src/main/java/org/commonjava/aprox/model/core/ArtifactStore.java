@@ -22,10 +22,14 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.wordnik.swagger.annotations.ApiModel;
+import com.wordnik.swagger.annotations.ApiModelProperty;
 
 @JsonTypeInfo( use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = ArtifactStore.TYPE_ATTR )
 @JsonSubTypes( { @Type( name = "remote", value = RemoteRepository.class ),
     @Type( name = "hosted", value = HostedRepository.class ), @Type( name = "group", value = Group.class ) } )
+@ApiModel( description = "Definition of a content store on AProx, whether it proxies content from a remote server, hosts artifacts on this system, or groups other content stores.", discriminator = "type", subTypes = {
+    HostedRepository.class, Group.class, RemoteRepository.class } )
 public abstract class ArtifactStore
     implements Serializable
 {
@@ -38,6 +42,7 @@ public abstract class ArtifactStore
 
     private static final long serialVersionUID = 1L;
 
+    @ApiModelProperty( required = true, dataType = "string", value = "Serialized store key, of the form: '[hosted|group|remote]:name'" )
     private StoreKey key;
 
     private String description;

@@ -19,6 +19,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import com.wordnik.swagger.annotations.ApiModel;
+
 /**
  * DTO used to wrap a listing of available {@link EndpointView} instances (read: artifact-stores) installed in the system.
  * 
@@ -28,7 +30,7 @@ import java.util.List;
  * http://stackoverflow.com/questions/3503102/what-are-top-level-json-arrays-and-why-are-they-a-security-risk
  * </a>
  */
-
+@ApiModel( "Listing of available artifact stores on the system, with the information necessary to access/reference each (for replicating from another AProx instance, or another remote repository manager)" )
 public class EndpointViewListing
     implements Iterable<EndpointView>
 {

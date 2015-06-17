@@ -35,6 +35,8 @@ public class AProxVersioning
 
     private String timestamp;
 
+    private String apiVersion;
+
     public AProxVersioning()
     {
     }
@@ -43,12 +45,14 @@ public class AProxVersioning
     public AProxVersioning( @JsonProperty( value = "version" ) final String version,
                             @JsonProperty( "builder" ) final String builder,
                             @JsonProperty( "commit-id" ) final String commitId,
-                            @JsonProperty( "timestamp" ) final String timestamp )
+                            @JsonProperty( "timestamp" ) final String timestamp,
+                            @JsonProperty( "api-version" ) final String apiVersion )
     {
         this.version = version;
         this.builder = builder;
         this.commitId = commitId;
         this.timestamp = timestamp;
+        this.apiVersion = apiVersion;
     }
 
     public String getVersion()
@@ -89,6 +93,11 @@ public class AProxVersioning
     public void setTimestamp( final String timestamp )
     {
         this.timestamp = timestamp;
+    }
+
+    public String getApiVersion()
+    {
+        return apiVersion;
     }
 
 }

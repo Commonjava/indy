@@ -36,7 +36,13 @@ import org.commonjava.aprox.model.core.dto.NotFoundCacheDTO;
 import org.commonjava.aprox.util.ApplicationContent;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
 
+@Api( description = "REST resource that manages the not-found cache", value = "/api/nfc" )
 @Path( "/api/nfc" )
 public class NfcResource
     implements AproxResources
@@ -48,6 +54,7 @@ public class NfcResource
     @Inject
     private ObjectMapper serializer;
 
+    @ApiOperation( "Clear all not-found cache entries" )
     @DELETE
     public Response clearAll()
     {
@@ -57,9 +64,11 @@ public class NfcResource
     }
 
     @Path( "/{type: (hosted|group|remote)}/{name}{path: (/.+)?}" )
+    @ApiOperation( "Clear all not-found cache entries for a particular store (or optionally, a subpath within a store)" )
     @DELETE
-    public Response clearStore( final @PathParam( "type" ) String t, final @PathParam( "name" ) String name,
-                                final @PathParam( "path" ) String p )
+    public Response clearStore( final @ApiParam( allowableValues = "hosted,group,remote", name = "type", required = true, value = "The type of store" ) @PathParam( "type" ) String t,
+                                final @ApiParam( name = "name", required = true, value = "The name of the store" ) @PathParam( "name" ) String name,
+                                final @ApiParam( name = "path", required = false, value = "The sub-path to clear" ) @PathParam( "path" ) String p )
     {
         Response response;
         final StoreType type = StoreType.get( t );
@@ -87,6 +96,8 @@ public class NfcResource
     }
 
     @GET
+    @ApiOperation( "Retrieve all not-found cache entries currently tracked" )
+    @ApiResponses( { @ApiResponse( code = 200, response = NotFoundCacheDTO.class, message = "The full not-found cache" ) } )
     @Produces( ApplicationContent.application_json )
     public Response getAll()
     {
@@ -96,9 +107,12 @@ public class NfcResource
     }
 
     @Path( "/{type: (hosted|group|remote)}/{name}" )
+    @ApiOperation( "Retrieve all not-found cache entries currently tracked for a given store" )
+    @ApiResponses( { @ApiResponse( code = 200, response = NotFoundCacheDTO.class, message = "The not-found cache for the specified artifact store" ) } )
     @GET
     @Produces( ApplicationContent.application_json )
-    public Response getStore( final @PathParam( "type" ) String t, final @PathParam( "name" ) String name )
+    public Response getStore( final @ApiParam( allowableValues = "hosted,group,remote", name = "type", required = true, value = "The type of store" ) @PathParam( "type" ) String t,
+                              final @ApiParam( name = "name", value = "The name of the store" ) @PathParam( "name" ) String name )
     {
         Response response;
         final StoreType type = StoreType.get( t );

@@ -20,11 +20,14 @@ import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.wordnik.swagger.annotations.ApiModel;
+import com.wordnik.swagger.annotations.ApiModelProperty;
 
 /**
  * Lightweight view of an {@link ArtifactStore} designed for external use. Each instance includes the name and type of the store, plus a resource-uri
  * for accessing content on that endpoint.
  */
+@ApiModel( "Artifact store information necessary for accessing or referencing (for replicating from another AProx instance, or from another repository manager)" )
 public final class EndpointView
     implements Comparable<EndpointView>
 {
@@ -32,6 +35,7 @@ public final class EndpointView
 
     private String type;
 
+    @ApiModelProperty( "URL for accessing this artifact store" )
     @JsonProperty( "resource_uri" )
     private String resourceUri;
 

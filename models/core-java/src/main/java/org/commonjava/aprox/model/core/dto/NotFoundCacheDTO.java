@@ -21,9 +21,14 @@ import java.util.Set;
 
 import org.commonjava.aprox.model.core.StoreKey;
 
+import com.wordnik.swagger.annotations.ApiModel;
+import com.wordnik.swagger.annotations.ApiModelProperty;
+
+@ApiModel( description = "Listing of artifact store paths that could not be retrieved.", value = "not-found cache" )
 public class NotFoundCacheDTO
 {
 
+    @ApiModelProperty( required = true, value = "Set of sections each corresponding an artifact store" )
     private final Set<NotFoundCacheSectionDTO> sections = new HashSet<NotFoundCacheSectionDTO>();
 
     public void addSection( final StoreKey key, final List<String> paths )

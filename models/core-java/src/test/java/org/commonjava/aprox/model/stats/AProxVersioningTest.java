@@ -32,7 +32,7 @@ public class AProxVersioningTest
         final AproxObjectMapper mapper = new AproxObjectMapper( true );
 
         final AProxVersioning versioning =
-            new AProxVersioning( "0.0.1", "somebody", "01010101010101", "2014-11-02 21:45:00" );
+            new AProxVersioning( "0.0.1", "somebody", "01010101010101", "2014-11-02 21:45:00", "1" );
 
         final String json = mapper.writeValueAsString( versioning );
 

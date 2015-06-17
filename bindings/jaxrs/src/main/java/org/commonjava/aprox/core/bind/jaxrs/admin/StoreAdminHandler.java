@@ -55,6 +55,15 @@ import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiImplicitParam;
+import com.wordnik.swagger.annotations.ApiImplicitParams;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
+
+@Api( description = "Resource for accessing and managing artifact store definitions", value = "/api/admin/<type>" )
 @Path( "/api/admin/{type}" )
 public class StoreAdminHandler
     implements AproxResources
@@ -79,9 +88,13 @@ public class StoreAdminHandler
     //    @Context
     //    private HttpServletRequest request;
 
+    @ApiOperation( "Check if a given store exists" )
+    @ApiResponses( { @ApiResponse( code = 200, message = "The store exists" ),
+        @ApiResponse( code = 404, message = "The store doesn't exist" ) } )
     @Path( "/{name}" )
     @HEAD
-    public Response exists( final @PathParam( "type" ) String type, @PathParam( "name" ) final String name )
+    public Response exists( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+                            @ApiParam( required = true ) @PathParam( "name" ) final String name )
     {
         Response response;
         final StoreType st = StoreType.get( type );
@@ -104,10 +117,15 @@ public class StoreAdminHandler
         return response;
     }
 
+    @ApiOperation( "Create a new store" )
+    @ApiResponses( { @ApiResponse( code = 201, response = ArtifactStore.class, message = "The store was created" ),
+        @ApiResponse( code = 409, message = "A store with the specified type and name already exists" ) } )
+    @ApiImplicitParams( { @ApiImplicitParam( allowMultiple = false, paramType = "body", name = "body", required = true, dataType = "org.commonjava.aprox.model.core.ArtifactStore", value = "The artifact store definition JSON" ) } )
     @POST
     @Consumes( ApplicationContent.application_json )
     @Produces( ApplicationContent.application_json )
-    public Response create( final @PathParam( "type" ) String type, final @Context UriInfo uriInfo,
+    public Response create( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+                            final @Context UriInfo uriInfo,
                             final @Context HttpServletRequest request )
     {
         final StoreType st = StoreType.get( type );
@@ -190,10 +208,15 @@ public class StoreAdminHandler
      * (non-Javadoc)
      * @see org.commonjava.aprox.core.rest.admin.DeployPointAdminResource#store(java.lang.String)
      */
+    @ApiOperation( "Update an existing store" )
+    @ApiResponses( { @ApiResponse( code = 200, message = "The store was updated" ),
+        @ApiResponse( code = 400, message = "The store specified in the body JSON didn't match the URL parameters" ), } )
+    @ApiImplicitParams( { @ApiImplicitParam( allowMultiple = false, paramType = "body", name = "body", required = true, dataType = "org.commonjava.aprox.model.core.ArtifactStore", value = "The artifact store definition JSON" ) } )
     @Path( "/{name}" )
     @PUT
     @Consumes( ApplicationContent.application_json )
-    public Response store( final @PathParam( "type" ) String type, @PathParam( "name" ) final String name,
+    public Response store( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+                           final @ApiParam( required = true ) @PathParam( "name" ) String name,
                            final @Context HttpServletRequest request )
     {
         final StoreType st = StoreType.get( type );
@@ -274,9 +297,11 @@ public class StoreAdminHandler
         return response;
     }
 
+    @ApiOperation( "Retrieve the definitions of all artifact stores of a given type on the system" )
+    @ApiResponses( { @ApiResponse( code = 200, response = StoreListingDTO.class, message = "The store definitions" ), } )
     @GET
     @Produces( ApplicationContent.application_json )
-    public Response getAll( final @PathParam( "type" ) String type )
+    public Response getAll( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type )
     {
         final StoreType st = StoreType.get( type );
 
@@ -301,10 +326,14 @@ public class StoreAdminHandler
         return response;
     }
 
+    @ApiOperation( "Retrieve the definition of a specific artifact store" )
+    @ApiResponses( { @ApiResponse( code = 200, response = ArtifactStore.class, message = "The store definition" ),
+        @ApiResponse( code = 404, message = "The store doesn't exist" ), } )
     @Path( "/{name}" )
     @GET
     @Produces( ApplicationContent.application_json )
-    public Response get( final @PathParam( "type" ) String type, @PathParam( "name" ) final String name )
+    public Response get( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+                         final @ApiParam( required = true ) @PathParam( "name" ) String name )
     {
         final StoreType st = StoreType.get( type );
         final StoreKey key = new StoreKey( st, name );
@@ -333,9 +362,12 @@ public class StoreAdminHandler
         return response;
     }
 
+    @ApiOperation( "Delete an artifact store" )
+    @ApiResponses( { @ApiResponse( code = 204, response = ArtifactStore.class, message = "The store was deleted (or didn't exist in the first place)" ), } )
     @Path( "/{name}" )
     @DELETE
-    public Response delete( final @PathParam( "type" ) String type, @PathParam( "name" ) final String name,
+    public Response delete( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+                            final @ApiParam( required = true ) @PathParam( "name" ) String name,
                             @Context final HttpServletRequest request )
     {
         final StoreType st = StoreType.get( type );

@@ -20,6 +20,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import com.wordnik.swagger.annotations.ApiModel;
+
+@ApiModel( description = "Grouping of other artifact stores, with a defined order to the membership that determines content preference", parent = ArtifactStore.class )
 public class Group
     extends ArtifactStore
 {

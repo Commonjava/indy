@@ -18,6 +18,10 @@ package org.commonjava.aprox.model.spi;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.wordnik.swagger.annotations.ApiModel;
+import com.wordnik.swagger.annotations.ApiModelProperty;
+
+@ApiModel( description = "Description of an add-on" )
 public final class AproxAddOnID
     implements Comparable<AproxAddOnID>
 {
@@ -26,10 +30,13 @@ public final class AproxAddOnID
 
     private String description;
 
+    @ApiModelProperty( "List of router entries (mainly for use in the UI)" )
     private List<UIRoute> routes;
 
+    @ApiModelProperty( "List of menu sections (mainly for use in the UI)" )
     private List<UISection> sections;
 
+    @ApiModelProperty( "Path to the Javascript needed to drive the UI for this add-on" )
     private String initJavascriptHref;
 
     public String getInitJavascriptHref()

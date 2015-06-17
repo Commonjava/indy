@@ -37,6 +37,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.AproxWorkflowException;
@@ -59,6 +60,13 @@ import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
+
+@Api( value = "/<type>/<name>", description = "Handles retrieval and management of file/artifact content. This is the main point of access for most users." )
 @Path( "/api/{type: (hosted|group|remote)}/{name}" )
 public class ContentAccessHandler
     implements AproxResources
@@ -85,9 +93,14 @@ public class ContentAccessHandler
         this.uriFormatter = uriFormatter;
     }
 
+    @ApiOperation( "Store file/artifact content under the given artifact store (type/name) and path." )
+    @ApiResponses( {
+        @ApiResponse( code = 201, message = "Content was stored successfully" ),
+        @ApiResponse( code = 400, message = "No appropriate storage location was found in the specified store (this store, or a member if a group is specified)." ) } )
     @PUT
     @Path( "/{path: (.+)?}" )
-    public Response doCreate( final @PathParam( "type" ) String type, final @PathParam( "name" ) String name,
+    public Response doCreate( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+                              final @ApiParam( required = true ) @PathParam( "name" ) String name,
                               final @PathParam( "path" ) String path, final @Context UriInfo uriInfo,
                               final @Context HttpServletRequest request )
     {
@@ -120,9 +133,12 @@ public class ContentAccessHandler
         return response;
     }
 
+    @ApiOperation( "Delete file/artifact content under the given artifact store (type/name) and path." )
+    @ApiResponses( { @ApiResponse( code = 204, message = "Content was deleted successfully" ) } )
     @DELETE
     @Path( "/{path: (.*)}" )
-    public Response doDelete( final @PathParam( "type" ) String type, final @PathParam( "name" ) String name,
+    public Response doDelete( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+                              final @ApiParam( required = true ) @PathParam( "name" ) String name,
                               final @PathParam( "path" ) String path )
     {
         final StoreType st = StoreType.get( type );
@@ -143,9 +159,12 @@ public class ContentAccessHandler
         return response;
     }
 
+    @ApiOperation( "Store file/artifact content under the given artifact store (type/name) and path." )
+    @ApiResponses( { @ApiResponse( code = 200, message = "Header metadata for content (or rendered listing when path ends with '/index.html' or '/'" ), } )
     @HEAD
     @Path( "/{path: (.*)}" )
-    public Response doHead( final @PathParam( "type" ) String type, final @PathParam( "name" ) String name,
+    public Response doHead( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+                            final @ApiParam( required = true ) @PathParam( "name" ) String name,
                             final @PathParam( "path" ) String path, @Context final UriInfo uriInfo,
                             @Context final HttpServletRequest request )
     {
@@ -215,9 +234,14 @@ public class ContentAccessHandler
         return response;
     }
 
+    @ApiOperation( "Store file/artifact content under the given artifact store (type/name) and path." )
+    @ApiResponses( {
+        @ApiResponse( code = 200, response = String.class, message = "Rendered content listing (when path ends with '/index.html' or '/')" ),
+        @ApiResponse( code = 200, response = StreamingOutput.class, message = "Content stream" ), } )
     @GET
     @Path( "/{path: (.*)}" )
-    public Response doGet( final @PathParam( "type" ) String type, final @PathParam( "name" ) String name,
+    public Response doGet( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+                           final @ApiParam( required = true ) @PathParam( "name" ) String name,
                            final @PathParam( "path" ) String path, @Context final UriInfo uriInfo,
                            @Context final HttpServletRequest request )
     {

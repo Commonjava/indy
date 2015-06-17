@@ -42,7 +42,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiImplicitParam;
+import com.wordnik.swagger.annotations.ApiImplicitParams;
+import com.wordnik.swagger.annotations.ApiOperation;
 
+@Api( description = "Replicate the artifact stores on a remote AProx instance, either by proxying the remote system's stores or by cloning the store definitions", value = "/api/admin/replicate" )
 @Path( "/api/admin/replicate" )
 public class ReplicationHandler
     implements AproxResources
@@ -56,6 +61,8 @@ public class ReplicationHandler
     @Inject
     private ObjectMapper serializer;
 
+    @ApiOperation( "Replicate the stores of a remote AProx" )
+    @ApiImplicitParams( { @ApiImplicitParam( paramType = "body", name = "body", dataType = "org.commonjava.aprox.model.core.dto.ReplicationDTO", required = true, value = "The configuration determining how replication should be handled, and what remote site to replicate." ) } )
     @POST
     @Produces( ApplicationContent.application_json )
     public Response replicate( @Context final HttpServletRequest request )

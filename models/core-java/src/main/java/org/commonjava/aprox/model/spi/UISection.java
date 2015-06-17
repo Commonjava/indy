@@ -15,10 +15,13 @@
  */
 package org.commonjava.aprox.model.spi;
 
+import com.wordnik.swagger.annotations.ApiModel;
+
 /**
  * Describes a section of the UI, to allow add-ons to auto-register UI additions. This corresponds to a menu title (name) and a UI route (path) for
  * display in the UI menuing system. The route is used as a key that links this section to a corresponding {@link UIRoute} via the UI logic.
  */
+@ApiModel( "Information about one menu item for use in a Javascript-driven UI" )
 public class UISection
 {
 

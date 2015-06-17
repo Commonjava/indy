@@ -23,18 +23,25 @@ import java.util.List;
 
 import org.commonjava.aprox.AproxException;
 
+import com.wordnik.swagger.annotations.ApiModel;
+import com.wordnik.swagger.annotations.ApiModelProperty;
+
+@ApiModel( description = "Configuration for replicating the content stores on a remote AProx system" )
 public class ReplicationDTO
     implements Iterable<ReplicationAction>
 {
 
+    @ApiModelProperty( "Whether to overwrite pre-existing artifact stores on the local AProx instance with definitions from the remote system" )
     private boolean overwrite;
 
+    @ApiModelProperty( required = true, value = "The URL to the remote AProx instance" )
     private String apiUrl;
 
     private String proxyHost;
 
     private int proxyPort;
 
+    @ApiModelProperty( required = true, value = "The list of replication actions to be performed" )
     private List<ReplicationAction> actions;
 
     public String getApiUrl()

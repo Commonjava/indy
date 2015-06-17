@@ -15,20 +15,11 @@
  */
 package org.commonjava.aprox.model.core.io;
 
-import java.io.IOException;
-
 import javax.enterprise.context.ApplicationScoped;
 
 import org.commonjava.aprox.model.core.StoreKey;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 @ApplicationScoped
 public class ApiSerializerModule
@@ -55,41 +46,5 @@ public class ApiSerializerModule
     public boolean equals( final Object other )
     {
         return getClass().equals( other.getClass() );
-    }
-
-    private static final class StoreKeyDeserializer
-        extends StdDeserializer<StoreKey>
-    {
-        private static final long serialVersionUID = 1L;
-
-        StoreKeyDeserializer()
-        {
-            super( StoreKey.class );
-        }
-
-        @Override
-        public StoreKey deserialize( final JsonParser parser, final DeserializationContext context )
-            throws IOException, JsonProcessingException
-        {
-            final String keyStr = parser.getText();
-            return StoreKey.fromString( keyStr );
-        }
-
-    }
-
-    private static final class StoreKeySerializer
-        extends StdSerializer<StoreKey>
-    {
-        StoreKeySerializer()
-        {
-            super( StoreKey.class );
-        }
-
-        @Override
-        public void serialize( final StoreKey key, final JsonGenerator generator, final SerializerProvider provider )
-            throws IOException, JsonProcessingException
-        {
-            generator.writeString( key.toString() );
-        }
     }
 }
