@@ -21,11 +21,17 @@ import java.util.Set;
 
 import org.commonjava.aprox.model.core.StoreKey;
 
+import com.wordnik.swagger.annotations.ApiModel;
+import com.wordnik.swagger.annotations.ApiModelProperty;
+
+@ApiModel( description = "Listing of paths that could not be retrieved for a given artifact store", value = "not-found cache section" )
 public class NotFoundCacheSectionDTO
 {
 
+    @ApiModelProperty( required = true, dataType = "string", value = "Serialized store key, of the form: '[hosted|group|remote]:name'" )
     private final StoreKey key;
 
+    @ApiModelProperty( required = true, value = "paths that failed retrieval within this store (may be empty)" )
     private final Set<String> paths;
 
     public NotFoundCacheSectionDTO( final StoreKey key, final Collection<String> paths )

@@ -18,6 +18,8 @@ package org.commonjava.aprox.model.spi;
 import java.util.Collections;
 import java.util.List;
 
+import com.wordnik.swagger.annotations.ApiModel;
+
 /**
  * DTO used to wrap a listing of available add-ons installed in the system. Wrapper embeds these id's in an "items" list, to work around a known
  * JSON security flaw.
@@ -26,6 +28,7 @@ import java.util.List;
  * http://stackoverflow.com/questions/3503102/what-are-top-level-json-arrays-and-why-are-they-a-security-risk
  * </a>
  */
+@ApiModel( description = "Listing of add-ons available on the system, with metadata" )
 public class AddOnListing
 {
 

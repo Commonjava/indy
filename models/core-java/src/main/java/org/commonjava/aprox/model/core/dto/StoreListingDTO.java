@@ -21,10 +21,15 @@ import java.util.List;
 
 import org.commonjava.aprox.model.core.ArtifactStore;
 
+import com.wordnik.swagger.annotations.ApiModel;
+import com.wordnik.swagger.annotations.ApiModelProperty;
+
+@ApiModel( "List of artifact store definitions" )
 public class StoreListingDTO<T extends ArtifactStore>
     implements Iterable<T>
 {
 
+    @ApiModelProperty( dataType = "org.commonjava.aprox.model.core.ArtifactStore", required = true, value = "The store definition list" )
     private List<T> items;
 
     public StoreListingDTO()

@@ -22,7 +22,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.wordnik.swagger.annotations.ApiModel;
+import com.wordnik.swagger.annotations.ApiModelProperty;
 
+@ApiModel( description = "Proxy to a remote server's artifact content, with local cache storage.", parent = ArtifactStore.class )
 public class RemoteRepository
     extends ArtifactStore
 {
@@ -32,6 +35,7 @@ public class RemoteRepository
 
     public static final int DEFAULT_TIMEOUT_SECONDS = 120;
 
+    @ApiModelProperty( required = true, value = "The remote URL to proxy" )
     @JsonProperty( "url" )
     private String url;
 

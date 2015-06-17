@@ -35,13 +35,19 @@ import org.commonjava.aprox.bind.jaxrs.AproxDeployment;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.core.ctl.StatsController;
 import org.commonjava.aprox.model.core.dto.EndpointViewListing;
+import org.commonjava.aprox.model.spi.AddOnListing;
+import org.commonjava.aprox.stats.AProxVersioning;
 import org.commonjava.aprox.util.ApplicationContent;
 import org.commonjava.aprox.util.UriFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiResponse;
 
+@Api( description = "Various read-only operations for retrieving information about the system.", value = "/api/stats" )
 @Path( "/api/stats" )
 public class StatsHandler
     implements AproxResources
@@ -58,6 +64,8 @@ public class StatsHandler
     @Inject
     private ObjectMapper objectMapper;
 
+    @ApiOperation( "Retrieve JSON describing the add-ons that are available on the system" )
+    @ApiResponse( code = 200, response = AddOnListing.class, message = "The description object" )
     @Path( "/addons/active" )
     @GET
     @Produces( ApplicationContent.application_json )
@@ -66,6 +74,8 @@ public class StatsHandler
         return formatOkResponseWithJsonEntity( statsController.getActiveAddOns(), objectMapper );
     }
 
+    @ApiOperation( "Aggregate javascript content for all add-ons and format as a single Javascript stream (this gives the UI a static URL to load add-on logic)" )
+    @ApiResponse( code = 200, message = "The add-on Javascript wrapped as a JSON object" )
     @Path( "/addons/active.js" )
     @GET
     @Produces( ApplicationContent.application_json )
@@ -86,6 +96,8 @@ public class StatsHandler
         return response;
     }
 
+    @ApiOperation( "Retrieve versioning information about this AProx instance" )
+    @ApiResponse( code = 200, response = AProxVersioning.class, message = "The version metadata" )
     @Path( "/version-info" )
     @GET
     @Produces( ApplicationContent.application_json )
@@ -94,6 +106,8 @@ public class StatsHandler
         return formatOkResponseWithJsonEntity( statsController.getVersionInfo(), objectMapper );
     }
 
+    @ApiOperation( "Retrieve a listing of the artifact stores available on the system. This is especially useful for setting up a network of AProx instances that reference one another" )
+    @ApiResponse( code = 200, response = EndpointViewListing.class, message = "The artifact store listing" )
     @Path( "/all-endpoints" )
     @GET
     @Produces( ApplicationContent.application_json )

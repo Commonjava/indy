@@ -69,7 +69,8 @@ public class AProxVersioningProvider
         versioning =
             new AProxVersioning( props.getProperty( "version", "unknown" ), props.getProperty( "builder", "unknown" ),
                                  props.getProperty( "commit.id", "unknown" ),
-                                 props.getProperty( "timestamp", "unknown" ) );
+                                 props.getProperty( "timestamp", "unknown" ), props.getProperty( "api-version",
+                                                                                                 "unknown" ) );
     }
 
     @Produces

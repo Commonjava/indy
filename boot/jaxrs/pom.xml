@@ -92,6 +92,11 @@
       <groupId>org.commonjava.atservice</groupId>
       <artifactId>atservice-processor</artifactId>
     </dependency>
+    
+    <dependency>
+      <groupId>com.wordnik</groupId>
+      <artifactId>swagger-jaxrs_2.10</artifactId>
+    </dependency>
   </dependencies>
   
 </project>

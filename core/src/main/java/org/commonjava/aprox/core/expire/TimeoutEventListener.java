@@ -228,7 +228,7 @@ public class TimeoutEventListener
                 final StoreType type = key.getType();
                 if ( type == StoreType.hosted )
                 {
-                    logger.info( "[ADJUST TIMEOUTS] Adjusting snapshot expirations in: %s", store.getKey() );
+                    logger.info( "[ADJUST TIMEOUTS] Adjusting snapshot expirations in: {}", store.getKey() );
                     try
                     {
                         scheduleManager.rescheduleSnapshotTimeouts( (HostedRepository) store );
@@ -240,7 +240,7 @@ public class TimeoutEventListener
                 }
                 else if ( type == StoreType.remote )
                 {
-                    logger.info( "[ADJUST TIMEOUTS] Adjusting proxied-file expirations in: %s", store.getKey() );
+                    logger.info( "[ADJUST TIMEOUTS] Adjusting proxied-file expirations in: {}", store.getKey() );
                     try
                     {
                         scheduleManager.rescheduleProxyTimeouts( (RemoteRepository) store );

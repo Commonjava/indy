@@ -21,6 +21,7 @@ import io.undertow.servlet.api.FilterInfo;
 import io.undertow.servlet.api.ServletInfo;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -38,10 +39,19 @@ import org.commonjava.aprox.bind.jaxrs.ui.UIServlet;
 import org.commonjava.aprox.bind.jaxrs.util.AproxResteasyJsonProvider;
 import org.commonjava.aprox.bind.jaxrs.util.CdiInjectorFactoryImpl;
 import org.commonjava.aprox.bind.jaxrs.util.RequestScopeListener;
+import org.commonjava.aprox.stats.AProxVersioning;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.spi.ResteasyDeployment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.wordnik.swagger.jaxrs.config.BeanConfig;
+import com.wordnik.swagger.jaxrs.filter.JaxrsFilter;
+import com.wordnik.swagger.jaxrs.json.JacksonJsonProvider;
+import com.wordnik.swagger.jaxrs.listing.ApiDeclarationProvider;
+import com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON;
+import com.wordnik.swagger.jaxrs.listing.ResourceListingProvider;
+import com.wordnik.swagger.model.SwaggerSerializers;
 
 @ApplicationScoped
 public class AproxDeployment
@@ -74,6 +84,9 @@ public class AproxDeployment
     @Inject
     private ResourceManagementFilter resourceManagementFilter;
 
+    @Inject
+    private AProxVersioning versioning;
+
     private Set<Class<?>> resourceClasses;
 
     private Set<Class<?>> providerClasses = PROVIDER_CLASSES;
@@ -85,11 +98,14 @@ public class AproxDeployment
     }
 
     public AproxDeployment( final Set<Class<?>> resourceClasses,
-                            final Set<AproxDeploymentProvider> deploymentProviders, final UIServlet ui )
+                            final Set<AproxDeploymentProvider> deploymentProviders, final UIServlet ui,
+                            final ResourceManagementFilter resourceManagementFilter, final AProxVersioning versioning )
     {
         this.resourceClasses = resourceClasses;
         this.deploymentProviders = deploymentProviders;
         this.ui = ui;
+        this.resourceManagementFilter = resourceManagementFilter;
+        this.versioning = versioning;
         this.providerClasses = Collections.emptySet();
     }
 
@@ -123,12 +139,27 @@ public class AproxDeployment
 
         deployment.setApplication( this );
         deployment.setInjectorFactoryClass( CdiInjectorFactoryImpl.class.getName() );
+        //        deployment.setResourceClasses( Arrays.asList( ApiListingResourceJSON.class.getName() ) );
+        //        deployment.setProviderClasses( Arrays.asList( JacksonJsonProvider.class.getName(),
+        //                                                      ApiDeclarationProvider.class.getName(),
+        //                                                      ResourceListingProvider.class.getName() ) );
 
         final ServletInfo resteasyServlet = Servlets.servlet( "REST", HttpServlet30Dispatcher.class )
                                                     .setAsyncSupported( true )
                                                     .setLoadOnStartup( 1 )
                                                     .addMapping( "/api*" )
-                                                    .addMapping( "/api/*" );
+                                                    .addMapping( "/api/*" )
+                                                    .addMapping( "/api-docs*" )
+                                                    .addMapping( "/api-docs/*" );
+
+        final BeanConfig beanConfig = new BeanConfig();
+        beanConfig.setFilterClass( JaxrsFilter.class.getName() );
+        beanConfig.setResourcePackage( "org.commonjava.aprox" );
+        beanConfig.setBasePath( "/" );
+        beanConfig.setLicense( "ASLv2" );
+        beanConfig.setLicenseUrl( "http://www.apache.org/licenses/LICENSE-2.0" );
+        beanConfig.setScan( true );
+        beanConfig.setVersion( versioning.getApiVersion() );
 
         final FilterInfo secFilter = Servlets.filter( "Security", SecurityFilter.class );
 
@@ -138,6 +169,7 @@ public class AproxDeployment
 
         final DeploymentInfo di =
             new DeploymentInfo().addListener( Servlets.listener( RequestScopeListener.class ) )
+                                //                                .addInitParameter( "resteasy.scan", Boolean.toString( true ) )
                                 .setContextPath( contextRoot )
                                 .addServletContextAttribute( ResteasyDeployment.class.getName(), deployment )
                                 .addServlet( resteasyServlet )
@@ -198,7 +230,10 @@ public class AproxDeployment
     public Set<Class<?>> getClasses()
     {
         final Set<Class<?>> classes = new HashSet<>( resourceClasses );
+        classes.addAll( Arrays.asList( ApiListingResourceJSON.class, SwaggerSerializers.class ) );
         classes.addAll( providerClasses );
+        classes.addAll( Arrays.asList( JacksonJsonProvider.class, ApiDeclarationProvider.class,
+                                       ResourceListingProvider.class ) );
         return classes;
     }
 
