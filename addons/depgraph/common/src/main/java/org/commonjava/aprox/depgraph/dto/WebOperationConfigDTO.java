@@ -41,6 +41,10 @@ public class WebOperationConfigDTO
 
     private Boolean localUrls;
 
+    private Boolean pathOnly;
+
+    private Boolean prependDownloading;
+
     public StoreKey getSource()
     {
         return source;
@@ -131,6 +135,26 @@ public class WebOperationConfigDTO
 
             setExcludedSourceLocations( excluded );
         }
+    }
+
+    public Boolean getPathOnly()
+    {
+        return pathOnly == null ? false : pathOnly;
+    }
+
+    public void setPathOnly( final Boolean pathOnly )
+    {
+        this.pathOnly = pathOnly;
+    }
+
+    public Boolean getPrependDownloading()
+    {
+        return prependDownloading == null ? false : prependDownloading;
+    }
+
+    public void setPrependDownloading( final Boolean prependDownloading )
+    {
+        this.prependDownloading = prependDownloading;
     }
 
 }

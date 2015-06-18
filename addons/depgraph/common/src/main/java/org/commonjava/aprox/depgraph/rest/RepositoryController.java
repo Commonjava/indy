@@ -287,7 +287,7 @@ public class RepositoryController
                 for ( final ConcreteResource item : items.values() )
                 {
                     logger.info( "Adding: '{}'", item );
-                    downLog.add( formatDownlogEntry( item, dto.getLocalUrls(), baseUri, uriFormatter ) );
+                    downLog.add( formatDownlogEntry( item, dto, baseUri, uriFormatter ) );
                 }
             }
         }
@@ -409,22 +409,50 @@ public class RepositoryController
         }
     }
 
-    private String formatDownlogEntry( final ConcreteResource item, final boolean localUrls, final String baseUri, final UriFormatter uriFormatter )
+    private String formatDownlogEntry( final ConcreteResource item, final WebOperationConfigDTO dto,
+                                       final String baseUri, final UriFormatter uriFormatter )
         throws MalformedURLException
     {
         final KeyedLocation kl = (KeyedLocation) item.getLocation();
         final StoreKey key = kl.getKey();
 
-        if ( localUrls || kl instanceof CacheOnlyLocation )
+        if ( dto.getPathOnly() )
+        {
+            if ( dto.getPrependDownloading() )
+            {
+                return "Downloading: " + item.getPath();
+            }
+            else
+            {
+                return item.getPath();
+            }
+        }
+
+        if ( dto.getLocalUrls() || kl instanceof CacheOnlyLocation )
         {
             final String uri = uriFormatter.formatAbsolutePathTo( baseUri, key.getType()
-                                                                              .singularEndpointName(), key.getName() );
-            return String.format( "Downloading: %s", uri );
+                                                               .singularEndpointName(), key.getName(), item.getPath() );
+            if ( dto.getPrependDownloading() )
+            {
+                return String.format( "Downloading: %s", uri );
+            }
+            else
+            {
+                return uri;
+            }
         }
         else
         {
-            return "Downloading: " + buildUrl( item.getLocation()
+            if ( dto.getPrependDownloading() )
+            {
+                return "Downloading: " + buildUrl( item.getLocation()
                                                    .getUri(), item.getPath() );
+            }
+            else
+            {
+                return buildUrl( item.getLocation()
+                                     .getUri(), item.getPath() );
+            }
         }
     }
 
