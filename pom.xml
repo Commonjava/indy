@@ -334,6 +334,13 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-indexer</artifactId>
+        <version>0.22.0-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>confset</classifier>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-db-memory</artifactId>
         <version>0.22.0-SNAPSHOT</version>
       </dependency>
