@@ -954,6 +954,7 @@
       <id>ci</id>
       <properties>
         <test-forkCount>2</test-forkCount>
+        <testTimeout>300</testTimeout>
       </properties>
     </profile>
   </profiles>

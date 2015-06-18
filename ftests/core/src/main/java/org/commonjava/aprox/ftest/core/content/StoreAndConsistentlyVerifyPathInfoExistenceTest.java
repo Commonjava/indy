@@ -51,9 +51,9 @@ public class StoreAndConsistentlyVerifyPathInfoExistenceTest
     }
 
     @Override
-    protected long getTestTimeoutSeconds()
+    protected int getTestTimeoutMultiplier()
     {
-        return 300;
+        return 2;
     }
 
 }
