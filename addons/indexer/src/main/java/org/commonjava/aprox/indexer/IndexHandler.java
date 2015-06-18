@@ -53,6 +53,7 @@ import org.commonjava.aprox.core.expire.SchedulerEvent;
 import org.commonjava.aprox.core.expire.StoreKeyMatcher;
 import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.indexer.conf.IndexerConfig;
 import org.commonjava.aprox.indexer.inject.IndexCreatorSet;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.Group;
@@ -110,6 +111,9 @@ public class IndexHandler
     private DownloadManager fileManager;
 
     @Inject
+    private IndexerConfig config;
+
+    @Inject
     @ExecutorConfig( daemon = true, priority = 7, named = "aprox-indexer" )
     private Executor executor;
 
@@ -120,22 +124,33 @@ public class IndexHandler
     }
 
     public IndexHandler( final ScheduleManager scheduleManager, final StoreDataManager storeDataManager,
-                         final DownloadManager fileManager )
+                         final DownloadManager fileManager, final IndexerConfig config )
         throws AproxIndexerException
     {
         this.scheduleManager = scheduleManager;
         this.storeDataManager = storeDataManager;
         this.fileManager = fileManager;
+        this.config = config;
     }
 
     public void onDelete( @Observes final AbstractStoreDeleteEvent event )
     {
+        if ( !config.isEnabled() )
+        {
+            return;
+        }
+
         logger.info( "Updating indexes as a result of ProxyManagerDeleteEvent." );
         executor.execute( new DeletionRunnable( event ) );
     }
 
     public void onStorage( @Observes final FileStorageEvent event )
     {
+        if ( !config.isEnabled() )
+        {
+            return;
+        }
+
         logger.info( "Handling storage event: {}", event );
         final Transfer item = event.getTransfer();
         final StoreKey key = LocationUtils.getKey( item );
@@ -185,6 +200,11 @@ public class IndexHandler
 
     public void onExpire( @Observes final SchedulerEvent event )
     {
+        if ( !config.isEnabled() )
+        {
+            return;
+        }
+
         if ( !event.getJobType()
                    .equals( REINDEX_JOB_TYPE ) )
         {
@@ -204,6 +224,11 @@ public class IndexHandler
 
     public void onAdd( @Observes final ArtifactStorePostUpdateEvent event )
     {
+        if ( !config.isEnabled() )
+        {
+            return;
+        }
+
         logger.info( "Updating indexes as a result of ArtifactStoreUpdateEvent." );
         executor.execute( new AdditionRunnable( event ) );
     }

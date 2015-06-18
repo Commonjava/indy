@@ -59,6 +59,12 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-indexer</artifactId>
+      <type>tar.gz</type>
+      <classifier>confset</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-autoprox-common</artifactId>
       <type>tar.gz</type>
       <classifier>dataset</classifier>
