@@ -43,6 +43,8 @@ public abstract class AbstractAproxFunctionalTest
 
     private static final String NAME_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_";
 
+    protected static final String TEST_TIMEOUT_SYSPROP = "testTimeout";
+
     protected Aprox client;
 
     protected CoreServerFixture fixture;
@@ -78,9 +80,14 @@ public abstract class AbstractAproxFunctionalTest
                        getAdditionalClientModules() ).connect();
     }
 
-    protected long getTestTimeoutSeconds()
+    protected final long getTestTimeoutSeconds()
     {
-        return 120;
+        return getTestTimeoutMultiplier() * Long.parseLong( System.getProperty( TEST_TIMEOUT_SYSPROP, "120" ) );
+    }
+
+    protected int getTestTimeoutMultiplier()
+    {
+        return 1;
     }
 
     @After
