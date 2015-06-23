@@ -56,6 +56,8 @@ public class RevisionsManagerTest
 
     private DataFileTestEventListener listener;
 
+    private AproxLifecycleEventManager lcEvents;
+
     @Before
     public void setup()
     {
@@ -76,16 +78,16 @@ public class RevisionsManagerTest
                             .select( DataFileTestEventListener.class )
                             .get();
 
-        final AproxLifecycleEventManager lcEvents = container.instance()
-                                                             .select( AproxLifecycleEventManager.class )
-                                                             .get();
-        lcEvents.fireStarted();
+        lcEvents = container.instance()
+                            .select( AproxLifecycleEventManager.class )
+                            .get();
     }
 
     @Test
     public void commitTwoDifferentFilesAndRetrieveChangelogForOneOfThem()
         throws Exception
     {
+        lcEvents.fireStarted();
         final DataFile f1 = dfManager.getDataFile( "test/foo.txt" );
         f1.writeString( "this is a test", "UTF-8", new ChangeSummary( "test-user", "test for first file." ) );
 
@@ -105,6 +107,7 @@ public class RevisionsManagerTest
     public void commitOneFileTwice_NoChangeSecondTime_RetrieveOneChangelog()
         throws Exception
     {
+        lcEvents.fireStarted();
         revManager.setup();
 
         final DataFile f1 = dfManager.getDataFile( "test/foo.txt" );
@@ -128,9 +131,44 @@ public class RevisionsManagerTest
     }
 
     @Test
+    public void commitOneFileTwice_ChangedBeforeServerStart_FirstChangelogAppearsOnServerStart()
+        throws Exception
+    {
+        revManager.setup();
+
+        final DataFile f1 = dfManager.getDataFile( "test/foo.txt" );
+        f1.writeString( "this is a test", "UTF-8", new ChangeSummary( "test-user", "test for first write of file." ) );
+
+        List<DataFileEvent> events = listener.waitForEvents( 1 );
+        System.out.println( "Got events:\n  " + join( events, "\n  " ) );
+
+        f1.writeString( "this is another test", "UTF-8", new ChangeSummary( "test-user",
+                                                                            "test for second write of file." ) );
+
+        events = listener.waitForEvents( 1 );
+
+        System.out.println( "Got events:\n  " + join( events, "\n  " ) );
+
+        List<ChangeSummary> changeLog = revManager.getDataChangeLog( f1.getPath(), 0, -1 );
+        assertThat( changeLog, notNullValue() );
+        assertThat( changeLog.size(), equalTo( 0 ) );
+
+        lcEvents.fireStarted();
+
+        changeLog = revManager.getDataChangeLog( f1.getPath(), 0, -1 );
+        assertThat( changeLog, notNullValue() );
+        assertThat( changeLog.size(), equalTo( 1 ) );
+
+        assertThat( changeLog.get( 0 )
+                             .getSummary()
+                             .contains( RevisionsManager.CATCHUP_CHANGELOG ), equalTo( true ) );
+    }
+
+    @Test
     public void commitTwoDifferentFilesAndRetrieveChangelogForOneOfThem_LimitToOldestEvent()
         throws Exception
     {
+        lcEvents.fireStarted();
         final DataFile f1 = dfManager.getDataFile( "test/foo.txt" );
         f1.writeString( "this is a test", "UTF-8", new ChangeSummary( "test-user", "test for first file." ) );
 

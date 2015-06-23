@@ -43,7 +43,8 @@ public class GalleyStorageProvider
 {
 
     private static final Set<String> UNDECORATED_FILE_ENDINGS =
-        Collections.unmodifiableSet( new HashSet<String>( Arrays.asList( new String[] { ".sha1", ".md5", ".info" } ) ) );
+        Collections.unmodifiableSet( new HashSet<String>( Arrays.asList( new String[] { ".sha1", ".md5", ".info",
+            ".http-metadata.json" } ) ) );
 
     @Inject
     private DefaultStorageProviderConfiguration config;

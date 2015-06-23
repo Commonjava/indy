@@ -15,22 +15,19 @@
  */
 package org.commonjava.aprox.ftest.core.content;
 
-import static org.commonjava.aprox.model.core.StoreType.remote;
+import static org.commonjava.aprox.model.core.StoreType.group;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import java.util.concurrent.CountDownLatch;
 
 import org.commonjava.aprox.ftest.core.fixture.DelayedDownload;
 import org.commonjava.aprox.model.core.StoreKey;
-import org.commonjava.aprox.test.fixture.core.TestHttpServer;
-import org.junit.Rule;
 import org.junit.Test;
 
 public class ConcurrentMissingMetadataChecksumAndFileDownloadTest
     extends AbstractContentManagementTest
 {
-
-    @Rule
-    public TestHttpServer server = new TestHttpServer( "repos" );
 
     @Test
     public void run()
@@ -40,15 +37,18 @@ public class ConcurrentMissingMetadataChecksumAndFileDownloadTest
 
         final CountDownLatch latch = new CountDownLatch( 2 );
 
-        final DelayedDownload download = new DelayedDownload( client, new StoreKey( remote, STORE ), path, 5, latch );
+        final DelayedDownload download = new DelayedDownload( client, new StoreKey( group, PUBLIC ), path, 5, latch );
         newThread( "download", download ).start();
 
         final DelayedDownload download2 =
-            new DelayedDownload( client, new StoreKey( remote, STORE ), path + ".sha1", 1, latch );
+            new DelayedDownload( client, new StoreKey( group, PUBLIC ), path + ".sha1", 1, latch );
         newThread( "download2", download2 ).start();
 
         System.out.println( "Waiting for content transfers to complete." );
         latch.await();
+
+        assertThat( download.isMissing(), equalTo( true ) );
+        assertThat( download2.isMissing(), equalTo( true ) );
     }
 
 }

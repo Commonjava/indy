@@ -39,6 +39,8 @@ public class DelayedDownload
     private ByteArrayOutputStream content;
 
     private final CountDownLatch latch;
+
+    private boolean missing;
     
     public DelayedDownload( final Aprox client, final StoreKey key, final String path, final long initialDelay,
                             final CountDownLatch latch )
@@ -72,7 +74,14 @@ public class DelayedDownload
         try
         {
             in = client.content().get( key.getType(), key.getName(), path );
-            IOUtils.copy(in, content);
+            if ( in == null )
+            {
+                missing = true;
+            }
+            else
+            {
+                IOUtils.copy( in, content );
+            }
         }
         catch ( AproxClientException | IOException e )
         {
@@ -87,6 +96,11 @@ public class DelayedDownload
         latch.countDown();
     }
     
+    public boolean isMissing()
+    {
+        return missing;
+    }
+
     public long getStartTime()
     {
         return startTime;
