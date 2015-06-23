@@ -152,8 +152,8 @@
                   <reuseForks>false</reuseForks>
                 <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
                   <dependenciesToScan>
-                    <dependency>org.commonjava.aprox:aprox-ftests-autoprox</dependency>
                     <dependency>org.commonjava.aprox:aprox-ftests-core</dependency>
+                    <dependency>org.commonjava.aprox:aprox-ftests-autoprox</dependency>
                     <dependency>org.commonjava.aprox:aprox-ftests-depgraph</dependency>
                     <dependency>org.commonjava.aprox:aprox-ftests-dot-maven</dependency>
                     <dependency>org.commonjava.aprox:aprox-ftests-folo</dependency>
