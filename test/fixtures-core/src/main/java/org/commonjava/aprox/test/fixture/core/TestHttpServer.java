@@ -26,14 +26,12 @@ import io.undertow.servlet.util.ImmediateInstanceFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
@@ -42,6 +40,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.commonjava.aprox.boot.PortFinder;
 import org.commonjava.maven.galley.util.UrlUtils;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
@@ -51,13 +50,9 @@ public class TestHttpServer
     extends ExternalResource
 {
 
-    private static final int TRIES = 4;
-
-    private static Random rand = new Random();
-
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private final int port;
+    private Integer port;
 
     private final ExpectationServlet servlet;
 
@@ -71,36 +66,6 @@ public class TestHttpServer
     public TestHttpServer( final String baseResource )
     {
         servlet = new ExpectationServlet( baseResource );
-
-        int port = -1;
-        ServerSocket ss = null;
-        for ( int i = 0; i < TRIES; i++ )
-        {
-            final int p = Math.abs( rand.nextInt() ) % 2000 + 8000;
-            logger.info( "Trying port: {}", p );
-            try
-            {
-                ss = new ServerSocket( p );
-                port = p;
-                break;
-            }
-            catch ( final IOException e )
-            {
-                logger.error( String.format( "Port %s failed. Reason: %s", p, e.getMessage() ), e );
-            }
-            finally
-            {
-                IOUtils.closeQuietly( ss );
-            }
-        }
-
-        if ( port < 8000 )
-        {
-            throw new RuntimeException( "Failed to start test HTTP server. Cannot find open port in " + TRIES
-                + " tries." );
-        }
-
-        this.port = port;
     }
 
     public int getPort()
@@ -139,6 +104,7 @@ public class TestHttpServer
                                              .addDeployment( di );
         dm.deploy();
 
+        port = PortFinder.findOpenPort( 16 );
         server = Undertow.builder()
                          .setHandler( dm.start() )
                          .addHttpListener( port, "127.0.0.1" )

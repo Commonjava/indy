@@ -35,14 +35,29 @@ public abstract class AbstractAproxFeatureConfig<T, U extends T>
 
     private final Class<U> implCls;
 
+    private final T impl;
+
     AbstractAproxFeatureConfig()
     {
         implCls = null;
+        impl = null;
     }
 
     public AbstractAproxFeatureConfig( final Class<U> implCls )
     {
         this.implCls = implCls;
+        this.impl = null;
+    }
+
+    public AbstractAproxFeatureConfig( final T impl )
+    {
+        this.implCls = null;
+        this.impl = impl;
+    }
+
+    public T getPrefabInstance()
+    {
+        return impl;
     }
 
     @Inject
@@ -57,7 +72,7 @@ public abstract class AbstractAproxFeatureConfig<T, U extends T>
     protected T getConfig()
         throws ConfigurationException
     {
-        return factory.getConfiguration( implCls );
+        return impl == null ? factory.getConfiguration( implCls ) : impl;
     }
 
 }

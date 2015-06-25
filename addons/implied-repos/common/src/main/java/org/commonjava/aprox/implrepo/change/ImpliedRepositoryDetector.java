@@ -15,6 +15,7 @@
  */
 package org.commonjava.aprox.implrepo.change;
 
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -266,10 +267,24 @@ public class ImpliedRepositoryDetector
 
             for ( final RepositoryView repo : repos )
             {
-                if ( !config.isIncludeSnapshotRepos() && !repo.isReleasesEnabled() )
+                final ProjectVersionRef gav = job.pathInfo.getProjectId();
+                try
                 {
-                    logger.debug( "Discarding snapshot repository: {}", repo );
-                    continue;
+                    if ( config.isBlacklisted( repo.getUrl() ) )
+                    {
+                        logger.debug( "Discarding blacklisted repository: {}", repo );
+                        continue;
+                    }
+                    else if ( !config.isIncludeSnapshotRepos() && !repo.isReleasesEnabled() )
+                    {
+                        logger.debug( "Discarding snapshot repository: {}", repo );
+                        continue;
+                    }
+                }
+                catch ( final MalformedURLException e )
+                {
+                    logger.error( String.format( "Cannot add implied remote repo: %s from: %s (transfer: %s). Failed to check if repository is blacklisted.",
+                                                 repo.getUrl(), gav, job.transfer ), e );
                 }
 
                 logger.debug( "Detected POM-declared repository: {}", repo );
@@ -277,7 +292,6 @@ public class ImpliedRepositoryDetector
                 if ( rr == null )
                 {
                     logger.debug( "Creating new RemoteRepository for: {}", repo );
-                    final ProjectVersionRef gav = job.pathInfo.getProjectId();
 
                     rr = new RemoteRepository( formatId( repo ), repo.getUrl() );
                     rr.setDescription( "Implicitly created repo for: " + repo.getName() + " (" + repo.getId()
