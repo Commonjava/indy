@@ -17,6 +17,7 @@ package org.commonjava.aprox.implrepo.conf;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -186,6 +187,13 @@ public class ImpliedRepoConfig
     public Class<?> getConfigurationClass()
     {
         return getClass();
+    }
+
+    public boolean isBlacklisted( final String url )
+        throws MalformedURLException
+    {
+        final URL u = new URL( url );
+        return isBlacklisted( u );
     }
 
 }
