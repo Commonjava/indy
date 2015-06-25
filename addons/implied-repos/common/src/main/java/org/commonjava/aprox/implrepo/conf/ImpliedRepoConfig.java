@@ -23,24 +23,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Alternative;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Produces;
-import javax.inject.Named;
 
-import org.commonjava.aprox.conf.AbstractAproxFeatureConfig;
 import org.commonjava.aprox.conf.AbstractAproxMapConfig;
-import org.commonjava.aprox.conf.AproxConfigClassInfo;
 import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.web.config.ConfigurationException;
-import org.commonjava.web.config.annotation.SectionName;
 
-@SectionName( ImpliedRepoConfig.SECTION_NAME )
-@Alternative
-@Named
+@ApplicationScoped
 public class ImpliedRepoConfig
     extends AbstractAproxMapConfig
-    implements AproxConfigClassInfo
+//    implements AproxConfigClassInfo
 {
 
     public static final String SECTION_NAME = "implied-repos";
@@ -63,6 +54,7 @@ public class ImpliedRepoConfig
 
     public ImpliedRepoConfig()
     {
+        super( SECTION_NAME );
     }
 
     public boolean isEnabled()
@@ -144,30 +136,30 @@ public class ImpliedRepoConfig
         }
     }
 
-    @javax.enterprise.context.ApplicationScoped
-    public static class FeatureConfig
-        extends AbstractAproxFeatureConfig<ImpliedRepoConfig, ImpliedRepoConfig>
-    {
-        public FeatureConfig()
-        {
-            super( new ImpliedRepoConfig() );
-        }
-
-        @Produces
-        @Default
-        @ApplicationScoped
-        public ImpliedRepoConfig getImpliedRepoConfig()
-            throws ConfigurationException
-        {
-            return getPrefabInstance();
-        }
-
-        @Override
-        public AproxConfigClassInfo getInfo()
-        {
-            return getPrefabInstance();
-        }
-    }
+//    @javax.enterprise.context.ApplicationScoped
+//    public static class FeatureConfig
+//        extends AbstractAproxFeatureConfig<ImpliedRepoConfig, ImpliedRepoConfig>
+//    {
+//        public FeatureConfig()
+//        {
+//            super( new ImpliedRepoConfig() );
+//        }
+//
+//        @Produces
+//        @Default
+//        @ApplicationScoped
+//        public ImpliedRepoConfig getImpliedRepoConfig()
+//            throws ConfigurationException
+//        {
+//            return getPrefabInstance();
+//        }
+//
+//        @Override
+//        public AproxConfigClassInfo getInfo()
+//        {
+//            return getPrefabInstance();
+//        }
+//    }
 
     @Override
     public String getDefaultConfigFileName()
@@ -183,11 +175,11 @@ public class ImpliedRepoConfig
                      .getResourceAsStream( "default-implied-repos.conf" );
     }
 
-    @Override
-    public Class<?> getConfigurationClass()
-    {
-        return getClass();
-    }
+    //    @Override
+    //    public Class<?> getConfigurationClass()
+    //    {
+    //        return getClass();
+    //    }
 
     public boolean isBlacklisted( final String url )
         throws MalformedURLException
