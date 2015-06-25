@@ -32,7 +32,13 @@ public final class UserPass
         if ( userpass != null )
         {
             final String[] upStr = userpass.split( ":" );
-            return new UserPass( upStr[0], upStr[1] );
+
+            if ( upStr.length < 1 )
+            {
+                return null;
+            }
+
+            return new UserPass( upStr[0], upStr.length > 1 ? upStr[1] : null );
         }
 
         return null;

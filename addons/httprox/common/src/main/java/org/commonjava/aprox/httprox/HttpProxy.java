@@ -16,6 +16,7 @@ import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.httprox.conf.HttproxConfig;
 import org.commonjava.aprox.httprox.handler.ProxyRequestReader;
 import org.commonjava.aprox.httprox.handler.ProxyResponseWriter;
+import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xnio.ChannelListener;
@@ -46,6 +47,9 @@ public class HttpProxy
     @Inject
     private ContentController contentController;
 
+    @Inject
+    private CacheProvider cacheProvider;
+
     private AcceptingChannel<StreamConnection> server;
 
     protected HttpProxy()
@@ -53,12 +57,13 @@ public class HttpProxy
     }
 
     public HttpProxy( final HttproxConfig config, final BootOptions bootOptions, final StoreDataManager storeManager,
-                      final ContentController contentController )
+                      final ContentController contentController, final CacheProvider cacheProvider )
     {
         this.config = config;
         this.bootOptions = bootOptions;
         this.storeManager = storeManager;
         this.contentController = contentController;
+        this.cacheProvider = cacheProvider;
     }
 
     @Override
@@ -127,7 +132,8 @@ public class HttpProxy
                 final ConduitStreamSourceChannel source = accepted.getSourceChannel();
                 final ConduitStreamSinkChannel sink = accepted.getSinkChannel();
                 
-                final ProxyResponseWriter writer = new ProxyResponseWriter(config, storeManager, contentController);
+                final ProxyResponseWriter writer =
+                    new ProxyResponseWriter( config, storeManager, contentController, cacheProvider );
                 final ProxyRequestReader reader = new ProxyRequestReader( writer, sink );
 
                 logger.debug( "Setting reader: {}", reader );

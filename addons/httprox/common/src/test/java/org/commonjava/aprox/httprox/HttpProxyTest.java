@@ -120,7 +120,7 @@ public class HttpProxyTest
         final ContentController contentController =
             new ContentController( storeManager, contentManager, templates, mapper, new MimeTyper() );
 
-        proxy = new HttpProxy( config, bootOpts, storeManager, contentController );
+        proxy = new HttpProxy( config, bootOpts, storeManager, contentController, core.getCache() );
         proxy.start();
     }
 

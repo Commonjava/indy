@@ -50,6 +50,8 @@ public class RevisionsManager
 
     private static final String[] DATA_DIR_GITIGNORES = { "depgraph", "scheduler" };
 
+    public static final String CATCHUP_CHANGELOG = "Committing files modified outside of the AProx UI.";
+
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private GitManager dataFileGit;
@@ -115,8 +117,7 @@ public class RevisionsManager
             {
                 logger.info( "Aprox started; committing externally changed files." );
 
-                final ChangeSummary summary =
-                    new ChangeSummary( ChangeSummary.SYSTEM_USER, "Committing files modified outside of the AProx UI." );
+                final ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, CATCHUP_CHANGELOG );
                 dataFileGit.commitModifiedFiles( summary );
 
                 if ( revisionsConfig.isPushEnabled() )

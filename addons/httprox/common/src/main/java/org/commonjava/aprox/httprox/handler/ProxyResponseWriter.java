@@ -35,6 +35,7 @@ import org.commonjava.aprox.util.UrlInfo;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,112 +63,142 @@ public final class ProxyResponseWriter
 
     private boolean transferred;
 
+    private final CacheProvider cacheProvider;
+
     public ProxyResponseWriter( final HttproxConfig config, final StoreDataManager storeManager,
-                                final ContentController contentController )
+                                final ContentController contentController, final CacheProvider cacheProvider )
     {
         this.config = config;
         this.contentController = contentController;
         this.storeManager = storeManager;
+        this.cacheProvider = cacheProvider;
     }
 
     @Override
     public void handleEvent( final ConduitStreamSinkChannel channel )
     {
-        logger.info( "\n\n\n>>>>>>> Handle write\n\n\n\n\n" );
-        if ( error == null )
+        if ( headerLines.size() < 1 )
         {
             try
             {
-                final UserPass proxyUserPass =
-                    UserPass.parse( ApplicationHeader.proxy_authorization, headerLines, null );
-                if ( ( config.isSecured() || TrackingType.ALWAYS == config.getTrackingType() ) && proxyUserPass == null )
-                {
-                    writeStatus( channel, ApplicationStatus.PROXY_AUTHENTICATION_REQUIRED );
-                    writeHeader( channel, ApplicationHeader.proxy_authenticate,
-                                 String.format( PROXY_AUTHENTICATE_FORMAT, config.getProxyRealm() ) );
-                }
-                else
-                {
-                    final String firstLine = headerLines.get( 0 );
-                    logger.debug( "Got first line:\n  '{}'", firstLine );
-                    final String[] parts = headerLines.get( 0 )
-                                                      .split( " " );
-
-                    final String method = parts[0].toUpperCase();
-
-                    switch ( method )
-                    {
-                        case GET_METHOD:
-                        case HEAD_METHOD:
-                        {
-                            final URL url = new URL( parts[1] );
-                            final RemoteRepository repo = getRepository( url );
-                            transfer( channel, repo, url.getPath(), GET_METHOD.equals( method ), proxyUserPass );
-
-                            break;
-                        }
-                        case OPTIONS_METHOD:
-                        {
-                            writeStatus( channel, ApplicationStatus.OK );
-                            writeHeader( channel, ApplicationHeader.allow, ALLOW_HEADER_VALUE );
-                            break;
-                        }
-                        default:
-                        {
-                            writeStatus( channel, ApplicationStatus.METHOD_NOT_ALLOWED );
-                        }
-                    }
-                }
-
-                logger.info( "Response complete." );
+                writeStatus( channel, ApplicationStatus.BAD_REQUEST );
             }
-            catch ( IOException | AproxWorkflowException | AproxDataException e )
+            catch ( final IOException e )
             {
-                error = e;
+                logger.error( "Failed to write BAD REQUEST for missing HTTP first-line to response channel.", e );
             }
+
+            return;
         }
 
-        if ( error != null )
-        {
-            logger.error( "HTTProx request failed: " + error.getMessage(), error );
-            try
-            {
-                if ( channel != null && channel.isOpen() )
-                {
-                    if ( error instanceof AproxWorkflowException )
-                    {
-                        writeStatus( channel,
-                                     ApplicationStatus.getStatus( ( (AproxWorkflowException) error ).getStatus() ) );
-                    }
-                    else
-                    {
-                        writeStatus( channel, ApplicationStatus.SERVER_ERROR );
-                    }
-
-                    writeError( channel, error );
-
-                    logger.info( "Response error complete." );
-                    //                    Channels.flushBlocking( channel );
-                    //                    channel.close();
-                }
-            }
-            catch ( final IOException closeException )
-            {
-                logger.error( "Failed to close httprox request: " + error.getMessage(), error );
-            }
-        }
+        final String oldThreadName = Thread.currentThread()
+                                           .getName();
+        Thread.currentThread()
+              .setName( headerLines.get( 0 ) );
 
         try
         {
-            channel.shutdownWrites();
-            Channels.flushBlocking( channel );
-        }
-        catch ( final IOException e )
-        {
-            logger.error( "Failed to flush/shutdown response.", e );
-        }
+            logger.info( "\n\n\n>>>>>>> Handle write\n\n\n\n\n" );
+            if ( error == null )
+            {
+                try
+                {
+                    final UserPass proxyUserPass =
+                        UserPass.parse( ApplicationHeader.proxy_authorization, headerLines, null );
+                    if ( ( config.isSecured() || TrackingType.ALWAYS == config.getTrackingType() )
+                        && proxyUserPass == null )
+                    {
+                        writeStatus( channel, ApplicationStatus.PROXY_AUTHENTICATION_REQUIRED );
+                        writeHeader( channel, ApplicationHeader.proxy_authenticate,
+                                     String.format( PROXY_AUTHENTICATE_FORMAT, config.getProxyRealm() ) );
+                    }
+                    else
+                    {
+                        final String firstLine = headerLines.get( 0 );
+                        logger.debug( "Got first line:\n  '{}'", firstLine );
+                        final String[] parts = headerLines.get( 0 )
+                                                          .split( " " );
 
-        //        IOUtils.closeQuietly( channel );
+                        final String method = parts[0].toUpperCase();
+
+                        switch ( method )
+                        {
+                            case GET_METHOD:
+                            case HEAD_METHOD:
+                            {
+                                final URL url = new URL( parts[1] );
+                                final RemoteRepository repo = getRepository( url );
+                                transfer( channel, repo, url.getPath(), GET_METHOD.equals( method ), proxyUserPass );
+
+                                break;
+                            }
+                            case OPTIONS_METHOD:
+                            {
+                                writeStatus( channel, ApplicationStatus.OK );
+                                writeHeader( channel, ApplicationHeader.allow, ALLOW_HEADER_VALUE );
+                                break;
+                            }
+                            default:
+                            {
+                                writeStatus( channel, ApplicationStatus.METHOD_NOT_ALLOWED );
+                            }
+                        }
+                    }
+
+                    logger.info( "Response complete." );
+                }
+                catch ( final Throwable e )
+                {
+                    error = e;
+                }
+            }
+
+            if ( error != null )
+            {
+                logger.error( "HTTProx request failed: " + error.getMessage(), error );
+                try
+                {
+                    if ( channel != null && channel.isOpen() )
+                    {
+                        if ( error instanceof AproxWorkflowException )
+                        {
+                            writeStatus( channel,
+                                         ApplicationStatus.getStatus( ( (AproxWorkflowException) error ).getStatus() ) );
+                        }
+                        else
+                        {
+                            writeStatus( channel, ApplicationStatus.SERVER_ERROR );
+                        }
+
+                        writeError( channel, error );
+
+                        logger.info( "Response error complete." );
+                        //                    Channels.flushBlocking( channel );
+                        //                    channel.close();
+                    }
+                }
+                catch ( final IOException closeException )
+                {
+                    logger.error( "Failed to close httprox request: " + error.getMessage(), error );
+                }
+            }
+
+            try
+            {
+                channel.shutdownWrites();
+                Channels.flushBlocking( channel );
+            }
+            catch ( final IOException e )
+            {
+                logger.error( "Failed to flush/shutdown response.", e );
+            }
+        }
+        finally
+        {
+            cacheProvider.cleanupCurrentThread();
+            Thread.currentThread()
+                  .setName( oldThreadName );
+        }
     }
 
     private void transfer( final ConduitStreamSinkChannel sinkChannel, final RemoteRepository repo, final String path,

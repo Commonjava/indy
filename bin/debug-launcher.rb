@@ -72,15 +72,16 @@ class Launcher
     if config[:clean]
       puts "Deleting AProx launch dir..."
       rm_rf( launch_dir )
+      
+      glob = File.join( target, "aprox-launcher-*-launcher.tar.gz" )
+
+      puts "Looking for launcher archives: '#{glob}"
+      archives = Dir.glob(glob)
+
+      puts "Found matching archives: #{archives}"
+      do_exec( "tar -zxvf #{archives[0]} -C #{target}" )
+
     end
-
-    glob = File.join( target, "aprox-launcher-*-launcher.tar.gz" )
-
-    puts "Looking for launcher archives: '#{glob}"
-    archives = Dir.glob(glob)
-
-    puts "Found matching archives: #{archives}"
-    do_exec( "tar -zxvf #{archives[0]} -C #{target}" )
 
     if (config[:uidev])
       uibase = "#{launch_dir}/var/lib/aprox/ui"

@@ -24,6 +24,7 @@ import org.commonjava.aprox.ftest.core.AbstractAproxFunctionalTest;
 import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.HostedRepository;
 import org.commonjava.aprox.model.core.RemoteRepository;
+import org.commonjava.aprox.test.fixture.core.TestHttpServer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
@@ -40,6 +41,9 @@ public class AbstractContentManagementTest
 
     @Rule
     public TestName name = new TestName();
+
+    @Rule
+    public TestHttpServer server = new TestHttpServer( "repos" );
 
     protected Thread newThread( final String named, final Runnable runnable )
     {
@@ -65,20 +69,13 @@ public class AbstractContentManagementTest
             this.client.stores()
                        .create( new HostedRepository( STORE ), changelog, HostedRepository.class );
 
-        RemoteRepository central = null;
-        if ( !client.stores()
-                    .exists( remote, CENTRAL ) )
-        {
-            central =
-                client.stores()
-                      .create( new RemoteRepository( CENTRAL, "http://repo.maven.apache.org/maven2/" ), changelog,
+        client.stores()
+              .delete( remote, CENTRAL, "removing to setup test instance" );
+
+        final RemoteRepository central =
+            client.stores()
+                      .create( new RemoteRepository( CENTRAL, server.formatUrl( "central" ) ), changelog,
                                RemoteRepository.class );
-        }
-        else
-        {
-            central = client.stores()
-                            .load( remote, CENTRAL, RemoteRepository.class );
-        }
 
         Group g;
         if ( client.stores()
