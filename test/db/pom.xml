@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.aprox</groupId>
     <artifactId>aprox-test</artifactId>
-    <version>0.22.0-SNAPSHOT</version>
+    <version>0.22.0</version>
   </parent>
   
   <artifactId>aprox-test-db</artifactId>
