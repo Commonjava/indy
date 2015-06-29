@@ -22,7 +22,7 @@ mvn clean install -Dauth=true -Dkeycloak.server.location=keycloak2-pncauth.rhclo
 
 After building of such command you will get following
 
-1. In the s file there is a section called [security]
+1. In the $APROX_HOME/bin/boot.properties file there is a section called [security]
 with 2 commented out properties to be defined by you.
 #aprox.boot.secure.config=<path_to_keycloak_json_config_file>
 #aprox.boot.secure.realm=<keycloak_realm>
@@ -71,3 +71,4 @@ What to change after build summary
 1. Update your $APROX_HOME/bin/boot.properties
 2. Update your $APROX_HOME/bin/keycloak.json file with correct configuration
 3. Update your $APROX_HOME/var/lib/aprox/ui/keycloak.json file with correct configuration
+4. Update your $APROX_HOME/bin/security-constraints.json file with your defined constraints
