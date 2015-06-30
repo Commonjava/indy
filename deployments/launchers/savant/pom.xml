@@ -147,6 +147,33 @@
     </plugins>
   </build>
   
+  <profiles>    
+     <profile>
+        <id>auth</id>
+        <activation>
+            <property>
+                <name>auth</name>
+                <value>true</value>
+            </property>
+        </activation>
+        <dependencies>
+		    <!-- Define Keycloak deps -->
+			<dependency>
+				<groupId>org.keycloak</groupId>
+				<artifactId>keycloak-undertow-adapter</artifactId>
+			</dependency>
+			<dependency>
+				<groupId>org.keycloak</groupId>
+				<artifactId>keycloak-core</artifactId>
+			</dependency>
+			<dependency>
+				<groupId>org.keycloak</groupId>
+				<artifactId>keycloak-adapter-core</artifactId>	
+			</dependency>
+        </dependencies>
+     </profile>
+  </profiles>  
+  
   <!--
   <profiles>
     <profile>

@@ -64,13 +64,25 @@ public class BootOptions
 
     @Option( name = "-C", aliases = { "--context-path" }, usage = "Specify a root context path for all of aprox to use" )
     private String contextPath;
-
+    
+    @Option( name = "-S", aliases = { "--secure-config-path" }, usage = "Specify config path of security file" )
+    private String secureConfig;
+    
+    @Option( name = "-R", aliases = { "--secure-realm" }, usage = "Specify security realm" )
+    private String secureRealm;
+    
+    @Option( name = "-x", aliases = { "--secure-constraint-config-path" }, usage = "Specify config path of security constraint file" )
+    private String secureConstraintConfig;
+    
+    
     private StringSearchInterpolator interp;
 
     private Properties bootProps;
 
     private String aproxHome;
-
+    
+    private boolean secure;
+    
     public static final BootOptions loadFromSysprops()
         throws AproxBootException
     {
@@ -80,13 +92,13 @@ public class BootOptions
         {
             bootDefaults = new File( bootDef );
         }
-
+        
         try
         {
             final String aproxHome =
                 System.getProperty( BootInterface.APROX_HOME_PROP, new File( "." ).getCanonicalPath() );
 
-            return new BootOptions( bootDefaults, aproxHome );
+            return new BootOptions( bootDefaults, aproxHome);
         }
         catch ( final IOException e )
         {
@@ -115,18 +127,20 @@ public class BootOptions
 
     }
 
+    
     public BootOptions( final String aproxHome )
-        throws IOException, InterpolationException
-    {
-        this( null, aproxHome );
-    }
+            throws IOException, InterpolationException
+        {
+            this( null, aproxHome );
+        }
+    
 
     public BootOptions( final File bootDefaults, final String aproxHome )
         throws IOException, InterpolationException
     {
         this.aproxHome = aproxHome;
         this.bootProps = new Properties();
-
+        
         if ( bootDefaults != null && bootDefaults.exists() )
         {
             FileInputStream stream = null;
@@ -141,6 +155,28 @@ public class BootOptions
                 IOUtils.closeQuietly( stream );
             }
         }
+        
+    	String secureConfig = bootProps.getProperty(BootInterface.BOOT_SECURE_CONFIG);
+    	String secureRealm = bootProps.getProperty(BootInterface.BOOT_SECURE_REALM);
+    	secureConstraintConfig = bootProps.getProperty(BootInterface.BOOT_SECURITY_CONSTRAINT_CONFIG_PATH);
+    	
+    	
+        File secureConfigFile = null;
+        File secureConstraintConfigFile = null;
+        if ( secureConfig != null )
+        {
+            secureConfigFile = new File( secureConfig );
+        }
+        if ( secureConstraintConfig != null )
+        {
+            secureConstraintConfigFile = new File( secureConstraintConfig );
+        }
+        if ( secureConstraintConfigFile != null && secureConstraintConfigFile.exists() 
+        		&& secureConfigFile != null && secureConfigFile.exists() 
+        		&& secureRealm != null && !secureRealm.equals("")) {
+        	this.secure = true;
+        }
+        
 
         if ( bind == null )
         {
@@ -359,5 +395,25 @@ public class BootOptions
     {
         this.workers = workers;
     }
+
+	public String getSecureConfig() {
+		return bootProps.getProperty(BootInterface.BOOT_SECURE_CONFIG);
+	}
+
+	public String getRealm() {
+		return bootProps.getProperty(BootInterface.BOOT_SECURE_REALM);
+	}
+
+	public boolean isSecure() {
+		return secure;
+	}
+
+	public void setSecure(boolean secure) {
+		this.secure = secure;
+	}
+
+	public String getSecureConstraintConfig() {
+		return secureConstraintConfig;
+	}
 
 }
