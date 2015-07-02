@@ -29,11 +29,12 @@ import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.dto.GraphComposition;
 import org.commonjava.maven.cartographer.dto.GraphDescription;
+import org.commonjava.maven.cartographer.dto.PomRecipe;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class WebPomDTOTest
+public class PomRecipeTest
 {
 
     @Test
@@ -50,9 +51,9 @@ public class WebPomDTOTest
 
         final GraphComposition comp = new GraphComposition( null, Collections.singletonList( desc ) );
 
-        final WebPomDTO dto = new WebPomDTO();
+        final PomRecipe dto = new PomRecipe();
         dto.setGraphComposition( comp );
-        dto.setSource( new StoreKey( StoreType.remote, "central" ) );
+        dto.setSource( new StoreKey( StoreType.remote, "central" ).toString() );
         dto.setOutput( new ProjectVersionRef( "org.foo", "bar-bom", "1.0" ) );
         dto.setWorkspaceId( "bar" );
         dto.setGraphToManagedDeps( true );
@@ -63,7 +64,7 @@ public class WebPomDTOTest
 
         System.out.println( json );
 
-        final WebPomDTO out = serializer.readValue( json, WebPomDTO.class );
+        final PomRecipe out = serializer.readValue( json, PomRecipe.class );
 
         System.out.println( out.getOutput() );
 

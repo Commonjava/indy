@@ -23,68 +23,69 @@ import javax.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
-import org.commonjava.aprox.depgraph.dto.MetadataCollationDTO;
+import org.commonjava.aprox.depgraph.dto.DownlogDTO;
 import org.commonjava.aprox.depgraph.dto.PathsDTO;
-import org.commonjava.aprox.depgraph.dto.WebPomDTO;
-import org.commonjava.aprox.depgraph.dto.WebOperationConfigDTO;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.cartographer.dto.GraphComposition;
-import org.commonjava.maven.cartographer.preset.PresetSelector;
-import org.commonjava.maven.galley.TransferException;
-import org.commonjava.maven.galley.spi.transport.LocationExpander;
+import org.commonjava.maven.cartographer.dto.MetadataCollationRecipe;
+import org.commonjava.maven.cartographer.dto.PomRecipe;
+import org.commonjava.maven.cartographer.dto.RepositoryContentRecipe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ApplicationScoped
-public class ConfigDTOHelper
+public class RecipeHelper
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private ObjectMapper serializer;
-
-    @Inject
-    private PresetSelector presets;
+    private ObjectMapper mapper;
 
     @Inject
     private AproxDepgraphConfig config;
 
-    @Inject
-    private LocationExpander locationExpander;
+    protected RecipeHelper()
+    {
+    }
 
-    @Inject
-    private StoreDataManager dataManager;
+    public RecipeHelper( final AproxDepgraphConfig config, final ObjectMapper mapper )
+    {
+        this.config = config;
+        this.mapper = mapper;
+    }
 
-    public WebOperationConfigDTO readWebOperationDTO( final InputStream configStream )
+    public RepositoryContentRecipe readRepositoryContentRecipe( final InputStream configStream )
         throws AproxWorkflowException
     {
         try
         {
-            return readWebOperationDTO( IOUtils.toString( configStream ) );
+            return readRepositoryContentRecipe( IOUtils.toString( configStream ) );
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( "Failed to read configuration JSON from request body. Reason: {}", e, e.getMessage() );
+            throw new AproxWorkflowException(
+                                              "Failed to read RepositoryContentRecipe JSON from request body. Reason: {}",
+                                              e, e.getMessage() );
         }
     }
 
-    public WebOperationConfigDTO readWebOperationDTO( final String json )
+    public RepositoryContentRecipe readRepositoryContentRecipe( final String json )
         throws AproxWorkflowException
     {
         logger.info( "Got configuration JSON:\n\n{}\n\n", json );
-        WebOperationConfigDTO dto;
+        RepositoryContentRecipe dto;
         try
         {
-            dto = serializer.readValue( json, WebOperationConfigDTO.class );
+            dto = mapper.readValue( json, RepositoryContentRecipe.class );
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( "Failed to deserialize DTO from JSON. Reason: %s", e, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to deserialize RepositoryContentRecipe from JSON. Reason: %s", e,
+                                              e.getMessage() );
         }
 
         if ( dto == null )
@@ -93,15 +94,47 @@ public class ConfigDTOHelper
                                               "No configuration found in request body!" );
         }
 
+        dto.setDefaultPreset( config.getDefaultWebFilterPreset() );
+
+        return dto;
+    }
+
+    public DownlogDTO readDownlogDTO( final InputStream configStream )
+        throws AproxWorkflowException
+    {
         try
         {
-            dto.calculateLocations( locationExpander, dataManager );
+            return readDownlogDTO( IOUtils.toString( configStream ) );
         }
-        catch ( final TransferException e )
+        catch ( final IOException e )
+        {
+            throw new AproxWorkflowException( "Failed to read DownlogDTO JSON from request body. Reason: {}", e,
+                                              e.getMessage() );
+        }
+    }
+
+    public DownlogDTO readDownlogDTO( final String json )
+        throws AproxWorkflowException
+    {
+        logger.info( "Got configuration JSON:\n\n{}\n\n", json );
+        DownlogDTO dto;
+        try
+        {
+            dto = mapper.readValue( json, DownlogDTO.class );
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxWorkflowException( "Failed to deserialize DownlogDTO from JSON. Reason: %s", e,
+                                              e.getMessage() );
+        }
+
+        if ( dto == null )
         {
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                              "One or more sources/excluded sources is invalid: {}", e, e.getMessage() );
+                                              "No configuration found in request body!" );
         }
+
+        dto.setDefaultPreset( config.getDefaultWebFilterPreset() );
 
         return dto;
     }
@@ -115,8 +148,8 @@ public class ConfigDTOHelper
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( "Failed to read configuration JSON from request body. Reason: {}",
-                                              e, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to read configuration JSON from request body. Reason: {}", e,
+                                              e.getMessage() );
         }
     }
 
@@ -127,7 +160,7 @@ public class ConfigDTOHelper
         PathsDTO dto;
         try
         {
-            dto = serializer.readValue( json, PathsDTO.class );
+            dto = mapper.readValue( json, PathsDTO.class );
         }
         catch ( final IOException e )
         {
@@ -136,18 +169,11 @@ public class ConfigDTOHelper
 
         if ( dto == null )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "No PathsDTO found in request body!" );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
+                                              "No PathsDTO found in request body!" );
         }
 
-        try
-        {
-            dto.calculateLocations( locationExpander, dataManager );
-        }
-        catch ( final TransferException e )
-        {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                              "One or more sources/excluded sources is invalid: {}", e, e.getMessage() );
-        }
+        dto.setDefaultPreset( config.getDefaultWebFilterPreset() );
 
         return dto;
     }
@@ -158,14 +184,15 @@ public class ConfigDTOHelper
         GraphComposition dto;
         try
         {
-            dto = serializer.readValue( json, GraphComposition.class );
+            dto = mapper.readValue( json, GraphComposition.class );
         }
         catch ( final IOException e )
         {
-            throw new AproxWorkflowException( "Failed to deserialize DTO from JSON. Reason: %s", e, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to deserialize GraphComposition from JSON. Reason: %s", e,
+                                              e.getMessage() );
         }
 
-        dto.resolveFilters( presets, config.getDefaultWebFilterPreset() );
+        dto.setDefaultPreset( config.getDefaultWebFilterPreset() );
 
         return dto;
     }
@@ -185,28 +212,28 @@ public class ConfigDTOHelper
 
     }
 
-    public MetadataCollationDTO readCollationDTO( final InputStream configStream, final String encoding )
+    public MetadataCollationRecipe readCollationRecipe( final InputStream configStream, final String encoding )
         throws AproxWorkflowException
     {
         try
         {
-            return readCollationDTO( IOUtils.toString( configStream ) );
+            return readCollationRecipe( IOUtils.toString( configStream ) );
         }
         catch ( final IOException e )
         {
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                              "Cannot read MetadataCollationDTO JSON from stream: {}", e,
+                                              "Cannot read MetadataCollationRecipe JSON from stream: {}", e,
                                               e.getMessage() );
         }
     }
 
-    public MetadataCollationDTO readCollationDTO( final String json )
+    public MetadataCollationRecipe readCollationRecipe( final String json )
         throws AproxWorkflowException
     {
-        MetadataCollationDTO dto;
+        MetadataCollationRecipe dto;
         try
         {
-            dto = serializer.readValue( json, MetadataCollationDTO.class );
+            dto = mapper.readValue( json, MetadataCollationRecipe.class );
         }
         catch ( final IOException e )
         {
@@ -219,43 +246,33 @@ public class ConfigDTOHelper
                                               "No collation configuration found in request body!" );
         }
 
-        dto.resolveFilters( presets, config.getDefaultWebFilterPreset() );
-
-        try
-        {
-            dto.calculateLocations( locationExpander, dataManager );
-        }
-        catch ( final TransferException e )
-        {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                              "One or more sources/excluded sources is invalid: {}", e, e.getMessage() );
-        }
+        dto.setDefaultPreset( config.getDefaultWebFilterPreset() );
 
         return dto;
     }
 
-    public WebPomDTO readPomDTO( final InputStream stream )
+    public PomRecipe readPomRecipe( final InputStream stream )
         throws AproxWorkflowException
     {
         try
         {
             final String json = IOUtils.toString( stream );
-            return readPomDTO( json );
+            return readPomRecipe( json );
         }
         catch ( final IOException e )
         {
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                              "Cannot read WebPomDTO JSON from stream: {}", e, e.getMessage() );
+                                              "Cannot read PomRecipe JSON from stream: {}", e, e.getMessage() );
         }
     }
 
-    public WebPomDTO readPomDTO( final String json )
+    public PomRecipe readPomRecipe( final String json )
         throws AproxWorkflowException
     {
-        WebPomDTO dto;
+        PomRecipe dto;
         try
         {
-            dto = serializer.readValue( json, WebPomDTO.class );
+            dto = mapper.readValue( json, PomRecipe.class );
         }
         catch ( final IOException e )
         {
@@ -268,18 +285,7 @@ public class ConfigDTOHelper
                                               "No POM configuration found in request body!" );
         }
 
-        dto.resolveFilters( presets, config.getDefaultWebFilterPreset() );
-
-        try
-        {
-            dto.calculateLocations( locationExpander, dataManager );
-        }
-        catch ( final TransferException e )
-        {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                              "AProx source store %s is invalid: %s", e,
-                                              dto.getSource(), e.getMessage() );
-        }
+        dto.setDefaultPreset( config.getDefaultWebFilterPreset() );
 
         return dto;
     }

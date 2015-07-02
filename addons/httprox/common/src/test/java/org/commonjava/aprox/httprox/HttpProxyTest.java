@@ -93,7 +93,7 @@ public class HttpProxyTest
     public TemporaryFolder temp = new TemporaryFolder();
 
     @Rule
-    public CoreFixture core = new CoreFixture( temp );
+    public CoreFixture core = new CoreFixture( false, temp );
 
     private int proxyPort;
 
@@ -107,9 +107,12 @@ public class HttpProxyTest
     {
         proxyPort = PortFinder.findOpenPort( 16 );
 
+        core.initGalley();
+
         final TransportManager transports =
             new TransportManagerImpl( new HttpClientTransport( new HttpImpl( new MemoryPasswordManager() ) ) );
-        core.setTransports( transports );
+
+        core.withTransportManager( transports );
 
         core.initMissingComponents();
 
@@ -125,7 +128,7 @@ public class HttpProxyTest
         final AproxObjectMapper mapper = new AproxObjectMapper( true );
 
         final DownloadManager downloadManager =
-            new DefaultDownloadManager( storeManager, core.getTransfers(), core.getLocations() );
+            new DefaultDownloadManager( storeManager, core.getTransferManager(), core.getLocationExpander() );
         final ContentManager contentManager =
             new DefaultContentManager( storeManager, downloadManager, mapper, Collections.<ContentGenerator> emptySet() );
 

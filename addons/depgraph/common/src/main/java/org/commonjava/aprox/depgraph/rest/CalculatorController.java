@@ -22,7 +22,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.depgraph.util.ConfigDTOHelper;
+import org.commonjava.aprox.depgraph.util.RecipeHelper;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.dto.GraphCalculation;
@@ -45,7 +45,7 @@ public class CalculatorController
     private ObjectMapper serializer;
 
     @Inject
-    private ConfigDTOHelper configHelper;
+    private RecipeHelper configHelper;
 
     public String difference( final InputStream configStream, final String encoding, final String workspaceId )
         throws AproxWorkflowException
