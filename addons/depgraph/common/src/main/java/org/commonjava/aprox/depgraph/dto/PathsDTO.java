@@ -18,9 +18,10 @@ package org.commonjava.aprox.depgraph.dto;
 import java.util.Set;
 
 import org.commonjava.maven.atlas.ident.ref.ProjectRef;
+import org.commonjava.maven.cartographer.dto.RepositoryContentRecipe;
 
 public class PathsDTO 
-    extends WebOperationConfigDTO
+    extends RepositoryContentRecipe
 {
 
     /** The target artifacts which we want collect paths to. */

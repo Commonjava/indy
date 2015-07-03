@@ -39,7 +39,6 @@ import org.commonjava.maven.galley.event.FileStorageEvent;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
-import org.commonjava.maven.galley.testing.core.ApiFixture;
 import org.commonjava.maven.galley.testing.maven.GalleyMavenFixture;
 import org.junit.Before;
 import org.junit.Rule;
@@ -53,7 +52,7 @@ public class ImpliedRepositoryDetectorTest
     private StoreDataManager storeManager;
 
     @Rule
-    public GalleyMavenFixture fixture = new GalleyMavenFixture( new ApiFixture() );
+    public GalleyMavenFixture fixture = new GalleyMavenFixture();
 
     private RemoteRepository remote;
 
@@ -67,8 +66,6 @@ public class ImpliedRepositoryDetectorTest
     public void setup()
         throws Exception
     {
-        fixture.initMissingComponents();
-
         storeManager = new MemoryStoreDataManager(true);
 
         metadataManager =

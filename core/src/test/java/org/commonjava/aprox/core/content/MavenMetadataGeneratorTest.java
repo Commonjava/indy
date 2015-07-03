@@ -53,7 +53,6 @@ import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.ListingResult;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.spi.transport.LocationExpander;
-import org.commonjava.maven.galley.testing.core.CoreFixture;
 import org.commonjava.maven.galley.testing.core.transport.job.TestListing;
 import org.commonjava.maven.galley.testing.maven.GalleyMavenFixture;
 import org.junit.Before;
@@ -64,7 +63,7 @@ public class MavenMetadataGeneratorTest
 {
 
     @Rule
-    public GalleyMavenFixture fixture = new GalleyMavenFixture( new CoreFixture() );
+    public GalleyMavenFixture fixture = new GalleyMavenFixture();
 
     private MavenMetadataGenerator generator;
 
@@ -78,13 +77,11 @@ public class MavenMetadataGeneratorTest
     public void setup()
         throws Exception
     {
-        fixture.initMissingComponents();
-
         stores = new MemoryStoreDataManager( new DefaultStoreEventDispatcher() );
 
         final LocationExpander locations = new AproxLocationExpander( stores );
 
-        final DownloadManager downloads = new DefaultDownloadManager( stores, fixture.getTransfers(), locations );
+        final DownloadManager downloads = new DefaultDownloadManager( stores, fixture.getTransferManager(), locations );
 
         final XMLInfrastructure xml = new XMLInfrastructure();
         final TypeMapper types = new StandardTypeMapper();
@@ -93,7 +90,8 @@ public class MavenMetadataGeneratorTest
 
         generator = new MavenMetadataGenerator( downloads, stores, xml, types, merger, helper );
 
-        metadataReader = new MavenMetadataReader( xml, locations, fixture.getMetadata(), fixture.getXpathManager() );
+        metadataReader =
+            new MavenMetadataReader( xml, locations, fixture.getArtifactMetadataManager(), fixture.getXPathManager() );
     }
 
     @Test

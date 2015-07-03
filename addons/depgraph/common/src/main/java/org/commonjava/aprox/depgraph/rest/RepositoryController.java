@@ -43,9 +43,9 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
+import org.commonjava.aprox.depgraph.dto.DownlogDTO;
 import org.commonjava.aprox.depgraph.dto.PathsDTO;
-import org.commonjava.aprox.depgraph.dto.WebOperationConfigDTO;
-import org.commonjava.aprox.depgraph.util.ConfigDTOHelper;
+import org.commonjava.aprox.depgraph.util.RecipeHelper;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.galley.CacheOnlyLocation;
 import org.commonjava.aprox.model.galley.KeyedLocation;
@@ -55,8 +55,8 @@ import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.data.CartoDataException;
+import org.commonjava.maven.cartographer.dto.RepositoryContentRecipe;
 import org.commonjava.maven.cartographer.ops.ResolveOps;
-import org.commonjava.maven.cartographer.preset.PresetSelector;
 import org.commonjava.maven.cartographer.util.ProjectVersionRefComparator;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferManager;
@@ -90,30 +90,27 @@ public class RepositoryController
     private TransferManager transferManager;
 
     @Inject
-    private PresetSelector presets;
-
-    @Inject
     private AproxDepgraphConfig config;
 
     @Inject
-    private ConfigDTOHelper configHelper;
+    private RecipeHelper configHelper;
 
 
     public String getUrlMap( final InputStream configStream, final String baseUri, final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
-        final WebOperationConfigDTO dto = configHelper.readWebOperationDTO( configStream );
+        final RepositoryContentRecipe dto = configHelper.readRepositoryContentRecipe( configStream );
         return getUrlMap( dto, baseUri, uriFormatter );
     }
 
     public String getUrlMap( final String json, final String baseUri, final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
-        final WebOperationConfigDTO dto = configHelper.readWebOperationDTO( json );
+        final RepositoryContentRecipe dto = configHelper.readRepositoryContentRecipe( json );
         return getUrlMap( dto, baseUri, uriFormatter );
     }
 
-    private String getUrlMap( final WebOperationConfigDTO dto, final String baseUri, final UriFormatter uriFormatter )
+    private String getUrlMap( final RepositoryContentRecipe dto, final String baseUri, final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
         final Map<ProjectVersionRef, Map<String, Object>> result = new LinkedHashMap<ProjectVersionRef, Map<String, Object>>();
@@ -259,18 +256,18 @@ public class RepositoryController
     public String getDownloadLog( final InputStream configStream, final String baseUri, final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
-        final WebOperationConfigDTO dto = configHelper.readWebOperationDTO( configStream );
+        final DownlogDTO dto = configHelper.readDownlogDTO( configStream );
         return getDownloadLog( dto, baseUri, uriFormatter );
     }
 
     public String getDownloadLog( final String json, final String baseUri, final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
-        final WebOperationConfigDTO dto = configHelper.readWebOperationDTO( json );
+        final DownlogDTO dto = configHelper.readDownlogDTO( json );
         return getDownloadLog( dto, baseUri, uriFormatter );
     }
 
-    public String getDownloadLog( final WebOperationConfigDTO dto, final String baseUri, final UriFormatter uriFormatter )
+    public String getDownloadLog( final DownlogDTO dto, final String baseUri, final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
         final Set<String> downLog = new HashSet<String>();
@@ -305,18 +302,18 @@ public class RepositoryController
     public void getZipRepository( final InputStream configStream, final OutputStream zipStream )
         throws AproxWorkflowException
     {
-        final WebOperationConfigDTO dto = configHelper.readWebOperationDTO( configStream );
+        final RepositoryContentRecipe dto = configHelper.readRepositoryContentRecipe( configStream );
         getZipRepository( dto, zipStream );
     }
 
     public void getZipRepository( final String json, final OutputStream zipStream )
         throws AproxWorkflowException
     {
-        final WebOperationConfigDTO dto = configHelper.readWebOperationDTO( json );
+        final RepositoryContentRecipe dto = configHelper.readRepositoryContentRecipe( json );
         getZipRepository( dto, zipStream );
     }
 
-    public void getZipRepository( final WebOperationConfigDTO dto, final OutputStream zipStream )
+    public void getZipRepository( final RepositoryContentRecipe dto, final OutputStream zipStream )
         throws AproxWorkflowException
     {
         ZipOutputStream stream = null;
@@ -409,18 +406,19 @@ public class RepositoryController
         }
     }
 
-    private String formatDownlogEntry( final ConcreteResource item, final WebOperationConfigDTO dto,
+    private String formatDownlogEntry( final ConcreteResource item, final DownlogDTO dto,
                                        final String baseUri, final UriFormatter uriFormatter )
         throws MalformedURLException
     {
         final KeyedLocation kl = (KeyedLocation) item.getLocation();
         final StoreKey key = kl.getKey();
 
-        if ( dto.getPathOnly() )
+        if ( dto.isPathOnly() )
         {
-            if ( dto.getPrependDownloading() )
+            final String prefix = dto.getLinePrefix();
+            if ( prefix != null )
             {
-                return "Downloading: " + item.getPath();
+                return prefix + item.getPath();
             }
             else
             {
@@ -432,9 +430,10 @@ public class RepositoryController
         {
             final String uri = uriFormatter.formatAbsolutePathTo( baseUri, key.getType()
                                                                .singularEndpointName(), key.getName(), item.getPath() );
-            if ( dto.getPrependDownloading() )
+            final String prefix = dto.getLinePrefix();
+            if ( prefix != null )
             {
-                return String.format( "Downloading: %s", uri );
+                return prefix + uri;
             }
             else
             {
@@ -443,9 +442,10 @@ public class RepositoryController
         }
         else
         {
-            if ( dto.getPrependDownloading() )
+            final String prefix = dto.getLinePrefix();
+            if ( prefix != null )
             {
-                return "Downloading: " + buildUrl( item.getLocation()
+                return prefix + buildUrl( item.getLocation()
                                                    .getUri(), item.getPath() );
             }
             else
@@ -471,7 +471,7 @@ public class RepositoryController
         }
     }
 
-    private Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> resolveContents( final WebOperationConfigDTO dto )
+    private Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> resolveContents( final RepositoryContentRecipe dto )
         throws AproxWorkflowException
     {
         if ( dto == null )
@@ -480,13 +480,7 @@ public class RepositoryController
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "JSON configuration not supplied" );
         }
 
-        dto.resolveFilters( presets, config.getDefaultWebFilterPreset() );
-
-        if ( !dto.isValid() )
-        {
-            logger.warn( "Repository archive configuration is invalid: {}", dto );
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid configuration: {}", dto );
-        }
+        dto.setDefaultPreset( this.config.getDefaultWebFilterPreset() );
 
         Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> contents;
         try
@@ -512,13 +506,7 @@ public class RepositoryController
         }
 
         // TODO implement for more than one graph
-        dto.resolveFilters( presets, config.getDefaultWebFilterPreset() );
-
-        if ( !dto.isValid() )
-        {
-            logger.warn( "Repository archive configuration is invalid: {}", dto );
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid configuration: {}", dto );
-        }
+        dto.setDefaultPreset( this.config.getDefaultWebFilterPreset() );
 
         final List<List<ProjectRelationship<ProjectVersionRef>>> discoveredPaths;
         try

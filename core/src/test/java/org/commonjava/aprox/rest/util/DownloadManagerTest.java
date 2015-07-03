@@ -34,7 +34,6 @@ import org.commonjava.aprox.model.galley.RepositoryLocation;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
-import org.commonjava.maven.galley.testing.core.ApiFixture;
 import org.commonjava.maven.galley.testing.core.transport.job.TestDownload;
 import org.commonjava.maven.galley.testing.maven.GalleyMavenFixture;
 import org.junit.Before;
@@ -51,7 +50,7 @@ public class DownloadManagerTest
     public final TemporaryFolder tempFolder = new TemporaryFolder();
 
     @Rule
-    public GalleyMavenFixture fixture = new GalleyMavenFixture( new ApiFixture( tempFolder ) );
+    public GalleyMavenFixture fixture = new GalleyMavenFixture( tempFolder );
 
     private MemoryStoreDataManager data;
 
@@ -62,9 +61,8 @@ public class DownloadManagerTest
         throws Exception
     {
         data = new MemoryStoreDataManager( new DefaultStoreEventDispatcher() );
-        fixture.initMissingComponents();
 
-        downloader = new DefaultDownloadManager( data, fixture.getTransfers(), new AproxLocationExpander( data ) );
+        downloader = new DefaultDownloadManager( data, fixture.getTransferManager(), new AproxLocationExpander( data ) );
     }
 
     @Test

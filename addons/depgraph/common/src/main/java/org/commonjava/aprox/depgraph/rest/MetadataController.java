@@ -26,15 +26,15 @@ import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.dto.MetadataBatchUpdateDTO;
-import org.commonjava.aprox.depgraph.dto.MetadataCollationDTO;
 import org.commonjava.aprox.depgraph.dto.MetadataUpdateDTO;
-import org.commonjava.aprox.depgraph.util.ConfigDTOHelper;
+import org.commonjava.aprox.depgraph.util.RecipeHelper;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.atlas.graph.ViewParams;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.dto.MetadataCollation;
+import org.commonjava.maven.cartographer.dto.MetadataCollationRecipe;
 import org.commonjava.maven.cartographer.ops.MetadataOps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +55,7 @@ public class MetadataController
     private ObjectMapper serializer;
 
     @Inject
-    private ConfigDTOHelper configHelper;
+    private RecipeHelper configHelper;
 
     public void batchUpdate( final InputStream stream, final String encoding, final String workspaceId )
         throws AproxWorkflowException
@@ -213,18 +213,18 @@ public class MetadataController
     public String getCollation( final InputStream configStream, final String encoding )
         throws AproxWorkflowException
     {
-        final MetadataCollationDTO dto = configHelper.readCollationDTO( configStream, encoding );
+        final MetadataCollationRecipe dto = configHelper.readCollationRecipe( configStream, encoding );
         return getCollation( dto );
     }
 
     public String getCollation( final String json )
         throws AproxWorkflowException
     {
-        final MetadataCollationDTO dto = configHelper.readCollationDTO( json );
+        final MetadataCollationRecipe dto = configHelper.readCollationRecipe( json );
         return getCollation( dto );
     }
 
-    private String getCollation( final MetadataCollationDTO dto )
+    private String getCollation( final MetadataCollationRecipe dto )
         throws AproxWorkflowException
     {
         try
