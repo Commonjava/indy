@@ -24,7 +24,7 @@ import org.commonjava.aprox.ftest.core.AbstractAproxFunctionalTest;
 import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.HostedRepository;
 import org.commonjava.aprox.model.core.RemoteRepository;
-import org.commonjava.aprox.test.fixture.core.TestHttpServer;
+import org.commonjava.test.http.TestHttpServer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;

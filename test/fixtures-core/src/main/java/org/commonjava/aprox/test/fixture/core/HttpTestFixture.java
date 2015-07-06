@@ -29,6 +29,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
 import org.commonjava.maven.galley.auth.MemoryPasswordManager;
+import org.commonjava.test.http.ContentResponse;
+import org.commonjava.test.http.TestHttpServer;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 
@@ -124,9 +126,9 @@ public class HttpTestFixture
         return server.getPort();
     }
 
-    public Map<String, Integer> getAccessesByPath()
+    public Map<String, Integer> getAccessesByPathKey()
     {
-        return server.getAccessesByPath();
+        return server.getAccessesByPathKey();
     }
 
     public String formatUrl( final String... subpath )

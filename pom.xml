@@ -652,6 +652,13 @@
         <artifactId>atlas-driver-neo4j-embedded</artifactId>
         <version>${atlasVersion}</version>
       </dependency>
+
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>http-testserver</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <scope>test</scope>
+      </dependency>
       
 
       <dependency>

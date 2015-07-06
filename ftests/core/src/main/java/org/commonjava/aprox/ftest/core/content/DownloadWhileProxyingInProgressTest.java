@@ -29,7 +29,7 @@ import org.commonjava.aprox.ftest.core.fixture.InputTimer;
 import org.commonjava.aprox.ftest.core.fixture.ReluctantInputStream;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
-import org.commonjava.aprox.test.fixture.core.TestHttpServer;
+import org.commonjava.test.http.TestHttpServer;
 import org.junit.Rule;
 import org.junit.Test;
 

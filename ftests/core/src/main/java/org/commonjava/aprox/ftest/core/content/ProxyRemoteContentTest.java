@@ -25,7 +25,7 @@ import java.io.InputStream;
 
 import org.commonjava.aprox.client.core.helper.PathInfo;
 import org.commonjava.aprox.model.core.RemoteRepository;
-import org.commonjava.aprox.test.fixture.core.TestHttpServer;
+import org.commonjava.test.http.TestHttpServer;
 import org.junit.Rule;
 import org.junit.Test;
 
