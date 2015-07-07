@@ -1,4 +1,4 @@
-package org.commonjava.aprox.depgraph.dto;
+package org.commonjava.aprox.model.galley;
 
 import javax.inject.Inject;
 
@@ -6,7 +6,6 @@ import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.StoreKey;
-import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.model.Location;

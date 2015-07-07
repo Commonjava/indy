@@ -112,10 +112,13 @@ public class AutoProxDataManagerDecoratorTest
         catalog.parseRules();
 
         final String testUrl = http.formatUrl( "target", "test" );
+
+        logger.info( "\n\nSETTING UP / VERIFYING REMOTE SERVER EXPECTATIONS" );
         http.get( testUrl, 404 );
         http.expect( testUrl, 200 );
         //        targetResponder.approveTargets( "test" );
         http.get( testUrl, 200 );
+        logger.info( "DONE: SETTING UP / VERIFYING REMOTE SERVER EXPECTATIONS\n\n" );
 
         catalog.setEnabled( false );
         assertThat( proxyManager.getRemoteRepository( "test" ), nullValue() );

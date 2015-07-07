@@ -244,6 +244,9 @@ public final class ProxyResponseWriter
                         writeStatus( sinkChannel, ApplicationStatus.BAD_REQUEST );
                         return;
                     }
+
+                    tk = new TrackingKey( proxyUserPass.getUser() );
+
                     break;
                 }
                 case SUFFIX:

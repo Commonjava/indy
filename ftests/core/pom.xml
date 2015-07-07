@@ -42,6 +42,11 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.util</groupId>
+      <artifactId>http-testserver</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-bindings-jaxrs</artifactId>
       <scope>provided</scope>
