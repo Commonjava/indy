@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang.StringUtils;
 import org.commonjava.aprox.boot.AproxBootException;
 import org.commonjava.aprox.boot.BootStatus;
 import org.commonjava.aprox.client.core.Aprox;
@@ -44,6 +45,8 @@ public abstract class AbstractAproxFunctionalTest
     private static final String NAME_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_";
 
     protected static final String TEST_TIMEOUT_SYSPROP = "testTimeout";
+
+    protected static final String DEFAULT_TEST_TIMEOUT = "120";
 
     protected Aprox client;
 
@@ -82,7 +85,13 @@ public abstract class AbstractAproxFunctionalTest
 
     protected final long getTestTimeoutSeconds()
     {
-        return getTestTimeoutMultiplier() * Long.parseLong( System.getProperty( TEST_TIMEOUT_SYSPROP, "120" ) );
+        String timeout = System.getProperty( TEST_TIMEOUT_SYSPROP );
+        if ( StringUtils.isEmpty( timeout ) )
+        {
+            timeout = DEFAULT_TEST_TIMEOUT;
+        }
+
+        return getTestTimeoutMultiplier() * Long.parseLong( timeout );
     }
 
     protected int getTestTimeoutMultiplier()
