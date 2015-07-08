@@ -18,17 +18,12 @@ package org.commonjava.aprox.bind.jaxrs;
 import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.FilterInfo;
-import io.undertow.servlet.api.LoginConfig;
-import io.undertow.servlet.api.SecurityConstraint;
 import io.undertow.servlet.api.ServletInfo;
-import io.undertow.servlet.api.WebResourceCollection;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -42,6 +37,7 @@ import javax.ws.rs.core.Application;
 import org.commonjava.aprox.bind.jaxrs.ui.UIServlet;
 import org.commonjava.aprox.bind.jaxrs.util.AproxResteasyJsonProvider;
 import org.commonjava.aprox.bind.jaxrs.util.CdiInjectorFactoryImpl;
+import org.commonjava.aprox.bind.jaxrs.util.DeploymentInfoUtils;
 import org.commonjava.aprox.bind.jaxrs.util.RequestScopeListener;
 import org.commonjava.aprox.stats.AProxVersioning;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
@@ -131,30 +127,6 @@ public class AproxDeployment
         }
     }
     
-    public DeploymentInfo addSecurityConstraintToDeployment(DeploymentInfo di, String role, String constraintUrl, List<String> httpMethods) {
-        SecurityConstraint constraint = new SecurityConstraint();
-        WebResourceCollection collection = new WebResourceCollection();
-        collection.addUrlPattern(constraintUrl);
-        if(httpMethods != null) { 
-        	collection.addHttpMethods(httpMethods);
-        }
-        constraint.addWebResourceCollection(collection);
-        if(role != null) {
-        	constraint.addRoleAllowed(role);
-        }
-        di.addSecurityConstraint(constraint);
-        return di;
-    }
-    
-    public DeploymentInfo addKeycloakAdapterToDeployment(DeploymentInfo di, String adapterConfigPath, String realm) {
-        di.addInitParameter("keycloak.config.file", adapterConfigPath);
-        LoginConfig loginConfig = new LoginConfig("KEYCLOAK", realm, null, null);
-        di.setLoginConfig(loginConfig);
-        return di;
-
-    }
-    
-
     public DeploymentInfo getDeployment( final String contextRoot )
     {
         final ResteasyDeployment deployment = new ResteasyDeployment();
@@ -209,31 +181,32 @@ public class AproxDeployment
 
         if ( deploymentProviders != null )
         {
-            for ( final AproxDeploymentProvider deploymentFactory : deploymentProviders )
-            {
-                logger.info( "Adding deployments from: {}" + deploymentFactory.getClass()
-                                                                              .getName() );
-                final DeploymentInfo info = deploymentFactory.getDeploymentInfo();
-                final Map<String, ServletInfo> servletInfos = info.getServlets();
-                if ( servletInfos != null )
-                {
-                    for ( final Map.Entry<String, ServletInfo> si : servletInfos.entrySet() )
-                    {
-                        di.addServlet( si.getValue() );
-                    }
-                }
-
-                final Map<String, FilterInfo> filterInfos = info.getFilters();
-                if ( filterInfos != null )
-                {
-                    for ( final Map.Entry<String, FilterInfo> fi : filterInfos.entrySet() )
-                    {
-                        di.addFilter( fi.getValue() );
-                    }
-                }
-
-                // TODO: More comprehensive merge...
-            }
+            DeploymentInfoUtils.mergeFromProviders( di, deploymentProviders );
+            //            for ( final AproxDeploymentProvider deploymentFactory : deploymentProviders )
+            //            {
+            //                logger.info( "Adding deployments from: {}" + deploymentFactory.getClass()
+            //                                                                              .getName() );
+            //                final DeploymentInfo info = deploymentFactory.getDeploymentInfo();
+            //                final Map<String, ServletInfo> servletInfos = info.getServlets();
+            //                if ( servletInfos != null )
+            //                {
+            //                    for ( final Map.Entry<String, ServletInfo> si : servletInfos.entrySet() )
+            //                    {
+            //                        di.addServlet( si.getValue() );
+            //                    }
+            //                }
+            //
+            //                final Map<String, FilterInfo> filterInfos = info.getFilters();
+            //                if ( filterInfos != null )
+            //                {
+            //                    for ( final Map.Entry<String, FilterInfo> fi : filterInfos.entrySet() )
+            //                    {
+            //                        di.addFilter( fi.getValue() );
+            //                    }
+            //                }
+            //
+            //                // TODO: More comprehensive merge...
+            //            }
         }
 
         // Add UI servlet at the end so its mappings don't obscure any from add-ons.

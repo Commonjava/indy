@@ -51,6 +51,12 @@
       <classifier>confset</classifier>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-keycloak</artifactId>
+      <type>tar.gz</type>
+      <classifier>confset</classifier>
+    </dependency>
+    <dependency>
       <groupId>org.jboss.weld.se</groupId>
       <artifactId>weld-se</artifactId>
       <scope>compile</scope>

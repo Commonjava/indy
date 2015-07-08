@@ -45,8 +45,6 @@ public class BootOptions
 
     public static final int DEFAULT_PORT = 8080;
 
-    public static final int DEFAULT_WORKERS_COUNT = 5;
-
     @Option( name = "-h", aliases = { "--help" }, usage = "Print this and exit" )
     private boolean help;
 
@@ -59,9 +57,6 @@ public class BootOptions
     @Option( name = "-c", aliases = { "--config" }, usage = "Use an alternative configuration file (default: <aprox-home>/etc/aprox/main.conf)" )
     private String config;
 
-    @Option( name = "-w", aliases = { "--workers" }, usage = "Number of worker threads to serve content (default: 5)" )
-    private Integer workers;
-
     @Option( name = "-C", aliases = { "--context-path" }, usage = "Specify a root context path for all of aprox to use" )
     private String contextPath;
     
@@ -71,17 +66,11 @@ public class BootOptions
     @Option( name = "-R", aliases = { "--secure-realm" }, usage = "Specify security realm" )
     private String secureRealm;
     
-    @Option( name = "-x", aliases = { "--secure-constraint-config-path" }, usage = "Specify config path of security constraint file" )
-    private String secureConstraintConfig;
-    
-    
     private StringSearchInterpolator interp;
 
     private Properties bootProps;
 
     private String aproxHome;
-    
-    private boolean secure;
     
     public static final BootOptions loadFromSysprops()
         throws AproxBootException
@@ -156,28 +145,6 @@ public class BootOptions
             }
         }
         
-    	String secureConfig = bootProps.getProperty(BootInterface.BOOT_SECURE_CONFIG);
-    	String secureRealm = bootProps.getProperty(BootInterface.BOOT_SECURE_REALM);
-    	secureConstraintConfig = bootProps.getProperty(BootInterface.BOOT_SECURITY_CONSTRAINT_CONFIG_PATH);
-    	
-    	
-        File secureConfigFile = null;
-        File secureConstraintConfigFile = null;
-        if ( secureConfig != null )
-        {
-            secureConfigFile = new File( secureConfig );
-        }
-        if ( secureConstraintConfig != null )
-        {
-            secureConstraintConfigFile = new File( secureConstraintConfig );
-        }
-        if ( secureConstraintConfigFile != null && secureConstraintConfigFile.exists() 
-        		&& secureConfigFile != null && secureConfigFile.exists() 
-        		&& secureRealm != null && !secureRealm.equals("")) {
-        	this.secure = true;
-        }
-        
-
         if ( bind == null )
         {
             bind = resolve( bootProps.getProperty( BIND_PROP, DEFAULT_BIND ) );
@@ -186,13 +153,6 @@ public class BootOptions
         if ( port == null )
         {
             port = Integer.parseInt( resolve( bootProps.getProperty( PORT_PROP, Integer.toString( DEFAULT_PORT ) ) ) );
-        }
-
-        if ( workers == null )
-        {
-            workers =
-                Integer.parseInt( resolve( bootProps.getProperty( WORKERS_PROP,
-                                                                  Integer.toString( DEFAULT_WORKERS_COUNT ) ) ) );
         }
 
         if ( config == null )
@@ -210,7 +170,6 @@ public class BootOptions
         this.bind = options.bind;
         this.port = options.port;
         this.config = options.config;
-        this.workers = options.workers;
         this.contextPath = options.contextPath;
         this.interp = options.interp;
         this.bootProps = options.bootProps;
@@ -247,11 +206,6 @@ public class BootOptions
         }
 
         return interp.interpolate( value );
-    }
-
-    public int getWorkers()
-    {
-        return workers;
     }
 
     public boolean isHelp()
@@ -295,12 +249,6 @@ public class BootOptions
     public BootOptions setConfig( final String config )
     {
         this.config = config;
-        return this;
-    }
-
-    public BootOptions setWorkers( final int workers )
-    {
-        this.workers = workers;
         return this;
     }
 
@@ -390,30 +338,5 @@ public class BootOptions
     {
         this.port = port;
     }
-
-    public void setWorkers( final Integer workers )
-    {
-        this.workers = workers;
-    }
-
-	public String getSecureConfig() {
-		return bootProps.getProperty(BootInterface.BOOT_SECURE_CONFIG);
-	}
-
-	public String getRealm() {
-		return bootProps.getProperty(BootInterface.BOOT_SECURE_REALM);
-	}
-
-	public boolean isSecure() {
-		return secure;
-	}
-
-	public void setSecure(boolean secure) {
-		this.secure = secure;
-	}
-
-	public String getSecureConstraintConfig() {
-		return secureConstraintConfig;
-	}
 
 }

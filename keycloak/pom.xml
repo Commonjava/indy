@@ -20,57 +20,57 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-bindings</artifactId>
+    <artifactId>aprox-parent</artifactId>
     <version>0.23.0-SNAPSHOT</version>
   </parent>
-  
-  <artifactId>aprox-bindings-jaxrs</artifactId>
-  <name>AProx :: Bindings :: JAX-RS</name>
-  
+  <artifactId>aprox-keycloak</artifactId>
+  <name>AProx :: Add-Ons :: Keycloak Integration Core</name>
+
   <dependencies>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-subsys-jaxrs</artifactId>
+      <artifactId>aprox-api</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-keycloak</artifactId>
-    </dependency>
+    
     <dependency>
       <groupId>javax.enterprise</groupId>
       <artifactId>cdi-api</artifactId>
-      <scope>compile</scope>
     </dependency>
+    
     <dependency>
-      <groupId>org.jboss.weld.se</groupId>
-      <artifactId>weld-se-core</artifactId>
-      <scope>compile</scope>
+      <groupId>org.keycloak</groupId>
+      <artifactId>keycloak-core</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>resteasy-jaxrs</artifactId>
-    </dependency>
+    
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
     </dependency>
     <dependency>
-      <groupId>args4j</groupId>
-      <artifactId>args4j</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-db-flat</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-filer-default</artifactId>
-    </dependency>
-    
-    <dependency>
-      <groupId>com.wordnik</groupId>
-      <artifactId>swagger-jaxrs_2.10</artifactId>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-core</artifactId>
     </dependency>
   </dependencies>
-  
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>confset</id>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <descriptorRefs>
+                <descriptorRef>confset</descriptorRef>
+              </descriptorRefs>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

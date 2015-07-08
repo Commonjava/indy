@@ -1,0 +1,19 @@
+{
+  "constraints" : [
+    {
+      "role" : "admin",
+      "urlPattern" : "/api/info/*",
+      "methods" : [ "POST", "GET" ]
+    },
+    {
+      "role" : "user",
+      "urlPattern" : "/api/all/*",
+      "methods" : [ "POST", "GET", "PUT", "DELETE" ]
+    },
+    {
+      "role" : "all",
+      "urlPattern" : "/api/test/*",
+      "methods" : [ "POST", "GET", "PUT", "TRACE" ]
+    }
+  ]
+}
