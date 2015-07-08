@@ -61,6 +61,9 @@
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
+            <systemPropertyVariables>
+              <testTimeout>${testTimeout}</testTimeout>
+            </systemPropertyVariables>
             <forkCount>${test-forkCount}</forkCount>
             <reuseForks>false</reuseForks>
             <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
