@@ -251,12 +251,15 @@ public final class ProxyResponseWriter
                 }
                 case SUFFIX:
                 {
-                    final String user = proxyUserPass.getUser();
-
-                    // TODO: Will this always be non-null here? Can we have an unsecured proxy?
-                    if ( user.endsWith( TRACKED_USER_SUFFIX ) && user.length() > TRACKED_USER_SUFFIX.length() )
+                    if ( proxyUserPass != null )
                     {
-                        tk = new TrackingKey( user );
+                        final String user = proxyUserPass.getUser();
+
+                        // TODO: Will this always be non-null here? Can we have an unsecured proxy?
+                        if ( user.endsWith( TRACKED_USER_SUFFIX ) && user.length() > TRACKED_USER_SUFFIX.length() )
+                        {
+                            tk = new TrackingKey( user );
+                        }
                     }
 
                     break;

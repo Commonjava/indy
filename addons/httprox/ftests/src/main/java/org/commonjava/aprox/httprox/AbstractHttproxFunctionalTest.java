@@ -92,9 +92,20 @@ public class AbstractHttproxFunctionalTest
                 .mkdirs();
 
         logger.info( "Writing httprox configuration to: {}", confFile );
-        FileUtils.write( confFile, "[httprox]\nenabled=true\nport=" + proxyPort );
+        String additionalConfig = getAdditionalHttproxConfig();
+        if ( additionalConfig == null )
+        {
+            additionalConfig = "";
+        }
+
+        FileUtils.write( confFile, "[httprox]\nenabled=true\nport=" + proxyPort + "\n" + additionalConfig );
 
         return fixture;
+    }
+
+    protected String getAdditionalHttproxConfig()
+    {
+        return null;
     }
 
     protected PomRef loadPom( final String name, final Map<String, String> substitutions )

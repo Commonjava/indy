@@ -56,23 +56,24 @@
       </dependencies>
       
       <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                  <forkCount>${test-forkCount}</forkCount>
-                  <reuseForks>false</reuseForks>
+        <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+              <configuration>
+                <systemPropertyVariables>
+                  <testTimeout>${testTimeout}</testTimeout>
+                </systemPropertyVariables>
+                <forkCount>${test-forkCount}</forkCount>
+                <reuseForks>false</reuseForks>
                 <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
-                  <dependenciesToScan>
-                    <dependency>org.commonjava.aprox:aprox-ftests-autoprox</dependency>
-                    <dependency>org.commonjava.aprox:aprox-ftests-core</dependency>
-                    <dependency>org.commonjava.aprox:aprox-ftests-dot-maven</dependency>
-                  </dependenciesToScan> 
-                </configuration>
-            </plugin>
-          </plugins>
-        </pluginManagement>
+                <dependenciesToScan>
+                  <dependency>org.commonjava.aprox:aprox-ftests-autoprox</dependency>
+                  <dependency>org.commonjava.aprox:aprox-ftests-core</dependency>
+                  <dependency>org.commonjava.aprox:aprox-ftests-dot-maven</dependency>
+                </dependenciesToScan> 
+              </configuration>
+          </plugin>
+        </plugins>
       </build>
     </profile>
   </profiles>
