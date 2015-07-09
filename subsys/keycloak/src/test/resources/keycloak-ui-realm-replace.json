@@ -1,0 +1,10 @@
+{
+  "realm": "${realm}",
+  "realm-public-key": "F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00",
+  "auth-server-url": "http://localhost:8080/auth",
+  "ssl-required": "none",
+  "resource": "aprox-ui",
+  "credentials": {
+    "secret": "c0ffee-c0ffee-c0ffee-c0ffee"
+  }
+}

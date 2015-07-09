@@ -1,7 +1,7 @@
 var auth = {};
 
 angular.element(document).ready(function () {
-  var keycloak = new Keycloak(@json@);
+  var keycloak = new Keycloak('api/security/keycloak.json');
   auth.loggedIn = false;
 
   keycloak.init({ onLoad: 'login-required' }).success(function () {
@@ -10,7 +10,7 @@ angular.element(document).ready(function () {
     auth.logout = function() {
       auth.loggedIn = false;
       auth.keycloak = null;
-      window.location = keycloak.authServerUrl + '/realms/@realm@/tokens/logout?redirect_uri=/index.html';
+      window.location = keycloak.authServerUrl + '/realms/${realm}/tokens/logout?redirect_uri=/index.html';
     };
     angular.bootstrap(document, ['aprox']);
   }).error(function () {

@@ -2,8 +2,6 @@ package org.commonjava.aprox.keycloak;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -12,13 +10,15 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.keycloak.conf.KeycloakConfig;
 import org.commonjava.aprox.keycloak.conf.KeycloakSecurityBindings;
-import org.commonjava.aprox.keycloak.conf.KeycloakSecurityConstraint;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-
 @ApplicationScoped
-public class SecurityConstraintProvider {
+public class SecurityConstraintProvider
+{
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private KeycloakConfig config;
@@ -38,7 +38,7 @@ public class SecurityConstraintProvider {
         this.config = config;
         init();
     }
-	
+
     @PostConstruct
     public void init()
     {
@@ -52,6 +52,7 @@ public class SecurityConstraintProvider {
 
             try
             {
+                logger.debug( "Loading security bindings: {}", constraintFile );
                 constraintSet = mapper.readValue( constraintFile, KeycloakSecurityBindings.class );
             }
             catch ( final IOException e )
@@ -60,31 +61,34 @@ public class SecurityConstraintProvider {
             }
         }
     }
-	
+
     @Produces
     public KeycloakSecurityBindings getConstraints()
     {
         return constraintSet;
-	}
-	
-    public static KeycloakSecurityBindings createConstraintsConfig()
-    {
-        final KeycloakSecurityBindings config = new KeycloakSecurityBindings();
-		// 1.constraint
-		final KeycloakSecurityConstraint securityConstraint1 = new KeycloakSecurityConstraint("admin","/api/info/*",new String[] {"POST","GET"}); 
-		// 2.constraint
-		final KeycloakSecurityConstraint securityConstraint2 = new KeycloakSecurityConstraint("user","/api/all/*",new String[] {"POST","GET","PUT","DELETE"}); 
-		// 3.constraint
-		final KeycloakSecurityConstraint securityConstraint3 = new KeycloakSecurityConstraint("all","/api/test/*",new String[] {"POST","GET","PUT","TRACE"});
-		
-		final List<KeycloakSecurityConstraint> constraints = new ArrayList<KeycloakSecurityConstraint>();
-		constraints.add(securityConstraint1);
-		constraints.add(securityConstraint2);
-		constraints.add(securityConstraint3);
-		
-        config.setConstraints( constraints );
-		
-		return config;
-	}
-	
+    }
+
+    //    public static KeycloakSecurityBindings createConstraintsConfig()
+    //    {
+    //        final KeycloakSecurityBindings config = new KeycloakSecurityBindings();
+    //        // 1.constraint
+    //        final KeycloakSecurityConstraint securityConstraint1 =
+    //            new KeycloakSecurityConstraint( "admin", "/api/info/*", new String[] { "POST", "GET" } );
+    //        // 2.constraint
+    //        final KeycloakSecurityConstraint securityConstraint2 =
+    //            new KeycloakSecurityConstraint( "user", "/api/all/*", new String[] { "POST", "GET", "PUT", "DELETE" } );
+    //        // 3.constraint
+    //        final KeycloakSecurityConstraint securityConstraint3 =
+    //            new KeycloakSecurityConstraint( "all", "/api/test/*", new String[] { "POST", "GET", "PUT", "TRACE" } );
+    //
+    //        final List<KeycloakSecurityConstraint> constraints = new ArrayList<KeycloakSecurityConstraint>();
+    //        constraints.add( securityConstraint1 );
+    //        constraints.add( securityConstraint2 );
+    //        constraints.add( securityConstraint3 );
+    //
+    //        config.setConstraints( constraints );
+    //
+    //        return config;
+    //    }
+
 }

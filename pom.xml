@@ -79,7 +79,6 @@
     <module>uis</module>
     <module>ftests</module>
     <module>clients</module>
-    <module>keycloak</module>
     
     <!-- TODO: put in profile, figure out why release version-adjustment isn't working in profile -->
     <module>embedder-tests</module>
@@ -498,6 +497,7 @@
         <version>0.23.0-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
@@ -541,15 +541,16 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-keycloak</artifactId>
+        <artifactId>aprox-subsys-keycloak</artifactId>
         <version>0.23.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-keycloak</artifactId>
+        <artifactId>aprox-subsys-keycloak</artifactId>
         <version>0.23.0-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
+        <scope>provided</scope>
       </dependency>
 
 

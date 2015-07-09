@@ -1,0 +1,1 @@
+/* Keycloak authentication is disabled. */

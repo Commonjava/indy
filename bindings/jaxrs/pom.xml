@@ -34,7 +34,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-keycloak</artifactId>
+      <artifactId>aprox-subsys-keycloak</artifactId>
     </dependency>
     <dependency>
       <groupId>javax.enterprise</groupId>

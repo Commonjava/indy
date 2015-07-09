@@ -20,11 +20,11 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-parent</artifactId>
+    <artifactId>aprox-subsystems</artifactId>
     <version>0.23.0-SNAPSHOT</version>
   </parent>
-  <artifactId>aprox-keycloak</artifactId>
-  <name>AProx :: Add-Ons :: Keycloak Integration Core</name>
+  <artifactId>aprox-subsys-keycloak</artifactId>
+  <name>AProx :: Keycloak Subsystem</name>
 
   <dependencies>
     <dependency>

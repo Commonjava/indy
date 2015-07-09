@@ -35,12 +35,16 @@ import org.commonjava.maven.galley.util.PathUtils;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SectionName( "keycloak" )
 @Alternative
 @Named
 public class KeycloakConfig
 {
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private static final boolean DEFAULT_ENABLED = false;
 
@@ -64,9 +68,11 @@ public class KeycloakConfig
 
     private String securityBindingsJson;
 
+    private String keycloakUrl;
+
     public boolean isEnabled()
     {
-        return enabled == null ? DEFAULT_ENABLED : enabled;
+        return ( enabled == null ? DEFAULT_ENABLED : enabled ) && getKeycloakUrl() != null;
     }
 
     @ConfigName( "enabled" )
@@ -207,6 +213,21 @@ public class KeycloakConfig
         {
             return info;
         }
+    }
+
+    public String getKeycloakUrl()
+    {
+        if ( keycloakUrl == null )
+        {
+            logger.warn( "Keycloak URL not set!" );
+        }
+        return keycloakUrl;
+    }
+
+    @ConfigName( "keycloak.url" )
+    public void setKeycloakUrl( final String keycloakUrl )
+    {
+        this.keycloakUrl = keycloakUrl;
     }
 
 }
