@@ -14,6 +14,7 @@ import javax.ws.rs.core.Response.Status;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.keycloak.rest.SecurityController;
+import org.commonjava.aprox.util.ApplicationHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +24,8 @@ public class SecurityResource
 {
 
     private static final String DISABLED_MESSAGE = "Keycloak is disabled";
+
+    private static final String NO_CACHE = "no-store, no-cache, must-revalidate, max-age=0";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -42,11 +45,13 @@ public class SecurityResource
             {
                 response = Response.status( Status.NOT_ACCEPTABLE )
                                    .entity( DISABLED_MESSAGE )
+                                   .header( ApplicationHeader.cache_control.key(), NO_CACHE )
                                    .build();
             }
             else
             {
                 response = Response.ok( content )
+                                   .header( ApplicationHeader.cache_control.key(), NO_CACHE )
                                    .build();
             }
         }
@@ -68,6 +73,7 @@ public class SecurityResource
         try
         {
             response = Response.ok( controller.getKeycloakInit() )
+                               .header( ApplicationHeader.cache_control.key(), NO_CACHE )
                                .build();
         }
         catch ( final AproxWorkflowException e )
@@ -91,6 +97,7 @@ public class SecurityResource
             if ( url == null )
             {
                 response = Response.ok( "/* " + DISABLED_MESSAGE + "; loading of keycloak.js blocked. */" )
+                                   .header( ApplicationHeader.cache_control.key(), NO_CACHE )
                                    .build();
             }
             else

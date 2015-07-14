@@ -35,16 +35,12 @@ import org.commonjava.maven.galley.util.PathUtils;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @SectionName( "keycloak" )
 @Alternative
 @Named
 public class KeycloakConfig
 {
-
-    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private static final boolean DEFAULT_ENABLED = false;
 
@@ -56,7 +52,9 @@ public class KeycloakConfig
 
     private static final String DEFAULT_SECURITY_BINDINGS_JSON = "keycloak/security-bindings.json";
 
-    private static final String KEYCLOAK_REALM = "keycloak.realm";
+    public static final String KEYCLOAK_REALM = "keycloak.realm";
+
+    public static final String KEYCLOAK_URL = "keycloak.url";
 
     private String realm;
 
@@ -68,11 +66,11 @@ public class KeycloakConfig
 
     private String securityBindingsJson;
 
-    private String keycloakUrl;
+    private String url;
 
     public boolean isEnabled()
     {
-        return ( enabled == null ? DEFAULT_ENABLED : enabled ) && getKeycloakUrl() != null;
+        return enabled == null ? DEFAULT_ENABLED : enabled;
     }
 
     @ConfigName( "enabled" )
@@ -147,6 +145,7 @@ public class KeycloakConfig
     {
         final Properties properties = System.getProperties();
         properties.setProperty( KEYCLOAK_REALM, getRealm() );
+        properties.setProperty( KEYCLOAK_URL, getUrl() );
         System.setProperties( properties );
 
         return this;
@@ -215,19 +214,15 @@ public class KeycloakConfig
         }
     }
 
-    public String getKeycloakUrl()
+    public String getUrl()
     {
-        if ( keycloakUrl == null )
-        {
-            logger.warn( "Keycloak URL not set!" );
-        }
-        return keycloakUrl;
+        return url;
     }
 
-    @ConfigName( "keycloak.url" )
-    public void setKeycloakUrl( final String keycloakUrl )
+    @ConfigName( "url" )
+    public void setUrl( final String url )
     {
-        this.keycloakUrl = keycloakUrl;
+        this.url = url;
     }
 
 }

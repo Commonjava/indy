@@ -23,7 +23,8 @@ var aprox = angular.module('aprox', [
   'aprox.filters',
   'aprox.directives',
   'aprox.services',
-  'aprox.controllers'
+  'aprox.controllers',
+  'aprox.addons'
 ]);
 
 
@@ -55,11 +56,13 @@ aprox.config(['$routeProvider', '$controllerProvider', '$compileProvider', '$fil
   $routeProvider.when('/nfc', {templateUrl: 'partials/nfc.html'});
   $routeProvider.when('/nfc/view/all', {templateUrl: 'partials/nfc.html'});
   $routeProvider.when('/nfc/view/:type/:name', {templateUrl: 'partials/nfc.html'});
+  
+  $routeProvider.when('/logout', {template: " ", controller: 'LogoutCtl'})
 
   
-  if ( addons !== undefined ){
+  if ( typeof addons !== 'undefined' ){
     addons.items.each( function(addon){
-      if( addon.routes !== undefined ){
+      if( typeof addon.routes !== 'undefined' ){
         addon.routes.each(function(route){
           var options = {};
           options.templateUrl= 'layover/' + route.templateHref;
@@ -70,5 +73,5 @@ aprox.config(['$routeProvider', '$controllerProvider', '$compileProvider', '$fil
     });
   }
 
-  $routeProvider.otherwise({redirectTo: '/remote'});
+//  $routeProvider.otherwise({redirectTo: '/remote'});
 }]);

@@ -31,6 +31,8 @@ public class SecurityController
 
     private String keycloakInitJs;
 
+    private String keycloakUiJson;
+
     protected SecurityController()
     {
     }
@@ -53,18 +55,9 @@ public class SecurityController
             {
                 final String raw = loadClasspathContent( KEYCLOAK_INIT_JS );
 
-                final Properties props = new Properties();
-                props.setProperty( "realm", config.getRealm() );
-
-                final String keycloakUiJson = loadFileContent( config.getKeycloakUiJson() );
-                props.setProperty( "json", keycloakUiJson );
-
-                final StringSearchInterpolator interpolator = new StringSearchInterpolator();
-                interpolator.addValueSource( new PropertiesBasedValueSource( props ) );
-
                 try
                 {
-                    keycloakInitJs = interpolator.interpolate( raw );
+                    keycloakInitJs = getInterpolator().interpolate( raw );
                 }
                 catch ( final InterpolationException e )
                 {
@@ -77,6 +70,18 @@ public class SecurityController
         return keycloakInitJs;
     }
 
+    private StringSearchInterpolator getInterpolator()
+    {
+        final Properties props = new Properties();
+        props.setProperty( KeycloakConfig.KEYCLOAK_REALM, config.getRealm() );
+        props.setProperty( KeycloakConfig.KEYCLOAK_URL, config.getUrl() );
+
+        final StringSearchInterpolator interpolator = new StringSearchInterpolator();
+        interpolator.addValueSource( new PropertiesBasedValueSource( props ) );
+
+        return interpolator;
+    }
+
     public String getKeycloakJs()
         throws AproxWorkflowException
     {
@@ -87,34 +92,32 @@ public class SecurityController
 
         try
         {
-            return UrlUtils.buildUrl( config.getKeycloakUrl(), "/js/keycloak.js" );
+            return UrlUtils.buildUrl( config.getUrl(), "/js/keycloak.js" );
         }
         catch ( final MalformedURLException e )
         {
-            throw new AproxWorkflowException( "Keycloak URL is invalid: %s", e, config.getKeycloakUrl() );
+            throw new AproxWorkflowException( "Keycloak URL is invalid: %s", e, config.getUrl() );
         }
     }
 
-    public String getKeycloakUiJson()
+    public synchronized String getKeycloakUiJson()
         throws AproxWorkflowException
     {
-        final Properties props = new Properties();
-        props.setProperty( "realm", config.getRealm() );
-
-        final StringSearchInterpolator interpolator = new StringSearchInterpolator();
-        interpolator.addValueSource( new PropertiesBasedValueSource( props ) );
-
-        final String raw = loadFileContent( config.getKeycloakUiJson() );
-
-        try
+        if ( keycloakUiJson == null )
         {
-            return interpolator.interpolate( raw );
+            final String raw = loadFileContent( config.getKeycloakUiJson() );
+            try
+            {
+                keycloakUiJson = getInterpolator().interpolate( raw );
+            }
+            catch ( final InterpolationException e )
+            {
+                throw new AproxWorkflowException( "Failed to resolve expressions in keycloak-ui.json: %s", e,
+                                                  e.getMessage() );
+            }
         }
-        catch ( final InterpolationException e )
-        {
-            throw new AproxWorkflowException( "Failed to resolve expressions in keycloak-ui.json: %s", e,
-                                              e.getMessage() );
-        }
+
+        return keycloakUiJson;
     }
 
     private String loadFileContent( final String path )

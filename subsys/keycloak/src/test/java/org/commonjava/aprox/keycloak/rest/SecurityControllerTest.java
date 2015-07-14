@@ -35,7 +35,7 @@ public class SecurityControllerTest
         final String realm = "myRealm";
         final KeycloakConfig config = new KeycloakConfig();
         config.setRealm( realm );
-        config.setKeycloakUrl( "http://localhost:11111/auth" );
+        config.setUrl( "http://localhost:11111/auth" );
         config.setEnabled( true );
         config.setKeycloakUiJson( keycloakJsonFile.getPath() );
 
@@ -62,7 +62,7 @@ public class SecurityControllerTest
         final String realm = "myRealm";
         final KeycloakConfig config = new KeycloakConfig();
         config.setRealm( realm );
-        config.setKeycloakUrl( "http://localhost:11111/auth" );
+        config.setUrl( "http://localhost:11111/auth" );
         config.setEnabled( true );
         config.setKeycloakUiJson( keycloakJsonFile.getPath() );
 

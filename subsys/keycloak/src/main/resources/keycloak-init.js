@@ -10,10 +10,11 @@ angular.element(document).ready(function () {
     auth.logout = function() {
       auth.loggedIn = false;
       auth.keycloak = null;
-      window.location = keycloak.authServerUrl + '/realms/${realm}/tokens/logout?redirect_uri=/index.html';
+      window.location = buildUrl( keycloak.authServerUrl, '/realms/' + keycloak.realm + '/tokens/logout?redirect_uri=' + appUrl('/index.html') );
     };
     angular.bootstrap(document, ['aprox']);
   }).error(function () {
+    alert("Reloading window after login error");
     window.location.reload();
   });
 
@@ -27,16 +28,22 @@ aprox.factory('authInterceptor', function ($q, $log, Auth) {
   return {
     request: function (config) {
       var deferred = $q.defer();
-
+      
       if (Auth.keycloak && Auth.keycloak.token) {
         Auth.keycloak.updateToken(5).success(function () {
           config.headers = config.headers || {};
           config.headers.Authorization = 'Bearer ' + Auth.keycloak.token;
 
+//          alert("injecting authorization: " + JSON.stringify(config));
           deferred.resolve(config);
         }).error(function () {
+          alert("rejected token! request abandoned: " + JSON.stringify(config));
           deferred.reject('Failed to refresh token');
         });
+      }
+      else{
+//        alert("NOT injecting authorization: " + JSON.stringify(config));
+        deferred.resolve(config);
       }
       return deferred.promise;
     }

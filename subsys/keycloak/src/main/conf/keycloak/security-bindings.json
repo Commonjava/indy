@@ -2,8 +2,8 @@
   "constraints" : [
     {
       "role" : "admin",
-      "urlPattern" : "/api/info/*",
-      "methods" : [ "POST", "GET" ]
+      "urlPattern" : "/api/admin/*",
+      "methods" : [ "POST", "GET", "PUT", "DELETE", "OPTIONS", "HEAD" ]
     },
     {
       "role" : "user",

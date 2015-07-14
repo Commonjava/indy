@@ -48,7 +48,7 @@ public class AutoProxAddOn
         {
             autoproxId =
                 new AproxAddOnID().withName( "AutoProx" )
-                                  .withInitJavascriptHref( "ui-addons/autoprox/js/autoprox.js" )
+                                  .withInitJavascriptHref( "js/autoprox.js" )
                                   .withRoute( new UIRoute().withRoute( ROUTE_CALC )
                                                            .withTemplateHref( "ui-addons/autoprox/partials/calc.html" ) )
                                   .withRoute( new UIRoute().withRoute( ROUTE_CALC_PREFILL )
