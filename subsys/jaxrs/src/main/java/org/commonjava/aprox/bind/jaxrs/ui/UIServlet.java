@@ -25,6 +25,9 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 
 import javax.activation.FileTypeMap;
 import javax.activation.MimetypesFileTypeMap;
@@ -49,6 +52,15 @@ public class UIServlet
 {
 
     private static final long serialVersionUID = 1L;
+
+    public static final Collection<String> PATHS = Collections.unmodifiableCollection( Arrays.asList( "/*.html", "/",
+                                                                                                      "/js/*",
+                                                                                                      "/css/*",
+                                                                                                      "/partials/*",
+                                                                                                      "/ui-addons/*" ) );
+
+    public static final Collection<String> METHODS = Collections.unmodifiableCollection( Arrays.asList( "GET", "HEAD",
+                                                                                                        "OPTIONS" ) );
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 

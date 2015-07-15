@@ -177,7 +177,8 @@ public class AproxDeployment
                                 .addFilter( nameFilter )
                                 .addFilterUrlMapping( nameFilter.getName(), "/api/*", DispatcherType.REQUEST )
                                 .setDeploymentName( "AProx" )
-                                .setClassLoader( ClassLoader.getSystemClassLoader() );
+                                .setClassLoader( ClassLoader.getSystemClassLoader() )
+                                .addOuterHandlerChainWrapper( new HeaderDebugger.Wrapper() );
 
         if ( deploymentProviders != null )
         {
@@ -213,12 +214,7 @@ public class AproxDeployment
         final ServletInfo uiServlet = Servlets.servlet( "UI", UIServlet.class )
                                               .setAsyncSupported( true )
                                               .setLoadOnStartup( 99 )
-                                              .addMapping( "/*.html" )
-                                              .addMapping( "/" )
-                                              .addMapping( "/js/*" )
-                                              .addMapping( "/css/*" )
-                                              .addMapping( "/partials/*" )
-                                              .addMapping( "/ui-addons/*" );
+                                              .addMappings( UIServlet.PATHS );
 
         uiServlet.setInstanceFactory( new ImmediateInstanceFactory<Servlet>( ui ) );
         di.addServlet( uiServlet );

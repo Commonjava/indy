@@ -26,6 +26,8 @@ import org.apache.http.message.BasicNameValuePair;
 import org.commonjava.aprox.keycloak.conf.KeycloakConfig;
 import org.commonjava.aprox.subsys.http.util.UserPass;
 import org.commonjava.maven.galley.transport.htcli.Http;
+import org.keycloak.OAuth2Constants;
+import org.keycloak.constants.ServiceUrlConstants;
 import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.util.BasicAuthHelper;
 import org.keycloak.util.JsonSerialization;
@@ -34,6 +36,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
+/** <b>FIXME:</b> Setting "enable-basic-auth" in keycloak.json instead of "bearer-only" should enable BOTH basic auth
+ * and bearer token auth. However, something about having the keycloak server on a separate domain seems to
+ * be causing problems with the state cookie not getting set during the post-sso redirection. This patches
+ * that problem by looking for basic auth first, retrieving the corresponding token, and injecting it as a
+ * request header.
+ * 
+ * @author jdcasey
+ */
 public class BasicAuthenticationOAuthTranslator
     implements AuthenticationMechanism
 {
@@ -47,17 +57,6 @@ public class BasicAuthenticationOAuthTranslator
     private static final String BASIC_AUTH_PREFIX = "basic";
 
     private static final String AUTHORIZATION_HEADER = "Authorization";
-
-    private static final String CLIENT_ID = "client_id";
-
-    private static final String GRANT_TYPE = "grant_type";
-
-    private static final String PASSWORD_GRANT_TYPE = "password";
-
-    // this URL is based on:
-    // https://docs.jboss.org/keycloak/docs/1.2.0.CR1/userguide/html_single/index.html#direct-access-grants
-    // If this becomes deprecated, that's the chapter to look in for the updated URL.
-    private static final String TOKEN_PATH = "/realms/{realm-name}/protocol/openid-connect/token";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -143,7 +142,7 @@ public class BasicAuthenticationOAuthTranslator
     private AccessTokenResponse lookupToken( final UserPass userPass )
     {
         final URI uri = KeycloakUriBuilder.fromUri( config.getUrl() )
-                                          .path( TOKEN_PATH )
+                                          .path( ServiceUrlConstants.TOKEN_PATH )
                                           .build( config.getRealm() );
 
         logger.debug( "Looking up token at: {}", uri );
@@ -152,8 +151,7 @@ public class BasicAuthenticationOAuthTranslator
         final List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add( new BasicNameValuePair( USERNAME, userPass.getUser() ) );
         params.add( new BasicNameValuePair( PASSWORD, userPass.getPassword() ) );
-        params.add( new BasicNameValuePair( CLIENT_ID, config.getServerResource() ) );
-        params.add( new BasicNameValuePair( GRANT_TYPE, PASSWORD_GRANT_TYPE ) );
+        params.add( new BasicNameValuePair( OAuth2Constants.GRANT_TYPE, OAuth2Constants.PASSWORD ) );
 
         final String authorization =
             BasicAuthHelper.createHeader( config.getServerResource(), config.getServerCredentialSecret() );

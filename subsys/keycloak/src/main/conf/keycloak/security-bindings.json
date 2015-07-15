@@ -9,6 +9,6 @@
       "role" : "user",
       "urlPattern" : "/api/*",
       "methods" : [ "POST", "PUT", "DELETE" ]
-    },
+    }
   ]
 }

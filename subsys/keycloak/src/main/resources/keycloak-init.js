@@ -37,7 +37,7 @@ aprox.factory('authInterceptor', function ($q, $log, Auth) {
 //          alert("injecting authorization: " + JSON.stringify(config));
           deferred.resolve(config);
         }).error(function () {
-          alert("rejected token! request abandoned: " + JSON.stringify(config));
+//          alert("rejected token! request abandoned: " + JSON.stringify(config));
           deferred.reject('Failed to refresh token');
         });
       }

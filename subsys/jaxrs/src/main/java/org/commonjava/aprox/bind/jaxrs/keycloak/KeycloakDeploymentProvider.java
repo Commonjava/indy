@@ -3,6 +3,7 @@ package org.commonjava.aprox.bind.jaxrs.keycloak;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.LoginConfig;
 import io.undertow.servlet.api.SecurityConstraint;
+import io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic;
 import io.undertow.servlet.api.WebResourceCollection;
 import io.undertow.util.ImmediateAuthenticationMechanismFactory;
 
@@ -11,6 +12,7 @@ import java.io.File;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.bind.jaxrs.AproxDeploymentProvider;
+import org.commonjava.aprox.bind.jaxrs.ui.UIServlet;
 import org.commonjava.aprox.keycloak.conf.KeycloakConfig;
 import org.commonjava.aprox.keycloak.conf.KeycloakSecurityBindings;
 import org.commonjava.aprox.keycloak.conf.KeycloakSecurityConstraint;
@@ -46,14 +48,23 @@ public class KeycloakDeploymentProvider
         final DeploymentInfo di = new DeploymentInfo();
         if ( config.isEnabled() )
         {
-            //            di.addOuterHandlerChainWrapper( new BasicAuthWrapper( "outer" ) );
             di.addAuthenticationMechanism( BASIC_LOGIN_MECHANISM,
                                            new ImmediateAuthenticationMechanismFactory( basicAuthInjector ) );
 
             logger.debug( "Adding keycloak security constraints" );
+
+            final SecurityConstraint ui = new SecurityConstraint();
+            ui.setEmptyRoleSemantic( EmptyRoleSemantic.PERMIT );
+            final WebResourceCollection uiCollection = new WebResourceCollection();
+            uiCollection.addUrlPatterns( UIServlet.PATHS );
+            uiCollection.addHttpMethods( UIServlet.METHODS );
+            ui.addWebResourceCollection( uiCollection );
+            di.addSecurityConstraint( ui );
+
             for ( final KeycloakSecurityConstraint constraint : bindings.getConstraints() )
             {
                 final SecurityConstraint sc = new SecurityConstraint();
+                sc.setEmptyRoleSemantic( EmptyRoleSemantic.PERMIT );
                 final WebResourceCollection collection = new WebResourceCollection();
                 collection.addUrlPattern( constraint.getUrlPattern() );
                 logger.debug( "new constraint>>> URL pattern: {}", constraint.getUrlPattern() );
