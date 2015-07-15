@@ -22,6 +22,8 @@ import static org.commonjava.aprox.client.core.util.UrlUtils.buildUrl;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,7 +33,10 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -40,9 +45,11 @@ import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -68,16 +75,44 @@ public class AproxClientHttp
 
     private CloseBlockingConnectionManager connectionManager;
 
-    public AproxClientHttp( final String baseUrl )
+    private final Credentials creds;
+
+    private HttpClientContext prototypeCtx;
+
+    public AproxClientHttp( final String baseUrl, final Credentials creds, final AproxObjectMapper mapper )
+        throws AproxClientException
     {
         this.baseUrl = baseUrl;
-        this.objectMapper = new AproxObjectMapper( true );
+        this.creds = creds;
+        this.objectMapper = mapper;
+
+        initPrototypeContext();
     }
 
-    public AproxClientHttp( final String baseUrl, final AproxObjectMapper mapper )
+    private void initPrototypeContext()
+        throws AproxClientException
     {
-        this.baseUrl = baseUrl;
-        this.objectMapper = mapper;
+        URL url;
+        try
+        {
+            url = new URL( baseUrl );
+        }
+        catch ( final MalformedURLException e )
+        {
+            throw new AproxClientException( "Invalid base-url: {}", e, baseUrl );
+        }
+
+        final AuthScope as = new AuthScope( url.getHost(), url.getPort() );
+
+        final HttpClientContext ctx = HttpClientContext.create();
+        if ( creds != null )
+        {
+            final CredentialsProvider credProvider = new BasicCredentialsProvider();
+            credProvider.setCredentials( as, creds );
+            ctx.setCredentialsProvider( credProvider );
+        }
+
+        this.prototypeCtx = ctx;
     }
 
     public void connect( final HttpClientConnectionManager connectionManager )
@@ -642,6 +677,11 @@ public class AproxClientHttp
         return HttpClients.custom()
                           .setConnectionManager( connectionManager )
                           .build();
+    }
+
+    public HttpClientContext newContext()
+    {
+        return new HttpClientContext( prototypeCtx );
     }
 
     public HttpGet newRawGet( final String url )
