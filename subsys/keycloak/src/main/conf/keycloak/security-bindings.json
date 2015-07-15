@@ -7,13 +7,8 @@
     },
     {
       "role" : "user",
-      "urlPattern" : "/api/all/*",
-      "methods" : [ "POST", "GET", "PUT", "DELETE" ]
+      "urlPattern" : "/api/*",
+      "methods" : [ "POST", "PUT", "DELETE" ]
     },
-    {
-      "role" : "all",
-      "urlPattern" : "/api/test/*",
-      "methods" : [ "POST", "GET", "PUT", "TRACE" ]
-    }
   ]
 }
