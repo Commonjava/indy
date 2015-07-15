@@ -54,6 +54,11 @@ public class BasicAuthenticationOAuthTranslator
 
     private static final String PASSWORD_GRANT_TYPE = "password";
 
+    // this URL is based on:
+    // https://docs.jboss.org/keycloak/docs/1.2.0.CR1/userguide/html_single/index.html#direct-access-grants
+    // If this becomes deprecated, that's the chapter to look in for the updated URL.
+    private static final String TOKEN_PATH = "/realms/{realm-name}/protocol/openid-connect/token";
+
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
@@ -138,7 +143,7 @@ public class BasicAuthenticationOAuthTranslator
     private AccessTokenResponse lookupToken( final UserPass userPass )
     {
         final URI uri = KeycloakUriBuilder.fromUri( config.getUrl() )
-                                          .path( "/realms/{realm-name}/protocol/openid-connect/token" )
+                                          .path( TOKEN_PATH )
                                           .build( config.getRealm() );
 
         logger.debug( "Looking up token at: {}", uri );
