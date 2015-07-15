@@ -17,6 +17,7 @@ package org.commonjava.aprox.bind.jaxrs.util;
 
 import io.undertow.security.api.AuthenticationMechanismFactory;
 import io.undertow.security.api.NotificationReceiver;
+import io.undertow.server.HandlerWrapper;
 import io.undertow.server.session.SessionListener;
 import io.undertow.servlet.ServletExtension;
 import io.undertow.servlet.api.DeploymentInfo;
@@ -276,6 +277,33 @@ public final class DeploymentInfoUtils
         if ( welcomePages != null )
         {
             into.addWelcomePages( welcomePages );
+        }
+
+        final List<HandlerWrapper> initWrappers = from.getInitialHandlerChainWrappers();
+        if ( initWrappers != null )
+        {
+            for ( final HandlerWrapper wrapper : initWrappers )
+            {
+                into.addInitialHandlerChainWrapper( wrapper );
+            }
+        }
+
+        final List<HandlerWrapper> outerWrappers = from.getOuterHandlerChainWrappers();
+        if ( outerWrappers != null )
+        {
+            for ( final HandlerWrapper wrapper : outerWrappers )
+            {
+                into.addOuterHandlerChainWrapper( wrapper );
+            }
+        }
+
+        final List<HandlerWrapper> innerWrappers = from.getInnerHandlerChainWrappers();
+        if ( innerWrappers != null )
+        {
+            for ( final HandlerWrapper wrapper : innerWrappers )
+            {
+                into.addInnerHandlerChainWrapper( wrapper );
+            }
         }
     }
 

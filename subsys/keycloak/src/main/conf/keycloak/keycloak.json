@@ -1,12 +1,12 @@
 {
   "realm": "${keycloak.realm}",
-  "resource": "aprox",
-  "realm-public-key": "APROX-REALM-PUBLIC-KEY",
+  "resource": "${keycloak.serverResource}",
+  "realm-public-key": "${keycloak.realmPublicKey}",
   "auth-server-url": "${keycloak.url}",
   "ssl-required": "external",
   "bearer-only": true,
   "enable-cors": true,
   "credentials": {
-    "secret": "KEYCLOAK-SECURITY-CREDENTIAL-FOR-APROX-CLIENT"
+    "secret": "${keycloak.serverCredentialSecret}"
   }
 }

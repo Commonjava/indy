@@ -52,9 +52,21 @@ public class KeycloakConfig
 
     private static final String DEFAULT_SECURITY_BINDINGS_JSON = "keycloak/security-bindings.json";
 
+    private static final String DEFAULT_SERVER_RESOURCE = "aprox";
+
+    private static final String DEFAULT_UI_RESOURCE = "aprox-ui";
+
     public static final String KEYCLOAK_REALM = "keycloak.realm";
 
     public static final String KEYCLOAK_URL = "keycloak.url";
+
+    public static final String KEYCLOAK_SERVER_RESOURCE = "keycloak.serverResource";
+
+    public static final String KEYCLOAK_UI_RESOURCE = "keycloak.uiResource";
+
+    private static final String KEYCLOAK_SERVER_CREDENTIAL_SECRET = "keycloak.serverCredentialSecret";
+
+    public static final String KEYCLOAK_REALM_PUBLIC_KEY = "keycloak.realmPublicKey";
 
     private String realm;
 
@@ -67,6 +79,14 @@ public class KeycloakConfig
     private String securityBindingsJson;
 
     private String url;
+
+    private String serverCredentialSecret;
+
+    private String serverResource;
+
+    private String uiResource;
+
+    private String realmPublicKey;
 
     public boolean isEnabled()
     {
@@ -146,6 +166,9 @@ public class KeycloakConfig
         final Properties properties = System.getProperties();
         properties.setProperty( KEYCLOAK_REALM, getRealm() );
         properties.setProperty( KEYCLOAK_URL, getUrl() );
+        properties.setProperty( KEYCLOAK_SERVER_RESOURCE, getServerResource() );
+        properties.setProperty( KEYCLOAK_SERVER_CREDENTIAL_SECRET, getServerCredentialSecret() );
+        properties.setProperty( KEYCLOAK_REALM_PUBLIC_KEY, getRealmPublicKey() );
         System.setProperties( properties );
 
         return this;
@@ -223,6 +246,50 @@ public class KeycloakConfig
     public void setUrl( final String url )
     {
         this.url = url;
+    }
+
+    public String getServerCredentialSecret()
+    {
+        return serverCredentialSecret;
+    }
+
+    @ConfigName( "server.credential.secret" )
+    public void setServerCredentialSecret( final String serverCredentialSecret )
+    {
+        this.serverCredentialSecret = serverCredentialSecret;
+    }
+
+    public String getServerResource()
+    {
+        return serverResource == null ? DEFAULT_SERVER_RESOURCE : serverResource;
+    }
+
+    @ConfigName( "server.resource" )
+    public void setServerResource( final String serverResource )
+    {
+        this.serverResource = serverResource;
+    }
+
+    public String getUiResource()
+    {
+        return uiResource == null ? DEFAULT_UI_RESOURCE : uiResource;
+    }
+
+    @ConfigName( "ui.resource" )
+    public void setUiResource( final String uiResource )
+    {
+        this.uiResource = uiResource;
+    }
+
+    public String getRealmPublicKey()
+    {
+        return realmPublicKey;
+    }
+
+    @ConfigName( "realm.public.key" )
+    public void setRealmPublicKey( final String realmPublicKey )
+    {
+        this.realmPublicKey = realmPublicKey;
     }
 
 }

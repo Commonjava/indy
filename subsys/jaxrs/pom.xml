@@ -103,6 +103,10 @@
       <groupId>com.wordnik</groupId>
       <artifactId>swagger-jaxrs_2.10</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-subsys-http</artifactId>
+    </dependency>
   </dependencies>
   
 </project>

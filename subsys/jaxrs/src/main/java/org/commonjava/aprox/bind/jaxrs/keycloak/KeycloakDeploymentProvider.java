@@ -4,6 +4,7 @@ import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.LoginConfig;
 import io.undertow.servlet.api.SecurityConstraint;
 import io.undertow.servlet.api.WebResourceCollection;
+import io.undertow.util.ImmediateAuthenticationMechanismFactory;
 
 import java.io.File;
 
@@ -26,11 +27,16 @@ public class KeycloakDeploymentProvider
 
     private static final String KEYCLOAK_LOGIN_MECHANISM = "KEYCLOAK";
 
+    private static final String BASIC_LOGIN_MECHANISM = "BASIC";
+
     @Inject
     private KeycloakConfig config;
 
     @Inject
     private KeycloakSecurityBindings bindings;
+
+    @Inject
+    private BasicAuthenticationOAuthTranslator basicAuthInjector;
 
     @Override
     public DeploymentInfo getDeploymentInfo()
@@ -40,6 +46,10 @@ public class KeycloakDeploymentProvider
         final DeploymentInfo di = new DeploymentInfo();
         if ( config.isEnabled() )
         {
+            //            di.addOuterHandlerChainWrapper( new BasicAuthWrapper( "outer" ) );
+            di.addAuthenticationMechanism( BASIC_LOGIN_MECHANISM,
+                                           new ImmediateAuthenticationMechanismFactory( basicAuthInjector ) );
+
             logger.debug( "Adding keycloak security constraints" );
             for ( final KeycloakSecurityConstraint constraint : bindings.getConstraints() )
             {
@@ -70,7 +80,10 @@ public class KeycloakDeploymentProvider
             di.addInitParameter( KEYCLOAK_CONFIG_FILE_PARAM, config.getKeycloakJson() );
 
             logger.debug( "login realm: {}", config.getRealm() );
-            di.setLoginConfig( new LoginConfig( KEYCLOAK_LOGIN_MECHANISM, config.getRealm() ) );
+            final LoginConfig loginConfig = new LoginConfig( KEYCLOAK_LOGIN_MECHANISM, config.getRealm() );
+            loginConfig.addFirstAuthMethod( BASIC_LOGIN_MECHANISM );
+
+            di.setLoginConfig( loginConfig );
         }
 
         return di;

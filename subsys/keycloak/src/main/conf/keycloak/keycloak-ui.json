@@ -1,7 +1,7 @@
 {
   "realm": "${keycloak.realm}",
-  "resource": "aprox-ui",
-  "realm-public-key": "APROX-REALM-PUBLIC-KEY",
+  "resource": "${keycloak.uiResource}",
+  "realm-public-key": "${keycloak.realmPublicKey}",
   "auth-server-url": "${keycloak.url}",
   "ssl-required": "external",
   "public-client": true
