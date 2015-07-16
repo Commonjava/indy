@@ -18,10 +18,5 @@
   <alternatives>
     <stereotype>org.commonjava.aprox.inject.Production</stereotype>
   </alternatives>
-  
-  <decorators>
-    <!-- <class>org.commonjava.aprox.autoprox.data.AutoProxDataManagerDecorator</class> -->
-    <class>org.commonjava.aprox.flat.data.FlatFileDataManagerDecorator</class>
-  </decorators>
       
 </beans>

@@ -95,25 +95,6 @@
         <scope>import</scope>
       </dependency>
       
-      
-    <!-- Define Keycloak deps -->
-	<dependency>
-		<groupId>org.keycloak</groupId>
-		<artifactId>keycloak-undertow-adapter</artifactId>
-		<version>${keycloakVersion}</version>    
-	</dependency>
-	<dependency>
-		<groupId>org.keycloak</groupId>
-		<artifactId>keycloak-core</artifactId>
-		<version>${keycloakVersion}</version>    
-	</dependency>
-	<dependency>
-		<groupId>org.keycloak</groupId>
-		<artifactId>keycloak-adapter-core</artifactId>	
-		<version>${keycloakVersion}</version>    
-	</dependency>
-      
-      
       <dependency>
         <groupId>org.commonjava.aprox.ui</groupId>
         <artifactId>aprox-ui-layover</artifactId>
@@ -516,6 +497,7 @@
         <version>0.23.0-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
@@ -556,6 +538,19 @@
         <groupId>org.commonjava.aprox.boot</groupId>
         <artifactId>aprox-booter-jaxrs</artifactId>
         <version>0.23.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-subsys-keycloak</artifactId>
+        <version>0.23.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-subsys-keycloak</artifactId>
+        <version>0.23.0-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>confset</classifier>
+        <scope>provided</scope>
       </dependency>
 
 
@@ -768,10 +763,10 @@
         <version>1.19</version>
       </dependency>
       <dependency>
-          <groupId>org.commonjava.maven.galley</groupId>
-          <artifactId>galley-test-harness-core</artifactId>
-          <version>${galleyVersion}</version>
-          <scope>test</scope>
+        <groupId>org.commonjava.maven.galley</groupId>
+        <artifactId>galley-test-harness-core</artifactId>
+        <version>${galleyVersion}</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.maven.galley</groupId>
@@ -845,6 +840,23 @@
         <groupId>org.jsoup</groupId>
         <artifactId>jsoup</artifactId>
         <version>1.7.2</version>
+      </dependency>
+      
+      <!-- Define Keycloak deps -->
+      <dependency>
+        <groupId>org.keycloak</groupId>
+        <artifactId>keycloak-undertow-adapter</artifactId>
+        <version>${keycloakVersion}</version>    
+      </dependency>
+      <dependency>
+        <groupId>org.keycloak</groupId>
+        <artifactId>keycloak-core</artifactId>
+        <version>${keycloakVersion}</version>    
+      </dependency>
+      <dependency>
+        <groupId>org.keycloak</groupId>
+        <artifactId>keycloak-adapter-core</artifactId>  
+        <version>${keycloakVersion}</version>    
       </dependency>
       
       <dependency>

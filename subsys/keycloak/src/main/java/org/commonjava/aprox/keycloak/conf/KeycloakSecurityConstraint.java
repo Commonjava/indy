@@ -1,15 +1,15 @@
-package org.commonjava.aprox.bind.jaxrs;
+package org.commonjava.aprox.keycloak.conf;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class SecurityConstraint {
+public class KeycloakSecurityConstraint {
 
 	private String role;
 	private String urlPattern;
 	private List<String> methods;	
 	
-	public SecurityConstraint(String role, String urlPattern,
+	public KeycloakSecurityConstraint(String role, String urlPattern,
 			List<String> methods) {
 		super();
 		this.role = role;
@@ -17,7 +17,7 @@ public class SecurityConstraint {
 		this.methods = methods;
 	}
 	
-	public SecurityConstraint(String role, String urlPattern,
+	public KeycloakSecurityConstraint(String role, String urlPattern,
 			String[] methods) {
 		super();
 		this.role = role;
@@ -25,7 +25,7 @@ public class SecurityConstraint {
 		this.methods = Arrays.asList(methods);
 	}
 	
-	public SecurityConstraint() {
+	public KeycloakSecurityConstraint() {
 		// keep default constructor
 	}
 	

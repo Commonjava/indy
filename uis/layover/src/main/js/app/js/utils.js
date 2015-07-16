@@ -34,6 +34,31 @@ Array.prototype.each = function (callback) {
   return this;
 };
 
+var buildUrl = function(baseUrl, path){
+  if ( baseUrl.endsWith('/') ){
+    if ( path.startsWith('/') ){
+      return baseUrl + path.substring(1);
+    }
+    else{
+      return baseUrl + path;
+    }
+  }
+  else if ( path.startsWith( '/' ) ){
+    return baseUrl + path;
+  }
+  else{
+    return baseUrl + '/' + path;
+  }
+};
+
+var appUrl = function(path){
+  var img = document.createElement('img');
+  img.src = path; // set string url
+  var url = img.src; // get qualified url
+  img.src = null; // no server request
+  return url;
+};
+
 var appPath = function( path ){
   var result = window.location.pathname;
 //  alert( "raw result: '" + result + "'");

@@ -29,9 +29,6 @@ import javax.servlet.ServletException;
 import org.commonjava.aprox.action.AproxLifecycleException;
 import org.commonjava.aprox.action.AproxLifecycleManager;
 import org.commonjava.aprox.bind.jaxrs.AproxDeployment;
-import org.commonjava.aprox.bind.jaxrs.SecurityConstraint;
-import org.commonjava.aprox.bind.jaxrs.SecurityConstraintConfig;
-import org.commonjava.aprox.bind.jaxrs.SecurityConstraintProcessor;
 import org.commonjava.aprox.boot.AproxBootException;
 import org.commonjava.aprox.boot.BootInterface;
 import org.commonjava.aprox.boot.BootOptions;
@@ -230,27 +227,9 @@ public class JaxRsBooter
                                                          .select( AproxDeployment.class )
                                                          .get();
 
-        DeploymentInfo di = aproxDeployment.getDeployment( bootOptions.getContextPath() )
+        final DeploymentInfo di = aproxDeployment.getDeployment( bootOptions.getContextPath() )
                                                  .setContextPath( "/" );
         
-        if(bootOptions.isSecure()) {
-        	System.out.println(">>> Using Aprox secure mode <<<");
-        	System.out.println(">>> secure config: " + bootOptions.getSecureConfig());
-        	System.out.println(">>> secure realm: " + bootOptions.getRealm());
-        	di = aproxDeployment.addKeycloakAdapterToDeployment(di, bootOptions.getSecureConfig(), bootOptions.getRealm());
-        	// TODO define proper roles here & possibly read them from boot configuration as well 
-        	// not authorized access
-//        	di = aproxDeployment.addSecurityConstraintToDeployment(di, null, "/api/stats/addons",null);
-//        	// not authorized access
-//        	di = aproxDeployment.addSecurityConstraintToDeployment(di, null, "/api/stats/addons/*",null);
-        	// authorized access to admin role
-        	System.out.println(">>> security constraints: \n");
-        	SecurityConstraintConfig securityConstraintConfig = new SecurityConstraintProcessor(bootOptions.getSecureConstraintConfig()).getConstraintConfig();
-        	for (SecurityConstraint constraint : securityConstraintConfig.getSecurityContraints()) {
-            	di = aproxDeployment.addSecurityConstraintToDeployment(di, constraint.getRole(), constraint.getUrlPattern(),constraint.getMethods());
-            	System.out.println(">>> " + constraint + "\n");
-			}
-        }
         final DeploymentManager dm = Servlets.defaultContainer()
                                              .addDeployment( di );
         dm.deploy();

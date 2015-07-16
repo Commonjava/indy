@@ -26,8 +26,8 @@ import java.util.Collections;
 import org.commonjava.aprox.client.core.AproxClientException;
 import org.commonjava.aprox.client.core.AproxClientHttp;
 import org.commonjava.aprox.client.core.AproxClientModule;
+import org.commonjava.aprox.client.core.module.AproxRawHttpModule;
 import org.commonjava.aprox.ftest.core.AbstractAproxFunctionalTest;
-import org.commonjava.aprox.ftest.core.fixture.AproxRawHttpModule;
 import org.commonjava.maven.galley.util.PathUtils;
 
 /**

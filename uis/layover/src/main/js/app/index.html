@@ -16,8 +16,7 @@
 
 -->
 <!DOCTYPE html>
-<!--  html lang="en" ng-app="aprox" class="no-js" -->
-<html lang="en" ng-app="aprox" class="no-js">
+<html lang="en" class="no-js"><!-- ng-app="aprox" -->
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -33,14 +32,18 @@
   <link rel="stylesheet" href="bower_components/ngDialog/css/ngDialog-theme-default.css"/>
   <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css"/>
   <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap-theme.min.css"/>
-  <link rel="stylesheet" href="bower_components/components-font-awesome/css/font-awesome.css"/>
+  <!-- link rel="stylesheet" href="bower_components/components-font-awesome/css/font-awesome.css"/ -->
   <link rel="stylesheet" href="css/aprox.css"/>
 
   <script src="bower_components/html5-boilerplate/js/vendor/modernizr-2.6.2.min.js"></script>
-  <!-- ${enable.security.start.html}  
-  <script src="http://${keycloak.server.location}/auth/js/keycloak.js"></script>
-  ${enable.security.end.html} -->
-      
+  <script src="api/security/keycloak.js"></script>
+  <script src="bower_components/angular/angular.js"></script>
+  <script src="bower_components/angular-route/angular-route.js"></script>
+  <script src="bower_components/angular-resource/angular-resource.js"></script>
+  <script src="bower_components/ngDialog/js/ngDialog.js"></script>
+  <script src="bower_components/jquery/dist/jquery.min.js"></script>
+  <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="js/utils.js"></script>
 </head>
 <body>
   <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -67,6 +70,12 @@
               <li ng-repeat="addon in addon_navs"><a class="fa" href="#{{addon.route}}">{{addon.name}}</a></li>
 			      </ul>
 			    </li>
+			    <li class="dropdown" ng-if="username">
+			      <a href="#" class="dropdown-toggle" data-toggle="dropdown">{{username}}<span class="caret"></span></a>
+			      <ul class="dropdown-menu" role="menu">
+	   		      <li><a class="fa fa-btn btn-lg" href="#/logout">Log Out</a></li>
+  			     </ul>
+			    </li>
 			  </ul>
 			</div>
     </div>
@@ -78,33 +87,28 @@
     <![endif]-->
 
     <div class="view-container">
-      <div ng-view class="view-frame"></div>
+      <div ng-view class="view-frame">
+      Welcome! Make a selection from the menu above to proceed.
+      </div>
     </div>
   </div>
 
-	<nav class="navbar navbar-default navbar-fixed-bottom" role="navigation" ng-controller="FooterCtl">
-	  <div class="container">
+  <nav class="navbar navbar-default navbar-fixed-bottom" role="navigation" ng-controller="FooterCtl">
+    <div class="container" ng-controller="FooterCtl">
       <span class="stat-label"><a target="_new" class="fa fa-btn" href="http://commonjava.github.io/aprox/">AProx @GitHub</a></span>
       | <span class="stat-label"><a target="_new" class="fa fa-btn" href="http://github.com/commonjava/aprox/issues">Issues</a></span>
       | <span class="stat-label">Version:</span> <span class="stat-value">{{stats.version}}</span>
       | <span class="stat-label">Commit ID:</span> <span class="stat-value"><a target="_new" class="fa fa-btn" href="http://github.com/commonjava/aprox/commit/{{stats['commit-id']}}">{{stats["commit-id"]}}</a></span>
       | <span class="stat-label">Built</span> <span class="stat-value">on {{stats["timestamp"]}} by <a target="_new" class="fa fa-btn" href="http://github.com/{{stats['builder']}}">{{stats["builder"]}}</a></span>
-	  </div>
-	</nav>
-
-  <script src="bower_components/angular/angular.js"></script>
-  <script src="bower_components/angular-route/angular-route.js"></script>
-  <script src="bower_components/angular-resource/angular-resource.js"></script>
-  <script src="bower_components/ngDialog/js/ngDialog.js"></script>
-  <script src="bower_components/jquery/dist/jquery.min.js"></script>
-  <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-  <script src="js/utils.js"></script>
-  <script src="api/stats/addons/active.js"></script>
-  <script src="js/app.js"></script>
+    </div>
+  </nav>
+  
   <script src="js/directives.js"></script>
   <script src="js/filters.js"></script>
   <script src="js/services.js"></script>
   <script src="js/controllers.js"></script>
-  <script src="js/dynamic-logic.js"></script>
+  <script src="api/stats/addons/active.js"></script>
+  <script src="js/app.js"></script>
+  <script src="api/security/keycloak-init.js"></script>
 </body>
 </html>

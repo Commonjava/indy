@@ -68,25 +68,4 @@
       </plugins>
     </pluginManagement>
   </build>
-  
-  <profiles>    
-     <profile>
-        <id>auth</id>
-        <activation>
-            <property>
-                <name>auth</name>
-                <value>true</value>
-            </property>
-        </activation>
-        <properties>
-		    <keycloak.server.location>undefined_keycloak</keycloak.server.location>
-            <enable.security.start.html>--&gt;</enable.security.start.html>
-            <enable.security.end.html>&lt;!--</enable.security.end.html>
-            <enable.security.start.js>*/</enable.security.start.js>
-            <enable.security.end.js>/*</enable.security.end.js>
-         </properties>
-     </profile>
-     
-  </profiles>  
-  
 </project>

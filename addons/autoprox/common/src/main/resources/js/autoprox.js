@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var aprox = angular.module('aprox');
-
-aprox.provide.factory('AutoProxUtilsSvc', function(){
+aproxAddons.factory('AutoProxUtilsSvc', function(){
   return {
     viewRulePath: function(rule){
       return '/autoprox/rules/view/' + rule;
@@ -35,7 +33,7 @@ aprox.provide.factory('AutoProxUtilsSvc', function(){
   };
 });
 
-aprox.provide.factory('AutoProxCalculatorSvc', ['$resource', function($resource){
+aproxAddons.factory('AutoProxCalculatorSvc', ['$resource', function($resource){
   return $resource(appPath('/api/autoprox/eval/:type/:name'), {}, {
     eval: {
       method:'GET', 
@@ -45,14 +43,14 @@ aprox.provide.factory('AutoProxCalculatorSvc', ['$resource', function($resource)
   });
 }]);
 
-aprox.provide.factory('AutoProxCatalogSvc', ['$resource', function($resource){
+aproxServices.factory('AutoProxCatalogSvc', ['$resource', function($resource){
   return $resource(appPath('/api/autoprox/catalog'), {}, {
     query: {method:'GET', params:{}, isArray:false},
   });
 }]);
 
 
-aprox.controllerProvider.register('AutoProxCalculatorCtl', ['$scope', '$routeParams', '$location', 'AutoProxCalculatorSvc', 'AutoProxUtilsSvc', 'StoreUtilSvc', 
+aproxAddons.controller('AutoProxCalculatorCtl', ['$scope', '$routeParams', '$location', 'AutoProxCalculatorSvc', 'AutoProxUtilsSvc', 'StoreUtilSvc', 
                                                             function($scope, $routeParams, $location, AutoProxCalculatorSvc, AutoProxUtilsSvc, StoreUtilSvc) {
   $scope.types = ['remote', 'hosted', 'group'];
   $scope.form = {
@@ -156,7 +154,7 @@ aprox.controllerProvider.register('AutoProxCalculatorCtl', ['$scope', '$routePar
   
 }]);
 
-aprox.controllerProvider.register('AutoProxCalcConstituentCtl', ['$scope', 'StoreUtilSvc', function( $scope, StoreUtilSvc){
+aproxAddons.controller('AutoProxCalcConstituentCtl', ['$scope', 'StoreUtilSvc', function( $scope, StoreUtilSvc){
   $scope.display = false;
   
   $scope.displayConstituent = function(){
@@ -201,7 +199,7 @@ aprox.controllerProvider.register('AutoProxCalcConstituentCtl', ['$scope', 'Stor
   $scope.storeUtils = StoreUtilSvc;
 }]);
 
-aprox.controllerProvider.register( 'AutoProxRulesCtl', ['$scope', '$routeParams', '$location', 'AutoProxCatalogSvc', 'AutoProxUtilsSvc', 'StoreUtilSvc',
+aproxAddons.controller( 'AutoProxRulesCtl', ['$scope', '$routeParams', '$location', 'AutoProxCatalogSvc', 'AutoProxUtilsSvc', 'StoreUtilSvc',
                                                         function($scope, $routeParams, $location, AutoProxCatalogSvc, AutoProxUtilsSvc, StoreUtilSvc){
   
   $scope.currentName = $routeParams.name;
