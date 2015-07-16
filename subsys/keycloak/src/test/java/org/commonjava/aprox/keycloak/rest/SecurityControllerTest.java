@@ -38,6 +38,7 @@ public class SecurityControllerTest
         config.setUrl( "http://localhost:11111/auth" );
         config.setEnabled( true );
         config.setKeycloakUiJson( keycloakJsonFile.getPath() );
+        config.setRealmPublicKey( "FOOBARR" );
 
         final SecurityController controller = new SecurityController( config );
 
@@ -65,11 +66,12 @@ public class SecurityControllerTest
         config.setUrl( "http://localhost:11111/auth" );
         config.setEnabled( true );
         config.setKeycloakUiJson( keycloakJsonFile.getPath() );
+        config.setRealmPublicKey( "FOOBARR" );
 
         final SecurityController controller = new SecurityController( config );
 
         final String json = controller.getKeycloakInit();
-        assertThat( json, containsString( realm ) );
+        assertThat( json, containsString( "api/security/keycloak.js" ) );
     }
 
 }

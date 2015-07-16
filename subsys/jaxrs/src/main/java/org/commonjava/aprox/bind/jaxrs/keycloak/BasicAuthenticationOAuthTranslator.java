@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -66,6 +67,8 @@ public class BasicAuthenticationOAuthTranslator
     @Inject
     private Http http;
 
+    private boolean enabled;
+
     protected BasicAuthenticationOAuthTranslator()
     {
     }
@@ -74,12 +77,31 @@ public class BasicAuthenticationOAuthTranslator
     {
         this.config = config;
         this.http = http;
+        init();
+    }
+
+    @PostConstruct
+    public void init()
+    {
+        if ( config.getServerCredentialSecret() == null || config.getServerResource() == null )
+        {
+            logger.warn( "BASIC authentication is disabled; server.resource and/or server.credential.secret are missing from keycloak.conf!" );
+        }
+        else
+        {
+            enabled = true;
+        }
     }
 
     @Override
     public AuthenticationMechanismOutcome authenticate( final HttpServerExchange exchange,
                                                         final SecurityContext securityContext )
     {
+        if ( !enabled )
+        {
+            return AuthenticationMechanismOutcome.NOT_ATTEMPTED;
+        }
+
         logger.debug( "BASIC authenticate injector checking for " + AUTHORIZATION_HEADER + " header." );
         final HeaderMap headers = exchange.getRequestHeaders();
         final Collection<String> vals = headers.remove( AUTHORIZATION_HEADER );

@@ -1,5 +1,5 @@
 {
-  "realm": "${realm}",
+  "realm": "${keycloak.realm}",
   "realm-public-key": "F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00F00",
   "auth-server-url": "http://localhost:8080/auth",
   "ssl-required": "none",

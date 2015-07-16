@@ -163,12 +163,30 @@ public class KeycloakConfig
      */
     public KeycloakConfig setSystemProperties()
     {
+        if ( !isEnabled() )
+        {
+            return this;
+        }
+
         final Properties properties = System.getProperties();
         properties.setProperty( KEYCLOAK_REALM, getRealm() );
         properties.setProperty( KEYCLOAK_URL, getUrl() );
-        properties.setProperty( KEYCLOAK_SERVER_RESOURCE, getServerResource() );
-        properties.setProperty( KEYCLOAK_SERVER_CREDENTIAL_SECRET, getServerCredentialSecret() );
-        properties.setProperty( KEYCLOAK_REALM_PUBLIC_KEY, getRealmPublicKey() );
+
+        if ( getServerResource() != null )
+        {
+            properties.setProperty( KEYCLOAK_SERVER_RESOURCE, getServerResource() );
+        }
+
+        if ( getServerCredentialSecret() != null )
+        {
+            properties.setProperty( KEYCLOAK_SERVER_CREDENTIAL_SECRET, getServerCredentialSecret() );
+        }
+
+        if ( getRealmPublicKey() != null )
+        {
+            properties.setProperty( KEYCLOAK_REALM_PUBLIC_KEY, getRealmPublicKey() );
+        }
+
         System.setProperties( properties );
 
         return this;

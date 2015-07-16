@@ -75,8 +75,16 @@ public class SecurityController
         final Properties props = new Properties();
         props.setProperty( KeycloakConfig.KEYCLOAK_REALM, config.getRealm() );
         props.setProperty( KeycloakConfig.KEYCLOAK_URL, config.getUrl() );
-        props.setProperty( KeycloakConfig.KEYCLOAK_UI_RESOURCE, config.getUiResource() );
-        props.setProperty( KeycloakConfig.KEYCLOAK_REALM_PUBLIC_KEY, config.getRealmPublicKey() );
+
+        if ( config.getUiResource() != null )
+        {
+            props.setProperty( KeycloakConfig.KEYCLOAK_UI_RESOURCE, config.getUiResource() );
+        }
+
+        if ( config.getRealmPublicKey() != null )
+        {
+            props.setProperty( KeycloakConfig.KEYCLOAK_REALM_PUBLIC_KEY, config.getRealmPublicKey() );
+        }
 
         final StringSearchInterpolator interpolator = new StringSearchInterpolator();
         interpolator.addValueSource( new PropertiesBasedValueSource( props ) );
