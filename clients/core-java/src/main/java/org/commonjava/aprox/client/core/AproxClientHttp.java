@@ -33,10 +33,7 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.Credentials;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -49,10 +46,11 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.commonjava.aprox.client.core.auth.AproxClientAuthenticator;
 import org.commonjava.aprox.client.core.helper.CloseBlockingConnectionManager;
 import org.commonjava.aprox.client.core.helper.HttpResources;
 import org.commonjava.aprox.model.core.ArtifactStore;
@@ -75,15 +73,18 @@ public class AproxClientHttp
 
     private CloseBlockingConnectionManager connectionManager;
 
-    private final Credentials creds;
-
     private HttpClientContext prototypeCtx;
 
-    public AproxClientHttp( final String baseUrl, final Credentials creds, final AproxObjectMapper mapper )
+    private final AproxClientAuthenticator authenticator;
+
+    private URL url;
+
+    public AproxClientHttp( final String baseUrl, final AproxClientAuthenticator authenticator,
+                            final AproxObjectMapper mapper )
         throws AproxClientException
     {
         this.baseUrl = baseUrl;
-        this.creds = creds;
+        this.authenticator = authenticator;
         this.objectMapper = mapper;
 
         initPrototypeContext();
@@ -92,7 +93,6 @@ public class AproxClientHttp
     private void initPrototypeContext()
         throws AproxClientException
     {
-        URL url;
         try
         {
             url = new URL( baseUrl );
@@ -102,14 +102,10 @@ public class AproxClientHttp
             throw new AproxClientException( "Invalid base-url: {}", e, baseUrl );
         }
 
-        final AuthScope as = new AuthScope( url.getHost(), url.getPort() );
-
-        final HttpClientContext ctx = HttpClientContext.create();
-        if ( creds != null )
+        HttpClientContext ctx = HttpClientContext.create();
+        if ( authenticator != null )
         {
-            final CredentialsProvider credProvider = new BasicCredentialsProvider();
-            credProvider.setCredentials( as, creds );
-            ctx.setCredentialsProvider( credProvider );
+            ctx = authenticator.decoratePrototypeContext( url, ctx );
         }
 
         this.prototypeCtx = ctx;
@@ -672,11 +668,16 @@ public class AproxClientHttp
     }
 
     public CloseableHttpClient newClient()
+        throws AproxClientException
     {
-        //        return HttpClients.createDefault();
-        return HttpClients.custom()
-                          .setConnectionManager( connectionManager )
-                          .build();
+        HttpClientBuilder builder = HttpClients.custom()
+                                               .setConnectionManager( connectionManager );
+
+        if ( authenticator != null )
+        {
+            builder = authenticator.decorateClientBuilder( url, builder );
+        }
+        return builder.build();
     }
 
     public HttpClientContext newContext()

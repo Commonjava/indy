@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.http.auth.Credentials;
+import org.commonjava.aprox.client.core.auth.AproxClientAuthenticator;
 import org.commonjava.aprox.client.core.module.AproxContentClientModule;
 import org.commonjava.aprox.client.core.module.AproxStatsClientModule;
 import org.commonjava.aprox.client.core.module.AproxStoresClientModule;
@@ -41,10 +41,11 @@ public class Aprox
         this( baseUrl, null, null, modules );
     }
 
-    public Aprox( final String baseUrl, final Credentials creds, final AproxClientModule... modules )
+    public Aprox( final String baseUrl, final AproxClientAuthenticator authenticator,
+                  final AproxClientModule... modules )
         throws AproxClientException
     {
-        this( baseUrl, creds, null, modules );
+        this( baseUrl, authenticator, null, modules );
     }
 
     public Aprox( final String baseUrl, final AproxObjectMapper mapper, final AproxClientModule... modules )
@@ -53,11 +54,12 @@ public class Aprox
         this( baseUrl, null, mapper, modules );
     }
 
-    public Aprox( final String baseUrl, final Credentials creds, final AproxObjectMapper mapper,
+    public Aprox( final String baseUrl, final AproxClientAuthenticator authenticator, final AproxObjectMapper mapper,
                   final AproxClientModule... modules )
         throws AproxClientException
     {
-        this.http = new AproxClientHttp( baseUrl, creds, mapper == null ? new AproxObjectMapper( true ) : mapper );
+        this.http =
+            new AproxClientHttp( baseUrl, authenticator, mapper == null ? new AproxObjectMapper( true ) : mapper );
         this.moduleRegistry = new HashSet<>();
 
         setupStandardModules();
@@ -74,10 +76,11 @@ public class Aprox
         this( baseUrl, null, null, modules );
     }
 
-    public Aprox( final String baseUrl, final Credentials creds, final Collection<AproxClientModule> modules )
+    public Aprox( final String baseUrl, final AproxClientAuthenticator authenticator,
+                  final Collection<AproxClientModule> modules )
         throws AproxClientException
     {
-        this( baseUrl, creds, null, modules );
+        this( baseUrl, authenticator, null, modules );
     }
 
     public Aprox( final String baseUrl, final AproxObjectMapper mapper, final Collection<AproxClientModule> modules )
@@ -86,11 +89,12 @@ public class Aprox
         this( baseUrl, null, mapper, modules );
     }
 
-    public Aprox( final String baseUrl, final Credentials creds, final AproxObjectMapper mapper,
+    public Aprox( final String baseUrl, final AproxClientAuthenticator authenticator, final AproxObjectMapper mapper,
                   final Collection<AproxClientModule> modules )
         throws AproxClientException
     {
-        this.http = new AproxClientHttp( baseUrl, creds, mapper == null ? new AproxObjectMapper( true ) : mapper );
+        this.http =
+            new AproxClientHttp( baseUrl, authenticator, mapper == null ? new AproxObjectMapper( true ) : mapper );
         this.moduleRegistry = new HashSet<>();
 
         setupStandardModules();
