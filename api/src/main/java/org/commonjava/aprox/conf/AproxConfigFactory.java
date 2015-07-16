@@ -24,6 +24,8 @@ import org.commonjava.web.config.ConfigurationException;
  */
 public interface AproxConfigFactory
 {
+    String APROX_HOME_PROP = "aprox.home";
+
     String CONFIG_PATH_PROP = "aprox.config";
 
     String CONFIG_DIR_PROP = CONFIG_PATH_PROP + ".dir";

@@ -34,6 +34,10 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-subsys-keycloak</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-dot-maven-common</artifactId>
     </dependency>
     <dependency>

@@ -13,8 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.aprox.ftest.core.fixture;
+package org.commonjava.aprox.client.core.module;
 
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.aprox.client.core.AproxClientHttp;
 import org.commonjava.aprox.client.core.AproxClientModule;
 
@@ -26,6 +30,22 @@ public class AproxRawHttpModule
     public AproxClientHttp getHttp()
     {
         return super.getHttp();
+    }
+
+    public CloseableHttpClient newClient()
+    {
+        return getHttp().newClient();
+    }
+
+    public HttpClientContext newContext()
+    {
+        return getHttp().newContext();
+    }
+
+    public void cleanup( final CloseableHttpClient client, final HttpUriRequest request,
+                         final CloseableHttpResponse response )
+    {
+        getHttp().cleanup( request, response, client );
     }
 
 }

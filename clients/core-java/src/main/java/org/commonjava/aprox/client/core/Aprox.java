@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.http.auth.Credentials;
 import org.commonjava.aprox.client.core.module.AproxContentClientModule;
 import org.commonjava.aprox.client.core.module.AproxStatsClientModule;
 import org.commonjava.aprox.client.core.module.AproxStoresClientModule;
@@ -35,27 +36,28 @@ public class Aprox
     private final Set<AproxClientModule> moduleRegistry;
 
     public Aprox( final String baseUrl, final AproxClientModule... modules )
+        throws AproxClientException
     {
-        this( baseUrl, null, modules );
+        this( baseUrl, null, null, modules );
     }
 
-    private void setupStandardModules()
+    public Aprox( final String baseUrl, final Credentials creds, final AproxClientModule... modules )
+        throws AproxClientException
     {
-        final Set<AproxClientModule> standardModules = new HashSet<>();
-        standardModules.add( new AproxStoresClientModule() );
-        standardModules.add( new AproxContentClientModule() );
-        standardModules.add( new AproxStatsClientModule() );
-
-        for ( final AproxClientModule module : standardModules )
-        {
-            module.setup( this, http );
-            moduleRegistry.add( module );
-        }
+        this( baseUrl, creds, null, modules );
     }
 
     public Aprox( final String baseUrl, final AproxObjectMapper mapper, final AproxClientModule... modules )
+        throws AproxClientException
     {
-        this.http = new AproxClientHttp( baseUrl, mapper == null ? new AproxObjectMapper( true ) : mapper );
+        this( baseUrl, null, mapper, modules );
+    }
+
+    public Aprox( final String baseUrl, final Credentials creds, final AproxObjectMapper mapper,
+                  final AproxClientModule... modules )
+        throws AproxClientException
+    {
+        this.http = new AproxClientHttp( baseUrl, creds, mapper == null ? new AproxObjectMapper( true ) : mapper );
         this.moduleRegistry = new HashSet<>();
 
         setupStandardModules();
@@ -67,13 +69,28 @@ public class Aprox
     }
 
     public Aprox( final String baseUrl, final Collection<AproxClientModule> modules )
+        throws AproxClientException
     {
-        this( baseUrl, null, modules );
+        this( baseUrl, null, null, modules );
+    }
+
+    public Aprox( final String baseUrl, final Credentials creds, final Collection<AproxClientModule> modules )
+        throws AproxClientException
+    {
+        this( baseUrl, creds, null, modules );
     }
 
     public Aprox( final String baseUrl, final AproxObjectMapper mapper, final Collection<AproxClientModule> modules )
+        throws AproxClientException
     {
-        this.http = new AproxClientHttp( baseUrl, mapper == null ? new AproxObjectMapper( true ) : mapper );
+        this( baseUrl, null, mapper, modules );
+    }
+
+    public Aprox( final String baseUrl, final Credentials creds, final AproxObjectMapper mapper,
+                  final Collection<AproxClientModule> modules )
+        throws AproxClientException
+    {
+        this.http = new AproxClientHttp( baseUrl, creds, mapper == null ? new AproxObjectMapper( true ) : mapper );
         this.moduleRegistry = new HashSet<>();
 
         setupStandardModules();
@@ -142,6 +159,20 @@ public class Aprox
     public String getBaseUrl()
     {
         return http.getBaseUrl();
+    }
+
+    private void setupStandardModules()
+    {
+        final Set<AproxClientModule> standardModules = new HashSet<>();
+        standardModules.add( new AproxStoresClientModule() );
+        standardModules.add( new AproxContentClientModule() );
+        standardModules.add( new AproxStatsClientModule() );
+
+        for ( final AproxClientModule module : standardModules )
+        {
+            module.setup( this, http );
+            moduleRegistry.add( module );
+        }
     }
 
 }

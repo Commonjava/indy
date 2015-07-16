@@ -15,10 +15,13 @@
  */
 package org.commonjava.aprox.core.ctl;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -26,6 +29,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
+import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
@@ -54,6 +58,8 @@ public class StatsController
     private static final String ADDONS_KEY = "addonsJson";
 
     private static final String ACTIVE_ADDONS_JS = "active-addons-js";
+
+    private static final String ADDONS_LOGIC = "addonsLogic";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -164,7 +170,46 @@ public class StatsController
         try
         {
             final String json = serializer.writeValueAsString( getActiveAddOns() );
-            return templates.render( ACTIVE_ADDONS_JS, Collections.<String, Object> singletonMap( ADDONS_KEY, json ) );
+            final Map<String, Object> params = new HashMap<>();
+
+            final Map<String, String> jsMap = new HashMap<>();
+            if ( addons != null )
+            {
+                final ClassLoader cl = Thread.currentThread()
+                                             .getContextClassLoader();
+                for ( final AproxAddOn addon : addons )
+                {
+                    final String jsRef = addon.getId()
+                                              .getInitJavascriptHref();
+                    if ( jsRef == null )
+                    {
+                        logger.debug( "Add-On has no init javascript: {}", addon );
+                        continue;
+                    }
+
+                    try (InputStream in = cl.getResourceAsStream( jsRef ))
+                    {
+                        if ( in == null )
+                        {
+                            logger.error( "Add-On failed to load: {}. Initialization javascript NOT FOUND in classpath: {}",
+                                          addon, jsRef );
+                            continue;
+                        }
+
+                        jsMap.put( jsRef, IOUtils.toString( in ) );
+                    }
+                    catch ( final IOException e )
+                    {
+                        logger.error( "Add-On failed to load: {}. Cannot load initialization javascript from classpath: {}",
+                                      addon, jsRef );
+                    }
+                }
+            }
+
+            params.put( ADDONS_KEY, json );
+            params.put( ADDONS_LOGIC, jsMap );
+
+            return templates.render( ACTIVE_ADDONS_JS, params );
         }
         catch ( final AproxGroovyException e )
         {

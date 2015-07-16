@@ -44,6 +44,7 @@ class Launcher
       :launch => true,
       :uidev => false,
       :flavor => 'savant',
+      :args => [],
     }
 
     OptionParser.new{|opts|
@@ -59,8 +60,9 @@ class Launcher
       opts.on('-L', '--nolaunch', 'do not launch!'){config[:launch]=false}
       opts.on('-u', '--uidev', 'Link to the sources for the UI to enable live UI development' ){config[:uidev]=true}
       opts.on('-t', "--type=TYPE", "Type of launcher to run (min|easyprox|savant, default: savant)"){|type| config[:flavor] = type}
+      opts.on('-p', '--port=PORT', "Port to use"){|port| config[:args] << "-p #{port}"}
 
-      config[:args] = opts.parse!(args)
+      config[:args].concat(opts.parse!(args))
     }
 
     launcher = config[:flavor]

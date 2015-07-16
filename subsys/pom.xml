@@ -34,8 +34,9 @@
     <module>git</module>
     <module>groovy</module>
     <module>http</module>
-    <module>maven</module>
+    <module>keycloak</module>
     <module>jaxrs</module>
+    <module>maven</module>
   </modules>
   
 </project>
