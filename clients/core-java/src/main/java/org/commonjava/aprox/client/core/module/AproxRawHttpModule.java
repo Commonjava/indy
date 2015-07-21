@@ -19,6 +19,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.commonjava.aprox.client.core.AproxClientException;
 import org.commonjava.aprox.client.core.AproxClientHttp;
 import org.commonjava.aprox.client.core.AproxClientModule;
 
@@ -33,6 +34,7 @@ public class AproxRawHttpModule
     }
 
     public CloseableHttpClient newClient()
+        throws AproxClientException
     {
         return getHttp().newClient();
     }
