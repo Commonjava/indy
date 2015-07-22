@@ -5,6 +5,7 @@ title: "AProx Developer Guide"
 ### Basics
 
 * [Building](build.html)
+* [Commonjava Project Dependencies](commonjava-deps.html)
 * [Architectural Overview](arch.html)
 * [Project Layout](layout.html)
 
