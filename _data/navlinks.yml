@@ -1,9 +1,9 @@
 - name: "User's Guide"
   nav: "user"
   url: user/index.html
-#- name: "Developer's Guide"
-#  nav: "dev"
-#  url: dev/index.html
+- name: "Developer's Guide"
+  nav: "dev"
+  url: dev/index.html
 #- name: "Reference"
 #  nav: "ref"
 #  url: ref/index.html
