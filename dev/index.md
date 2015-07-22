@@ -6,5 +6,14 @@ title: "AProx Developer Guide"
 
 * [Building](build.html)
 * [Architectural Overview](arch.html)
-* [Module Overview and Layout](modules.html)
+* [Project Layout](layout.html)
 
+
+### Specialized Developer Topics
+
+* [Writing an add-on](writing-addons.html)
+* [Writing a functional test](writing-ftests.html)
+
+### Getting Help
+
+**TODO**
