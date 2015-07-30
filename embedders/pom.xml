@@ -127,6 +127,7 @@
                     <include>org.commonjava*:*</include>
                   </includes>
                   <excludes>
+                    <exclude>org.commonjava.maven.atlas:*</exclude>
                     <exclude>org.commonjava*:*ftest*</exclude>
                   </excludes>
                 </artifactSet>

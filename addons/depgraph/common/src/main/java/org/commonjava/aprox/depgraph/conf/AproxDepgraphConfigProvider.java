@@ -30,11 +30,15 @@ import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.aprox.inject.Production;
 import org.commonjava.aprox.subsys.datafile.DataFileManager;
 import org.commonjava.web.config.ConfigurationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class AproxDepgraphConfigProvider
     extends AbstractAproxFeatureConfig<AproxDepgraphConfig, AproxDepgraphConfig>
 {
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
     @ApplicationScoped
     public static class AproxDepgraphConfigInfo
         extends AbstractAproxConfigInfo
@@ -65,6 +69,8 @@ public class AproxDepgraphConfigProvider
     @Inject
     private DataFileManager ffManager;
 
+    private AproxDepgraphConfig config;
+
     public AproxDepgraphConfigProvider()
     {
         super( AproxDepgraphConfig.class );
@@ -73,16 +79,17 @@ public class AproxDepgraphConfigProvider
     @Produces
     @Production
     @Default
-    public AproxDepgraphConfig getDepgraphConfig()
+    public synchronized AproxDepgraphConfig getDepgraphConfig()
         throws ConfigurationException
     {
-        AproxDepgraphConfig config = getConfig();
+        logger.debug( "Retrieving AProx depgraph configuration." );
         if ( config == null )
         {
-            config = new AproxDepgraphConfig();
+            config = getConfig();
+            config.setDirectories( ffManager.getDetachedDataBasedir(), ffManager.getDetachedWorkBasedir() );
         }
 
-        return config.setDirectories( ffManager.getDetachedDataBasedir(), ffManager.getDetachedWorkBasedir() );
+        return config;
     }
 
     @Override

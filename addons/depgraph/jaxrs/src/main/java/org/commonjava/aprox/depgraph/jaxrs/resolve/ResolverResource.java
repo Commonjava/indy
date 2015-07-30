@@ -19,6 +19,8 @@ import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatOkRespons
 import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.aprox.model.util.HttpUtils.parseQueryMap;
 
+import java.util.Map;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -59,8 +61,13 @@ public class ResolverResource
         Response response = null;
         try
         {
-            final String json =
-                controller.resolveGraph( f, gid, aid, ver, recurse, wsid, parseQueryMap( request.getQueryString() ) );
+            final Map<String, String[]> queryMap = parseQueryMap( request.getQueryString() );
+
+            logger.debug( "Resolving graph given the following information:\nFrom: {}\nGroup-Id: {}\nArtifact-Id: {}\nVersion: {}\nWorkspace-Id: {}\nRecurse: {}\nQuery params: {}",
+                          f, gid, aid, ver, wsid, recurse, queryMap );
+
+            final String json = controller.resolveGraph( f, gid, aid, ver, recurse, wsid, queryMap );
+
             if ( json == null )
             {
                 response = Response.ok()

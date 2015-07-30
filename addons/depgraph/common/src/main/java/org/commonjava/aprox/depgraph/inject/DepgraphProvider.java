@@ -18,6 +18,7 @@ package org.commonjava.aprox.depgraph.inject;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
@@ -25,10 +26,14 @@ import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.maven.atlas.graph.RelationshipGraphException;
 import org.commonjava.maven.atlas.graph.RelationshipGraphFactory;
 import org.commonjava.maven.atlas.graph.spi.neo4j.FileNeo4jConnectionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class DepgraphProvider
 {
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private AproxDepgraphConfig config;
@@ -48,6 +53,7 @@ public class DepgraphProvider
     @PostConstruct
     public void init()
     {
+        logger.debug( "SETUP: RelationshipGraphFactory" );
         this.graphFactory =
             new RelationshipGraphFactory( new FileNeo4jConnectionFactory( config.getDataBasedir(), true ) );
     }
@@ -60,6 +66,7 @@ public class DepgraphProvider
     }
 
     @Produces
+    @Default
     public RelationshipGraphFactory getGraphFactory()
     {
         return graphFactory;
