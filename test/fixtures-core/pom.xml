@@ -46,6 +46,7 @@
     <dependency>
       <groupId>org.commonjava.aprox.boot</groupId>
       <artifactId>aprox-booter-api</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>javax.enterprise</groupId>

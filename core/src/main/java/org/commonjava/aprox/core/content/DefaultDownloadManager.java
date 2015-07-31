@@ -477,6 +477,7 @@ public class DefaultDownloadManager
         OutputStream out = null;
         try
         {
+            logger.info( "Writing: {} with event metadata: {}", target, eventMetadata );
             out = target.openOutputStream( op, true, eventMetadata );
             copy( stream, out );
         }
@@ -538,6 +539,7 @@ public class DefaultDownloadManager
                                               "No deployment locations available." );
         }
 
+        logger.info( "Storing: {} in selected: {} with event metadata: {}", path, selected, eventMetadata );
         store( selected, path, stream, op, eventMetadata );
 
         return getStorageReference( selected.getKey(), path );

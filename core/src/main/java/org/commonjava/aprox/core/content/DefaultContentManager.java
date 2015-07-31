@@ -308,8 +308,8 @@ public class DefaultContentManager
             }
         }
 
+        logger.info( "Storing: {} for: {} with event metadata: {}", path, store.getKey(), eventMetadata );
         final Transfer txfr = downloadManager.store( store, path, stream, op, eventMetadata );
-        logger.info( "Stored: {} for: {} in: {}", path, store.getKey(), txfr );
         if ( txfr != null )
         {
             final KeyedLocation kl = (KeyedLocation) txfr.getLocation();
@@ -354,7 +354,8 @@ public class DefaultContentManager
                            final TransferOperation op , final EventMetadata eventMetadata  )
         throws AproxWorkflowException
     {
-        final Transfer txfr = downloadManager.store( stores, path, stream, op, new EventMetadata() );
+        logger.info( "Storing: {} in: {} with event metadata: {}", path, stores, eventMetadata );
+        final Transfer txfr = downloadManager.store( stores, path, stream, op, eventMetadata );
         if ( txfr != null )
         {
             final KeyedLocation kl = (KeyedLocation) txfr.getLocation();

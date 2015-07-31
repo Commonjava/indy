@@ -111,6 +111,8 @@ public class FoloContentAccessHandler
         final TrackingKey tk = new TrackingKey( id );
         final StoreKey sk = new StoreKey( st, name );
 
+        logger.info( "UPLOAD:\nPath: {}\nTracking key: {}\nStorage key: {}", path, tk, sk );
+
         Response response = null;
         Transfer transfer;
         try
@@ -155,6 +157,8 @@ public class FoloContentAccessHandler
 
         final TrackingKey tk = new TrackingKey( id );
         final StoreKey sk = new StoreKey( st, name );
+
+        logger.info( "EXISTS:\nPath: {}\nTracking key: {}\nStorage key: {}", path, tk, sk );
 
         final AcceptInfo acceptInfo = jaxRsRequestHelper.findAccept( request, ApplicationContent.text_html );
 
@@ -230,6 +234,8 @@ public class FoloContentAccessHandler
 
         final TrackingKey tk = new TrackingKey( id );
         final StoreKey sk = new StoreKey( st, name );
+
+        logger.info( "DOWNLOAD:\nPath: {}\nTracking key: {}\nStorage key: {}", path, tk, sk );
 
         final AcceptInfo acceptInfo = jaxRsRequestHelper.findAccept( request, ApplicationContent.text_html );
 
