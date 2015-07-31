@@ -29,8 +29,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.aprox.client.core.helper.HttpResources;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreType;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore( "passing 5xx upstream errors through the repo manager as 404 to support maven" )
 public class Propagate500As502ErrorTest
     extends AbstractHttproxFunctionalTest
 {

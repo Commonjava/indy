@@ -46,21 +46,21 @@ public class FoloTrackingListener
                                                            .get( FoloConstants.TRACKING_KEY );
         if ( trackingKey == null )
         {
-            logger.debug( "No tracking key for access to: {}", event.getTransfer() );
+            logger.info( "No tracking key for access to: {}", event.getTransfer() );
             return;
         }
 
         final Transfer transfer = event.getTransfer();
         if ( transfer == null )
         {
-            logger.debug( "No transfer: {}", event );
+            logger.info( "No transfer: {}", event );
             return;
         }
 
         final Location location = transfer.getLocation();
         if ( !( location instanceof KeyedLocation ) )
         {
-            logger.debug( "Not in a keyed location: {}", event.getTransfer() );
+            logger.info( "Not in a keyed location: {}", event.getTransfer() );
             return;
         }
 
@@ -84,18 +84,21 @@ public class FoloTrackingListener
                                                            .get( FoloConstants.TRACKING_KEY );
         if ( trackingKey == null )
         {
+            logger.info( "No tracking key. Not recording." );
             return;
         }
 
         final Transfer transfer = event.getTransfer();
         if ( transfer == null )
         {
+            logger.info( "No transfer. Not recording." );
             return;
         }
 
         final Location location = transfer.getLocation();
         if ( !( location instanceof KeyedLocation ) )
         {
+            logger.info( "Invalid transfer source location: {}. Not recording.", location );
             return;
         }
 

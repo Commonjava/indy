@@ -15,6 +15,7 @@
  */
 package org.commonjava.aprox.folo.ftest.report;
 
+import static org.commonjava.aprox.model.core.StoreType.group;
 import static org.commonjava.aprox.model.core.StoreType.hosted;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -33,7 +34,7 @@ import org.commonjava.aprox.folo.dto.TrackedContentEntryDTO;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.junit.Test;
 
-public class StoreFileAndVerifyInTrackingReportTest
+public class StoreFileViaGroupAndVerifyInTrackingReportTest
     extends AbstractTrackingReportTest
 {
 
@@ -47,7 +48,7 @@ public class StoreFileAndVerifyInTrackingReportTest
 
         final String path = "/path/to/foo.class";
         client.module( AproxFoloContentClientModule.class )
-              .store( trackingId, hosted, STORE, path, stream );
+              .store( trackingId, group, PUBLIC, path, stream );
 
         final TrackedContentDTO report = client.module( AproxFoloAdminClientModule.class )
                                                .getTrackingReport( trackingId );

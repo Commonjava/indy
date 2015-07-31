@@ -34,47 +34,40 @@
       <groupId>org.commonjava.aprox.embed</groupId>
       <artifactId>aprox-embedder-easyprox</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-ftests-autoprox</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-ftests-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-ftests-dot-maven</artifactId>
+    </dependency>
   </dependencies>
   
-  <profiles>
-    <profile>
-      <id>run-its</id>
-      
-      <dependencies>
-        <dependency>
-          <groupId>org.commonjava.aprox</groupId>
-          <artifactId>aprox-ftests-autoprox</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>org.commonjava.aprox</groupId>
-          <artifactId>aprox-ftests-common</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>org.commonjava.aprox</groupId>
-          <artifactId>aprox-ftests-dot-maven</artifactId>
-        </dependency>
-      </dependencies>
-      
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-surefire-plugin</artifactId>
-              <configuration>
-                <systemPropertyVariables>
-                  <testTimeout>${testTimeout}</testTimeout>
-                </systemPropertyVariables>
-                <forkCount>${test-forkCount}</forkCount>
-                <reuseForks>false</reuseForks>
-                <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
-                <dependenciesToScan>
-                  <dependency>org.commonjava.aprox:aprox-ftests-autoprox</dependency>
-                  <dependency>org.commonjava.aprox:aprox-ftests-core</dependency>
-                  <dependency>org.commonjava.aprox:aprox-ftests-dot-maven</dependency>
-                </dependenciesToScan> 
-              </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <skip>${skipITs}</skip>
+            <systemPropertyVariables>
+              <testTimeout>${testTimeout}</testTimeout>
+            </systemPropertyVariables>
+            <forkCount>${test-forkCount}</forkCount>
+            <reuseForks>false</reuseForks>
+            <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
+            <dependenciesToScan>
+              <dependency>org.commonjava.aprox:aprox-ftests-autoprox</dependency>
+              <dependency>org.commonjava.aprox:aprox-ftests-core</dependency>
+              <dependency>org.commonjava.aprox:aprox-ftests-dot-maven</dependency>
+            </dependenciesToScan> 
+          </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

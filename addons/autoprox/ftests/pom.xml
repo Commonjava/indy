@@ -57,6 +57,11 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.aprox.boot</groupId>
+      <artifactId>aprox-booter-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>compile</scope>

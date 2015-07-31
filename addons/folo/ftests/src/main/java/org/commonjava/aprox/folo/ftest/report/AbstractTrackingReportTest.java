@@ -45,6 +45,11 @@ public abstract class AbstractTrackingReportTest
     public void before()
         throws Exception
     {
+        if ( !createStandardStores() )
+        {
+            return;
+        }
+
         final String changelog = "Setup " + name.getMethodName();
         final HostedRepository hosted =
             this.client.stores()
@@ -81,6 +86,11 @@ public abstract class AbstractTrackingReportTest
         g.setConstituents( Arrays.asList( hosted.getKey(), central.getKey() ) );
         client.stores()
               .update( g, changelog );
+    }
+
+    protected boolean createStandardStores()
+    {
+        return true;
     }
 
     protected String sha256Hex( final byte[] bytes )

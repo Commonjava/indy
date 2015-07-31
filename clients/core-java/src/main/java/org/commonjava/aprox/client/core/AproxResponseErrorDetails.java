@@ -68,7 +68,7 @@ public class AproxResponseErrorDetails
     @Override
     public String toString()
     {
-        return String.format( "Status: %d %s (%s)\nBody:\n\n=========================================%s\n\n=========================================",
+        return String.format( "Status: %d %s (%s)\nBody:\n\n=========================================\n%s\n\n=========================================",
                               code, reason, version, body );
     }
 

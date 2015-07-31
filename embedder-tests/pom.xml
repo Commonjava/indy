@@ -31,10 +31,14 @@
   <name>AProx :: Embedder-Tests :: Parent</name>
   
   <modules>
+    <module>savant</module>
     <module>rest-min</module>
     <module>easyprox</module>
-    <module>savant</module>
   </modules>
+
+  <properties>
+    <skipITs>true</skipITs>
+  </properties>
   
   <dependencies>
     <dependency>
@@ -61,6 +65,7 @@
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
+            <skip>${skipITs}</skip>
             <systemPropertyVariables>
               <testTimeout>${testTimeout}</testTimeout>
             </systemPropertyVariables>
@@ -75,4 +80,14 @@
       </plugins>
     </pluginManagement>
   </build>
+
+  <profiles>
+    <profile>
+      <id>run-its</id>
+
+      <properties>
+        <skipITs>false</skipITs>
+      </properties>
+    </profile>
+  </profiles>
 </project>

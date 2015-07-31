@@ -73,6 +73,7 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
+            <skip>${skipITs}</skip>
             <systemPropertyVariables>
               <testTimeout>${testTimeout}</testTimeout>
             </systemPropertyVariables>

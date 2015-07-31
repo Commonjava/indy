@@ -178,6 +178,8 @@ public class ContentController
         throws AproxWorkflowException
     {
         final ArtifactStore store = getStore( key );
+
+        logger.info( "Storing: {} in: {} with event metadata: {}", path, store, eventMetadata );
         final Transfer item = contentManager.store( store, path, stream, TransferOperation.UPLOAD, eventMetadata );
 
         return item;
