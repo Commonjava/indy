@@ -151,7 +151,17 @@ public class MavenMetadataGenerator
                                        .getParent()
                                        .toString();
 
-        final List<StoreResource> firstLevel = fileManager.list( store, parentPath );
+        List<StoreResource> firstLevel;
+        try
+        {
+            firstLevel = fileManager.list( store, parentPath );
+        }
+        catch ( final AproxWorkflowException e )
+        {
+            logger.error( String.format( "Failed to generate maven-metadata.xml from listing of directory contents for: %s under path: %s",
+                                         store, parentPath ), e );
+            return null;
+        }
 
         String toGenPath = path;
         if ( !path.endsWith( MavenMetadataMerger.METADATA_NAME ) )
