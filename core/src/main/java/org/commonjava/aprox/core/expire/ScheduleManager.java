@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -267,6 +268,17 @@ public class ScheduleManager
                                    .requestRecovery()
                                    .setJobData( dataMap )
                                    .build();
+            }
+            else
+            {
+                final List<? extends Trigger> triggers = scheduler.getTriggersOfJob( jk );
+                if ( triggers != null )
+                {
+                    for ( final Trigger trigger : triggers )
+                    {
+                        scheduler.unscheduleJob( trigger.getKey() );
+                    }
+                }
             }
 
             final long startMillis = System.currentTimeMillis() + ( startSeconds * 1000 );

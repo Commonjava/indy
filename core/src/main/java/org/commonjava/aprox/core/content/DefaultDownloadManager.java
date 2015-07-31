@@ -140,7 +140,7 @@ public class DefaultDownloadManager
             catch ( final BadGatewayException | TransferTimeoutException e )
             {
                 logger.error( e.getMessage(), e );
-                throw new AproxWorkflowException( ApplicationStatus.BAD_GATEWAY.code(),
+                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
                                                   "Failed to list ALL paths: {} from: {}. Reason: {}", e, path,
                                                   store.getKey(), e.getMessage() );
             }
@@ -171,7 +171,7 @@ public class DefaultDownloadManager
                 catch ( final BadGatewayException | TransferTimeoutException e )
                 {
                     logger.error( e.getMessage(), e );
-                    throw new AproxWorkflowException( ApplicationStatus.BAD_GATEWAY.code(),
+                    throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
                                                       "Failed to list path: {} from: {}. Reason: {}", e, path,
                                                       store.getKey(), e.getMessage() );
                 }
@@ -198,7 +198,7 @@ public class DefaultDownloadManager
                 catch ( final BadGatewayException | TransferTimeoutException e )
                 {
                     logger.error( e.getMessage(), e );
-                    throw new AproxWorkflowException( ApplicationStatus.BAD_GATEWAY.code(),
+                    throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
                                                       "Failed to list path: {} from: {}. Reason: {}", e, path,
                                                       store.getKey(), e.getMessage() );
                 }
@@ -241,7 +241,7 @@ public class DefaultDownloadManager
         catch ( final BadGatewayException | TransferTimeoutException e )
         {
             logger.error( e.getMessage(), e );
-            throw new AproxWorkflowException( ApplicationStatus.BAD_GATEWAY.code(),
+            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
                                               "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, stores,
                                               e.getMessage() );
         }
@@ -276,7 +276,7 @@ public class DefaultDownloadManager
         catch ( final BadGatewayException | TransferTimeoutException e )
         {
             logger.error( e.getMessage(), e );
-            throw new AproxWorkflowException( ApplicationStatus.BAD_GATEWAY.code(),
+            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
                                               "Failed to list first path: {} from: {}. Reason: {}", e, path, stores,
                                               e.getMessage() );
         }
@@ -316,7 +316,7 @@ public class DefaultDownloadManager
         catch ( final BadGatewayException | TransferTimeoutException e )
         {
             logger.error( e.getMessage(), e );
-            throw new AproxWorkflowException( ApplicationStatus.BAD_GATEWAY.code(),
+            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
                                               "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, stores,
                                               e.getMessage() );
         }
@@ -395,7 +395,7 @@ public class DefaultDownloadManager
         catch ( final BadGatewayException | TransferTimeoutException e )
         {
             logger.error( e.getMessage(), e );
-            throw new AproxWorkflowException( ApplicationStatus.BAD_GATEWAY.code(),
+            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
                                               "Failed to retrieve path: {} from: {}. Reason: {}", e, path, store,
                                               e.getMessage() );
         }
