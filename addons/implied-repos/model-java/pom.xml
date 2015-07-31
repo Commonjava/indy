@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.aprox</groupId>
     <artifactId>aprox-implied-repos</artifactId>
-    <version>0.23.0-SNAPSHOT</version>
+    <version>0.23.0</version>
   </parent>
   <artifactId>aprox-implied-repos-model-java</artifactId>
   <name>AProx :: Add-Ons :: Implied Repositories :: Java Domain Model</name>
