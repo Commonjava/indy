@@ -50,8 +50,10 @@ import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.aprox.util.PathUtils;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
+import org.commonjava.maven.galley.BadGatewayException;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferManager;
+import org.commonjava.maven.galley.TransferTimeoutException;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.model.ConcreteResource;
@@ -135,6 +137,13 @@ public class DefaultDownloadManager
                     }
                 }
             }
+            catch ( final BadGatewayException | TransferTimeoutException e )
+            {
+                logger.error( e.getMessage(), e );
+                throw new AproxWorkflowException( ApplicationStatus.BAD_GATEWAY.code(),
+                                                  "Failed to list ALL paths: {} from: {}. Reason: {}", e, path,
+                                                  store.getKey(), e.getMessage() );
+            }
             catch ( final TransferException e )
             {
                 logger.error( e.getMessage(), e );
@@ -159,6 +168,13 @@ public class DefaultDownloadManager
                         }
                     }
                 }
+                catch ( final BadGatewayException | TransferTimeoutException e )
+                {
+                    logger.error( e.getMessage(), e );
+                    throw new AproxWorkflowException( ApplicationStatus.BAD_GATEWAY.code(),
+                                                      "Failed to list path: {} from: {}. Reason: {}", e, path,
+                                                      store.getKey(), e.getMessage() );
+                }
                 catch ( final TransferException e )
                 {
                     logger.error( e.getMessage(), e );
@@ -178,6 +194,13 @@ public class DefaultDownloadManager
                             result.add( new StoreResource( loc, dir, child ) );
                         }
                     }
+                }
+                catch ( final BadGatewayException | TransferTimeoutException e )
+                {
+                    logger.error( e.getMessage(), e );
+                    throw new AproxWorkflowException( ApplicationStatus.BAD_GATEWAY.code(),
+                                                      "Failed to list path: {} from: {}. Reason: {}", e, path,
+                                                      store.getKey(), e.getMessage() );
                 }
                 catch ( final TransferException e )
                 {
@@ -215,6 +238,13 @@ public class DefaultDownloadManager
                 }
             }
         }
+        catch ( final BadGatewayException | TransferTimeoutException e )
+        {
+            logger.error( e.getMessage(), e );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_GATEWAY.code(),
+                                              "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, stores,
+                                              e.getMessage() );
+        }
         catch ( final TransferException e )
         {
             logger.error( e.getMessage(), e );
@@ -242,6 +272,13 @@ public class DefaultDownloadManager
             return transfers.retrieveFirst( locationExpander.expand( new VirtualResource(
                                                                                           LocationUtils.toLocations( stores ),
                                                                                           path ) ), eventMetadata );
+        }
+        catch ( final BadGatewayException | TransferTimeoutException e )
+        {
+            logger.error( e.getMessage(), e );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_GATEWAY.code(),
+                                              "Failed to list first path: {} from: {}. Reason: {}", e, path, stores,
+                                              e.getMessage() );
         }
         catch ( final TransferException e )
         {
@@ -272,10 +309,16 @@ public class DefaultDownloadManager
     {
         try
         {
-            // FIXME: Needs to be a list?
             return transfers.retrieveAll( locationExpander.expand( new VirtualResource(
                                                                                         LocationUtils.toLocations( stores ),
                                                                                         path ) ), eventMetadata );
+        }
+        catch ( final BadGatewayException | TransferTimeoutException e )
+        {
+            logger.error( e.getMessage(), e );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_GATEWAY.code(),
+                                              "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, stores,
+                                              e.getMessage() );
         }
         catch ( final TransferException e )
         {
@@ -348,6 +391,13 @@ public class DefaultDownloadManager
             //            {
             //                return null;
             //            }
+        }
+        catch ( final BadGatewayException | TransferTimeoutException e )
+        {
+            logger.error( e.getMessage(), e );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_GATEWAY.code(),
+                                              "Failed to retrieve path: {} from: {}. Reason: {}", e, path, store,
+                                              e.getMessage() );
         }
         catch ( final TransferException e )
         {

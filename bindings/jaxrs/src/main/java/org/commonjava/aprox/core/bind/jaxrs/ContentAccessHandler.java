@@ -174,15 +174,14 @@ public class ContentAccessHandler
         final AcceptInfo acceptInfo = jaxRsRequestHelper.findAccept( request, ApplicationContent.text_html );
 
         Response response = null;
-        try
+        final String baseUri = uriInfo.getBaseUriBuilder()
+                                      .path( AproxDeployment.API_PREFIX )
+                                      .build()
+                                      .toString();
+
+        if ( path == null || path.equals( "" ) || path.endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )
         {
-            final String baseUri = uriInfo.getBaseUriBuilder()
-                                          .path( AproxDeployment.API_PREFIX )
-                                          .build()
-                                          .toString();
-
-
-            if ( path == null || path.equals( "" ) || path.endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )
+            try
             {
                 logger.info( "Getting listing at: {}", path );
                 final String content =
@@ -195,7 +194,16 @@ public class ContentAccessHandler
                             .header( ApplicationHeader.last_modified.key(), HttpUtils.formatDateHeader( new Date() ) )
                             .build();
             }
-            else
+            catch ( final AproxWorkflowException e )
+            {
+                logger.error( String.format( "Failed to list content: %s from: %s. Reason: %s", path, name,
+                                             e.getMessage() ), e );
+                response = formatResponse( e, true );
+            }
+        }
+        else
+        {
+            try
             {
                 final Transfer item = contentController.get( sk, path );
                 if ( item == null )
@@ -224,12 +232,12 @@ public class ContentAccessHandler
                     response = builder.build();
                 }
             }
-        }
-        catch ( final AproxWorkflowException e )
-        {
-            logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name,
-                                         e.getMessage() ), e );
-            response = formatResponse( e, true );
+            catch ( final AproxWorkflowException e )
+            {
+                logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name,
+                                             e.getMessage() ), e );
+                response = formatResponse( e, true );
+            }
         }
         return response;
     }
@@ -256,14 +264,14 @@ public class ContentAccessHandler
         logger.info( "User asked for: {}\nStandard accept header for that is: {}", acceptInfo.getRawAccept(),
                      standardAccept );
 
-        try
-        {
-            final String baseUri = uriInfo.getBaseUriBuilder()
-                                          .path( AproxDeployment.API_PREFIX )
-                                          .build()
-                                          .toString();
+        final String baseUri = uriInfo.getBaseUriBuilder()
+                                      .path( AproxDeployment.API_PREFIX )
+                                      .build()
+                                      .toString();
 
-            if ( path == null || path.equals( "" ) || path.endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )
+        if ( path == null || path.equals( "" ) || path.endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )
+        {
+            try
             {
                 logger.info( "Getting listing at: {}", path );
                 final String content =
@@ -271,7 +279,16 @@ public class ContentAccessHandler
 
                 response = formatOkResponseWithEntity( content, acceptInfo.getRawAccept() );
             }
-            else
+            catch ( final AproxWorkflowException e )
+            {
+                logger.error( String.format( "Failed to render content listing: %s from: %s. Reason: %s", path, name,
+                                             e.getMessage() ), e );
+                response = formatResponse( e, true );
+            }
+        }
+        else
+        {
+            try
             {
                 final Transfer item = contentController.get( sk, path );
 
@@ -279,10 +296,19 @@ public class ContentAccessHandler
                 {
                     if ( StoreType.remote == st )
                     {
-                        final HttpExchangeMetadata metadata = contentController.getHttpMetadata( sk, path );
-                        if ( metadata != null )
+                        try
                         {
-                            response = formatResponseFromMetadata( metadata );
+                            final HttpExchangeMetadata metadata = contentController.getHttpMetadata( sk, path );
+                            if ( metadata != null )
+                            {
+                                response = formatResponseFromMetadata( metadata );
+                            }
+                        }
+                        catch ( final AproxWorkflowException e )
+                        {
+                            logger.error( String.format( "Error retrieving status metadata for: %s from: %s. Reason: %s",
+                                                         path, name, e.getMessage() ), e );
+                            response = formatResponse( e, true );
                         }
                     }
 
@@ -292,16 +318,25 @@ public class ContentAccessHandler
                                            .build();
                     }
                 }
-                else if ( item.isDirectory()
-                    || ( path.lastIndexOf( '.' ) < path.lastIndexOf( '/' ) && contentController.isHtmlContent( item ) ) )
+                else if ( item.isDirectory() || ( path.endsWith( "index.html" ) ) )
                 {
-                    item.delete( false );
+                    try
+                    {
+                        item.delete( false );
 
-                    logger.info( "Getting listing at: {}", path + "/" );
-                    final String content =
-                        contentController.renderListing( standardAccept, st, name, path + "/", baseUri, uriFormatter );
+                        logger.info( "Getting listing at: {}", path + "/" );
+                        final String content =
+                            contentController.renderListing( standardAccept, st, name, path + "/", baseUri,
+                                                             uriFormatter );
 
-                    response = formatOkResponseWithEntity( content, acceptInfo.getRawAccept() );
+                        response = formatOkResponseWithEntity( content, acceptInfo.getRawAccept() );
+                    }
+                    catch ( final AproxWorkflowException | IOException e )
+                    {
+                        logger.error( String.format( "Failed to render content listing: %s from: %s. Reason: %s", path,
+                                                     name, e.getMessage() ), e );
+                        response = formatResponse( e, true );
+                    }
                 }
                 else
                 {
@@ -314,12 +349,12 @@ public class ContentAccessHandler
                     response = builder.build();
                 }
             }
-        }
-        catch ( final AproxWorkflowException | IOException e )
-        {
-            logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name,
-                                         e.getMessage() ), e );
-            response = formatResponse( e, true );
+            catch ( final AproxWorkflowException e )
+            {
+                logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name,
+                                             e.getMessage() ), e );
+                response = formatResponse( e, true );
+            }
         }
 
         return response;

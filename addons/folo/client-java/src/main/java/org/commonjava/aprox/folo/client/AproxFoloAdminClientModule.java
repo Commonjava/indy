@@ -26,6 +26,12 @@ public class AproxFoloAdminClientModule
     extends AproxClientModule
 {
 
+    public boolean initReport( final String trackingId )
+        throws AproxClientException
+    {
+        return http.put( UrlUtils.buildUrl( "/folo/admin", trackingId, "record" ), trackingId );
+    }
+
     public TrackedContentDTO getTrackingReport( final String trackingId )
         throws AproxClientException
     {

@@ -39,6 +39,7 @@ import org.commonjava.aprox.folo.model.TrackingKey;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
+import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.util.UrlUtils;
 import org.slf4j.Logger;
@@ -84,7 +85,8 @@ public class FoloAdminController
 
             if ( record == null )
             {
-                throw new AproxWorkflowException( "No tracking record available for: %s", tk );
+                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
+                                                  "No tracking record available for: %s", tk );
             }
 
             final Set<TrackedContentEntryDTO> uploads = new TreeSet<>();
@@ -176,7 +178,8 @@ public class FoloAdminController
         }
         catch ( final FoloContentException e )
         {
-            throw new AproxWorkflowException( "Failed to retrieve record: %s. Reason: %s", e, tk, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
+                                              "Failed to retrieve record: %s. Reason: %s", e, tk, e.getMessage() );
         }
     }
 
@@ -184,6 +187,25 @@ public class FoloAdminController
     {
         final TrackingKey tk = new TrackingKey( id );
         recordManager.clearRecord( tk );
+    }
+
+    public boolean hasRecord( final String id )
+    {
+        return recordManager.hasRecord( new TrackingKey( id ) );
+    }
+
+    public void initRecord( final String id )
+        throws AproxWorkflowException
+    {
+        try
+        {
+            recordManager.initRecord( new TrackingKey( id ) );
+        }
+        catch ( final FoloContentException e )
+        {
+            throw new AproxWorkflowException( "Failed to initialize tracking record for: %s. Reason: %s", e, id,
+                                              e.getMessage() );
+        }
     }
 
 }

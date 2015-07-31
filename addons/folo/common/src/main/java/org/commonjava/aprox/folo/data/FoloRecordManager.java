@@ -107,4 +107,10 @@ public class FoloRecordManager
         return cache.hasRecord( key );
     }
 
+    public void initRecord( final TrackingKey key )
+        throws FoloContentException
+    {
+        cache.get( key );
+    }
+
 }
