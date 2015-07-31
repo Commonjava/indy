@@ -118,7 +118,8 @@ public class AproxContentClientModule
             }
 
             IOUtils.closeQuietly( resources );
-            throw new AproxClientException( "Response returned status: %s.", resources.getStatusLine() );
+            throw new AproxClientException( resources.getStatusCode(), "Response returned status: %s.",
+                                            resources.getStatusLine() );
         }
 
         try
@@ -127,7 +128,8 @@ public class AproxContentClientModule
         }
         catch ( final IOException e )
         {
-            throw new AproxClientException( "Failed to open response content stream: %s", e, e.getMessage() );
+            throw new AproxClientException( "Failed to open response content stream: %s", e,
+                                            e.getMessage() );
         }
     }
 

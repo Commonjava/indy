@@ -111,7 +111,7 @@ public class FoloRecordCache
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to persist artimon log of artifact usage via: " + key, e );
+            logger.error( "Failed to persist folo log of artifact usage via: " + key, e );
         }
     }
 
@@ -133,7 +133,7 @@ public class FoloRecordCache
         }
         catch ( final IOException e )
         {
-            logger.error( "Failed to read artimon tracked record: " + key, e );
+            logger.error( "Failed to read folo tracked record: " + key, e );
             throw new IllegalStateException( "Requested artimon tracked record: " + key
                 + " is corrupt, and cannot be read.", e );
         }

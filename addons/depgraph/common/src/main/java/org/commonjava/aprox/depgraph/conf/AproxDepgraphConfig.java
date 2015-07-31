@@ -22,12 +22,16 @@ import javax.inject.Named;
 
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SectionName( "depgraph" )
 @Named( "use-factory-instead" )
 @Alternative
 public class AproxDepgraphConfig
 {
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private static final String DEFAULT_DEF_WEBFILTER_PRESET = "build-requires";
 
@@ -53,6 +57,8 @@ public class AproxDepgraphConfig
     {
         this.dataBasedir = new File( dataBasedir, "depgraph" );
         this.workBasedir = new File( workBasedir, "depgraph" );
+
+        logger.debug( "Set depgraph-data-basedir to: {}\nSet depgraph-work-basedir to: {}", dataBasedir, workBasedir );
         return this;
     }
 

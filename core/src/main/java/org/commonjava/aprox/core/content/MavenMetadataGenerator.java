@@ -151,7 +151,23 @@ public class MavenMetadataGenerator
                                        .getParent()
                                        .toString();
 
-        final List<StoreResource> firstLevel = fileManager.list( store, parentPath );
+        List<StoreResource> firstLevel;
+        try
+        {
+            firstLevel = fileManager.list( store, parentPath );
+        }
+        catch ( final AproxWorkflowException e )
+        {
+            logger.error( String.format( "SKIP: Failed to generate maven-metadata.xml from listing of directory contents for: %s under path: %s",
+                                         store, parentPath ), e );
+            return null;
+        }
+        //
+        //        if ( firstLevel == null || firstLevel.isEmpty() )
+        //        {
+        //            logger.error( String.format( "SKIP: Listing is empty for: %s under path: %s", store, parentPath ) );
+        //            return null;
+        //        }
 
         String toGenPath = path;
         if ( !path.endsWith( MavenMetadataMerger.METADATA_NAME ) )
@@ -177,10 +193,12 @@ public class MavenMetadataGenerator
 
         if ( snapshotPomInfo != null )
         {
+            logger.info( "Generating maven-metadata.xml for snapshots" );
             generated = writeSnapshotMetadata( snapshotPomInfo, firstLevel, store, toGenPath, eventMetadata );
         }
         else
         {
+            logger.info( "Generating maven-metadata.xml for releases" );
             generated = writeVersionMetadata( firstLevel, store, toGenPath, eventMetadata );
         }
 

@@ -38,7 +38,9 @@ public enum ApplicationStatus
     
     CONFLICT( 409, "Conflict" ),
     
-    SERVER_ERROR( 500, "Internal Server Error" );
+    SERVER_ERROR( 500, "Internal Server Error" ), 
+    
+    BAD_GATEWAY( 502, "Bad Gateway" );
     /* @formatter:on */
 
     private int status;

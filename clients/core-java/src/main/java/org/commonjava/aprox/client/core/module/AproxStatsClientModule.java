@@ -56,7 +56,8 @@ public class AproxStatsClientModule
         if ( resources.getStatusCode() != 200 )
         {
             IOUtils.closeQuietly( resources );
-            throw new AproxClientException( "Response returned status: %s.", resources.getStatusLine() );
+            throw new AproxClientException( resources.getStatusCode(), "Response returned status: %s.",
+                                            resources.getStatusLine() );
         }
 
         try

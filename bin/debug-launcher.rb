@@ -45,6 +45,7 @@ class Launcher
       :uidev => false,
       :flavor => 'savant',
       :args => [],
+      :verbose => false,
     }
 
     OptionParser.new{|opts|
@@ -61,6 +62,7 @@ class Launcher
       opts.on('-u', '--uidev', 'Link to the sources for the UI to enable live UI development' ){config[:uidev]=true}
       opts.on('-t', "--type=TYPE", "Type of launcher to run (min|easyprox|savant, default: savant)"){|type| config[:flavor] = type}
       opts.on('-p', '--port=PORT', "Port to use"){|port| config[:args] << "-p #{port}"}
+      opts.on('-v', '--verbose', "Verbose debug output (NOTE: outputs to console ONLY)"){config[:verbose] = true}
 
       config[:args].concat(opts.parse!(args))
     }
@@ -82,7 +84,7 @@ class Launcher
 
       puts "Found matching archives: #{archives}"
       do_exec( "tar -zxvf #{archives[0]} -C #{target}" )
-
+      rm_rf("#{target}/aprox/etc/aprox/logging") if config[:verbose]
     end
 
     if (config[:uidev])

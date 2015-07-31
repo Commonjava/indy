@@ -265,6 +265,7 @@ public class DefaultContentManager
         {
             for ( final ContentGenerator generator : contentGenerators )
             {
+                logger.debug( "Attempting to generate content for path: {} in: {} via: {}", path, store, generator );
                 item = generator.generateFileContent( store, path, eventMetadata );
                 if ( item != null )
                 {

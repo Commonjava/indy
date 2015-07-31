@@ -23,7 +23,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.commonjava.maven.atlas.ident.util.JoinString;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,7 +110,7 @@ public final class HttpUtils
     {
         final String[] values = params.get( key );
         boolean val;
-        if ( isEmpty( values[0] ) )
+        if ( values == null || values.length < 1 || isEmpty( values[0] ) )
         {
             val = def;
         }
@@ -119,7 +119,8 @@ public final class HttpUtils
             val = Boolean.parseBoolean( values[0] );
         }
 
-        logger.debug( "Values of key: {} are: {}. Returning boolean-param-with-default value: {}", key, new JoinString( ", ", values ), val );
+        logger.debug( "Values of key: {} are: {}. Returning boolean-param-with-default value: {}", key,
+                      joinString( ", ", values ), val );
         return val;
     }
 
@@ -142,7 +143,8 @@ public final class HttpUtils
             val = Long.parseLong( values[0] );
         }
 
-        logger.debug( "Values of key: {} are: {}. Returning long-param-with-default value: {}", key, new JoinString( ", ", values ), val );
+        logger.debug( "Values of key: {} are: {}. Returning long-param-with-default value: {}", key,
+                      joinString( ", ", values ), val );
         return val;
     }
 
@@ -158,6 +160,18 @@ public final class HttpUtils
 
         logger.debug( "Value of key: {} is: {}. Returning string-param-with-default value: {}", key, value, val );
         return val;
+    }
+
+    private static Object joinString( final String joint, final Object[] values )
+    {
+        return new Object()
+        {
+            @Override
+            public String toString()
+            {
+                return values == null || values.length < 1 ? "NONE" : StringUtils.join( values, joint );
+            }
+        };
     }
 
 }

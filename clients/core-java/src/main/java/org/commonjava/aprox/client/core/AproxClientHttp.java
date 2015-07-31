@@ -34,7 +34,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -163,8 +162,8 @@ public class AproxClientHttp
                     return null;
                 }
 
-                throw new AproxClientException( "Error executing HEAD: %s. Status was: %d %s (%s)", path,
-                                                sl.getStatusCode(), sl.getReasonPhrase(), sl.getProtocolVersion() );
+                throw new AproxClientException( sl.getStatusCode(), "Error executing HEAD: %s. Status was: %d %s (%s)",
+                                                path, sl.getStatusCode(), sl.getReasonPhrase(), sl.getProtocolVersion() );
             }
 
             final Map<String, String> headers = new HashMap<>();
@@ -213,9 +212,8 @@ public class AproxClientHttp
                     return null;
                 }
 
-                throw new AproxClientException( "Error retrieving %s from: %s. Status was: %d %s (%s)",
-                                                type.getSimpleName(), path, sl.getStatusCode(), sl.getReasonPhrase(),
-                                                sl.getProtocolVersion() );
+                throw new AproxClientException( sl.getStatusCode(), "Error retrieving %s from: %s.\n%s",
+                                                type.getSimpleName(), path, new AproxResponseErrorDetails( response ) );
             }
 
             final String json = entityToString( response );
@@ -257,9 +255,8 @@ public class AproxClientHttp
                     return null;
                 }
 
-                throw new AproxClientException( "Error retrieving %s from: %s. Status was: %d %s (%s)",
-                                                typeRef.getType(), path, sl.getStatusCode(), sl.getReasonPhrase(),
-                                                sl.getProtocolVersion() );
+                throw new AproxClientException( sl.getStatusCode(), "Error retrieving %s from: %s.\n%s",
+                                                typeRef.getType(), path, new AproxResponseErrorDetails( response ) );
             }
 
             final String json = entityToString( response );
@@ -345,41 +342,38 @@ public class AproxClientHttp
 
         final HttpPut put = newRawPut( buildUrl( baseUrl, path ) );
         final CloseableHttpClient client = newClient();
+        CloseableHttpResponse response = null;
         try
         {
             put.setEntity( new InputStreamEntity( stream ) );
 
-            client.execute( put, new ResponseHandler<Void>()
+            response = client.execute( put );
+            final StatusLine sl = response.getStatusLine();
+            if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
-                @Override
-                public Void handleResponse( final HttpResponse response )
-                    throws ClientProtocolException, IOException
-                {
-                    try
-                    {
-                        final StatusLine sl = response.getStatusLine();
-                        if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
-                        {
-                            throw new ClientProtocolException(
-                                                               String.format( "Error in response from: %s. Status was: %d %s (%s)",
-                                                                              path, sl.getStatusCode(),
-                                                                              sl.getReasonPhrase(),
-                                                                              sl.getProtocolVersion() ) );
-                        }
+                throw new ClientProtocolException( new AproxClientException( sl.getStatusCode(),
+                                                                             "Error in response from: %s.\n%s", path,
+                                                                             new AproxResponseErrorDetails( response ) ) );
+            }
 
-                        return null;
-                    }
-                    finally
-                    {
-                        cleanupResources( put, response, client );
-                    }
-                }
-            } );
+        }
+        catch ( final ClientProtocolException e )
+        {
+            final Throwable cause = e.getCause();
+            if ( cause != null && ( cause instanceof AproxClientException ) )
+            {
+                throw (AproxClientException) cause;
+            }
 
+            throw new AproxClientException( "AProx request failed: %s", e, e.getMessage() );
         }
         catch ( final IOException e )
         {
             throw new AproxClientException( "AProx request failed: %s", e, e.getMessage() );
+        }
+        finally
+        {
+            cleanupResources( put, response, client );
         }
     }
 
@@ -408,10 +402,8 @@ public class AproxClientHttp
             final StatusLine sl = response.getStatusLine();
             if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
-                logger.error( "Error in response from: %s. Status was: %d %s (%s)", path, sl.getStatusCode(),
-                              sl.getReasonPhrase(), sl.getProtocolVersion() );
-
-                return false;
+                throw new AproxClientException( sl.getStatusCode(), "Error in response from: %s.\n%s", path,
+                                                new AproxResponseErrorDetails( response ) );
             }
         }
         catch ( final IOException e )
@@ -453,9 +445,8 @@ public class AproxClientHttp
             final StatusLine sl = response.getStatusLine();
             if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
-                throw new AproxClientException( "Error retrieving %s from: %s. Status was: %d %s (%s)",
-                                                type.getSimpleName(), path, sl.getStatusCode(), sl.getReasonPhrase(),
-                                                sl.getProtocolVersion() );
+                throw new AproxClientException( sl.getStatusCode(), "Error retrieving %s from: %s.\n%s",
+                                                type.getSimpleName(), path, new AproxResponseErrorDetails( response ) );
             }
 
             final String json = entityToString( response );
@@ -510,9 +501,8 @@ public class AproxClientHttp
             final StatusLine sl = response.getStatusLine();
             if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
-                throw new AproxClientException( "Error retrieving %s from: %s. Status was: %d %s (%s)",
-                                                typeRef.getType(), path, sl.getStatusCode(), sl.getReasonPhrase(),
-                                                sl.getProtocolVersion() );
+                throw new AproxClientException( sl.getStatusCode(), "Error retrieving %s from: %s.\n%s",
+                                                typeRef.getType(), path, new AproxResponseErrorDetails( response ) );
             }
 
             final String json = entityToString( response );
@@ -558,8 +548,8 @@ public class AproxClientHttp
             final StatusLine sl = response.getStatusLine();
             if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
-                throw new AproxClientException( "Error deleting: %s. Status was: %d %s (%s)", path, sl.getStatusCode(),
-                                                sl.getReasonPhrase(), sl.getProtocolVersion() );
+                throw new AproxClientException( sl.getStatusCode(), "Error deleting: %s.\n%s", path,
+                                                new AproxResponseErrorDetails( response ) );
             }
         }
         catch ( final IOException e )
@@ -596,8 +586,8 @@ public class AproxClientHttp
             final StatusLine sl = response.getStatusLine();
             if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
-                throw new AproxClientException( "Error deleting: %s. Status was: %d %s (%s)", path, sl.getStatusCode(),
-                                                sl.getReasonPhrase(), sl.getProtocolVersion() );
+                throw new AproxClientException( sl.getStatusCode(), "Error deleting: %s.\n%s", path,
+                                                new AproxResponseErrorDetails( response ) );
             }
         }
         catch ( final IOException e )
@@ -640,7 +630,8 @@ public class AproxClientHttp
                 return false;
             }
 
-            throw new AproxClientException( "Error checking existence of: %s. Error was: %s", path, sl );
+            throw new AproxClientException( sl.getStatusCode(), "Error checking existence of: %s.\n%s", path,
+                                            new AproxResponseErrorDetails( response ) );
         }
         catch ( final IOException e )
         {

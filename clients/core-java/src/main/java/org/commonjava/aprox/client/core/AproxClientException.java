@@ -30,16 +30,35 @@ public class AproxClientException
 
     private transient String formattedMessage;
 
+    private final int statusCode;
+
+    public AproxClientException( final int statusCode, final String message, final Object... params )
+    {
+        super( message );
+        this.statusCode = statusCode;
+        this.params = params;
+    }
+
+    public AproxClientException( final int statusCode, final String message, final Throwable cause,
+                                 final Object... params )
+    {
+        super( message, cause );
+        this.statusCode = statusCode;
+        this.params = params;
+    }
+
     public AproxClientException( final String message, final Object... params )
     {
         super( message );
         this.params = params;
+        this.statusCode = -1;
     }
 
     public AproxClientException( final String message, final Throwable cause, final Object... params )
     {
         super( message, cause );
         this.params = params;
+        this.statusCode = -1;
     }
 
     private static final long serialVersionUID = 1L;
@@ -116,6 +135,11 @@ public class AproxClientException
 
         this.params = newParams;
         return this;
+    }
+
+    public int getStatusCode()
+    {
+        return statusCode;
     }
 
 }
