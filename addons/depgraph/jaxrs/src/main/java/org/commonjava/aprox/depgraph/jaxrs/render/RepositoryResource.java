@@ -15,9 +15,7 @@
  */
 package org.commonjava.aprox.depgraph.jaxrs.render;
 
-import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatOkResponseWithEntity;
-import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
-import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatResponse;
+import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.*;
 import static org.commonjava.aprox.util.ApplicationContent.application_json;
 import static org.commonjava.aprox.util.ApplicationContent.application_zip;
 import static org.commonjava.aprox.util.ApplicationContent.text_plain;
@@ -41,14 +39,17 @@ import javax.ws.rs.core.UriInfo;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.bind.jaxrs.util.JaxRsUriFormatter;
+import org.commonjava.aprox.depgraph.dto.DownlogDTO;
+import org.commonjava.aprox.depgraph.dto.UrlMapDTO;
 import org.commonjava.aprox.depgraph.rest.RepositoryController;
 import org.commonjava.aprox.util.ApplicationContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Path( "/api/depgraph/repo" )
+@Consumes( { "application/json", "application/aprox*+json" } )
 public class RepositoryResource
-    implements AproxResources
+                implements AproxResources
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -57,104 +58,52 @@ public class RepositoryResource
     private RepositoryController controller;
 
     @Path( "/urlmap" )
+    @Produces( { "applicaiton/json", "application/aprox*+json" } )
     @POST
-    @Consumes( application_json )
-    @Produces( application_json )
-    public Response getUrlMap( final @Context UriInfo uriInfo, final @Context HttpServletRequest request )
+    public UrlMapDTO getUrlMap( final @Context UriInfo uriInfo, final @Context HttpServletRequest request )
     {
         Response response = null;
         try
         {
-            final String baseUri = uriInfo.getAbsolutePathBuilder()
-                                          .path( "api" )
-                                          .build()
-                                          .toString();
+            final String baseUri = uriInfo.getAbsolutePathBuilder().path( "api" ).build().toString();
 
-            final String json = controller.getUrlMap( request.getInputStream(), baseUri, new JaxRsUriFormatter() );
-
-            if ( json == null )
-            {
-                response = Response.noContent()
-                                   .build();
-            }
-            else
-            {
-                response = formatOkResponseWithJsonEntity( json );
-            }
+            return controller.getUrlMap( request.getInputStream(), baseUri, new JaxRsUriFormatter() );
         }
         catch ( final AproxWorkflowException | IOException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
-        return response;
-    }
-
-    @Path( "/paths" )
-    @POST
-    @Consumes( application_json )
-    @Produces( application_json )
-    public Response getPaths( final @Context UriInfo uriInfo, final @Context HttpServletRequest request )
-    {
-        Response response = null;
-        try
-        {
-            final String baseUri = uriInfo.getAbsolutePathBuilder()
-                                          .path( "api" )
-                                          .build()
-                                          .toString();
-
-            final String json = controller.getPaths( request.getInputStream(), new JaxRsUriFormatter() );
-
-            if ( json == null )
-            {
-                response = Response.noContent()
-                                   .build();
-            }
-            else
-            {
-                response = formatOkResponseWithJsonEntity( json );
-            }
-        }
-        catch ( final AproxWorkflowException | IOException e )
-        {
-            logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
-        }
-        return response;
+        return null;
     }
 
     @Path( "/downlog" )
     @POST
-    @Consumes( application_json )
     @Produces( text_plain )
     public Response getDownloadLog( final @Context UriInfo uriInfo, final @Context HttpServletRequest request )
     {
         Response response = null;
         try
         {
-            final String baseUri = uriInfo.getAbsolutePathBuilder()
-                                          .path( "api" )
-                                          .build()
-                                          .toString();
+            final String baseUri = uriInfo.getAbsolutePathBuilder().path( "api" ).build().toString();
 
-            final String downlog =
-                controller.getDownloadLog( request.getInputStream(), baseUri, new JaxRsUriFormatter() );
-            if ( downlog == null )
+            DownlogDTO dto = controller.getDownloadLog( request.getInputStream(), baseUri, new JaxRsUriFormatter() );
+
+            if ( dto == null )
             {
-                response = Response.noContent()
-                                   .build();
+                response = Response.noContent().build();
             }
             else
             {
-                response = formatOkResponseWithEntity( downlog, ApplicationContent.text_plain );
+                response = formatOkResponseWithEntity( dto.render(), ApplicationContent.text_plain );
             }
         }
         catch ( final AproxWorkflowException | IOException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            throwError( e );
         }
+
         return response;
     }
 
@@ -162,26 +111,20 @@ public class RepositoryResource
     @POST
     @Consumes( application_json )
     @Produces( application_zip )
-    public Response getZipRepository( final @Context HttpServletRequest request, final @Context HttpServletResponse resp )
+    public Response getZipRepository( final @Context HttpServletRequest request,
+                                      final @Context HttpServletResponse resp )
     {
-        final StreamingOutput out = new StreamingOutput()
-        {
-            @Override
-            public void write( final OutputStream output )
-                throws IOException, WebApplicationException
+        final StreamingOutput out = ( output ) -> {
+            try
             {
-                try
-                {
-                    controller.getZipRepository( request.getInputStream(), output );
-                }
-                catch ( final AproxWorkflowException e )
-                {
-                    throw new WebApplicationException( formatResponse( e, true ) );
-                }
+                controller.getZipRepository( request.getInputStream(), output );
+            }
+            catch ( final AproxWorkflowException e )
+            {
+                throwError( e );
             }
         };
 
-        return Response.ok( out )
-                       .build();
+        return Response.ok( out ).build();
     }
 }

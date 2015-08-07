@@ -37,27 +37,18 @@ import org.commonjava.aprox.depgraph.util.PresetParameterParser;
 import org.commonjava.aprox.depgraph.util.RecipeHelper;
 import org.commonjava.aprox.depgraph.util.RequestAdvisor;
 import org.commonjava.aprox.util.ApplicationStatus;
-import org.commonjava.maven.atlas.graph.RelationshipGraph;
-import org.commonjava.maven.atlas.graph.RelationshipGraphException;
-import org.commonjava.maven.atlas.graph.RelationshipGraphFactory;
-import org.commonjava.maven.atlas.graph.ViewParams;
 import org.commonjava.maven.atlas.graph.filter.ProjectRelationshipFilter;
-import org.commonjava.maven.atlas.graph.mutate.GraphMutator;
-import org.commonjava.maven.atlas.graph.mutate.ManagedDependencyMutator;
 import org.commonjava.maven.atlas.ident.DependencyScope;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.data.CartoDataException;
-import org.commonjava.maven.cartographer.data.CartoGraphUtils;
 import org.commonjava.maven.cartographer.dto.GraphCalculation.Type;
 import org.commonjava.maven.cartographer.dto.GraphComposition;
 import org.commonjava.maven.cartographer.dto.GraphDescription;
-import org.commonjava.maven.cartographer.dto.PomRecipe;
-import org.commonjava.maven.cartographer.dto.RepositoryContentRecipe;
 import org.commonjava.maven.cartographer.ops.GraphRenderingOps;
-import org.commonjava.maven.cartographer.ops.ResolveOps;
 import org.commonjava.maven.cartographer.preset.CommonPresetParameters;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.commonjava.maven.cartographer.recipe.MultiRenderRecipe;
+import org.commonjava.maven.cartographer.recipe.PomRecipe;
+import org.commonjava.maven.cartographer.recipe.RepositoryContentRecipe;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -74,10 +65,10 @@ public class RenderingController
     private RequestAdvisor requestAdvisor;
 
     @Inject
-    private RecipeHelper configHelper;
+    private AproxDepgraphConfig config;
 
     @Inject
-    private AproxDepgraphConfig config;
+    private RecipeHelper configHelper;
 
     @Inject
     private PresetParameterParser presetParamParser;
@@ -85,31 +76,25 @@ public class RenderingController
     @Inject
     private ObjectMapper serializer;
 
-    @Inject
-    private ResolveOps resolveOps;
-
-    @Inject
-    private RelationshipGraphFactory graphFactory;
-
-    private final Logger logger = LoggerFactory.getLogger( getClass() );
-
     public File tree( final InputStream configStream )
         throws AproxWorkflowException
     {
-        final RepositoryContentRecipe dto = configHelper.readRepositoryContentRecipe( configStream );
+        final RepositoryContentRecipe dto = configHelper.readRecipe( configStream, RepositoryContentRecipe.class );
         return tree( dto );
     }
 
     public File tree( final String json )
         throws AproxWorkflowException
     {
-        final RepositoryContentRecipe dto = configHelper.readRepositoryContentRecipe( json );
+        final RepositoryContentRecipe dto = configHelper.readRecipe( json, RepositoryContentRecipe.class );
         return tree( dto );
     }
 
-    private File tree( final RepositoryContentRecipe dto )
+    public File tree( final RepositoryContentRecipe dto )
         throws AproxWorkflowException
     {
+        configHelper.setRecipeDefaults( dto );
+
         final File workBasedir = config.getWorkBasedir();
         String dtoJson;
         try
@@ -124,12 +109,11 @@ public class RenderingController
         final File out = new File( workBasedir, DigestUtils.md5Hex( dtoJson ) );
         workBasedir.mkdirs();
 
-        final GraphComposition comp = resolve( dto );
         FileWriter w = null;
         try
         {
             w = new FileWriter( out );
-            ops.depTree( dto.getWorkspaceId(), comp, false, new PrintWriter( w ) );
+            ops.depTree( dto, false, new PrintWriter( w ) );
         }
         catch ( final CartoDataException e )
         {
@@ -177,7 +161,7 @@ public class RenderingController
                           final String workspaceId, final Map<String, String[]> params, final InputStream configStream )
         throws AproxWorkflowException
     {
-        final PomRecipe config = configHelper.readPomRecipe( configStream );
+        final PomRecipe config = configHelper.readRecipe( configStream, PomRecipe.class );
         return pomFor( groupId, artifactId, version, workspaceId, params, config );
     }
 
@@ -186,7 +170,7 @@ public class RenderingController
                           final String workspaceId, final Map<String, String[]> params, final String configJson )
         throws AproxWorkflowException
     {
-        final PomRecipe config = configHelper.readPomRecipe( configJson );
+        final PomRecipe config = configHelper.readRecipe( configJson, PomRecipe.class );
         return pomFor( groupId, artifactId, version, workspaceId, params, config );
     }
 
@@ -203,23 +187,24 @@ public class RenderingController
     public String pomFor( final InputStream configStream )
         throws AproxWorkflowException
     {
-        final PomRecipe config = configHelper.readPomRecipe( configStream );
+        final PomRecipe config = configHelper.readRecipe( configStream, PomRecipe.class );
         return pomFor( config );
     }
 
     public String pomFor( final String configJson )
         throws AproxWorkflowException
     {
-        final PomRecipe config = configHelper.readPomRecipe( configJson );
+        final PomRecipe config = configHelper.readRecipe( configJson, PomRecipe.class );
         return pomFor( config );
     }
 
     public String pomFor( final PomRecipe config )
         throws AproxWorkflowException
     {
+        configHelper.setRecipeDefaults( config );
+
         try
         {
-            config.setDefaultPreset( this.config.getDefaultWebFilterPreset() );
             final Model model = ops.generatePOM( config );
 
             final StringWriter writer = new StringWriter();
@@ -240,78 +225,34 @@ public class RenderingController
         }
     }
 
-    public String dotfile( final String groupId, final String artifactId, final String version,
-                           final String workspaceId, final Map<String, String[]> params )
+    public String dotfile( final InputStream configStream )
         throws AproxWorkflowException
     {
-        //        final DiscoveryConfig discovery = createDiscoveryConfig( request, null, sourceFactory );
-        final ProjectRelationshipFilter filter =
-            requestAdvisor.createRelationshipFilter( params, presetParamParser.parse( params ) );
-
-        final GraphMutator mutator = new ManagedDependencyMutator();
-
-        RelationshipGraph graph = null;
-        try
-        {
-            final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
-
-            graph = graphFactory.open( new ViewParams( workspaceId, filter, mutator, ref ), true );
-            final String dotfile = ops.dotfile( ref, graph );
-
-            if ( dotfile != null )
-            {
-                return dotfile;
-            }
-            else
-            {
-                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
-                                                  "Cannot find graph: {}:{}:{} in workspace: {}", groupId, artifactId,
-                                                  version, workspaceId );
-            }
-
-        }
-        catch ( final CartoDataException e )
-        {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR.code(),
-                                              "Failed to render DOT file for: {}:{}:{} in workspace: {}. Reason: {}",
-                                              e, groupId, artifactId, version, workspaceId, e.getMessage(), e );
-        }
-        catch ( final RelationshipGraphException e )
-        {
-            throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR.code(),
-                                              "Failed to render DOT file for: {}:{}:{} in workspace: {}. Reason: {}",
-                                              e, groupId, artifactId, version, workspaceId, e.getMessage(), e );
-        }
-        finally
-        {
-            CartoGraphUtils.closeGraphQuietly( graph );
-        }
+        final MultiRenderRecipe config = configHelper.readRecipe( configStream, MultiRenderRecipe.class );
+        return dotfile( config );
     }
 
-    private GraphComposition resolve( final RepositoryContentRecipe dto )
+    public String dotfile( final String configJson )
         throws AproxWorkflowException
     {
-        if ( dto == null )
-        {
-            logger.warn( "Repository archive configuration is missing." );
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "JSON configuration not supplied" );
-        }
+        final MultiRenderRecipe config = configHelper.readRecipe( configJson, MultiRenderRecipe.class );
+        return dotfile( config );
+    }
 
-        dto.setDefaultPreset( config.getDefaultWebFilterPreset() );
+    public String dotfile( final MultiRenderRecipe recipe )
+        throws AproxWorkflowException
+    {
+        configHelper.setRecipeDefaults( recipe );
 
-        GraphComposition result;
         try
         {
-            result = resolveOps.resolve( dto );
+            return ops.dotfile( recipe );
         }
         catch ( final CartoDataException e )
         {
-            logger.error( String.format( "Failed to resolve repository contents for: %s. Reason: %s", dto,
-                                         e.getMessage() ), e );
-            throw new AproxWorkflowException( "Failed to resolve repository contents for: {}. Reason: {}", e, dto,
+            throw new AproxWorkflowException( "Failed to render Graphviz dotfile for: %s. Reason: %s", e, recipe,
                                               e.getMessage() );
         }
-
-        return result;
     }
+
 }

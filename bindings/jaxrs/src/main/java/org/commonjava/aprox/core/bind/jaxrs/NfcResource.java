@@ -89,7 +89,7 @@ public class NfcResource
         }
         catch ( final AproxWorkflowException e )
         {
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
 
         return response;
@@ -125,7 +125,7 @@ public class NfcResource
         }
         catch ( final AproxWorkflowException e )
         {
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
         return response;
     }

@@ -143,7 +143,7 @@ public class StoreAdminHandler
                                                          .getSimpleName() + " from request body.";
 
             logger.error( message, e );
-            response = formatResponse( e, message, true );
+            response = formatResponse( e, message );
         }
 
         if ( response != null )
@@ -162,7 +162,7 @@ public class StoreAdminHandler
                                                          .getSimpleName() + " from request body.";
 
             logger.error( message, e );
-            response = formatResponse( e, message, true );
+            response = formatResponse( e, message );
         }
 
         if ( response != null )
@@ -199,7 +199,7 @@ public class StoreAdminHandler
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
         return response;
     }
@@ -234,7 +234,7 @@ public class StoreAdminHandler
                                                          .getSimpleName() + " from request body.";
 
             logger.error( message, e );
-            response = formatResponse( e, message, true );
+            response = formatResponse( e, message );
         }
 
         if ( response != null )
@@ -253,7 +253,7 @@ public class StoreAdminHandler
                                                           .getSimpleName() + " from request body.";
 
             logger.error( message, e );
-            response = formatResponse( e, message, true );
+            response = formatResponse( e, message );
         }
 
         if ( response != null )
@@ -291,7 +291,7 @@ public class StoreAdminHandler
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
 
         return response;
@@ -320,7 +320,7 @@ public class StoreAdminHandler
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
 
         return response;
@@ -357,7 +357,7 @@ public class StoreAdminHandler
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
         return response;
     }
@@ -409,7 +409,7 @@ public class StoreAdminHandler
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
         return response;
     }

@@ -16,28 +16,40 @@
 package org.commonjava.aprox.depgraph.jaxrs;
 
 import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
-import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatResponse;
-import static org.commonjava.aprox.model.util.HttpUtils.parseQueryMap;
+import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.throwError;
+import static org.commonjava.aprox.util.ApplicationContent.application_json;
 
-import javax.enterprise.context.ApplicationScoped;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
-import org.apache.commons.lang.StringUtils;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
+import org.commonjava.aprox.bind.jaxrs.util.JaxRsUriFormatter;
 import org.commonjava.aprox.depgraph.rest.GraphController;
+import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
+import org.commonjava.maven.atlas.graph.traverse.model.BuildOrder;
+import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.cartographer.dto.GraphExport;
+import org.commonjava.maven.cartographer.recipe.PathsRecipe;
+import org.commonjava.maven.cartographer.recipe.ProjectGraphRecipe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Path( "/api/depgraph/rel" )
-@ApplicationScoped
+@Path( "/api/depgraph/graph" )
+@Consumes( { "application/json", "application/aprox*+json" } )
+@Produces( { "applicaiton/json", "application/aprox*+json" } )
 public class GraphResource
     implements AproxResources
 {
@@ -46,221 +58,129 @@ public class GraphResource
     @Inject
     private GraphController controller;
 
-    @Path( "/reindex{gav: (/[^/]+/[^/]+/[^/]+)?}" )
-    @GET
-    public Response reindex( final @PathParam( "gav" ) String coord, @QueryParam( "wsid" ) final String wsid )
+    @Path( "/paths" )
+    @POST
+    public Map<ProjectVersionRef, List<List<ProjectRelationship<?>>>> getPaths( final PathsRecipe recipe )
     {
-        Response response = null;
         try
         {
-            controller.reindex( coordToGav( coord ), wsid );
-            response = Response.ok()
-                               .build();
+            return controller.getPaths( recipe );
         }
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            throwError( e );
         }
-        return response;
+        return null;
     }
 
-    @Path( "/errors{gav: (/[^/]+/[^/]+/[^/]+)?}" )
-    @GET
-    public Response errors( final @PathParam( "gav" ) String coord, @QueryParam( "wsid" ) final String wsid )
+    @Path( "/errors" )
+    @POST
+    public Map<ProjectVersionRef, String> errors( final ProjectGraphRecipe recipe )
     {
-        Response response = null;
         try
         {
-            final String json = controller.errors( coordToGav( coord ), wsid );
-            if ( json != null )
-            {
-                response = formatOkResponseWithJsonEntity( json );
-            }
-            else
-            {
-                response = Response.ok()
-                                   .build();
-            }
+            return controller.errors( recipe );
+        }
+        catch ( final AproxWorkflowException e )
+        {
+            throwError( e );
+        }
+
+        return null;
+    }
+
+    @Path( "/reindex" )
+    @POST
+    public List<ProjectVersionRef> reindex( final ProjectGraphRecipe recipe )
+    {
+        try
+        {
+            return controller.reindex( recipe );
         }
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            throwError( e );
         }
-        return response;
+        return null;
     }
 
-    @Path( "/incomplete{gav: (/[^/]+/[^/]+/[^/]+)?}" )
-    @GET
-    public Response incomplete( final @PathParam( "gav" ) String coord, @QueryParam( "wsid" ) final String wsid,
-                            @Context final HttpServletRequest request )
+    @Path( "/incomplete" )
+    @POST
+    public Set<ProjectVersionRef> incomplete( final ProjectGraphRecipe recipe )
     {
-        Response response = null;
         try
         {
-            final String json = controller.incomplete( coordToGav( coord ), wsid, parseQueryMap( request.getQueryString() ) );
-
-            if ( json != null )
-            {
-                response = formatOkResponseWithJsonEntity( json );
-            }
-            else
-            {
-                response = Response.ok()
-                                   .build();
-            }
+            return controller.incomplete( recipe );
         }
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            throwError( e );
         }
-        return response;
+        return null;
     }
 
-    @Path( "/variable{gav: (/[^/]+/[^/]+/[^/]+)?}" )
-    @GET
-    public Response variable( final @PathParam( "gav" ) String coord, @QueryParam( "wsid" ) final String wsid,
-                              @Context final HttpServletRequest request )
+    @Path( "/variable" )
+    @POST
+    public Set<ProjectVersionRef> variable( final ProjectGraphRecipe recipe )
     {
-        Response response = null;
         try
         {
-            final String json = controller.variable( coordToGav( coord ), wsid, parseQueryMap( request.getQueryString() ) );
-
-            if ( json != null )
-            {
-                response = formatOkResponseWithJsonEntity( json );
-            }
-            else
-            {
-                response = Response.ok()
-                                   .build();
-            }
+            return controller.variable( recipe );
         }
         catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            throwError( e );
         }
-        return response;
+        return null;
     }
 
-    /**
-     * Converts the coordination info from URL path into GAV. The coord format is
-     * &quot;/{groupId}/{artifactId}/{version}&quot;. The target format is
-     * &quot;{groupId}:{artifactId}:{version}&quot;.
-     * 
-     * @param coord the coordination info, can be {@code null}
-     * @return {@code null} if the passed input is empty, otherwise input converted into GAV format
-     */
-    private String coordToGav( final String coord )
+    @Path( "/ancestry" )
+    @POST
+    public Map<ProjectVersionRef, List<ProjectVersionRef>> ancestryOf( final ProjectGraphRecipe recipe )
     {
-        final String result;
-        if ( StringUtils.isEmpty( coord ) )
-        {
-            result = null;
-        }
-        else
-        {
-            String[] parts = coord.split( "/" );
-            if ( parts.length != 4 || parts[0].length() > 0 )
-            {
-                throw new IllegalArgumentException( "Cannot parse the coordination info \"" + coord 
-                                                    + "\". The expected format is \"/{groupId}/{artifactId}/{version}\"." );
-            }
-            result = parts[1] + ':' + parts[2] + ':' + parts[3];
-        }
-        return result;
-    }
-
-    @Path( "/ancestry/{groupId}/{artifactId}/{version}" )
-    @GET
-    public Response ancestryOf( final @PathParam( "groupId" ) String gid, @PathParam( "artifactId" ) final String aid,
-                                @PathParam( "version" ) final String ver, @QueryParam( "wsid" ) final String wsid )
-    {
-        Response response = null;
         try
         {
-            final String json = controller.ancestryOf( gid, aid, ver, wsid );
-
-            if ( json != null )
-            {
-                response = formatOkResponseWithJsonEntity( json );
-            }
-            else
-            {
-                response = Response.ok()
-                                   .build();
-            }
+            return controller.ancestryOf( recipe );
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            throwError( e );
         }
-        return response;
+        return null;
     }
 
-    @Path( "/build-order/{groupId}/{artifactId}/{version}" )
-    @GET
-    public Response buildOrder( @PathParam( "groupId" ) final String gid, @PathParam( "artifactId" ) final String aid,
-                                @PathParam( "version" ) final String ver, @QueryParam( "wsid" ) final String wsid,
-                                @Context final HttpServletRequest request )
+    @Path( "/build-order" )
+    @POST
+    public BuildOrder buildOrder( final ProjectGraphRecipe recipe )
     {
-        Response response = null;
         try
         {
-            final String json = controller.buildOrder( gid, aid, ver, wsid, parseQueryMap( request.getQueryString() ) );
-
-            if ( json != null )
-            {
-                response = formatOkResponseWithJsonEntity( json );
-            }
-            else
-            {
-                response = Response.ok()
-                                   .build();
-            }
+            return controller.buildOrder( recipe );
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            throwError( e );
         }
-        return response;
+        return null;
     }
 
-    @Path( "/project/{groupId}/{artifactId}/{version}" )
-    @GET
-    public Response projectGraph( @PathParam( "groupId" ) final String gid,
-                                  @PathParam( "artifactId" ) final String aid,
-                                  @PathParam( "version" ) final String ver, @QueryParam( "wsid" ) final String wsid,
-                                  @Context final HttpServletRequest request )
+    @Path( "/export" )
+    @POST
+    public GraphExport graph( final ProjectGraphRecipe recipe )
     {
-        Response response = null;
         try
         {
-            final String json =
-                controller.projectGraph( gid, aid, ver, wsid, parseQueryMap( request.getQueryString() ) );
-
-            if ( json != null )
-            {
-                response = formatOkResponseWithJsonEntity( json );
-            }
-            else
-            {
-                response = Response.ok()
-                                   .build();
-            }
+            return controller.projectGraph( recipe );
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            throwError( e );
         }
-        return response;
+        return null;
     }
 
 }

@@ -135,7 +135,7 @@ public class FoloContentAccessHandler
         }
         catch ( final IOException e )
         {
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
         catch ( final AproxWorkflowException e )
         {
@@ -219,7 +219,7 @@ public class FoloContentAccessHandler
         {
             logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name,
                                          e.getMessage() ), e );
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
         return response;
     }
@@ -314,13 +314,13 @@ public class FoloContentAccessHandler
         {
             logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name,
                                          e.getMessage() ), e );
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
         catch ( final IOException e )
         {
             logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name,
                                          e.getMessage() ), e );
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
 
         return response;

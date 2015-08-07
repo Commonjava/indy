@@ -22,11 +22,13 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.dto.CreationDTO;
@@ -37,12 +39,16 @@ import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public final class ResponseUtils
 {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger( ResponseUtils.class );
 
     private ResponseUtils()
     {
@@ -84,7 +90,7 @@ public final class ResponseUtils
         }
         catch ( final JsonProcessingException e )
         {
-            response = formatResponse( e, "Failed to serialize DTO to JSON: " + dto, true );
+            response = formatResponse( e, "Failed to serialize DTO to JSON: " + dto );
         }
 
         return response;
@@ -118,7 +124,7 @@ public final class ResponseUtils
         }
         catch ( final JsonProcessingException e )
         {
-            response = formatResponse( e, "Failed to serialize DTO to JSON: " + dto, true );
+            response = formatResponse( e, "Failed to serialize DTO to JSON: " + dto );
         }
 
         return response;
@@ -215,70 +221,105 @@ public final class ResponseUtils
 
     public static Response formatResponse( final Throwable error )
     {
-        return formatResponse( null, error, true );
+        return formulateResponse( null, error, null, false );
+    }
+
+    public static void throwError( final Throwable error )
+    {
+        formulateResponse( null, error, null, true );
     }
 
     public static Response formatResponse( final ApplicationStatus status, final Throwable error )
     {
-        return formatResponse( status, error, true );
+        return formulateResponse( status, error, null, false );
     }
 
-    public static Response formatResponse( final Throwable error, final boolean includeExplanation )
+    public static void throwError( final ApplicationStatus status, final Throwable error )
     {
-        return formatResponse( null, error, includeExplanation );
+        formulateResponse( status, error, null, true );
     }
 
-    public static Response formatResponse( final Throwable error, final String message, final boolean includeExplanation )
+    public static Response formatResponse( final Throwable error, final String message )
     {
-        return formatResponse( null, error, message, includeExplanation );
+        return formulateResponse( null, error, message, false );
     }
 
-    public static Response formatResponse( final ApplicationStatus status, final Throwable error,
-                                           final boolean includeExplanation )
+    public static void throwError( final Throwable error, final String message )
     {
-        return formatResponse( status, error, null, includeExplanation );
+        formulateResponse( null, error, message, true );
     }
 
-    public static Response formatResponse( final ApplicationStatus status, final Throwable error, final String message,
-                                           final boolean includeExplanation )
+    public static Response formatResponse( final ApplicationStatus status, final Throwable error, final String message )
     {
-        ResponseBuilder rb;
+        return formulateResponse( status, error, message, false );
+    }
+
+    public static void throwError( final ApplicationStatus status, final Throwable error, final String message )
+    {
+        formulateResponse( status, error, message, true );
+    }
+
+    private static Response formulateResponse( final ApplicationStatus status, final Throwable error,
+                                               final String message,
+                                               final boolean throwIt )
+    {
+        final String id = generateErrorId();
+        final String msg = formatEntity( id, error, message ).toString();
+        Status code = Status.INTERNAL_SERVER_ERROR;
+
         if ( status != null )
         {
-            rb = Response.status( Status.fromStatusCode( status.code() ) );
+            code = Status.fromStatusCode( status.code() );
         }
         else if ( ( error instanceof AproxWorkflowException ) && ( (AproxWorkflowException) error ).getStatus() > 0 )
         {
             final int sc = ( (AproxWorkflowException) error ).getStatus();
-            rb = Response.status( Status.fromStatusCode( sc ) );
-        }
-        else
-        {
-            rb = Response.serverError();
+            Status.fromStatusCode( sc );
         }
 
-        if ( includeExplanation )
+        LOGGER.error( "Sending error response: {} {}\n{}", code.getStatusCode(), code.getReasonPhrase(), msg );
+
+        if ( throwIt )
         {
-            final String msg = formatEntity( error, message ).toString();
-            rb.entity( msg )
-              .type( MediaType.TEXT_PLAIN );
+            throw new WebApplicationException( msg, code );
         }
 
-        return rb.build();
+        return Response.status( code )
+                       .entity( msg )
+                       .build();
+    }
+
+    public static String generateErrorId()
+    {
+        return new String( DigestUtils.sha( Thread.currentThread()
+                                                  .getName() ) );
+
+        //+ "@" + new SimpleDateFormat( "yyyy-MM-ddThhmmss.nnnZ" ).format( new Date() );
     }
 
     public static CharSequence formatEntity( final Throwable error )
     {
-        return formatEntity( error, null );
+        return formatEntity( generateErrorId(), error, null );
+    }
+
+    public static CharSequence formatEntity( final String id, final Throwable error )
+    {
+        return formatEntity( id, error, null );
     }
 
     public static CharSequence formatEntity( final Throwable error, final String message )
     {
+        return formatEntity( generateErrorId(), error, message );
+    }
+    public static CharSequence formatEntity( final String id, final Throwable error, final String message )
+    {
         final StringWriter sw = new StringWriter();
+        sw.append( "Id: " )
+          .append( id );
         if ( message != null )
         {
-            sw.append( message );
-            sw.append( "\nError was:\n\n" );
+            sw.append( "\nMessage: " )
+              .append( message );
         }
 
         sw.append( error.getMessage() );
@@ -286,7 +327,7 @@ public final class ResponseUtils
         final Throwable cause = error.getCause();
         if ( cause != null )
         {
-            sw.append( "\n\n" );
+            sw.append( "\nError:\n\n" );
             cause.printStackTrace( new PrintWriter( sw ) );
         }
 

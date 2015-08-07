@@ -24,13 +24,11 @@ import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
-import org.commonjava.aprox.depgraph.dto.DownlogDTO;
+import org.commonjava.aprox.depgraph.dto.DownlogRecipe;
 import org.commonjava.aprox.depgraph.dto.PathsDTO;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.cartographer.dto.GraphComposition;
-import org.commonjava.maven.cartographer.dto.MetadataCollationRecipe;
-import org.commonjava.maven.cartographer.dto.PomRecipe;
-import org.commonjava.maven.cartographer.dto.RepositoryContentRecipe;
+import org.commonjava.maven.cartographer.recipe.AbstractResolverRecipe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,48 +56,19 @@ public class RecipeHelper
         this.mapper = mapper;
     }
 
-    public RepositoryContentRecipe readRepositoryContentRecipe( final InputStream configStream )
+    public void setRecipeDefaults( final AbstractResolverRecipe recipe )
         throws AproxWorkflowException
     {
-        try
+        if ( recipe == null )
         {
-            return readRepositoryContentRecipe( IOUtils.toString( configStream ) );
+            logger.warn( "Configuration DTO is missing." );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "JSON configuration not supplied" );
         }
-        catch ( final IOException e )
-        {
-            throw new AproxWorkflowException(
-                                              "Failed to read RepositoryContentRecipe JSON from request body. Reason: {}",
-                                              e, e.getMessage() );
-        }
+
+        recipe.setDefaultPreset( this.config.getDefaultWebFilterPreset() );
     }
 
-    public RepositoryContentRecipe readRepositoryContentRecipe( final String json )
-        throws AproxWorkflowException
-    {
-        logger.info( "Got configuration JSON:\n\n{}\n\n", json );
-        RepositoryContentRecipe dto;
-        try
-        {
-            dto = mapper.readValue( json, RepositoryContentRecipe.class );
-        }
-        catch ( final IOException e )
-        {
-            throw new AproxWorkflowException( "Failed to deserialize RepositoryContentRecipe from JSON. Reason: %s", e,
-                                              e.getMessage() );
-        }
-
-        if ( dto == null )
-        {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                              "No configuration found in request body!" );
-        }
-
-        dto.setDefaultPreset( config.getDefaultWebFilterPreset() );
-
-        return dto;
-    }
-
-    public DownlogDTO readDownlogDTO( final InputStream configStream )
+    public DownlogRecipe readDownlogDTO( final InputStream configStream )
         throws AproxWorkflowException
     {
         try
@@ -113,14 +82,14 @@ public class RecipeHelper
         }
     }
 
-    public DownlogDTO readDownlogDTO( final String json )
+    public DownlogRecipe readDownlogDTO( final String json )
         throws AproxWorkflowException
     {
         logger.info( "Got configuration JSON:\n\n{}\n\n", json );
-        DownlogDTO dto;
+        DownlogRecipe dto;
         try
         {
-            dto = mapper.readValue( json, DownlogDTO.class );
+            dto = mapper.readValue( json, DownlogRecipe.class );
         }
         catch ( final IOException e )
         {
@@ -212,67 +181,28 @@ public class RecipeHelper
 
     }
 
-    public MetadataCollationRecipe readCollationRecipe( final InputStream configStream, final String encoding )
-        throws AproxWorkflowException
-    {
-        try
-        {
-            return readCollationRecipe( IOUtils.toString( configStream ) );
-        }
-        catch ( final IOException e )
-        {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                              "Cannot read MetadataCollationRecipe JSON from stream: {}", e,
-                                              e.getMessage() );
-        }
-    }
-
-    public MetadataCollationRecipe readCollationRecipe( final String json )
-        throws AproxWorkflowException
-    {
-        MetadataCollationRecipe dto;
-        try
-        {
-            dto = mapper.readValue( json, MetadataCollationRecipe.class );
-        }
-        catch ( final IOException e )
-        {
-            throw new AproxWorkflowException( "Failed to deserialize DTO from JSON. Reason: %s", e, e.getMessage() );
-        }
-
-        if ( dto == null )
-        {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                              "No collation configuration found in request body!" );
-        }
-
-        dto.setDefaultPreset( config.getDefaultWebFilterPreset() );
-
-        return dto;
-    }
-
-    public PomRecipe readPomRecipe( final InputStream stream )
+    public <T extends AbstractResolverRecipe> T readRecipe( final InputStream stream, final Class<T> type )
         throws AproxWorkflowException
     {
         try
         {
             final String json = IOUtils.toString( stream );
-            return readPomRecipe( json );
+            return readRecipe( json, type );
         }
         catch ( final IOException e )
         {
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                              "Cannot read PomRecipe JSON from stream: {}", e, e.getMessage() );
+                                              "Cannot read graph recipe JSON from stream: {}", e, e.getMessage() );
         }
     }
 
-    public PomRecipe readPomRecipe( final String json )
+    public <T extends AbstractResolverRecipe> T readRecipe( final String json, final Class<T> type )
         throws AproxWorkflowException
     {
-        PomRecipe dto;
+        T dto;
         try
         {
-            dto = mapper.readValue( json, PomRecipe.class );
+            dto = mapper.readValue( json, type );
         }
         catch ( final IOException e )
         {

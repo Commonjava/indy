@@ -15,33 +15,34 @@
  */
 package org.commonjava.aprox.depgraph.dto;
 
-import java.util.Set;
-
-import org.commonjava.maven.atlas.ident.ref.ProjectRef;
 import org.commonjava.maven.cartographer.recipe.RepositoryContentRecipe;
 
-public class PathsDTO 
+public class DownlogRecipe
     extends RepositoryContentRecipe
 {
 
-    /** The target artifacts which we want collect paths to. */
-    private Set<ProjectRef> targets;
+    private boolean pathOnly;
 
-    /**
-     * @return the target artifacts which we want collect paths to
-     */
-    public Set<ProjectRef> getTargets()
+    private String linePrefix;
+
+    public boolean isPathOnly()
     {
-        return targets;
+        return pathOnly;
     }
 
-    /**
-     * @param targets
-     *            the target artifacts which we want collect paths to
-     */
-    public void setTargets( final Set<ProjectRef> targets )
+    public void setPathOnly( final boolean pathOnly )
     {
-        this.targets = targets;
+        this.pathOnly = pathOnly;
+    }
+
+    public String getLinePrefix()
+    {
+        return linePrefix;
+    }
+
+    public void setLinePrefix( final String linePrefix )
+    {
+        this.linePrefix = linePrefix;
     }
 
 }

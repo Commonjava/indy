@@ -29,7 +29,7 @@ import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.cartographer.dto.GraphComposition;
 import org.commonjava.maven.cartographer.dto.GraphDescription;
-import org.commonjava.maven.cartographer.dto.PomRecipe;
+import org.commonjava.maven.cartographer.recipe.PomRecipe;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;

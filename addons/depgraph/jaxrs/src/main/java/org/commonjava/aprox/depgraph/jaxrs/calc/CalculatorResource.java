@@ -62,7 +62,7 @@ public class CalculatorResource
         catch ( final AproxWorkflowException | IOException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
         return response;
     }
@@ -80,7 +80,7 @@ public class CalculatorResource
         catch ( final AproxWorkflowException | IOException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
         return response;
     }

@@ -94,7 +94,7 @@ public class ChangelogResource
                 String.format( "Failed to lookup changelog for: %s. Reason: %s", key, e.getMessage() );
             logger.error( message, e );
 
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
 
         return response;
