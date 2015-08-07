@@ -324,11 +324,14 @@ public final class ProxyResponseWriter
                         final ByteBuffer buf = ByteBuffer.wrap( bytes, 0, read );
                         sinkChannel.write( buf );
                     }
-                    //                    IoUtils.transfer( channel, txfr.length(), ByteBuffer.allocate( 4096 ), sinkChannel );
+
+                    // TODO: Is this sufficient to avoid the need to explicitly close the channel?
+                    sinkChannel.shutdownWrites();
                 }
             }
             finally
             {
+                // FIXME: This appears to be truncating output.
                 IOUtils.closeQuietly( channel );
                 IOUtils.closeQuietly( stream );
             }

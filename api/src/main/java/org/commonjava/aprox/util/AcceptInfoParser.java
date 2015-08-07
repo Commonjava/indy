@@ -27,6 +27,12 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * <pre>
+ * IN: application/aprox-v1+json
+ * OUT: {@link AcceptInfo} with raw equal to that given above, base = application/aprox+json, version=v1
+ * </pre>
+ */
 public class AcceptInfoParser
 {
 

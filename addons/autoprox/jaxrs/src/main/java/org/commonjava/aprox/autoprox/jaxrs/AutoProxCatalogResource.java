@@ -156,7 +156,7 @@ public class AutoProxCatalogResource
             final String message = "Failed to read " + RuleDTO.class.getSimpleName() + " from request body.";
 
             logger.error( message, e );
-            response = formatResponse( e, message, true );
+            response = formatResponse( e, message );
         }
 
         if ( response != null )
@@ -183,7 +183,7 @@ public class AutoProxCatalogResource
             final String message = "Failed to store rule: " + dto.getName() + ".";
 
             logger.error( message, e );
-            response = formatResponse( e, message, true );
+            response = formatResponse( e, message );
         }
 
         return response;
@@ -214,7 +214,7 @@ public class AutoProxCatalogResource
             final String message = "Failed to read " + RuleDTO.class.getSimpleName() + " from request body.";
 
             logger.error( message, e );
-            response = formatResponse( e, message, true );
+            response = formatResponse( e, message );
         }
 
         if ( response != null )
@@ -250,7 +250,7 @@ public class AutoProxCatalogResource
             final String message = "Failed to store rule: " + dto.getName() + ".";
 
             logger.error( message, e );
-            response = formatResponse( e, message, true );
+            response = formatResponse( e, message );
         }
 
         return response;

@@ -127,7 +127,7 @@ public class ContentAccessHandler
         {
             logger.error( String.format( "Failed to upload: %s to: %s. Reason: %s", path, name, e.getMessage() ), e );
 
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
 
         return response;
@@ -154,7 +154,7 @@ public class ContentAccessHandler
         {
             logger.error( String.format( "Failed to delete artifact: %s from: %s. Reason: %s", path, name,
                                          e.getMessage() ), e );
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
         return response;
     }
@@ -198,7 +198,7 @@ public class ContentAccessHandler
             {
                 logger.error( String.format( "Failed to list content: %s from: %s. Reason: %s", path, name,
                                              e.getMessage() ), e );
-                response = formatResponse( e, true );
+                response = formatResponse( e );
             }
         }
         else
@@ -236,7 +236,7 @@ public class ContentAccessHandler
             {
                 logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name,
                                              e.getMessage() ), e );
-                response = formatResponse( e, true );
+                response = formatResponse( e );
             }
         }
         return response;
@@ -283,7 +283,7 @@ public class ContentAccessHandler
             {
                 logger.error( String.format( "Failed to render content listing: %s from: %s. Reason: %s", path, name,
                                              e.getMessage() ), e );
-                response = formatResponse( e, true );
+                response = formatResponse( e );
             }
         }
         else
@@ -308,7 +308,7 @@ public class ContentAccessHandler
                         {
                             logger.error( String.format( "Error retrieving status metadata for: %s from: %s. Reason: %s",
                                                          path, name, e.getMessage() ), e );
-                            response = formatResponse( e, true );
+                            response = formatResponse( e );
                         }
                     }
 
@@ -335,7 +335,7 @@ public class ContentAccessHandler
                     {
                         logger.error( String.format( "Failed to render content listing: %s from: %s. Reason: %s", path,
                                                      name, e.getMessage() ), e );
-                        response = formatResponse( e, true );
+                        response = formatResponse( e );
                     }
                 }
                 else
@@ -353,7 +353,7 @@ public class ContentAccessHandler
             {
                 logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name,
                                              e.getMessage() ), e );
-                response = formatResponse( e, true );
+                response = formatResponse( e );
             }
         }
 

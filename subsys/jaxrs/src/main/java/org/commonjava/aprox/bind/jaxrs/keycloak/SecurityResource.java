@@ -73,7 +73,7 @@ public class SecurityResource
         catch ( final AproxWorkflowException e )
         {
             logger.error( String.format( "Failed to load client-side keycloak.json. Reason: %s", e.getMessage() ), e );
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
 
         return response;
@@ -94,7 +94,7 @@ public class SecurityResource
         catch ( final AproxWorkflowException e )
         {
             logger.error( String.format( "Failed to load keycloak-init.js. Reason: %s", e.getMessage() ), e );
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
 
         return response;
@@ -124,7 +124,7 @@ public class SecurityResource
         catch ( final AproxWorkflowException | URISyntaxException e )
         {
             logger.error( String.format( "Failed to load keycloak.js. Reason: %s", e.getMessage() ), e );
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
 
         return response;

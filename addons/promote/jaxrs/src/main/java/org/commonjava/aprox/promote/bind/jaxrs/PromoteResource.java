@@ -69,7 +69,7 @@ public class PromoteResource
         }
         catch ( final IOException e )
         {
-            response = formatResponse( e, "Failed to read DTO from request body.", true );
+            response = formatResponse( e, "Failed to read DTO from request body." );
         }
 
         if ( response != null )
@@ -87,7 +87,7 @@ public class PromoteResource
         catch ( PromotionException | AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
 
         return response;
@@ -106,7 +106,7 @@ public class PromoteResource
         }
         catch ( final IOException e )
         {
-            response = formatResponse( e, "Failed to read DTO from request body.", true );
+            response = formatResponse( e, "Failed to read DTO from request body." );
         }
 
         if ( response != null )
@@ -124,7 +124,7 @@ public class PromoteResource
         catch ( PromotionException | AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
 
         return response;
@@ -143,7 +143,7 @@ public class PromoteResource
         }
         catch ( final IOException e )
         {
-            response = formatResponse( e, "Failed to read DTO from request body.", true );
+            response = formatResponse( e, "Failed to read DTO from request body." );
         }
 
         if ( response != null )
@@ -161,7 +161,7 @@ public class PromoteResource
         catch ( PromotionException | AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
 
         return response;
