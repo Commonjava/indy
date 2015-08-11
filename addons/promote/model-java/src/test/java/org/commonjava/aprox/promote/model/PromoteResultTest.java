@@ -89,7 +89,7 @@ public class PromoteResultTest
             new PromoteResult( new PromoteRequest( new StoreKey( StoreType.hosted, "source" ),
                                                    new StoreKey( StoreType.hosted, "target" ) ),
                                new HashSet<String>( Arrays.asList( "/path/one", "/path/two" ) ),
-                               new HashSet<String>( Arrays.asList( "/path/three" ) ), "Something stupid happened" );
+                               new HashSet<String>( Collections.singletonList( "/path/three" ) ), "Something stupid happened" );
 
         final String json = mapper.writeValueAsString( in );
 

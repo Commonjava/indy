@@ -21,7 +21,6 @@ import static org.commonjava.aprox.util.ApplicationContent.application_zip;
 import static org.commonjava.aprox.util.ApplicationContent.text_plain;
 
 import java.io.IOException;
-import java.io.OutputStream;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -30,7 +29,6 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
@@ -40,9 +38,11 @@ import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.bind.jaxrs.util.JaxRsUriFormatter;
 import org.commonjava.aprox.depgraph.dto.DownlogDTO;
+import org.commonjava.aprox.depgraph.dto.DownlogRequest;
 import org.commonjava.aprox.depgraph.dto.UrlMapDTO;
 import org.commonjava.aprox.depgraph.rest.RepositoryController;
 import org.commonjava.aprox.util.ApplicationContent;
+import org.commonjava.maven.cartographer.request.RepositoryContentRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,66 +58,56 @@ public class RepositoryResource
     private RepositoryController controller;
 
     @Path( "/urlmap" )
-    @Produces( { "applicaiton/json", "application/aprox*+json" } )
+    @Produces( { "application/json", "application/aprox*+json" } )
     @POST
-    public UrlMapDTO getUrlMap( final @Context UriInfo uriInfo, final @Context HttpServletRequest request )
+    public UrlMapDTO getUrlMap( final RepositoryContentRequest request, final @Context UriInfo uriInfo )
     {
         Response response = null;
         try
         {
             final String baseUri = uriInfo.getAbsolutePathBuilder().path( "api" ).build().toString();
 
-            return controller.getUrlMap( request.getInputStream(), baseUri, new JaxRsUriFormatter() );
+            return controller.getUrlMap( request, baseUri, new JaxRsUriFormatter() );
         }
-        catch ( final AproxWorkflowException | IOException e )
+        catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
             response = formatResponse( e );
         }
+
         return null;
     }
 
     @Path( "/downlog" )
     @POST
     @Produces( text_plain )
-    public Response getDownloadLog( final @Context UriInfo uriInfo, final @Context HttpServletRequest request )
+    public DownlogDTO getDownloadLog( final DownlogRequest request, final @Context UriInfo uriInfo )
     {
         Response response = null;
         try
         {
             final String baseUri = uriInfo.getAbsolutePathBuilder().path( "api" ).build().toString();
 
-            DownlogDTO dto = controller.getDownloadLog( request.getInputStream(), baseUri, new JaxRsUriFormatter() );
-
-            if ( dto == null )
-            {
-                response = Response.noContent().build();
-            }
-            else
-            {
-                response = formatOkResponseWithEntity( dto.render(), ApplicationContent.text_plain );
-            }
+            return controller.getDownloadLog( request, baseUri, new JaxRsUriFormatter() );
         }
-        catch ( final AproxWorkflowException | IOException e )
+        catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
             throwError( e );
         }
 
-        return response;
+        return null;
     }
 
     @Path( "/zip" )
     @POST
-    @Consumes( application_json )
     @Produces( application_zip )
-    public Response getZipRepository( final @Context HttpServletRequest request,
-                                      final @Context HttpServletResponse resp )
+    public Response getZipRepository( RepositoryContentRequest request )
     {
         final StreamingOutput out = ( output ) -> {
             try
             {
-                controller.getZipRepository( request.getInputStream(), output );
+                controller.getZipRepository( request, output );
             }
             catch ( final AproxWorkflowException e )
             {

@@ -300,7 +300,7 @@ public class DataFileStoreDataManager
     @Override
     public boolean isStarted()
     {
-        return started ? super.isStarted() : false;
+        return started && super.isStarted();
     }
 
 }

@@ -155,7 +155,6 @@ public class DatabaseLifecycleActions
                 line = line.trim();
                 if ( line.length() < 1 || line.startsWith( "--" ) )
                 {
-                    continue;
                 }
                 else if ( line.endsWith( ";" ) )
                 {

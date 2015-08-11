@@ -19,6 +19,7 @@ import static org.commonjava.aprox.model.core.StoreType.group;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 import org.commonjava.aprox.client.core.AproxClientException;
 import org.commonjava.aprox.client.core.AproxClientHttp;
@@ -81,7 +82,7 @@ public abstract class AbstractFoloUrlsTest
                       .create( new Group( PUBLIC ), changelog, Group.class );
         }
 
-        g.setConstituents( Arrays.asList( hosted.getKey() ) );
+        g.setConstituents( Collections.singletonList( hosted.getKey() ) );
         client.stores()
               .update( g, changelog );
     }

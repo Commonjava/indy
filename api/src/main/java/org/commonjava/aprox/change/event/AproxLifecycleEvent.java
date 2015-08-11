@@ -20,7 +20,7 @@ public class AproxLifecycleEvent
 
     public enum Type
     {
-        started;
+        started
     }
 
     private final Type type;

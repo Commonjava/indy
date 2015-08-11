@@ -303,7 +303,7 @@ public class ArtifactStoreSubStore
                         noms.addAll( Arrays.asList( item.list() ) );
                     }
 
-                    names = noms.toArray( new String[] {} );
+                    names = noms.toArray( new String[noms.size()] );
                 }
                 else
                 {
@@ -360,7 +360,7 @@ public class ArtifactStoreSubStore
                 noms.add( store.getName() );
             }
 
-            names = noms.toArray( new String[] {} );
+            names = noms.toArray( new String[noms.size()] );
         }
         else
         {

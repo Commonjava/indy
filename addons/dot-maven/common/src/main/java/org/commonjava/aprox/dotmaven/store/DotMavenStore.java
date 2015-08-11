@@ -176,7 +176,7 @@ public class DotMavenStore
                 names.addAll( Arrays.asList( ss.getRootResourceNames() ) );
             }
 
-            return names.toArray( new String[] {} );
+            return names.toArray( new String[names.size()] );
         }
         else
         {

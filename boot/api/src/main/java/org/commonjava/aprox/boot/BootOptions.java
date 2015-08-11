@@ -72,7 +72,7 @@ public class BootOptions
 
     private String aproxHome;
     
-    public static final BootOptions loadFromSysprops()
+    public static BootOptions loadFromSysprops()
         throws AproxBootException
     {
         final String bootDef = System.getProperty( BootInterface.BOOT_DEFAULTS_PROP );

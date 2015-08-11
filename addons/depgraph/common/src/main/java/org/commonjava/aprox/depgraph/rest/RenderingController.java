@@ -40,15 +40,12 @@ import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.atlas.graph.filter.ProjectRelationshipFilter;
 import org.commonjava.maven.atlas.ident.DependencyScope;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.cartographer.CartoRequestException;
 import org.commonjava.maven.cartographer.data.CartoDataException;
-import org.commonjava.maven.cartographer.dto.GraphCalculation.Type;
-import org.commonjava.maven.cartographer.dto.GraphComposition;
-import org.commonjava.maven.cartographer.dto.GraphDescription;
+import org.commonjava.maven.cartographer.request.*;
 import org.commonjava.maven.cartographer.ops.GraphRenderingOps;
 import org.commonjava.maven.cartographer.preset.CommonPresetParameters;
-import org.commonjava.maven.cartographer.recipe.MultiRenderRecipe;
-import org.commonjava.maven.cartographer.recipe.PomRecipe;
-import org.commonjava.maven.cartographer.recipe.RepositoryContentRecipe;
+import org.commonjava.maven.cartographer.request.MultiRenderRequest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -79,27 +76,27 @@ public class RenderingController
     public File tree( final InputStream configStream )
         throws AproxWorkflowException
     {
-        final RepositoryContentRecipe dto = configHelper.readRecipe( configStream, RepositoryContentRecipe.class );
+        final RepositoryContentRequest dto = configHelper.readRecipe( configStream, RepositoryContentRequest.class );
         return tree( dto );
     }
 
     public File tree( final String json )
         throws AproxWorkflowException
     {
-        final RepositoryContentRecipe dto = configHelper.readRecipe( json, RepositoryContentRecipe.class );
+        final RepositoryContentRequest dto = configHelper.readRecipe( json, RepositoryContentRequest.class );
         return tree( dto );
     }
 
-    public File tree( final RepositoryContentRecipe dto )
+    public File tree( final RepositoryContentRequest recipe )
         throws AproxWorkflowException
     {
-        configHelper.setRecipeDefaults( dto );
+        configHelper.setRecipeDefaults( recipe );
 
         final File workBasedir = config.getWorkBasedir();
         String dtoJson;
         try
         {
-            dtoJson = serializer.writeValueAsString( dto );
+            dtoJson = serializer.writeValueAsString( recipe );
         }
         catch ( final JsonProcessingException e )
         {
@@ -113,11 +110,16 @@ public class RenderingController
         try
         {
             w = new FileWriter( out );
-            ops.depTree( dto, false, new PrintWriter( w ) );
+            ops.depTree( recipe, false, new PrintWriter( w ) );
         }
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException( "Failed to generate dependency tree. Reason: {}", e, e.getMessage() );
+        }
+        catch ( CartoRequestException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid request: %s. Reason: %s", e,
+                                              recipe, e.getMessage() );
         }
         catch ( final IOException e )
         {
@@ -147,11 +149,11 @@ public class RenderingController
 
         final ProjectRelationshipFilter filter = requestAdvisor.createRelationshipFilter( params, parsed );
 
-        final RepositoryContentRecipe dto = new RepositoryContentRecipe();
+        final RepositoryContentRequest dto = new RepositoryContentRequest();
         dto.setWorkspaceId( workspaceId );
 
         final GraphDescription desc = new GraphDescription( filter, ref );
-        dto.setGraphComposition( new GraphComposition( Type.ADD, Collections.singletonList( desc ) ) );
+        dto.setGraphComposition( new GraphComposition( GraphCalculationType.ADD, Collections.singletonList( desc ) ) );
 
         return tree( dto );
     }
@@ -161,7 +163,7 @@ public class RenderingController
                           final String workspaceId, final Map<String, String[]> params, final InputStream configStream )
         throws AproxWorkflowException
     {
-        final PomRecipe config = configHelper.readRecipe( configStream, PomRecipe.class );
+        final PomRequest config = configHelper.readRecipe( configStream, PomRequest.class );
         return pomFor( groupId, artifactId, version, workspaceId, params, config );
     }
 
@@ -170,13 +172,13 @@ public class RenderingController
                           final String workspaceId, final Map<String, String[]> params, final String configJson )
         throws AproxWorkflowException
     {
-        final PomRecipe config = configHelper.readRecipe( configJson, PomRecipe.class );
+        final PomRequest config = configHelper.readRecipe( configJson, PomRequest.class );
         return pomFor( groupId, artifactId, version, workspaceId, params, config );
     }
 
     @Deprecated
     public String pomFor( final String groupId, final String artifactId, final String version,
-                          final String workspaceId, final Map<String, String[]> params, final PomRecipe config )
+                          final String workspaceId, final Map<String, String[]> params, final PomRequest config )
         throws AproxWorkflowException
     {
         final ProjectVersionRef pvr = new ProjectVersionRef( groupId, artifactId, version );
@@ -187,25 +189,25 @@ public class RenderingController
     public String pomFor( final InputStream configStream )
         throws AproxWorkflowException
     {
-        final PomRecipe config = configHelper.readRecipe( configStream, PomRecipe.class );
+        final PomRequest config = configHelper.readRecipe( configStream, PomRequest.class );
         return pomFor( config );
     }
 
     public String pomFor( final String configJson )
         throws AproxWorkflowException
     {
-        final PomRecipe config = configHelper.readRecipe( configJson, PomRecipe.class );
+        final PomRequest config = configHelper.readRecipe( configJson, PomRequest.class );
         return pomFor( config );
     }
 
-    public String pomFor( final PomRecipe config )
+    public String pomFor( final PomRequest recipe )
         throws AproxWorkflowException
     {
-        configHelper.setRecipeDefaults( config );
+        configHelper.setRecipeDefaults( recipe );
 
         try
         {
-            final Model model = ops.generatePOM( config );
+            final Model model = ops.generatePOM( recipe );
 
             final StringWriter writer = new StringWriter();
             new MavenXpp3Writer().write( writer, model );
@@ -220,26 +222,31 @@ public class RenderingController
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException( ApplicationStatus.SERVER_ERROR.code(),
-                                              "Failed to generate POM for: {} using config: {}. Reason: {}", e, config,
+                                              "Failed to generate POM for: {} using config: {}. Reason: {}", e, recipe,
                                               e.getMessage() );
+        }
+        catch ( CartoRequestException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid request: %s. Reason: %s", e,
+                                              recipe, e.getMessage() );
         }
     }
 
     public String dotfile( final InputStream configStream )
         throws AproxWorkflowException
     {
-        final MultiRenderRecipe config = configHelper.readRecipe( configStream, MultiRenderRecipe.class );
+        final MultiRenderRequest config = configHelper.readRecipe( configStream, MultiRenderRequest.class );
         return dotfile( config );
     }
 
     public String dotfile( final String configJson )
         throws AproxWorkflowException
     {
-        final MultiRenderRecipe config = configHelper.readRecipe( configJson, MultiRenderRecipe.class );
+        final MultiRenderRequest config = configHelper.readRecipe( configJson, MultiRenderRequest.class );
         return dotfile( config );
     }
 
-    public String dotfile( final MultiRenderRecipe recipe )
+    public String dotfile( final MultiRenderRequest recipe )
         throws AproxWorkflowException
     {
         configHelper.setRecipeDefaults( recipe );
@@ -252,6 +259,11 @@ public class RenderingController
         {
             throw new AproxWorkflowException( "Failed to render Graphviz dotfile for: %s. Reason: %s", e, recipe,
                                               e.getMessage() );
+        }
+        catch ( CartoRequestException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid request: %s. Reason: %s", e,
+                                              recipe, e.getMessage() );
         }
     }
 

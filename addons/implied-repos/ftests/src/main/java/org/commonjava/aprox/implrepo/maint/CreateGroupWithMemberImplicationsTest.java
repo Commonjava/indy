@@ -19,6 +19,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.commonjava.aprox.implrepo.client.ImpliedRepoClientModule;
 import org.commonjava.aprox.model.core.Group;
@@ -52,7 +53,7 @@ public class CreateGroupWithMemberImplicationsTest
                        RemoteRepository.class );
 
         client.module( ImpliedRepoClientModule.class )
-              .setStoresImpliedBy( testRepo, Arrays.asList( impliedKey ), "setting store implications" );
+              .setStoresImpliedBy( testRepo, Collections.singletonList( impliedKey ), "setting store implications" );
 
         pubGroup.addConstituent( testKey );
 

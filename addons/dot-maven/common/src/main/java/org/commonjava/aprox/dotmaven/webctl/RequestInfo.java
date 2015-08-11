@@ -53,8 +53,7 @@ public class RequestInfo
             return null;
         }
 
-        String baseUrl = request.getRequestURI()
-                                .toString();
+        String baseUrl = request.getRequestURI();
 
         logger.debug( "DAV RAW Base-URL: {}", baseUrl );
 

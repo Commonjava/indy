@@ -36,8 +36,8 @@ public enum StoreType
 
     private final Class<? extends ArtifactStore> storeClass;
 
-    private StoreType( final Class<? extends ArtifactStore> storeClass, final boolean writable, final String singular, final String plural,
-                       final String... aliases )
+    StoreType( final Class<? extends ArtifactStore> storeClass, final boolean writable, final String singular,
+               final String plural, final String... aliases )
     {
         this.storeClass = storeClass;
         this.writable = writable;

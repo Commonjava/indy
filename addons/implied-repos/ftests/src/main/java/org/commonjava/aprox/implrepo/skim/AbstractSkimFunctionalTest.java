@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -78,7 +79,7 @@ public class AbstractSkimFunctionalTest
                       .create( new Group( PUBLIC ), changelog, Group.class );
         }
 
-        g.setConstituents( Arrays.asList( testRepo.getKey() ) );
+        g.setConstituents( Collections.singletonList( testRepo.getKey() ) );
         client.stores()
               .update( g, changelog );
     }

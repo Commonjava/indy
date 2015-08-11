@@ -26,12 +26,12 @@ public enum ContentDigest
 
     private String digestName;
 
-    private ContentDigest()
+    ContentDigest()
     {
         this.digestName = name();
     }
 
-    private ContentDigest( final String digestName )
+    ContentDigest( final String digestName )
     {
         this.digestName = digestName;
     }

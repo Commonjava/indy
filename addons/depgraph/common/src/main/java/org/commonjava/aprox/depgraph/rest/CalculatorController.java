@@ -21,14 +21,16 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import javafx.application.Application;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.util.RecipeHelper;
 import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
+import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.cartographer.CartoRequestException;
 import org.commonjava.maven.cartographer.data.CartoDataException;
-import org.commonjava.maven.cartographer.dto.GraphCalculation;
-import org.commonjava.maven.cartographer.dto.GraphComposition;
-import org.commonjava.maven.cartographer.dto.GraphDescription;
-import org.commonjava.maven.cartographer.dto.GraphDifference;
+import org.commonjava.maven.cartographer.request.*;
+import org.commonjava.maven.cartographer.result.GraphDifference;
 import org.commonjava.maven.cartographer.ops.CalculationOps;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -47,94 +49,99 @@ public class CalculatorController
     @Inject
     private RecipeHelper configHelper;
 
-    public String difference( final InputStream configStream, final String encoding, final String workspaceId )
-        throws AproxWorkflowException
+    public GraphDifference<ProjectRelationship<?>> difference( final InputStream configStream )
+                    throws AproxWorkflowException
     {
-        final GraphComposition dto = configHelper.readGraphComposition( configStream, encoding );
-        return difference( dto, workspaceId );
+        final GraphAnalysisRequest request = configHelper.readRecipe( configStream, GraphAnalysisRequest.class );
+        return difference( request );
     }
 
-    public String difference( final String json, final String workspaceId )
-        throws AproxWorkflowException
+    public GraphDifference<ProjectRelationship<?>> difference( final String json )
+                    throws AproxWorkflowException
     {
-        final GraphComposition dto = configHelper.readGraphComposition( json );
-        return difference( dto, workspaceId );
+        final GraphAnalysisRequest request = configHelper.readRecipe( json, GraphAnalysisRequest.class );
+        return difference( request );
     }
 
-    private String difference( final GraphComposition dto, final String workspaceId )
-        throws AproxWorkflowException
+    public GraphDifference<ProjectRelationship<?>> difference( final GraphAnalysisRequest request )
+                    throws AproxWorkflowException
     {
         try
         {
-            final List<GraphDescription> graphs = dto.getGraphs();
-
-            if ( graphs.size() != 2 )
-            {
-                throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                                  "You must specify EXACTLY two graph descriptions (GAV-set with optional filter preset) in order to perform a diff." );
-            }
-            else
-            {
-                final GraphDifference<?> difference = ops.difference( graphs.get( 0 ), graphs.get( 1 ), workspaceId );
-                return serializer.writeValueAsString( difference );
-            }
+            return ops.difference( request );
         }
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException( "Failed to retrieve graph(s): {}", e, e.getMessage() );
         }
-        catch ( final JsonProcessingException e )
+        catch ( final CartoRequestException e )
         {
-            throw new AproxWorkflowException( "Failed to serialize to JSON. Reason: %s", e, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Failed to retrieve graph(s): {}",
+                                              e, e.getMessage() );
         }
     }
 
-    public String calculate( final InputStream configStream, final String encoding, final String workspaceId )
-        throws AproxWorkflowException
+    public GraphDifference<ProjectVersionRef> drift( final InputStream configStream )
+                    throws AproxWorkflowException
     {
-        final GraphComposition dto = configHelper.readGraphComposition( configStream, encoding );
-        return calculate( dto, workspaceId );
+        final GraphAnalysisRequest request = configHelper.readRecipe( configStream, GraphAnalysisRequest.class );
+        return drift( request );
     }
 
-    public String calculate( final String json, final String workspaceId )
-        throws AproxWorkflowException
+    public GraphDifference<ProjectVersionRef> drift( final String json )
+                    throws AproxWorkflowException
     {
-        final GraphComposition dto = configHelper.readGraphComposition( json );
-        return calculate( dto, workspaceId );
+        final GraphAnalysisRequest request = configHelper.readRecipe( json, GraphAnalysisRequest.class );
+        return drift( request );
     }
 
-    public String calculate( final GraphComposition dto, final String workspaceId )
-        throws AproxWorkflowException
+    public GraphDifference<ProjectVersionRef> drift( final GraphAnalysisRequest request )
+                    throws AproxWorkflowException
     {
         try
         {
-            final List<GraphDescription> graphs = dto.getGraphs();
-
-            if ( graphs.size() < 2 )
-            {
-                throw new AproxWorkflowException(
-                                                  ApplicationStatus.BAD_REQUEST.code(),
-                                                  "You must specify at least two graph descriptions (GAV-set with optional filter preset) in order to perform a calculation." );
-            }
-            else if ( dto.getCalculation() == null )
-            {
-                throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                                  "You must specify a calculation type." );
-            }
-            else
-            {
-                final GraphCalculation result = ops.calculate( dto, workspaceId );
-
-                return serializer.writeValueAsString( result );
-            }
+            return ops.intersectingTargetDrift( request );
         }
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException( "Failed to retrieve graph(s): {}", e, e.getMessage() );
         }
-        catch ( final JsonProcessingException e )
+        catch ( final CartoRequestException e )
         {
-            throw new AproxWorkflowException( "Failed to serialize to JSON. Reason: %s", e, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Failed to retrieve graph(s): {}",
+                                              e, e.getMessage() );
+        }
+    }
+
+    public GraphCalculation calculate( final InputStream configStream, final String encoding, final String workspaceId )
+                    throws AproxWorkflowException
+    {
+        final MultiGraphRequest request = configHelper.readRecipe( configStream, MultiGraphRequest.class );
+        return calculate( request );
+    }
+
+    public GraphCalculation calculate( final String json )
+                    throws AproxWorkflowException
+    {
+        final MultiGraphRequest request = configHelper.readRecipe( json, MultiGraphRequest.class );
+        return calculate( request );
+    }
+
+    public GraphCalculation calculate( final MultiGraphRequest request )
+                    throws AproxWorkflowException
+    {
+        try
+        {
+            return ops.calculate( request );
+        }
+        catch ( final CartoDataException e )
+        {
+            throw new AproxWorkflowException( "Failed to retrieve graph(s): {}", e, e.getMessage() );
+        }
+        catch ( CartoRequestException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Failed to retrieve graph(s): {}",
+                                              e, e.getMessage() );
         }
     }
 

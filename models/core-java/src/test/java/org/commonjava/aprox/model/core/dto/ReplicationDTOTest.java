@@ -16,6 +16,7 @@
 package org.commonjava.aprox.model.core.dto;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.commonjava.aprox.model.core.dto.ReplicationAction;
 import org.commonjava.aprox.model.core.dto.ReplicationDTO;
@@ -32,7 +33,7 @@ public class ReplicationDTOTest
     {
         final ReplicationDTO dto = new ReplicationDTO();
         dto.setApiUrl( "http://foo.com/api/1.0" );
-        dto.setActions( Arrays.asList( new ReplicationAction( ActionType.PROXY ) ) );
+        dto.setActions( Collections.singletonList( new ReplicationAction( ActionType.PROXY ) ) );
 
         final String json = new AproxObjectMapper( true )
                                               .writeValueAsString( dto );

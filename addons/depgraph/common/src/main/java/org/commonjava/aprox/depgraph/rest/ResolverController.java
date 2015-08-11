@@ -23,9 +23,11 @@ import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.aprox.depgraph.util.RecipeHelper;
+import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.maven.cartographer.CartoRequestException;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.ops.ResolveOps;
-import org.commonjava.maven.cartographer.recipe.MultiGraphResolverRecipe;
+import org.commonjava.maven.cartographer.request.MultiGraphRequest;
 
 public class ResolverController
 {
@@ -42,12 +44,12 @@ public class ResolverController
     public void resolve( final InputStream stream )
         throws AproxWorkflowException
     {
-        final MultiGraphResolverRecipe recipe = configHelper.readRecipe( stream, MultiGraphResolverRecipe.class );
+        final MultiGraphRequest recipe = configHelper.readRecipe( stream, MultiGraphRequest.class );
 
         resolve( recipe );
     }
 
-    public void resolve( final MultiGraphResolverRecipe recipe )
+    public void resolve( final MultiGraphRequest recipe )
         throws AproxWorkflowException
     {
         recipe.setDefaultPreset( config.getDefaultWebFilterPreset() );
@@ -63,6 +65,11 @@ public class ResolverController
         {
             throw new AproxWorkflowException( "Failed to lookup incomplete subgraphs for: {}. Reason: {}", e, recipe,
                                               e.getMessage() );
+        }
+        catch ( CartoRequestException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid request: %s. Reason: %s", e,
+                                              recipe, e.getMessage() );
         }
     }
 

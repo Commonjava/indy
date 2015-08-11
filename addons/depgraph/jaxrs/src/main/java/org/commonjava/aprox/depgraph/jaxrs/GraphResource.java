@@ -15,41 +15,35 @@
  */
 package org.commonjava.aprox.depgraph.jaxrs;
 
-import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.throwError;
+import static org.commonjava.aprox.util.ApplicationContent.application_aprox_star_json;
 import static org.commonjava.aprox.util.ApplicationContent.application_json;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
-import org.commonjava.aprox.bind.jaxrs.util.JaxRsUriFormatter;
 import org.commonjava.aprox.depgraph.rest.GraphController;
 import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
 import org.commonjava.maven.atlas.graph.traverse.model.BuildOrder;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.cartographer.dto.GraphExport;
-import org.commonjava.maven.cartographer.recipe.PathsRecipe;
-import org.commonjava.maven.cartographer.recipe.ProjectGraphRecipe;
+import org.commonjava.maven.cartographer.result.*;
+import org.commonjava.maven.cartographer.request.PathsRequest;
+import org.commonjava.maven.cartographer.request.ProjectGraphRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Path( "/api/depgraph/graph" )
-@Consumes( { "application/json", "application/aprox*+json" } )
-@Produces( { "applicaiton/json", "application/aprox*+json" } )
+@Consumes( { application_json, application_aprox_star_json } )
+@Produces( { application_json, application_aprox_star_json } )
 public class GraphResource
     implements AproxResources
 {
@@ -60,7 +54,7 @@ public class GraphResource
 
     @Path( "/paths" )
     @POST
-    public Map<ProjectVersionRef, List<List<ProjectRelationship<?>>>> getPaths( final PathsRecipe recipe )
+    public ProjectPathsResult getPaths( final PathsRequest recipe )
     {
         try
         {
@@ -76,7 +70,7 @@ public class GraphResource
 
     @Path( "/errors" )
     @POST
-    public Map<ProjectVersionRef, String> errors( final ProjectGraphRecipe recipe )
+    public ProjectErrors errors( final ProjectGraphRequest recipe )
     {
         try
         {
@@ -92,7 +86,7 @@ public class GraphResource
 
     @Path( "/reindex" )
     @POST
-    public List<ProjectVersionRef> reindex( final ProjectGraphRecipe recipe )
+    public ProjectListResult reindex( final ProjectGraphRequest recipe )
     {
         try
         {
@@ -108,7 +102,7 @@ public class GraphResource
 
     @Path( "/incomplete" )
     @POST
-    public Set<ProjectVersionRef> incomplete( final ProjectGraphRecipe recipe )
+    public ProjectListResult incomplete( final ProjectGraphRequest recipe )
     {
         try
         {
@@ -124,7 +118,7 @@ public class GraphResource
 
     @Path( "/variable" )
     @POST
-    public Set<ProjectVersionRef> variable( final ProjectGraphRecipe recipe )
+    public ProjectListResult variable( final ProjectGraphRequest recipe )
     {
         try
         {
@@ -140,7 +134,7 @@ public class GraphResource
 
     @Path( "/ancestry" )
     @POST
-    public Map<ProjectVersionRef, List<ProjectVersionRef>> ancestryOf( final ProjectGraphRecipe recipe )
+    public MappedProjectsResult ancestryOf( final ProjectGraphRequest recipe )
     {
         try
         {
@@ -155,7 +149,7 @@ public class GraphResource
 
     @Path( "/build-order" )
     @POST
-    public BuildOrder buildOrder( final ProjectGraphRecipe recipe )
+    public BuildOrder buildOrder( final ProjectGraphRequest recipe )
     {
         try
         {
@@ -170,7 +164,7 @@ public class GraphResource
 
     @Path( "/export" )
     @POST
-    public GraphExport graph( final ProjectGraphRecipe recipe )
+    public GraphExport graph( final ProjectGraphRequest recipe )
     {
         try
         {

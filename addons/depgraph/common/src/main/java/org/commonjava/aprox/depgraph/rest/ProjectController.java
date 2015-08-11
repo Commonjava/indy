@@ -24,12 +24,15 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.util.RecipeHelper;
+import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.cartographer.CartoRequestException;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.ops.GraphOps;
-import org.commonjava.maven.cartographer.recipe.ProjectGraphRecipe;
-import org.commonjava.maven.cartographer.recipe.ProjectGraphRelationshipsRecipe;
+import org.commonjava.maven.cartographer.request.ProjectGraphRequest;
+import org.commonjava.maven.cartographer.request.ProjectGraphRelationshipsRequest;
+import org.commonjava.maven.cartographer.result.ProjectListResult;
 
 public class ProjectController
 {
@@ -39,14 +42,14 @@ public class ProjectController
     @Inject
     private RecipeHelper configHelper;
 
-    public List<ProjectVersionRef> list( final InputStream stream )
+    public ProjectListResult list( final InputStream stream )
         throws AproxWorkflowException
     {
-        final ProjectGraphRecipe recipe = configHelper.readRecipe( stream, ProjectGraphRecipe.class );
+        final ProjectGraphRequest recipe = configHelper.readRecipe( stream, ProjectGraphRequest.class );
         return list( recipe );
     }
 
-    public List<ProjectVersionRef> list( final ProjectGraphRecipe recipe )
+    public ProjectListResult list( final ProjectGraphRequest recipe )
         throws AproxWorkflowException
     {
         configHelper.setRecipeDefaults( recipe );
@@ -56,7 +59,12 @@ public class ProjectController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to lookup project listing matching recipe: %s. Reason: %s", e,
+            throw new AproxWorkflowException( "Failed to lookup project listing matching request: %s. Reason: %s", e,
+                                              recipe, e.getMessage() );
+        }
+        catch ( CartoRequestException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid request: %s. Reason: %s", e,
                                               recipe, e.getMessage() );
         }
     }
@@ -64,11 +72,11 @@ public class ProjectController
     public Map<ProjectVersionRef, ProjectVersionRef> parentOf( final InputStream stream )
         throws AproxWorkflowException
     {
-        final ProjectGraphRecipe recipe = configHelper.readRecipe( stream, ProjectGraphRecipe.class );
+        final ProjectGraphRequest recipe = configHelper.readRecipe( stream, ProjectGraphRequest.class );
         return parentOf( recipe );
     }
 
-    public Map<ProjectVersionRef, ProjectVersionRef> parentOf( final ProjectGraphRecipe recipe )
+    public Map<ProjectVersionRef, ProjectVersionRef> parentOf( final ProjectGraphRequest recipe )
         throws AproxWorkflowException
     {
         configHelper.setRecipeDefaults( recipe );
@@ -78,21 +86,26 @@ public class ProjectController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to lookup parent(s) for recipe: %s. Reason: %s", e, recipe,
+            throw new AproxWorkflowException( "Failed to lookup parent(s) for request: %s. Reason: %s", e, recipe,
                                               e.getMessage() );
+        }
+        catch ( CartoRequestException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid request: %s. Reason: %s", e,
+                                              recipe, e.getMessage() );
         }
     }
 
     public Map<ProjectVersionRef, Set<ProjectRelationship<?>>> relationshipsDeclaredBy( final InputStream stream )
         throws AproxWorkflowException
     {
-        final ProjectGraphRelationshipsRecipe recipe =
-            configHelper.readRecipe( stream, ProjectGraphRelationshipsRecipe.class );
+        final ProjectGraphRelationshipsRequest recipe =
+            configHelper.readRecipe( stream, ProjectGraphRelationshipsRequest.class );
 
         return relationshipsDeclaredBy( recipe );
     }
 
-    public Map<ProjectVersionRef, Set<ProjectRelationship<?>>> relationshipsDeclaredBy( final ProjectGraphRelationshipsRecipe recipe )
+    public Map<ProjectVersionRef, Set<ProjectRelationship<?>>> relationshipsDeclaredBy( final ProjectGraphRelationshipsRequest recipe )
         throws AproxWorkflowException
     {
         configHelper.setRecipeDefaults( recipe );
@@ -103,21 +116,26 @@ public class ProjectController
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException(
-                                              "Failed to lookup relationships declared by GAVs given in recipe: {}. Reason: {}",
+                                              "Failed to lookup relationships declared by GAVs given in request: {}. Reason: {}",
                                               e, recipe, e.getMessage() );
+        }
+        catch ( CartoRequestException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid request: %s. Reason: %s", e,
+                                              recipe, e.getMessage() );
         }
     }
 
     public Map<ProjectVersionRef, Set<ProjectRelationship<?>>> relationshipsTargeting( final InputStream stream )
         throws AproxWorkflowException
     {
-        final ProjectGraphRelationshipsRecipe recipe =
-            configHelper.readRecipe( stream, ProjectGraphRelationshipsRecipe.class );
+        final ProjectGraphRelationshipsRequest recipe =
+            configHelper.readRecipe( stream, ProjectGraphRelationshipsRequest.class );
 
         return relationshipsDeclaredBy( recipe );
     }
 
-    public Map<ProjectVersionRef, Set<ProjectRelationship<?>>> relationshipsTargeting( final ProjectGraphRelationshipsRecipe recipe )
+    public Map<ProjectVersionRef, Set<ProjectRelationship<?>>> relationshipsTargeting( final ProjectGraphRelationshipsRequest recipe )
         throws AproxWorkflowException
     {
         configHelper.setRecipeDefaults( recipe );
@@ -128,8 +146,13 @@ public class ProjectController
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException(
-                                              "Failed to lookup relationships targeting GAVs given in recipe: {}. Reason: {}",
+                                              "Failed to lookup relationships targeting GAVs given in request: {}. Reason: {}",
                                               e, recipe, e.getMessage() );
+        }
+        catch ( CartoRequestException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid request: %s. Reason: %s", e,
+                                              recipe, e.getMessage() );
         }
     }
 

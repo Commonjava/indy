@@ -16,6 +16,8 @@
 package org.commonjava.aprox.depgraph.jaxrs.resolve;
 
 import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.throwError;
+import static org.commonjava.aprox.util.ApplicationContent.application_aprox_star_json;
+import static org.commonjava.aprox.util.ApplicationContent.application_json;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -27,11 +29,10 @@ import javax.ws.rs.core.Response;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.depgraph.rest.ResolverController;
-import org.commonjava.maven.cartographer.recipe.MultiGraphResolverRecipe;
+import org.commonjava.maven.cartographer.request.MultiGraphRequest;
 
 @Path( "/api/depgraph/resolve" )
-@Consumes( { "application/json", "application/aprox*+json" } )
-@Produces( { "applicaiton/json", "application/aprox*+json" } )
+@Consumes( { application_json, application_aprox_star_json } )
 public class ResolverResource
     implements AproxResources
 {
@@ -40,7 +41,7 @@ public class ResolverResource
     private ResolverController controller;
 
     @POST
-    public Response resolveGraph( final MultiGraphResolverRecipe recipe )
+    public Response resolveGraph( final MultiGraphRequest recipe )
     {
         try
         {

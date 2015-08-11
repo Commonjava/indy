@@ -52,16 +52,18 @@ public class ResourceManagementFilter
         throws IOException, ServletException
     {
         final HttpServletRequest hsr = (HttpServletRequest) request;
+        String name = Thread.currentThread().getName();
         try
         {
             Thread.currentThread()
-                  .setName( hsr.getPathInfo() );
+                  .setName( hsr.getMethod() + " " + hsr.getPathInfo() );
             chain.doFilter( request, response );
         }
         finally
         {
             logger.debug( "Cleaning up resources for thread: {}", Thread.currentThread()
                                                                         .getName() );
+            Thread.currentThread().setName( name );
             cacheProvider.cleanupCurrentThread();
         }
     }

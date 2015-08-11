@@ -19,6 +19,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.change.event.ArtifactStorePreUpdateEvent;
@@ -72,7 +73,7 @@ public class ImpliedRepoMaintainerTest
         final RemoteRepository repo2 = new RemoteRepository( "one", "http://www.foo.com/repo" );
         storeDataManager.storeArtifactStore( repo2, summary, new EventMetadata() );
 
-        metadataManager.addImpliedMetadata( repo1, Arrays.<ArtifactStore> asList( repo2 ) );
+        metadataManager.addImpliedMetadata( repo1, Collections.singletonList( repo2 ) );
 
         g.addConstituent( repo1 );
 
@@ -97,7 +98,7 @@ public class ImpliedRepoMaintainerTest
         final RemoteRepository repo2 = new RemoteRepository( "one", "http://www.foo.com/repo" );
         storeDataManager.storeArtifactStore( repo2, summary, new EventMetadata() );
 
-        metadataManager.addImpliedMetadata( repo1, Arrays.<ArtifactStore> asList( repo2 ) );
+        metadataManager.addImpliedMetadata( repo1, Collections.singletonList( repo2 ) );
 
         // Simulates removal of repo1...odd, I know, but since they post-process these updates, it's what the 
         // event observers would see.

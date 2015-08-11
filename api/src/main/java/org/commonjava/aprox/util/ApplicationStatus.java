@@ -47,7 +47,7 @@ public enum ApplicationStatus
 
     private String message;
 
-    private ApplicationStatus( final int status, final String messsage )
+    ApplicationStatus( final int status, final String messsage )
     {
         this.status = status;
         this.message = messsage;

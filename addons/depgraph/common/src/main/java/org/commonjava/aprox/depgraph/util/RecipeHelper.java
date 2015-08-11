@@ -24,11 +24,11 @@ import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
-import org.commonjava.aprox.depgraph.dto.DownlogRecipe;
-import org.commonjava.aprox.depgraph.dto.PathsDTO;
+import org.commonjava.aprox.depgraph.dto.DownlogRequest;
 import org.commonjava.aprox.util.ApplicationStatus;
-import org.commonjava.maven.cartographer.dto.GraphComposition;
-import org.commonjava.maven.cartographer.recipe.AbstractResolverRecipe;
+import org.commonjava.maven.cartographer.request.AbstractGraphRequest;
+import org.commonjava.maven.cartographer.request.GraphBasedRequest;
+import org.commonjava.maven.cartographer.request.GraphComposition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +56,7 @@ public class RecipeHelper
         this.mapper = mapper;
     }
 
-    public void setRecipeDefaults( final AbstractResolverRecipe recipe )
+    public void setRecipeDefaults( final AbstractGraphRequest recipe )
         throws AproxWorkflowException
     {
         if ( recipe == null )
@@ -68,7 +68,7 @@ public class RecipeHelper
         recipe.setDefaultPreset( this.config.getDefaultWebFilterPreset() );
     }
 
-    public DownlogRecipe readDownlogDTO( final InputStream configStream )
+    public DownlogRequest readDownlogDTO( final InputStream configStream )
         throws AproxWorkflowException
     {
         try
@@ -82,14 +82,14 @@ public class RecipeHelper
         }
     }
 
-    public DownlogRecipe readDownlogDTO( final String json )
+    public DownlogRequest readDownlogDTO( final String json )
         throws AproxWorkflowException
     {
         logger.info( "Got configuration JSON:\n\n{}\n\n", json );
-        DownlogRecipe dto;
+        DownlogRequest dto;
         try
         {
-            dto = mapper.readValue( json, DownlogRecipe.class );
+            dto = mapper.readValue( json, DownlogRequest.class );
         }
         catch ( final IOException e )
         {
@@ -101,45 +101,6 @@ public class RecipeHelper
         {
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
                                               "No configuration found in request body!" );
-        }
-
-        dto.setDefaultPreset( config.getDefaultWebFilterPreset() );
-
-        return dto;
-    }
-
-    public PathsDTO readPathsDTO( final InputStream configStream )
-        throws AproxWorkflowException
-    {
-        try
-        {
-            return readPathsDTO( IOUtils.toString( configStream ) );
-        }
-        catch ( final IOException e )
-        {
-            throw new AproxWorkflowException( "Failed to read configuration JSON from request body. Reason: {}", e,
-                                              e.getMessage() );
-        }
-    }
-
-    public PathsDTO readPathsDTO( final String json )
-        throws AproxWorkflowException
-    {
-        logger.info( "Got paths configuration JSON:\n\n{}\n\n", json );
-        PathsDTO dto;
-        try
-        {
-            dto = mapper.readValue( json, PathsDTO.class );
-        }
-        catch ( final IOException e )
-        {
-            throw new AproxWorkflowException( "Failed to deserialize PathsDTO from JSON. Reason: %s", e, e.getMessage() );
-        }
-
-        if ( dto == null )
-        {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                              "No PathsDTO found in request body!" );
         }
 
         dto.setDefaultPreset( config.getDefaultWebFilterPreset() );
@@ -181,7 +142,7 @@ public class RecipeHelper
 
     }
 
-    public <T extends AbstractResolverRecipe> T readRecipe( final InputStream stream, final Class<T> type )
+    public <T extends GraphBasedRequest> T readRecipe( final InputStream stream, final Class<T> type )
         throws AproxWorkflowException
     {
         try
@@ -192,11 +153,11 @@ public class RecipeHelper
         catch ( final IOException e )
         {
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                              "Cannot read graph recipe JSON from stream: {}", e, e.getMessage() );
+                                              "Cannot read graph request JSON from stream: {}", e, e.getMessage() );
         }
     }
 
-    public <T extends AbstractResolverRecipe> T readRecipe( final String json, final Class<T> type )
+    public <T extends GraphBasedRequest> T readRecipe( final String json, final Class<T> type )
         throws AproxWorkflowException
     {
         T dto;
