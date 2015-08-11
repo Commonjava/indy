@@ -23,6 +23,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.io.IOUtils;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 
 public class TransferStreamingOutput
@@ -31,9 +32,12 @@ public class TransferStreamingOutput
 
     private final Transfer item;
 
-    public TransferStreamingOutput( final Transfer item )
+    private EventMetadata eventMetadata;
+
+    public TransferStreamingOutput( final Transfer item, EventMetadata eventMetadata )
     {
         this.item = item;
+        this.eventMetadata = eventMetadata;
     }
 
     @Override
@@ -43,7 +47,7 @@ public class TransferStreamingOutput
         InputStream in = null;
         try
         {
-            in = item.openInputStream();
+            in = item.openInputStream( true, eventMetadata );
             IOUtils.copy( in, out );
         }
         finally

@@ -55,6 +55,7 @@ import org.commonjava.aprox.util.ApplicationHeader;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.LocationUtils;
 import org.commonjava.aprox.util.UriFormatter;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
@@ -342,7 +343,7 @@ public class ContentAccessHandler
                 {
                     item.touch();
 
-                    final ResponseBuilder builder = Response.ok( new TransferStreamingOutput( item ) );
+                    final ResponseBuilder builder = Response.ok( new TransferStreamingOutput( item ,new EventMetadata() ) );
                     setInfoHeaders( builder, item, sk, path, false, contentController.getContentType( path ),
                                     contentController.getHttpMetadata( sk, path ) );
 
