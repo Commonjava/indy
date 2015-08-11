@@ -235,13 +235,9 @@ public class IndexHandler
 
     private boolean isIndexable( final String path )
     {
-        if ( path.endsWith( ".sha1" ) || path.endsWith( ".md5" ) || path.endsWith( "maven-metadata.xml" )
-            || path.endsWith( "archetype-catalog.xml" ) )
-        {
-            return false;
-        }
+        return !( path.endsWith( ".sha1" ) || path.endsWith( ".md5" ) || path.endsWith( "maven-metadata.xml" )
+                        || path.endsWith( "archetype-catalog.xml" ) );
 
-        return true;
     }
 
     private boolean lock( final StoreKey key )

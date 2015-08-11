@@ -31,7 +31,7 @@ public class DownlogDTO
     }
 
     public DownlogDTO( final Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> contents,
-                       final DownlogRecipe recipe, final String baseUri, final UriFormatter uriFormatter )
+                       final DownlogRequest recipe, final String baseUri, final UriFormatter uriFormatter )
                     throws AproxWorkflowException
     {
         locations = new TreeSet<>();
@@ -71,7 +71,7 @@ public class DownlogDTO
         return sb.toString();
     }
 
-    private String formatDownlogEntry( final ConcreteResource item, final DownlogRecipe recipe, final String baseUri,
+    private String formatDownlogEntry( final ConcreteResource item, final DownlogRequest recipe, final String baseUri,
                                        final UriFormatter uriFormatter )
                     throws AproxWorkflowException
     {

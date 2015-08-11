@@ -31,7 +31,7 @@ public class CreationDTO
     {
         this.uri = uri;
         this.jsonResponse = null;
-    };
+    }
 
     public CreationDTO( final URI uri, final String jsonResponse )
     {
@@ -47,6 +47,6 @@ public class CreationDTO
     public String getJsonResponse()
     {
         return jsonResponse;
-    };
+    }
 
 }

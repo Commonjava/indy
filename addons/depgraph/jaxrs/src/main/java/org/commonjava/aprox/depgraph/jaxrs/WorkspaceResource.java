@@ -17,6 +17,8 @@ package org.commonjava.aprox.depgraph.jaxrs;
 
 import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.throwError;
+import static org.commonjava.aprox.util.ApplicationContent.application_aprox_star_json;
+import static org.commonjava.aprox.util.ApplicationContent.application_json;
 
 import java.util.Set;
 
@@ -34,8 +36,7 @@ import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.depgraph.rest.WorkspaceController;
 
 @Path( "/api/depgraph/ws" )
-@Consumes( { "application/json", "application/aprox*+json" } )
-@Produces( { "applicaiton/json", "application/aprox*+json" } )
+@Produces( { application_json, application_aprox_star_json } )
 public class WorkspaceResource
     implements AproxResources
 {

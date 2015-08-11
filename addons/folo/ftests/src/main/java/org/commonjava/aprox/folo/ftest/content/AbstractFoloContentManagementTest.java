@@ -20,6 +20,7 @@ import static org.commonjava.aprox.model.core.StoreType.remote;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 import org.commonjava.aprox.client.core.AproxClientModule;
 import org.commonjava.aprox.folo.client.AproxFoloContentClientModule;
@@ -84,7 +85,7 @@ public class AbstractFoloContentManagementTest
     @Override
     protected Collection<AproxClientModule> getAdditionalClientModules()
     {
-        return Arrays.<AproxClientModule> asList( new AproxFoloContentClientModule() );
+        return Collections.singletonList( new AproxFoloContentClientModule() );
     }
 
 }

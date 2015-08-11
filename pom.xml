@@ -915,7 +915,7 @@
           <artifactId>maven-release-plugin</artifactId>
           <configuration>
             <autoVersionSubmodules>true</autoVersionSubmodules>
-            <mavenExecutorId>forked-path</mavenExecutorId>
+            <mavenExecutorId>forked-pathParts</mavenExecutorId>
             <useReleaseProfile>false</useReleaseProfile>
             <arguments>-Prelease,run-its</arguments>
           </configuration>

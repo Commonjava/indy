@@ -18,25 +18,28 @@ package org.commonjava.aprox.depgraph.jaxrs.render;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.depgraph.rest.RenderingController;
-import org.commonjava.maven.cartographer.recipe.MultiRenderRecipe;
-import org.commonjava.maven.cartographer.recipe.PomRecipe;
-import org.commonjava.maven.cartographer.recipe.RepositoryContentRecipe;
+import org.commonjava.maven.cartographer.request.MultiRenderRequest;
+import org.commonjava.maven.cartographer.request.PomRequest;
+import org.commonjava.maven.cartographer.request.RepositoryContentRequest;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import java.io.File;
 
 import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.throwError;
+import static org.commonjava.aprox.util.ApplicationContent.application_aprox_star_json;
+import static org.commonjava.aprox.util.ApplicationContent.application_json;
 import static org.commonjava.aprox.util.ApplicationContent.application_xml;
+import static org.commonjava.aprox.util.ApplicationContent.application_zip;
 import static org.commonjava.aprox.util.ApplicationContent.text_plain;
 
 @Path( "/api/depgraph/render" )
-@Consumes( { "application/json", "application/aprox*+json" } )
-@Produces( { "applicaiton/json", "application/aprox*+json" } )
-@ApplicationScoped
+@Consumes( { application_json, application_aprox_star_json } )
 public class GraphRenderingResource
-    implements AproxResources
+                implements AproxResources
 {
 
     private static final String TYPE_GRAPHVIZ = "text/x-graphviz";
@@ -47,7 +50,7 @@ public class GraphRenderingResource
     @Path( "/pom" )
     @POST
     @Produces( application_xml )
-    public String pom( PomRecipe recipe )
+    public String pom( PomRequest recipe )
     {
         try
         {
@@ -60,10 +63,10 @@ public class GraphRenderingResource
         return null;
     }
 
-    @Path( "/dotfile/{groupId}/{artifactId}/{version}" )
-    @GET
+    @Path( "/dotfile" )
+    @POST
     @Produces( TYPE_GRAPHVIZ )
-    public String dotfile( final MultiRenderRecipe recipe )
+    public String dotfile( final MultiRenderRequest recipe )
     {
         try
         {
@@ -79,7 +82,7 @@ public class GraphRenderingResource
     @Path( "/tree" )
     @POST
     @Produces( text_plain )
-    public File tree( final RepositoryContentRecipe recipe )
+    public File tree( final RepositoryContentRequest recipe )
     {
         try
         {

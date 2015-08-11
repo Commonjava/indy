@@ -7,7 +7,7 @@ import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.util.ProjectVersionRefComparator;
-import org.commonjava.maven.cartographer.recipe.RepositoryContentRecipe;
+import org.commonjava.maven.cartographer.request.RepositoryContentRequest;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +54,7 @@ public class UrlMapDTO
     private final Map<ProjectVersionRef, UrlMapProject> projects;
 
     public UrlMapDTO( final Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> contents,
-                         final RepositoryContentRecipe recipe, final String baseUri, final UriFormatter uriFormatter )
+                         final RepositoryContentRequest recipe, final String baseUri, final UriFormatter uriFormatter )
     {
         projects = new TreeMap<>( new ProjectVersionRefComparator() );
         for ( final ProjectVersionRef gav : contents.keySet() )

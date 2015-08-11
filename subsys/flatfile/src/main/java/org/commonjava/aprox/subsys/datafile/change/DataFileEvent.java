@@ -103,11 +103,7 @@ public final class DataFileEvent
             return false;
         }
         final DataFileEvent other = (DataFileEvent) obj;
-        if ( id != other.id )
-        {
-            return false;
-        }
-        return true;
+        return id == other.id;
     }
 
     @Override

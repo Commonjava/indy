@@ -23,13 +23,17 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.util.RecipeHelper;
+import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.cartographer.CartoRequestException;
 import org.commonjava.maven.cartographer.data.CartoDataException;
-import org.commonjava.maven.cartographer.dto.MetadataCollation;
+import org.commonjava.maven.cartographer.result.MetadataCollationResult;
 import org.commonjava.maven.cartographer.ops.MetadataOps;
-import org.commonjava.maven.cartographer.recipe.MetadataCollationRecipe;
-import org.commonjava.maven.cartographer.recipe.MetadataExtractionRecipe;
-import org.commonjava.maven.cartographer.recipe.MetadataUpdateRecipe;
+import org.commonjava.maven.cartographer.request.MetadataCollationRequest;
+import org.commonjava.maven.cartographer.request.MetadataExtractionRequest;
+import org.commonjava.maven.cartographer.request.MetadataUpdateRequest;
+import org.commonjava.maven.cartographer.result.MetadataResult;
+import org.commonjava.maven.cartographer.result.ProjectListResult;
 
 public class MetadataController
 {
@@ -40,14 +44,14 @@ public class MetadataController
     @Inject
     private RecipeHelper configHelper;
 
-    public List<ProjectVersionRef> batchUpdate( final InputStream stream )
+    public ProjectListResult batchUpdate( final InputStream stream )
         throws AproxWorkflowException
     {
-        final MetadataUpdateRecipe recipe = configHelper.readRecipe( stream, MetadataUpdateRecipe.class );
+        final MetadataUpdateRequest recipe = configHelper.readRecipe( stream, MetadataUpdateRequest.class );
         return batchUpdate( recipe );
     }
 
-    public List<ProjectVersionRef> batchUpdate( final MetadataUpdateRecipe recipe )
+    public ProjectListResult batchUpdate( final MetadataUpdateRequest recipe )
         throws AproxWorkflowException
     {
         configHelper.setRecipeDefaults( recipe );
@@ -58,19 +62,24 @@ public class MetadataController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to update metadata for recipe: %s. Reason: %s", e, recipe,
+            throw new AproxWorkflowException( "Failed to update metadata for request: %s. Reason: %s", e, recipe,
                                               e.getMessage() );
+        }
+        catch ( CartoRequestException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid request: %s. Reason: %s", e,
+                                              recipe, e.getMessage() );
         }
     }
 
-    public Map<ProjectVersionRef, Map<String, String>> getMetadata( final InputStream stream )
+    public MetadataResult getMetadata( final InputStream stream )
         throws AproxWorkflowException
     {
-        final MetadataExtractionRecipe recipe = configHelper.readRecipe( stream, MetadataExtractionRecipe.class );
+        final MetadataExtractionRequest recipe = configHelper.readRecipe( stream, MetadataExtractionRequest.class );
         return getMetadata( recipe );
     }
 
-    public Map<ProjectVersionRef, Map<String, String>> getMetadata( final MetadataExtractionRecipe recipe )
+    public MetadataResult getMetadata( final MetadataExtractionRequest recipe )
         throws AproxWorkflowException
     {
         configHelper.setRecipeDefaults( recipe );
@@ -81,38 +90,48 @@ public class MetadataController
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to retrieve metadata for recipe: %s. Reason: %s", e, recipe,
+            throw new AproxWorkflowException( "Failed to retrieve metadata for request: %s. Reason: %s", e, recipe,
                                               e.getMessage() );
+        }
+        catch ( CartoRequestException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid request: %s. Reason: %s", e,
+                                              recipe, e.getMessage() );
         }
     }
 
-    public MetadataCollation getCollation( final InputStream configStream, final String encoding )
+    public MetadataCollationResult getCollation( final InputStream configStream, final String encoding )
         throws AproxWorkflowException
     {
-        final MetadataCollationRecipe dto = configHelper.readRecipe( configStream, MetadataCollationRecipe.class );
+        final MetadataCollationRequest dto = configHelper.readRecipe( configStream, MetadataCollationRequest.class );
         return getCollation( dto );
     }
 
-    public MetadataCollation getCollation( final String json )
+    public MetadataCollationResult getCollation( final String json )
         throws AproxWorkflowException
     {
-        final MetadataCollationRecipe dto = configHelper.readRecipe( json, MetadataCollationRecipe.class );
+        final MetadataCollationRequest dto = configHelper.readRecipe( json, MetadataCollationRequest.class );
         return getCollation( dto );
     }
 
-    public MetadataCollation getCollation( final MetadataCollationRecipe dto )
+    public MetadataCollationResult getCollation( final MetadataCollationRequest recipe )
         throws AproxWorkflowException
     {
-        configHelper.setRecipeDefaults( dto );
+        configHelper.setRecipeDefaults( recipe );
         try
         {
-            return ops.collate( dto );
+            return ops.collate( recipe );
         }
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException(
                                               "Failed to resolve or collate graph contents by metadata: {}. Reason: {}",
-                                              e, dto, e.getMessage() );
+                                              e, recipe, e.getMessage() );
+        }
+        catch ( CartoRequestException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid request: %s. Reason: %s", e,
+                                              recipe, e.getMessage() );
         }
     }
 

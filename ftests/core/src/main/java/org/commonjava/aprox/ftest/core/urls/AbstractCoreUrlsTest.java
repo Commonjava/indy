@@ -82,7 +82,7 @@ public abstract class AbstractCoreUrlsTest
                       .create( new Group( PUBLIC ), changelog, Group.class );
         }
 
-        g.setConstituents( Arrays.asList( hosted.getKey() ) );
+        g.setConstituents( Collections.singletonList( hosted.getKey() ) );
         client.stores()
               .update( g, changelog );
     }

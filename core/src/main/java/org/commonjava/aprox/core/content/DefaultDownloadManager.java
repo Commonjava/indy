@@ -15,23 +15,6 @@
  */
 package org.commonjava.aprox.core.content;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
-import static org.apache.commons.io.IOUtils.copy;
-import static org.commonjava.aprox.util.ContentUtils.dedupeListing;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
-
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.change.event.AproxFileEventManager;
 import org.commonjava.aprox.change.event.ArtifactStoreRescanEvent;
@@ -39,11 +22,7 @@ import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.content.StoreResource;
 import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.model.core.ArtifactStore;
-import org.commonjava.aprox.model.core.HostedRepository;
-import org.commonjava.aprox.model.core.RemoteRepository;
-import org.commonjava.aprox.model.core.StoreKey;
-import org.commonjava.aprox.model.core.StoreType;
+import org.commonjava.aprox.model.core.*;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.LocationUtils;
@@ -56,14 +35,26 @@ import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.TransferTimeoutException;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.event.FileAccessEvent;
-import org.commonjava.maven.galley.model.ConcreteResource;
-import org.commonjava.maven.galley.model.ListingResult;
-import org.commonjava.maven.galley.model.Transfer;
-import org.commonjava.maven.galley.model.TransferOperation;
-import org.commonjava.maven.galley.model.VirtualResource;
+import org.commonjava.maven.galley.model.*;
 import org.commonjava.maven.galley.spi.transport.LocationExpander;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.apache.commons.io.IOUtils.copy;
+import static org.commonjava.aprox.util.ContentUtils.dedupeListing;
 
 @javax.enterprise.context.ApplicationScoped
 public class DefaultDownloadManager
@@ -79,7 +70,7 @@ public class DefaultDownloadManager
     private AproxFileEventManager fileEventManager;
 
     // Byte, because it's small, and we really only care about the keys anyway.
-    private final Map<StoreKey, Byte> rescansInProgress = new ConcurrentHashMap<StoreKey, Byte>();
+    private final Map<StoreKey, Byte> rescansInProgress = new ConcurrentHashMap<>();
 
     @Inject
     @ExecutorConfig( priority = 10, threads = 2, named = "file-manager" )
@@ -112,10 +103,9 @@ public class DefaultDownloadManager
     public List<StoreResource> list( final ArtifactStore store, final String path )
         throws AproxWorkflowException
     {
-        final String dir = path;
         //        final String dir = PathUtils.dirname( path );
 
-        final List<StoreResource> result = new ArrayList<StoreResource>();
+        final List<StoreResource> result = new ArrayList<>();
         if ( store.getKey()
                   .getType() == StoreType.group )
         {
@@ -124,7 +114,7 @@ public class DefaultDownloadManager
                 final List<ListingResult> results =
                     transfers.listAll( locationExpander.expand( new VirtualResource(
                                                                                      LocationUtils.toLocations( store ),
-                                                                                     dir ) ) );
+                                                                                     path ) ) );
 
                 for ( final ListingResult lr : results )
                 {
@@ -132,14 +122,14 @@ public class DefaultDownloadManager
                     {
                         for ( final String file : lr.getListing() )
                         {
-                            result.add( new StoreResource( (KeyedLocation) lr.getLocation(), dir, file ) );
+                            result.add( new StoreResource( (KeyedLocation) lr.getLocation(), path, file ) );
                         }
                     }
                 }
             }
             catch ( final BadGatewayException | TransferTimeoutException e )
             {
-                logger.error( e.getMessage(), e );
+                logger.warn( "Timeout / bad gateway: " + e.getMessage(), e );
                 throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
                                                   "Failed to list ALL paths: {} from: {}. Reason: {}", e, path,
                                                   store.getKey(), e.getMessage() );
@@ -154,7 +144,7 @@ public class DefaultDownloadManager
         else
         {
             final KeyedLocation loc = LocationUtils.toLocation( store );
-            final StoreResource res = new StoreResource( loc, dir );
+            final StoreResource res = new StoreResource( loc, path );
             if ( store instanceof RemoteRepository )
             {
                 try
@@ -164,13 +154,13 @@ public class DefaultDownloadManager
                     {
                         for ( final String file : lr.getListing() )
                         {
-                            result.add( new StoreResource( loc, dir, file ) );
+                            result.add( new StoreResource( loc, path, file ) );
                         }
                     }
                 }
                 catch ( final BadGatewayException | TransferTimeoutException e )
                 {
-                    logger.error( e.getMessage(), e );
+                    logger.warn( "Timeout / bad gateway: " + e.getMessage(), e );
                     throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
                                                       "Failed to list path: {} from: {}. Reason: {}", e, path,
                                                       store.getKey(), e.getMessage() );
@@ -191,13 +181,13 @@ public class DefaultDownloadManager
                     {
                         for ( final String child : listing.getListing() )
                         {
-                            result.add( new StoreResource( loc, dir, child ) );
+                            result.add( new StoreResource( loc, path, child ) );
                         }
                     }
                 }
                 catch ( final BadGatewayException | TransferTimeoutException e )
                 {
-                    logger.error( e.getMessage(), e );
+                    logger.warn( "Timeout  / bad gateway: " + e.getMessage(), e );
                     throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
                                                       "Failed to list path: {} from: {}. Reason: {}", e, path,
                                                       store.getKey(), e.getMessage() );
@@ -220,7 +210,7 @@ public class DefaultDownloadManager
     {
         final String dir = PathUtils.dirname( path );
 
-        final List<StoreResource> result = new ArrayList<StoreResource>();
+        final List<StoreResource> result = new ArrayList<>();
         try
         {
             final List<ListingResult> results =
@@ -240,7 +230,7 @@ public class DefaultDownloadManager
         }
         catch ( final BadGatewayException | TransferTimeoutException e )
         {
-            logger.error( e.getMessage(), e );
+            logger.warn( "Timeout / bad gateway: " + e.getMessage(), e );
             throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
                                               "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, stores,
                                               e.getMessage() );
@@ -275,7 +265,7 @@ public class DefaultDownloadManager
         }
         catch ( final BadGatewayException | TransferTimeoutException e )
         {
-            logger.error( e.getMessage(), e );
+            logger.warn( "Timeout / bad gateway: " + e.getMessage(), e );
             throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
                                               "Failed to list first path: {} from: {}. Reason: {}", e, path, stores,
                                               e.getMessage() );
@@ -315,7 +305,7 @@ public class DefaultDownloadManager
         }
         catch ( final BadGatewayException | TransferTimeoutException e )
         {
-            logger.error( e.getMessage(), e );
+            logger.warn( "Timeout / bad gateway: " + e.getMessage(), e );
             throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
                                               "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, stores,
                                               e.getMessage() );
@@ -362,7 +352,7 @@ public class DefaultDownloadManager
             return null;
         }
 
-        Transfer target = null;
+        Transfer target;
         try
         {
             final ConcreteResource res = new ConcreteResource( LocationUtils.toLocation( store ), path );
@@ -394,7 +384,7 @@ public class DefaultDownloadManager
         }
         catch ( final BadGatewayException | TransferTimeoutException e )
         {
-            logger.error( e.getMessage(), e );
+            logger.warn( "Timeout / bad gateway: " + e.getMessage(), e );
             throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
                                               "Failed to retrieve path: {} from: {}. Reason: {}", e, path, store,
                                               e.getMessage() );

@@ -270,11 +270,13 @@ public final class ResponseUtils
         if ( status != null )
         {
             code = Status.fromStatusCode( status.code() );
+            LOGGER.debug( "got error code from parameter: {}", code );
         }
         else if ( ( error instanceof AproxWorkflowException ) && ( (AproxWorkflowException) error ).getStatus() > 0 )
         {
             final int sc = ( (AproxWorkflowException) error ).getStatus();
-            Status.fromStatusCode( sc );
+            LOGGER.debug( "got error code from exception: {}", sc );
+            code = Status.fromStatusCode( sc );
         }
 
         LOGGER.error( "Sending error response: {} {}\n{}", code.getStatusCode(), code.getReasonPhrase(), msg );

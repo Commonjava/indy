@@ -15,6 +15,7 @@
  */
 package org.commonjava.aprox.depgraph.jaxrs;
 
+import static org.commonjava.aprox.util.ApplicationContent.*;
 import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.throwError;
 
 import java.util.List;
@@ -31,14 +32,16 @@ import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.depgraph.rest.MetadataController;
 import org.commonjava.aprox.util.ApplicationContent;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.cartographer.dto.MetadataCollation;
-import org.commonjava.maven.cartographer.recipe.MetadataCollationRecipe;
-import org.commonjava.maven.cartographer.recipe.MetadataExtractionRecipe;
-import org.commonjava.maven.cartographer.recipe.MetadataUpdateRecipe;
+import org.commonjava.maven.cartographer.result.MetadataCollationResult;
+import org.commonjava.maven.cartographer.request.MetadataCollationRequest;
+import org.commonjava.maven.cartographer.request.MetadataExtractionRequest;
+import org.commonjava.maven.cartographer.request.MetadataUpdateRequest;
+import org.commonjava.maven.cartographer.result.MetadataResult;
+import org.commonjava.maven.cartographer.result.ProjectListResult;
 
 @Path( "/api/depgraph/meta" )
-@Consumes( { "application/json", "application/aprox*+json" } )
-@Produces( { "applicaiton/json", "application/aprox*+json" } )
+@Consumes( { application_json, application_aprox_star_json } )
+@Produces( { application_json, application_aprox_star_json } )
 public class MetadataResource
     implements AproxResources
 {
@@ -48,8 +51,7 @@ public class MetadataResource
 
     @Path( "/updates" )
     @POST
-    @Consumes( ApplicationContent.application_json )
-    public List<ProjectVersionRef> batchUpdate( final MetadataUpdateRecipe recipe )
+    public ProjectListResult batchUpdate( final MetadataUpdateRequest recipe )
     {
         try
         {
@@ -63,7 +65,7 @@ public class MetadataResource
     }
 
     @POST
-    public Map<ProjectVersionRef, Map<String, String>> getMetadata( final MetadataExtractionRecipe recipe )
+    public MetadataResult getMetadata( final MetadataExtractionRequest recipe )
     {
         try
         {
@@ -79,7 +81,7 @@ public class MetadataResource
 
     @Path( "/collation" )
     @POST
-    public MetadataCollation getCollation( final MetadataCollationRecipe recipe )
+    public MetadataCollationResult getCollation( final MetadataCollationRequest recipe )
     {
         try
         {

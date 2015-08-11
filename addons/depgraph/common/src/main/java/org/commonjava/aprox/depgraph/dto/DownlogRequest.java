@@ -15,10 +15,10 @@
  */
 package org.commonjava.aprox.depgraph.dto;
 
-import org.commonjava.maven.cartographer.recipe.RepositoryContentRecipe;
+import org.commonjava.maven.cartographer.request.RepositoryContentRequest;
 
-public class DownlogRecipe
-    extends RepositoryContentRecipe
+public class DownlogRequest
+    extends RepositoryContentRequest
 {
 
     private boolean pathOnly;

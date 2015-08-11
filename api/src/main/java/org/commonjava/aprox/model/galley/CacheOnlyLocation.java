@@ -74,13 +74,13 @@ public class CacheOnlyLocation
     @Override
     public boolean allowsSnapshots()
     {
-        return repo == null ? false : repo.isAllowSnapshots();
+        return repo != null && repo.isAllowSnapshots();
     }
 
     @Override
     public boolean allowsReleases()
     {
-        return repo == null ? true : repo.isAllowReleases();
+        return repo == null || repo.isAllowReleases();
     }
 
     @Override

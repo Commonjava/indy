@@ -181,12 +181,8 @@ public class ImpliedRepositoryDetector
                                          job.pathInfo.getProjectId(), transfer ), e );
         }
 
-        if ( job.pomView == null )
-        {
-            return false;
-        }
+        return job.pomView != null;
 
-        return true;
     }
 
     private boolean updateExistingGroups( final ImplicationsJob job )

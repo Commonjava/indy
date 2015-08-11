@@ -17,7 +17,6 @@ package org.commonjava.aprox.depgraph.rest;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.apache.commons.io.IOUtils.copy;
-import static org.apache.commons.lang.StringUtils.join;
 import static org.commonjava.maven.galley.util.UrlUtils.buildUrl;
 
 import java.io.IOException;
@@ -40,18 +39,20 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.dto.DownlogDTO;
-import org.commonjava.aprox.depgraph.dto.DownlogRecipe;
+import org.commonjava.aprox.depgraph.dto.DownlogRequest;
 import org.commonjava.aprox.depgraph.dto.UrlMapDTO;
 import org.commonjava.aprox.depgraph.util.RecipeHelper;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.galley.CacheOnlyLocation;
 import org.commonjava.aprox.model.galley.KeyedLocation;
+import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.cartographer.CartoRequestException;
 import org.commonjava.maven.cartographer.data.CartoDataException;
 import org.commonjava.maven.cartographer.ops.ResolveOps;
-import org.commonjava.maven.cartographer.recipe.RepositoryContentRecipe;
+import org.commonjava.maven.cartographer.request.RepositoryContentRequest;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -80,18 +81,18 @@ public class RepositoryController
     public UrlMapDTO getUrlMap( final InputStream configStream, final String baseUri, final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
-        final RepositoryContentRecipe dto = configHelper.readRecipe( configStream, RepositoryContentRecipe.class );
+        final RepositoryContentRequest dto = configHelper.readRecipe( configStream, RepositoryContentRequest.class );
         return getUrlMap( dto, baseUri, uriFormatter );
     }
 
     public UrlMapDTO getUrlMap( final String json, final String baseUri, final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
-        final RepositoryContentRecipe dto = configHelper.readRecipe( json, RepositoryContentRecipe.class );
+        final RepositoryContentRequest dto = configHelper.readRecipe( json, RepositoryContentRequest.class );
         return getUrlMap( dto, baseUri, uriFormatter );
     }
 
-    public UrlMapDTO getUrlMap( final RepositoryContentRecipe recipe, final String baseUri,
+    public UrlMapDTO getUrlMap( final RepositoryContentRequest recipe, final String baseUri,
                                 final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
@@ -102,18 +103,18 @@ public class RepositoryController
     public DownlogDTO getDownloadLog(final InputStream configStream, final String baseUri, final UriFormatter uriFormatter)
         throws AproxWorkflowException
     {
-        final DownlogRecipe dto = configHelper.readDownlogDTO( configStream );
+        final DownlogRequest dto = configHelper.readDownlogDTO( configStream );
         return getDownloadLog( dto, baseUri, uriFormatter );
     }
 
     public DownlogDTO getDownloadLog(final String json, final String baseUri, final UriFormatter uriFormatter)
         throws AproxWorkflowException
     {
-        final DownlogRecipe dto = configHelper.readDownlogDTO( json );
+        final DownlogRequest dto = configHelper.readDownlogDTO( json );
         return getDownloadLog( dto, baseUri, uriFormatter );
     }
 
-    public DownlogDTO getDownloadLog( final DownlogRecipe recipe, final String baseUri, final UriFormatter uriFormatter )
+    public DownlogDTO getDownloadLog( final DownlogRequest recipe, final String baseUri, final UriFormatter uriFormatter )
         throws AproxWorkflowException
     {
         final Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> contents = resolveContents( recipe );
@@ -123,18 +124,18 @@ public class RepositoryController
     public void getZipRepository( final InputStream configStream, final OutputStream zipStream )
         throws AproxWorkflowException
     {
-        final RepositoryContentRecipe dto = configHelper.readRecipe( configStream, RepositoryContentRecipe.class );
+        final RepositoryContentRequest dto = configHelper.readRecipe( configStream, RepositoryContentRequest.class );
         getZipRepository( dto, zipStream );
     }
 
     public void getZipRepository( final String json, final OutputStream zipStream )
         throws AproxWorkflowException
     {
-        final RepositoryContentRecipe dto = configHelper.readRecipe( json, RepositoryContentRecipe.class );
+        final RepositoryContentRequest dto = configHelper.readRecipe( json, RepositoryContentRequest.class );
         getZipRepository( dto, zipStream );
     }
 
-    public void getZipRepository( final RepositoryContentRecipe dto, final OutputStream zipStream )
+    public void getZipRepository( final RepositoryContentRequest dto, final OutputStream zipStream )
         throws AproxWorkflowException
     {
         ZipOutputStream stream = null;
@@ -223,7 +224,7 @@ public class RepositoryController
         }
     }
 
-    private String formatDownlogEntry( final ConcreteResource item, final DownlogRecipe dto,
+    private String formatDownlogEntry( final ConcreteResource item, final DownlogRequest dto,
                                        final String baseUri, final UriFormatter uriFormatter )
         throws MalformedURLException
     {
@@ -273,20 +274,25 @@ public class RepositoryController
         }
     }
 
-    private Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> resolveContents( final RepositoryContentRecipe dto )
+    private Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> resolveContents( final RepositoryContentRequest recipe )
         throws AproxWorkflowException
     {
-        configHelper.setRecipeDefaults( dto );
+        configHelper.setRecipeDefaults( recipe );
 
         Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> contents;
         try
         {
-            contents = ops.resolveRepositoryContents( dto );
+            contents = ops.resolveRepositoryContents( recipe );
         }
         catch ( final CartoDataException e )
         {
-            logger.error( String.format( "Failed to resolve repository contents for: %s. Reason: %s", dto, e.getMessage() ), e );
-            throw new AproxWorkflowException( "Failed to resolve repository contents for: {}. Reason: {}", e, dto, e.getMessage() );
+            logger.error( String.format( "Failed to resolve repository contents for: %s. Reason: %s", recipe, e.getMessage() ), e );
+            throw new AproxWorkflowException( "Failed to resolve repository contents for: {}. Reason: {}", e, recipe, e.getMessage() );
+        }
+        catch ( CartoRequestException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid request: %s. Reason: %s", e,
+                                              recipe, e.getMessage() );
         }
 
         return contents;
