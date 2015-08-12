@@ -15,183 +15,83 @@
  */
 package org.commonjava.aprox.depgraph.jaxrs;
 
-import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
-import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatResponse;
+import static org.commonjava.aprox.util.ApplicationContent.*;
+import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.throwError;
 
-import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.Produces;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.depgraph.rest.MetadataController;
 import org.commonjava.aprox.util.ApplicationContent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.cartographer.result.MetadataCollationResult;
+import org.commonjava.maven.cartographer.request.MetadataCollationRequest;
+import org.commonjava.maven.cartographer.request.MetadataExtractionRequest;
+import org.commonjava.maven.cartographer.request.MetadataUpdateRequest;
+import org.commonjava.maven.cartographer.result.MetadataResult;
+import org.commonjava.maven.cartographer.result.ProjectListResult;
 
 @Path( "/api/depgraph/meta" )
-@ApplicationScoped
+@Consumes( { application_json, application_aprox_star_json } )
+@Produces( { application_json, application_aprox_star_json } )
 public class MetadataResource
     implements AproxResources
 {
 
-    private final Logger logger = LoggerFactory.getLogger( getClass() );
-
     @Inject
     private MetadataController controller;
 
-    @Path( "/batch" )
+    @Path( "/updates" )
     @POST
-    @Consumes( ApplicationContent.application_json )
-    public Response batchUpdate( @QueryParam( "wsid" ) final String wsid, @Context final HttpServletRequest request )
+    public ProjectListResult batchUpdate( final MetadataUpdateRequest recipe )
     {
-        Response response = null;
         try
         {
-            // FIXME: Figure out character encoding parse.
-            controller.batchUpdate( request.getInputStream(), request.getCharacterEncoding(), wsid );
-            response = Response.ok()
-                               .build();
-        }
-        catch ( final AproxWorkflowException | IOException e )
-        {
-            logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
-        }
-        return response;
-    }
-
-    @Path( "/for/{groupId}/{artifactId}/{version}" )
-    @GET
-    public Response getMetadata( @PathParam( "groupId" ) final String gid, @PathParam( "artifactId" ) final String aid,
-                                 @PathParam( "version" ) final String ver, @QueryParam( "wsid" ) final String wsid )
-    {
-        Response response = null;
-        String json = null;
-        try
-        {
-            json = controller.getMetadata( gid, aid, ver, wsid );
+            return controller.batchUpdate( recipe );
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            throwError( e );
         }
-
-        if ( response == null )
-        {
-            if ( json == null )
-            {
-                response = Response.status( Status.NOT_FOUND )
-                                   .build();
-            }
-            else
-            {
-                response = formatOkResponseWithJsonEntity( json );
-            }
-        }
-
-        return response;
+        return null;
     }
 
-    @Path( "/forkey/{groupId}/{artifactId}/{version}/{key}" )
-    public Response getMetadataValue( @PathParam( "groupId" ) final String gid,
-                                      @PathParam( "artifactId" ) final String aid,
-                                      @PathParam( "version" ) final String ver,
-                                      @QueryParam( "wsid" ) final String wsid, @PathParam( "key" ) final String k )
+    @POST
+    public MetadataResult getMetadata( final MetadataExtractionRequest recipe )
     {
-        Response response = null;
-        String json = null;
         try
         {
-            json = controller.getMetadataValue( gid, aid, ver, k, wsid );
+            return controller.getMetadata( recipe );
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            throwError( e );
         }
 
-        if ( response == null )
-        {
-            if ( json == null )
-            {
-                response = Response.status( Status.NOT_FOUND )
-                                   .build();
-            }
-            else
-            {
-                response = formatOkResponseWithJsonEntity( json );
-            }
-        }
-
-        return response;
+        return null;
     }
 
-    @Path( "/{groupId}/{artifactId}/{version}" )
+    @Path( "/collation" )
     @POST
-    public Response updateMetadata( @PathParam( "groupId" ) final String gid,
-                                    @PathParam( "artifactId" ) final String aid,
-                                    @PathParam( "version" ) final String ver, @QueryParam( "wsid" ) final String wsid,
-                                    @Context final HttpServletRequest request )
+    public MetadataCollationResult getCollation( final MetadataCollationRequest recipe )
     {
-        Response response = null;
         try
         {
-            // FIXME: Figure out character encoding parse.
-            controller.updateMetadata( gid, aid, ver, request.getInputStream(), request.getCharacterEncoding(), wsid );
-            response = Response.ok()
-                               .build();
+            return controller.getCollation( recipe );
         }
-        catch ( final AproxWorkflowException | IOException e )
+        catch ( final AproxWorkflowException e )
         {
-            logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
-        }
-        return response;
-    }
-
-    @Path( "/collate" )
-    @POST
-    public Response getCollation( @Context final HttpServletRequest request )
-    {
-        Response response = null;
-        String json = null;
-        try
-        {
-            // FIXME: Figure out character encoding parse.
-            json = controller.getCollation( request.getInputStream(), request.getCharacterEncoding() );
-        }
-        catch ( final AproxWorkflowException | IOException e )
-        {
-            logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            throwError( e );
         }
 
-        if ( response == null )
-        {
-            if ( json == null )
-            {
-                response = Response.status( Status.NOT_FOUND )
-                                   .build();
-            }
-            else
-            {
-                response = formatOkResponseWithJsonEntity( json );
-            }
-        }
-
-        return response;
+        return null;
     }
 }

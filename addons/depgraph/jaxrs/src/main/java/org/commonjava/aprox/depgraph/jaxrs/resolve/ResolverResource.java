@@ -15,101 +15,46 @@
  */
 package org.commonjava.aprox.depgraph.jaxrs.resolve;
 
-import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
-import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatResponse;
-import static org.commonjava.aprox.model.util.HttpUtils.parseQueryMap;
+import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.throwError;
+import static org.commonjava.aprox.util.ApplicationContent.application_aprox_star_json;
+import static org.commonjava.aprox.util.ApplicationContent.application_json;
 
-import java.util.Map;
-
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.depgraph.rest.ResolverController;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.commonjava.maven.cartographer.request.MultiGraphRequest;
 
-// FIXME: Inlining a source URL is a terrible idea, make these POSTs with config DTOs
-@Path( "/api/depgraph/resolve/{from}" )
-@ApplicationScoped
+@Path( "/api/depgraph/resolve" )
+@Consumes( { application_json, application_aprox_star_json } )
 public class ResolverResource
     implements AproxResources
 {
 
-    private final Logger logger = LoggerFactory.getLogger( getClass() );
-
     @Inject
     private ResolverController controller;
 
-    @Path( "/{groupId}/{artifactId}/{version}" )
-    @GET
-    public Response resolveGraph( @PathParam( "from" ) final String f, @PathParam( "groupId" ) final String gid,
-                                  @PathParam( "artifactId" ) final String aid,
-                                  @PathParam( "version" ) final String ver, @QueryParam( "wsid" ) final String wsid,
-                                  @QueryParam( "recurse" ) @DefaultValue( "false" ) final boolean recurse,
-                                  @Context final HttpServletRequest request )
+    @POST
+    public Response resolveGraph( final MultiGraphRequest recipe )
     {
-        Response response = null;
         try
         {
-            final Map<String, String[]> queryMap = parseQueryMap( request.getQueryString() );
-
-            logger.debug( "Resolving graph given the following information:\nFrom: {}\nGroup-Id: {}\nArtifact-Id: {}\nVersion: {}\nWorkspace-Id: {}\nRecurse: {}\nQuery params: {}",
-                          f, gid, aid, ver, wsid, recurse, queryMap );
-
-            final String json = controller.resolveGraph( f, gid, aid, ver, recurse, wsid, queryMap );
-
-            if ( json == null )
-            {
-                response = Response.ok()
-                                   .build();
-            }
-            else
-            {
-                response = formatOkResponseWithJsonEntity( json );
-            }
+            controller.resolve( recipe );
+            return Response.ok()
+                           .build();
 
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            throwError( e );
         }
-        return response;
-    }
-
-    // TODO: Return resolved rels
-    @Path( "/{groupId}/{artifactId}/{version}/incomplete" )
-    @GET
-    public Response resolveIncomplete( @PathParam( "from" ) final String f, @PathParam( "groupId" ) final String gid,
-                                       @PathParam( "artifactId" ) final String aid,
-                                       @PathParam( "version" ) final String ver,
-                                       @QueryParam( "wsid" ) final String wsid,
-                                       @QueryParam( "recurse" ) @DefaultValue( "false" ) final boolean recurse,
-                                       @Context final HttpServletRequest request )
-    {
-        Response response = null;
-        try
-        {
-            controller.resolveIncomplete( f, gid, aid, ver, recurse, wsid, parseQueryMap( request.getQueryString() ) );
-            response = Response.ok()
-                               .build();
-        }
-        catch ( final AproxWorkflowException e )
-        {
-            logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
-        }
-        return response;
+        return null;
     }
 
 }

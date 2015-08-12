@@ -15,6 +15,7 @@
  */
 package org.commonjava.aprox.depgraph;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -154,7 +155,7 @@ public class DepgraphStorageListenerRunnable
                 {
                     graph.close();
                 }
-                catch ( final RelationshipGraphException e )
+                catch ( final IOException e )
                 {
                     logger.error( String.format( "Failed to close relationship graph for: %s. Reason: %s", key,
                                                  e.getMessage() ), e );

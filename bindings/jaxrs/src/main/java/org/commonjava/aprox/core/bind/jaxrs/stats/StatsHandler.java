@@ -91,7 +91,7 @@ public class StatsHandler
         catch ( final AproxWorkflowException e )
         {
             logger.error( String.format( "Failed to format active-addons javascript: %s", formatEntity( e ) ), e );
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
         return response;
     }
@@ -129,7 +129,7 @@ public class StatsHandler
         catch ( final AproxWorkflowException e )
         {
             logger.error( String.format( "Failed to retrieve endpoint listing: %s", formatEntity( e ) ), e );
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
         return response;
     }

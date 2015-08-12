@@ -88,7 +88,7 @@ public class FoloAdminHandler
                                          e.getMessage() ),
                           e );
 
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
 
         return response;
@@ -115,7 +115,7 @@ public class FoloAdminHandler
             logger.error( String.format( "Failed to serialize tracking report for: %s. Reason: %s", id, e.getMessage() ),
                           e );
 
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
 
         return response;
@@ -146,7 +146,7 @@ public class FoloAdminHandler
             logger.error( String.format( "Failed to retrieve tracking report for: %s. Reason: %s", tk, e.getMessage() ),
                           e );
 
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
 
         return response;

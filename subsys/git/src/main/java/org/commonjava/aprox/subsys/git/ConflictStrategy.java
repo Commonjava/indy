@@ -24,7 +24,7 @@ public enum ConflictStrategy
 
     private MergeStrategy mergeStrategy;
 
-    private ConflictStrategy( final MergeStrategy mergeStrategy )
+    ConflictStrategy( final MergeStrategy mergeStrategy )
     {
         this.mergeStrategy = mergeStrategy;
     }

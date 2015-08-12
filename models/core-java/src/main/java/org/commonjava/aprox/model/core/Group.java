@@ -84,12 +84,12 @@ public class Group
 
     public boolean removeConstituent( final ArtifactStore constituent )
     {
-        return constituent == null ? false : removeConstituent( constituent.getKey() );
+        return constituent != null && removeConstituent( constituent.getKey() );
     }
 
     public boolean removeConstituent( final StoreKey repository )
     {
-        return constituents == null ? false : constituents.remove( repository );
+        return constituents != null && constituents.remove( repository );
     }
 
     public void setConstituents( final List<StoreKey> constituents )

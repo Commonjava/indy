@@ -26,6 +26,6 @@ public enum ArtifactStoreUpdateType
     /** Definite creation of new store. */
     ADD,
     /** upadting an existing store. */
-    UPDATE;
+    UPDATE
 
 }

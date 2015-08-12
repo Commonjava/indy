@@ -33,7 +33,7 @@ public enum ApplicationHeader
 
     private final String key;
 
-    private ApplicationHeader( final String key )
+    ApplicationHeader( final String key )
     {
         this.key = key;
     }

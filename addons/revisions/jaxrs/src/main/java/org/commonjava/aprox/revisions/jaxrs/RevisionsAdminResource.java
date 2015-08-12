@@ -72,7 +72,7 @@ public class RevisionsAdminResource
         {
             logger.error( "Failed to pull git updates for data dir: " + e.getMessage(), e );
             response =
-                ResponseUtils.formatResponse( e, "Failed to pull git updates for data dir: " + e.getMessage(), true );
+                ResponseUtils.formatResponse( e, "Failed to pull git updates for data dir: " + e.getMessage() );
         }
 
         return response;
@@ -95,7 +95,7 @@ public class RevisionsAdminResource
         {
             logger.error( "Failed to push git updates for data dir: " + e.getMessage(), e );
             response =
-                ResponseUtils.formatResponse( e, "Failed to push git updates for data dir: " + e.getMessage(), true );
+                ResponseUtils.formatResponse( e, "Failed to push git updates for data dir: " + e.getMessage() );
         }
 
         return response;
@@ -117,7 +117,7 @@ public class RevisionsAdminResource
         catch ( final GitSubsystemException e )
         {
             logger.error( "Failed to read git changelog from data dir: " + e.getMessage(), e );
-            response = formatResponse( e, "Failed to read git changelog from data dir.", true );
+            response = formatResponse( e, "Failed to read git changelog from data dir." );
         }
 
         return response;

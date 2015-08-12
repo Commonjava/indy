@@ -17,6 +17,7 @@ package org.commonjava.aprox.depgraph.jaxrs.calc;
 
 import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatResponse;
+import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.throwError;
 import static org.commonjava.aprox.util.ApplicationContent.application_json;
 
 import java.io.IOException;
@@ -24,21 +25,25 @@ import java.io.IOException;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.depgraph.rest.CalculatorController;
+import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
+import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.cartographer.request.GraphAnalysisRequest;
+import org.commonjava.maven.cartographer.request.GraphCalculation;
+import org.commonjava.maven.cartographer.request.MultiGraphRequest;
+import org.commonjava.maven.cartographer.result.GraphDifference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Path( "/api/depgraph/calc" )
-@ApplicationScoped
+@Consumes( { "application/json", "application/aprox*+json" } )
+@Produces( { "application/json", "application/aprox*+json" } )
 public class CalculatorResource
     implements AproxResources
 {
@@ -49,39 +54,54 @@ public class CalculatorResource
     private CalculatorController controller;
 
     @Path( "/diff" )
-    @GET
+    @POST
     @Produces( application_json )
-    public Response difference( final @QueryParam( "wsid" ) String wsid, @Context final HttpServletRequest request )
+    public GraphDifference<ProjectRelationship<?>> difference( final GraphAnalysisRequest request )
     {
         Response response = null;
         try
         {
-            final String json = controller.difference( request.getInputStream(), request.getCharacterEncoding(), wsid );
-            response = formatOkResponseWithJsonEntity( json );
+            return controller.difference( request );
         }
-        catch ( final AproxWorkflowException | IOException e )
+        catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            throwError( e );
         }
-        return response;
+        return null;
     }
 
-    @GET
+    @Path( "/drift" )
+    @POST
     @Produces( application_json )
-    public Response calculate( final @QueryParam( "wsid" ) String wsid, @Context final HttpServletRequest request )
+    public GraphDifference<ProjectVersionRef> drift( final GraphAnalysisRequest request )
     {
         Response response = null;
         try
         {
-            final String json = controller.calculate( request.getInputStream(), request.getCharacterEncoding(), wsid );
-            response = formatOkResponseWithJsonEntity( json );
+            return controller.drift( request );
         }
-        catch ( final AproxWorkflowException | IOException e )
+        catch ( final AproxWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            throwError( e );
         }
-        return response;
+        return null;
+    }
+
+    @POST
+    @Produces( application_json )
+    public GraphCalculation calculate( MultiGraphRequest request )
+    {
+        try
+        {
+            return controller.calculate( request );
+        }
+        catch ( final AproxWorkflowException e )
+        {
+            logger.error( e.getMessage(), e );
+            throwError( e );
+        }
+        return null;
     }
 }

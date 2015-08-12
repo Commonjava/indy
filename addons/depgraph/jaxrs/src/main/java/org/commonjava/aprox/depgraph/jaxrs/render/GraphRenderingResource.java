@@ -15,162 +15,83 @@
  */
 package org.commonjava.aprox.depgraph.jaxrs.render;
 
-import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatOkResponseWithEntity;
-import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatResponse;
-import static org.commonjava.aprox.model.util.HttpUtils.parseQueryMap;
-import static org.commonjava.aprox.util.ApplicationContent.application_xml;
-import static org.commonjava.aprox.util.ApplicationContent.text_plain;
-
-import java.io.File;
-import java.io.IOException;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.depgraph.rest.RenderingController;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.commonjava.maven.cartographer.request.MultiRenderRequest;
+import org.commonjava.maven.cartographer.request.PomRequest;
+import org.commonjava.maven.cartographer.request.RepositoryContentRequest;
+
+import javax.inject.Inject;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import java.io.File;
+
+import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.throwError;
+import static org.commonjava.aprox.util.ApplicationContent.application_aprox_star_json;
+import static org.commonjava.aprox.util.ApplicationContent.application_json;
+import static org.commonjava.aprox.util.ApplicationContent.application_xml;
+import static org.commonjava.aprox.util.ApplicationContent.application_zip;
+import static org.commonjava.aprox.util.ApplicationContent.text_plain;
 
 @Path( "/api/depgraph/render" )
-@ApplicationScoped
+@Consumes( { application_json, application_aprox_star_json } )
 public class GraphRenderingResource
-    implements AproxResources
+                implements AproxResources
 {
 
     private static final String TYPE_GRAPHVIZ = "text/x-graphviz";
 
-    private final Logger logger = LoggerFactory.getLogger( getClass() );
-
     @Inject
     private RenderingController controller;
-
-    @Path( "/pom/{groupId}/{artifactId}/{version}" )
-    @POST
-    @Produces( application_xml )
-    @Deprecated
-    public Response pomFor( final @PathParam( "groupId" ) String gid, @PathParam( "artifactId" ) final String aid,
-                            @PathParam( "version" ) final String ver, @QueryParam( "wsid" ) final String wsid,
-                            @Context final HttpServletRequest request )
-    {
-        Response response = null;
-
-        try
-        {
-            final String out =
-                controller.pomFor( gid, aid, ver, wsid, parseQueryMap( request.getQueryString() ),
-                                   request.getInputStream() );
-            if ( out == null )
-            {
-                response = Response.status( Status.NOT_FOUND )
-                                   .build();
-            }
-            else
-            {
-                response = formatOkResponseWithEntity( out, application_xml );
-            }
-
-        }
-        catch ( final AproxWorkflowException | IOException e )
-        {
-            logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
-        }
-        return response;
-    }
 
     @Path( "/pom" )
     @POST
     @Produces( application_xml )
-    public Response pomForDTO( @Context final HttpServletRequest request )
+    public String pom( PomRequest recipe )
     {
-        Response response = null;
         try
         {
-            final String out = controller.pomFor( request.getInputStream() );
-            if ( out == null )
-            {
-                response = Response.status( Status.NOT_FOUND )
-                                   .build();
-            }
-            else
-            {
-                response = formatOkResponseWithEntity( out, application_xml );
-            }
-
-        }
-        catch ( final AproxWorkflowException | IOException e )
-        {
-            logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
-        }
-        return response;
-    }
-
-    @Path( "/dotfile/{groupId}/{artifactId}/{version}" )
-    @GET
-    @Produces( TYPE_GRAPHVIZ )
-    public Response dotfile( final @PathParam( "groupId" ) String gid, @PathParam( "artifactId" ) final String aid,
-                             @PathParam( "version" ) final String ver, @QueryParam( "wsid" ) final String wsid,
-                             @Context final HttpServletRequest request )
-    {
-        Response response = null;
-        try
-        {
-            final String out = controller.dotfile( gid, aid, ver, wsid, parseQueryMap( request.getQueryString() ) );
-            if ( out == null )
-            {
-                response = Response.status( Status.NOT_FOUND )
-                                   .build();
-            }
-            else
-            {
-                response = formatOkResponseWithEntity( out, TYPE_GRAPHVIZ );
-            }
+            return controller.pomFor( recipe );
         }
         catch ( final AproxWorkflowException e )
         {
-            logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            throwError( e );
         }
-        return response;
+        return null;
+    }
+
+    @Path( "/dotfile" )
+    @POST
+    @Produces( TYPE_GRAPHVIZ )
+    public String dotfile( final MultiRenderRequest recipe )
+    {
+        try
+        {
+            return controller.dotfile( recipe );
+        }
+        catch ( final AproxWorkflowException e )
+        {
+            throwError( e );
+        }
+        return null;
     }
 
     @Path( "/tree" )
     @POST
     @Produces( text_plain )
-    public Response tree( @Context final HttpServletRequest request )
+    public File tree( final RepositoryContentRequest recipe )
     {
-        Response response = null;
         try
         {
-            final File out = controller.tree( request.getInputStream() );
-            if ( out == null )
-            {
-                response = Response.status( Status.NOT_FOUND )
-                                   .build();
-            }
-            else
-            {
-                response = formatOkResponseWithEntity( out, text_plain );
-            }
+            return controller.tree( recipe );
         }
-        catch ( final AproxWorkflowException | IOException e )
+        catch ( final AproxWorkflowException e )
         {
-            logger.error( e.getMessage(), e );
-            response = formatResponse( e, true );
+            throwError( e );
         }
-        return response;
+        return null;
     }
 }

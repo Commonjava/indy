@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.aprox.subsys.datafile.change;
+package org.commonjava.aprox.bind.jaxrs;
 
-public enum DataFileEventType
+public interface RestProvider
 {
-
-    accessed, modified, deleted
 
 }

@@ -126,7 +126,7 @@ public final class UrlUtils
         {
             if ( part == null || part.length() < 1 || "/".equals( part ) )
             {
-                continue parts;
+                continue;
             }
 
             if ( idx == 0 && part.startsWith( "file:" ) )
@@ -136,7 +136,7 @@ public final class UrlUtils
                     sb.append( part.substring( 5 ) );
                 }
 
-                continue parts;
+                continue;
             }
 
             if ( idx > 0 )

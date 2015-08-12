@@ -18,6 +18,7 @@ package org.commonjava.aprox.promote.ftest;
 import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 import org.commonjava.aprox.client.core.AproxClientModule;
 import org.commonjava.aprox.ftest.core.AbstractAproxFunctionalTest;
@@ -66,6 +67,6 @@ public class AbstractPromotionManagerTest
     @Override
     protected Collection<AproxClientModule> getAdditionalClientModules()
     {
-        return Arrays.<AproxClientModule> asList( new AproxPromoteClientModule() );
+        return Collections.singletonList( new AproxPromoteClientModule() );
     }
 }

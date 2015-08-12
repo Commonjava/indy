@@ -22,6 +22,8 @@ import java.util.Map;
 public final class ApplicationContent
 {
 
+    public static final String application_aprox_star_json = "application/aprox*+json";
+
     public static final String application_json = "application/json";
 
     public static final String application_xml = "application/xml";

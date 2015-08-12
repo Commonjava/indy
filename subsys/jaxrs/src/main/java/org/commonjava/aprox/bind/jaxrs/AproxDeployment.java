@@ -35,7 +35,6 @@ import javax.servlet.Servlet;
 import javax.ws.rs.core.Application;
 
 import org.commonjava.aprox.bind.jaxrs.ui.UIServlet;
-import org.commonjava.aprox.bind.jaxrs.util.AproxResteasyJsonProvider;
 import org.commonjava.aprox.bind.jaxrs.util.CdiInjectorFactoryImpl;
 import org.commonjava.aprox.bind.jaxrs.util.DeploymentInfoUtils;
 import org.commonjava.aprox.bind.jaxrs.util.RequestScopeListener;
@@ -62,18 +61,11 @@ public class AproxDeployment
 
     public static final String API_PREFIX = "api";
 
-    private static Set<Class<?>> PROVIDER_CLASSES;
-
-    static
-    {
-        final Set<Class<?>> providers = new HashSet<>();
-        providers.add( AproxResteasyJsonProvider.class );
-
-        PROVIDER_CLASSES = providers;
-    }
-
     @Inject
     private Instance<AproxResources> resources;
+
+    @Inject
+    private Instance<RestProvider> providerInstances;
 
     @Inject
     private Instance<AproxDeploymentProvider> deployments;
@@ -87,9 +79,9 @@ public class AproxDeployment
     @Inject
     private AProxVersioning versioning;
 
-    private Set<Class<?>> resourceClasses;
+    private Set<Class<? extends AproxResources>> resourceClasses;
 
-    private Set<Class<?>> providerClasses = PROVIDER_CLASSES;
+    private Set<Class<? extends RestProvider>> providerClasses;
 
     private Set<AproxDeploymentProvider> deploymentProviders;
 
@@ -97,7 +89,7 @@ public class AproxDeployment
     {
     }
 
-    public AproxDeployment( final Set<Class<?>> resourceClasses,
+    public AproxDeployment( final Set<Class<? extends AproxResources>> resourceClasses, final Set<Class<? extends RestProvider>> restProviders,
                             final Set<AproxDeploymentProvider> deploymentProviders, final UIServlet ui,
                             final ResourceManagementFilter resourceManagementFilter, final AProxVersioning versioning )
     {
@@ -112,11 +104,16 @@ public class AproxDeployment
     @PostConstruct
     public void cdiInit()
     {
-        providerClasses = Collections.emptySet();
+        providerClasses = new HashSet<>();
         resourceClasses = new HashSet<>();
         for ( final AproxResources aproxResources : resources )
         {
             resourceClasses.add( aproxResources.getClass() );
+        }
+
+        for ( final RestProvider restProvider : providerInstances )
+        {
+            providerClasses.add( restProvider.getClass() );
         }
 
         deploymentProviders = new HashSet<>();

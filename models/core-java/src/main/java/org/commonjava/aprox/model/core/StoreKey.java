@@ -93,11 +93,7 @@ public final class StoreKey
         {
             return false;
         }
-        if ( type != other.type )
-        {
-            return false;
-        }
-        return true;
+        return type == other.type;
     }
 
     public static StoreKey fromString( final String id )

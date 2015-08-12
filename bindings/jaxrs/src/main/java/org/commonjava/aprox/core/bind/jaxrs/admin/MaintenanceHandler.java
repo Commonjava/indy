@@ -58,7 +58,7 @@ public class MaintenanceHandler
         catch ( final AproxWorkflowException e )
         {
             logger.error( String.format( "Failed to rescan: %s. Reason: %s", key, e.getMessage() ), e );
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
         return response;
     }
@@ -77,7 +77,7 @@ public class MaintenanceHandler
         catch ( final AproxWorkflowException e )
         {
             logger.error( String.format( "Failed to rescan: ALL. Reason: %s", e.getMessage() ), e );
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
         return response;
     }
@@ -96,7 +96,7 @@ public class MaintenanceHandler
         catch ( final AproxWorkflowException e )
         {
             logger.error( String.format( "Failed to delete: %s in: ALL. Reason: %s", e.getMessage() ), e );
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
         return response;
     }
@@ -115,7 +115,7 @@ public class MaintenanceHandler
         catch ( final AproxWorkflowException e )
         {
             logger.error( String.format( "Failed to delete: %s in: ALL. Reason: %s", e.getMessage() ), e );
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
         return response;
     }

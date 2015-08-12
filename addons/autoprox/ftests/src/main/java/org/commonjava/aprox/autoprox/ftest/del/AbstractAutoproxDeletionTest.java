@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.autoprox.client.AutoProxCatalogModule;
@@ -72,7 +73,7 @@ public abstract class AbstractAutoproxDeletionTest
     @Override
     protected Collection<AproxClientModule> getAdditionalClientModules()
     {
-        return Arrays.<AproxClientModule> asList( new AutoProxCatalogModule() );
+        return Collections.singletonList( new AutoProxCatalogModule() );
     }
 
 }

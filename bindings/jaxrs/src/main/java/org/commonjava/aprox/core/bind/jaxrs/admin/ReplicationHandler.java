@@ -85,7 +85,7 @@ public class ReplicationHandler
         catch ( final AproxWorkflowException | IOException e )
         {
             logger.error( String.format( "Replication failed: %s", e.getMessage() ), e );
-            response = formatResponse( e, true );
+            response = formatResponse( e );
         }
 
         return response;

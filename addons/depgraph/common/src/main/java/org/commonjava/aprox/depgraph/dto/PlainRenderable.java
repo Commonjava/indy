@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.aprox.subsys.datafile.change;
+package org.commonjava.aprox.depgraph.dto;
 
-public enum DataFileEventType
+public interface PlainRenderable
 {
 
-    accessed, modified, deleted
+    String render();
 
 }

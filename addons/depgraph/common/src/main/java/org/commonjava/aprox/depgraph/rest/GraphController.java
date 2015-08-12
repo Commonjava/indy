@@ -15,37 +15,28 @@
  */
 package org.commonjava.aprox.depgraph.rest;
 
-import static org.commonjava.maven.atlas.ident.util.IdentityUtils.projectVersion;
-
-import java.util.Collections;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.depgraph.dto.ProjectListing;
-import org.commonjava.aprox.depgraph.util.PresetParameterParser;
-import org.commonjava.aprox.depgraph.util.RequestAdvisor;
+import org.commonjava.aprox.depgraph.util.RecipeHelper;
 import org.commonjava.aprox.util.ApplicationStatus;
-import org.commonjava.maven.atlas.graph.ViewParams;
-import org.commonjava.maven.atlas.graph.filter.ProjectRelationshipFilter;
-import org.commonjava.maven.atlas.graph.mutate.ManagedDependencyMutator;
+import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
 import org.commonjava.maven.atlas.graph.traverse.model.BuildOrder;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.atlas.ident.version.InvalidVersionSpecificationException;
+import org.commonjava.maven.cartographer.CartoRequestException;
 import org.commonjava.maven.cartographer.data.CartoDataException;
-import org.commonjava.maven.cartographer.dto.GraphExport;
+import org.commonjava.maven.cartographer.result.*;
 import org.commonjava.maven.cartographer.ops.GraphOps;
+import org.commonjava.maven.cartographer.request.PathsRequest;
+import org.commonjava.maven.cartographer.request.ProjectGraphRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-@ApplicationScoped
 public class GraphController
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -54,255 +45,269 @@ public class GraphController
     private GraphOps ops;
 
     @Inject
-    private ObjectMapper serializer;
+    private RecipeHelper configHelper;
 
-    @Inject
-    private RequestAdvisor requestAdvisor;
-
-    @Inject
-    private PresetParameterParser presetParamParser;
-
-    public void reindex( final String gav, final String workspaceId )
+    public ProjectListResult reindex( final ProjectGraphRequest recipe )
         throws AproxWorkflowException
     {
-        final ViewParams params = new ViewParams( workspaceId );
-        ProjectVersionRef ref = null;
         try
         {
-            if ( gav != null )
-            {
-                ref = projectVersion( gav );
-            }
-
-            if ( ref != null )
-            {
-                ops.reindex( ref, params );
-            }
-            else
-            {
-                ops.reindexAll( params );
-            }
+            return ops.reindex( recipe );
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to reindex: {}. Reason: {}", e, ref == null ? "all projects"
-                            : ref, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to reindex: {}. Reason: {}", e, recipe, e.getMessage() );
+        }
+        catch ( CartoRequestException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid request: %s. Reason: %s", e,
+                                              recipe, e.getMessage() );
         }
     }
 
-    public String errors( final String gav, final String workspaceId )
+    public ProjectPathsResult getPaths( final InputStream configStream )
         throws AproxWorkflowException
     {
-        final ViewParams params = new ViewParams( workspaceId );
-        ProjectVersionRef ref = null;
-        try
-        {
-            if ( gav != null )
-            {
-                ref = projectVersion( gav );
-            }
-
-            Map<ProjectVersionRef, String> errors;
-            if ( ref != null )
-            {
-                logger.debug( "Retrieving project errors in graph: {}", ref );
-                errors = Collections.singletonMap( ref, ops.getProjectError( ref, params ) );
-            }
-            else
-            {
-                logger.debug( "Retrieving ALL project errors" );
-                errors = ops.getAllProjectErrors( params );
-            }
-
-            return errors == null ? null : serializer.writeValueAsString( errors );
-        }
-        catch ( final CartoDataException e )
-        {
-            throw new AproxWorkflowException( "Failed to lookup resolution errors for: {}. Reason: {}", e,
-                                              ref == null ? "all projects" : ref, e.getMessage() );
-        }
-        catch ( final JsonProcessingException e )
-        {
-            throw new AproxWorkflowException( "Failed to serialize to JSON. Reason: %s", e, e.getMessage() );
-        }
-
+        final PathsRequest dto = configHelper.readRecipe( configStream, PathsRequest.class );
+        return getPaths( dto );
     }
 
-    public String incomplete( final String gav, final String workspaceId, final Map<String, String[]> params )
+    public ProjectPathsResult getPaths( final String json )
         throws AproxWorkflowException
     {
-        final ProjectVersionRef ref = gav == null ? null : projectVersion( gav );
-
-        try
-        {
-            final ProjectRelationshipFilter filter =
-                requestAdvisor.createRelationshipFilter( params, presetParamParser.parse( params ) );
-
-            ViewParams viewParams;
-            if ( ref == null )
-            {
-                viewParams = new ViewParams( workspaceId, filter, new ManagedDependencyMutator() );
-            }
-            else
-            {
-                viewParams = new ViewParams( workspaceId, filter, new ManagedDependencyMutator(), ref );
-            }
-
-            final Set<ProjectVersionRef> result = ops.getIncomplete( viewParams );
-
-            return result == null ? null
-                            : serializer.writeValueAsString( new ProjectListing<ProjectVersionRef>( result ) );
-        }
-        catch ( final CartoDataException e )
-        {
-            throw new AproxWorkflowException( "Failed to lookup incomplete subgraphs for: {}. Reason: {}", e,
-                                              ref == null ? "all projects" : ref, e.getMessage() );
-        }
-        catch ( final JsonProcessingException e )
-        {
-            throw new AproxWorkflowException( "Failed to serialize to JSON. Reason: %s", e, e.getMessage() );
-        }
+        final PathsRequest dto = configHelper.readRecipe( json, PathsRequest.class );
+        return getPaths( dto );
     }
 
-    public String variable( final String gav, final String workspaceId, final Map<String, String[]> params )
+    public ProjectPathsResult getPaths( final PathsRequest recipe )
         throws AproxWorkflowException
     {
-        final ProjectVersionRef ref = gav == null ? null : projectVersion( gav );
+        configHelper.setRecipeDefaults( recipe );
 
         try
         {
-            final ProjectRelationshipFilter filter =
-                requestAdvisor.createRelationshipFilter( params, presetParamParser.parse( params ) );
-
-            ViewParams viewParams;
-            if ( ref == null )
-            {
-                viewParams = new ViewParams( workspaceId, filter, new ManagedDependencyMutator() );
-            }
-            else
-            {
-                viewParams = new ViewParams( workspaceId, filter, new ManagedDependencyMutator(), ref );
-            }
-
-            final Set<ProjectVersionRef> result = ops.getVariable( viewParams );
-
-            return result == null ? null
-                            : serializer.writeValueAsString( new ProjectListing<ProjectVersionRef>( result ) );
+            return ops.getPaths( recipe );
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to lookup variable subgraphs for: {}. Reason: {}", e,
-                                              ref == null ? "all projects" : ref, e.getMessage() );
-        }
-        catch ( final JsonProcessingException e )
-        {
-            throw new AproxWorkflowException( "Failed to serialize to JSON. Reason: %s", e, e.getMessage() );
-        }
-    }
-
-    public String ancestryOf( final String groupId, final String artifactId, final String version,
-                              final String workspaceId )
-        throws AproxWorkflowException
-    {
-        final ProjectVersionRef root = new ProjectVersionRef( groupId, artifactId, version );
-        final ViewParams params = new ViewParams( workspaceId, root );
-        try
-        {
-            final List<ProjectVersionRef> ancestry = ops.getAncestry( root, params );
-
-            final ProjectListing<ProjectVersionRef> listing = new ProjectListing<>( ancestry );
-            return ancestry == null ? null : serializer.writeValueAsString( listing );
-        }
-        catch ( final CartoDataException e )
-        {
-            throw new AproxWorkflowException( "Failed to lookup ancestry for: {}:{}:{}. Reason: {}", e, groupId,
-                                              artifactId, version, e.getMessage() );
-        }
-        catch ( final InvalidVersionSpecificationException e )
-        {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                              "Invalid version in request: '{}'. Reason: {}", e, version,
+            throw new AproxWorkflowException( "Failed to discover paths for request: %s. Reason: %s", e, recipe,
                                               e.getMessage() );
         }
-        catch ( final JsonProcessingException e )
+        catch ( CartoRequestException e )
         {
-            throw new AproxWorkflowException( "Failed to serialize to JSON. Reason: %s", e, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid request: %s. Reason: %s", e,
+                                              recipe, e.getMessage() );
         }
     }
 
-    public String buildOrder( final String groupId, final String artifactId, final String version,
-                              final String workspaceId, final Map<String, String[]> filterParams )
+    public ProjectErrors errors( final InputStream configStream )
         throws AproxWorkflowException
     {
-        //        final DiscoveryConfig discovery = createDiscoveryConfig( request, null, sourceFactory );
-        final ProjectRelationshipFilter filter =
-            requestAdvisor.createRelationshipFilter( filterParams, presetParamParser.parse( filterParams ) );
+        final ProjectGraphRequest dto = configHelper.readRecipe( configStream, ProjectGraphRequest.class );
+        return errors( dto );
+    }
+
+    public ProjectErrors errors( final String json )
+        throws AproxWorkflowException
+    {
+        final ProjectGraphRequest dto = configHelper.readRecipe( json, ProjectGraphRequest.class );
+        return errors( dto );
+    }
+
+    public ProjectErrors errors( final ProjectGraphRequest recipe )
+        throws AproxWorkflowException
+    {
+        configHelper.setRecipeDefaults( recipe );
 
         try
         {
-            final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
-
-            final ViewParams params = new ViewParams( workspaceId, filter, new ManagedDependencyMutator(), ref );
-
-            final BuildOrder buildOrder = ops.getBuildOrder( ref, params );
-
-            return buildOrder == null ? null : serializer.writeValueAsString( buildOrder );
+            logger.debug( "Retrieving project errors: {}", recipe );
+            return ops.getProjectErrors( recipe );
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to lookup project graph for: {}:{}:{}. Reason: {}", e, groupId,
-                                              artifactId, version, e.getMessage() );
-        }
-        catch ( final InvalidVersionSpecificationException e )
-        {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                              "Invalid version in request: '{}'. Reason: {}", e, version,
+            throw new AproxWorkflowException( "Failed to lookup resolution errors for: {}. Reason: {}", e, recipe,
                                               e.getMessage() );
         }
-        catch ( final JsonProcessingException e )
+        catch ( CartoRequestException e )
         {
-            throw new AproxWorkflowException( "Failed to serialize to JSON. Reason: %s", e, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid request: %s. Reason: %s", e,
+                                              recipe, e.getMessage() );
         }
     }
 
-    public String projectGraph( final String groupId, final String artifactId, final String version,
-                                final String workspaceId, final Map<String, String[]> filterParams )
+    public ProjectListResult incomplete( final InputStream configStream )
         throws AproxWorkflowException
     {
+        final ProjectGraphRequest dto = configHelper.readRecipe( configStream, ProjectGraphRequest.class );
+        return incomplete( dto );
+    }
+
+    public ProjectListResult incomplete( final String json )
+        throws AproxWorkflowException
+    {
+        final ProjectGraphRequest dto = configHelper.readRecipe( json, ProjectGraphRequest.class );
+        return incomplete( dto );
+    }
+
+    public ProjectListResult incomplete( final ProjectGraphRequest recipe )
+        throws AproxWorkflowException
+    {
+        configHelper.setRecipeDefaults( recipe );
+
         try
         {
-            //            final DiscoveryConfig discovery = createDiscoveryConfig( request, null, sourceFactory );
-            final ProjectRelationshipFilter filter =
-                requestAdvisor.createRelationshipFilter( filterParams, presetParamParser.parse( filterParams ) );
-
-            final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
-
-            final ViewParams params = new ViewParams( workspaceId, filter, new ManagedDependencyMutator(), ref );
-            final GraphExport graph = ops.exportGraph( params );
-
-            if ( graph != null )
-            {
-                return serializer.writeValueAsString( graph );
-            }
-            else
-            {
-                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(), "Could not find graph: {}", ref );
-            }
+            return ops.getIncomplete( recipe );
         }
         catch ( final CartoDataException e )
         {
-            throw new AproxWorkflowException( "Failed to lookup project graph for: {}:{}:{}. Reason: {}", e, groupId,
-                                              artifactId, version, e.getMessage() );
-        }
-        catch ( final InvalidVersionSpecificationException e )
-        {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                              "Invalid version in request: '{}'. Reason: {}", e, version,
+            throw new AproxWorkflowException( "Failed to lookup incomplete subgraphs for: {}. Reason: {}", e, recipe,
                                               e.getMessage() );
         }
-        catch ( final JsonProcessingException e )
+        catch ( CartoRequestException e )
         {
-            throw new AproxWorkflowException( "Failed to serialize to JSON. Reason: %s", e, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid request: %s. Reason: %s", e,
+                                              recipe, e.getMessage() );
+        }
+    }
+
+    public ProjectListResult variable( final InputStream configStream )
+        throws AproxWorkflowException
+    {
+        final ProjectGraphRequest dto = configHelper.readRecipe( configStream, ProjectGraphRequest.class );
+        return variable( dto );
+    }
+
+    public ProjectListResult variable( final String json )
+        throws AproxWorkflowException
+    {
+        final ProjectGraphRequest dto = configHelper.readRecipe( json, ProjectGraphRequest.class );
+        return variable( dto );
+    }
+
+    public ProjectListResult variable( final ProjectGraphRequest recipe )
+        throws AproxWorkflowException
+    {
+        configHelper.setRecipeDefaults( recipe );
+
+        try
+        {
+            return ops.getVariable( recipe );
+        }
+        catch ( final CartoDataException e )
+        {
+            throw new AproxWorkflowException( "Failed to lookup variable subgraphs for: {}. Reason: {}", e, recipe,
+                                              e.getMessage() );
+        }
+        catch ( CartoRequestException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid request: %s. Reason: %s", e,
+                                              recipe, e.getMessage() );
+        }
+    }
+
+    public MappedProjectsResult ancestryOf( final InputStream configStream )
+        throws AproxWorkflowException
+    {
+        final ProjectGraphRequest dto = configHelper.readRecipe( configStream, ProjectGraphRequest.class );
+        return ancestryOf( dto );
+    }
+
+    public MappedProjectsResult ancestryOf( final String json )
+        throws AproxWorkflowException
+    {
+        final ProjectGraphRequest dto = configHelper.readRecipe( json, ProjectGraphRequest.class );
+        return ancestryOf( dto );
+    }
+
+    public MappedProjectsResult ancestryOf( final ProjectGraphRequest recipe )
+        throws AproxWorkflowException
+    {
+        configHelper.setRecipeDefaults( recipe );
+
+        try
+        {
+            return ops.getAncestry( recipe );
+        }
+        catch ( final CartoDataException e )
+        {
+            throw new AproxWorkflowException( "Failed to lookup ancestry for: {}. Reason: {}", e, recipe,
+                                              e.getMessage() );
+        }
+        catch ( CartoRequestException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid request: %s. Reason: %s", e,
+                                              recipe, e.getMessage() );
+        }
+    }
+
+    public BuildOrder buildOrder( final InputStream configStream )
+        throws AproxWorkflowException
+    {
+        final ProjectGraphRequest dto = configHelper.readRecipe( configStream, ProjectGraphRequest.class );
+        return buildOrder( dto );
+    }
+
+    public BuildOrder buildOrder( final String json )
+        throws AproxWorkflowException
+    {
+        final ProjectGraphRequest dto = configHelper.readRecipe( json, ProjectGraphRequest.class );
+        return buildOrder( dto );
+    }
+
+    public BuildOrder buildOrder( final ProjectGraphRequest recipe )
+        throws AproxWorkflowException
+    {
+        configHelper.setRecipeDefaults( recipe );
+
+        try
+        {
+            return ops.getBuildOrder( recipe );
+        }
+        catch ( final CartoDataException e )
+        {
+            throw new AproxWorkflowException( "Failed to lookup build order for: {}. Reason: {}", e, recipe,
+                                              e.getMessage() );
+        }
+        catch ( CartoRequestException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid request: %s. Reason: %s", e,
+                                              recipe, e.getMessage() );
+        }
+    }
+
+    public GraphExport projectGraph( final InputStream configStream )
+        throws AproxWorkflowException
+    {
+        final ProjectGraphRequest dto = configHelper.readRecipe( configStream, ProjectGraphRequest.class );
+        return projectGraph( dto );
+    }
+
+    public GraphExport projectGraph( final String json )
+        throws AproxWorkflowException
+    {
+        final ProjectGraphRequest dto = configHelper.readRecipe( json, ProjectGraphRequest.class );
+        return projectGraph( dto );
+    }
+
+    public GraphExport projectGraph( final ProjectGraphRequest recipe )
+        throws AproxWorkflowException
+    {
+        configHelper.setRecipeDefaults( recipe );
+
+        try
+        {
+            return ops.exportGraph( recipe );
+        }
+        catch ( final CartoDataException e )
+        {
+            throw new AproxWorkflowException( "Failed to export project graph for: {}. Reason: {}", e, recipe,
+                                              e.getMessage() );
+        }
+        catch ( CartoRequestException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid request: %s. Reason: %s", e,
+                                              recipe, e.getMessage() );
         }
     }
 

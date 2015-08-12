@@ -27,9 +27,9 @@ import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.cartographer.dto.GraphComposition;
-import org.commonjava.maven.cartographer.dto.GraphDescription;
-import org.commonjava.maven.cartographer.dto.PomRecipe;
+import org.commonjava.maven.cartographer.request.GraphComposition;
+import org.commonjava.maven.cartographer.request.GraphDescription;
+import org.commonjava.maven.cartographer.request.PomRequest;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,7 +51,7 @@ public class PomRecipeTest
 
         final GraphComposition comp = new GraphComposition( null, Collections.singletonList( desc ) );
 
-        final PomRecipe dto = new PomRecipe();
+        final PomRequest dto = new PomRequest();
         dto.setGraphComposition( comp );
         dto.setSource( new StoreKey( StoreType.remote, "central" ).toString() );
         dto.setOutput( new ProjectVersionRef( "org.foo", "bar-bom", "1.0" ) );
@@ -64,7 +64,7 @@ public class PomRecipeTest
 
         System.out.println( json );
 
-        final PomRecipe out = serializer.readValue( json, PomRecipe.class );
+        final PomRequest out = serializer.readValue( json, PomRequest.class );
 
         System.out.println( out.getOutput() );
 

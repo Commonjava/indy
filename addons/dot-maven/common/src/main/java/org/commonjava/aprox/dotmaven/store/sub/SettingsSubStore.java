@@ -150,7 +150,7 @@ public class SettingsSubStore
             }
         }
 
-        return names.toArray( new String[] {} );
+        return names.toArray( new String[names.size()] );
     }
 
     @Override
