@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.aprox</groupId>
     <artifactId>aprox-depgraph</artifactId>
-    <version>0.23.1</version>
+    <version>0.24.0-SNAPSHOT</version>
   </parent>
   
   <artifactId>aprox-depgraph-common</artifactId>
