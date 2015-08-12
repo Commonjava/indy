@@ -15,32 +15,11 @@
  */
 package org.commonjava.aprox.depgraph.rest;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
-import static org.apache.commons.io.IOUtils.copy;
-import static org.commonjava.maven.galley.util.UrlUtils.buildUrl;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
 import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.depgraph.dto.DownlogDTO;
-import org.commonjava.aprox.depgraph.dto.DownlogRequest;
-import org.commonjava.aprox.depgraph.dto.UrlMapDTO;
+import org.commonjava.aprox.depgraph.model.DownlogRequest;
+import org.commonjava.aprox.depgraph.model.DownlogResult;
+import org.commonjava.aprox.depgraph.model.UrlMapProject;
+import org.commonjava.aprox.depgraph.model.UrlMapResult;
 import org.commonjava.aprox.depgraph.util.RecipeHelper;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.galley.CacheOnlyLocation;
@@ -62,6 +41,22 @@ import org.commonjava.maven.galley.model.TransferBatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.apache.commons.io.IOUtils.copy;
+import static org.commonjava.maven.galley.util.UrlUtils.buildUrl;
+
 @ApplicationScoped
 public class RepositoryController
 {
@@ -77,74 +72,75 @@ public class RepositoryController
     @Inject
     private RecipeHelper configHelper;
 
-
-    public UrlMapDTO getUrlMap( final InputStream configStream, final String baseUri, final UriFormatter uriFormatter )
-        throws AproxWorkflowException
+    public UrlMapResult getUrlMap( final InputStream configStream, final String baseUri, final UriFormatter uriFormatter )
+                    throws AproxWorkflowException
     {
         final RepositoryContentRequest dto = configHelper.readRecipe( configStream, RepositoryContentRequest.class );
         return getUrlMap( dto, baseUri, uriFormatter );
     }
 
-    public UrlMapDTO getUrlMap( final String json, final String baseUri, final UriFormatter uriFormatter )
-        throws AproxWorkflowException
+    public UrlMapResult getUrlMap( final String json, final String baseUri, final UriFormatter uriFormatter )
+                    throws AproxWorkflowException
     {
         final RepositoryContentRequest dto = configHelper.readRecipe( json, RepositoryContentRequest.class );
         return getUrlMap( dto, baseUri, uriFormatter );
     }
 
-    public UrlMapDTO getUrlMap( final RepositoryContentRequest recipe, final String baseUri,
+    public UrlMapResult getUrlMap( final RepositoryContentRequest recipe, final String baseUri,
                                 final UriFormatter uriFormatter )
-        throws AproxWorkflowException
+                    throws AproxWorkflowException
     {
         final Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> contents = resolveContents( recipe );
-        return new UrlMapDTO( contents, recipe, baseUri, uriFormatter );
+        return new UrlMapResult( createUrlMapProjectMappings( contents, recipe, baseUri, uriFormatter ) );
     }
 
-    public DownlogDTO getDownloadLog(final InputStream configStream, final String baseUri, final UriFormatter uriFormatter)
-        throws AproxWorkflowException
+    public DownlogResult getDownloadLog( final InputStream configStream, final String baseUri,
+                                      final UriFormatter uriFormatter )
+                    throws AproxWorkflowException
     {
         final DownlogRequest dto = configHelper.readDownlogDTO( configStream );
         return getDownloadLog( dto, baseUri, uriFormatter );
     }
 
-    public DownlogDTO getDownloadLog(final String json, final String baseUri, final UriFormatter uriFormatter)
-        throws AproxWorkflowException
+    public DownlogResult getDownloadLog( final String json, final String baseUri, final UriFormatter uriFormatter )
+                    throws AproxWorkflowException
     {
         final DownlogRequest dto = configHelper.readDownlogDTO( json );
         return getDownloadLog( dto, baseUri, uriFormatter );
     }
 
-    public DownlogDTO getDownloadLog( final DownlogRequest recipe, final String baseUri, final UriFormatter uriFormatter )
-        throws AproxWorkflowException
+    public DownlogResult getDownloadLog( final DownlogRequest recipe, final String baseUri,
+                                      final UriFormatter uriFormatter )
+                    throws AproxWorkflowException
     {
         final Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> contents = resolveContents( recipe );
-        return new DownlogDTO(contents, recipe, baseUri, uriFormatter);
+        return new DownlogResult( recipe.getLinePrefix(), formatDownlogLines( contents, recipe, baseUri, uriFormatter ) );
     }
 
     public void getZipRepository( final InputStream configStream, final OutputStream zipStream )
-        throws AproxWorkflowException
+                    throws AproxWorkflowException
     {
         final RepositoryContentRequest dto = configHelper.readRecipe( configStream, RepositoryContentRequest.class );
         getZipRepository( dto, zipStream );
     }
 
     public void getZipRepository( final String json, final OutputStream zipStream )
-        throws AproxWorkflowException
+                    throws AproxWorkflowException
     {
         final RepositoryContentRequest dto = configHelper.readRecipe( json, RepositoryContentRequest.class );
         getZipRepository( dto, zipStream );
     }
 
     public void getZipRepository( final RepositoryContentRequest dto, final OutputStream zipStream )
-        throws AproxWorkflowException
+                    throws AproxWorkflowException
     {
         ZipOutputStream stream = null;
         try
         {
             final Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> contents = resolveContents( dto );
 
-            final Set<ConcreteResource> entries = new HashSet<ConcreteResource>();
-            final Set<String> seenPaths = new HashSet<String>();
+            final Set<ConcreteResource> entries = new HashSet<>();
+            final Set<String> seenPaths = new HashSet<>();
 
             logger.info( "Iterating contents with {} GAVs.", contents.size() );
             for ( final Map<ArtifactRef, ConcreteResource> artifactResources : contents.values() )
@@ -174,23 +170,13 @@ public class RepositoryController
             TransferBatch batch = new TransferBatch( entries );
             batch = transferManager.batchRetrieve( batch, new EventMetadata() );
 
-            logger.info( "Retrieved {} artifacts. Creating zip.", batch.getTransfers()
-                                                                       .size() );
+            logger.info( "Retrieved {} artifacts. Creating zip.", batch.getTransfers().size() );
 
             // FIXME: Stream to a temp file, then pass that to the Response.ok() handler...
             stream = new ZipOutputStream( zipStream );
 
-            final List<Transfer> items = new ArrayList<Transfer>( batch.getTransfers()
-                                                                       .values() );
-            Collections.sort( items, new Comparator<Transfer>()
-            {
-                @Override
-                public int compare( final Transfer f, final Transfer s )
-                {
-                    return f.getPath()
-                            .compareTo( s.getPath() );
-                }
-            } );
+            final List<Transfer> items = new ArrayList<>( batch.getTransfers().values() );
+            Collections.sort( items, (f, s)-> f.getPath().compareTo( s.getPath() ) );
 
             for ( final Transfer item : items )
             {
@@ -224,58 +210,9 @@ public class RepositoryController
         }
     }
 
-    private String formatDownlogEntry( final ConcreteResource item, final DownlogRequest dto,
-                                       final String baseUri, final UriFormatter uriFormatter )
-        throws MalformedURLException
-    {
-        final KeyedLocation kl = (KeyedLocation) item.getLocation();
-        final StoreKey key = kl.getKey();
-
-        if ( dto.isPathOnly() )
-        {
-            final String prefix = dto.getLinePrefix();
-            if ( prefix != null )
-            {
-                return prefix + item.getPath();
-            }
-            else
-            {
-                return item.getPath();
-            }
-        }
-
-        if ( dto.getLocalUrls() || kl instanceof CacheOnlyLocation )
-        {
-            final String uri = uriFormatter.formatAbsolutePathTo( baseUri, key.getType()
-                                                               .singularEndpointName(), key.getName(), item.getPath() );
-            final String prefix = dto.getLinePrefix();
-            if ( prefix != null )
-            {
-                return prefix + uri;
-            }
-            else
-            {
-                return uri;
-            }
-        }
-        else
-        {
-            final String prefix = dto.getLinePrefix();
-            if ( prefix != null )
-            {
-                return prefix + buildUrl( item.getLocation()
-                                                   .getUri(), item.getPath() );
-            }
-            else
-            {
-                return buildUrl( item.getLocation()
-                                     .getUri(), item.getPath() );
-            }
-        }
-    }
-
-    private Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> resolveContents( final RepositoryContentRequest recipe )
-        throws AproxWorkflowException
+    private Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> resolveContents(
+                    final RepositoryContentRequest recipe )
+                    throws AproxWorkflowException
     {
         configHelper.setRecipeDefaults( recipe );
 
@@ -286,16 +223,122 @@ public class RepositoryController
         }
         catch ( final CartoDataException e )
         {
-            logger.error( String.format( "Failed to resolve repository contents for: %s. Reason: %s", recipe, e.getMessage() ), e );
-            throw new AproxWorkflowException( "Failed to resolve repository contents for: {}. Reason: {}", e, recipe, e.getMessage() );
+            logger.error( String.format( "Failed to resolve repository contents for: %s. Reason: %s", recipe,
+                                         e.getMessage() ), e );
+            throw new AproxWorkflowException( "Failed to resolve repository contents for: {}. Reason: {}", e, recipe,
+                                              e.getMessage() );
         }
         catch ( CartoRequestException e )
         {
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid request: %s. Reason: %s", e,
-                                              recipe, e.getMessage() );
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid request: %s. Reason: %s",
+                                              e, recipe, e.getMessage() );
         }
 
         return contents;
+    }
+
+    private Map<ProjectVersionRef,UrlMapProject> createUrlMapProjectMappings(
+                    Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> contents,
+                    RepositoryContentRequest recipe, String baseUri, UriFormatter uriFormatter )
+    {
+        Map<ProjectVersionRef, UrlMapProject> map = new HashMap<>();
+        for ( final ProjectVersionRef gav : contents.keySet() )
+        {
+            final Map<ArtifactRef, ConcreteResource> items = contents.get( gav );
+
+            final Set<String> files = new HashSet<>();
+            KeyedLocation kl = null;
+
+            for ( final ConcreteResource item : items.values() )
+            {
+                final KeyedLocation loc = (KeyedLocation) item.getLocation();
+
+                // FIXME: we're squashing some potential variation in the locations here!
+                // if we're not looking for local urls, allow any cache-only location to be overridden...
+                if ( kl == null || ( !recipe.getLocalUrls() && ( kl instanceof CacheOnlyLocation ) ) )
+                {
+                    kl = loc;
+                }
+
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.debug( "Adding {} (keyLocation: {})", item, kl );
+                files.add( new File( item.getPath() ).getName() );
+            }
+
+            final Set<String> sortedFiles = new TreeSet<>( files );
+
+            final String url = formatUrlMapRepositoryUrl( kl, recipe.getLocalUrls(), baseUri, uriFormatter );
+
+            map.put( gav, new UrlMapProject( url, sortedFiles ) );
+        }
+
+        return map;
+    }
+
+    private String formatUrlMapRepositoryUrl( final KeyedLocation kl, final boolean localUrls, final String baseUri,
+                                              final UriFormatter uriFormatter )
+    {
+        if ( localUrls || kl instanceof CacheOnlyLocation )
+        {
+            final StoreKey key = kl.getKey();
+            return uriFormatter.formatAbsolutePathTo( baseUri, key.getType()
+                                                                  .singularEndpointName(), key.getName() );
+        }
+        else
+        {
+            return kl.getUri();
+        }
+    }
+
+    private Set<String> formatDownlogLines( Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> contents,
+                                            DownlogRequest recipe, String baseUri, UriFormatter uriFormatter )
+                    throws AproxWorkflowException
+    {
+        Set<String> locations = new TreeSet<>();
+        for ( final ProjectVersionRef ref : contents.keySet() )
+        {
+            final Map<ArtifactRef, ConcreteResource> items = contents.get( ref );
+            for ( final ConcreteResource item : items.values() )
+            {
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.debug( "Adding: '{}'", item );
+                locations.add( formatDownlogEntry( item, recipe, baseUri, uriFormatter ) );
+            }
+        }
+
+        return locations;
+    }
+
+    private String formatDownlogEntry( ConcreteResource item, DownlogRequest recipe, String baseUri,
+                                       UriFormatter uriFormatter )
+                    throws AproxWorkflowException
+    {
+        String path;
+        if ( recipe.isPathOnly() )
+        {
+            path = item.getPath();
+        }
+        else if ( recipe.getLocalUrls() || item.getLocation() instanceof CacheOnlyLocation )
+        {
+            final StoreKey key = ( (CacheOnlyLocation) item.getLocation() ).getKey();
+
+            path = uriFormatter.formatAbsolutePathTo( baseUri, key.getType().singularEndpointName(), key.getName(),
+                                                      item.getPath() );
+        }
+        else
+        {
+            try
+            {
+                path = buildUrl( item.getLocation().getUri(), item.getPath() );
+            }
+            catch ( MalformedURLException e )
+            {
+                throw new AproxWorkflowException( "Failed to generate remote URL for: %s in location: %s. Reason: %s",
+                                                  e, item.getPath(), item.getLocationUri(), e.getMessage() );
+            }
+        }
+
+        return path;
     }
 
 }

@@ -20,6 +20,7 @@ import java.util.Set;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
+import org.commonjava.aprox.depgraph.model.WorkspaceList;
 import org.commonjava.maven.atlas.graph.RelationshipGraphException;
 import org.commonjava.maven.atlas.graph.RelationshipGraphFactory;
 
@@ -30,7 +31,7 @@ public class WorkspaceController
     private RelationshipGraphFactory graphFactory;
 
     public void delete( final String id )
-        throws AproxWorkflowException
+                    throws AproxWorkflowException
     {
         try
         {
@@ -45,11 +46,11 @@ public class WorkspaceController
         }
     }
 
-    public Set<String> list()
-        throws AproxWorkflowException
+    public WorkspaceList list()
+                    throws AproxWorkflowException
     {
-        return graphFactory.listWorkspaces();
+        Set<String> ids = graphFactory.listWorkspaces();
+        return new WorkspaceList( ids );
     }
-
 
 }

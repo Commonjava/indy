@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <!--
 
     Copyright (C) 2011 Red Hat, Inc. (jdcasey@commonjava.org)
@@ -17,24 +18,31 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
   <parent>
     <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-addons</artifactId>
+    <artifactId>aprox-depgraph</artifactId>
     <version>0.24.0-SNAPSHOT</version>
   </parent>
-  
-  <artifactId>aprox-depgraph</artifactId>
-  <packaging>pom</packaging>
+  <artifactId>aprox-depgraph-model-java</artifactId>
+  <name>AProx :: Add-Ons :: DepGraph :: Java Domain Model</name>
 
-  <name>AProx :: Add-Ons :: DepGraph (Cartographer Integration) :: Parent</name>
-  
-  <modules>
-    <module>model-java</module>
-    <module>client-java</module>
-    <module>common</module>
-    <module>ftests</module>
-    <module>jaxrs</module>
-  </modules>
-
+  <dependencies>
+    <dependency>
+    	<groupId>org.commonjava.aprox</groupId>
+    	<artifactId>aprox-model-core-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.maven.cartographer</groupId>
+      <artifactId>cartographer-model-java</artifactId>
+    </dependency>
+    <dependency>
+    	<groupId>junit</groupId>
+    	<artifactId>junit</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.wordnik</groupId>
+      <artifactId>swagger-jaxrs_2.10</artifactId>
+    </dependency>
+  </dependencies>
 </project>

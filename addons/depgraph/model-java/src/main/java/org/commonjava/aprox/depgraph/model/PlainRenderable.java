@@ -13,36 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.aprox.depgraph.dto;
+package org.commonjava.aprox.depgraph.model;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.commonjava.maven.atlas.ident.ref.ProjectRef;
-
-public class ProjectListing<T extends ProjectRef>
+public interface PlainRenderable
 {
 
-    private List<T> items;
-
-    public ProjectListing()
-    {
-    }
-
-    public ProjectListing( final Collection<T> items )
-    {
-        this.items = ( items instanceof List ? (List<T>) items : new ArrayList<>( items ) );
-    }
-
-    public List<T> getItems()
-    {
-        return items;
-    }
-
-    public void setItems( final List<T> items )
-    {
-        this.items = items;
-    }
+    String render();
 
 }
