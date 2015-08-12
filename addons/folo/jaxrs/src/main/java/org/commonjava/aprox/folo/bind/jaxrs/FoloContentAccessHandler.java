@@ -64,7 +64,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Modified copy of {@link ContentAccessHandler} that collects a tracking ID in addition to store type and name, then hands this off to
- * {@link FoloContentController} (a variant of {@link ContentController}), which records artifact accesses.
+ * {@link ContentController} (with {@link EventMetadata} containing the tracking ID), which records artifact accesses.
  * 
  * NOTE: This is a result of copy/paste programming, so changes to {@link ContentAccessHandler} will have to be ported over.
  * 
@@ -266,16 +266,17 @@ public class FoloContentAccessHandler
             }
             else
             {
-                final Transfer item =
-                    contentController.get( sk, path, new EventMetadata().set( FoloConstants.TRACKING_KEY, tk ) );
+                EventMetadata metadata = new EventMetadata().set( FoloConstants.TRACKING_KEY, tk );
+                final Transfer item = contentController.get( sk, path, metadata );
+
                 if ( item == null )
                 {
                     if ( StoreType.remote == st )
                     {
-                        final HttpExchangeMetadata metadata = contentController.getHttpMetadata( sk, path );
+                        final HttpExchangeMetadata httpMetadata = contentController.getHttpMetadata( sk, path );
                         if ( metadata != null )
                         {
-                            response = formatResponseFromMetadata( metadata );
+                            response = formatResponseFromMetadata( httpMetadata );
                         }
                     }
 
@@ -303,7 +304,7 @@ public class FoloContentAccessHandler
 
                     item.touch();
 
-                    response = Response.ok( new TransferStreamingOutput( item ) )
+                    response = Response.ok( new TransferStreamingOutput( item, metadata ) )
                                        .header( ApplicationHeader.content_type.key(), contentType )
                                        .build();
                 }
