@@ -60,7 +60,7 @@ public class ProjectResource
         return null;
     }
 
-    @Path( "/parent" )
+    @Path( "/parents" )
     @POST
     public MappedProjectResult parentOf( final ProjectGraphRequest recipe )
     {
