@@ -49,6 +49,7 @@ import org.commonjava.aprox.core.content.DefaultContentManager;
 import org.commonjava.aprox.core.content.DefaultDownloadManager;
 import org.commonjava.aprox.core.ctl.ContentController;
 import org.commonjava.aprox.httprox.conf.HttproxConfig;
+import org.commonjava.aprox.httprox.handler.ProxyAcceptHandler;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
@@ -68,10 +69,7 @@ import org.commonjava.maven.galley.transport.htcli.HttpClientTransport;
 import org.commonjava.maven.galley.transport.htcli.HttpImpl;
 import org.commonjava.maven.galley.transport.htcli.util.HttpUtil;
 import org.commonjava.test.http.TestHttpServer;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,10 +137,13 @@ public class HttpProxyTest
         final ContentController contentController =
             new ContentController( storeManager, contentManager, templates, mapper, new MimeTyper() );
 
-        proxy = new HttpProxy( config, bootOpts, storeManager, contentController, core.getCache() );
+        proxy = new HttpProxy( config, bootOpts,
+                               new ProxyAcceptHandler( config, bootOpts, storeManager, contentController,
+                                                       core.getCache() ) );
         proxy.start();
     }
 
+    @After
     public void teardown()
     {
         if ( proxy != null )
