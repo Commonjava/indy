@@ -13,11 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.aprox.depgraph.dto;
+package org.commonjava.aprox.depgraph.model;
 
-public interface PlainRenderable
+import org.commonjava.maven.cartographer.request.RepositoryContentRequest;
+
+public class DownlogRequest
+    extends RepositoryContentRequest
 {
 
-    String render();
+    private boolean pathOnly;
+
+    private String linePrefix;
+
+    public boolean isPathOnly()
+    {
+        return pathOnly;
+    }
+
+    public void setPathOnly( final boolean pathOnly )
+    {
+        this.pathOnly = pathOnly;
+    }
+
+    public String getLinePrefix()
+    {
+        return linePrefix;
+    }
+
+    public void setLinePrefix( final String linePrefix )
+    {
+        this.linePrefix = linePrefix;
+    }
 
 }

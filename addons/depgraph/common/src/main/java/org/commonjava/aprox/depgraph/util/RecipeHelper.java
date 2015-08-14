@@ -24,7 +24,7 @@ import javax.inject.Inject;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
-import org.commonjava.aprox.depgraph.dto.DownlogRequest;
+import org.commonjava.aprox.depgraph.model.DownlogRequest;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.cartographer.request.AbstractGraphRequest;
 import org.commonjava.maven.cartographer.request.GraphBasedRequest;

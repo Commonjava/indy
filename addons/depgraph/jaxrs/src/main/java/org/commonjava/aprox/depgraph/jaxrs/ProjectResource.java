@@ -15,13 +15,14 @@
  */
 package org.commonjava.aprox.depgraph.jaxrs;
 
-import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.throwError;
-import static org.commonjava.aprox.util.ApplicationContent.application_aprox_star_json;
-import static org.commonjava.aprox.util.ApplicationContent.application_json;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import org.commonjava.aprox.AproxWorkflowException;
+import org.commonjava.aprox.bind.jaxrs.AproxResources;
+import org.commonjava.aprox.depgraph.rest.ProjectController;
+import org.commonjava.maven.cartographer.request.ProjectGraphRelationshipsRequest;
+import org.commonjava.maven.cartographer.request.ProjectGraphRequest;
+import org.commonjava.maven.cartographer.result.MappedProjectRelationshipsResult;
+import org.commonjava.maven.cartographer.result.MappedProjectResult;
+import org.commonjava.maven.cartographer.result.ProjectListResult;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -29,14 +30,9 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
-import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.bind.jaxrs.AproxResources;
-import org.commonjava.aprox.depgraph.rest.ProjectController;
-import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
-import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.cartographer.request.ProjectGraphRelationshipsRequest;
-import org.commonjava.maven.cartographer.request.ProjectGraphRequest;
-import org.commonjava.maven.cartographer.result.ProjectListResult;
+import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.throwError;
+import static org.commonjava.aprox.util.ApplicationContent.application_aprox_star_json;
+import static org.commonjava.aprox.util.ApplicationContent.application_json;
 
 @Path( "/api/depgraph/project" )
 @Consumes( { application_json, application_aprox_star_json } )
@@ -64,9 +60,9 @@ public class ProjectResource
         return null;
     }
 
-    @Path( "/parent" )
+    @Path( "/parents" )
     @POST
-    public Map<ProjectVersionRef, ProjectVersionRef> parentOf( final ProjectGraphRequest recipe )
+    public MappedProjectResult parentOf( final ProjectGraphRequest recipe )
     {
         try
         {
@@ -82,7 +78,7 @@ public class ProjectResource
 
     @Path( "/relationships" )
     @POST
-    public Map<ProjectVersionRef, Set<ProjectRelationship<?>>> dependenciesOf( final ProjectGraphRelationshipsRequest recipe )
+    public MappedProjectRelationshipsResult dependenciesOf( final ProjectGraphRelationshipsRequest recipe )
     {
         try
         {
@@ -98,7 +94,7 @@ public class ProjectResource
 
     @Path( "/targeting" )
     @POST
-    public Map<ProjectVersionRef, Set<ProjectRelationship<?>>> relationshipsTargeting( final ProjectGraphRelationshipsRequest recipe )
+    public MappedProjectRelationshipsResult relationshipsTargeting( final ProjectGraphRelationshipsRequest recipe )
     {
         try
         {

@@ -33,6 +33,7 @@ import javax.ws.rs.core.Response;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
+import org.commonjava.aprox.depgraph.model.WorkspaceList;
 import org.commonjava.aprox.depgraph.rest.WorkspaceController;
 
 @Path( "/api/depgraph/ws" )
@@ -64,7 +65,7 @@ public class WorkspaceResource
     }
 
     @GET
-    public Set<String> list()
+    public WorkspaceList list()
     {
         try
         {
