@@ -33,7 +33,7 @@ import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.maven.atlas.graph.RelationshipGraphException;
 import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.cartographer.event.RelationshipStorageEvent;
+import org.commonjava.cartographer.spi.event.RelationshipStorageEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -16,14 +16,14 @@
 package org.commonjava.aprox.depgraph.dto;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.commonjava.aprox.depgraph.json.ProjectRelationshipSerializerModule;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
+import org.commonjava.cartographer.request.GraphComposition;
+import org.commonjava.cartographer.request.GraphDescription;
+import org.commonjava.cartographer.request.PomRequest;
+import org.commonjava.maven.atlas.graph.jackson.ProjectRelationshipSerializerModule;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.cartographer.request.GraphComposition;
-import org.commonjava.maven.cartographer.request.GraphDescription;
-import org.commonjava.maven.cartographer.request.PomRequest;
 import org.junit.Test;
 
 import java.util.Collections;

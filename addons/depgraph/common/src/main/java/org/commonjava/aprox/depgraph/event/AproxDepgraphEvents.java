@@ -32,11 +32,11 @@ import org.commonjava.maven.atlas.graph.RelationshipGraph;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 import org.commonjava.maven.atlas.ident.version.InvalidVersionSpecificationException;
-import org.commonjava.maven.cartographer.data.CartoDataException;
-import org.commonjava.maven.cartographer.event.CartoEventManager;
-import org.commonjava.maven.cartographer.event.CartoEventManagerImpl;
-import org.commonjava.maven.cartographer.event.ProjectRelationshipsErrorEvent;
-import org.commonjava.maven.cartographer.event.RelationshipStorageEvent;
+import org.commonjava.cartographer.CartoDataException;
+import org.commonjava.cartographer.spi.event.CartoEventManager;
+import org.commonjava.cartographer.INTERNAL.event.CartoEventManagerImpl;
+import org.commonjava.cartographer.spi.event.ProjectRelationshipsErrorEvent;
+import org.commonjava.cartographer.spi.event.RelationshipStorageEvent;
 import org.commonjava.maven.galley.event.FileErrorEvent;
 import org.commonjava.maven.galley.event.FileNotFoundEvent;
 import org.commonjava.maven.galley.model.ConcreteResource;
@@ -54,7 +54,7 @@ public class AproxDepgraphEvents
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private CartoEventManagerImpl delegate;
+    private CartoEventManager delegate;
 
     @Inject
     private Event<RelationshipStorageEvent> storageEvents;
@@ -66,7 +66,7 @@ public class AproxDepgraphEvents
     {
     }
 
-    public AproxDepgraphEvents( final CartoEventManagerImpl delegate )
+    public AproxDepgraphEvents( final CartoEventManager delegate )
     {
         this.delegate = delegate;
     }
@@ -160,6 +160,12 @@ public class AproxDepgraphEvents
         {
             errorEvents.fire( evt );
         }
+    }
+
+    @Override
+    public void notifyOfGraph( ProjectVersionRef ref )
+    {
+        delegate.notifyOfGraph( ref );
     }
 
     @Override

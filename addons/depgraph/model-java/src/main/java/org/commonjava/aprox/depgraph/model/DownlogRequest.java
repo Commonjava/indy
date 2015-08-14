@@ -15,7 +15,7 @@
  */
 package org.commonjava.aprox.depgraph.model;
 
-import org.commonjava.maven.cartographer.request.RepositoryContentRequest;
+import org.commonjava.cartographer.request.RepositoryContentRequest;
 
 public class DownlogRequest
     extends RepositoryContentRequest

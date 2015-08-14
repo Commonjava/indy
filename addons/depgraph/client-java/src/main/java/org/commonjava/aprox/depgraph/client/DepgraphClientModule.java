@@ -1,7 +1,6 @@
 package org.commonjava.aprox.depgraph.client;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JavaType;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
 import org.commonjava.aprox.client.core.AproxClientException;
@@ -13,12 +12,12 @@ import org.commonjava.aprox.depgraph.model.DownlogRequest;
 import org.commonjava.aprox.depgraph.model.UrlMapResult;
 import org.commonjava.aprox.depgraph.model.WorkspaceList;
 import org.commonjava.aprox.depgraph.model.builder.DownlogRequestBuilder;
+import org.commonjava.cartographer.request.*;
+import org.commonjava.cartographer.request.build.*;
+import org.commonjava.cartographer.result.*;
 import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
 import org.commonjava.maven.atlas.graph.traverse.model.BuildOrder;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.cartographer.request.*;
-import org.commonjava.maven.cartographer.request.build.*;
-import org.commonjava.maven.cartographer.result.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

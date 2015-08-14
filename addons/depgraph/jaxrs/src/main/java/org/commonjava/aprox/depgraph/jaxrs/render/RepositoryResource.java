@@ -36,7 +36,7 @@ import org.commonjava.aprox.depgraph.model.DownlogRequest;
 import org.commonjava.aprox.depgraph.model.DownlogResult;
 import org.commonjava.aprox.depgraph.model.UrlMapResult;
 import org.commonjava.aprox.depgraph.rest.RepositoryController;
-import org.commonjava.maven.cartographer.request.RepositoryContentRequest;
+import org.commonjava.cartographer.request.RepositoryContentRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

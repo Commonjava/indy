@@ -24,16 +24,16 @@ import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.aprox.depgraph.util.RecipeHelper;
 import org.commonjava.aprox.util.ApplicationStatus;
-import org.commonjava.maven.cartographer.CartoRequestException;
-import org.commonjava.maven.cartographer.data.CartoDataException;
-import org.commonjava.maven.cartographer.ops.ResolveOps;
-import org.commonjava.maven.cartographer.request.MultiGraphRequest;
+import org.commonjava.cartographer.CartoRequestException;
+import org.commonjava.cartographer.CartoDataException;
+import org.commonjava.cartographer.graph.GraphResolver;
+import org.commonjava.cartographer.request.MultiGraphRequest;
 
 public class ResolverController
 {
 
     @Inject
-    private ResolveOps ops;
+    private GraphResolver resolver;
 
     @Inject
     private AproxDepgraphConfig config;
@@ -57,7 +57,7 @@ public class ResolverController
         try
         {
             // TODO: we could provide some feedback to the user based on the graph...
-            ops.resolveGraphs( recipe, ( graph ) -> {
+            resolver.resolveGraphs( recipe, ( graph ) -> {
                 IOUtils.closeQuietly( graph );
             } );
         }

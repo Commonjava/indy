@@ -16,24 +16,19 @@
 package org.commonjava.aprox.depgraph.rest;
 
 import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.util.RecipeHelper;
 import org.commonjava.aprox.util.ApplicationStatus;
-import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
+import org.commonjava.cartographer.result.*;
 import org.commonjava.maven.atlas.graph.traverse.model.BuildOrder;
-import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.cartographer.CartoRequestException;
-import org.commonjava.maven.cartographer.data.CartoDataException;
-import org.commonjava.maven.cartographer.result.*;
-import org.commonjava.maven.cartographer.ops.GraphOps;
-import org.commonjava.maven.cartographer.request.PathsRequest;
-import org.commonjava.maven.cartographer.request.ProjectGraphRequest;
+import org.commonjava.cartographer.CartoRequestException;
+import org.commonjava.cartographer.CartoDataException;
+import org.commonjava.cartographer.ops.GraphOps;
+import org.commonjava.cartographer.request.PathsRequest;
+import org.commonjava.cartographer.request.ProjectGraphRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

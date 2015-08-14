@@ -1,9 +1,8 @@
 package org.commonjava.aprox.depgraph.model.builder;
 
 import org.commonjava.aprox.depgraph.model.DownlogRequest;
-import org.commonjava.maven.cartographer.request.RepositoryContentRequest;
-import org.commonjava.maven.cartographer.request.build.GraphRequestOwner;
-import org.commonjava.maven.cartographer.request.build.RepositoryContentRequestBuilder;
+import org.commonjava.cartographer.request.build.GraphRequestOwner;
+import org.commonjava.cartographer.request.build.RepositoryContentRequestBuilder;
 
 /**
  * Created by jdcasey on 8/12/15.

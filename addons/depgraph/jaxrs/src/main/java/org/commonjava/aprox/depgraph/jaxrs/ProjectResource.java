@@ -18,11 +18,11 @@ package org.commonjava.aprox.depgraph.jaxrs;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.depgraph.rest.ProjectController;
-import org.commonjava.maven.cartographer.request.ProjectGraphRelationshipsRequest;
-import org.commonjava.maven.cartographer.request.ProjectGraphRequest;
-import org.commonjava.maven.cartographer.result.MappedProjectRelationshipsResult;
-import org.commonjava.maven.cartographer.result.MappedProjectResult;
-import org.commonjava.maven.cartographer.result.ProjectListResult;
+import org.commonjava.cartographer.request.ProjectGraphRelationshipsRequest;
+import org.commonjava.cartographer.request.ProjectGraphRequest;
+import org.commonjava.cartographer.result.MappedProjectRelationshipsResult;
+import org.commonjava.cartographer.result.MappedProjectResult;
+import org.commonjava.cartographer.result.ProjectListResult;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;

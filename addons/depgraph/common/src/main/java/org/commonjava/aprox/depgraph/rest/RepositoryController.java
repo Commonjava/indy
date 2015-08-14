@@ -28,10 +28,10 @@ import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.cartographer.CartoRequestException;
-import org.commonjava.maven.cartographer.data.CartoDataException;
-import org.commonjava.maven.cartographer.ops.ResolveOps;
-import org.commonjava.maven.cartographer.request.RepositoryContentRequest;
+import org.commonjava.cartographer.CartoRequestException;
+import org.commonjava.cartographer.CartoDataException;
+import org.commonjava.cartographer.ops.ResolveOps;
+import org.commonjava.cartographer.request.RepositoryContentRequest;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -223,9 +223,9 @@ public class RepositoryController
         }
         catch ( final CartoDataException e )
         {
-            logger.error( String.format( "Failed to resolve repository contents for: %s. Reason: %s", recipe,
+            logger.error( String.format( "Failed to graph repository contents for: %s. Reason: %s", recipe,
                                          e.getMessage() ), e );
-            throw new AproxWorkflowException( "Failed to resolve repository contents for: {}. Reason: {}", e, recipe,
+            throw new AproxWorkflowException( "Failed to graph repository contents for: {}. Reason: {}", e, recipe,
                                               e.getMessage() );
         }
         catch ( CartoRequestException e )

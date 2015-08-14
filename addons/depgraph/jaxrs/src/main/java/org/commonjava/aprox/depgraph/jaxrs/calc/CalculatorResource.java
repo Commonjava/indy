@@ -20,13 +20,8 @@ import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.throwError;
 import static org.commonjava.aprox.util.ApplicationContent.application_json;
 
-import java.io.IOException;
-
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 import org.commonjava.aprox.AproxWorkflowException;
@@ -34,10 +29,10 @@ import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.depgraph.rest.CalculatorController;
 import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.cartographer.request.GraphAnalysisRequest;
-import org.commonjava.maven.cartographer.request.GraphCalculation;
-import org.commonjava.maven.cartographer.request.MultiGraphRequest;
-import org.commonjava.maven.cartographer.result.GraphDifference;
+import org.commonjava.cartographer.request.GraphAnalysisRequest;
+import org.commonjava.cartographer.request.GraphCalculation;
+import org.commonjava.cartographer.request.MultiGraphRequest;
+import org.commonjava.cartographer.result.GraphDifference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

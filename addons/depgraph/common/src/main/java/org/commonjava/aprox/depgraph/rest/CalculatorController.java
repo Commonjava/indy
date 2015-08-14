@@ -16,24 +16,23 @@
 package org.commonjava.aprox.depgraph.rest;
 
 import java.io.InputStream;
-import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import javafx.application.Application;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.util.RecipeHelper;
 import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.cartographer.request.GraphAnalysisRequest;
+import org.commonjava.cartographer.request.GraphCalculation;
+import org.commonjava.cartographer.request.MultiGraphRequest;
 import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.cartographer.CartoRequestException;
-import org.commonjava.maven.cartographer.data.CartoDataException;
-import org.commonjava.maven.cartographer.request.*;
-import org.commonjava.maven.cartographer.result.GraphDifference;
-import org.commonjava.maven.cartographer.ops.CalculationOps;
+import org.commonjava.cartographer.CartoRequestException;
+import org.commonjava.cartographer.CartoDataException;
+import org.commonjava.cartographer.result.GraphDifference;
+import org.commonjava.cartographer.ops.CalculationOps;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ApplicationScoped

@@ -23,15 +23,14 @@ import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.depgraph.rest.ResolverController;
-import org.commonjava.maven.cartographer.request.MultiGraphRequest;
+import org.commonjava.cartographer.request.MultiGraphRequest;
 
-@Path( "/api/depgraph/resolve" )
+@Path( "/api/depgraph/graph" )
 @Consumes( { application_json, application_aprox_star_json } )
 public class ResolverResource
     implements AproxResources

@@ -26,9 +26,9 @@ import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.aprox.depgraph.model.DownlogRequest;
 import org.commonjava.aprox.util.ApplicationStatus;
-import org.commonjava.maven.cartographer.request.AbstractGraphRequest;
-import org.commonjava.maven.cartographer.request.GraphBasedRequest;
-import org.commonjava.maven.cartographer.request.GraphComposition;
+import org.commonjava.cartographer.request.AbstractGraphRequest;
+import org.commonjava.cartographer.request.GraphBasedRequest;
+import org.commonjava.cartographer.request.GraphComposition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
