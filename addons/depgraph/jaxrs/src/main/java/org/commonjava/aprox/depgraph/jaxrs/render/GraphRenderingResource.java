@@ -78,7 +78,7 @@ public class GraphRenderingResource
         return null;
     }
 
-    @Path( "/tree" )
+    @Path( "/depTree" )
     @POST
     @Produces( text_plain )
     public File tree( final RepositoryContentRequest recipe )
@@ -86,6 +86,22 @@ public class GraphRenderingResource
         try
         {
             return controller.tree( recipe );
+        }
+        catch ( final AproxWorkflowException e )
+        {
+            throwError( e );
+        }
+        return null;
+    }
+
+    @Path( "/depList" )
+    @POST
+    @Produces( text_plain )
+    public File list( final RepositoryContentRequest recipe )
+    {
+        try
+        {
+            return controller.list( recipe );
         }
         catch ( final AproxWorkflowException e )
         {

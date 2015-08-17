@@ -27,6 +27,7 @@ import javax.ws.rs.Produces;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.depgraph.rest.MetadataController;
+import org.commonjava.cartographer.request.ProjectGraphRequest;
 import org.commonjava.cartographer.result.MetadataCollationResult;
 import org.commonjava.cartographer.request.MetadataCollationRequest;
 import org.commonjava.cartographer.request.MetadataExtractionRequest;
@@ -51,6 +52,21 @@ public class MetadataResource
         try
         {
             return controller.batchUpdate( recipe );
+        }
+        catch ( final AproxWorkflowException e )
+        {
+            throwError( e );
+        }
+        return null;
+    }
+
+    @Path( "/rescan" )
+    @POST
+    public ProjectListResult rescan( final ProjectGraphRequest recipe )
+    {
+        try
+        {
+            return controller.rescan( recipe );
         }
         catch ( final AproxWorkflowException e )
         {

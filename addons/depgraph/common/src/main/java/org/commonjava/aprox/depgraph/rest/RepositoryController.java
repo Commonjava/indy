@@ -16,10 +16,7 @@
 package org.commonjava.aprox.depgraph.rest;
 
 import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.depgraph.model.DownlogRequest;
-import org.commonjava.aprox.depgraph.model.DownlogResult;
-import org.commonjava.aprox.depgraph.model.UrlMapProject;
-import org.commonjava.aprox.depgraph.model.UrlMapResult;
+import org.commonjava.aprox.depgraph.model.*;
 import org.commonjava.aprox.depgraph.util.RecipeHelper;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.galley.CacheOnlyLocation;
@@ -35,6 +32,8 @@ import org.commonjava.cartographer.request.RepositoryContentRequest;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.maven.spi.type.TypeMapper;
+import org.commonjava.maven.galley.maven.util.ArtifactPathUtils;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferBatch;
@@ -71,6 +70,9 @@ public class RepositoryController
 
     @Inject
     private RecipeHelper configHelper;
+
+    @Inject
+    private TypeMapper typeMapper;
 
     public UrlMapResult getUrlMap( final InputStream configStream, final String baseUri, final UriFormatter uriFormatter )
                     throws AproxWorkflowException
@@ -181,9 +183,9 @@ public class RepositoryController
             for ( final Transfer item : items )
             {
                 //                    logger.info( "Adding: {}", item );
-                final String path = item.getPath();
                 if ( item != null )
                 {
+                    final String path = item.getPath();
                     final ZipEntry ze = new ZipEntry( path );
                     stream.putNextEntry( ze );
 
@@ -208,6 +210,37 @@ public class RepositoryController
         {
             closeQuietly( stream );
         }
+    }
+
+    public RepoContentResult getRepoContent( RepositoryContentRequest request, String baseUri, UriFormatter uriFormatter )
+            throws AproxWorkflowException
+    {
+        final Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> contents = resolveContents( request );
+        RepoContentResult result = new RepoContentResult();
+        for ( ProjectVersionRef key: contents.keySet() )
+        {
+            Map<ArtifactRef, ConcreteResource> artifactMap = contents.get( key );
+            ProjectRepoContent projectContent = new ProjectRepoContent();
+            for ( ArtifactRef artifact: artifactMap.keySet() )
+            {
+                ConcreteResource item = artifactMap.get( artifact );
+                KeyedLocation kl = (KeyedLocation) item.getLocation();
+
+                String baseUrl = formatRepositoryUrl( kl, request.getLocalUrls(), baseUri, uriFormatter );
+                result.addRepoUrl( kl.getKey(), baseUrl );
+                try
+                {
+                    String path = ArtifactPathUtils.formatArtifactPath( artifact, typeMapper );
+                    projectContent.addArtifact( new ArtifactRepoContent( artifact, kl.getKey(), path ) );
+                }
+                catch ( TransferException e )
+                {
+                    logger.error( "Failed to format artifact path: %s. Reason: %s", e, artifact, e.getMessage() );
+                }
+            }
+        }
+
+        return result;
     }
 
     private Map<ProjectVersionRef, Map<ArtifactRef, ConcreteResource>> resolveContents(
@@ -267,7 +300,7 @@ public class RepositoryController
 
             final Set<String> sortedFiles = new TreeSet<>( files );
 
-            final String url = formatUrlMapRepositoryUrl( kl, recipe.getLocalUrls(), baseUri, uriFormatter );
+            final String url = formatRepositoryUrl( kl, recipe.getLocalUrls(), baseUri, uriFormatter );
 
             map.put( gav, new UrlMapProject( url, sortedFiles ) );
         }
@@ -275,8 +308,8 @@ public class RepositoryController
         return map;
     }
 
-    private String formatUrlMapRepositoryUrl( final KeyedLocation kl, final boolean localUrls, final String baseUri,
-                                              final UriFormatter uriFormatter )
+    private String formatRepositoryUrl( final KeyedLocation kl, final boolean localUrls, final String baseUri,
+                                        final UriFormatter uriFormatter )
     {
         if ( localUrls || kl instanceof CacheOnlyLocation )
         {

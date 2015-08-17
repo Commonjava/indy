@@ -160,6 +160,19 @@ public class Aprox
         throw new AproxClientException( "Module not found: %s.", type.getName() );
     }
 
+    public boolean hasModule( Class<?> type )
+    {
+        for ( final AproxClientModule module : moduleRegistry )
+        {
+            if ( type.isInstance( module ) )
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public String getBaseUrl()
     {
         return http.getBaseUrl();

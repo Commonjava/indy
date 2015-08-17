@@ -24,6 +24,7 @@ import org.commonjava.aprox.depgraph.util.RecipeHelper;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.cartographer.CartoRequestException;
 import org.commonjava.cartographer.CartoDataException;
+import org.commonjava.cartographer.request.ProjectGraphRequest;
 import org.commonjava.cartographer.result.MetadataCollationResult;
 import org.commonjava.cartographer.ops.MetadataOps;
 import org.commonjava.cartographer.request.MetadataCollationRequest;
@@ -132,4 +133,21 @@ public class MetadataController
         }
     }
 
+    public ProjectListResult rescan( ProjectGraphRequest recipe )
+            throws AproxWorkflowException
+    {
+        try
+        {
+            return ops.rescanMetadata( recipe );
+        }
+        catch ( CartoDataException e )
+        {
+            throw new AproxWorkflowException( "Failed to rescan graph metadata: {}. Reason: {}", e, recipe, e.getMessage() );
+        }
+        catch ( CartoRequestException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid request: %s. Reason: %s", e,
+                                              recipe, e.getMessage() );
+        }
+    }
 }

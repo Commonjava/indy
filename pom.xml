@@ -643,7 +643,17 @@
         <artifactId>cartographer-model-java</artifactId>
         <version>${cartoVersion}</version>
       </dependency>
-      
+      <dependency>
+        <groupId>org.commonjava.maven.cartographer</groupId>
+        <artifactId>cartographer-tck</artifactId>
+        <version>${cartoVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.maven.cartographer</groupId>
+        <artifactId>cartographer-api</artifactId>
+        <version>${cartoVersion}</version>
+      </dependency>
+
       <!-- override galley-cache-partyline dep -->
       <dependency>
         <groupId>org.commonjava.util.partyline</groupId>
@@ -665,7 +675,7 @@
       <dependency>
         <groupId>org.commonjava.util</groupId>
         <artifactId>http-testserver</artifactId>
-        <version>1.0</version>
+        <version>1.1-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
       

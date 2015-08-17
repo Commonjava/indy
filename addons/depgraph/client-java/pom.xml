@@ -36,6 +36,10 @@
       <artifactId>aprox-depgraph-model-java</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.maven.cartographer</groupId>
+      <artifactId>cartographer-api</artifactId>
+    </dependency>
+    <dependency>
     	<groupId>junit</groupId>
     	<artifactId>junit</artifactId>
     </dependency>
