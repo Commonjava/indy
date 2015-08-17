@@ -13,36 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.aprox.depgraph.dto;
+package org.commonjava.aprox.depgraph.model;
 
-import org.commonjava.maven.cartographer.request.RepositoryContentRequest;
+import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 
-public class DownlogRequest
-    extends RepositoryContentRequest
+import java.util.Map;
+
+public class UrlMapResult
 {
 
-    private boolean pathOnly;
+    private Map<ProjectVersionRef, UrlMapProject> projects;
 
-    private String linePrefix;
+    public UrlMapResult(){}
 
-    public boolean isPathOnly()
+    public UrlMapResult( Map<ProjectVersionRef, UrlMapProject> projects )
     {
-        return pathOnly;
+        this.projects = projects;
     }
 
-    public void setPathOnly( final boolean pathOnly )
+    public Map<ProjectVersionRef, UrlMapProject> getProjects()
     {
-        this.pathOnly = pathOnly;
+        return projects;
     }
 
-    public String getLinePrefix()
+    public void setProjects( Map<ProjectVersionRef, UrlMapProject> projects )
     {
-        return linePrefix;
-    }
-
-    public void setLinePrefix( final String linePrefix )
-    {
-        this.linePrefix = linePrefix;
+        this.projects = projects;
     }
 
 }

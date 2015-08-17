@@ -36,11 +36,10 @@ import org.commonjava.maven.atlas.graph.filter.ParentFilter;
 import org.commonjava.maven.atlas.graph.filter.PluginRuntimeFilter;
 import org.commonjava.maven.atlas.graph.filter.ProjectRelationshipFilter;
 import org.commonjava.maven.atlas.ident.DependencyScope;
-import org.commonjava.maven.cartographer.data.CartoDataException;
-import org.commonjava.maven.cartographer.discover.DefaultDiscoveryConfig;
-import org.commonjava.maven.cartographer.discover.DiscoveryConfig;
-import org.commonjava.maven.cartographer.discover.DiscoverySourceManager;
-import org.commonjava.maven.cartographer.preset.PresetSelector;
+import org.commonjava.cartographer.CartoDataException;
+import org.commonjava.cartographer.graph.discover.DiscoveryConfig;
+import org.commonjava.cartographer.spi.graph.discover.DiscoverySourceManager;
+import org.commonjava.cartographer.graph.preset.PresetSelector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,7 +105,7 @@ public class RequestAdvisor
                                                   final DiscoverySourceManager sourceFactory )
         throws CartoDataException
     {
-        DiscoveryConfig result = DiscoveryConfig.DISABLED;
+        DiscoveryConfig result = null;
         if ( getBooleanParamWithDefault( params, "discover", false ) )
         {
             URI s = source;
@@ -115,14 +114,14 @@ public class RequestAdvisor
                 s = sourceFactory.createSourceURI( getStringParamWithDefault( params, "from", null ) );
             }
 
-            final DefaultDiscoveryConfig c = new DefaultDiscoveryConfig( s );
+            final DiscoveryConfig c = new DiscoveryConfig( s );
             result = c;
 
             c.setEnabled( true );
             c.setTimeoutMillis( getLongParamWithDefault( params, "timeout", c.getTimeoutMillis() ) );
         }
 
-        return result;
+        return result == null ? DiscoveryConfig.getDisabledConfig() : result;
     }
 
 }

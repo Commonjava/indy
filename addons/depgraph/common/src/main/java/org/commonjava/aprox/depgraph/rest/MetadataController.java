@@ -16,24 +16,21 @@
 package org.commonjava.aprox.depgraph.rest;
 
 import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.util.RecipeHelper;
 import org.commonjava.aprox.util.ApplicationStatus;
-import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.cartographer.CartoRequestException;
-import org.commonjava.maven.cartographer.data.CartoDataException;
-import org.commonjava.maven.cartographer.result.MetadataCollationResult;
-import org.commonjava.maven.cartographer.ops.MetadataOps;
-import org.commonjava.maven.cartographer.request.MetadataCollationRequest;
-import org.commonjava.maven.cartographer.request.MetadataExtractionRequest;
-import org.commonjava.maven.cartographer.request.MetadataUpdateRequest;
-import org.commonjava.maven.cartographer.result.MetadataResult;
-import org.commonjava.maven.cartographer.result.ProjectListResult;
+import org.commonjava.cartographer.CartoRequestException;
+import org.commonjava.cartographer.CartoDataException;
+import org.commonjava.cartographer.result.MetadataCollationResult;
+import org.commonjava.cartographer.ops.MetadataOps;
+import org.commonjava.cartographer.request.MetadataCollationRequest;
+import org.commonjava.cartographer.request.MetadataExtractionRequest;
+import org.commonjava.cartographer.request.MetadataUpdateRequest;
+import org.commonjava.cartographer.result.MetadataResult;
+import org.commonjava.cartographer.result.ProjectListResult;
 
 public class MetadataController
 {
@@ -125,7 +122,7 @@ public class MetadataController
         catch ( final CartoDataException e )
         {
             throw new AproxWorkflowException(
-                                              "Failed to resolve or collate graph contents by metadata: {}. Reason: {}",
+                                              "Failed to graph or collate graph contents by metadata: {}. Reason: {}",
                                               e, recipe, e.getMessage() );
         }
         catch ( CartoRequestException e )

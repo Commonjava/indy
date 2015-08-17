@@ -15,11 +15,6 @@
  */
 package org.commonjava.aprox.depgraph.discover;
 
-import java.util.Collections;
-
-import javax.enterprise.inject.Default;
-import javax.inject.Inject;
-
 import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depgraph.util.AproxDepgraphUtils;
@@ -27,16 +22,16 @@ import org.commonjava.aprox.inject.Production;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.util.LocationUtils;
+import org.commonjava.cartographer.CartoDataException;
+import org.commonjava.cartographer.graph.discover.DiscoveryResult;
+import org.commonjava.cartographer.graph.discover.DiscoveryConfig;
+import org.commonjava.cartographer.spi.graph.discover.ProjectRelationshipDiscoverer;
 import org.commonjava.maven.atlas.graph.RelationshipGraph;
 import org.commonjava.maven.atlas.graph.RelationshipGraphException;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.maven.atlas.ident.version.InvalidVersionSpecificationException;
-import org.commonjava.maven.cartographer.data.CartoDataException;
-import org.commonjava.maven.cartographer.discover.DiscoveryConfig;
-import org.commonjava.maven.cartographer.discover.DiscoveryResult;
-import org.commonjava.maven.cartographer.discover.ProjectRelationshipDiscoverer;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.maven.ArtifactManager;
@@ -44,6 +39,10 @@ import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.enterprise.inject.Default;
+import javax.inject.Inject;
+import java.util.Collections;
 
 @javax.enterprise.context.ApplicationScoped
 @Production
@@ -86,7 +85,7 @@ public class AproxProjectGraphDiscoverer
                 specific = resolveSpecificVersion( ref, discoveryConfig );
                 if ( specific == null || specific.equals( ref ) )
                 {
-                    logger.warn( "Cannot resolve specific version of: '{}'.", ref );
+                    logger.warn( "Cannot graph specific version of: '{}'.", ref );
                     return null;
                 }
             }
@@ -179,7 +178,7 @@ public class AproxProjectGraphDiscoverer
         }
         catch ( final TransferException e )
         {
-            throw new CartoDataException( "Failed to resolve variable version for: {}. Reason: {}", e, ref,
+            throw new CartoDataException( "Failed to graph variable version for: {}. Reason: {}", e, ref,
                                           e.getMessage() );
         }
     }

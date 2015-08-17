@@ -15,24 +15,22 @@
  */
 package org.commonjava.aprox.depgraph.dto;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
-
-import java.util.Collections;
-
-import org.commonjava.aprox.depgraph.json.MetadataBatchUpdateSerializerModule;
-import org.commonjava.aprox.depgraph.json.ProjectRelationshipSerializerModule;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
+import org.commonjava.cartographer.request.GraphComposition;
+import org.commonjava.cartographer.request.GraphDescription;
+import org.commonjava.cartographer.request.PomRequest;
+import org.commonjava.maven.atlas.graph.jackson.ProjectRelationshipSerializerModule;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.cartographer.request.GraphComposition;
-import org.commonjava.maven.cartographer.request.GraphDescription;
-import org.commonjava.maven.cartographer.request.PomRequest;
 import org.junit.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Collections;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
 
 public class PomRecipeTest
 {
@@ -42,7 +40,7 @@ public class PomRecipeTest
         throws Exception
     {
         final ObjectMapper serializer =
-            new AproxObjectMapper( true, new MetadataBatchUpdateSerializerModule(),
+            new AproxObjectMapper( true,
                                    new ProjectRelationshipSerializerModule() );
 
         final GraphDescription desc =

@@ -17,7 +17,7 @@ package org.commonjava.aprox.depgraph.discover;
 
 import java.util.List;
 
-import org.commonjava.maven.cartographer.data.CartoDataException;
+import org.commonjava.cartographer.CartoDataException;
 
 public class RetryFailedException
     extends CartoDataException

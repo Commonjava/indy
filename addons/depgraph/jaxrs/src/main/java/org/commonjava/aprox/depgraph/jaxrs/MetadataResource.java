@@ -18,9 +18,6 @@ package org.commonjava.aprox.depgraph.jaxrs;
 import static org.commonjava.aprox.util.ApplicationContent.*;
 import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.throwError;
 
-import java.util.List;
-import java.util.Map;
-
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -30,14 +27,12 @@ import javax.ws.rs.Produces;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.depgraph.rest.MetadataController;
-import org.commonjava.aprox.util.ApplicationContent;
-import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.cartographer.result.MetadataCollationResult;
-import org.commonjava.maven.cartographer.request.MetadataCollationRequest;
-import org.commonjava.maven.cartographer.request.MetadataExtractionRequest;
-import org.commonjava.maven.cartographer.request.MetadataUpdateRequest;
-import org.commonjava.maven.cartographer.result.MetadataResult;
-import org.commonjava.maven.cartographer.result.ProjectListResult;
+import org.commonjava.cartographer.result.MetadataCollationResult;
+import org.commonjava.cartographer.request.MetadataCollationRequest;
+import org.commonjava.cartographer.request.MetadataExtractionRequest;
+import org.commonjava.cartographer.request.MetadataUpdateRequest;
+import org.commonjava.cartographer.result.MetadataResult;
+import org.commonjava.cartographer.result.ProjectListResult;
 
 @Path( "/api/depgraph/meta" )
 @Consumes( { application_json, application_aprox_star_json } )

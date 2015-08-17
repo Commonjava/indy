@@ -35,10 +35,10 @@ import org.commonjava.maven.atlas.graph.RelationshipGraphFactory;
 import org.commonjava.maven.atlas.graph.ViewParams;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
-import org.commonjava.maven.cartographer.data.CartoDataException;
-import org.commonjava.maven.cartographer.discover.DefaultDiscoveryConfig;
-import org.commonjava.maven.cartographer.discover.DiscoveryResult;
-import org.commonjava.maven.cartographer.discover.post.patch.PatcherSupport;
+import org.commonjava.cartographer.CartoDataException;
+import org.commonjava.cartographer.graph.discover.DiscoveryConfig;
+import org.commonjava.cartographer.graph.discover.DiscoveryResult;
+import org.commonjava.cartographer.graph.discover.patch.PatcherSupport;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,7 +124,7 @@ public class DepgraphStorageListenerRunnable
         RelationshipGraph graph = null;
         try
         {
-            final DefaultDiscoveryConfig config = new DefaultDiscoveryConfig( item.getLocation() );
+            final DiscoveryConfig config = new DiscoveryConfig( item.getLocation() );
             config.setLocations( locations );
             config.setStoreRelationships( true );
             config.setEnabledPatchers( patcherSupport.getAvailablePatchers() );

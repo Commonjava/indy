@@ -22,7 +22,7 @@ import javax.enterprise.context.ApplicationScoped;
 
 import org.commonjava.aprox.depgraph.util.PresetParameterParser;
 import org.commonjava.maven.atlas.ident.DependencyScope;
-import org.commonjava.maven.cartographer.preset.CommonPresetParameters;
+import org.commonjava.cartographer.graph.preset.CommonPresetParameters;
 
 @ApplicationScoped
 public class JaxRsPresetParamParser

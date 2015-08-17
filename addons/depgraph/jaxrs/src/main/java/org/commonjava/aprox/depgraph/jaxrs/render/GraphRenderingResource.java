@@ -18,9 +18,9 @@ package org.commonjava.aprox.depgraph.jaxrs.render;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.depgraph.rest.RenderingController;
-import org.commonjava.maven.cartographer.request.MultiRenderRequest;
-import org.commonjava.maven.cartographer.request.PomRequest;
-import org.commonjava.maven.cartographer.request.RepositoryContentRequest;
+import org.commonjava.cartographer.request.MultiRenderRequest;
+import org.commonjava.cartographer.request.PomRequest;
+import org.commonjava.cartographer.request.RepositoryContentRequest;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -33,7 +33,6 @@ import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.throwError;
 import static org.commonjava.aprox.util.ApplicationContent.application_aprox_star_json;
 import static org.commonjava.aprox.util.ApplicationContent.application_json;
 import static org.commonjava.aprox.util.ApplicationContent.application_xml;
-import static org.commonjava.aprox.util.ApplicationContent.application_zip;
 import static org.commonjava.aprox.util.ApplicationContent.text_plain;
 
 @Path( "/api/depgraph/render" )

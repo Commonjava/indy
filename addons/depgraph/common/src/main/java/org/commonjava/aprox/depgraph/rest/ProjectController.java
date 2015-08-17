@@ -15,24 +15,20 @@
  */
 package org.commonjava.aprox.depgraph.rest;
 
-import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.inject.Inject;
-
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.util.RecipeHelper;
 import org.commonjava.aprox.util.ApplicationStatus;
-import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
-import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.cartographer.CartoRequestException;
-import org.commonjava.maven.cartographer.data.CartoDataException;
-import org.commonjava.maven.cartographer.ops.GraphOps;
-import org.commonjava.maven.cartographer.request.ProjectGraphRequest;
-import org.commonjava.maven.cartographer.request.ProjectGraphRelationshipsRequest;
-import org.commonjava.maven.cartographer.result.ProjectListResult;
+import org.commonjava.cartographer.CartoRequestException;
+import org.commonjava.cartographer.CartoDataException;
+import org.commonjava.cartographer.ops.GraphOps;
+import org.commonjava.cartographer.request.ProjectGraphRelationshipsRequest;
+import org.commonjava.cartographer.request.ProjectGraphRequest;
+import org.commonjava.cartographer.result.MappedProjectRelationshipsResult;
+import org.commonjava.cartographer.result.MappedProjectResult;
+import org.commonjava.cartographer.result.ProjectListResult;
+
+import javax.inject.Inject;
+import java.io.InputStream;
 
 public class ProjectController
 {
@@ -69,14 +65,14 @@ public class ProjectController
         }
     }
 
-    public Map<ProjectVersionRef, ProjectVersionRef> parentOf( final InputStream stream )
+    public MappedProjectResult parentOf( final InputStream stream )
         throws AproxWorkflowException
     {
         final ProjectGraphRequest recipe = configHelper.readRecipe( stream, ProjectGraphRequest.class );
         return parentOf( recipe );
     }
 
-    public Map<ProjectVersionRef, ProjectVersionRef> parentOf( final ProjectGraphRequest recipe )
+    public MappedProjectResult parentOf( final ProjectGraphRequest recipe )
         throws AproxWorkflowException
     {
         configHelper.setRecipeDefaults( recipe );
@@ -96,7 +92,7 @@ public class ProjectController
         }
     }
 
-    public Map<ProjectVersionRef, Set<ProjectRelationship<?>>> relationshipsDeclaredBy( final InputStream stream )
+    public MappedProjectRelationshipsResult relationshipsDeclaredBy( final InputStream stream )
         throws AproxWorkflowException
     {
         final ProjectGraphRelationshipsRequest recipe =
@@ -105,7 +101,7 @@ public class ProjectController
         return relationshipsDeclaredBy( recipe );
     }
 
-    public Map<ProjectVersionRef, Set<ProjectRelationship<?>>> relationshipsDeclaredBy( final ProjectGraphRelationshipsRequest recipe )
+    public MappedProjectRelationshipsResult relationshipsDeclaredBy( final ProjectGraphRelationshipsRequest recipe )
         throws AproxWorkflowException
     {
         configHelper.setRecipeDefaults( recipe );
@@ -126,7 +122,7 @@ public class ProjectController
         }
     }
 
-    public Map<ProjectVersionRef, Set<ProjectRelationship<?>>> relationshipsTargeting( final InputStream stream )
+    public MappedProjectRelationshipsResult relationshipsTargeting( final InputStream stream )
         throws AproxWorkflowException
     {
         final ProjectGraphRelationshipsRequest recipe =
@@ -135,7 +131,7 @@ public class ProjectController
         return relationshipsDeclaredBy( recipe );
     }
 
-    public Map<ProjectVersionRef, Set<ProjectRelationship<?>>> relationshipsTargeting( final ProjectGraphRelationshipsRequest recipe )
+    public MappedProjectRelationshipsResult relationshipsTargeting( final ProjectGraphRelationshipsRequest recipe )
         throws AproxWorkflowException
     {
         configHelper.setRecipeDefaults( recipe );

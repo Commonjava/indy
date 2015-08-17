@@ -19,10 +19,6 @@ import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.throwError;
 import static org.commonjava.aprox.util.ApplicationContent.application_aprox_star_json;
 import static org.commonjava.aprox.util.ApplicationContent.application_json;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -32,12 +28,10 @@ import javax.ws.rs.Produces;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.depgraph.rest.GraphController;
-import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
+import org.commonjava.cartographer.result.*;
 import org.commonjava.maven.atlas.graph.traverse.model.BuildOrder;
-import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.cartographer.result.*;
-import org.commonjava.maven.cartographer.request.PathsRequest;
-import org.commonjava.maven.cartographer.request.ProjectGraphRequest;
+import org.commonjava.cartographer.request.PathsRequest;
+import org.commonjava.cartographer.request.ProjectGraphRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

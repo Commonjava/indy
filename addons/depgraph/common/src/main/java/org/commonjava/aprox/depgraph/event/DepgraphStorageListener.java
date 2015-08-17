@@ -26,7 +26,7 @@ import org.commonjava.aprox.depgraph.conf.AproxDepgraphConfig;
 import org.commonjava.aprox.depgraph.discover.AproxModelDiscoverer;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.maven.atlas.graph.RelationshipGraphFactory;
-import org.commonjava.maven.cartographer.discover.post.patch.PatcherSupport;
+import org.commonjava.cartographer.graph.discover.patch.PatcherSupport;
 import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
