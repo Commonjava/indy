@@ -95,6 +95,48 @@
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-httprox-common</artifactId>
     </dependency>
+
+    <!-- Tests -->
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-ftests-autoprox</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-ftests-depgraph</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-ftests-dot-maven</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-ftests-folo</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-ftests-httprox</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-ftests-implied-repos</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-ftests-promote</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.maven.cartographer</groupId>
+      <artifactId>cartographer-tck</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   
   <build>
@@ -110,41 +152,6 @@
   <profiles>
     <profile>
       <id>run-its</id>
-      
-      <dependencies>
-        <dependency>
-          <groupId>org.commonjava.aprox</groupId>
-          <artifactId>aprox-ftests-autoprox</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>org.commonjava.aprox</groupId>
-          <artifactId>aprox-ftests-depgraph</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>org.commonjava.aprox</groupId>
-          <artifactId>aprox-ftests-dot-maven</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>org.commonjava.aprox</groupId>
-          <artifactId>aprox-ftests-folo</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>org.commonjava.aprox</groupId>
-          <artifactId>aprox-ftests-httprox</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>org.commonjava.aprox</groupId>
-          <artifactId>aprox-ftests-implied-repos</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>org.commonjava.aprox</groupId>
-          <artifactId>aprox-ftests-promote</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>org.commonjava.maven.cartographer</groupId>
-          <artifactId>cartographer-tck</artifactId>
-        </dependency>
-      </dependencies>
       
       <build>
         <pluginManagement>

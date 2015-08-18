@@ -647,6 +647,7 @@
         <groupId>org.commonjava.maven.cartographer</groupId>
         <artifactId>cartographer-tck</artifactId>
         <version>${cartoVersion}</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.maven.cartographer</groupId>
@@ -946,7 +947,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-shade-plugin</artifactId>
-          <version>2.3</version>
+          <version>2.4.1</version>
         </plugin>
         <plugin>
           <artifactId>maven-plugin-plugin</artifactId>

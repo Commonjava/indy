@@ -37,38 +37,47 @@
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-ftests-autoprox</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-ftests-folo</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-ftests-httprox</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-ftests-implied-repos</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-ftests-promote</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-ftests-depgraph</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-ftests-dot-maven</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-ftests-common</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.maven.cartographer</groupId>
       <artifactId>cartographer-tck</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
   
