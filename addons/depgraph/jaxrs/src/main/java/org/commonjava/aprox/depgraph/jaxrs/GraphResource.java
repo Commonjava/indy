@@ -28,6 +28,7 @@ import javax.ws.rs.Produces;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.depgraph.rest.GraphController;
+import org.commonjava.cartographer.request.SingleGraphRequest;
 import org.commonjava.cartographer.result.*;
 import org.commonjava.maven.atlas.graph.traverse.model.BuildOrder;
 import org.commonjava.cartographer.request.PathsRequest;
@@ -158,7 +159,7 @@ public class GraphResource
 
     @Path( "/export" )
     @POST
-    public GraphExport graph( final ProjectGraphRequest recipe )
+    public GraphExport graph( final SingleGraphRequest recipe )
     {
         try
         {

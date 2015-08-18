@@ -34,6 +34,7 @@ import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.bind.jaxrs.util.JaxRsUriFormatter;
 import org.commonjava.aprox.depgraph.model.DownlogRequest;
 import org.commonjava.aprox.depgraph.model.DownlogResult;
+import org.commonjava.aprox.depgraph.model.RepoContentResult;
 import org.commonjava.aprox.depgraph.model.UrlMapResult;
 import org.commonjava.aprox.depgraph.rest.RepositoryController;
 import org.commonjava.cartographer.request.RepositoryContentRequest;
@@ -50,6 +51,27 @@ public class RepositoryResource
 
     @Inject
     private RepositoryController controller;
+
+    @Path( "/content" )
+    @Produces( { "application/json", "application/aprox*+json" } )
+    @POST
+    public RepoContentResult getRepoContent( final RepositoryContentRequest request, final @Context UriInfo uriInfo )
+    {
+        Response response = null;
+        try
+        {
+            final String baseUri = uriInfo.getAbsolutePathBuilder().path( "api" ).build().toString();
+
+            return controller.getRepoContent( request, baseUri, new JaxRsUriFormatter() );
+        }
+        catch ( final AproxWorkflowException e )
+        {
+            logger.error( e.getMessage(), e );
+            response = formatResponse( e );
+        }
+
+        return null;
+    }
 
     @Path( "/urlmap" )
     @Produces( { "application/json", "application/aprox*+json" } )

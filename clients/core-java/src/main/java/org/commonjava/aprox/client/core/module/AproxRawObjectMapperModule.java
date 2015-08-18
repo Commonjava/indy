@@ -13,32 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.aprox.depgraph.model;
+package org.commonjava.aprox.client.core.module;
 
-import java.util.Set;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.commonjava.aprox.client.core.AproxClientModule;
+import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 
 /**
- * Created by jdcasey on 8/12/15.
+ * Created by jdcasey on 8/17/15.
  */
-public class WorkspaceList
+public class AproxRawObjectMapperModule
+    extends AproxClientModule
 {
 
-    private Set<String> workspaces;
-
-    public WorkspaceList(){}
-
-    public WorkspaceList( Set<String> workspaces )
+    public AproxObjectMapper getObjectMapper()
     {
-        this.workspaces = workspaces;
-    }
-
-    public Set<String> getWorkspaces()
-    {
-        return workspaces;
-    }
-
-    public void setWorkspaces( Set<String> workspaces )
-    {
-        this.workspaces = workspaces;
+        return getHttp().getObjectMapper();
     }
 }

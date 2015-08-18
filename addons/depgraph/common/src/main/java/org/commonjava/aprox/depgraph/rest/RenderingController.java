@@ -15,18 +15,8 @@
  */
 package org.commonjava.aprox.depgraph.rest;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Collections;
-import java.util.Map;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.model.Model;
@@ -37,17 +27,20 @@ import org.commonjava.aprox.depgraph.util.PresetParameterParser;
 import org.commonjava.aprox.depgraph.util.RecipeHelper;
 import org.commonjava.aprox.depgraph.util.RequestAdvisor;
 import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.cartographer.CartoDataException;
+import org.commonjava.cartographer.CartoRequestException;
+import org.commonjava.cartographer.graph.preset.CommonPresetParameters;
+import org.commonjava.cartographer.ops.GraphRenderingOps;
 import org.commonjava.cartographer.request.*;
 import org.commonjava.maven.atlas.graph.filter.ProjectRelationshipFilter;
 import org.commonjava.maven.atlas.ident.DependencyScope;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.cartographer.CartoRequestException;
-import org.commonjava.cartographer.CartoDataException;
-import org.commonjava.cartographer.ops.GraphRenderingOps;
-import org.commonjava.cartographer.graph.preset.CommonPresetParameters;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.io.*;
+import java.util.Collections;
+import java.util.Map;
 
 @ApplicationScoped
 // FIXME: DTO Validations!!
@@ -110,6 +103,53 @@ public class RenderingController
         {
             w = new FileWriter( out );
             ops.depTree( recipe, false, new PrintWriter( w ) );
+        }
+        catch ( final CartoDataException e )
+        {
+            throw new AproxWorkflowException( "Failed to generate dependency tree. Reason: {}", e, e.getMessage() );
+        }
+        catch ( CartoRequestException e )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "Invalid request: %s. Reason: %s", e,
+                                              recipe, e.getMessage() );
+        }
+        catch ( final IOException e )
+        {
+            throw new AproxWorkflowException( "Failed to open work file for caching output: {}. Reason: {}", e, out,
+                                              e.getMessage() );
+        }
+        finally
+        {
+            IOUtils.closeQuietly( w );
+        }
+
+        return out;
+    }
+
+    public File list( final RepositoryContentRequest recipe )
+            throws AproxWorkflowException
+    {
+        configHelper.setRecipeDefaults( recipe );
+
+        final File workBasedir = config.getWorkBasedir();
+        String dtoJson;
+        try
+        {
+            dtoJson = serializer.writeValueAsString( recipe );
+        }
+        catch ( final JsonProcessingException e )
+        {
+            throw new AproxWorkflowException( "Failed to serialize to JSON: %s", e, e.getMessage() );
+        }
+
+        final File out = new File( workBasedir, DigestUtils.md5Hex( dtoJson ) );
+        workBasedir.mkdirs();
+
+        FileWriter w = null;
+        try
+        {
+            w = new FileWriter( out );
+            ops.depList( recipe, new PrintWriter( w ) );
         }
         catch ( final CartoDataException e )
         {

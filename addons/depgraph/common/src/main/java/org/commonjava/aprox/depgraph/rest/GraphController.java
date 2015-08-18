@@ -22,6 +22,7 @@ import javax.inject.Inject;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.depgraph.util.RecipeHelper;
 import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.cartographer.request.SingleGraphRequest;
 import org.commonjava.cartographer.result.*;
 import org.commonjava.maven.atlas.graph.traverse.model.BuildOrder;
 import org.commonjava.cartographer.CartoRequestException;
@@ -285,7 +286,7 @@ public class GraphController
         return projectGraph( dto );
     }
 
-    public GraphExport projectGraph( final ProjectGraphRequest recipe )
+    public GraphExport projectGraph( final SingleGraphRequest recipe )
         throws AproxWorkflowException
     {
         configHelper.setRecipeDefaults( recipe );
