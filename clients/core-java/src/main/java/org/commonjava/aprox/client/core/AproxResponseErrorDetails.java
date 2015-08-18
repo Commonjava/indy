@@ -17,6 +17,7 @@ package org.commonjava.aprox.client.core;
 
 import java.io.IOException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.ParseException;
 import org.apache.http.ProtocolVersion;
@@ -68,8 +69,14 @@ public class AproxResponseErrorDetails
     @Override
     public String toString()
     {
-        return String.format( "Status: %d %s (%s)\nBody:\n\n=========================================\n%s\n\n=========================================",
-                              code, reason, version, body );
+        String bodyStr = "";
+        if ( StringUtils.isNotEmpty(body ))
+        {
+            bodyStr = String.format("\nBody:\n\n=========================================\n%s\n\n=========================================", body);
+        }
+
+        return String.format( "Status: %d %s (%s)%s",
+                              code, reason, version, bodyStr );
     }
 
 }

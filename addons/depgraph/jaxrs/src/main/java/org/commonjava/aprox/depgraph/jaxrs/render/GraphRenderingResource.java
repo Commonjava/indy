@@ -30,15 +30,12 @@ import javax.ws.rs.Produces;
 import java.io.File;
 
 import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.throwError;
-import static org.commonjava.aprox.util.ApplicationContent.application_aprox_star_json;
-import static org.commonjava.aprox.util.ApplicationContent.application_json;
-import static org.commonjava.aprox.util.ApplicationContent.application_xml;
-import static org.commonjava.aprox.util.ApplicationContent.text_plain;
+import static org.commonjava.aprox.util.ApplicationContent.*;
 
 @Path( "/api/depgraph/render" )
-@Consumes( { application_json, application_aprox_star_json } )
+//@Consumes( { application_json, application_aprox_star_json } )
 public class GraphRenderingResource
-                implements AproxResources
+        implements AproxResources
 {
 
     private static final String TYPE_GRAPHVIZ = "text/x-graphviz";
@@ -48,7 +45,7 @@ public class GraphRenderingResource
 
     @Path( "/pom" )
     @POST
-    @Produces( application_xml )
+//    @Produces( application_xml )
     public String pom( PomRequest recipe )
     {
         try

@@ -15,35 +15,24 @@
  */
 package org.commonjava.aprox.depgraph.ftest;
 
-import com.fasterxml.jackson.databind.Module;
-import org.apache.commons.lang.StringUtils;
 import org.commonjava.aprox.boot.AproxBootException;
 import org.commonjava.aprox.boot.BootStatus;
 import org.commonjava.aprox.client.core.Aprox;
-import org.commonjava.aprox.client.core.AproxClientModule;
 import org.commonjava.aprox.client.core.module.AproxRawObjectMapperModule;
 import org.commonjava.aprox.depgraph.client.DepgraphAproxClientModule;
 import org.commonjava.aprox.depgraph.impl.ClientCartographer;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
-import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.test.fixture.core.CoreServerFixture;
 import org.commonjava.cartographer.Cartographer;
 import org.commonjava.maven.cartographer.ftest.CartoTCKDriver;
-import org.commonjava.test.http.StreamServer;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
+import org.commonjava.test.http.stream.StreamServer;
 import org.junit.rules.TemporaryFolder;
-import org.junit.rules.TestName;
-import org.junit.rules.Timeout;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 
@@ -89,7 +78,7 @@ public class AproxCartoTCKDriver
 
         closeQuietly( client );
 
-        servers.forEach( org.commonjava.test.http.StreamServer::stop );
+        servers.forEach( StreamServer::stop );
     }
 
     @Override
@@ -99,11 +88,7 @@ public class AproxCartoTCKDriver
         String url = repoResource;
         if ( repoResource.startsWith("file:") || repoResource.startsWith("jar:") )
         {
-            // setup test http server to serve content, then:
-            String path = new URI(repoResource).getPath();
-            File f = new File( path );
-
-            StreamServer server = new StreamServer( f ).start();
+            StreamServer server = new StreamServer( repoResource ).start();
             servers.add( server );
 
             url = server.getBaseUri();

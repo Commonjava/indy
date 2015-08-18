@@ -29,7 +29,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
 import org.commonjava.maven.galley.auth.MemoryPasswordManager;
-import org.commonjava.test.http.ContentResponse;
+import org.commonjava.test.http.expect.ContentResponse;
 import org.commonjava.test.http.TestHttpServer;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;

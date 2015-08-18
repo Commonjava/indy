@@ -60,7 +60,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 public class AproxClientHttp
-                implements Closeable
+        implements Closeable
 {
     private static final int GLOBAL_MAX_CONNECTIONS = 20;
 
@@ -80,7 +80,7 @@ public class AproxClientHttp
 
     public AproxClientHttp( final String baseUrl, final AproxClientAuthenticator authenticator,
                             final AproxObjectMapper mapper )
-                    throws AproxClientException
+            throws AproxClientException
     {
         this.baseUrl = baseUrl;
         this.authenticator = authenticator;
@@ -90,7 +90,7 @@ public class AproxClientHttp
     }
 
     private void initPrototypeContext()
-                    throws AproxClientException
+            throws AproxClientException
     {
         try
         {
@@ -111,12 +111,12 @@ public class AproxClientHttp
     }
 
     public void connect( final HttpClientConnectionManager connectionManager )
-                    throws AproxClientException
+            throws AproxClientException
     {
         if ( this.connectionManager != null )
         {
             throw new AproxClientException( "Already connected! (Possibly when you called a client "
-                                                            + "API method previously.) Call close before connecting again." );
+                                                    + "API method previously.) Call close before connecting again." );
         }
 
         this.connectionManager = new CloseBlockingConnectionManager( connectionManager );
@@ -134,13 +134,13 @@ public class AproxClientHttp
     }
 
     public Map<String, String> head( final String path )
-                    throws AproxClientException
+            throws AproxClientException
     {
         return head( path, HttpStatus.SC_OK );
     }
 
     public Map<String, String> head( final String path, final int... responseCodes )
-                    throws AproxClientException
+            throws AproxClientException
     {
         connect();
 
@@ -191,7 +191,7 @@ public class AproxClientHttp
     }
 
     public <T> T get( final String path, final Class<T> type )
-                    throws AproxClientException
+            throws AproxClientException
     {
         connect();
 
@@ -235,7 +235,7 @@ public class AproxClientHttp
     }
 
     public <T> T get( final String path, final TypeReference<T> typeRef )
-                    throws AproxClientException
+            throws AproxClientException
     {
         connect();
 
@@ -275,7 +275,7 @@ public class AproxClientHttp
     }
 
     public HttpResources getRaw( final HttpGet req )
-                    throws AproxClientException
+            throws AproxClientException
     {
         connect();
 
@@ -299,13 +299,13 @@ public class AproxClientHttp
     }
 
     public HttpResources getRaw( final String path )
-                    throws AproxClientException
+            throws AproxClientException
     {
         return getRaw( path, Collections.singletonMap( "Accept", "*" ) );
     }
 
     public HttpResources getRaw( final String path, final Map<String, String> headers )
-                    throws AproxClientException
+            throws AproxClientException
     {
         connect();
 
@@ -330,13 +330,13 @@ public class AproxClientHttp
     }
 
     public void putWithStream( final String path, final InputStream stream )
-                    throws AproxClientException
+            throws AproxClientException
     {
         putWithStream( path, stream, HttpStatus.SC_CREATED );
     }
 
     public void putWithStream( final String path, final InputStream stream, final int... responseCodes )
-                    throws AproxClientException
+            throws AproxClientException
     {
         connect();
 
@@ -352,8 +352,8 @@ public class AproxClientHttp
             if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
                 throw new ClientProtocolException(
-                                new AproxClientException( sl.getStatusCode(), "Error in response from: %s.\n%s", path,
-                                                          new AproxResponseErrorDetails( response ) ) );
+                        new AproxClientException( sl.getStatusCode(), "Error in response from: %s.\n%s", path,
+                                                  new AproxResponseErrorDetails( response ) ) );
             }
 
         }
@@ -378,13 +378,13 @@ public class AproxClientHttp
     }
 
     public boolean put( final String path, final Object value )
-                    throws AproxClientException
+            throws AproxClientException
     {
         return put( path, value, HttpStatus.SC_OK, HttpStatus.SC_CREATED );
     }
 
     public boolean put( final String path, final Object value, final int... responseCodes )
-                    throws AproxClientException
+            throws AproxClientException
     {
         checkRequestValue( value );
 
@@ -421,13 +421,13 @@ public class AproxClientHttp
     }
 
     public HttpResources postRaw( final String path, Object value )
-                    throws AproxClientException
+            throws AproxClientException
     {
         return postRaw( path, value, Collections.singletonMap( "Accept", "*" ) );
     }
 
     public HttpResources postRaw( final String path, Object value, final Map<String, String> headers )
-                    throws AproxClientException
+            throws AproxClientException
     {
         checkRequestValue( value );
         connect();
@@ -436,6 +436,14 @@ public class AproxClientHttp
         try
         {
             final HttpPost req = newRawPost( buildUrl( baseUrl, path ) );
+            if ( headers != null )
+            {
+                for ( String key : headers.keySet() )
+                {
+                    req.setHeader( key, headers.get( key ) );
+                }
+            }
+
             req.setEntity( new StringEntity( objectMapper.writeValueAsString( value ) ) );
 
             final CloseableHttpClient client = newClient();
@@ -455,7 +463,7 @@ public class AproxClientHttp
     }
 
     private void checkRequestValue( Object value )
-                    throws AproxClientException
+            throws AproxClientException
     {
         if ( value == null )
         {
@@ -464,14 +472,14 @@ public class AproxClientHttp
     }
 
     public <T> T postWithResponse( final String path, final Object value, final Class<T> type )
-                    throws AproxClientException
+            throws AproxClientException
     {
         return postWithResponse( path, value, type, HttpStatus.SC_CREATED, HttpStatus.SC_OK );
     }
 
     public <T> T postWithResponse( final String path, final Object value, final Class<T> type,
                                    final int... responseCodes )
-                    throws AproxClientException
+            throws AproxClientException
     {
         checkRequestValue( value );
 
@@ -522,14 +530,14 @@ public class AproxClientHttp
     }
 
     public <T> T postWithResponse( final String path, final Object value, final TypeReference<T> typeRef )
-                    throws AproxClientException
+            throws AproxClientException
     {
         return postWithResponse( path, value, typeRef, HttpStatus.SC_CREATED );
     }
 
     public <T> T postWithResponse( final String path, final Object value, final TypeReference<T> typeRef,
                                    final int... responseCodes )
-                    throws AproxClientException
+            throws AproxClientException
     {
         checkRequestValue( value );
 
@@ -575,13 +583,13 @@ public class AproxClientHttp
     }
 
     public void delete( final String path )
-                    throws AproxClientException
+            throws AproxClientException
     {
         delete( path, HttpStatus.SC_NO_CONTENT );
     }
 
     public void delete( final String path, final int... responseCodes )
-                    throws AproxClientException
+            throws AproxClientException
     {
         connect();
 
@@ -612,13 +620,13 @@ public class AproxClientHttp
     }
 
     public void deleteWithChangelog( final String path, final String changelog )
-                    throws AproxClientException
+            throws AproxClientException
     {
         deleteWithChangelog( path, changelog, HttpStatus.SC_NO_CONTENT );
     }
 
     public void deleteWithChangelog( final String path, final String changelog, final int... responseCodes )
-                    throws AproxClientException
+            throws AproxClientException
     {
         connect();
 
@@ -650,13 +658,13 @@ public class AproxClientHttp
     }
 
     public boolean exists( final String path )
-                    throws AproxClientException
+            throws AproxClientException
     {
         return exists( path, HttpStatus.SC_OK );
     }
 
     public boolean exists( final String path, final int... responseCodes )
-                    throws AproxClientException
+            throws AproxClientException
     {
         connect();
 
@@ -708,7 +716,7 @@ public class AproxClientHttp
     }
 
     public CloseableHttpClient newClient()
-                    throws AproxClientException
+            throws AproxClientException
     {
         HttpClientBuilder builder = HttpClients.custom().setConnectionManager( connectionManager );
 

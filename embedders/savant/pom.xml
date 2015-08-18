@@ -140,6 +140,10 @@
           <groupId>org.commonjava.aprox</groupId>
           <artifactId>aprox-ftests-promote</artifactId>
         </dependency>
+        <dependency>
+          <groupId>org.commonjava.maven.cartographer</groupId>
+          <artifactId>cartographer-tck</artifactId>
+        </dependency>
       </dependencies>
       
       <build>
@@ -163,6 +167,7 @@
                     <dependency>org.commonjava.aprox:aprox-ftests-httprox</dependency>
                     <dependency>org.commonjava.aprox:aprox-ftests-implied-repos</dependency>
                     <dependency>org.commonjava.aprox:aprox-ftests-promote</dependency>
+                    <dependency>org.commonjava.maven.cartographer:cartographer-tck</dependency>
                   </dependenciesToScan> 
                 </configuration>
             </plugin>
