@@ -289,7 +289,7 @@ public final class ResponseUtils
 
         if ( throwIt )
         {
-            throw new WebApplicationException( msg, code );
+            throw new WebApplicationException( msg, error, code );
         }
 
         return Response.status( code )
