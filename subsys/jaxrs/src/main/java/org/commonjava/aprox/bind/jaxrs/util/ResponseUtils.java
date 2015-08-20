@@ -191,14 +191,20 @@ public final class ResponseUtils
     public static Response formatResponseFromMetadata( final HttpExchangeMetadata metadata )
     {
         final ResponseBuilder builder = Response.status( metadata.getResponseStatusCode() );
-        for ( final Map.Entry<String, List<String>> headerSet : metadata.getResponseHeaders()
-                                                                        .entrySet() )
-        {
-            for ( final String value : headerSet.getValue() )
-            {
-                builder.header( headerSet.getKey(), value );
-            }
-        }
+        // The code below was triggering empty responses via GET requests when something was missing upstream.
+        // See https://github.com/Commonjava/aprox/issues/207
+//        Logger logger = LoggerFactory.getLogger( ResponseUtils.class );
+//        for ( final Map.Entry<String, List<String>> headerSet : metadata.getResponseHeaders()
+//                                                                        .entrySet() )
+//        {
+//            for ( final String value : headerSet.getValue() )
+//            {
+//                logger.info( "Setting response header from http metadata: key={}, value={}", headerSet.getKey(),
+//                             value );
+//
+//                builder.header( headerSet.getKey(), value );
+//            }
+//        }
 
         return builder.build();
     }
