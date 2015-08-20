@@ -16,23 +16,28 @@
 package org.commonjava.aprox.depgraph.model.builder;
 
 import org.commonjava.aprox.depgraph.model.DownlogRequest;
-import org.commonjava.cartographer.request.build.GraphRequestOwner;
+import org.commonjava.cartographer.request.ExtraCT;
+import org.commonjava.cartographer.request.GraphComposition;
 import org.commonjava.cartographer.request.build.RepositoryContentRequestBuilder;
+import org.commonjava.maven.atlas.ident.ref.ProjectRef;
+import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.galley.model.Location;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by jdcasey on 8/12/15.
  */
-public class DownlogRequestBuilder<T extends DownlogRequestBuilder<T, O, R>, O extends GraphRequestOwner<O, R>, R extends DownlogRequest>
-    extends RepositoryContentRequestBuilder<T, O, R>
+public class DownlogRequestBuilder<T extends DownlogRequestBuilder<T, R>, R extends DownlogRequest>
+    extends RepositoryContentRequestBuilder<T, R>
 {
 
     public static final class StandaloneDownlogBuilder
-                    extends DownlogRequestBuilder<StandaloneDownlogBuilder, StandaloneRequestOwner<DownlogRequest>, DownlogRequest>
+                    extends DownlogRequestBuilder<StandaloneDownlogBuilder, DownlogRequest>
     {
-        public StandaloneDownlogBuilder()
-        {
-            super( new StandaloneRequestOwner<>() );
-        }
     }
 
     public static StandaloneDownlogBuilder newDownlogRequestBuilder()
@@ -43,11 +48,6 @@ public class DownlogRequestBuilder<T extends DownlogRequestBuilder<T, O, R>, O e
     private boolean pathOnly;
 
     private String linePrefix;
-
-    public DownlogRequestBuilder( final O owner )
-    {
-        super( owner );
-    }
 
     public T withPathOnly( boolean pathOnly )
     {
@@ -65,19 +65,112 @@ public class DownlogRequestBuilder<T extends DownlogRequestBuilder<T, O, R>, O e
     @Override
     public R build()
     {
-        final DownlogRequest recipe = new DownlogRequest();
+        final R recipe = (R) new DownlogRequest();
         configure( recipe );
-        configureMultiGraphs( recipe );
-        configureRepoContent( recipe );
-        confgureDownlog( recipe );
 
-        return (R) recipe;
+        return recipe;
     }
 
-    protected void confgureDownlog( DownlogRequest recipe )
+    protected void confgure( R recipe )
     {
         recipe.setPathOnly( pathOnly );
         recipe.setLinePrefix( linePrefix );
+        super.configure( recipe );
     }
 
+    @Override
+    public T withExcludedSources( Set<String> excludedSources )
+    {
+        return super.withExcludedSources( excludedSources );
+    }
+
+    @Override
+    public T withExtras( Set<ExtraCT> extras )
+    {
+        return super.withExtras( extras );
+    }
+
+    @Override
+    public T withMetas( Set<String> metas )
+    {
+        return super.withMetas( metas );
+    }
+
+    @Override
+    public T withExcludedSourceLocations( Set<Location> excludedSourceLocations )
+    {
+        return super.withExcludedSourceLocations( excludedSourceLocations );
+    }
+
+    @Override
+    public T withMultiSourceGAVs( boolean multiSourceGAVs )
+    {
+        return super.withMultiSourceGAVs( multiSourceGAVs );
+    }
+
+    @Override
+    public T withLocalUrls( boolean localUrls )
+    {
+        return super.withLocalUrls( localUrls );
+    }
+
+    @Override
+    public T withGraphs( GraphComposition graphs )
+    {
+        return super.withGraphs( graphs );
+    }
+
+    @Override
+    public T withSource( String source )
+    {
+        return super.withSource( source );
+    }
+
+    @Override
+    public T withWorkspaceId( String workspaceId )
+    {
+        return super.withWorkspaceId( workspaceId );
+    }
+
+    @Override
+    public T withSourceLocation( Location source )
+    {
+        return super.withSourceLocation( source );
+    }
+
+    @Override
+    public T withTimeoutSecs( Integer timeoutSecs )
+    {
+        return super.withTimeoutSecs( timeoutSecs );
+    }
+
+    @Override
+    public T withPatcherIds( Collection<String> patcherIds )
+    {
+        return super.withPatcherIds( patcherIds );
+    }
+
+    @Override
+    public T withResolve( boolean resolve )
+    {
+        return super.withResolve( resolve );
+    }
+
+    @Override
+    public T withInjectedBOMs( List<ProjectVersionRef> injectedBOMs )
+    {
+        return super.withInjectedBOMs( injectedBOMs );
+    }
+
+    @Override
+    public T withExcludedSubgraphs( Collection<ProjectVersionRef> excludedSubgraphs )
+    {
+        return super.withExcludedSubgraphs( excludedSubgraphs );
+    }
+
+    @Override
+    public T withVersionSelections( Map<ProjectRef, ProjectVersionRef> versionSelections )
+    {
+        return super.withVersionSelections( versionSelections );
+    }
 }

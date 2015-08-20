@@ -316,6 +316,16 @@ public class DepgraphAproxClientModule
         return RepositoryContentRequestBuilder.newRepositoryContentRecipeBuilder();
     }
 
+    public GraphDescriptionBuilder newGraphDescription()
+    {
+        return GraphDescriptionBuilder.newGraphDescriptionBuilder();
+    }
+
+    public GraphCompositionBuilder newGraphComposition()
+    {
+        return GraphCompositionBuilder.newGraphCompositionBuilder();
+    }
+
     private String postWithStringOutput( String path, Object request )
             throws AproxClientException
     {
