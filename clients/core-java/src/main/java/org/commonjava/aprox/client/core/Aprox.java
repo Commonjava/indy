@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.databind.Module;
 import org.commonjava.aprox.client.core.auth.AproxClientAuthenticator;
 import org.commonjava.aprox.client.core.module.AproxContentClientModule;
 import org.commonjava.aprox.client.core.module.AproxStatsClientModule;
@@ -65,8 +66,7 @@ public class Aprox
         setupStandardModules();
         for ( final AproxClientModule module : modules )
         {
-            module.setup( this, http );
-            moduleRegistry.add( module );
+            setup( module );
         }
     }
 
@@ -107,7 +107,7 @@ public class Aprox
 
     public void setupExternal( final AproxClientModule module )
     {
-        module.setup( this, http );
+        setup( module );
     }
 
     public Aprox connect()
@@ -187,8 +187,19 @@ public class Aprox
 
         for ( final AproxClientModule module : standardModules )
         {
-            module.setup( this, http );
-            moduleRegistry.add( module );
+            setup( module );
+        }
+    }
+
+    private void setup( AproxClientModule module )
+    {
+        module.setup( this, http );
+        moduleRegistry.add( module );
+
+        Iterable<Module> serMods = module.getSerializerModules();
+        if ( serMods != null )
+        {
+            http.getObjectMapper().registerModules( serMods );
         }
     }
 

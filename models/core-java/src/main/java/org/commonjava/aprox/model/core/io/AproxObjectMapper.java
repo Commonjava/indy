@@ -31,6 +31,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -115,6 +116,11 @@ public class AproxObjectMapper
                 }
             }
         }
+    }
+
+    public void register(Iterable<Module> modules)
+    {
+        registerModules( modules );
     }
 
     public String patchLegacyStoreJson( final String json )
