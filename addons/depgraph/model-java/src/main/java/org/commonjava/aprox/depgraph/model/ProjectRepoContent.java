@@ -15,8 +15,6 @@
  */
 package org.commonjava.aprox.depgraph.model;
 
-import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;

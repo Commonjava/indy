@@ -48,7 +48,7 @@
     <javaVersion>1.8</javaVersion>
     <slf4j-version>1.6.1</slf4j-version>
     <atlasVersion>0.14.3-SNAPSHOT</atlasVersion>
-    <galleyVersion>0.9.3</galleyVersion>
+    <galleyVersion>0.9.4-SNAPSHOT</galleyVersion>
     <cartoVersion>0.9.4-SNAPSHOT</cartoVersion>
     <bomVersion>17</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
