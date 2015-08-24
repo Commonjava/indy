@@ -54,6 +54,13 @@ public class AproxWorkflowException
         this.status = status;
     }
 
+    public AproxWorkflowException( final int status, final String message, Throwable cause, final Object... params )
+    {
+        super( message, cause );
+        this.params = params;
+        this.status = status;
+    }
+
     private static final long serialVersionUID = 1L;
 
     @Override

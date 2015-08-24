@@ -16,6 +16,7 @@
 package org.commonjava.aprox.depgraph.client;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.Module;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
 import org.commonjava.aprox.client.core.AproxClientException;
@@ -28,6 +29,7 @@ import org.commonjava.aprox.depgraph.model.RepoContentResult;
 import org.commonjava.aprox.depgraph.model.UrlMapResult;
 import org.commonjava.aprox.depgraph.model.WorkspaceList;
 import org.commonjava.aprox.depgraph.model.builder.DownlogRequestBuilder;
+import org.commonjava.aprox.depgraph.model.io.DepgraphObjectMapperModules;
 import org.commonjava.cartographer.request.*;
 import org.commonjava.cartographer.request.build.*;
 import org.commonjava.cartographer.result.*;
@@ -324,6 +326,12 @@ public class DepgraphAproxClientModule
     public GraphCompositionBuilder newGraphComposition()
     {
         return GraphCompositionBuilder.newGraphCompositionBuilder();
+    }
+
+    @Override
+    public Iterable<Module> getSerializerModules()
+    {
+        return new DepgraphObjectMapperModules().getSerializerModules();
     }
 
     private String postWithStringOutput( String path, Object request )

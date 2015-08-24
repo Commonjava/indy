@@ -15,7 +15,10 @@
  */
 package org.commonjava.aprox.client.core;
 
+import com.fasterxml.jackson.databind.Module;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
+
+import java.util.Collections;
 
 public abstract class AproxClientModule
 {
@@ -28,6 +31,11 @@ public abstract class AproxClientModule
     {
         this.client = client;
         this.http = http;
+    }
+
+    public Iterable<Module> getSerializerModules()
+    {
+        return Collections.emptySet();
     }
 
     protected Aprox getClient()
