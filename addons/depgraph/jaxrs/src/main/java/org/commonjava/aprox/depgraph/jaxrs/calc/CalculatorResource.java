@@ -51,7 +51,7 @@ public class CalculatorResource
     @Path( "/diff" )
     @POST
     @Produces( application_json )
-    public GraphDifference<ProjectRelationship<?>> difference( final GraphAnalysisRequest request )
+    public GraphDifference<ProjectRelationship<?, ?>> difference( final GraphAnalysisRequest request )
     {
         Response response = null;
         try
