@@ -17,6 +17,7 @@ package org.commonjava.aprox.model.core.io;
 
 import javax.enterprise.context.ApplicationScoped;
 
+import com.fasterxml.jackson.databind.Module;
 import org.commonjava.aprox.model.core.StoreKey;
 
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -27,6 +28,8 @@ public class ApiSerializerModule
 {
 
     private static final long serialVersionUID = 1L;
+
+    public static final ApiSerializerModule INSTANCE = new ApiSerializerModule();
 
     public ApiSerializerModule()
     {

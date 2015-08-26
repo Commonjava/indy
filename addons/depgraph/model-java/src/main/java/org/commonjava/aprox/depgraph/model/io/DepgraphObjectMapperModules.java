@@ -16,12 +16,18 @@
 package org.commonjava.aprox.depgraph.model.io;
 
 import com.fasterxml.jackson.databind.Module;
+import org.commonjava.aprox.model.core.io.ModuleSet;
+import org.commonjava.aprox.model.core.io.SimpleModuleSet;
 import org.commonjava.maven.atlas.graph.jackson.ProjectRelationshipSerializerModule;
+import org.commonjava.maven.atlas.graph.spi.neo4j.io.NeoSpecificProjectRelationshipSerializerModule;
+import org.commonjava.maven.atlas.graph.spi.neo4j.io.NeoSpecificProjectVersionRefSerializerModule;
+import org.commonjava.maven.atlas.ident.jackson.ProjectVersionRefSerializerModule;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
-import java.util.Collections;
+import javax.inject.Named;
+import java.util.Arrays;
 
 /**
  * Created by jdcasey on 8/20/15.
@@ -30,16 +36,32 @@ import java.util.Collections;
 public class DepgraphObjectMapperModules
 {
 
+    private final NeoSpecificProjectVersionRefSerializerModule neoRefModule;
+
+    private final ProjectVersionRefSerializerModule refModule;
+
     private ProjectRelationshipSerializerModule relModule;
+
+    private NeoSpecificProjectRelationshipSerializerModule neoRelModule;
 
     public DepgraphObjectMapperModules()
     {
-        relModule = new ProjectRelationshipSerializerModule();
+        refModule = ProjectVersionRefSerializerModule.INSTANCE;
+        relModule = ProjectRelationshipSerializerModule.INSTANCE;
+        neoRelModule = NeoSpecificProjectRelationshipSerializerModule.INSTANCE;
+        neoRefModule = NeoSpecificProjectVersionRefSerializerModule.INSTANCE;
     }
 
     public Iterable<Module> getSerializerModules()
     {
-        return Collections.singleton( relModule );
+        return Arrays.asList( refModule, relModule, neoRelModule, neoRefModule );
+    }
+
+    @Produces
+    @Named( "depgraph-module-set" )
+    public ModuleSet getModuleSet()
+    {
+        return new SimpleModuleSet( refModule, relModule, neoRelModule, neoRefModule );
     }
 
     @Produces
@@ -48,4 +70,19 @@ public class DepgraphObjectMapperModules
     {
         return relModule;
     }
+
+    @Produces
+    @Default
+    public NeoSpecificProjectRelationshipSerializerModule getNeoRelationshipModule()
+    {
+        return neoRelModule;
+    }
+
+    @Produces
+    @Default
+    public NeoSpecificProjectVersionRefSerializerModule getNeoRefModule()
+    {
+        return neoRefModule;
+    }
+
 }
