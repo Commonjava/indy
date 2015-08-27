@@ -59,7 +59,7 @@ public class RepoSourceMetadataListener
 
     public void addRepoMetadata( @Observes final RelationshipStorageEvent event )
     {
-        final Collection<? extends ProjectRelationship<?>> stored = event.getStored();
+        final Collection<? extends ProjectRelationship<?, ?>> stored = event.getStored();
         if ( stored == null )
         {
             return;
@@ -69,7 +69,7 @@ public class RepoSourceMetadataListener
         final Set<URI> unmatchedSources = new HashSet<URI>();
 
         final Set<ProjectVersionRef> seen = new HashSet<ProjectVersionRef>();
-        for ( final ProjectRelationship<?> rel : stored )
+        for ( final ProjectRelationship<?, ?> rel : stored )
         {
             final ProjectVersionRef ref = rel.getDeclaring()
                                              .asProjectVersionRef();

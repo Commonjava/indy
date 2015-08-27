@@ -15,12 +15,6 @@
  */
 package org.commonjava.aprox.depgraph;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.depgraph.discover.AproxModelDiscoverer;
@@ -29,19 +23,25 @@ import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.util.LocationUtils;
+import org.commonjava.cartographer.CartoDataException;
+import org.commonjava.cartographer.graph.discover.DiscoveryConfig;
+import org.commonjava.cartographer.graph.discover.DiscoveryResult;
+import org.commonjava.cartographer.graph.discover.patch.PatcherSupport;
 import org.commonjava.maven.atlas.graph.RelationshipGraph;
 import org.commonjava.maven.atlas.graph.RelationshipGraphException;
 import org.commonjava.maven.atlas.graph.RelationshipGraphFactory;
 import org.commonjava.maven.atlas.graph.ViewParams;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
-import org.commonjava.cartographer.CartoDataException;
-import org.commonjava.cartographer.graph.discover.DiscoveryConfig;
-import org.commonjava.cartographer.graph.discover.DiscoveryResult;
-import org.commonjava.cartographer.graph.discover.patch.PatcherSupport;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 public class DepgraphStorageListenerRunnable
     implements Runnable

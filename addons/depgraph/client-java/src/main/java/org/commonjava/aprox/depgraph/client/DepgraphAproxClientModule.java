@@ -180,11 +180,11 @@ public class DepgraphAproxClientModule
                                            } );
     }
 
-    public GraphDifference<ProjectRelationship<?>> graphDiff( GraphAnalysisRequest request )
+    public GraphDifference<ProjectRelationship<?, ?>> graphDiff( GraphAnalysisRequest request )
             throws AproxClientException
     {
         return getHttp().postWithResponse( "depgraph/calc/drift", request,
-                                           new TypeReference<GraphDifference<ProjectRelationship<?>>>()
+                                           new TypeReference<GraphDifference<ProjectRelationship<?, ?>>>()
                                            {
                                            } );
     }

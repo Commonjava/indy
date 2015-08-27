@@ -35,7 +35,7 @@ import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.util.LocationUtils;
-import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.atlas.ident.ref.SimpleProjectVersionRef;
 import org.commonjava.maven.atlas.ident.util.SnapshotUtils;
 import org.commonjava.maven.atlas.ident.util.VersionUtils;
 import org.commonjava.maven.atlas.ident.version.SingleVersion;
@@ -109,7 +109,7 @@ public class MavenMetadataGeneratorTest
         assertThat( transfer, notNullValue() );
 
         final MavenMetadataView metadata =
-            metadataReader.readMetadata( new ProjectVersionRef( "org.group", "artifact", "1.0-SNAPSHOT" ),
+            metadataReader.readMetadata( new SimpleProjectVersionRef( "org.group", "artifact", "1.0-SNAPSHOT" ),
                                          Collections.singletonList( transfer ), emd );
 
         assertThat( metadata, notNullValue() );
@@ -184,7 +184,7 @@ public class MavenMetadataGeneratorTest
         assertThat( transfer, notNullValue() );
 
         final MavenMetadataView metadata =
-            metadataReader.readMetadata( new ProjectVersionRef( "org.group", "artifact", "1.0-SNAPSHOT" ),
+            metadataReader.readMetadata( new SimpleProjectVersionRef( "org.group", "artifact", "1.0-SNAPSHOT" ),
                                          Collections.singletonList( transfer ), new EventMetadata() );
 
         assertThat( metadata, notNullValue() );

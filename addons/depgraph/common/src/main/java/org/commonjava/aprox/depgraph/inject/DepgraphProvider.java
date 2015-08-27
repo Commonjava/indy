@@ -29,6 +29,8 @@ import org.commonjava.maven.atlas.graph.spi.neo4j.FileNeo4jConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+
 @ApplicationScoped
 public class DepgraphProvider
 {
@@ -60,9 +62,15 @@ public class DepgraphProvider
 
     @PreDestroy
     public void shutdown()
-        throws RelationshipGraphException
     {
-        this.graphFactory.close();
+        try
+        {
+            this.graphFactory.close();
+        }
+        catch ( IOException e )
+        {
+            logger.error("Failed ot close graph factory", e );
+        }
     }
 
     @Produces

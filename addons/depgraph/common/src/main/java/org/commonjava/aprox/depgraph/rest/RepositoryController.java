@@ -24,6 +24,7 @@ import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.UriFormatter;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
+import org.commonjava.maven.atlas.ident.ref.SimpleArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.cartographer.CartoRequestException;
 import org.commonjava.cartographer.CartoDataException;

@@ -36,6 +36,10 @@
       <artifactId>cartographer-model-java</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.maven.atlas</groupId>
+      <artifactId>atlas-driver-neo4j-embedded</artifactId>
+    </dependency>
+    <dependency>
     	<groupId>junit</groupId>
     	<artifactId>junit</artifactId>
     </dependency>

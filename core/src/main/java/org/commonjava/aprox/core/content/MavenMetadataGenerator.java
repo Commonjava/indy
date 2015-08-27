@@ -15,24 +15,6 @@
  */
 package org.commonjava.aprox.core.content;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
-import static org.commonjava.maven.galley.util.PathUtils.normalize;
-import static org.commonjava.maven.galley.util.PathUtils.parentPath;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.inject.Inject;
-
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.content.StoreResource;
@@ -43,6 +25,7 @@ import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.util.LocationUtils;
+import org.commonjava.maven.atlas.ident.ref.SimpleTypeAndClassifier;
 import org.commonjava.maven.atlas.ident.ref.TypeAndClassifier;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 import org.commonjava.maven.atlas.ident.util.SnapshotUtils;
@@ -58,6 +41,17 @@ import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.model.TypeMapping;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import javax.inject.Inject;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Paths;
+import java.util.*;
+
+import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.commonjava.maven.galley.util.PathUtils.normalize;
+import static org.commonjava.maven.galley.util.PathUtils.parentPath;
 
 public class MavenMetadataGenerator
     extends AbstractMergedContentGenerator
@@ -538,7 +532,9 @@ public class MavenMetadataGenerator
                 {
                     snapMap = new HashMap<String, String>();
 
-                    final TypeAndClassifier tc = new TypeAndClassifier( pathInfo.getType(), pathInfo.getClassifier() );
+                    final TypeAndClassifier
+                            tc = new SimpleTypeAndClassifier( pathInfo.getType(), pathInfo.getClassifier() );
+
                     final TypeMapping mapping = typeMapper.lookup( tc );
 
                     final String classifier = mapping == null ? pathInfo.getClassifier() : mapping.getClassifier();
