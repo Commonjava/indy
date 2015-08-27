@@ -123,7 +123,7 @@ public class AproxModelDiscoverer
                 logger.info( "Storing discovered relationships." );
                 try
                 {
-                    final Set<ProjectRelationship<?>> rejected =
+                    final Set<ProjectRelationship<?, ?>> rejected =
                         graph.storeRelationships( result.getAcceptedRelationships() );
 
                     graph.addMetadata( result.getSelectedRef(), metadata );

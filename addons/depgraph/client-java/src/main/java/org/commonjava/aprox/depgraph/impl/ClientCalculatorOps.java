@@ -44,7 +44,7 @@ public class ClientCalculatorOps
     }
 
     @Override
-    public GraphDifference<ProjectRelationship<?>> difference( GraphAnalysisRequest request )
+    public GraphDifference<ProjectRelationship<?, ?>> difference( GraphAnalysisRequest request )
             throws CartoDataException, CartoRequestException
     {
         try

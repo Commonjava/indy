@@ -35,6 +35,7 @@ import org.commonjava.cartographer.request.*;
 import org.commonjava.maven.atlas.graph.filter.ProjectRelationshipFilter;
 import org.commonjava.maven.atlas.ident.DependencyScope;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.atlas.ident.ref.SimpleProjectVersionRef;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -178,7 +179,7 @@ public class RenderingController
                       final DependencyScope scope, final Map<String, String[]> params )
         throws AproxWorkflowException
     {
-        final ProjectVersionRef ref = new ProjectVersionRef( groupId, artifactId, version );
+        final ProjectVersionRef ref = new SimpleProjectVersionRef( groupId, artifactId, version );
 
         final Map<String, Object> parsed = presetParamParser.parse( params );
         if ( !parsed.containsKey( CommonPresetParameters.SCOPE ) )
@@ -220,7 +221,7 @@ public class RenderingController
                           final String workspaceId, final Map<String, String[]> params, final PomRequest config )
         throws AproxWorkflowException
     {
-        final ProjectVersionRef pvr = new ProjectVersionRef( groupId, artifactId, version );
+        final ProjectVersionRef pvr = new SimpleProjectVersionRef( groupId, artifactId, version );
         config.setOutput( pvr );
         return pomFor( config );
     }

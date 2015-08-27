@@ -25,6 +25,9 @@ import org.commonjava.aprox.bind.jaxrs.RestProvider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import org.commonjava.aprox.model.core.io.AproxObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Consumes( { "application/json", "application/*+json", "text/json" } )
 @Produces( { "application/json", "application/*+json", "text/json" } )
@@ -34,18 +37,22 @@ public class CDIJacksonProvider
 {
 
     @Inject
-    private ObjectMapper mapper;
+    private AproxObjectMapper mapper;
 
     @Override
     public ObjectMapper locateMapper( final Class<?> type, final MediaType mediaType )
     {
-        if ( mapper == null )
+        AproxObjectMapper aom = mapper;
+        if ( aom == null )
         {
             final CDI<Object> cdi = CDI.current();
-            return cdi.select( ObjectMapper.class )
+            aom = cdi.select( AproxObjectMapper.class )
                       .get();
         }
 
-        return mapper;
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug("Returning AproxObjectMapper with registered modules: {}", mapper.getRegisteredModuleNames() );
+
+        return aom;
     }
 }

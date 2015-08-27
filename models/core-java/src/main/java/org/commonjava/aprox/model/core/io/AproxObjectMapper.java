@@ -23,6 +23,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.maven.atlas.ident.jackson.ProjectVersionRefSerializerModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Alternative;
@@ -31,7 +33,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -46,20 +47,29 @@ public class AproxObjectMapper
     @Inject
     private Instance<Module> injectedModules;
 
+    @Inject
+    private Instance<ModuleSet> injectedModuleSets;
+
     private final Iterable<Module> ctorModules;
+
+    private final Iterable<ModuleSet> ctorModuleSets;
+
+    private Set<String> registeredModules = new HashSet<>();
 
     protected AproxObjectMapper()
     {
         ctorModules = null;
+        ctorModuleSets = null;
     }
 
     public AproxObjectMapper( final boolean unused, final Module... additionalModules )
     {
         final Set<Module> mods = new HashSet<Module>();
-        mods.add( new ApiSerializerModule() );
-        mods.add( new ProjectVersionRefSerializerModule() );
+        mods.add( ApiSerializerModule.INSTANCE );
+        mods.add( ProjectVersionRefSerializerModule.INSTANCE );
         mods.addAll( Arrays.asList( additionalModules ) );
         this.ctorModules = mods;
+        this.ctorModuleSets = null;
 
         init();
     }
@@ -74,6 +84,22 @@ public class AproxObjectMapper
             mods.add( module );
         }
         this.ctorModules = mods;
+        this.ctorModuleSets = null;
+
+        init();
+    }
+
+    public AproxObjectMapper( Instance<Module> modules, Instance<ModuleSet> moduleSets )
+    {
+        final Set<Module> mods = new HashSet<Module>();
+        mods.add( new ApiSerializerModule() );
+        mods.add( new ProjectVersionRefSerializerModule() );
+        for ( final Module module : mods )
+        {
+            mods.add( module );
+        }
+        this.ctorModules = mods;
+        this.ctorModuleSets = moduleSets;
 
         init();
     }
@@ -93,34 +119,64 @@ public class AproxObjectMapper
 
         disable( DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES );
 
-        if ( injectedModules != null )
+        inject( injectedModules, injectedModuleSets );
+        inject( ctorModules, ctorModuleSets );
+    }
+
+    private void inject( Iterable<Module> modules, Iterable<ModuleSet> moduleSets )
+    {
+        Set<Module> injected = new HashSet<>();
+
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        if ( modules != null )
         {
-            registerModules( injectedModules );
-            for ( final Module module : injectedModules )
+            for ( final Module module : modules )
             {
-                if ( module instanceof AproxSerializerModule )
+                injected.add( module );
+            }
+        }
+
+        if ( moduleSets != null )
+        {
+            for ( ModuleSet moduleSet : moduleSets )
+            {
+                logger.debug("Adding module-set to object mapper..." );
+
+                Set<Module> set = moduleSet.getModules();
+                if ( set != null )
                 {
-                    ( (AproxSerializerModule) module ).register( this );
+                    for ( Module module : set )
+                    {
+                        injected.add( module );
+                    }
                 }
             }
         }
 
-        if ( ctorModules != null )
+        for ( Module module : injected )
         {
-            registerModules( ctorModules );
-            for ( final Module module : ctorModules )
-            {
-                if ( module instanceof AproxSerializerModule )
-                {
-                    ( (AproxSerializerModule) module ).register( this );
-                }
-            }
+            injectSingle( module );
+        }
+
+    }
+
+    private void injectSingle( Module module )
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug("Registering object-mapper module: {}", module );
+
+        registerModule( module );
+        registeredModules.add( module.getClass().getSimpleName() );
+
+        if ( module instanceof AproxSerializerModule )
+        {
+            ( (AproxSerializerModule) module ).register( this );
         }
     }
 
-    public void register(Iterable<Module> modules)
+    public Set<String> getRegisteredModuleNames()
     {
-        registerModules( modules );
+        return registeredModules;
     }
 
     public String patchLegacyStoreJson( final String json )

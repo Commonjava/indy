@@ -23,7 +23,7 @@ import org.commonjava.cartographer.request.GraphComposition;
 import org.commonjava.cartographer.request.GraphDescription;
 import org.commonjava.cartographer.request.PomRequest;
 import org.commonjava.maven.atlas.graph.jackson.ProjectRelationshipSerializerModule;
-import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.atlas.ident.ref.SimpleProjectVersionRef;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -45,14 +45,14 @@ public class PomRecipeTest
 
         final GraphDescription desc =
             new GraphDescription( "runtime", Collections.<String, Object> emptyMap(),
-                                  Collections.singleton( new ProjectVersionRef( "org.foo", "bar", "1.0" ) ) );
+                                  Collections.singleton( new SimpleProjectVersionRef( "org.foo", "bar", "1.0" ) ) );
 
         final GraphComposition comp = new GraphComposition( null, Collections.singletonList( desc ) );
 
         final PomRequest dto = new PomRequest();
         dto.setGraphComposition( comp );
         dto.setSource( new StoreKey( StoreType.remote, "central" ).toString() );
-        dto.setOutput( new ProjectVersionRef( "org.foo", "bar-bom", "1.0" ) );
+        dto.setOutput( new SimpleProjectVersionRef( "org.foo", "bar-bom", "1.0" ) );
         dto.setWorkspaceId( "bar" );
         dto.setGraphToManagedDeps( true );
         dto.setResolve( true );

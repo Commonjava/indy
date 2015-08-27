@@ -17,6 +17,7 @@ package org.commonjava.aprox.depgraph.model;
 
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.atlas.ident.ref.SimpleProjectVersionRef;
 
 import java.util.Collections;
 import java.util.HashMap;

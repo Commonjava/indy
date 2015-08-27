@@ -48,21 +48,21 @@ public class CalculatorController
     @Inject
     private RecipeHelper configHelper;
 
-    public GraphDifference<ProjectRelationship<?>> difference( final InputStream configStream )
+    public GraphDifference<ProjectRelationship<?, ?>> difference( final InputStream configStream )
                     throws AproxWorkflowException
     {
         final GraphAnalysisRequest request = configHelper.readRecipe( configStream, GraphAnalysisRequest.class );
         return difference( request );
     }
 
-    public GraphDifference<ProjectRelationship<?>> difference( final String json )
+    public GraphDifference<ProjectRelationship<?, ?>> difference( final String json )
                     throws AproxWorkflowException
     {
         final GraphAnalysisRequest request = configHelper.readRecipe( json, GraphAnalysisRequest.class );
         return difference( request );
     }
 
-    public GraphDifference<ProjectRelationship<?>> difference( final GraphAnalysisRequest request )
+    public GraphDifference<ProjectRelationship<?, ?>> difference( final GraphAnalysisRequest request )
                     throws AproxWorkflowException
     {
         try

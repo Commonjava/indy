@@ -30,6 +30,7 @@ import javax.inject.Inject;
 import org.commonjava.aprox.inject.Production;
 import org.commonjava.maven.atlas.graph.RelationshipGraph;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.atlas.ident.ref.SimpleProjectVersionRef;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 import org.commonjava.maven.atlas.ident.version.InvalidVersionSpecificationException;
 import org.commonjava.cartographer.CartoDataException;
@@ -88,7 +89,7 @@ public class AproxDepgraphEvents
             if ( info != null )
             {
                 final ProjectVersionRef ref =
-                    new ProjectVersionRef( info.getGroupId(), info.getArtifactId(), info.getVersion() );
+                    new SimpleProjectVersionRef( info.getGroupId(), info.getArtifactId(), info.getVersion() );
 
                 delegate.notifyOfGraph( ref );
             }
@@ -127,7 +128,7 @@ public class AproxDepgraphEvents
                     if ( info != null )
                     {
                         final ProjectVersionRef ref =
-                            new ProjectVersionRef( info.getGroupId(), info.getArtifactId(), info.getVersion() );
+                            new SimpleProjectVersionRef( info.getGroupId(), info.getArtifactId(), info.getVersion() );
 
                         delegate.notifyOfGraph( ref );
                     }

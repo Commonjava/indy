@@ -26,6 +26,7 @@ import org.commonjava.aprox.inject.Production;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 
 import com.fasterxml.jackson.databind.Module;
+import org.commonjava.aprox.model.core.io.ModuleSet;
 
 @ApplicationScoped
 public class CoreProvider
@@ -33,6 +34,9 @@ public class CoreProvider
 
     @Inject
     private Instance<Module> objectMapperModules;
+
+    @Inject
+    private Instance<ModuleSet> objectMapperModuleSets;
 
     private AproxObjectMapper objectMapper;
 
@@ -43,7 +47,7 @@ public class CoreProvider
     @PostConstruct
     public void init()
     {
-        this.objectMapper = new AproxObjectMapper( objectMapperModules );
+        this.objectMapper = new AproxObjectMapper( objectMapperModules, objectMapperModuleSets );
     }
 
     @Produces
