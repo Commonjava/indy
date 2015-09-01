@@ -140,7 +140,7 @@ public class AproxObjectMapper
         {
             for ( ModuleSet moduleSet : moduleSets )
             {
-                logger.debug("Adding module-set to object mapper..." );
+                logger.info("Adding module-set to object mapper..." );
 
                 Set<Module> set = moduleSet.getModules();
                 if ( set != null )
@@ -163,7 +163,7 @@ public class AproxObjectMapper
     private void injectSingle( Module module )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.debug("Registering object-mapper module: {}", module );
+        logger.info("Registering object-mapper module: {}", module );
 
         registerModule( module );
         registeredModules.add( module.getClass().getSimpleName() );

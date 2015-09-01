@@ -39,7 +39,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
-import org.commonjava.aprox.keycloak.conf.KeycloakConfig;
+import org.commonjava.aprox.subsys.keycloak.conf.KeycloakConfig;
 import org.commonjava.aprox.subsys.http.util.UserPass;
 import org.commonjava.maven.galley.transport.htcli.Http;
 import org.keycloak.OAuth2Constants;

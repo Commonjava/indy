@@ -28,7 +28,9 @@ public enum ApplicationStatus
     
     NOT_MODIFIED( 304, "Not Modified" ),
     
-    BAD_REQUEST( 400, "Bad Request" ), 
+    BAD_REQUEST( 400, "Bad Request" ),
+
+    UNAUTHORIZED(401, "Unauthorized"),
     
     NOT_FOUND( 404, "Not Found" ), 
     

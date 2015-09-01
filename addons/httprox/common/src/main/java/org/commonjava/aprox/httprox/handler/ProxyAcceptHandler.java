@@ -19,6 +19,7 @@ import org.commonjava.aprox.boot.BootOptions;
 import org.commonjava.aprox.core.ctl.ContentController;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.httprox.conf.HttproxConfig;
+import org.commonjava.aprox.httprox.keycloak.KeycloakProxyAuthenticator;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,27 +43,23 @@ public class ProxyAcceptHandler implements ChannelListener<AcceptingChannel<Stre
     private HttproxConfig config;
 
     @Inject
-    private BootOptions bootOptions;
-
-    @Inject
     private StoreDataManager storeManager;
 
     @Inject
     private ContentController contentController;
 
     @Inject
-    private CacheProvider cacheProvider;
+    private KeycloakProxyAuthenticator proxyAuthenticator;
 
-    public ProxyAcceptHandler(){}
+    protected ProxyAcceptHandler(){}
 
-    public ProxyAcceptHandler( HttproxConfig config, BootOptions bootOptions, StoreDataManager storeManager,
-                               ContentController contentController, CacheProvider cacheProvider )
+    public ProxyAcceptHandler( HttproxConfig config, StoreDataManager storeManager,
+                               ContentController contentController, KeycloakProxyAuthenticator proxyAuthenticator )
     {
         this.config = config;
-        this.bootOptions = bootOptions;
         this.storeManager = storeManager;
         this.contentController = contentController;
-        this.cacheProvider = cacheProvider;
+        this.proxyAuthenticator = proxyAuthenticator;
     }
 
     @Override
@@ -87,7 +84,7 @@ public class ProxyAcceptHandler implements ChannelListener<AcceptingChannel<Stre
         final ConduitStreamSinkChannel sink = accepted.getSinkChannel();
 
         final ProxyResponseWriter writer =
-                        new ProxyResponseWriter( config, storeManager, contentController, cacheProvider );
+                        new ProxyResponseWriter( config, storeManager, contentController, proxyAuthenticator );
 
         logger.debug( "Setting writer: {}", writer );
         sink.getWriteSetter()

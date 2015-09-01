@@ -28,7 +28,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
-import org.commonjava.aprox.keycloak.rest.SecurityController;
+import org.commonjava.aprox.subsys.keycloak.rest.SecurityController;
 import org.commonjava.aprox.util.ApplicationHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -28,9 +28,9 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.bind.jaxrs.AproxDeploymentProvider;
 import org.commonjava.aprox.bind.jaxrs.ui.UIServlet;
-import org.commonjava.aprox.keycloak.conf.KeycloakConfig;
-import org.commonjava.aprox.keycloak.conf.KeycloakSecurityBindings;
-import org.commonjava.aprox.keycloak.conf.KeycloakSecurityConstraint;
+import org.commonjava.aprox.subsys.keycloak.conf.KeycloakConfig;
+import org.commonjava.aprox.subsys.keycloak.conf.KeycloakSecurityBindings;
+import org.commonjava.aprox.subsys.keycloak.conf.KeycloakSecurityConstraint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

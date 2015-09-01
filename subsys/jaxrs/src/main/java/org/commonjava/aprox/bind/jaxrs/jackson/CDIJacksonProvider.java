@@ -51,7 +51,7 @@ public class CDIJacksonProvider
         }
 
         Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.debug("Returning AproxObjectMapper with registered modules: {}", mapper.getRegisteredModuleNames() );
+        logger.info("Returning AproxObjectMapper with registered modules: {}", mapper.getRegisteredModuleNames() );
 
         return aom;
     }

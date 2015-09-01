@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.aprox.keycloak.rest;
+package org.commonjava.aprox.subsys.keycloak.rest;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +30,7 @@ import org.codehaus.plexus.interpolation.InterpolationException;
 import org.codehaus.plexus.interpolation.PropertiesBasedValueSource;
 import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.keycloak.conf.KeycloakConfig;
+import org.commonjava.aprox.subsys.keycloak.conf.KeycloakConfig;
 import org.commonjava.maven.galley.util.UrlUtils;
 
 @ApplicationScoped
