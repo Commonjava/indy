@@ -15,6 +15,8 @@
  */
 package org.commonjava.aprox.httprox.handler;
 
+import org.apache.http.HttpRequest;
+import org.apache.http.RequestLine;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.core.ctl.ContentController;
@@ -42,7 +44,6 @@ import org.xnio.conduits.ConduitStreamSinkChannel;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
 
 import static org.commonjava.aprox.httprox.util.HttpProxyConstants.ALLOW_HEADER_VALUE;
 import static org.commonjava.aprox.httprox.util.HttpProxyConstants.GET_METHOD;
@@ -59,8 +60,6 @@ public final class ProxyResponseWriter
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private List<String> headerLines;
-
     private Throwable error;
 
     private final HttproxConfig config;
@@ -72,6 +71,8 @@ public final class ProxyResponseWriter
     private KeycloakProxyAuthenticator proxyAuthenticator;
 
     private boolean transferred;
+
+    private HttpRequest httpRequest;
 
     public ProxyResponseWriter( final HttproxConfig config, final StoreDataManager storeManager,
                                 final ContentController contentController,
@@ -86,16 +87,25 @@ public final class ProxyResponseWriter
     @Override
     public void handleEvent( final ConduitStreamSinkChannel channel )
     {
-        HttpConduitWrapper http = new HttpConduitWrapper( channel, headerLines, contentController );
-        if ( headerLines.size() < 1 )
+        HttpConduitWrapper http = new HttpConduitWrapper( channel, httpRequest, contentController );
+        if ( httpRequest == null )
         {
-            try
+            if ( error != null )
             {
-                http.writeStatus( ApplicationStatus.BAD_REQUEST );
+                logger.debug( "handling error from request reader: " + error.getMessage(), error );
+                handleError( error, http );
             }
-            catch ( final IOException e )
+            else
             {
-                logger.error( "Failed to write BAD REQUEST for missing HTTP first-line to response channel.", e );
+                logger.debug( "invalid state (no error or request) from request reader. Sending 400." );
+                try
+                {
+                    http.writeStatus( ApplicationStatus.BAD_REQUEST );
+                }
+                catch ( final IOException e )
+                {
+                    logger.error( "Failed to write BAD REQUEST for missing HTTP first-line to response channel.", e );
+                }
             }
 
             return;
@@ -103,7 +113,7 @@ public final class ProxyResponseWriter
 
         // TODO: Can we handle this?
         final String oldThreadName = Thread.currentThread().getName();
-        Thread.currentThread().setName( headerLines.get( 0 ) );
+        Thread.currentThread().setName( httpRequest.getRequestLine().toString() );
         channel.getCloseSetter().set( ( sinkChannel ) ->
         {
             logger.debug("sink channel closing.");
@@ -116,7 +126,7 @@ public final class ProxyResponseWriter
             try
             {
                 final UserPass proxyUserPass =
-                                UserPass.parse( ApplicationHeader.proxy_authorization, headerLines, null );
+                                UserPass.parse( ApplicationHeader.proxy_authorization, httpRequest, null );
                 if ( ( config.isSecured() || TrackingType.ALWAYS == config.getTrackingType() )
                                 && proxyUserPass == null )
                 {
@@ -126,12 +136,8 @@ public final class ProxyResponseWriter
                 }
                 else
                 {
-                    final String firstLine = headerLines.get( 0 );
-                    logger.debug( "Got first line:\n  '{}'", firstLine );
-                    final String[] parts = headerLines.get( 0 ).split( " " );
-
-                    final String method = parts[0].toUpperCase();
-
+                    RequestLine requestLine = httpRequest.getRequestLine();
+                    String method = requestLine.getMethod().toUpperCase();
                     switch ( method )
                     {
                         case GET_METHOD:
@@ -139,13 +145,14 @@ public final class ProxyResponseWriter
                         {
                             if ( proxyUserPass != null )
                             {
+                                logger.debug( "Passing BASIC authentication credentials to Keycloak bearer-token translation authenticator" );
                                 if (!proxyAuthenticator.authenticate( proxyUserPass, http ))
                                 {
                                     break;
                                 }
                             }
 
-                            final URL url = new URL( parts[1] );
+                            final URL url = new URL( requestLine.getUri() );
                             final RemoteRepository repo = getRepository( url );
                             transfer( http, repo, url.getPath(), GET_METHOD.equals( method ), proxyUserPass );
 
@@ -205,7 +212,7 @@ public final class ProxyResponseWriter
 
                 http.writeError( error );
 
-                logger.info( "Response error complete." );
+                logger.debug( "Response error complete." );
                 //                    Channels.flushBlocking( channel );
                 //                    channel.close();
             }
@@ -308,7 +315,7 @@ public final class ProxyResponseWriter
             }
             else
             {
-                logger.info( "NOT TRACKING: {} in {}", path, repo );
+                logger.debug( "NOT TRACKING: {} in {}", path, repo );
             }
         }
         else
@@ -343,7 +350,7 @@ public final class ProxyResponseWriter
             remote = new RemoteRepository( name, baseUrl );
             remote.setDescription( "HTTProx proxy based on: " + info.getUrl() );
 
-            final UserPass up = UserPass.parse( ApplicationHeader.authorization, headerLines, url.getAuthority() );
+            final UserPass up = UserPass.parse( ApplicationHeader.authorization, httpRequest, url.getAuthority() );
             if ( up != null )
             {
                 remote.setUser( up.getUser() );
@@ -358,15 +365,13 @@ public final class ProxyResponseWriter
         return remote;
     }
 
-    public ProxyResponseWriter setHead( final List<String> headerLines )
-    {
-        this.headerLines = headerLines;
-        return this;
-    }
-
     public void setError( final Throwable error )
     {
         this.error = error;
     }
 
+    public void setHttpRequest( HttpRequest request )
+    {
+        this.httpRequest = request;
+    }
 }

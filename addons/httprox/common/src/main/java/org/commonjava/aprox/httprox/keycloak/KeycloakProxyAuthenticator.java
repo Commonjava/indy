@@ -15,17 +15,23 @@
  */
 package org.commonjava.aprox.httprox.keycloak;
 
+import org.apache.commons.codec.binary.Base64;
 import org.commonjava.aprox.httprox.conf.HttproxConfig;
 import org.commonjava.aprox.subsys.http.HttpWrapper;
 import org.commonjava.aprox.subsys.http.util.UserPass;
 import org.commonjava.aprox.subsys.keycloak.KeycloakAuthenticator;
 import org.commonjava.aprox.subsys.keycloak.conf.KeycloakConfig;
+import org.commonjava.aprox.subsys.keycloak.util.KeycloakBearerTokenDebug;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.keycloak.RSATokenVerifier;
 import org.keycloak.VerificationException;
+import org.keycloak.adapters.AdapterDeploymentContext;
 import org.keycloak.adapters.KeycloakDeployment;
 import org.keycloak.adapters.KeycloakDeploymentBuilder;
+import org.keycloak.jose.jws.JWSHeader;
 import org.keycloak.representations.AccessToken;
+import org.keycloak.util.Base64Url;
+import org.keycloak.util.JsonSerialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,11 +44,14 @@ import java.util.List;
 
 /**
  * Created by jdcasey on 9/1/15.
+ * Shamelessly ripped from BearerTokenRequestAuthenticator in keycloak-adapter-api.
  */
 @ApplicationScoped
 public class KeycloakProxyAuthenticator
         implements KeycloakAuthenticator
 {
+
+    private static final String TOKEN_HEADER = "TOKEN";
 
     @Inject
     private HttproxConfig httproxConfig;
@@ -52,7 +61,9 @@ public class KeycloakProxyAuthenticator
 
     private KeycloakDeployment deployment;
 
-    protected KeycloakProxyAuthenticator(){}
+    protected KeycloakProxyAuthenticator()
+    {
+    }
 
     public KeycloakProxyAuthenticator( KeycloakConfig config, HttproxConfig httproxConfig )
     {
@@ -64,8 +75,10 @@ public class KeycloakProxyAuthenticator
     public boolean authenticate( UserPass userPass, HttpWrapper http )
             throws IOException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
         if ( !keycloakConfig.isEnabled() )
         {
+            logger.debug( "Keycloak httprox translation authenticator is disabled. Skipping authentication." );
             return true;
         }
 
@@ -74,119 +87,175 @@ public class KeycloakProxyAuthenticator
             if ( deployment == null )
             {
                 String jsonPath = keycloakConfig.getKeycloakJson();
+
+                logger.debug( "Reading keycloak deployment info from: {}", jsonPath );
+
                 File jsonFile = new File( jsonPath );
-                if ( !jsonFile.exists() )
+                if ( jsonFile.exists() )
                 {
                     try (FileInputStream in = new FileInputStream( jsonFile ))
                     {
                         deployment = KeycloakDeploymentBuilder.build( in );
+                        logger.debug( "Got public key: '{}'", deployment.getRealmKey() );
                     }
+                }
+                else
+                {
+                    logger.warn( "Cannot read keycloak.json from: {}", jsonPath );
+                    return false;
                 }
             }
         }
 
-        List<String> authHeaders = http.getHeaders( "Authorization" );
-        if (authHeaders == null || authHeaders.size() == 0) {
-            sendChallengeResponse(http, null, null);
-            return false;
+        String tokenString = userPass.getPassword();
+
+        AuthResult result = null;
+        if ( tokenString != null )
+        {
+            result = authenticateToken( http, tokenString );
         }
 
-        String tokenString = null;
-        for (String authHeader : authHeaders) {
-            String[] split = authHeader.trim().split("\\s+");
-            if (split.length != 2) continue;
-            if (!split[0].equalsIgnoreCase("Bearer")) continue;
-            tokenString = split[1];
+        if ( result == null || !result.success )
+        {
+            String ts = null;
+            List<String> headers = http.getHeaders( TOKEN_HEADER );
+            if ( headers != null && !headers.isEmpty() )
+            {
+                ts = new String( Base64.decodeBase64( headers.get( 0 ) ) );
+            }
+
+            if ( ts != null )
+            {
+                tokenString = ts;
+                result = authenticateToken( http, ts );
+            }
         }
 
-        if (tokenString == null) {
+        if ( result == null )
+        {
+            logger.info( "No keycloak bearer token provided! This must either be in the password of a BASIC "
+                                 + "authentication header, or in a separate Base64-encoded header: {}",
+                         TOKEN_HEADER );
+
             sendChallengeResponse( http, null, null );
-            return false;
+            result = new AuthResult( false );
+        }
+        else
+        {
+            sendChallengeResponse( http, result.reason, result.description );
         }
 
-        return (authenticateToken(http, tokenString));
+        return result.success;
     }
 
-    protected boolean authenticateToken(HttpWrapper exchange, String tokenString)
+    private static final class AuthResult
+    {
+        private boolean success;
+        private String reason;
+        private String description;
+
+        private AuthResult( boolean success, String reason, String description )
+        {
+            this.success = success;
+            this.reason = reason;
+            this.description = description;
+        }
+
+        private AuthResult( boolean success )
+        {
+            this.success = success;
+        }
+    }
+
+    protected AuthResult authenticateToken( HttpWrapper exchange, String tokenString )
             throws IOException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
+
         AccessToken token;
-        try {
+        try
+        {
+            KeycloakBearerTokenDebug.debugToken( tokenString );
+
+            logger.debug( "Verifying token: '{}'", tokenString );
             token = RSATokenVerifier.verifyToken( tokenString, deployment.getRealmKey(), deployment.getRealmInfoUrl() );
-        } catch (VerificationException e) {
-            logger.error("Failed to verify token", e);
-            sendChallengeResponse( exchange, "invalid_token", e.getMessage() );
-            return false;
         }
-        if (token.getIssuedAt() < deployment.getNotBefore()) {
-            logger.error("Stale token");
-            sendChallengeResponse( exchange, "invalid_token", "Stale token" );
-            return false;
+        catch ( VerificationException e )
+        {
+            logger.error( "Failed to verify token", e );
+            return new AuthResult( false, "invalid_token", e.getMessage() );
+        }
+        if ( token.getIssuedAt() < deployment.getNotBefore() )
+        {
+            logger.error( "Stale token" );
+            return new AuthResult( false, "invalid_token", "Stale token" );
         }
 
         // TODO: Not yet supported.
-//        boolean verifyCaller = false;
-//        if (deployment.isUseResourceRoleMappings()) {
-//            verifyCaller = token.isVerifyCaller(deployment.getResourceName());
-//        } else {
-//            verifyCaller = token.isVerifyCaller();
-//        }
-//
-//        String surrogate = null;
-//        if (verifyCaller) {
-//            if (token.getTrustedCertificates() == null || token.getTrustedCertificates().size() == 0) {
-//                logger.warn("No trusted certificates in token");
-//                sendClientCertChallenge( exchange );
-//                return false;
-//            }
-//
-//            // for now, we just make sure Undertow did two-way SSL
-//            // assume JBoss Web verifies the client cert
-//            X509Certificate[] chain = new X509Certificate[0];
-//            try {
-//                chain = exchange.getCertificateChain();
-//            } catch (Exception ignore) {
-//
-//            }
-//            if (chain == null || chain.length == 0) {
-//                logger.warn("No certificates provided by undertow to verify the caller");
-//                sendClientCertChallenge( exchange );
-//                return false;
-//            }
-//            surrogate = chain[0].getSubjectDN().getName();
-//        }
+        //        boolean verifyCaller = false;
+        //        if (deployment.isUseResourceRoleMappings()) {
+        //            verifyCaller = token.isVerifyCaller(deployment.getResourceName());
+        //        } else {
+        //            verifyCaller = token.isVerifyCaller();
+        //        }
+        //
+        //        String surrogate = null;
+        //        if (verifyCaller) {
+        //            if (token.getTrustedCertificates() == null || token.getTrustedCertificates().size() == 0) {
+        //                logger.warn("No trusted certificates in token");
+        //                sendClientCertChallenge( exchange );
+        //                return false;
+        //            }
+        //
+        //            // for now, we just make sure Undertow did two-way SSL
+        //            // assume JBoss Web verifies the client cert
+        //            X509Certificate[] chain = new X509Certificate[0];
+        //            try {
+        //                chain = exchange.getCertificateChain();
+        //            } catch (Exception ignore) {
+        //
+        //            }
+        //            if (chain == null || chain.length == 0) {
+        //                logger.warn("No certificates provided by undertow to verify the caller");
+        //                sendClientCertChallenge( exchange );
+        //                return false;
+        //            }
+        //            surrogate = chain[0].getSubjectDN().getName();
+        //        }
 
-        return true;
+        logger.debug( "Token verification succeeded!" );
+        return new AuthResult( true );
     }
 
-//    protected void sendClientCertChallenge(HttpWrapper exchange) {
-//        return new AuthChallenge() {
-//            @Override
-//            public boolean errorPage() {
-//                return false;
-//            }
-//
-//            @Override
-//            public boolean challenge(HttpFacade exchange) {
-//                // do the same thing as client cert auth
-//                return false;
-//            }
-//        };
-//    }
+    //    protected void sendClientCertChallenge(HttpWrapper exchange) {
+    //        return new AuthChallenge() {
+    //            @Override
+    //            public boolean errorPage() {
+    //                return false;
+    //            }
+    //
+    //            @Override
+    //            public boolean challenge(HttpFacade exchange) {
+    //                // do the same thing as client cert auth
+    //                return false;
+    //            }
+    //        };
+    //    }
 
-
-    protected void sendChallengeResponse(HttpWrapper http, String error, String description)
+    protected void sendChallengeResponse( HttpWrapper http, String error, String description )
             throws IOException
     {
-        StringBuilder header = new StringBuilder("Bearer realm=\"");
-        header.append(httproxConfig.getProxyRealm()).append("\"");
-        if (error != null) {
-            header.append(", error=\"").append(error).append("\"");
+        StringBuilder header = new StringBuilder( "Bearer realm=\"" );
+        header.append( httproxConfig.getProxyRealm() ).append( "\"" );
+        if ( error != null )
+        {
+            header.append( ", error=\"" ).append( error ).append( "\"" );
         }
-        if (description != null) {
-            header.append(", error_description=\"").append(description).append("\"");
+        if ( description != null )
+        {
+            header.append( ", error_description=\"" ).append( description ).append( "\"" );
         }
+
         final String challenge = header.toString();
 
         ApplicationStatus stat = ApplicationStatus.UNAUTHORIZED;

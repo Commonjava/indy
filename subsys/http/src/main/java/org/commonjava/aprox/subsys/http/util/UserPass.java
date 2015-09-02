@@ -15,11 +15,13 @@
  */
 package org.commonjava.aprox.subsys.http.util;
 
-import java.util.List;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpRequest;
 import org.commonjava.aprox.util.ApplicationHeader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class UserPass
 {
@@ -29,19 +31,23 @@ public final class UserPass
 
     private final String password;
 
-    public static UserPass parse( final ApplicationHeader header, final List<String> headerLines, String userpass )
+    public static UserPass parse( final ApplicationHeader header, final HttpRequest httpRequest, String userpass )
     {
+        Logger logger = LoggerFactory.getLogger( UserPass.class );
         if ( userpass == null )
         {
-            for ( final String line : headerLines )
+            Header[] headers = httpRequest.getHeaders( header.key() );
+            if ( headers != null && headers.length > 0 )
             {
-                final String upperLine = line.toUpperCase();
-                if ( upperLine.startsWith( header.upperKey() ) && upperLine.contains( "BASIC" ) )
+                for ( Header h : headers )
                 {
-                    final String[] authParts = line.split( " " );
-                    if ( authParts.length > 2 )
+                    String value = h.getValue();
+                    if ( value.toUpperCase().startsWith( "BASIC " ) )
                     {
-                        userpass = new String( Base64.decodeBase64( authParts[2] ) );
+                        final String[] authParts = value.split( " " );
+                        userpass = new String( Base64.decodeBase64( authParts[1] ) );
+                        logger.info( "userpass is: '{}'", userpass );
+                        break;
                     }
                 }
             }
@@ -50,6 +56,7 @@ public final class UserPass
         if ( userpass != null )
         {
             final String[] upStr = userpass.split( ":" );
+            logger.info( "Split userpass into:\n  {}", StringUtils.join( upStr, "\n  " ) );
 
             if ( upStr.length < 1 )
             {

@@ -15,25 +15,35 @@
  */
 package org.commonjava.aprox.httprox.handler;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
-
+import org.apache.http.HttpException;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpRequestFactory;
+import org.apache.http.config.MessageConstraints;
+import org.apache.http.impl.DefaultHttpRequestFactory;
+import org.apache.http.impl.io.DefaultHttpRequestParser;
+import org.apache.http.impl.io.HttpTransportMetricsImpl;
+import org.apache.http.impl.io.SessionInputBufferImpl;
+import org.apache.http.message.BasicLineParser;
+import org.apache.http.message.LineParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xnio.ChannelListener;
 import org.xnio.conduits.ConduitStreamSinkChannel;
 import org.xnio.conduits.ConduitStreamSourceChannel;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.nio.ByteBuffer;
+
 public final class ProxyRequestReader
-    implements ChannelListener<ConduitStreamSourceChannel>
+        implements ChannelListener<ConduitStreamSourceChannel>
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private StringBuilder currentLine = new StringBuilder();
-
-    private final List<String> headerLines = new ArrayList<>();
+    private ByteArrayOutputStream req = new ByteArrayOutputStream();
 
     private char lastChar = 0;
 
@@ -59,14 +69,37 @@ public final class ProxyRequestReader
         {
             final int read = doRead( channel );
 
+            logger.debug( "Request in progress is:\n\n'{}'", new String( req.toByteArray() ) );
+
             if ( read < 0 || headDone )
             {
-                writer.setHead( headerLines );
-                sendResponse = true;
+                logger.debug( "request done. parsing." );
+                MessageConstraints mc = MessageConstraints.DEFAULT;
+                SessionInputBufferImpl inbuf = new SessionInputBufferImpl( new HttpTransportMetricsImpl(), 1024 );
+                HttpRequestFactory requestFactory = new DefaultHttpRequestFactory();
+                LineParser lp = new BasicLineParser();
+
+                DefaultHttpRequestParser requestParser = new DefaultHttpRequestParser( inbuf, lp, requestFactory, mc );
+
+                inbuf.bind( new ByteArrayInputStream( req.toByteArray() ) );
+
+                try
+                {
+                    logger.debug( "Passing parsed http request off to response writer." );
+                    HttpRequest request = requestParser.parse();
+                    writer.setHttpRequest( request );
+                    sendResponse = true;
+                }
+                catch ( HttpException e )
+                {
+                    logger.error( "Failed to parse http request: " + e.getMessage(), e );
+                    writer.setError( e );
+                }
             }
             else
             {
-                logger.debug( "request head not finished. Pausing until more reads are available." );
+                logger.debug( "request not finished. Pausing until more reads are available.'" );
+
                 channel.resumeReads();
             }
         }
@@ -92,12 +125,21 @@ public final class ProxyRequestReader
     }
 
     private int doRead( final ConduitStreamSourceChannel channel )
-        throws IOException
+            throws IOException
     {
+        int read = -1;
+        if ( headDone )
+        {
+            return read;
+        }
+
         final ByteBuffer buf = ByteBuffer.allocate( 256 );
         logger.debug( "Starting read: {}", channel );
-        int read = 0;
-        readLoop: while ( ( read = channel.read( buf ) ) > 0 )
+
+        PrintWriter printer = new PrintWriter( new OutputStreamWriter( req ) );
+
+        readLoop:
+        while ( ( read = channel.read( buf ) ) > 0 )
         {
             logger.debug( "Read {} bytes", read );
 
@@ -105,36 +147,36 @@ public final class ProxyRequestReader
             final byte[] bbuf = new byte[buf.limit()];
             buf.get( bbuf );
 
+            //            req.write( bbuf );
+            // inefficient, but allows us to stop after header read...
             final String part = new String( bbuf );
-            logger.debug( part );
+//            logger.debug( part );
             for ( final char c : part.toCharArray() )
             {
-                if ( !headDone )
+                switch ( c )
                 {
-                    if ( lastChar == '\n' && c == '\r' && !headerLines.isEmpty() )
+                    case '\r':
                     {
-                        // end of request head
-                        logger.debug( "Detected end of request head. Breaking read loop." );
-                        headDone = true;
-                        break readLoop;
+                        // check: \r\N\R\n
+                        if ( lastChar == '\n' && req.size() > 0 )
+                        {
+                            // end of request head
+                            logger.debug( "Detected end of request head. Breaking read loop." );
+                            headDone = true;
+                            break readLoop;
+                        }
                     }
-                    else if ( c == '\n' )
+                    default:
                     {
-                        logger.debug( "Got line: '{}'", currentLine );
-                        headerLines.add( currentLine.toString() );
-                        currentLine.setLength( 0 );
-                        currentLine = new StringBuilder();
+                        req.write( (byte) c & 0x00FF );
                     }
-                    else if ( c != '\r' )
-                    {
-                        currentLine.append( c );
-                    }
-
-                    lastChar = c;
                 }
+
+                lastChar = c;
             }
         }
 
+        logger.debug( "Processed {} bytes", read );
         return read;
     }
 

@@ -27,6 +27,8 @@ import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 
 import com.fasterxml.jackson.databind.Module;
 import org.commonjava.aprox.model.core.io.ModuleSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class CoreProvider
@@ -55,6 +57,8 @@ public class CoreProvider
     @Production
     public AproxObjectMapper getAproxObjectMapper()
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.info( "Core mapper is: {}", objectMapper );
         return objectMapper;
     }
 

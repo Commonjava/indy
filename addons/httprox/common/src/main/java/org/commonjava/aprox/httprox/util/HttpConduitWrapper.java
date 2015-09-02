@@ -15,8 +15,9 @@
  */
 package org.commonjava.aprox.httprox.util;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpRequest;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.core.ctl.ContentController;
 import org.commonjava.aprox.model.core.RemoteRepository;
@@ -31,7 +32,6 @@ import org.slf4j.LoggerFactory;
 import org.xnio.channels.Channels;
 import org.xnio.conduits.ConduitStreamSinkChannel;
 
-import java.io.Closeable;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -49,14 +49,14 @@ public class HttpConduitWrapper
 
     private final ConduitStreamSinkChannel sinkChannel;
 
-    private List<String> headerLines;
+    private HttpRequest httpRequest;
 
     private final ContentController contentController;
 
-    public HttpConduitWrapper( ConduitStreamSinkChannel channel, List<String> headerLines, ContentController contentController )
+    public HttpConduitWrapper( ConduitStreamSinkChannel channel, HttpRequest httpRequest, ContentController contentController )
     {
         this.sinkChannel = channel;
-        this.headerLines = headerLines;
+        this.httpRequest = httpRequest;
         this.contentController = contentController;
     }
 
@@ -177,17 +177,10 @@ public class HttpConduitWrapper
     public List<String> getHeaders( String name )
     {
         List<String> result = new ArrayList<>();
-        for ( final String line : headerLines )
+        Header[] headers = httpRequest.getHeaders( name );
+        for ( final Header header : headers )
         {
-            final String upperLine = line.toUpperCase();
-            if ( upperLine.startsWith( name.toUpperCase() ) )
-            {
-                final String[] parts = line.split( " " );
-                if ( parts.length > 1 )
-                {
-                    result.add( parts[1] );
-                }
-            }
+            result.add( header.getValue() );
         }
 
         return result;
