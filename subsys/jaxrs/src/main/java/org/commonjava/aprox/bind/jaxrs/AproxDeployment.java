@@ -24,6 +24,7 @@ import io.undertow.servlet.util.ImmediateInstanceFactory;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -222,9 +223,10 @@ public class AproxDeployment
     @Override
     public Set<Class<?>> getClasses()
     {
-        final Set<Class<?>> classes = new HashSet<>( resourceClasses );
-        classes.addAll( Arrays.asList( ApiListingResourceJSON.class, SwaggerSerializers.class ) );
+        final Set<Class<?>> classes = new LinkedHashSet<>();
         classes.addAll( providerClasses );
+        classes.addAll( resourceClasses );
+        classes.addAll( Arrays.asList( ApiListingResourceJSON.class, SwaggerSerializers.class ) );
         classes.addAll( Arrays.asList( JacksonJsonProvider.class, ApiDeclarationProvider.class,
                                        ResourceListingProvider.class ) );
         return classes;
