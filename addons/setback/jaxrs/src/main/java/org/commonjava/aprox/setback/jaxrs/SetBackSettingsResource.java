@@ -29,13 +29,14 @@ import org.commonjava.aprox.bind.jaxrs.AproxResources;
 import org.commonjava.aprox.bind.jaxrs.util.ResponseUtils;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
+import org.commonjava.aprox.setback.conf.SetbackConfig;
 import org.commonjava.aprox.setback.rest.SetBackController;
 import org.commonjava.aprox.subsys.datafile.DataFile;
 import org.commonjava.aprox.util.ApplicationContent;
 
 @Path( "/api/setback" )
 public class SetBackSettingsResource
-    implements AproxResources
+        implements AproxResources
 {
 
     @Inject
@@ -50,8 +51,7 @@ public class SetBackSettingsResource
 
         if ( StoreType.hosted == type )
         {
-            return Response.status( Status.BAD_REQUEST )
-                           .build();
+            return Response.status( Status.BAD_REQUEST ).build();
         }
 
         Response response;
@@ -69,14 +69,11 @@ public class SetBackSettingsResource
 
         if ( settingsXml != null && settingsXml.exists() )
         {
-            response = Response.ok( settingsXml )
-                               .type( ApplicationContent.application_xml )
-                               .build();
+            response = Response.ok( settingsXml ).type( ApplicationContent.application_xml ).build();
         }
         else
         {
-            response = Response.status( Status.NOT_FOUND )
-                               .build();
+            response = Response.status( Status.NOT_FOUND ).build();
         }
 
         return response;
@@ -90,8 +87,7 @@ public class SetBackSettingsResource
 
         if ( StoreType.hosted == type )
         {
-            return Response.status( Status.BAD_REQUEST )
-                           .build();
+            return Response.status( Status.BAD_REQUEST ).build();
         }
 
         Response response;
@@ -103,13 +99,11 @@ public class SetBackSettingsResource
 
             if ( found )
             {
-                response = Response.status( Status.NO_CONTENT )
-                                   .build();
+                response = Response.status( Status.NO_CONTENT ).build();
             }
             else
             {
-                response = Response.status( Status.NOT_FOUND )
-                                   .build();
+                response = Response.status( Status.NOT_FOUND ).build();
             }
         }
         catch ( final AproxWorkflowException e )

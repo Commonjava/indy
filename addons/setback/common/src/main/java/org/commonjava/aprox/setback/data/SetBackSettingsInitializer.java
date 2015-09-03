@@ -26,6 +26,7 @@ import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.StoreType;
+import org.commonjava.aprox.setback.conf.SetbackConfig;
 import org.commonjava.aprox.subsys.datafile.DataFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,14 +44,18 @@ public class SetBackSettingsInitializer
     @Inject
     private SetBackSettingsManager settingsManager;
 
+    @Inject
+    private SetbackConfig config;
+
     protected SetBackSettingsInitializer()
     {
     }
 
-    public SetBackSettingsInitializer( final StoreDataManager storeManager, final SetBackSettingsManager settingsManager )
+    public SetBackSettingsInitializer( final StoreDataManager storeManager, final SetBackSettingsManager settingsManager, SetbackConfig config )
     {
         this.storeManager = storeManager;
         this.settingsManager = settingsManager;
+        this.config = config;
     }
 
     @Override
@@ -63,6 +68,11 @@ public class SetBackSettingsInitializer
     public void start()
         throws AproxLifecycleException
     {
+        if ( !config.isEnabled() )
+        {
+            return;
+        }
+
         try
         {
             final List<ArtifactStore> stores = storeManager.getAllArtifactStores();
