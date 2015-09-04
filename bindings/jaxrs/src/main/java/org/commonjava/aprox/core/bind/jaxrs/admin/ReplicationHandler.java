@@ -34,7 +34,7 @@ import javax.ws.rs.core.SecurityContext;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
-import org.commonjava.aprox.bind.jaxrs.util.SecurityParam;
+import org.commonjava.aprox.bind.jaxrs.SecurityManager;
 import org.commonjava.aprox.core.ctl.ReplicationController;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.dto.ReplicationDTO;
@@ -62,6 +62,9 @@ public class ReplicationHandler
     @Inject
     private ObjectMapper serializer;
 
+    @Inject
+    private SecurityManager securityManager;
+
     @ApiOperation( "Replicate the stores of a remote AProx" )
     @ApiImplicitParams( { @ApiImplicitParam( paramType = "body", name = "body", dataType = "org.commonjava.aprox.model.core.dto.ReplicationDTO", required = true, value = "The configuration determining how replication should be handled, and what remote site to replicate." ) } )
     @POST
@@ -71,7 +74,7 @@ public class ReplicationHandler
         Response response;
         try
         {
-            String user = securityContext == null ? null : securityContext.getUserPrincipal().getName();
+            String user = securityManager.getUser( securityContext, request );
 
             final ReplicationDTO dto = serializer.readValue( request.getInputStream(), ReplicationDTO.class );
             final Set<StoreKey> replicated = controller.replicate( dto, user );

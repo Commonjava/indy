@@ -15,24 +15,11 @@
  */
 package org.commonjava.aprox.promote.bind.jaxrs;
 
-import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
-import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatResponse;
-import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.throwError;
-
-import java.io.IOException;
-
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
+import org.commonjava.aprox.bind.jaxrs.SecurityManager;
 import org.commonjava.aprox.promote.data.PromotionException;
 import org.commonjava.aprox.promote.data.PromotionManager;
 import org.commonjava.aprox.promote.model.GroupPromoteRequest;
@@ -43,11 +30,23 @@ import org.commonjava.aprox.util.ApplicationContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
+import java.io.IOException;
+
+import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
+import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatResponse;
+import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.throwError;
 
 @Path( "/api/promotion" )
 public class PromoteResource
-    implements AproxResources
+        implements AproxResources
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -58,15 +57,20 @@ public class PromoteResource
     @Inject
     private ObjectMapper mapper;
 
+    @Inject
+    private SecurityManager securityManager;
+
     @Path( "/groups/promote" )
     @POST
     @Consumes( ApplicationContent.application_json )
-    public GroupPromoteResult promoteToGroup( final GroupPromoteRequest request, final @Context SecurityContext securityContext )
+    public GroupPromoteResult promoteToGroup( final GroupPromoteRequest request,
+                                              final @Context HttpServletRequest servletRequest,
+                                              final @Context SecurityContext securityContext )
     {
         Response response = null;
         try
         {
-            String user = securityContext == null ? null : securityContext.getUserPrincipal().getName();
+            String user = securityManager.getUser( securityContext, servletRequest );
             return manager.promoteToGroup( request, user );
         }
         catch ( PromotionException e )
@@ -81,11 +85,13 @@ public class PromoteResource
     @Path( "/groups/rollback" )
     @POST
     @Consumes( ApplicationContent.application_json )
-    public GroupPromoteResult rollbackGroupPromote( GroupPromoteResult result, @Context final SecurityContext securityContext )
+    public GroupPromoteResult rollbackGroupPromote( GroupPromoteResult result,
+                                                    @Context final HttpServletRequest servletRequest,
+                                                    @Context final SecurityContext securityContext )
     {
         try
         {
-            String user = securityContext == null ? null : securityContext.getUserPrincipal().getName();
+            String user = securityManager.getUser( securityContext, servletRequest );
             return manager.rollbackGroupPromote( result, user );
         }
         catch ( PromotionException e )
