@@ -39,8 +39,9 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
-import org.commonjava.aprox.keycloak.conf.KeycloakConfig;
+import org.commonjava.aprox.subsys.keycloak.conf.KeycloakConfig;
 import org.commonjava.aprox.subsys.http.util.UserPass;
+import org.commonjava.aprox.subsys.keycloak.util.KeycloakBearerTokenDebug;
 import org.commonjava.maven.galley.transport.htcli.Http;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.constants.ServiceUrlConstants;
@@ -73,6 +74,8 @@ public class BasicAuthenticationOAuthTranslator
     private static final String BASIC_AUTH_PREFIX = "basic";
 
     private static final String AUTHORIZATION_HEADER = "Authorization";
+
+    private static final String APROX_BEARER_TOKEN = "Aprox-Bearer";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -162,8 +165,12 @@ public class BasicAuthenticationOAuthTranslator
                     final String value = BEARER_AUTH_PREFIX + " " + encodedToken;
 
                     logger.debug( "Adding {} value: {}", AUTHORIZATION_HEADER, value );
-                    logger.info( "BASIC authentication translated into OAuth 2.0 bearer token. Handing off to Keycloak." );
+                    logger.info(
+                            "BASIC authentication translated into OAuth 2.0 bearer token. Handing off to Keycloak." );
                     resultValues.add( value );
+
+                    KeycloakBearerTokenDebug.debugToken( encodedToken );
+                    exchange.getResponseHeaders().add( new HttpString( APROX_BEARER_TOKEN ), encodedToken );
                 }
             }
         }

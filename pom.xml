@@ -47,9 +47,9 @@
     <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
     <javaVersion>1.8</javaVersion>
     <slf4j-version>1.6.1</slf4j-version>
-    <atlasVersion>0.14.3-SNAPSHOT</atlasVersion>
-    <galleyVersion>0.9.4-SNAPSHOT</galleyVersion>
-    <cartoVersion>0.9.4-SNAPSHOT</cartoVersion>
+    <atlasVersion>0.15.0</atlasVersion>
+    <galleyVersion>0.10.0</galleyVersion>
+    <cartoVersion>0.10.0</cartoVersion>
     <bomVersion>17</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <resteasyVersion>3.0.9.Final</resteasyVersion>
@@ -266,6 +266,14 @@
         <version>0.24.0-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>dataset</classifier>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-setback-common</artifactId>
+        <version>0.24.0-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>confset</classifier>
         <scope>provided</scope>
       </dependency>
       <dependency>
@@ -973,6 +981,23 @@
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.18.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>${version.plugin.javadoc}</version>
+          <executions>
+            <execution>
+              <id>attach-javadocs</id>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+              <configuration>
+                <detectOfflineLinks>false</detectOfflineLinks>
+                <additionalparam>-Xdoclint:none</additionalparam>
+              </configuration>
+            </execution>
+          </executions>
         </plugin>
         <!-- <plugin>
           <artifactId>maven-compiler-plugin</artifactId>

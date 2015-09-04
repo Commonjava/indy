@@ -72,6 +72,7 @@
             <phase>package</phase>
             <configuration>
               <descriptorRefs>
+                <descriptorRef>confset</descriptorRef>
                 <descriptorRef>dataset</descriptorRef>
               </descriptorRefs>
             </configuration>

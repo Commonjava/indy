@@ -16,12 +16,12 @@
 package org.commonjava.aprox.promote.ftest;
 
 import java.io.ByteArrayInputStream;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
 import org.commonjava.aprox.client.core.AproxClientModule;
 import org.commonjava.aprox.ftest.core.AbstractAproxFunctionalTest;
+import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.HostedRepository;
 import org.commonjava.aprox.promote.client.AproxPromoteClientModule;
 import org.junit.Before;
@@ -36,7 +36,7 @@ public class AbstractPromotionManagerTest
 
     protected HostedRepository source;
 
-    protected HostedRepository target;
+    protected ArtifactStore target;
 
     @Before
     public void setupRepos()
@@ -52,16 +52,24 @@ public class AbstractPromotionManagerTest
               .create( source, changelog, HostedRepository.class );
 
         client.content()
-              .store( source.getKey()
-                            .getType(), source.getName(), first, new ByteArrayInputStream( "This is a test".getBytes() ) );
+              .store( source.getKey().getType(), source.getName(), first,
+                      new ByteArrayInputStream( "This is a test".getBytes() ) );
         client.content()
               .store( source.getKey()
                             .getType(), source.getName(), second,
                       new ByteArrayInputStream( "This is a test".getBytes() ) );
 
-        target = new HostedRepository( "target" );
+        target = createTarget( changelog );
+    }
+
+    protected ArtifactStore createTarget( String changelog )
+            throws Exception
+    {
+        HostedRepository target = new HostedRepository( "target" );
         client.stores()
               .create( target, changelog, HostedRepository.class );
+
+        return target;
     }
 
     @Override

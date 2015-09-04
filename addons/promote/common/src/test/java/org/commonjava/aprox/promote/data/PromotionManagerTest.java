@@ -36,8 +36,8 @@ import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.core.HostedRepository;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.promote.fixture.GalleyFixture;
-import org.commonjava.aprox.promote.model.PromoteRequest;
-import org.commonjava.aprox.promote.model.PromoteResult;
+import org.commonjava.aprox.promote.model.PathsPromoteRequest;
+import org.commonjava.aprox.promote.model.PathsPromoteResult;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
@@ -98,7 +98,8 @@ public class PromotionManagerTest
         final HostedRepository target = new HostedRepository("target");
         storeManager.storeArtifactStore( target, new ChangeSummary(ChangeSummary.SYSTEM_USER, "test setup"), new EventMetadata() );
         
-        final PromoteResult result = manager.promote( new PromoteRequest( source.getKey(), target.getKey() ) );
+        final PathsPromoteResult result = manager.promotePaths(
+                new PathsPromoteRequest( source.getKey(), target.getKey() ) );
         
         assertThat( result.getRequest()
                           .getSource(), equalTo( source.getKey() ) );
@@ -139,8 +140,8 @@ public class PromotionManagerTest
         final HostedRepository target = new HostedRepository( "target" );
         storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ), new EventMetadata() );
 
-        final PromoteResult result =
-            manager.promote( new PromoteRequest( source.getKey(), target.getKey() ).setDryRun( true ) );
+        final PathsPromoteResult result =
+            manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey() ).setDryRun( true ) );
 
         assertThat( result.getRequest()
                           .getSource(), equalTo( source.getKey() ) );
@@ -181,8 +182,8 @@ public class PromotionManagerTest
         final HostedRepository target = new HostedRepository( "target" );
         storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ), new EventMetadata() );
 
-        final PromoteResult result =
-            manager.promote( new PromoteRequest( source.getKey(), target.getKey() ).setPurgeSource( true ) );
+        final PathsPromoteResult result =
+            manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey() ).setPurgeSource( true ) );
 
         assertThat( result.getRequest()
                           .getSource(), equalTo( source.getKey() ) );
@@ -230,7 +231,7 @@ public class PromotionManagerTest
         final HostedRepository target = new HostedRepository( "target" );
         storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ), new EventMetadata() );
 
-        PromoteResult result = manager.promote( new PromoteRequest( source.getKey(), target.getKey() ) );
+        PathsPromoteResult result = manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey() ) );
 
         assertThat( result.getRequest()
                           .getSource(), equalTo( source.getKey() ) );
@@ -246,7 +247,7 @@ public class PromotionManagerTest
 
         assertThat( result.getError(), nullValue() );
 
-        result = manager.rollback( result );
+        result = manager.rollbackPathsPromote( result );
 
         assertThat( result.getRequest()
                           .getSource(), equalTo( source.getKey() ) );
@@ -287,8 +288,8 @@ public class PromotionManagerTest
         final HostedRepository target = new HostedRepository( "target" );
         storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ), new EventMetadata() );
 
-        PromoteResult result =
-            manager.promote( new PromoteRequest( source.getKey(), target.getKey() ).setPurgeSource( true ) );
+        PathsPromoteResult result =
+            manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey() ).setPurgeSource( true ) );
 
         assertThat( result.getRequest()
                           .getSource(), equalTo( source.getKey() ) );
@@ -304,7 +305,7 @@ public class PromotionManagerTest
 
         assertThat( result.getError(), nullValue() );
 
-        result = manager.rollback( result );
+        result = manager.rollbackPathsPromote( result );
 
         assertThat( result.getRequest()
                           .getSource(), equalTo( source.getKey() ) );

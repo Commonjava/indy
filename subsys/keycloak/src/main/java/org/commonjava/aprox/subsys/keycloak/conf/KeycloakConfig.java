@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.aprox.keycloak.conf;
+package org.commonjava.aprox.subsys.keycloak.conf;
 
 import java.io.File;
 import java.io.InputStream;

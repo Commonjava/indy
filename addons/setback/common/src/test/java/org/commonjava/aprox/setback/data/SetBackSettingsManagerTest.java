@@ -36,6 +36,7 @@ import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.HostedRepository;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
+import org.commonjava.aprox.setback.conf.SetbackConfig;
 import org.commonjava.aprox.subsys.datafile.DataFile;
 import org.commonjava.aprox.subsys.datafile.DataFileManager;
 import org.commonjava.aprox.subsys.datafile.change.DataFileEventManager;
@@ -75,7 +76,7 @@ public class SetBackSettingsManagerTest
         final DataFileManager fileManager = new DataFileManager( config, new DataFileEventManager() );
 
         final TemplatingEngine templates = new TemplatingEngine( new GStringTemplateEngine(), fileManager );
-        manager = new SetBackSettingsManager( storeManager, templates, fileManager );
+        manager = new SetBackSettingsManager( storeManager, templates, fileManager, new SetbackConfig(true) );
     }
 
     @Test

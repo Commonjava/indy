@@ -15,10 +15,17 @@
  */
 package org.commonjava.aprox.core.bind.jaxrs.admin;
 
+import static javax.ws.rs.core.Response.Status.CONFLICT;
+import static javax.ws.rs.core.Response.noContent;
+import static javax.ws.rs.core.Response.notModified;
+import static javax.ws.rs.core.Response.ok;
+import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatCreatedResponseWithJsonEntity;
 import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatResponse;
+import static org.commonjava.aprox.model.core.ArtifactStore.METADATA_CHANGELOG;
+import static org.commonjava.aprox.util.ApplicationContent.application_json;
 
 import java.io.IOException;
 import java.net.URI;
@@ -38,12 +45,13 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
-import org.commonjava.aprox.bind.jaxrs.util.SecurityParam;
+import org.commonjava.aprox.bind.jaxrs.SecurityManager;
 import org.commonjava.aprox.core.ctl.AdminController;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.StoreKey;
@@ -76,6 +84,9 @@ public class StoreAdminHandler
 
     @Inject
     private AproxObjectMapper objectMapper;
+
+    @Inject
+    private SecurityManager securityManager;
 
     public StoreAdminHandler()
     {
@@ -126,7 +137,8 @@ public class StoreAdminHandler
     @Produces( ApplicationContent.application_json )
     public Response create( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
                             final @Context UriInfo uriInfo,
-                            final @Context HttpServletRequest request )
+                            final @Context HttpServletRequest request,
+                            final @Context SecurityContext securityContext )
     {
         final StoreType st = StoreType.get( type );
 
@@ -174,25 +186,22 @@ public class StoreAdminHandler
 
         try
         {
-            final String user = (String) request.getSession( true )
-                                                .getAttribute( SecurityParam.user.key() );
+            String user = securityManager.getUser( securityContext, request );
 
             if ( adminController.store( store, user, true ) )
             {
                 final URI uri = uriInfo.getBaseUriBuilder()
                                        .path( getClass() )
                                        .path( store.getName() )
-                                       .build( store.getKey()
-                                                    .getType()
-                                                    .singularEndpointName() );
+                                       .build( store.getKey().getType().singularEndpointName() );
 
                 response = formatCreatedResponseWithJsonEntity( uri, store, objectMapper );
             }
             else
             {
-                response = Response.status( Status.CONFLICT )
+                response = status( CONFLICT )
                                    .entity( "{\"error\": \"Store already exists.\"}" )
-                                   .type( ApplicationContent.application_json )
+                                   .type( application_json )
                                    .build();
             }
         }
@@ -217,7 +226,8 @@ public class StoreAdminHandler
     @Consumes( ApplicationContent.application_json )
     public Response store( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
                            final @ApiParam( required = true ) @PathParam( "name" ) String name,
-                           final @Context HttpServletRequest request )
+                           final @Context HttpServletRequest request,
+                           final @Context SecurityContext securityContext )
     {
         final StoreType st = StoreType.get( type );
 
@@ -272,20 +282,17 @@ public class StoreAdminHandler
 
         try
         {
-            final String user = (String) request.getSession( true )
-                                                .getAttribute( SecurityParam.user.key() );
+            String user = securityManager.getUser( securityContext, request );
 
             logger.info( "Storing: {}", store );
             if ( adminController.store( store, user, false ) )
             {
-                response = Response.ok()
-                                   .build();
+                response = ok().build();
             }
             else
             {
                 logger.warn( "{} NOT modified!", store );
-                response = Response.notModified()
-                                   .build();
+                response = notModified().build();
             }
         }
         catch ( final AproxWorkflowException e )
@@ -368,7 +375,8 @@ public class StoreAdminHandler
     @DELETE
     public Response delete( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
                             final @ApiParam( required = true ) @PathParam( "name" ) String name,
-                            @Context final HttpServletRequest request )
+                            @Context final HttpServletRequest request,
+                            final @Context SecurityContext securityContext )
     {
         final StoreType st = StoreType.get( type );
         final StoreKey key = new StoreKey( st, name );
@@ -390,7 +398,7 @@ public class StoreAdminHandler
 
             if ( isEmpty( summary ) )
             {
-                summary = request.getHeader( ArtifactStore.METADATA_CHANGELOG );
+                summary = request.getHeader( METADATA_CHANGELOG );
             }
 
             if ( isEmpty( summary ) )
@@ -398,13 +406,11 @@ public class StoreAdminHandler
                 summary = "Changelog not provided";
             }
 
-            final String user = (String) request.getSession( true )
-                                                .getAttribute( SecurityParam.user.key() );
+            String user = securityManager.getUser( securityContext, request );
 
             adminController.delete( key, user, summary );
 
-            response = Response.noContent()
-                               .build();
+            response = noContent().build();
         }
         catch ( final AproxWorkflowException e )
         {

@@ -24,6 +24,7 @@ import io.undertow.servlet.util.ImmediateInstanceFactory;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -158,7 +159,7 @@ public class AproxDeployment
         beanConfig.setScan( true );
         beanConfig.setVersion( versioning.getApiVersion() );
 
-        final FilterInfo secFilter = Servlets.filter( "Security", SecurityFilter.class );
+//        final FilterInfo secFilter = Servlets.filter( "Security", SecurityFilter.class );
 
         final FilterInfo nameFilter =
             Servlets.filter( "Naming", ResourceManagementFilter.class,
@@ -169,8 +170,8 @@ public class AproxDeployment
                                 .setContextPath( contextRoot )
                                 .addServletContextAttribute( ResteasyDeployment.class.getName(), deployment )
                                 .addServlet( resteasyServlet )
-                                .addFilter( secFilter )
-                                .addFilterUrlMapping( secFilter.getName(), "/api/*", DispatcherType.REQUEST )
+//                                .addFilter( secFilter )
+//                                .addFilterUrlMapping( secFilter.getName(), "/api/*", DispatcherType.REQUEST )
                                 .addFilter( nameFilter )
                                 .addFilterUrlMapping( nameFilter.getName(), "/api/*", DispatcherType.REQUEST )
                                 .setDeploymentName( "AProx" )
@@ -222,9 +223,10 @@ public class AproxDeployment
     @Override
     public Set<Class<?>> getClasses()
     {
-        final Set<Class<?>> classes = new HashSet<>( resourceClasses );
-        classes.addAll( Arrays.asList( ApiListingResourceJSON.class, SwaggerSerializers.class ) );
+        final Set<Class<?>> classes = new LinkedHashSet<>();
         classes.addAll( providerClasses );
+        classes.addAll( resourceClasses );
+        classes.addAll( Arrays.asList( ApiListingResourceJSON.class, SwaggerSerializers.class ) );
         classes.addAll( Arrays.asList( JacksonJsonProvider.class, ApiDeclarationProvider.class,
                                        ResourceListingProvider.class ) );
         return classes;

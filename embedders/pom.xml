@@ -150,6 +150,7 @@
                   <dependencySourceInclude>org.commonjava.aprox*</dependencySourceInclude>
                 </dependencySourceIncludes>
                 <detectOfflineLinks>false</detectOfflineLinks>
+                <additionalparam>-Xdoclint:none</additionalparam>
               </configuration>
             </execution>
           </executions>

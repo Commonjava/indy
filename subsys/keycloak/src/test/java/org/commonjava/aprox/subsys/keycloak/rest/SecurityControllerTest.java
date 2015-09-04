@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.aprox.keycloak.rest;
+package org.commonjava.aprox.subsys.keycloak.rest;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertThat;
@@ -23,7 +23,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
-import org.commonjava.aprox.keycloak.conf.KeycloakConfig;
+import org.commonjava.aprox.subsys.keycloak.conf.KeycloakConfig;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.aprox.keycloak;
+package org.commonjava.aprox.subsys.keycloak;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,8 +23,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.keycloak.conf.KeycloakConfig;
-import org.commonjava.aprox.keycloak.conf.KeycloakSecurityBindings;
+import org.commonjava.aprox.subsys.keycloak.conf.KeycloakConfig;
+import org.commonjava.aprox.subsys.keycloak.conf.KeycloakSecurityBindings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

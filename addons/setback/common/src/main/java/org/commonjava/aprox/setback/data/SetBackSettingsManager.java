@@ -38,6 +38,7 @@ import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
+import org.commonjava.aprox.setback.conf.SetbackConfig;
 import org.commonjava.aprox.subsys.datafile.DataFile;
 import org.commonjava.aprox.subsys.datafile.DataFileManager;
 import org.commonjava.aprox.subsys.template.AproxGroovyException;
@@ -66,20 +67,29 @@ public class SetBackSettingsManager
     @Inject
     private DataFileManager manager;
 
+    @Inject
+    private SetbackConfig config;
+
     protected SetBackSettingsManager()
     {
     }
 
     public SetBackSettingsManager( final StoreDataManager storeManager, final TemplatingEngine templates,
-                                   final DataFileManager manager )
+                                   final DataFileManager manager, SetbackConfig config )
     {
         this.storeManager = storeManager;
         this.templates = templates;
         this.manager = manager;
+        this.config = config;
     }
 
     public void deleteSettingsOnEvent( @Observes final AbstractStoreDeleteEvent event )
     {
+        if ( !config.isEnabled() )
+        {
+            return;
+        }
+
         for ( final Map.Entry<ArtifactStore, Transfer> storeRoot : event.getStoreRoots()
                                                                         .entrySet() )
         {
@@ -97,6 +107,11 @@ public class SetBackSettingsManager
     public boolean deleteStoreSettings( final ArtifactStore store )
         throws SetBackDataException
     {
+        if ( !config.isEnabled() )
+        {
+            throw new SetBackDataException( "SetBack is disabled!" );
+        }
+
         final StoreKey key = store.getKey();
         if ( StoreType.hosted == key.getType() )
         {
@@ -126,6 +141,11 @@ public class SetBackSettingsManager
 
     public void updateSettingsOnEvent( @Observes final ArtifactStorePostUpdateEvent event )
     {
+        if ( !config.isEnabled() )
+        {
+            return;
+        }
+
         final Collection<ArtifactStore> stores = event.getChanges();
         for ( final ArtifactStore store : stores )
         {
@@ -143,6 +163,11 @@ public class SetBackSettingsManager
     public DataFile generateStoreSettings( final ArtifactStore store )
         throws SetBackDataException
     {
+        if ( !config.isEnabled() )
+        {
+            throw new SetBackDataException( "SetBack is disabled!" );
+        }
+
         final StoreKey key = store.getKey();
         if ( StoreType.group == key.getType() )
         {
@@ -159,6 +184,11 @@ public class SetBackSettingsManager
     private DataFile updateSettingsRelatedToRemote( final ArtifactStore store )
         throws SetBackDataException
     {
+        if ( !config.isEnabled() )
+        {
+            throw new SetBackDataException( "SetBack is disabled!" );
+        }
+
         Set<Group> groups;
         try
         {
@@ -189,6 +219,11 @@ public class SetBackSettingsManager
     private DataFile updateSettingsForGroup( final Group group )
         throws SetBackDataException
     {
+        if ( !config.isEnabled() )
+        {
+            throw new SetBackDataException( "SetBack is disabled!" );
+        }
+
         logger.info( "Updating set-back settings.xml for group: {}", group.getName() );
         List<ArtifactStore> concreteStores;
         try
@@ -219,6 +254,11 @@ public class SetBackSettingsManager
                                      final List<RemoteRepository> remotes )
         throws SetBackDataException
     {
+        if ( !config.isEnabled() )
+        {
+            throw new SetBackDataException( "SetBack is disabled!" );
+        }
+
         final StoreKey key = store.getKey();
         final DataFile settingsXml = getSettingsXml( key );
 
@@ -259,12 +299,22 @@ public class SetBackSettingsManager
 
     private DataFile getSettingsXml( final StoreKey key )
     {
+        if ( !config.isEnabled() )
+        {
+            return null;
+        }
+
         return manager.getDataFile( DATA_DIR, key.getType()
                                                  .singularEndpointName(), "settings-" + key.getName() + ".xml" );
     }
 
     public DataFile getSetBackSettings( final StoreKey key )
     {
+        if ( !config.isEnabled() )
+        {
+            return null;
+        }
+
         final DataFile settingsXml = getSettingsXml( key );
         return settingsXml == null || !settingsXml.exists() ? null : settingsXml;
     }

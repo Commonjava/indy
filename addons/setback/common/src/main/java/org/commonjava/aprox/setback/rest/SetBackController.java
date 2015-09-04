@@ -23,9 +23,11 @@ import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.StoreKey;
+import org.commonjava.aprox.setback.conf.SetbackConfig;
 import org.commonjava.aprox.setback.data.SetBackDataException;
 import org.commonjava.aprox.setback.data.SetBackSettingsManager;
 import org.commonjava.aprox.subsys.datafile.DataFile;
+import org.commonjava.aprox.util.ApplicationStatus;
 
 @ApplicationScoped
 public class SetBackController
@@ -36,25 +38,31 @@ public class SetBackController
     @Inject
     private StoreDataManager storeManager;
 
+    @Inject
+    private SetbackConfig config;
+
     protected SetBackController()
     {
     }
 
-    public SetBackController( final SetBackSettingsManager manager, final StoreDataManager storeManager )
+    public SetBackController( final SetBackSettingsManager manager, final StoreDataManager storeManager, SetbackConfig config )
     {
         this.manager = manager;
         this.storeManager = storeManager;
+        this.config = config;
     }
 
     public DataFile getSetBackSettings( final StoreKey key )
         throws AproxWorkflowException
     {
+        checkEnabled();
         return manager.getSetBackSettings( key );
     }
 
     public boolean deleteSetBackSettings( final StoreKey key )
         throws AproxWorkflowException
     {
+        checkEnabled();
         try
         {
             final ArtifactStore store = storeManager.getArtifactStore( key );
@@ -79,6 +87,15 @@ public class SetBackController
         }
 
         return false;
+    }
+
+    private void checkEnabled()
+            throws AproxWorkflowException
+    {
+        if ( !config.isEnabled() )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "SetBack is disabled." );
+        }
     }
 
 }

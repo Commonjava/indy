@@ -33,7 +33,7 @@ public class AproxPromoteClientModuleUrlsTest
         final String url = new Aprox( BASE, new AproxPromoteClientModule() ).module( AproxPromoteClientModule.class )
                                                                             .promoteUrl();
 
-        assertThat( url, equalTo( BASE + "/" + AproxPromoteClientModule.PROMOTE_PATH ) );
+        assertThat( url, equalTo( BASE + "/" + AproxPromoteClientModule.PATHS_PROMOTE_PATH ) );
     }
 
     @Test
@@ -43,7 +43,7 @@ public class AproxPromoteClientModuleUrlsTest
         final String url = new Aprox( BASE, new AproxPromoteClientModule() ).module( AproxPromoteClientModule.class )
                                                                             .resumeUrl();
 
-        assertThat( url, equalTo( BASE + "/" + AproxPromoteClientModule.RESUME_PATH ) );
+        assertThat( url, equalTo( BASE + "/" + AproxPromoteClientModule.PATHS_RESUME_PATH ) );
     }
 
     @Test
@@ -53,7 +53,7 @@ public class AproxPromoteClientModuleUrlsTest
         final String url = new Aprox( BASE, new AproxPromoteClientModule() ).module( AproxPromoteClientModule.class )
                                                                             .rollbackUrl();
 
-        assertThat( url, equalTo( BASE + "/" + AproxPromoteClientModule.ROLLBACK_PATH ) );
+        assertThat( url, equalTo( BASE + "/" + AproxPromoteClientModule.PATHS_ROLLBACK_PATH ) );
     }
 
 }

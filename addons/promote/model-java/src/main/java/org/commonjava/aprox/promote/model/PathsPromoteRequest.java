@@ -29,7 +29,7 @@ import org.commonjava.aprox.model.core.StoreKey;
  * @author jdcasey
  *
  */
-public class PromoteRequest
+public class PathsPromoteRequest
 {
 
     private StoreKey source;
@@ -42,18 +42,18 @@ public class PromoteRequest
 
     private boolean dryRun;
 
-    public PromoteRequest()
+    public PathsPromoteRequest()
     {
     }
 
-    public PromoteRequest( final StoreKey source, final StoreKey target, final Set<String> paths )
+    public PathsPromoteRequest( final StoreKey source, final StoreKey target, final Set<String> paths )
     {
         this.source = source;
         this.target = target;
         this.paths = paths;
     }
 
-    public PromoteRequest( final StoreKey source, final StoreKey target, final String... paths )
+    public PathsPromoteRequest( final StoreKey source, final StoreKey target, final String... paths )
     {
         this.source = source;
         this.target = target;
@@ -65,7 +65,7 @@ public class PromoteRequest
         return source;
     }
 
-    public PromoteRequest setSource( final StoreKey source )
+    public PathsPromoteRequest setSource( final StoreKey source )
     {
         this.source = source;
         return this;
@@ -76,7 +76,7 @@ public class PromoteRequest
         return target;
     }
 
-    public PromoteRequest setTarget( final StoreKey target )
+    public PathsPromoteRequest setTarget( final StoreKey target )
     {
         this.target = target;
         return this;
@@ -87,7 +87,7 @@ public class PromoteRequest
         return paths == null ? Collections.<String> emptySet() : paths;
     }
 
-    public PromoteRequest setPaths( final Set<String> paths )
+    public PathsPromoteRequest setPaths( final Set<String> paths )
     {
         this.paths = paths;
         return this;
@@ -96,10 +96,10 @@ public class PromoteRequest
     @Override
     public String toString()
     {
-        return String.format( "PromoteRequest [source=%s, target=%s, paths=%s]", source, target, paths );
+        return String.format( "PathsPromoteRequest [source=%s, target=%s, paths=%s]", source, target, paths );
     }
 
-    public PromoteRequest setPurgeSource( final boolean purgeSource )
+    public PathsPromoteRequest setPurgeSource( final boolean purgeSource )
     {
         this.purgeSource = purgeSource;
         return this;
@@ -115,7 +115,7 @@ public class PromoteRequest
         return dryRun;
     }
 
-    public PromoteRequest setDryRun( final boolean dryRun )
+    public PathsPromoteRequest setDryRun( final boolean dryRun )
     {
         this.dryRun = dryRun;
         return this;

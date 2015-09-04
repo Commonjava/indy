@@ -25,8 +25,10 @@ import org.commonjava.aprox.client.core.AproxClientModule;
 import org.commonjava.aprox.client.core.util.UrlUtils;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
-import org.commonjava.aprox.promote.model.PromoteRequest;
-import org.commonjava.aprox.promote.model.PromoteResult;
+import org.commonjava.aprox.promote.model.GroupPromoteRequest;
+import org.commonjava.aprox.promote.model.GroupPromoteResult;
+import org.commonjava.aprox.promote.model.PathsPromoteRequest;
+import org.commonjava.aprox.promote.model.PathsPromoteResult;
 
 public class AproxPromoteClientModule
     extends AproxClientModule
@@ -34,39 +36,79 @@ public class AproxPromoteClientModule
 
     public static final String PROMOTE_BASEPATH = "promotion";
 
-    public static final String PROMOTE_PATH = PROMOTE_BASEPATH + "/promote";
+    public static final String PATHS_PROMOTE_PATH = PROMOTE_BASEPATH + "/paths/promote";
 
-    public static final String RESUME_PATH = PROMOTE_BASEPATH + "/resume";
+    public static final String PATHS_RESUME_PATH = PROMOTE_BASEPATH + "/paths/resume";
 
-    public static final String ROLLBACK_PATH = PROMOTE_BASEPATH + "/rollback";
+    public static final String PATHS_ROLLBACK_PATH = PROMOTE_BASEPATH + "/paths/rollback";
 
-    public PromoteResult promote( final StoreType srcType, final String srcName, final StoreType targetType,
-                                  final String targetName, final boolean purgeSource, final String... paths )
+    public static final String GROUP_PROMOTE_PATH = PROMOTE_BASEPATH + "/groups/promote";
+
+    public static final String GROUP_ROLLBACK_PATH = PROMOTE_BASEPATH + "/groups/rollback";
+
+    public GroupPromoteResult promoteToGroup( final StoreType srcType, final String srcName, final String targetGroup )
+            throws AproxClientException
+    {
+        final GroupPromoteRequest req =
+                new GroupPromoteRequest( new StoreKey( srcType, srcName ), targetGroup );
+
+        final GroupPromoteResult
+                result = http.postWithResponse( GROUP_PROMOTE_PATH, req, GroupPromoteResult.class, HttpStatus.SC_OK );
+
+        return result;
+    }
+
+    public GroupPromoteResult promoteToGroup( final GroupPromoteRequest request )
+            throws AproxClientException
+    {
+        final GroupPromoteResult
+                result = http.postWithResponse( GROUP_PROMOTE_PATH, request, GroupPromoteResult.class, HttpStatus.SC_OK );
+
+        return result;
+    }
+
+    public GroupPromoteResult rollbackGroupPromote( final GroupPromoteResult result )
+            throws AproxClientException
+    {
+        return http.postWithResponse( GROUP_ROLLBACK_PATH, result, GroupPromoteResult.class, HttpStatus.SC_OK );
+    }
+
+    public GroupPromoteResult rollbackGroupPromote( final GroupPromoteRequest request )
+            throws AproxClientException
+    {
+        return http.postWithResponse( GROUP_ROLLBACK_PATH, new GroupPromoteResult( request ), GroupPromoteResult.class, HttpStatus.SC_OK );
+    }
+
+    public PathsPromoteResult promoteByPath( final StoreType srcType, final String srcName, final StoreType targetType,
+                                             final String targetName, final boolean purgeSource, final String... paths )
         throws AproxClientException
     {
-        final PromoteRequest req =
-            new PromoteRequest( new StoreKey( srcType, srcName ), new StoreKey( targetType, targetName ),
+        final PathsPromoteRequest req =
+            new PathsPromoteRequest( new StoreKey( srcType, srcName ), new StoreKey( targetType, targetName ),
                                 new HashSet<String>( Arrays.asList( paths ) ) ).setPurgeSource( purgeSource );
 
-        final PromoteResult result = http.postWithResponse( PROMOTE_PATH, req, PromoteResult.class, HttpStatus.SC_OK );
+        final PathsPromoteResult
+                result = http.postWithResponse( PATHS_PROMOTE_PATH, req, PathsPromoteResult.class, HttpStatus.SC_OK );
         return result;
     }
 
-    public PromoteResult promote( final StoreKey src, final StoreKey target, final boolean purgeSource,
-                                  final String... paths )
+    public PathsPromoteResult promoteByPath( final StoreKey src, final StoreKey target, final boolean purgeSource,
+                                             final String... paths )
         throws AproxClientException
     {
-        final PromoteRequest req =
-            new PromoteRequest( src, target, new HashSet<String>( Arrays.asList( paths ) ) ).setPurgeSource( purgeSource );
+        final PathsPromoteRequest req =
+            new PathsPromoteRequest( src, target, new HashSet<String>( Arrays.asList( paths ) ) ).setPurgeSource( purgeSource );
 
-        final PromoteResult result = http.postWithResponse( PROMOTE_PATH, req, PromoteResult.class, HttpStatus.SC_OK );
+        final PathsPromoteResult
+                result = http.postWithResponse( PATHS_PROMOTE_PATH, req, PathsPromoteResult.class, HttpStatus.SC_OK );
         return result;
     }
 
-    public PromoteResult promote( final PromoteRequest req )
+    public PathsPromoteResult promoteByPath( final PathsPromoteRequest req )
         throws AproxClientException
     {
-        final PromoteResult result = http.postWithResponse( PROMOTE_PATH, req, PromoteResult.class, HttpStatus.SC_OK );
+        final PathsPromoteResult
+                result = http.postWithResponse( PATHS_PROMOTE_PATH, req, PathsPromoteResult.class, HttpStatus.SC_OK );
         return result;
     }
 
@@ -74,36 +116,36 @@ public class AproxPromoteClientModule
         throws AproxClientException
     {
         final StoreKey sk = new StoreKey( type, name );
-        final PromoteResult result = promote( new PromoteRequest( sk, sk ).setDryRun( true ) );
+        final PathsPromoteResult result = promoteByPath( new PathsPromoteRequest( sk, sk ).setDryRun( true ) );
 
         return result.getPendingPaths();
     }
 
-    public PromoteResult resume( final PromoteResult result )
+    public PathsPromoteResult resumePathPromote( final PathsPromoteResult result )
         throws AproxClientException
     {
-        return http.postWithResponse( RESUME_PATH, result, PromoteResult.class, HttpStatus.SC_OK );
+        return http.postWithResponse( PATHS_RESUME_PATH, result, PathsPromoteResult.class, HttpStatus.SC_OK );
     }
 
-    public PromoteResult rollback( final PromoteResult result )
+    public PathsPromoteResult rollbackPathPromote( final PathsPromoteResult result )
         throws AproxClientException
     {
-        return http.postWithResponse( ROLLBACK_PATH, result, PromoteResult.class, HttpStatus.SC_OK );
+        return http.postWithResponse( PATHS_ROLLBACK_PATH, result, PathsPromoteResult.class, HttpStatus.SC_OK );
     }
 
     public String promoteUrl()
     {
-        return UrlUtils.buildUrl( http.getBaseUrl(), PROMOTE_PATH );
+        return UrlUtils.buildUrl( http.getBaseUrl(), PATHS_PROMOTE_PATH );
     }
 
     public String resumeUrl()
     {
-        return UrlUtils.buildUrl( http.getBaseUrl(), RESUME_PATH );
+        return UrlUtils.buildUrl( http.getBaseUrl(), PATHS_RESUME_PATH );
     }
 
     public String rollbackUrl()
     {
-        return UrlUtils.buildUrl( http.getBaseUrl(), ROLLBACK_PATH );
+        return UrlUtils.buildUrl( http.getBaseUrl(), PATHS_ROLLBACK_PATH );
     }
 
 }

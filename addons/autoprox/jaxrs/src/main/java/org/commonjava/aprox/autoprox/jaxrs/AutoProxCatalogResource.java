@@ -15,6 +15,11 @@
  */
 package org.commonjava.aprox.autoprox.jaxrs;
 
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.created;
+import static javax.ws.rs.core.Response.noContent;
+import static javax.ws.rs.core.Response.ok;
+import static javax.ws.rs.core.Response.status;
 import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatCreatedResponseWithJsonEntity;
 import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatResponse;
@@ -34,6 +39,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.autoprox.data.AutoProxRuleException;
@@ -41,7 +47,7 @@ import org.commonjava.aprox.autoprox.rest.AutoProxAdminController;
 import org.commonjava.aprox.autoprox.rest.dto.CatalogDTO;
 import org.commonjava.aprox.autoprox.rest.dto.RuleDTO;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
-import org.commonjava.aprox.bind.jaxrs.util.SecurityParam;
+import org.commonjava.aprox.bind.jaxrs.SecurityManager;
 import org.commonjava.aprox.util.ApplicationContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +66,9 @@ public class AutoProxCatalogResource
 
     @Inject
     private AutoProxAdminController controller;
+
+    @Inject
+    private SecurityManager securityManager;
 
     @DELETE
     public Response reparseCatalog()
@@ -112,24 +121,22 @@ public class AutoProxCatalogResource
 
     @DELETE
     @Path( "{name}" )
-    public Response deleteRule( @PathParam( "name" ) final String name, @Context final HttpServletRequest request )
+    public Response deleteRule( @PathParam( "name" ) final String name, @Context final HttpServletRequest request,
+                                @Context final SecurityContext securityContext )
     {
         Response response;
         try
         {
-            final String user = (String) request.getSession( true )
-                                                .getAttribute( SecurityParam.user.key() );
+            String user = securityManager.getUser( securityContext, request );
 
             final RuleDTO dto = controller.deleteRule( name, user );
             if ( dto == null )
             {
-                response = Response.status( Status.NOT_FOUND )
-                                   .build();
+                response = status( NOT_FOUND ).build();
             }
             else
             {
-                response = Response.noContent()
-                                   .build();
+                response = noContent().build();
             }
         }
         catch ( final AutoProxRuleException e )
@@ -143,7 +150,8 @@ public class AutoProxCatalogResource
 
     @POST
     @Consumes( ApplicationContent.application_json )
-    public Response createRule( @Context final HttpServletRequest request, @Context final UriInfo uriInfo )
+    public Response createRule( @Context final HttpServletRequest request, @Context final UriInfo uriInfo,
+                                @Context SecurityContext securityContext )
     {
         Response response = null;
         RuleDTO dto = null;
@@ -166,15 +174,11 @@ public class AutoProxCatalogResource
 
         try
         {
-            final String user = (String) request.getSession( true )
-                                                .getAttribute( SecurityParam.user.key() );
+            String user = securityManager.getUser( securityContext, request );
 
             dto = controller.storeRule( dto, user );
 
-            final URI uri = uriInfo.getBaseUriBuilder()
-                                   .path( getClass() )
-                                   .path( dto.getName() )
-                                   .build();
+            final URI uri = uriInfo.getBaseUriBuilder().path( getClass() ).path( dto.getName() ).build();
 
             response = formatCreatedResponseWithJsonEntity( uri, dto, serializer );
         }
@@ -193,7 +197,7 @@ public class AutoProxCatalogResource
     @Path( "{name}" )
     @Consumes( ApplicationContent.application_json )
     public Response updateRule( @PathParam( "name" ) final String name, @Context final HttpServletRequest request,
-                                @Context final UriInfo uriInfo )
+                                @Context final UriInfo uriInfo, @Context final SecurityContext securityContext )
     {
         RuleDTO dto = controller.getRule( name );
 
@@ -224,25 +228,19 @@ public class AutoProxCatalogResource
 
         try
         {
-            final String user = (String) request.getSession( true )
-                                                .getAttribute( SecurityParam.user.key() );
+            String user = securityManager.getUser( securityContext, request );
 
             dto = controller.storeRule( dto, user );
 
             if ( updating )
             {
-                response = Response.ok()
-                                   .build();
+                response = ok().build();
             }
             else
             {
-                final URI uri = uriInfo.getBaseUriBuilder()
-                                       .path( getClass() )
-                                       .path( dto.getName() )
-                                       .build();
+                final URI uri = uriInfo.getBaseUriBuilder().path( getClass() ).path( dto.getName() ).build();
 
-                response = Response.created( uri )
-                                   .build();
+                response = created( uri ).build();
             }
         }
         catch ( final AutoProxRuleException e )
