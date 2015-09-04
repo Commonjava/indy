@@ -26,7 +26,7 @@ import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.junit.Test;
 
-public class PromoteRequestTest
+public class PathsPromoteRequestTest
 {
 
     @Test
@@ -35,14 +35,14 @@ public class PromoteRequestTest
     {
         final AproxObjectMapper mapper = new AproxObjectMapper( true );
 
-        final PromoteRequest req =
-            new PromoteRequest( new StoreKey( StoreType.hosted, "source" ), new StoreKey( StoreType.hosted, "target" ) );
+        final PathsPromoteRequest req =
+            new PathsPromoteRequest( new StoreKey( StoreType.hosted, "source" ), new StoreKey( StoreType.hosted, "target" ) );
 
         final String json = mapper.writeValueAsString( req );
 
         System.out.println( json );
 
-        final PromoteRequest result = mapper.readValue( json, PromoteRequest.class );
+        final PathsPromoteRequest result = mapper.readValue( json, PathsPromoteRequest.class );
 
         assertThat( result.getSource(), equalTo( req.getSource() ) );
         assertThat( result.getTarget(), equalTo( req.getTarget() ) );
@@ -56,15 +56,15 @@ public class PromoteRequestTest
     {
         final AproxObjectMapper mapper = new AproxObjectMapper( true );
 
-        final PromoteRequest req =
-            new PromoteRequest( new StoreKey( StoreType.hosted, "source" ), new StoreKey( StoreType.hosted, "target" ),
+        final PathsPromoteRequest req =
+            new PathsPromoteRequest( new StoreKey( StoreType.hosted, "source" ), new StoreKey( StoreType.hosted, "target" ),
                                 new HashSet<String>( Arrays.asList( "/path/one", "/path/two" ) ) );
 
         final String json = mapper.writeValueAsString( req );
 
         System.out.println( json );
 
-        final PromoteRequest result = mapper.readValue( json, PromoteRequest.class );
+        final PathsPromoteRequest result = mapper.readValue( json, PathsPromoteRequest.class );
 
         assertThat( result.getSource(), equalTo( req.getSource() ) );
         assertThat( result.getTarget(), equalTo( req.getTarget() ) );
@@ -78,14 +78,14 @@ public class PromoteRequestTest
     {
         final AproxObjectMapper mapper = new AproxObjectMapper( true );
 
-        final PromoteRequest req =
-            new PromoteRequest( new StoreKey( StoreType.hosted, "source" ), new StoreKey( StoreType.hosted, "target" ) ).setPurgeSource( true );
+        final PathsPromoteRequest req =
+            new PathsPromoteRequest( new StoreKey( StoreType.hosted, "source" ), new StoreKey( StoreType.hosted, "target" ) ).setPurgeSource( true );
 
         final String json = mapper.writeValueAsString( req );
 
         System.out.println( json );
 
-        final PromoteRequest result = mapper.readValue( json, PromoteRequest.class );
+        final PathsPromoteRequest result = mapper.readValue( json, PathsPromoteRequest.class );
 
         assertThat( result.getSource(), equalTo( req.getSource() ) );
         assertThat( result.getTarget(), equalTo( req.getTarget() ) );

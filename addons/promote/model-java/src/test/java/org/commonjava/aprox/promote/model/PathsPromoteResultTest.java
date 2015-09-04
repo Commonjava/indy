@@ -27,7 +27,7 @@ import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.junit.Test;
 
-public class PromoteResultTest
+public class PathsPromoteResultTest
 {
 
     @Test
@@ -36,8 +36,8 @@ public class PromoteResultTest
     {
         final AproxObjectMapper mapper = new AproxObjectMapper( true );
 
-        final PromoteResult in =
-            new PromoteResult( new PromoteRequest( new StoreKey( StoreType.hosted, "source" ),
+        final PathsPromoteResult in =
+            new PathsPromoteResult( new PathsPromoteRequest( new StoreKey( StoreType.hosted, "source" ),
                                                    new StoreKey( StoreType.hosted, "target" ) ),
                                Collections.<String> emptySet(), new HashSet<String>( Arrays.asList( "/path/one",
                                                                                                     "/path/two" ) ),
@@ -47,7 +47,7 @@ public class PromoteResultTest
 
         System.out.println( json );
 
-        final PromoteResult out = mapper.readValue( json, PromoteResult.class );
+        final PathsPromoteResult out = mapper.readValue( json, PathsPromoteResult.class );
 
         // we have separate unit tests to handle serialization checks for PromoteRequest...skipping here.
         assertThat( out.getPendingPaths(), equalTo( in.getPendingPaths() ) );
@@ -61,8 +61,8 @@ public class PromoteResultTest
     {
         final AproxObjectMapper mapper = new AproxObjectMapper( true );
 
-        final PromoteResult in =
-            new PromoteResult( new PromoteRequest( new StoreKey( StoreType.hosted, "source" ),
+        final PathsPromoteResult in =
+            new PathsPromoteResult( new PathsPromoteRequest( new StoreKey( StoreType.hosted, "source" ),
                                                    new StoreKey( StoreType.hosted, "target" ) ),
                                new HashSet<String>( Arrays.asList( "/path/one", "/path/two" ) ),
                                Collections.<String> emptySet(), "Something stupid happened" );
@@ -71,7 +71,7 @@ public class PromoteResultTest
 
         System.out.println( json );
 
-        final PromoteResult out = mapper.readValue( json, PromoteResult.class );
+        final PathsPromoteResult out = mapper.readValue( json, PathsPromoteResult.class );
 
         // we have separate unit tests to handle serialization checks for PromoteRequest...skipping here.
         assertThat( out.getPendingPaths(), equalTo( in.getPendingPaths() ) );
@@ -85,8 +85,8 @@ public class PromoteResultTest
     {
         final AproxObjectMapper mapper = new AproxObjectMapper( true );
 
-        final PromoteResult in =
-            new PromoteResult( new PromoteRequest( new StoreKey( StoreType.hosted, "source" ),
+        final PathsPromoteResult in =
+            new PathsPromoteResult( new PathsPromoteRequest( new StoreKey( StoreType.hosted, "source" ),
                                                    new StoreKey( StoreType.hosted, "target" ) ),
                                new HashSet<String>( Arrays.asList( "/path/one", "/path/two" ) ),
                                new HashSet<String>( Collections.singletonList( "/path/three" ) ), "Something stupid happened" );
@@ -95,7 +95,7 @@ public class PromoteResultTest
 
         System.out.println( json );
 
-        final PromoteResult out = mapper.readValue( json, PromoteResult.class );
+        final PathsPromoteResult out = mapper.readValue( json, PathsPromoteResult.class );
 
         // we have separate unit tests to handle serialization checks for PromoteRequest...skipping here.
         assertThat( out.getPendingPaths(), equalTo( in.getPendingPaths() ) );

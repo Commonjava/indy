@@ -159,7 +159,7 @@ public class AproxDeployment
         beanConfig.setScan( true );
         beanConfig.setVersion( versioning.getApiVersion() );
 
-        final FilterInfo secFilter = Servlets.filter( "Security", SecurityFilter.class );
+//        final FilterInfo secFilter = Servlets.filter( "Security", SecurityFilter.class );
 
         final FilterInfo nameFilter =
             Servlets.filter( "Naming", ResourceManagementFilter.class,
@@ -170,8 +170,8 @@ public class AproxDeployment
                                 .setContextPath( contextRoot )
                                 .addServletContextAttribute( ResteasyDeployment.class.getName(), deployment )
                                 .addServlet( resteasyServlet )
-                                .addFilter( secFilter )
-                                .addFilterUrlMapping( secFilter.getName(), "/api/*", DispatcherType.REQUEST )
+//                                .addFilter( secFilter )
+//                                .addFilterUrlMapping( secFilter.getName(), "/api/*", DispatcherType.REQUEST )
                                 .addFilter( nameFilter )
                                 .addFilterUrlMapping( nameFilter.getName(), "/api/*", DispatcherType.REQUEST )
                                 .setDeploymentName( "AProx" )

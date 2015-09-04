@@ -23,8 +23,8 @@ import static org.junit.Assert.assertThat;
 import java.util.Set;
 
 import org.commonjava.aprox.promote.client.AproxPromoteClientModule;
-import org.commonjava.aprox.promote.model.PromoteRequest;
-import org.commonjava.aprox.promote.model.PromoteResult;
+import org.commonjava.aprox.promote.model.PathsPromoteRequest;
+import org.commonjava.aprox.promote.model.PathsPromoteResult;
 import org.junit.Test;
 
 public class PromoteAllWithPurgeTest
@@ -35,9 +35,9 @@ public class PromoteAllWithPurgeTest
     public void promoteAll_PurgeSource_PushTwoArtifactsToHostedRepo_VerifyCopiedToOtherHostedRepo()
         throws Exception
     {
-        final PromoteResult result =
+        final PathsPromoteResult result =
             client.module( AproxPromoteClientModule.class )
-                  .promote( new PromoteRequest( source.getKey(), target.getKey() ).setPurgeSource( true ) );
+                  .promoteByPath( new PathsPromoteRequest( source.getKey(), target.getKey() ).setPurgeSource( true ) );
 
         assertThat( result.getRequest()
                           .getSource(), equalTo( source.getKey() ) );

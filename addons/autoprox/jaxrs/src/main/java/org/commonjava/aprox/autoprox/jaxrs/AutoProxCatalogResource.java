@@ -34,6 +34,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.aprox.autoprox.data.AutoProxRuleException;
@@ -112,13 +113,13 @@ public class AutoProxCatalogResource
 
     @DELETE
     @Path( "{name}" )
-    public Response deleteRule( @PathParam( "name" ) final String name, @Context final HttpServletRequest request )
+    public Response deleteRule( @PathParam( "name" ) final String name, @Context final HttpServletRequest request,
+                                @Context final SecurityContext securityContext )
     {
         Response response;
         try
         {
-            final String user = (String) request.getSession( true )
-                                                .getAttribute( SecurityParam.user.key() );
+            String user = securityContext == null ? null : securityContext.getUserPrincipal().getName();
 
             final RuleDTO dto = controller.deleteRule( name, user );
             if ( dto == null )
@@ -143,7 +144,8 @@ public class AutoProxCatalogResource
 
     @POST
     @Consumes( ApplicationContent.application_json )
-    public Response createRule( @Context final HttpServletRequest request, @Context final UriInfo uriInfo )
+    public Response createRule( @Context final HttpServletRequest request, @Context final UriInfo uriInfo,
+                                @Context SecurityContext securityContext )
     {
         Response response = null;
         RuleDTO dto = null;
@@ -166,8 +168,7 @@ public class AutoProxCatalogResource
 
         try
         {
-            final String user = (String) request.getSession( true )
-                                                .getAttribute( SecurityParam.user.key() );
+            String user = securityContext == null ? null : securityContext.getUserPrincipal().getName();
 
             dto = controller.storeRule( dto, user );
 
@@ -193,7 +194,7 @@ public class AutoProxCatalogResource
     @Path( "{name}" )
     @Consumes( ApplicationContent.application_json )
     public Response updateRule( @PathParam( "name" ) final String name, @Context final HttpServletRequest request,
-                                @Context final UriInfo uriInfo )
+                                @Context final UriInfo uriInfo, @Context final SecurityContext securityContext )
     {
         RuleDTO dto = controller.getRule( name );
 
@@ -224,8 +225,7 @@ public class AutoProxCatalogResource
 
         try
         {
-            final String user = (String) request.getSession( true )
-                                                .getAttribute( SecurityParam.user.key() );
+            String user = securityContext == null ? null : securityContext.getUserPrincipal().getName();
 
             dto = controller.storeRule( dto, user );
 

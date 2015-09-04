@@ -38,6 +38,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.io.IOUtils;
@@ -126,7 +127,8 @@ public class StoreAdminHandler
     @Produces( ApplicationContent.application_json )
     public Response create( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
                             final @Context UriInfo uriInfo,
-                            final @Context HttpServletRequest request )
+                            final @Context HttpServletRequest request,
+                            final @Context SecurityContext securityContext )
     {
         final StoreType st = StoreType.get( type );
 
@@ -174,8 +176,7 @@ public class StoreAdminHandler
 
         try
         {
-            final String user = (String) request.getSession( true )
-                                                .getAttribute( SecurityParam.user.key() );
+            String user = securityContext == null ? null : securityContext.getUserPrincipal().getName();
 
             if ( adminController.store( store, user, true ) )
             {
@@ -217,7 +218,8 @@ public class StoreAdminHandler
     @Consumes( ApplicationContent.application_json )
     public Response store( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
                            final @ApiParam( required = true ) @PathParam( "name" ) String name,
-                           final @Context HttpServletRequest request )
+                           final @Context HttpServletRequest request,
+                           final @Context SecurityContext securityContext )
     {
         final StoreType st = StoreType.get( type );
 
@@ -272,8 +274,7 @@ public class StoreAdminHandler
 
         try
         {
-            final String user = (String) request.getSession( true )
-                                                .getAttribute( SecurityParam.user.key() );
+            String user = securityContext == null ? null : securityContext.getUserPrincipal().getName();
 
             logger.info( "Storing: {}", store );
             if ( adminController.store( store, user, false ) )
@@ -368,7 +369,8 @@ public class StoreAdminHandler
     @DELETE
     public Response delete( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
                             final @ApiParam( required = true ) @PathParam( "name" ) String name,
-                            @Context final HttpServletRequest request )
+                            @Context final HttpServletRequest request,
+                            final @Context SecurityContext securityContext )
     {
         final StoreType st = StoreType.get( type );
         final StoreKey key = new StoreKey( st, name );
@@ -398,8 +400,7 @@ public class StoreAdminHandler
                 summary = "Changelog not provided";
             }
 
-            final String user = (String) request.getSession( true )
-                                                .getAttribute( SecurityParam.user.key() );
+            String user = securityContext == null ? null : securityContext.getUserPrincipal().getName();
 
             adminController.delete( key, user, summary );
 
