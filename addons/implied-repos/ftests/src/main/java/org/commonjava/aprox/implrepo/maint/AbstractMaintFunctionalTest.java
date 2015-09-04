@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.apache.commons.io.FileUtils;
-import org.commonjava.aprox.boot.AproxBootException;
 import org.commonjava.aprox.client.core.AproxClientModule;
 import org.commonjava.aprox.ftest.core.AbstractAproxFunctionalTest;
 import org.commonjava.aprox.implrepo.client.ImpliedRepoClientModule;
@@ -69,22 +68,17 @@ public class AbstractMaintFunctionalTest
         }
     }
 
-    @Override
-    protected CoreServerFixture newServerFixture()
-        throws AproxBootException, IOException
+    protected void initTestConfig( CoreServerFixture fixture, File etcDir )
+            throws IOException
     {
-        final CoreServerFixture fixture = new CoreServerFixture();
+        super.initTestConfig( fixture, etcDir );
 
-        final File confFile = new File( fixture.getBootOptions()
-                                               .getAproxHome(), "etc/aprox/conf.d/implied-repos.conf" );
+        final File confFile = new File( etcDir, "conf.d/implied-repos.conf" );
 
-        confFile.getParentFile()
-                .mkdirs();
+        confFile.getParentFile().mkdirs();
 
         logger.info( "Writing implied-repos configuration to: {}", confFile );
         FileUtils.write( confFile, "[implied-repos]\nenabled=true" );
-
-        return fixture;
     }
 
     @Override

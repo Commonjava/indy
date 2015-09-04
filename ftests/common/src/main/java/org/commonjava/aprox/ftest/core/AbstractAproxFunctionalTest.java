@@ -17,17 +17,30 @@ package org.commonjava.aprox.ftest.core;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.Temporal;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
+import java.util.Properties;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.aprox.boot.AproxBootException;
 import org.commonjava.aprox.boot.BootStatus;
 import org.commonjava.aprox.client.core.Aprox;
 import org.commonjava.aprox.client.core.AproxClientModule;
+import org.commonjava.aprox.core.conf.AproxSchedulerConfig;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.test.fixture.core.CoreServerFixture;
 import org.junit.After;
@@ -37,6 +50,8 @@ import org.junit.rules.TestName;
 import org.junit.rules.Timeout;
 
 import com.fasterxml.jackson.databind.Module;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractAproxFunctionalTest
 {
@@ -64,10 +79,23 @@ public abstract class AbstractAproxFunctionalTest
     @SuppressWarnings( "resource" )
     @Before
     public void start()
-        throws Throwable
+            throws Throwable
     {
-        Thread.currentThread()
-              .setName( getClass().getSimpleName() + "." + name.getMethodName() );
+        final long start = System.currentTimeMillis();
+        TimerTask task = new TimerTask()
+        {
+            @Override
+            public void run()
+            {
+                long time = System.currentTimeMillis();
+                System.out.printf( "\n\n\nDate: %s\nElapsed: %s\n\n\n", new Date( time ),
+                                   Duration.between( Instant.ofEpochMilli( start ), Instant.ofEpochMilli( time ) ) );
+            }
+        };
+
+        new Timer().scheduleAtFixedRate( task, 0, 5000 );
+
+        Thread.currentThread().setName( getClass().getSimpleName() + "." + name.getMethodName() );
 
         fixture = newServerFixture();
         fixture.start();
@@ -78,9 +106,8 @@ public abstract class AbstractAproxFunctionalTest
             throw new IllegalStateException( "server fixture failed to boot.", status.getError() );
         }
 
-        client =
-            new Aprox( fixture.getUrl(), new AproxObjectMapper( getAdditionalMapperModules() ),
-                       getAdditionalClientModules() ).connect();
+        client = new Aprox( fixture.getUrl(), new AproxObjectMapper( getAdditionalMapperModules() ),
+                            getAdditionalClientModules() ).connect();
     }
 
     protected final long getTestTimeoutSeconds()
@@ -106,10 +133,53 @@ public abstract class AbstractAproxFunctionalTest
         closeQuietly( client );
     }
 
-    protected CoreServerFixture newServerFixture()
-        throws AproxBootException, IOException
+    protected final CoreServerFixture newServerFixture()
+            throws AproxBootException, IOException
     {
-        return new CoreServerFixture();
+        final CoreServerFixture fixture = new CoreServerFixture();
+
+        File etcDir = new File( fixture.getBootOptions().getAproxHome(), "etc/aprox" );
+
+        initBaseTestConfig( fixture, etcDir );
+        initTestConfig( fixture, etcDir );
+
+        return fixture;
+    }
+
+    protected void initTestConfig( CoreServerFixture fixture, File etcDir )
+            throws IOException
+    {
+    }
+
+    protected void initBaseTestConfig( CoreServerFixture fixture, File etcDir )
+            throws IOException
+    {
+        final File confFile = new File( etcDir, "conf.d/scheduler.conf" );
+
+        confFile.getParentFile().mkdirs();
+        //
+        //        File sql = fixture.getTempFolder().newFile( "quartz-h2.sql" );
+        //
+        //        InputStream sqlStream =
+        //                Thread.currentThread().getContextClassLoader().getResourceAsStream( "scheduler/quartz-h2.sql" );
+        //
+        //        try (FileOutputStream out = new FileOutputStream( sql ))
+        //        {
+        //            IOUtils.copy( sqlStream, out );
+        //        }
+        //
+        //        InputStream defaultConfig = new AproxSchedulerConfig().getDefaultConfig();
+        //        String config = IOUtils.toString( defaultConfig );
+        //
+        //        config = config.replaceAll( "org.quartz.dataSource.ds.URL = .*",
+        //                                    "org.quartz.dataSource.ds.URL = jdbc:h2:mem:ds;INIT=runscript from '" + sql.getAbsolutePath() + "'" );
+        //
+        //        Logger logger = LoggerFactory.getLogger( getClass() );
+        //        logger.debug( "scheduler.conf contents:\n\n{}\n\n", config );
+        //
+        //        FileUtils.write( confFile, config );
+
+        FileUtils.write( confFile, "[scheduler]\nenabled=false" );
     }
 
     protected Collection<Module> getAdditionalMapperModules()

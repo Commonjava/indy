@@ -82,6 +82,12 @@ public class DatabaseLifecycleActions
     public void init()
         throws AproxLifecycleException
     {
+        if ( !schedulerConfig.isEnabled() )
+        {
+            logger.info( "Scheduler disabled. Skipping its initialization" );
+            return;
+        }
+
         final CharSequence violations = schedulerConfig.validate();
         if ( violations != null )
         {
@@ -129,9 +135,7 @@ public class DatabaseLifecycleActions
 
         if ( lines == null )
         {
-            final InputStream resource = Thread.currentThread()
-                                               .getContextClassLoader()
-                                               .getResourceAsStream( ddl );
+            final InputStream resource = Thread.currentThread().getContextClassLoader().getResourceAsStream( ddl );
 
             if ( resource != null )
             {
@@ -161,8 +165,7 @@ public class DatabaseLifecycleActions
                     line = line.substring( 0, line.length() - 1 );
                     if ( currentCommand.length() > 0 )
                     {
-                        currentCommand.append( "\n" )
-                                      .append( line );
+                        currentCommand.append( "\n" ).append( line );
                         commands.add( currentCommand.toString() );
                         currentCommand.setLength( 0 );
                     }
@@ -186,9 +189,7 @@ public class DatabaseLifecycleActions
             Statement stmt = null;
             try
             {
-                Thread.currentThread()
-                      .getContextClassLoader()
-                      .loadClass( driverName );
+                Thread.currentThread().getContextClassLoader().loadClass( driverName );
 
                 logger.info( "Connecting to DB: {}", url );
                 connection = DriverManager.getConnection( url );
@@ -303,6 +304,12 @@ public class DatabaseLifecycleActions
     public void stop()
         throws AproxLifecycleException
     {
+        if ( !schedulerConfig.isEnabled() )
+        {
+            logger.info( "Scheduler disabled. Skipping its initialization" );
+            return;
+        }
+
         final String dbDriver = schedulerConfig.getDbDriver();
         if ( dbDriver.startsWith( APACHEDB_DRIVER_SUPER_PACKAGE ) )
         {
