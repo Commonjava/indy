@@ -102,6 +102,12 @@ public class ScheduleManager
     public void init()
         throws AproxLifecycleException
     {
+        if ( !schedulerConfig.isEnabled() )
+        {
+            logger.info( "Scheduler disabled. Skipping Quartz initialization" );
+            return;
+        }
+
         try
         {
             final Properties props = new Properties();
@@ -159,6 +165,12 @@ public class ScheduleManager
     public void rescheduleSnapshotTimeouts( final HostedRepository deploy )
         throws AproxSchedulerException
     {
+        if ( !schedulerConfig.isEnabled() )
+        {
+            logger.debug( "Scheduler disabled." );
+            return;
+        }
+
         int timeout = -1;
         if ( deploy.isAllowSnapshots() && deploy.getSnapshotTimeoutSeconds() > 0 )
         {
@@ -183,6 +195,12 @@ public class ScheduleManager
     public void rescheduleProxyTimeouts( final RemoteRepository repo )
         throws AproxSchedulerException
     {
+        if ( !schedulerConfig.isEnabled() )
+        {
+            logger.debug( "Scheduler disabled." );
+            return;
+        }
+
         int timeout = -1;
         if ( !repo.isPassthrough() && repo.getCacheTimeoutSeconds() > 0 )
         {
@@ -210,6 +228,12 @@ public class ScheduleManager
     public void setProxyTimeouts( final StoreKey key, final String path )
         throws AproxSchedulerException
     {
+        if ( !schedulerConfig.isEnabled() )
+        {
+            logger.debug( "Scheduler disabled." );
+            return;
+        }
+
         RemoteRepository repo = null;
         try
         {
@@ -245,6 +269,12 @@ public class ScheduleManager
                                   final int startSeconds, final int repeatSeconds )
         throws AproxSchedulerException
     {
+        if ( !schedulerConfig.isEnabled() )
+        {
+            logger.debug( "Scheduler disabled." );
+            return;
+        }
+
         final JobDataMap dataMap = new JobDataMap();
         dataMap.put( JOB_TYPE, jobType );
         try
@@ -305,6 +335,12 @@ public class ScheduleManager
     public void scheduleContentExpiration( final StoreKey key, final String path, final int timeoutSeconds )
         throws AproxSchedulerException
     {
+        if ( !schedulerConfig.isEnabled() )
+        {
+            logger.debug( "Scheduler disabled." );
+            return;
+        }
+
         logger.info( "Scheduling timeout for: {} in: {} in: {} seconds.", path, key, timeoutSeconds );
         scheduleForStore( key, CONTENT_JOB_TYPE, path, new ContentExpiration( key, path ), timeoutSeconds, -1 );
     }
@@ -312,6 +348,12 @@ public class ScheduleManager
     public void setSnapshotTimeouts( final StoreKey key, final String path )
         throws AproxSchedulerException
     {
+        if ( !schedulerConfig.isEnabled() )
+        {
+            logger.debug( "Scheduler disabled." );
+            return;
+        }
+
         HostedRepository deploy = null;
         try
         {
@@ -385,6 +427,12 @@ public class ScheduleManager
     public Set<TriggerKey> cancelAllBefore( final GroupMatcher<TriggerKey> matcher, final long timeout )
         throws AproxSchedulerException
     {
+        if ( !schedulerConfig.isEnabled() )
+        {
+            logger.debug( "Scheduler disabled." );
+            return Collections.emptySet();
+        }
+
         final Set<TriggerKey> canceled = new HashSet<>();
         try
         {
@@ -423,6 +471,12 @@ public class ScheduleManager
     public Set<TriggerKey> cancel( final GroupMatcher<TriggerKey> matcher, final String name )
         throws AproxSchedulerException
     {
+        if ( !schedulerConfig.isEnabled() )
+        {
+            logger.debug( "Scheduler disabled." );
+            return Collections.emptySet();
+        }
+
         Set<TriggerKey> canceled = new HashSet<>();
         try
         {
@@ -475,6 +529,12 @@ public class ScheduleManager
     public TriggerKey findFirstMatchingTrigger( final GroupMatcher<TriggerKey> matcher )
         throws AproxSchedulerException
     {
+        if ( !schedulerConfig.isEnabled() )
+        {
+            logger.debug( "Scheduler disabled." );
+            return null;
+        }
+
         try
         {
             final Set<TriggerKey> keys = scheduler.getTriggerKeys( matcher );
@@ -515,6 +575,12 @@ public class ScheduleManager
     public void deleteJobs( final Set<TriggerKey> keys )
         throws AproxSchedulerException
     {
+        if ( !schedulerConfig.isEnabled() )
+        {
+            logger.debug( "Scheduler disabled." );
+            return;
+        }
+
         for ( final TriggerKey key : keys )
         {
             try
@@ -532,6 +598,12 @@ public class ScheduleManager
     public void deleteJob( final String group, final String name )
         throws AproxSchedulerException
     {
+        if ( !schedulerConfig.isEnabled() )
+        {
+            logger.debug( "Scheduler disabled." );
+            return;
+        }
+
         final JobKey jk = new JobKey( name, group );
         try
         {
@@ -565,6 +637,12 @@ public class ScheduleManager
     public void stop()
         throws AproxLifecycleException
     {
+        if ( !schedulerConfig.isEnabled() )
+        {
+            logger.debug( "Scheduler disabled." );
+            return;
+        }
+
         if ( scheduler != null )
         {
             try

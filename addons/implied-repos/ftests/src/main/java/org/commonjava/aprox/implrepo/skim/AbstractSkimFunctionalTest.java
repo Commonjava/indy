@@ -21,13 +21,11 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.commonjava.aprox.boot.AproxBootException;
 import org.commonjava.aprox.ftest.core.AbstractAproxFunctionalTest;
 import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.RemoteRepository;
@@ -85,21 +83,16 @@ public class AbstractSkimFunctionalTest
     }
 
     @Override
-    protected CoreServerFixture newServerFixture()
-        throws AproxBootException, IOException
+    protected void initTestConfig( CoreServerFixture fixture, File etcDir )
+        throws IOException
     {
-        final CoreServerFixture fixture = new CoreServerFixture();
-
-        final File confFile = new File( fixture.getBootOptions()
-                                               .getAproxHome(), "etc/aprox/conf.d/implied-repos.conf" );
+        final File confFile = new File( etcDir, "conf.d/implied-repos.conf" );
 
         confFile.getParentFile()
                 .mkdirs();
 
         logger.info( "Writing implied-repos configuration to: {}", confFile );
         FileUtils.write( confFile, "[implied-repos]\nenabled=true" );
-
-        return fixture;
     }
 
     protected PomRef loadPom( final String name, final Map<String, String> substitutions )

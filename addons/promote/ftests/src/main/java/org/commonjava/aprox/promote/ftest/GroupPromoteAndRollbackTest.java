@@ -55,7 +55,7 @@ public class GroupPromoteAndRollbackTest
 
 
         // now rollback.
-        
+
         result = client.module( AproxPromoteClientModule.class ).rollbackGroupPromote( result );
 
         assertThat( result.getError(), nullValue() );

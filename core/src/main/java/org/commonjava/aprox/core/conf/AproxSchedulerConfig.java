@@ -42,11 +42,17 @@ public class AproxSchedulerConfig
 
     private static final String DDL_PROP = "ddl";
 
+    private static final String ENABLED_PROP = "enabled";
+
     private static final String DEFAULT_DB_URL =
         String.format( "jdbc:derby:%s/var/lib/aprox/data/scheduler",
                        System.getProperty( "aprox.home", System.getProperty( "java.io.tmpdir" ) ) );
 
     private static final String DEFAULT_DB_DRIVER = "org.apache.derby.jdbc.EmbeddedDriver";
+
+    private static final boolean DEFAULT_ENABLED = true;
+
+    private Boolean enabled;
 
     private transient boolean dbDetailsParsed;
 
@@ -87,7 +93,11 @@ public class AproxSchedulerConfig
             for ( final Map.Entry<String, String> entry : configMap.entrySet() )
             {
                 final String key = entry.getKey();
-                if ( DDL_PROP.equalsIgnoreCase( key ) )
+                if ( ENABLED_PROP.equalsIgnoreCase( key ) )
+                {
+                    enabled = Boolean.parseBoolean( entry.getValue().toLowerCase() );
+                }
+                else if ( DDL_PROP.equalsIgnoreCase( key ) )
                 {
                     ddlFile = entry.getValue();
                 }
@@ -104,6 +114,12 @@ public class AproxSchedulerConfig
                 }
             }
         }
+    }
+
+    public boolean isEnabled()
+    {
+        parseDatabaseDetails();
+        return enabled == null ? DEFAULT_ENABLED : enabled;
     }
 
     public String getDdlFile()

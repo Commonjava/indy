@@ -34,7 +34,6 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
-import org.commonjava.aprox.boot.AproxBootException;
 import org.commonjava.aprox.boot.PortFinder;
 import org.commonjava.aprox.ftest.core.AbstractAproxFunctionalTest;
 import org.commonjava.aprox.test.fixture.core.CoreServerFixture;
@@ -78,15 +77,12 @@ public class AbstractHttproxFunctionalTest
     }
 
     @Override
-    protected CoreServerFixture newServerFixture()
-        throws AproxBootException, IOException
+    protected void initTestConfig( CoreServerFixture fixture, File etcDir )
+        throws IOException
     {
-        final CoreServerFixture fixture = new CoreServerFixture();
-
         proxyPort = PortFinder.findOpenPort( 16 );
 
-        final File confFile = new File( fixture.getBootOptions()
-                                               .getAproxHome(), "etc/aprox/conf.d/httprox.conf" );
+        final File confFile = new File( etcDir, "conf.d/httprox.conf" );
 
         confFile.getParentFile()
                 .mkdirs();
@@ -99,8 +95,6 @@ public class AbstractHttproxFunctionalTest
         }
 
         FileUtils.write( confFile, "[httprox]\nenabled=true\nport=" + proxyPort + "\n" + additionalConfig );
-
-        return fixture;
     }
 
     protected String getAdditionalHttproxConfig()
