@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.aprox</groupId>
     <artifactId>aprox-promote</artifactId>
-    <version>0.25.0-SNAPSHOT</version>
+    <version>0.24.0-SNAPSHOT</version>
   </parent>
   <artifactId>aprox-promote-model-java</artifactId>
   <name>AProx :: Add-Ons :: Artifact Promotion :: Java Domain Model</name>
