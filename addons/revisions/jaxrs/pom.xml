@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.aprox</groupId>
     <artifactId>aprox-revisions</artifactId>
-    <version>0.24.0</version>
+    <version>0.25.0-SNAPSHOT</version>
   </parent>
   
   <artifactId>aprox-revisions-jaxrs</artifactId>
