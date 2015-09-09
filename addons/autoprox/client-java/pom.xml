@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.aprox</groupId>
     <artifactId>aprox-autoprox</artifactId>
-    <version>0.24.0</version>
+    <version>0.25.0-SNAPSHOT</version>
   </parent>
   <artifactId>aprox-autoprox-client-java</artifactId>
   <name>AProx :: Add-Ons :: Auto-Proxy :: Java Client</name>
