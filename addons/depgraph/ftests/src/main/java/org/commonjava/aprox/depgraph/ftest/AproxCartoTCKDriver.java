@@ -15,6 +15,7 @@
  */
 package org.commonjava.aprox.depgraph.ftest;
 
+import org.apache.commons.io.FileUtils;
 import org.commonjava.aprox.boot.AproxBootException;
 import org.commonjava.aprox.boot.BootStatus;
 import org.commonjava.aprox.client.core.Aprox;
@@ -29,6 +30,8 @@ import org.commonjava.cartographer.Cartographer;
 import org.commonjava.maven.cartographer.ftest.CartoTCKDriver;
 import org.commonjava.test.http.stream.StreamServer;
 import org.junit.rules.TemporaryFolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,6 +49,8 @@ public class AproxCartoTCKDriver
     private Set<StreamServer> servers = new HashSet<>();
 
     private ClientCartographer carto;
+
+    private File etcDir;
 
     public Cartographer start( TemporaryFolder temp )
             throws Exception
@@ -102,7 +107,22 @@ public class AproxCartoTCKDriver
     protected CoreServerFixture newServerFixture( TemporaryFolder temp )
         throws AproxBootException, IOException
     {
-        return new CoreServerFixture( temp );
+        CoreServerFixture fixture = new CoreServerFixture( temp );
+
+        etcDir = new File( fixture.getBootOptions().getAproxHome(), "etc/aprox" );
+        writeConfigFile( "conf.d/scheduler.conf", "[scheduler]\nenabled=false" );
+
+        return fixture;
     }
 
+    protected void writeConfigFile( String confPath, String contents )
+            throws IOException
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.info( "Writing configuration to: {}\n\n{}\n\n", confPath, contents );
+        File confFile = new File( etcDir, confPath );
+        confFile.getParentFile().mkdirs();
+
+        FileUtils.write( confFile, contents );
+    }
 }

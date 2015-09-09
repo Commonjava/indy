@@ -67,6 +67,8 @@ public abstract class AbstractAproxFunctionalTest
 
     protected CoreServerFixture fixture;
 
+    protected final Logger logger = LoggerFactory.getLogger( getClass() );
+
     @Rule
     public TestName name = new TestName();
 
@@ -75,6 +77,8 @@ public abstract class AbstractAproxFunctionalTest
                                     .withLookingForStuckThread( true )
                                     .withTimeout( getTestTimeoutSeconds(), TimeUnit.SECONDS )
                                     .build();
+
+    private File etcDir;
 
     @SuppressWarnings( "resource" )
     @Before
@@ -138,8 +142,7 @@ public abstract class AbstractAproxFunctionalTest
     {
         final CoreServerFixture fixture = new CoreServerFixture();
 
-        File etcDir = new File( fixture.getBootOptions().getAproxHome(), "etc/aprox" );
-
+        etcDir = new File( fixture.getBootOptions().getAproxHome(), "etc/aprox" );
         initBaseTestConfig( fixture, etcDir );
         initTestConfig( fixture, etcDir );
 
@@ -151,35 +154,20 @@ public abstract class AbstractAproxFunctionalTest
     {
     }
 
-    protected void initBaseTestConfig( CoreServerFixture fixture, File etcDir )
+    protected final void initBaseTestConfig( CoreServerFixture fixture, File etcDir )
             throws IOException
     {
-        final File confFile = new File( etcDir, "conf.d/scheduler.conf" );
+        writeConfigFile( "conf.d/scheduler.conf", "[scheduler]\nenabled=false" );
+    }
 
+    protected void writeConfigFile( String confPath, String contents )
+            throws IOException
+    {
+        logger.info( "Writing configuration to: {}\n\n{}\n\n", confPath, contents );
+        File confFile = new File( etcDir, confPath );
         confFile.getParentFile().mkdirs();
-        //
-        //        File sql = fixture.getTempFolder().newFile( "quartz-h2.sql" );
-        //
-        //        InputStream sqlStream =
-        //                Thread.currentThread().getContextClassLoader().getResourceAsStream( "scheduler/quartz-h2.sql" );
-        //
-        //        try (FileOutputStream out = new FileOutputStream( sql ))
-        //        {
-        //            IOUtils.copy( sqlStream, out );
-        //        }
-        //
-        //        InputStream defaultConfig = new AproxSchedulerConfig().getDefaultConfig();
-        //        String config = IOUtils.toString( defaultConfig );
-        //
-        //        config = config.replaceAll( "org.quartz.dataSource.ds.URL = .*",
-        //                                    "org.quartz.dataSource.ds.URL = jdbc:h2:mem:ds;INIT=runscript from '" + sql.getAbsolutePath() + "'" );
-        //
-        //        Logger logger = LoggerFactory.getLogger( getClass() );
-        //        logger.debug( "scheduler.conf contents:\n\n{}\n\n", config );
-        //
-        //        FileUtils.write( confFile, config );
 
-        FileUtils.write( confFile, "[scheduler]\nenabled=false" );
+        FileUtils.write( confFile, contents );
     }
 
     protected Collection<Module> getAdditionalMapperModules()

@@ -82,19 +82,13 @@ public class AbstractHttproxFunctionalTest
     {
         proxyPort = PortFinder.findOpenPort( 16 );
 
-        final File confFile = new File( etcDir, "conf.d/httprox.conf" );
-
-        confFile.getParentFile()
-                .mkdirs();
-
-        logger.info( "Writing httprox configuration to: {}", confFile );
         String additionalConfig = getAdditionalHttproxConfig();
         if ( additionalConfig == null )
         {
             additionalConfig = "";
         }
 
-        FileUtils.write( confFile, "[httprox]\nenabled=true\nport=" + proxyPort + "\n" + additionalConfig );
+        writeConfigFile( "conf.d/httprox.conf", "[httprox]\nenabled=true\nport=" + proxyPort + "\n" + additionalConfig );
     }
 
     protected String getAdditionalHttproxConfig()

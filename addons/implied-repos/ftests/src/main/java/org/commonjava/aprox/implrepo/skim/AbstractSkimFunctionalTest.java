@@ -86,13 +86,7 @@ public class AbstractSkimFunctionalTest
     protected void initTestConfig( CoreServerFixture fixture, File etcDir )
         throws IOException
     {
-        final File confFile = new File( etcDir, "conf.d/implied-repos.conf" );
-
-        confFile.getParentFile()
-                .mkdirs();
-
-        logger.info( "Writing implied-repos configuration to: {}", confFile );
-        FileUtils.write( confFile, "[implied-repos]\nenabled=true" );
+        writeConfigFile( "conf.d/implied-repos.conf", "[implied-repos]\nenabled=true" );
     }
 
     protected PomRef loadPom( final String name, final Map<String, String> substitutions )
