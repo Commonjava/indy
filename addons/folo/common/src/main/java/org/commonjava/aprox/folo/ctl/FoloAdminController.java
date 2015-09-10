@@ -15,10 +15,23 @@
  */
 package org.commonjava.aprox.folo.ctl;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -30,6 +43,7 @@ import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.folo.data.FoloContentException;
+import org.commonjava.aprox.folo.data.FoloFiler;
 import org.commonjava.aprox.folo.data.FoloRecordManager;
 import org.commonjava.aprox.folo.dto.TrackedContentDTO;
 import org.commonjava.aprox.folo.dto.TrackedContentEntryDTO;
@@ -40,10 +54,21 @@ import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.util.ApplicationStatus;
+import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
+import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.galley.TransferException;
+import org.commonjava.maven.galley.TransferManager;
+import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.model.TransferBatch;
+import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.util.UrlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.apache.commons.io.IOUtils.copy;
 
 @ApplicationScoped
 public class FoloAdminController
@@ -53,6 +78,9 @@ public class FoloAdminController
 
     @Inject
     private FoloRecordManager recordManager;
+
+    @Inject
+    private FoloFiler filer;
 
     @Inject
     private DownloadManager downloadManager;
@@ -67,14 +95,116 @@ public class FoloAdminController
     {
     }
 
-    public FoloAdminController( final FoloRecordManager recordManager, final DownloadManager downloadManager )
+    public FoloAdminController( final FoloRecordManager recordManager, final FoloFiler filer, final DownloadManager downloadManager,
+                                ContentManager contentManager, StoreDataManager storeManager )
     {
         this.recordManager = recordManager;
+        this.filer = filer;
         this.downloadManager = downloadManager;
+        this.contentManager = contentManager;
+        this.storeManager = storeManager;
+    }
+
+    public File renderRepositoryZip( final String id )
+            throws AproxWorkflowException
+    {
+        final TrackingKey tk = new TrackingKey( id );
+
+        File file = filer.getRepositoryZipFile( tk ).getDetachedFile();
+        file.getParentFile().mkdirs();
+        try
+        {
+            logger.debug( "Retrieving tracking record for: {}", tk );
+            final TrackedContentRecord record = recordManager.getRecord( tk );
+            logger.debug( "Got: {}", record );
+
+            if ( record == null )
+            {
+                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
+                                                  "No tracking record available for: %s", tk );
+            }
+
+            final Set<String> seenPaths = new HashSet<>();
+            final List<Transfer> items = new ArrayList<>();
+            for ( final AffectedStoreRecord asr : record )
+            {
+                final StoreKey sk = asr.getKey();
+
+                addTransfers( asr.getUploadedPaths(), sk, items, id, seenPaths );
+                addTransfers( asr.getDownloadedPaths(), sk, items, id, seenPaths );
+            }
+
+            logger.debug( "Retrieved {} files. Creating zip.", items.size() );
+
+            Collections.sort( items, ( f, s ) -> f.getPath().compareTo( s.getPath() ) );
+
+            try(ZipOutputStream stream = new ZipOutputStream( new FileOutputStream( file)))
+            {
+                for ( final Transfer item : items )
+                {
+                    //                    logger.info( "Adding: {}", item );
+                    if ( item != null )
+                    {
+                        final String path = item.getPath();
+                        final ZipEntry ze = new ZipEntry( path );
+                        stream.putNextEntry( ze );
+
+                        InputStream itemStream = null;
+                        try
+                        {
+                            itemStream = item.openInputStream();
+                            copy( itemStream, stream );
+                        }
+                        finally
+                        {
+                            closeQuietly( itemStream );
+                        }
+                    }
+                }
+            }
+            catch ( final IOException e )
+            {
+                throw new AproxWorkflowException( "Failed to generate repository zip from tracking record: {}. Reason: {}", e, id, e.getMessage() );
+            }
+        }
+        catch ( FoloContentException e )
+        {
+            throw new AproxWorkflowException( "Failed to retrieve record: %s. Reason: %s", e, tk, e.getMessage() );
+        }
+
+        return file;
+    }
+
+    private void addTransfers( Set<String> paths, StoreKey sk, List<Transfer> items, String trackingId,
+                               Set<String> seenPaths )
+            throws AproxWorkflowException
+    {
+        if ( paths != null )
+        {
+            for ( String path : paths )
+            {
+                if ( path == null || seenPaths.contains( path ) )
+                {
+                    continue;
+                }
+
+                Transfer transfer = contentManager.getTransfer( sk, path, TransferOperation.DOWNLOAD );
+                if ( transfer == null )
+                {
+                    Logger logger = LoggerFactory.getLogger( getClass() );
+                    logger.warn( "While creating Folo repo zip for: {}, cannot find: {} in: {}", trackingId, path, sk );
+                }
+                else
+                {
+                    seenPaths.add( path );
+                    items.add( transfer );
+                }
+            }
+        }
     }
 
     public TrackedContentDTO renderReport( final String id, final String apiBaseUrl )
-        throws AproxWorkflowException
+            throws AproxWorkflowException
     {
         final TrackingKey tk = new TrackingKey( id );
         try
@@ -118,7 +248,7 @@ public class FoloAdminController
 
     private void addEntries( final Set<TrackedContentEntryDTO> entries, final StoreKey key, final Set<String> paths,
                              final String apiBaseUrl )
-        throws AproxWorkflowException
+            throws AproxWorkflowException
     {
         for ( final String path : paths )
         {
@@ -130,8 +260,7 @@ public class FoloAdminController
                 try
                 {
                     final String localUrl =
-                        UrlUtils.buildUrl( apiBaseUrl, key.getType()
-                                                                    .singularEndpointName(), key.getName(), path );
+                            UrlUtils.buildUrl( apiBaseUrl, key.getType().singularEndpointName(), key.getName(), path );
 
                     String remoteUrl = null;
                     if ( StoreType.remote == key.getType() )
@@ -147,7 +276,7 @@ public class FoloAdminController
                     entry.setOriginUrl( remoteUrl );
 
                     final Map<ContentDigest, String> digests =
-                        contentManager.digest( key, path, ContentDigest.MD5, ContentDigest.SHA_256 );
+                            contentManager.digest( key, path, ContentDigest.MD5, ContentDigest.SHA_256 );
 
                     entry.setMd5( digests.get( ContentDigest.MD5 ) );
                     entry.setSha256( digests.get( ContentDigest.SHA_256 ) );
@@ -157,8 +286,8 @@ public class FoloAdminController
                 catch ( final AproxDataException e )
                 {
                     throw new AproxWorkflowException(
-                                                      "Cannot retrieve RemoteRepository: %s to calculate remote URL for: %s. Reason: %s",
-                                                      e, key, path, e.getMessage() );
+                            "Cannot retrieve RemoteRepository: %s to calculate remote URL for: %s. Reason: %s", e, key,
+                            path, e.getMessage() );
                 }
                 catch ( final MalformedURLException e )
                 {
@@ -169,7 +298,7 @@ public class FoloAdminController
     }
 
     public TrackedContentRecord getRecord( final String id )
-        throws AproxWorkflowException
+            throws AproxWorkflowException
     {
         final TrackingKey tk = new TrackingKey( id );
         try
@@ -195,7 +324,7 @@ public class FoloAdminController
     }
 
     public void initRecord( final String id )
-        throws AproxWorkflowException
+            throws AproxWorkflowException
     {
         try
         {

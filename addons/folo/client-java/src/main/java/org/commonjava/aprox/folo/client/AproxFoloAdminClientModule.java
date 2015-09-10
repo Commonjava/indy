@@ -15,12 +15,18 @@
  */
 package org.commonjava.aprox.folo.client;
 
+import org.apache.http.HttpStatus;
 import org.commonjava.aprox.client.core.AproxClientException;
 import org.commonjava.aprox.client.core.AproxClientModule;
+import org.commonjava.aprox.client.core.AproxResponseErrorDetails;
+import org.commonjava.aprox.client.core.helper.HttpResources;
 import org.commonjava.aprox.client.core.util.UrlUtils;
 import org.commonjava.aprox.folo.dto.TrackedContentDTO;
 import org.commonjava.aprox.folo.model.TrackedContentRecord;
 import org.commonjava.aprox.model.core.StoreType;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 public class AproxFoloAdminClientModule
     extends AproxClientModule
@@ -30,6 +36,19 @@ public class AproxFoloAdminClientModule
         throws AproxClientException
     {
         return http.put( UrlUtils.buildUrl( "/folo/admin", trackingId, "record" ), trackingId );
+    }
+
+    public InputStream getTrackingRepoZip( String trackingId )
+            throws AproxClientException, IOException
+    {
+        HttpResources resources = getHttp().getRaw( UrlUtils.buildUrl("folo/admin", trackingId, "repo/zip" ) );
+        if ( resources.getStatusCode() != HttpStatus.SC_OK )
+        {
+            throw new AproxClientException( resources.getStatusCode(), "Error retrieving repository zip for tracking record: %s.\n%s",
+                                            trackingId, new AproxResponseErrorDetails( resources.getResponse() ) );
+        }
+
+        return resources.getResponseEntityContent();
     }
 
     public TrackedContentDTO getTrackingReport( final String trackingId )

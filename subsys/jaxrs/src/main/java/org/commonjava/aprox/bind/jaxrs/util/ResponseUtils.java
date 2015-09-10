@@ -15,6 +15,7 @@
  */
 package org.commonjava.aprox.bind.jaxrs.util;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
@@ -181,6 +182,23 @@ public final class ResponseUtils
         }
 
         if ( includeContentLength && !lenSet )
+        {
+            builder.header( ApplicationHeader.content_length.key(), item.length() );
+        }
+
+        return builder;
+    }
+
+    public static ResponseBuilder setInfoHeaders( final ResponseBuilder builder, final File item,
+                                                  final boolean includeContentLength, final String contentType )
+            throws AproxWorkflowException
+    {
+        // I don't think we want to use the result from upstream; it's often junk...we should retain control of this.
+        builder.header( ApplicationHeader.content_type.key(), contentType );
+
+        builder.header( ApplicationHeader.last_modified.key(), HttpUtils.formatDateHeader( item.lastModified() ) );
+
+        if ( includeContentLength )
         {
             builder.header( ApplicationHeader.content_length.key(), item.length() );
         }

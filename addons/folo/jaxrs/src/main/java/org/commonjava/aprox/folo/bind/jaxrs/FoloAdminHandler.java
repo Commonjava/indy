@@ -15,8 +15,18 @@
  */
 package org.commonjava.aprox.folo.bind.jaxrs;
 
-import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
-import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatResponse;
+import org.commonjava.aprox.AproxWorkflowException;
+import org.commonjava.aprox.bind.jaxrs.AproxResources;
+import org.commonjava.aprox.core.bind.jaxrs.util.TransferStreamingOutput;
+import org.commonjava.aprox.core.ctl.ContentController;
+import org.commonjava.aprox.folo.ctl.FoloAdminController;
+import org.commonjava.aprox.folo.dto.TrackedContentDTO;
+import org.commonjava.aprox.folo.model.TrackedContentRecord;
+import org.commonjava.aprox.folo.model.TrackingKey;
+import org.commonjava.aprox.model.core.io.AproxObjectMapper;
+import org.commonjava.maven.galley.event.EventMetadata;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -25,20 +35,18 @@ import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+import java.io.File;
 
-import org.commonjava.aprox.AproxWorkflowException;
-import org.commonjava.aprox.bind.jaxrs.AproxResources;
-import org.commonjava.aprox.folo.ctl.FoloAdminController;
-import org.commonjava.aprox.folo.dto.TrackedContentDTO;
-import org.commonjava.aprox.folo.model.TrackedContentRecord;
-import org.commonjava.aprox.folo.model.TrackingKey;
-import org.commonjava.aprox.model.core.io.AproxObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
+import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatResponse;
+import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.setInfoHeaders;
+import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.throwError;
+import static org.commonjava.aprox.util.ApplicationContent.application_zip;
 
 @Path( "/api/folo/admin" )
 @ApplicationScoped
@@ -53,6 +61,30 @@ public class FoloAdminHandler
 
     @Inject
     private FoloAdminController controller;
+
+    @Inject
+    private ContentController contentController;
+
+    @Path( "/{id}/repo/zip" )
+    @GET
+    @Produces( application_zip )
+    public File getZipRepository( @PathParam( "id" ) String id )
+    {
+        try
+        {
+            File zip = controller.renderRepositoryZip( id );
+            return zip;
+//
+//            final Response.ResponseBuilder builder = Response.ok( zip );
+//            return setInfoHeaders( builder, zip, false, application_zip ).build();
+        }
+        catch ( AproxWorkflowException e )
+        {
+            throwError( e );
+        }
+
+        return null;
+    }
 
     @Path( "/{id}/report" )
     @GET

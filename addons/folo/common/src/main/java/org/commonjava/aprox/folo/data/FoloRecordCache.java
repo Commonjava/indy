@@ -15,30 +15,27 @@
  */
 package org.commonjava.aprox.folo.data;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
-import org.commonjava.aprox.folo.conf.FoloConfig;
-import org.commonjava.aprox.folo.model.TrackedContentRecord;
-import org.commonjava.aprox.folo.model.TrackingKey;
-import org.commonjava.aprox.model.core.io.AproxObjectMapper;
-import org.commonjava.aprox.subsys.datafile.DataFile;
-import org.commonjava.aprox.subsys.datafile.DataFileManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
+import org.commonjava.aprox.folo.conf.FoloConfig;
+import org.commonjava.aprox.folo.model.TrackedContentRecord;
+import org.commonjava.aprox.folo.model.TrackingKey;
+import org.commonjava.aprox.model.core.io.AproxObjectMapper;
+import org.commonjava.aprox.subsys.datafile.DataFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 @ApplicationScoped
 public class FoloRecordCache
@@ -46,12 +43,9 @@ public class FoloRecordCache
     implements RemovalListener<TrackingKey, TrackedContentRecord>
 {
 
-    private static final String DATA_DIR = "folo";
+    private static final String JSON_TYPE = "json";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
-
-    @Inject
-    private DataFileManager dataFileManager;
 
     @Inject
     private AproxObjectMapper objectMapper;
@@ -59,16 +53,19 @@ public class FoloRecordCache
     @Inject
     private FoloConfig config;
 
+    @Inject
+    private FoloFiler filer;
+
     protected Cache<TrackingKey, TrackedContentRecord> recordCache;
 
     protected FoloRecordCache()
     {
     }
 
-    public FoloRecordCache( final DataFileManager dataFileManager, final AproxObjectMapper objectMapper,
+    public FoloRecordCache( final FoloFiler filer, final AproxObjectMapper objectMapper,
                             final FoloConfig config )
     {
-        this.dataFileManager = dataFileManager;
+        this.filer = filer;
         this.objectMapper = objectMapper;
         this.config = config;
     }
@@ -101,7 +98,7 @@ public class FoloRecordCache
     {
         final TrackingKey key = record.getKey();
 
-        final File file = getFile( key );
+        final File file = filer.getRecordFile( key ).getDetachedFile();
         logger.info( "Writing {} to: {}", key, file );
         try
         {
@@ -119,7 +116,7 @@ public class FoloRecordCache
     public TrackedContentRecord load( final TrackingKey key )
         throws Exception
     {
-        final File file = getFile( key );
+        final DataFile file = filer.getRecordFile( key );
         if ( !file.exists() )
         {
             logger.info( "Creating new record for: {}", key );
@@ -129,7 +126,7 @@ public class FoloRecordCache
         logger.info( "Loading: {} from: {}", key, file );
         try
         {
-            return objectMapper.readValue( file, TrackedContentRecord.class );
+            return objectMapper.readValue( file.getDetachedFile(), TrackedContentRecord.class );
         }
         catch ( final IOException e )
         {
@@ -142,21 +139,7 @@ public class FoloRecordCache
     public void delete( final TrackingKey key )
     {
         recordCache.invalidate( key );
-        final File file = getFile( key );
-        if ( file.exists() )
-        {
-            logger.info( "Deleting: {} at: {}", key, file );
-            file.delete();
-        }
-    }
-
-    protected File getFile( final TrackingKey key )
-    {
-        final String fname = String.format( "%s.json", key.getId() );
-
-        final DataFile dataFile = dataFileManager.getDataFile( DATA_DIR, fname );
-
-        return dataFile.getDetachedFile();
+        filer.deleteFiles( key );
     }
 
     public Callable<? extends TrackedContentRecord> newCallable( final TrackingKey trackedStore )
@@ -187,7 +170,7 @@ public class FoloRecordCache
 
     public boolean hasRecord( final TrackingKey key )
     {
-        return recordCache.getIfPresent( key ) != null || getFile( key ).exists();
+        return recordCache.getIfPresent( key ) != null || filer.getRecordFile( key ).exists();
     }
 
     public TrackedContentRecord get( final TrackingKey key )

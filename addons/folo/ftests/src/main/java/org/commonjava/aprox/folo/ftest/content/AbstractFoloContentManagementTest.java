@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.commonjava.aprox.client.core.AproxClientModule;
+import org.commonjava.aprox.folo.client.AproxFoloAdminClientModule;
 import org.commonjava.aprox.folo.client.AproxFoloContentClientModule;
 import org.commonjava.aprox.ftest.core.AbstractAproxFunctionalTest;
 import org.commonjava.aprox.model.core.Group;
@@ -85,7 +86,7 @@ public class AbstractFoloContentManagementTest
     @Override
     protected Collection<AproxClientModule> getAdditionalClientModules()
     {
-        return Collections.singletonList( new AproxFoloContentClientModule() );
+        return Arrays.<AproxClientModule> asList( new AproxFoloContentClientModule(), new AproxFoloAdminClientModule() );
     }
 
 }

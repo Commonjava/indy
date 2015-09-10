@@ -44,16 +44,10 @@ public class FoloRecordCacheTest
     private final class TestCache
         extends FoloRecordCache
     {
-        private TestCache( final DataFileManager dataFileManager, final AproxObjectMapper objectMapper,
+        private TestCache( final FoloFiler filer, final AproxObjectMapper objectMapper,
                            final FoloConfig config )
         {
-            super( dataFileManager, objectMapper, config );
-        }
-
-        @Override
-        public File getFile( final TrackingKey key )
-        {
-            return super.getFile( key );
+            super( filer, objectMapper, config );
         }
 
         @Override
@@ -67,6 +61,8 @@ public class FoloRecordCacheTest
             this.recordCache = cache;
         }
     }
+
+    private FoloFiler filer;
 
     private DataFileManager dataFileManager;
 
@@ -87,7 +83,8 @@ public class FoloRecordCacheTest
     {
         dataFileManager = new DataFileManager( temp.newFolder(), new DataFileEventManager() );
         objectMapper = new AproxObjectMapper( false );
-        cache = new TestCache( dataFileManager, objectMapper, new FoloConfig( 0 ) );
+        filer = new FoloFiler( dataFileManager );
+        cache = new TestCache( filer, objectMapper, new FoloConfig( 0 ) );
         cache.buildCache();
     }
 
@@ -121,9 +118,14 @@ public class FoloRecordCacheTest
 
         assertThat( cache.size(), equalTo( 0L ) );
 
-        final File f = this.cache.getFile( record.getKey() );
+        final File f = getFile( record );
         System.out.println( "Checking: " + f );
         assertThat( f.exists(), equalTo( true ) );
+    }
+
+    private File getFile( TrackedContentRecord record )
+    {
+        return this.filer.getRecordFile( record.getKey() ).getDetachedFile();
     }
 
     @Test
@@ -142,7 +144,7 @@ public class FoloRecordCacheTest
 
         assertThat( cache.size(), equalTo( 0L ) );
 
-        final File f = this.cache.getFile( record.getKey() );
+        final File f = getFile( record );
         System.out.println( "Checking: " + f );
         assertThat( f.exists(), equalTo( true ) );
 
@@ -189,7 +191,7 @@ public class FoloRecordCacheTest
 
         assertThat( loadCalled, equalTo( true ) );
 
-        final File f = this.cache.getFile( record.getKey() );
+        final File f = getFile( record );
         System.out.println( "Checking: " + f );
         assertThat( f.exists(), equalTo( true ) );
     }
@@ -224,7 +226,7 @@ public class FoloRecordCacheTest
         ticker += 60 * 1000000000L + 1;
         assertThat( this.cache.get( record.getKey() ), notNullValue() );
 
-        final File f = this.cache.getFile( record.getKey() );
+        final File f = getFile( record );
         System.out.println( "Checking: " + f );
         assertThat( f.exists(), equalTo( true ) );
     }
@@ -236,7 +238,7 @@ public class FoloRecordCacheTest
         final TrackedContentRecord record = newRecord();
         this.cache.write( record );
 
-        final File f = this.cache.getFile( record.getKey() );
+        final File f = getFile( record );
         System.out.println( "Checking: " + f );
         assertThat( f.exists(), equalTo( true ) );
 
