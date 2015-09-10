@@ -219,7 +219,7 @@ public class DepgraphAproxClientModule
         HttpResources resources = getHttp().postRaw( "depgraph/repo/zip", request );
         if ( resources.getStatusCode() != HttpStatus.SC_OK )
         {
-            throw new AproxClientException( resources.getStatusCode(), "Error retrieving downlog.\n%s",
+            throw new AproxClientException( resources.getStatusCode(), "Error retrieving repo zip.\n%s",
                                             new AproxResponseErrorDetails( resources.getResponse() ) );
         }
 

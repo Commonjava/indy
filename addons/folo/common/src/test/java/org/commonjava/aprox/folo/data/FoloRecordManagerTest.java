@@ -52,14 +52,9 @@ public class FoloRecordManagerTest
         final AproxObjectMapper objectMapper = new AproxObjectMapper( false );
 
         final FoloConfig config = new FoloConfig( (int) TimeUnit.SECONDS.convert( 2, TimeUnit.MINUTES ) );
-        final FoloRecordCache cache = new FoloRecordCache( dataFileManager, objectMapper, config )
+        final FoloFiler filer = new FoloFiler( dataFileManager );
+        final FoloRecordCache cache = new FoloRecordCache( filer, objectMapper, config )
         {
-            @Override
-            public File getFile( final TrackingKey key )
-            {
-                return super.getFile( key );
-            }
-
             @Override
             public void write( final TrackedContentRecord record )
             {
