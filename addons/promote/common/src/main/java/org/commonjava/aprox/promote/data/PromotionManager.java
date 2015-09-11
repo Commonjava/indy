@@ -77,9 +77,10 @@ public class PromotionManager
     {
     }
 
-    public PromotionManager( final ContentManager contentManager, final DownloadManager downloadManager,
+    public PromotionManager( PromotionValidator validator, final ContentManager contentManager, final DownloadManager downloadManager,
                              final StoreDataManager storeManager )
     {
+        this.validator = validator;
         this.contentManager = contentManager;
         this.downloadManager = downloadManager;
         this.storeManager = storeManager;

@@ -187,6 +187,11 @@ public class PromoteValidationsManager
 
     public ValidationRuleSet getRuleSetMatching( StoreKey storeKey )
     {
+        if ( ruleSets == null )
+        {
+            return null;
+        }
+
         String keyStr = storeKey.toString();
         for ( ValidationRuleSet set : ruleSets.values() )
         {
@@ -268,7 +273,7 @@ public class PromoteValidationsManager
 
     public synchronized ValidationRuleMapping getRuleMappingNamed( final String name )
     {
-        return ruleMappings.get( name );
+        return ruleMappings == null ? null : ruleMappings.get( name );
     }
 
 }
