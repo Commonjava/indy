@@ -37,11 +37,12 @@ import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.model.core.ArtifactStore;
 import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.StoreKey;
-import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.promote.model.GroupPromoteRequest;
 import org.commonjava.aprox.promote.model.GroupPromoteResult;
 import org.commonjava.aprox.promote.model.PathsPromoteRequest;
 import org.commonjava.aprox.promote.model.PathsPromoteResult;
+import org.commonjava.aprox.promote.validate.PromotionValidator;
+import org.commonjava.aprox.promote.model.ValidationResult;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
@@ -69,6 +70,9 @@ public class PromotionManager
     @Inject
     private StoreDataManager storeManager;
 
+    @Inject
+    private PromotionValidator validator;
+
     protected PromotionManager()
     {
     }
@@ -95,7 +99,7 @@ public class PromotionManager
         Group target;
         try
         {
-            target = (Group) storeManager.getArtifactStore( new StoreKey( StoreType.group, request.getTargetGroup() ) );
+            target = (Group) storeManager.getArtifactStore( request.getTargetKey() );
         }
         catch ( AproxDataException e )
         {
@@ -111,22 +115,27 @@ public class PromotionManager
             return new GroupPromoteResult( request, error );
         }
 
-        if ( !target.getConstituents().contains( request.getSource() ) )
+        ValidationResult validation = new ValidationResult();
+        validator.validate( request, validation );
+        if ( validation.isValid() )
         {
-            target.addConstituent( request.getSource() );
-            try
+            if ( !target.getConstituents().contains( request.getSource() ) )
             {
-                storeManager.storeArtifactStore( target, new ChangeSummary( user, "Promoting " + request.getSource()
-                        + " into membership of group: " + target.getKey() ), false, new EventMetadata() );
-            }
-            catch ( AproxDataException e )
-            {
-                throw new PromotionException( "Failed to store group: %s with additional member: %s. Reason: %s",
-                                              e, target.getKey(), request.getSource(), e.getMessage() );
+                target.addConstituent( request.getSource() );
+                try
+                {
+                    storeManager.storeArtifactStore( target, new ChangeSummary( user, "Promoting " + request.getSource()
+                            + " into membership of group: " + target.getKey() ), false, new EventMetadata() );
+                }
+                catch ( AproxDataException e )
+                {
+                    throw new PromotionException( "Failed to store group: %s with additional member: %s. Reason: %s",
+                                                  e, target.getKey(), request.getSource(), e.getMessage() );
+                }
             }
         }
 
-        return new GroupPromoteResult( request );
+        return new GroupPromoteResult( request, validation );
     }
 
     public GroupPromoteResult rollbackGroupPromote( GroupPromoteResult result, String user )
@@ -145,7 +154,7 @@ public class PromotionManager
         Group target;
         try
         {
-            target = (Group) storeManager.getArtifactStore( new StoreKey( StoreType.group, request.getTargetGroup() ) );
+            target = (Group) storeManager.getArtifactStore( request.getTargetKey() );
         }
         catch ( AproxDataException e )
         {
@@ -219,12 +228,20 @@ public class PromotionManager
             pending.add( transfer.getPath() );
         }
 
+        ValidationResult validation = new ValidationResult();
+        validator.validate( request, validation );
         if ( request.isDryRun() )
         {
-            return new PathsPromoteResult( request, pending, Collections.<String> emptySet(), null );
+            return new PathsPromoteResult( request, pending, Collections.emptySet(), validation );
         }
-
-        return runPathPromotions( request, pending, Collections.<String>emptySet(), contents );
+        else if ( validation.isValid() )
+        {
+            return runPathPromotions( request, pending, Collections.emptySet(), contents );
+        }
+        else
+        {
+            return new PathsPromoteResult( request, pending, Collections.emptySet(), validation );
+        }
     }
 
     /**
@@ -342,7 +359,7 @@ public class PromotionManager
     {
         if ( pending == null || pending.isEmpty() )
         {
-            return new PathsPromoteResult( request, pending, prevComplete, null );
+            return new PathsPromoteResult( request, pending, prevComplete, new ValidationResult() );
         }
 
         final Set<String> complete = prevComplete == null ? new HashSet<String>() : new HashSet<>( prevComplete );

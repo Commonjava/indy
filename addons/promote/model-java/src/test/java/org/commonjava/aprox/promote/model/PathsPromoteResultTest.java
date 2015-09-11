@@ -41,7 +41,7 @@ public class PathsPromoteResultTest
                                                    new StoreKey( StoreType.hosted, "target" ) ),
                                Collections.<String> emptySet(), new HashSet<String>( Arrays.asList( "/path/one",
                                                                                                     "/path/two" ) ),
-                               null );
+                               new ValidationResult() );
 
         final String json = mapper.writeValueAsString( in );
 

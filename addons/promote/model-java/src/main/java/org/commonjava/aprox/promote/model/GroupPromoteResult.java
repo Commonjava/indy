@@ -27,6 +27,8 @@ public class GroupPromoteResult
 
     private GroupPromoteRequest request;
 
+    private ValidationResult validations;
+
     private String error;
 
     public GroupPromoteResult()
@@ -37,6 +39,12 @@ public class GroupPromoteResult
     {
         this.request = request;
         this.error = error;
+    }
+
+    public GroupPromoteResult( GroupPromoteRequest request, ValidationResult validations )
+    {
+        this.request = request;
+        this.validations = validations;
     }
 
     public GroupPromoteResult( GroupPromoteRequest request )
@@ -64,10 +72,20 @@ public class GroupPromoteResult
         this.request = request;
     }
 
+    public ValidationResult getValidations()
+    {
+        return validations;
+    }
+
+    public void setValidations( ValidationResult validations )
+    {
+        this.validations = validations;
+    }
+
     @Override
     public String toString()
     {
-        return String.format( "GroupPromoteResult [\n  request=%s\n  error=%s\n]", request, error );
+        return String.format( "GroupPromoteResult [\n  request=%s\n  error=%s\n  validations:\n  %s\n]", request, error, validations );
     }
 
 }

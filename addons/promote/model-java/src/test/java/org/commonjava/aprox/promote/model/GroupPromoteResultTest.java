@@ -39,7 +39,7 @@ public class GroupPromoteResultTest
         final GroupPromoteResult in =
             new GroupPromoteResult( new GroupPromoteRequest( new StoreKey( StoreType.hosted, "source" ),
                                                    "target" ),
-                               null );
+                               new ValidationResult() );
 
         final String json = mapper.writeValueAsString( in );
 
