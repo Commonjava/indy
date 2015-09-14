@@ -33,6 +33,9 @@ import java.io.IOException;
 public class ValidationRuleParser
 {
 
+    private static final String STANDARD_IMPORTS = "import org.commonjava.aprox.promote.validate.model.*;\n"
+            + "import org.commonjava.aprox.promote.validate.*;";
+
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
@@ -63,6 +66,11 @@ public class ValidationRuleParser
         {
             logger.error( String.format( "[PROMOTE] Cannot load validation rule from: %s. Reason: %s", script,
                                          e.getMessage() ), e );
+        }
+
+        if ( !spec.contains( "import " ) && !spec.contains( "package " ) )
+        {
+            spec = STANDARD_IMPORTS + spec;
         }
 
         return parseRule( spec, script.getName() );
@@ -164,8 +172,8 @@ public class ValidationRuleParser
         catch ( final IOException e )
         {
             throw new PromotionValidationException(
-                    "[PROMOTE] Cannot load validation rule-set from: {} as an instance of: {}. Reason: {}", e, scriptName,
-                    ValidationRule.class.getSimpleName(), e.getMessage() );
+                    "[PROMOTE] Cannot load validation rule-set from: {} as an instance of: {}. Reason: {}", e,
+                    scriptName, ValidationRule.class.getSimpleName(), e.getMessage() );
         }
     }
 

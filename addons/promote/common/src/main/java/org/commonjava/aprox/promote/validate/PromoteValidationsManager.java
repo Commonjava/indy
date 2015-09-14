@@ -100,7 +100,7 @@ public class PromoteValidationsManager
             this.enabled = false;
             this.ruleMappings = Collections.emptyMap();
 
-            logger.info( "Autoprox is disabled." );
+            logger.info( "Promotion is disabled." );
             return;
         }
 

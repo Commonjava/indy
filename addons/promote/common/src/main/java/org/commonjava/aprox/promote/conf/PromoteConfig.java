@@ -97,7 +97,7 @@ public class PromoteConfig
 
     private String basedir;
 
-    private boolean enabled;
+    private boolean enabled = true;
 
     public PromoteConfig()
     {

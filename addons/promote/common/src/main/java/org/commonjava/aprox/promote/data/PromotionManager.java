@@ -117,6 +117,9 @@ public class PromotionManager
         }
 
         ValidationResult validation = new ValidationResult();
+        logger.info( "Running validations for promotion of: {} to group: {}", request.getSource(),
+                     request.getTargetGroup() );
+
         validator.validate( request, validation );
         if ( validation.isValid() )
         {

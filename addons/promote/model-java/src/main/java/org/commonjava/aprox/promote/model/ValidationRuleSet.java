@@ -15,6 +15,9 @@
  */
 package org.commonjava.aprox.promote.model;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -112,6 +115,8 @@ public class ValidationRuleSet
 
     public boolean matchesKey( String keyStr )
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.info( "Checking whether pattern: '{}' matches store key: {}", storeKeyPattern, keyStr );
         return storeKeyPattern == null || keyStr.matches( storeKeyPattern );
     }
 

@@ -51,6 +51,11 @@
       <artifactId>aprox-ftests-common</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-test-fixtures-core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>compile</scope>

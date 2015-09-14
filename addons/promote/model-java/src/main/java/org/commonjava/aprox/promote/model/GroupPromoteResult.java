@@ -52,6 +52,11 @@ public class GroupPromoteResult
         this.request = request;
     }
 
+    public boolean succeeded()
+    {
+        return error == null && ( validations == null || validations.isValid() );
+    }
+
     public String getError()
     {
         return error;

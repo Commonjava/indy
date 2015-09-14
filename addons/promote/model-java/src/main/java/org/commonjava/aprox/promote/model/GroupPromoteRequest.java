@@ -15,6 +15,7 @@
  */
 package org.commonjava.aprox.promote.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 
@@ -55,6 +56,7 @@ public class GroupPromoteRequest
     }
 
     @Override
+    @JsonIgnore
     public StoreKey getTargetKey()
     {
         return new StoreKey( StoreType.group, getTargetGroup() );

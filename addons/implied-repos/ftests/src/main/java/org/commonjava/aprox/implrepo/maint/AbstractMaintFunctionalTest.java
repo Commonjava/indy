@@ -68,7 +68,8 @@ public class AbstractMaintFunctionalTest
         }
     }
 
-    protected void initTestConfig( CoreServerFixture fixture, File etcDir )
+    @Override
+    protected void initTestConfig( CoreServerFixture fixture )
             throws IOException
     {
         writeConfigFile( "conf.d/implied-repos.conf", "[implied-repos]\nenabled=true" );
