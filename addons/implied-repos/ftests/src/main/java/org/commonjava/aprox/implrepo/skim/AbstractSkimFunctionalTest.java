@@ -83,7 +83,7 @@ public class AbstractSkimFunctionalTest
     }
 
     @Override
-    protected void initTestConfig( CoreServerFixture fixture, File etcDir )
+    protected void initTestConfig( CoreServerFixture fixture )
         throws IOException
     {
         writeConfigFile( "conf.d/implied-repos.conf", "[implied-repos]\nenabled=true" );

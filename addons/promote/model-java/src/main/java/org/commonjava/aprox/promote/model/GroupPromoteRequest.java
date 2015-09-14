@@ -15,7 +15,9 @@
  */
 package org.commonjava.aprox.promote.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.commonjava.aprox.model.core.StoreKey;
+import org.commonjava.aprox.model.core.StoreType;
 
 /**
  * Configuration for promoting artifacts from one store to another (denoted by their corresponding {@link StoreKey}'s). If paths are provided, only
@@ -25,6 +27,7 @@ import org.commonjava.aprox.model.core.StoreKey;
  *
  */
 public class GroupPromoteRequest
+    implements PromoteRequest<GroupPromoteRequest>
 {
 
     private StoreKey source;
@@ -50,6 +53,13 @@ public class GroupPromoteRequest
     {
         this.source = source;
         return this;
+    }
+
+    @Override
+    @JsonIgnore
+    public StoreKey getTargetKey()
+    {
+        return new StoreKey( StoreType.group, getTargetGroup() );
     }
 
     public String getTargetGroup()

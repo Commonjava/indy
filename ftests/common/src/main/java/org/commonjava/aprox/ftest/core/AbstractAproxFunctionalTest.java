@@ -79,7 +79,9 @@ public abstract class AbstractAproxFunctionalTest
                                     .withTimeout( getTestTimeoutSeconds(), TimeUnit.SECONDS )
                                     .build();
 
-    private File etcDir;
+    protected File etcDir;
+
+    protected File dataDir;
 
     @SuppressWarnings( "resource" )
     @Before
@@ -144,28 +146,54 @@ public abstract class AbstractAproxFunctionalTest
         final CoreServerFixture fixture = new CoreServerFixture();
 
         etcDir = new File( fixture.getBootOptions().getAproxHome(), "etc/aprox" );
-        initBaseTestConfig( fixture, etcDir );
-        initTestConfig( fixture, etcDir );
+        dataDir = new File( fixture.getBootOptions().getAproxHome(), "var/lib/aprox/data" );
+
+        initBaseTestConfig( fixture );
+        initTestConfig( fixture );
+        initTestData( fixture );
 
         return fixture;
     }
 
-    protected void initTestConfig( CoreServerFixture fixture, File etcDir )
+    protected void initTestConfig( CoreServerFixture fixture )
             throws IOException
     {
     }
 
-    protected final void initBaseTestConfig( CoreServerFixture fixture, File etcDir )
+    protected void initTestData( CoreServerFixture fixture )
+            throws IOException
+    {
+    }
+
+    protected final void initBaseTestConfig( CoreServerFixture fixture )
             throws IOException
     {
         writeConfigFile( "conf.d/scheduler.conf", "[scheduler]\nenabled=false" );
     }
 
+    protected String readTestResource( String resource )
+            throws IOException
+    {
+        return IOUtils.toString( Thread.currentThread().getContextClassLoader().getResourceAsStream( resource ) );
+    }
+
     protected void writeConfigFile( String confPath, String contents )
             throws IOException
     {
-        logger.info( "Writing configuration to: {}\n\n{}\n\n", confPath, contents );
         File confFile = new File( etcDir, confPath );
+        logger.info( "Writing configuration to: {}\n\n{}\n\n", confFile, contents );
+
+        confFile.getParentFile().mkdirs();
+
+        FileUtils.write( confFile, contents );
+    }
+
+    protected void writeDataFile( String path, String contents )
+            throws IOException
+    {
+        File confFile = new File( dataDir, path );
+
+        logger.info( "Writing data file to: {}\n\n{}\n\n", confFile, contents );
         confFile.getParentFile().mkdirs();
 
         FileUtils.write( confFile, contents );

@@ -77,7 +77,7 @@ public class AbstractHttproxFunctionalTest
     }
 
     @Override
-    protected void initTestConfig( CoreServerFixture fixture, File etcDir )
+    protected void initTestConfig( CoreServerFixture fixture )
         throws IOException
     {
         proxyPort = PortFinder.findOpenPort( 16 );

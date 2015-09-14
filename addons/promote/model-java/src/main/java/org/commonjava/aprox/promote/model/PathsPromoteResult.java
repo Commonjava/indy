@@ -34,6 +34,8 @@ public class PathsPromoteResult
 
     private Set<String> completedPaths;
 
+    private ValidationResult validations;
+
     private String error;
 
     public PathsPromoteResult()
@@ -47,6 +49,26 @@ public class PathsPromoteResult
         this.pendingPaths = pending;
         this.completedPaths = complete;
         this.error = error;
+    }
+
+    public PathsPromoteResult( final PathsPromoteRequest request, final Set<String> pending, final Set<String> complete,
+                               final ValidationResult validations )
+    {
+        this.request = request;
+        this.pendingPaths = pending;
+        this.completedPaths = complete;
+        this.validations = validations;
+        this.error = null;
+    }
+
+    public ValidationResult getValidations()
+    {
+        return validations;
+    }
+
+    public void setValidations( ValidationResult validations )
+    {
+        this.validations = validations;
     }
 
     public Set<String> getPendingPaths()
@@ -92,8 +114,8 @@ public class PathsPromoteResult
     @Override
     public String toString()
     {
-        return String.format( "PathsPromoteResult [\n  request=%s\n  pendingPaths=%s\n  completedPaths=%s\n  error=%s\n]",
-                              request, pendingPaths, completedPaths, error );
+        return String.format( "PathsPromoteResult [\n  request=%s\n  pendingPaths=%s\n  completedPaths=%s\n  error=%s\n  validations:\n  %s\n]",
+                              request, pendingPaths, completedPaths, error, validations );
     }
 
 }

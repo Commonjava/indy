@@ -35,9 +35,16 @@ import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.core.HostedRepository;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
+import org.commonjava.aprox.promote.conf.PromoteConfig;
 import org.commonjava.aprox.promote.fixture.GalleyFixture;
 import org.commonjava.aprox.promote.model.PathsPromoteRequest;
 import org.commonjava.aprox.promote.model.PathsPromoteResult;
+import org.commonjava.aprox.promote.validate.PromoteValidationsManager;
+import org.commonjava.aprox.promote.validate.PromotionValidator;
+import org.commonjava.aprox.promote.validate.ValidationRuleParser;
+import org.commonjava.aprox.subsys.datafile.DataFileManager;
+import org.commonjava.aprox.subsys.datafile.change.DataFileEventManager;
+import org.commonjava.aprox.subsys.template.ScriptEngine;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
@@ -62,6 +69,12 @@ public class PromotionManagerTest
 
     private PromotionManager manager;
 
+    private DataFileManager dataManager;
+
+    private PromoteValidationsManager validationsManager;
+
+    private PromotionValidator validator;
+
     @Before
     public void setup()
         throws Exception
@@ -77,7 +90,13 @@ public class PromotionManagerTest
             new DefaultContentManager( storeManager, downloadManager, new AproxObjectMapper( true ),
                                        Collections.<ContentGenerator> emptySet() );
 
-        manager = new PromotionManager( contentManager, downloadManager, storeManager );
+        dataManager= new DataFileManager(temp.newFolder( "data"), new DataFileEventManager() );
+        validationsManager = new PromoteValidationsManager( dataManager, new PromoteConfig(),
+                                                            new ValidationRuleParser( new ScriptEngine(),
+                                                                                      new AproxObjectMapper( true ) ) );
+
+        validator = new PromotionValidator( contentManager, storeManager, validationsManager );
+        manager = new PromotionManager( validator, contentManager, downloadManager, storeManager );
     }
 
     @Test

@@ -15,12 +15,12 @@
  */
 package org.commonjava.aprox.promote.model;
 
+import org.commonjava.aprox.model.core.StoreKey;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.commonjava.aprox.model.core.StoreKey;
 
 /**
  * Configuration for promoting artifacts from one store to another (denoted by their corresponding {@link StoreKey}'s). If paths are provided, only
@@ -30,6 +30,7 @@ import org.commonjava.aprox.model.core.StoreKey;
  *
  */
 public class PathsPromoteRequest
+        implements PromoteRequest<PathsPromoteRequest>
 {
 
     private StoreKey source;
@@ -60,15 +61,23 @@ public class PathsPromoteRequest
         this.paths = new HashSet<>( Arrays.asList( paths ) );
     }
 
+    @Override
     public StoreKey getSource()
     {
         return source;
     }
 
+    @Override
     public PathsPromoteRequest setSource( final StoreKey source )
     {
         this.source = source;
         return this;
+    }
+
+    @Override
+    public StoreKey getTargetKey()
+    {
+        return getTarget();
     }
 
     public StoreKey getTarget()
