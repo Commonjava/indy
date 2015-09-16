@@ -23,9 +23,10 @@ title: "AProx User's Guide"
 * [Folo Content-Tracking](folo-addon.html)
 * [Promote Content-Relocation](promote-addon.html)
 * [Revisions Data-Versioning](revisions-addon.html)
+* [HTTProx Generic Content Proxy](httprox-addon.html)
+* [Depgraph Project Relationship Grapher](depgraph-addon.html)
 
 ### Experimental Features and Add-Ons
 
 * [Implied Repositories](implied-repos-addon.html)
-* [HTTProx Generic Content Proxy](httprox-addon.html)
 

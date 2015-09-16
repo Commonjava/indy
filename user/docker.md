@@ -22,15 +22,15 @@ title: "Docker Deployment"
 ### Getting Started
 <a name="getting-started"></a>
 
-If you have a Linux machine with Docker installed, the quickest way to try AProx is to instantiate a container from the [buildchimp/aprox](https://registry.hub.docker.com/u/buildchimp/aprox/) image. This image has a **lot** of available options, as we'll explore below. However, you can try a simple deployment by issuing a single command:
+If you have a Linux machine with Docker installed, the quickest way to try AProx is to instantiate a container from the [commonjava/aprox](https://registry.hub.docker.com/u/commonjava/aprox/) image. This image has a **lot** of available options, as we'll explore below. However, you can try a simple deployment by issuing a single command:
 
     $ sudo docker run -p 8081:8081 -ti --rm \
-         --name=aprox buildchimp/aprox
+         --name=aprox commonjava/aprox
 
 If you're on a RHEL 7 server, you might have more luck prefixing the image name with `docker.io`:
 
     $ sudo docker run -p 8081:8081 -ti --rm \
-         --name=aprox docker.io/buildchimp/aprox
+         --name=aprox docker.io/commonjava/aprox
 
 You should be able to see the log output on screen. When the server says it's listening on port 8081, you should be able to browse to [http://localhost:8081/](http://localhost:8081/).
 
@@ -44,11 +44,11 @@ The above Docker command has several parts, some of which are optional or even d
 
 On most systems, the default Docker installation will only allow the `root` user to control containers. So, we're using `sudo` to run the Docker command as `root`. In enterprise deployments, this might not be the preferred way of managing Docker containers.
 
-    run ... buildchimp/aprox
+    run ... commonjava/aprox
 
 or, on RHEL 7:
 
-    run ... [docker.io/]buildchimp/aprox
+    run ... [docker.io/]commonjava/aprox
 
 This Docker sub-command simply resolves the given image from the Docker registry, downloading the associated filesystem archives, and sets up a new running container based on it. This part is not optional.
 
@@ -76,19 +76,19 @@ This tells Docker to remove the container when it stops. It makes our little exp
 
     --name=aprox
 
-This tells Docker to name the container `aprox` locally (this is distinct from the *image* name `buildchimp/aprox`). The container name is useful for starting or stopping it once the `run` command has been issued.
+This tells Docker to name the container `aprox` locally (this is distinct from the *image* name `commonjava/aprox`). The container name is useful for starting or stopping it once the `run` command has been issued.
 
 #### How Do I Make the AProx Container Permanent?
 
 That's even simpler:
 
     $ sudo docker run -p 8081:8081 -t \
-         --name=aprox buildchimp/aprox
+         --name=aprox commonjava/aprox
 
 Again, if you're on a RHEL 7 server, you might have more luck prefixing the image name with `docker.io`:
 
     $ sudo docker run -p 8081:8081 -t \
-         --name=aprox docker.io/buildchimp/aprox
+         --name=aprox docker.io/commonjava/aprox
 
 ### Persistent Deployment
 <a name="persistent-deployment"></a>
@@ -189,7 +189,7 @@ Remember that `init-aprox-server-no-vols.py` script we used above? If we run tha
                             (default: savant)
       -i IMAGE, --image=IMAGE
                             The image to use when deploying (default:
-                            buildchimp/aprox)
+                            commonjava/aprox)
       -n NAME, --name=NAME  The container name under which to deploy 
                             AProx (default: aprox)
       -p PORT, --port=PORT  Port on which AProx should listen 
