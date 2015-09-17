@@ -4,6 +4,13 @@
 {% if    depth == 1 %}{% assign base = '.' %}
 {% elsif depth == 2 %}{% assign base = '..' %}
 {% elsif depth == 3 %}{% assign base = '../..' %}
-{% elsif depth == 4 %}{% assign base = '../../..' %}{% endif %}
+{% elsif depth == 4 %}{% assign base = '../../..' %}
+{% elsif depth == 5 %}{% assign base = '../../../..' %}
+{% elsif depth == 6 %}{% assign base = '../../../..' %}
+{% elsif depth == 7 %}{% assign base = '../../../..' %}
+{% elsif depth == 8 %}{% assign base = '../../../..' %}
+{% elsif depth == 9 %}{% assign base = '../../../..' %}
+{% elsif depth == 10 %}{% assign base = '../../../..' %}
+{% endif %}
 
 <!-- base is: {{base}} -->
