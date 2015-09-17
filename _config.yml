@@ -1,27 +1,52 @@
 safe: true
 defaults:
-  - 
-    scope:
+  - scope:
       path: ""
     values:
       layout: "slate"
       title: ""
       author: "John Casey"
-  - 
-    scope:
+  - scope:
       path: "user"
     values:
       nav: "user"
-  - 
-    scope:
+      breadcrumbs:
+      - href: "../index.html"
+        title: "Top"
+  - scope:
       path: "dev"
     values:
       nav: "dev"
-  - 
-    scope:
-      path: "ref"
+      breadcrumbs:
+      - href: "../index.html"
+        title: "Top"
+  - scope:
+      path: "user/addons"
     values:
-      nav: "ref"
+      nav: "user"
+      breadcrumbs:
+      - href: "../index.html"
+        title: "Add-Ons"
+  - scope:
+      path: "user/addons/depgraph"
+    values:
+      nav: "user"
+      breadcrumbs:
+      - href: "../index.html"
+        title: "Add-Ons"
+      - href: "index.html"
+        title: "Depgraph Contents"
+  - scope:
+      path: "user/addons/depgraph/features"
+    values:
+      nav: "user"
+      breadcrumbs:
+      - href: "../../index.html"
+        title: "Add-Ons"
+      - href: "../index.html"
+        title: "Depgraph Contents"
+      - href: "../features.html"
+        title: "Depgraph Features"
 
 title: "AProx Artifact Repository"
 siteTitle: "Commonjava"
@@ -29,5 +54,9 @@ projectTitle: "AProx"
 tagline: "Management Platform for Maven-Style Artifacts and Repositories"
 owner: "John Casey"
 ownerEmail: jdcasey@commonjava.org
+
+gems:
+  - jemoji
+  - kramdown
 
 markdown: kramdown
