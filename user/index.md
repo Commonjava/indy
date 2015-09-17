@@ -4,7 +4,6 @@ title: "AProx User's Guide"
 
 ### Basics
 
-
 * [Quick Start](quickstart.html)
 * [Repositories and Groups](repos-groups.html)
 * [Java Client API](java-client-basics.html)
@@ -18,5 +17,7 @@ title: "AProx User's Guide"
 
 ### Features and Add-Ons
 
-AProx provides various add-ons that supplement the core functionality. The full list, with links to documentation, is [here](addons/index.html).
+AProx provides various add-ons that supplement the core functionality. For the full list, with links to documentation on each, take a look here:
+
+* [Feature Documentation](addons/index.html)
 

@@ -18,4 +18,6 @@ AProx provides the following add-ons, which appear in various deployment flavors
 
 ### Experimental
 
+These add-ons are in a sort of "preview" state. While they showcase the basic functionality, they could still cause your system to misbehave. Use with caution!
+
 * [Implied Repositories](implied-repos/index.html)
