@@ -13,18 +13,11 @@ The Java examples in the feature documentation below will assume you already hav
 
 ### Feature Documentation
 
-Depgraph's features can be broken down into a few broad categories including administration and maintenance, graph querying and extraction, and graph rendering.
+Depgraph's features can be broken down into a few broad categories including administration and maintenance, graph querying and extraction, and graph rendering. Starting in the AProx 0.24.0 release, relationship graph discovery is an option you specify with the operation's configuration, instead of being a separate REST call. 
+
+Whenever you see the `"resolve": true` configuration parameter, this will tell the underlying Cartographer instance to execute graph discovery before continuing with the operation. If the graph has already been discovered and this parameter is set to true, Cartographer will look for any GAVs marked as missing or in error that are reachable using the specified filter. If it finds any, it will attempt to resolve them.
 
 The following sections provide detail on each of these feature categories:
-
-#### Administration and Maintenance
-<a name="admin"></a>
-
-* [List](features/list-workspaces.html) or [delete](features/delete-workspace.html) workspaces
-* [Re-scan](features/rescan-metadata.html) previously discovered GAVs for metadata
-  * *(scans for extra info like SCM available in POMs)*
-* [Reindex](features/reindex-graph.html) previously discovered relationships
-* [Store / update](features/store-update-metadata.html) metadata attached to GAVs
 
 #### Graph Querying and Extraction
 <a name="query"></a>
@@ -50,3 +43,12 @@ The following sections provide detail on each of these feature categories:
 * Generate `maven-dependency-plugin` style output:
   * [dependency:tree](features/dep-tree.html)
   * [dependency:list](features/dep-list.html)
+
+#### Administration and Maintenance
+<a name="admin"></a>
+
+* [List](features/list-workspaces.html) or [delete](features/delete-workspace.html) workspaces
+* [Re-scan](features/rescan-metadata.html) previously discovered GAVs for metadata
+  * *(scans for extra info like SCM available in POMs)*
+* [Reindex](features/reindex-graph.html) previously discovered relationships
+* [Store / update](features/store-update-metadata.html) metadata attached to GAVs
