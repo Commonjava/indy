@@ -27,4 +27,8 @@ public interface PromoteRequest<T extends PromoteRequest<T>>
     T setSource( StoreKey source );
 
     StoreKey getTargetKey();
+
+    boolean isDryRun();
+
+    T setDryRun( boolean dryRun );
 }

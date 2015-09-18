@@ -123,7 +123,7 @@ public class PromotionManager
         validator.validate( request, validation );
         if ( validation.isValid() )
         {
-            if ( !target.getConstituents().contains( request.getSource() ) )
+            if ( !request.isDryRun() && !target.getConstituents().contains( request.getSource() ) )
             {
                 target.addConstituent( request.getSource() );
                 try

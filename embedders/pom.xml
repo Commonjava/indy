@@ -147,7 +147,7 @@
               <configuration>
                 <includeDependencySources>true</includeDependencySources>
                 <dependencySourceIncludes>
-                  <dependencySourceInclude>org.commonjava.aprox*</dependencySourceInclude>
+                  <dependencySourceInclude>org.commonjava*</dependencySourceInclude>
                 </dependencySourceIncludes>
                 <detectOfflineLinks>false</detectOfflineLinks>
                 <additionalparam>-Xdoclint:none</additionalparam>
