@@ -53,7 +53,7 @@ public class WorkspaceResource
         try
         {
             controller.delete( id );
-            response = Response.ok()
+            response = Response.noContent()
                                .build();
         }
         catch ( final AproxWorkflowException e )

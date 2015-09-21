@@ -4,7 +4,7 @@ import java.net.MalformedURLException;
 import org.commonjava.aprox.model.core.*;
 import org.commonjava.aprox.autoprox.data.*;
 
-class ProdFactory extends AbstractAutoProxRule
+class SimpleRule extends AbstractAutoProxRule
 {
 
     RemoteRepository createRemoteRepository( final String named )

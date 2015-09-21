@@ -167,7 +167,9 @@ public class ValidationRuleParser
         try
         {
 
-            return objectMapper.readValue( spec, ValidationRuleSet.class );
+            ValidationRuleSet rs = objectMapper.readValue( spec, ValidationRuleSet.class );
+            rs.setName( scriptName );
+            return rs;
         }
         catch ( final IOException e )
         {

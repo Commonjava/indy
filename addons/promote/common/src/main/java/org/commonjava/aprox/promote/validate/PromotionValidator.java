@@ -24,6 +24,7 @@ import org.commonjava.aprox.promote.model.ValidationResult;
 import org.commonjava.aprox.promote.validate.model.ValidationRuleMapping;
 
 import javax.inject.Inject;
+import java.io.File;
 import java.util.List;
 
 /**
@@ -57,14 +58,18 @@ public class PromotionValidator
 
         if ( set != null )
         {
+            result.setRuleSet( set.getName() );
             List<String> ruleNames = set.getRuleNames();
-            if ( ruleNames != null && !ruleNames.isEmpty())
+            if ( ruleNames != null && !ruleNames.isEmpty() )
             {
-                ValidationRequest req =
-                        new ValidationRequest( request, set, new PromotionValidationTools( contentManager, storeDataManager ) );
+                ValidationRequest req = new ValidationRequest( request, set,
+                                                               new PromotionValidationTools( contentManager,
+                                                                                             storeDataManager ) );
 
-                for ( String ruleName : ruleNames )
+                for ( String ruleRef : ruleNames )
                 {
+                    String ruleName = new File( ruleRef ).getName(); // flatten in case some path fragment leaks in...
+
                     ValidationRuleMapping rule = validationsManager.getRuleMappingNamed( ruleName );
                     if ( rule != null )
                     {

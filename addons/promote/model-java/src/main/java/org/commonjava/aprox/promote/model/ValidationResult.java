@@ -27,6 +27,8 @@ public class ValidationResult
 
     private Map<String, String> validatorErrors = new HashMap<>();
 
+    private String ruleSet;
+
     public void addValidatorError( String validatorName, String message )
     {
         valid = false;
@@ -51,5 +53,15 @@ public class ValidationResult
     public void setValidatorErrors( Map<String, String> validatorErrors )
     {
         this.validatorErrors = validatorErrors;
+    }
+
+    public void setRuleSet( String ruleSet )
+    {
+        this.ruleSet = ruleSet;
+    }
+
+    public String getRuleSet()
+    {
+        return ruleSet;
     }
 }

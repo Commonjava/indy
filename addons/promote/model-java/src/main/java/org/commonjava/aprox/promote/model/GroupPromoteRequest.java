@@ -34,6 +34,8 @@ public class GroupPromoteRequest
 
     private String targetGroup;
 
+    private boolean dryRun;
+
     public GroupPromoteRequest()
     {
     }
@@ -73,6 +75,16 @@ public class GroupPromoteRequest
         return this;
     }
 
+    public boolean isDryRun()
+    {
+        return dryRun;
+    }
+
+    public GroupPromoteRequest setDryRun( final boolean dryRun )
+    {
+        this.dryRun = dryRun;
+        return this;
+    }
     @Override
     public String toString()
     {
