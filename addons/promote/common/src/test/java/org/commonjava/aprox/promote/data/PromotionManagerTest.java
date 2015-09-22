@@ -40,14 +40,17 @@ import org.commonjava.aprox.promote.fixture.GalleyFixture;
 import org.commonjava.aprox.promote.model.PathsPromoteRequest;
 import org.commonjava.aprox.promote.model.PathsPromoteResult;
 import org.commonjava.aprox.promote.validate.PromoteValidationsManager;
+import org.commonjava.aprox.promote.validate.PromotionValidationTools;
 import org.commonjava.aprox.promote.validate.PromotionValidator;
 import org.commonjava.aprox.promote.validate.ValidationRuleParser;
 import org.commonjava.aprox.subsys.datafile.DataFileManager;
 import org.commonjava.aprox.subsys.datafile.change.DataFileEventManager;
 import org.commonjava.aprox.subsys.template.ScriptEngine;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.maven.parse.MavenMetadataReader;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
+import org.commonjava.maven.galley.testing.maven.GalleyMavenFixture;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -65,7 +68,7 @@ public class PromotionManagerTest
 
     private StoreDataManager storeManager;
 
-    private GalleyFixture galleyParts;
+    private GalleyMavenFixture galleyParts;
 
     private PromotionManager manager;
 
@@ -77,53 +80,54 @@ public class PromotionManagerTest
 
     @Before
     public void setup()
-        throws Exception
+            throws Exception
     {
-        galleyParts = new GalleyFixture( temp.newFolder( "storage" ) );
-        storeManager = new MemoryStoreDataManager(true);
+        galleyParts = new GalleyMavenFixture( true, temp );
+        storeManager = new MemoryStoreDataManager( true );
 
-        downloadManager =
-            new DefaultDownloadManager( storeManager, galleyParts.getTransfers(),
-                                        new AproxLocationExpander( storeManager ) );
+        downloadManager = new DefaultDownloadManager( storeManager, galleyParts.getTransfers(),
+                                                      new AproxLocationExpander( storeManager ) );
 
-        contentManager =
-            new DefaultContentManager( storeManager, downloadManager, new AproxObjectMapper( true ),
-                                       Collections.<ContentGenerator> emptySet() );
+        contentManager = new DefaultContentManager( storeManager, downloadManager, new AproxObjectMapper( true ),
+                                                    Collections.<ContentGenerator>emptySet() );
 
-        dataManager= new DataFileManager(temp.newFolder( "data"), new DataFileEventManager() );
+        dataManager = new DataFileManager( temp.newFolder( "data" ), new DataFileEventManager() );
         validationsManager = new PromoteValidationsManager( dataManager, new PromoteConfig(),
                                                             new ValidationRuleParser( new ScriptEngine(),
                                                                                       new AproxObjectMapper( true ) ) );
 
-        validator = new PromotionValidator( contentManager, storeManager, validationsManager );
+        validator = new PromotionValidator( validationsManager,
+                                            new PromotionValidationTools( contentManager, storeManager,
+                                                                          galleyParts.getPomReader(),
+                                                                          galleyParts.getMavenMetadataReader() ) );
         manager = new PromotionManager( validator, contentManager, downloadManager, storeManager );
     }
 
     @Test
     public void promoteAll_PushTwoArtifactsToHostedRepo_VerifyCopiedToOtherHostedRepo()
-        throws Exception
+            throws Exception
     {
         final HostedRepository source = new HostedRepository( "source" );
-        storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ), new EventMetadata() );
-        
+        storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
+                                         new EventMetadata() );
+
         final String first = "/first/path";
         final String second = "/second/path";
         contentManager.store( source, first, new ByteArrayInputStream( "This is a test".getBytes() ),
                               TransferOperation.UPLOAD, new EventMetadata() );
-        
+
         contentManager.store( source, second, new ByteArrayInputStream( "This is a test".getBytes() ),
                               TransferOperation.UPLOAD, new EventMetadata() );
-        
-        final HostedRepository target = new HostedRepository("target");
-        storeManager.storeArtifactStore( target, new ChangeSummary(ChangeSummary.SYSTEM_USER, "test setup"), new EventMetadata() );
-        
-        final PathsPromoteResult result = manager.promotePaths(
-                new PathsPromoteRequest( source.getKey(), target.getKey() ) );
-        
-        assertThat( result.getRequest()
-                          .getSource(), equalTo( source.getKey() ) );
-        assertThat( result.getRequest()
-                          .getTarget(), equalTo( target.getKey() ) );
+
+        final HostedRepository target = new HostedRepository( "target" );
+        storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
+                                         new EventMetadata() );
+
+        final PathsPromoteResult result =
+                manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey() ) );
+
+        assertThat( result.getRequest().getSource(), equalTo( source.getKey() ) );
+        assertThat( result.getRequest().getTarget(), equalTo( target.getKey() ) );
 
         final Set<String> pending = result.getPendingPaths();
         assertThat( pending == null || pending.isEmpty(), equalTo( true ) );
@@ -143,10 +147,11 @@ public class PromotionManagerTest
 
     @Test
     public void promoteAll_PushTwoArtifactsToHostedRepo_DryRun_VerifyPendingPathsPopulated()
-        throws Exception
+            throws Exception
     {
         final HostedRepository source = new HostedRepository( "source" );
-        storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ), new EventMetadata() );
+        storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
+                                         new EventMetadata() );
 
         final String first = "/first/path";
         final String second = "/second/path";
@@ -157,15 +162,14 @@ public class PromotionManagerTest
                               TransferOperation.UPLOAD, new EventMetadata() );
 
         final HostedRepository target = new HostedRepository( "target" );
-        storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ), new EventMetadata() );
+        storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
+                                         new EventMetadata() );
 
         final PathsPromoteResult result =
-            manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey() ).setDryRun( true ) );
+                manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey() ).setDryRun( true ) );
 
-        assertThat( result.getRequest()
-                          .getSource(), equalTo( source.getKey() ) );
-        assertThat( result.getRequest()
-                          .getTarget(), equalTo( target.getKey() ) );
+        assertThat( result.getRequest().getSource(), equalTo( source.getKey() ) );
+        assertThat( result.getRequest().getTarget(), equalTo( target.getKey() ) );
 
         final Set<String> completed = result.getCompletedPaths();
         assertThat( completed == null || completed.isEmpty(), equalTo( true ) );
@@ -185,10 +189,11 @@ public class PromotionManagerTest
 
     @Test
     public void promoteAll_PurgeSource_PushTwoArtifactsToHostedRepo_VerifyCopiedToOtherHostedRepo()
-        throws Exception
+            throws Exception
     {
         final HostedRepository source = new HostedRepository( "source" );
-        storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ), new EventMetadata() );
+        storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
+                                         new EventMetadata() );
 
         final String first = "/first/path";
         final String second = "/second/path";
@@ -199,15 +204,14 @@ public class PromotionManagerTest
                               TransferOperation.UPLOAD, new EventMetadata() );
 
         final HostedRepository target = new HostedRepository( "target" );
-        storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ), new EventMetadata() );
+        storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
+                                         new EventMetadata() );
 
-        final PathsPromoteResult result =
-            manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey() ).setPurgeSource( true ) );
+        final PathsPromoteResult result = manager.promotePaths(
+                new PathsPromoteRequest( source.getKey(), target.getKey() ).setPurgeSource( true ) );
 
-        assertThat( result.getRequest()
-                          .getSource(), equalTo( source.getKey() ) );
-        assertThat( result.getRequest()
-                          .getTarget(), equalTo( target.getKey() ) );
+        assertThat( result.getRequest().getSource(), equalTo( source.getKey() ) );
+        assertThat( result.getRequest().getTarget(), equalTo( target.getKey() ) );
 
         final Set<String> pending = result.getPendingPaths();
         assertThat( pending == null || pending.isEmpty(), equalTo( true ) );
@@ -234,10 +238,11 @@ public class PromotionManagerTest
 
     @Test
     public void rollback_PushTwoArtifactsToHostedRepo_PromoteSuccessThenRollback()
-        throws Exception
+            throws Exception
     {
         final HostedRepository source = new HostedRepository( "source" );
-        storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ), new EventMetadata() );
+        storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
+                                         new EventMetadata() );
 
         final String first = "/first/path";
         final String second = "/second/path";
@@ -248,14 +253,13 @@ public class PromotionManagerTest
                               TransferOperation.UPLOAD, new EventMetadata() );
 
         final HostedRepository target = new HostedRepository( "target" );
-        storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ), new EventMetadata() );
+        storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
+                                         new EventMetadata() );
 
         PathsPromoteResult result = manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey() ) );
 
-        assertThat( result.getRequest()
-                          .getSource(), equalTo( source.getKey() ) );
-        assertThat( result.getRequest()
-                          .getTarget(), equalTo( target.getKey() ) );
+        assertThat( result.getRequest().getSource(), equalTo( source.getKey() ) );
+        assertThat( result.getRequest().getTarget(), equalTo( target.getKey() ) );
 
         Set<String> pending = result.getPendingPaths();
         assertThat( pending == null || pending.isEmpty(), equalTo( true ) );
@@ -268,10 +272,8 @@ public class PromotionManagerTest
 
         result = manager.rollbackPathsPromote( result );
 
-        assertThat( result.getRequest()
-                          .getSource(), equalTo( source.getKey() ) );
-        assertThat( result.getRequest()
-                          .getTarget(), equalTo( target.getKey() ) );
+        assertThat( result.getRequest().getSource(), equalTo( source.getKey() ) );
+        assertThat( result.getRequest().getTarget(), equalTo( target.getKey() ) );
 
         completed = result.getCompletedPaths();
         assertThat( completed == null || completed.isEmpty(), equalTo( true ) );
@@ -291,10 +293,11 @@ public class PromotionManagerTest
 
     @Test
     public void rollback_PurgeSource_PushTwoArtifactsToHostedRepo_PromoteSuccessThenRollback_VerifyContentInSource()
-        throws Exception
+            throws Exception
     {
         final HostedRepository source = new HostedRepository( "source" );
-        storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ), new EventMetadata() );
+        storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
+                                         new EventMetadata() );
 
         final String first = "/first/path";
         final String second = "/second/path";
@@ -305,15 +308,14 @@ public class PromotionManagerTest
                               TransferOperation.UPLOAD, new EventMetadata() );
 
         final HostedRepository target = new HostedRepository( "target" );
-        storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ), new EventMetadata() );
+        storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
+                                         new EventMetadata() );
 
-        PathsPromoteResult result =
-            manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey() ).setPurgeSource( true ) );
+        PathsPromoteResult result = manager.promotePaths(
+                new PathsPromoteRequest( source.getKey(), target.getKey() ).setPurgeSource( true ) );
 
-        assertThat( result.getRequest()
-                          .getSource(), equalTo( source.getKey() ) );
-        assertThat( result.getRequest()
-                          .getTarget(), equalTo( target.getKey() ) );
+        assertThat( result.getRequest().getSource(), equalTo( source.getKey() ) );
+        assertThat( result.getRequest().getTarget(), equalTo( target.getKey() ) );
 
         Set<String> pending = result.getPendingPaths();
         assertThat( pending == null || pending.isEmpty(), equalTo( true ) );
@@ -326,10 +328,8 @@ public class PromotionManagerTest
 
         result = manager.rollbackPathsPromote( result );
 
-        assertThat( result.getRequest()
-                          .getSource(), equalTo( source.getKey() ) );
-        assertThat( result.getRequest()
-                          .getTarget(), equalTo( target.getKey() ) );
+        assertThat( result.getRequest().getSource(), equalTo( source.getKey() ) );
+        assertThat( result.getRequest().getTarget(), equalTo( target.getKey() ) );
 
         completed = result.getCompletedPaths();
         assertThat( completed == null || completed.isEmpty(), equalTo( true ) );

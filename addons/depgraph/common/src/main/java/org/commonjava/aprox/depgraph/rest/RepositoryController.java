@@ -220,8 +220,10 @@ public class RepositoryController
         RepoContentResult result = new RepoContentResult();
         for ( ProjectVersionRef key: contents.keySet() )
         {
-            Map<ArtifactRef, ConcreteResource> artifactMap = contents.get( key );
             ProjectRepoContent projectContent = new ProjectRepoContent();
+            result.addProject( key, projectContent );
+
+            Map<ArtifactRef, ConcreteResource> artifactMap = contents.get( key );
             for ( ArtifactRef artifact: artifactMap.keySet() )
             {
                 ConcreteResource item = artifactMap.get( artifact );

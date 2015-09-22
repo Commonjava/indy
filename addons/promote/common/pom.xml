@@ -48,6 +48,10 @@
       <artifactId>aprox-db-memory</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.maven.galley</groupId>
+      <artifactId>galley-test-harness-maven</artifactId>
+    </dependency>
   </dependencies>
   
 </project>

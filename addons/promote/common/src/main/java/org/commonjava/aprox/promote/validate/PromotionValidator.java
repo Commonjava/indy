@@ -33,28 +33,25 @@ import java.util.List;
 public class PromotionValidator
 {
     @Inject
-    private ContentManager contentManager;
-
-    @Inject
     private PromoteValidationsManager validationsManager;
 
     @Inject
-    private StoreDataManager storeDataManager;
+    private PromotionValidationTools validationTools;
 
-    protected PromotionValidator(){}
-
-    public PromotionValidator( ContentManager contentManager, StoreDataManager storeDataManager, PromoteValidationsManager validationsManager )
+    protected PromotionValidator()
     {
-        this.contentManager = contentManager;
-        this.storeDataManager = storeDataManager;
+    }
+
+    public PromotionValidator( PromoteValidationsManager validationsManager, PromotionValidationTools validationTools )
+    {
         this.validationsManager = validationsManager;
+        this.validationTools = validationTools;
     }
 
     public void validate( PromoteRequest request, ValidationResult result )
             throws PromotionValidationException
     {
-        ValidationRuleSet set =
-                validationsManager.getRuleSetMatching( request.getTargetKey() );
+        ValidationRuleSet set = validationsManager.getRuleSetMatching( request.getTargetKey() );
 
         if ( set != null )
         {
@@ -62,9 +59,7 @@ public class PromotionValidator
             List<String> ruleNames = set.getRuleNames();
             if ( ruleNames != null && !ruleNames.isEmpty() )
             {
-                ValidationRequest req = new ValidationRequest( request, set,
-                                                               new PromotionValidationTools( contentManager,
-                                                                                             storeDataManager ) );
+                ValidationRequest req = new ValidationRequest( request, set, validationTools );
 
                 for ( String ruleRef : ruleNames )
                 {
