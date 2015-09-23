@@ -15,15 +15,6 @@
  */
 package org.commonjava.aprox.promote.data;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
-
-import java.io.ByteArrayInputStream;
-import java.util.Collections;
-import java.util.Set;
-
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.content.AproxLocationExpander;
 import org.commonjava.aprox.content.ContentGenerator;
@@ -36,7 +27,6 @@ import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.model.core.HostedRepository;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.promote.conf.PromoteConfig;
-import org.commonjava.aprox.promote.fixture.GalleyFixture;
 import org.commonjava.aprox.promote.model.PathsPromoteRequest;
 import org.commonjava.aprox.promote.model.PathsPromoteResult;
 import org.commonjava.aprox.promote.validate.PromoteValidationsManager;
@@ -46,8 +36,11 @@ import org.commonjava.aprox.promote.validate.ValidationRuleParser;
 import org.commonjava.aprox.subsys.datafile.DataFileManager;
 import org.commonjava.aprox.subsys.datafile.change.DataFileEventManager;
 import org.commonjava.aprox.subsys.template.ScriptEngine;
+import org.commonjava.cartographer.INTERNAL.graph.discover.SourceManagerImpl;
+import org.commonjava.cartographer.graph.MavenModelProcessor;
+import org.commonjava.cartographer.graph.discover.patch.PatcherSupport;
+import org.commonjava.cartographer.spi.graph.discover.DiscoverySourceManager;
 import org.commonjava.maven.galley.event.EventMetadata;
-import org.commonjava.maven.galley.maven.parse.MavenMetadataReader;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.testing.maven.GalleyMavenFixture;
@@ -55,6 +48,15 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
+import java.io.ByteArrayInputStream;
+import java.util.Collections;
+import java.util.Set;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 public class PromotionManagerTest
 {
@@ -83,9 +85,11 @@ public class PromotionManagerTest
             throws Exception
     {
         galleyParts = new GalleyMavenFixture( true, temp );
+        galleyParts.initMissingComponents();
+
         storeManager = new MemoryStoreDataManager( true );
 
-        downloadManager = new DefaultDownloadManager( storeManager, galleyParts.getTransfers(),
+        downloadManager = new DefaultDownloadManager( storeManager, galleyParts.getTransferManager(),
                                                       new AproxLocationExpander( storeManager ) );
 
         contentManager = new DefaultContentManager( storeManager, downloadManager, new AproxObjectMapper( true ),
@@ -96,10 +100,16 @@ public class PromotionManagerTest
                                                             new ValidationRuleParser( new ScriptEngine(),
                                                                                       new AproxObjectMapper( true ) ) );
 
+        PatcherSupport patcherSupport = new PatcherSupport();
+        MavenModelProcessor modelProcessor = new MavenModelProcessor();
+        DiscoverySourceManager sourceManager = new SourceManagerImpl();
         validator = new PromotionValidator( validationsManager,
                                             new PromotionValidationTools( contentManager, storeManager,
                                                                           galleyParts.getPomReader(),
-                                                                          galleyParts.getMavenMetadataReader() ) );
+                                                                          galleyParts.getMavenMetadataReader(),
+                                                                          patcherSupport, modelProcessor, sourceManager,
+                                                                          galleyParts.getTypeMapper(),
+                                                                          galleyParts.getTransferManager() ) );
         manager = new PromotionManager( validator, contentManager, downloadManager, storeManager );
     }
 

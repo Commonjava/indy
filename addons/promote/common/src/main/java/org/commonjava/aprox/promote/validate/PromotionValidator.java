@@ -15,6 +15,7 @@
  */
 package org.commonjava.aprox.promote.validate;
 
+import org.apache.commons.lang.StringUtils;
 import org.commonjava.aprox.content.ContentManager;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.promote.model.PromoteRequest;
@@ -22,6 +23,8 @@ import org.commonjava.aprox.promote.model.ValidationRuleSet;
 import org.commonjava.aprox.promote.validate.model.ValidationRequest;
 import org.commonjava.aprox.promote.model.ValidationResult;
 import org.commonjava.aprox.promote.validate.model.ValidationRuleMapping;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -53,8 +56,11 @@ public class PromotionValidator
     {
         ValidationRuleSet set = validationsManager.getRuleSetMatching( request.getTargetKey() );
 
+        Logger logger = LoggerFactory.getLogger( getClass() );
         if ( set != null )
         {
+            logger.debug( "Running validation rule-set for promotion: {}", set.getName() );
+
             result.setRuleSet( set.getName() );
             List<String> ruleNames = set.getRuleNames();
             if ( ruleNames != null && !ruleNames.isEmpty() )
@@ -70,10 +76,16 @@ public class PromotionValidator
                     {
                         try
                         {
+                            logger.debug( "Running promotion validation rule: {}", rule.getName() );
                             String error = rule.getRule().validate( req );
-                            if ( error != null )
+                            if ( StringUtils.isNotEmpty( error ) )
                             {
+                                logger.debug( "Failed" );
                                 result.addValidatorError( rule.getName(), error );
+                            }
+                            else
+                            {
+                                logger.debug( "Succeeded" );
                             }
                         }
                         catch ( Exception e )

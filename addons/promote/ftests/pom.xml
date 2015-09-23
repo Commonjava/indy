@@ -40,6 +40,12 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-promote-common</artifactId>
+      <classifier>dataset</classifier>
+      <!-- <scope>provided</scope> -->
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-promote-client-java</artifactId>
     </dependency>
     <dependency>

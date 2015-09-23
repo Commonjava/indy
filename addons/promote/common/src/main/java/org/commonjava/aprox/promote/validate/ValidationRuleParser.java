@@ -101,11 +101,15 @@ public class ValidationRuleParser
             return null;
         }
 
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Parsing rule from: {} with content:\n{}\n", scriptName, spec );
+
         ValidationRule rule = null;
         try
         {
 
             rule = scriptEngine.parseScriptInstance( spec, ValidationRule.class );
+            logger.debug( "Parsed: {}", rule.getClass().getName() );
         }
         catch ( final AproxGroovyException e )
         {
@@ -163,6 +167,9 @@ public class ValidationRuleParser
         {
             return null;
         }
+
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Parsing rule-set from: {} with content:\n{}\n", scriptName, spec );
 
         try
         {
