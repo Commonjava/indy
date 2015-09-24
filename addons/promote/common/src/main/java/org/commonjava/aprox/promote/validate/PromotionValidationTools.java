@@ -27,82 +27,345 @@ import org.commonjava.aprox.model.core.HostedRepository;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
+import org.commonjava.aprox.model.galley.AproxLocationResolver;
+import org.commonjava.aprox.model.galley.KeyedLocation;
+import org.commonjava.aprox.promote.model.PromoteRequest;
+import org.commonjava.aprox.util.LocationUtils;
+import org.commonjava.cartographer.CartoDataException;
+import org.commonjava.cartographer.graph.MavenModelProcessor;
+import org.commonjava.cartographer.graph.discover.DiscoveryConfig;
+import org.commonjava.cartographer.graph.discover.DiscoveryResult;
+import org.commonjava.cartographer.graph.discover.meta.MetadataScannerSupport;
+import org.commonjava.cartographer.graph.discover.patch.DepgraphPatcherConstants;
+import org.commonjava.cartographer.graph.discover.patch.PatcherSupport;
+import org.commonjava.cartographer.spi.graph.discover.DiscoverySourceManager;
+import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
+import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
+import org.commonjava.maven.atlas.ident.ref.ProjectRef;
+import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
+import org.commonjava.maven.galley.TransferException;
+import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.maven.GalleyMavenException;
+import org.commonjava.maven.galley.maven.model.view.MavenPomView;
+import org.commonjava.maven.galley.maven.model.view.meta.MavenMetadataView;
+import org.commonjava.maven.galley.maven.parse.MavenMetadataReader;
+import org.commonjava.maven.galley.maven.parse.MavenPomReader;
+import org.commonjava.maven.galley.maven.spi.type.TypeMapper;
+import org.commonjava.maven.galley.maven.util.ArtifactPathUtils;
+import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 
+import javax.inject.Inject;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static org.commonjava.aprox.promote.validate.util.ReadOnlyTransfer.readOnlyWrapper;
+import static org.commonjava.aprox.promote.validate.util.ReadOnlyTransfer.readOnlyWrappers;
 
 /**
  * Created by jdcasey on 9/11/15.
  */
 public class PromotionValidationTools
 {
+    @Inject
     private ContentManager contentManager;
 
-    private final StoreDataManager storeDataManager;
+    @Inject
+    private StoreDataManager storeDataManager;
 
-    public PromotionValidationTools( ContentManager manager, StoreDataManager storeDataManager )
+    @Inject
+    private MavenPomReader pomReader;
+
+    @Inject
+    private MavenMetadataReader metadataReader;
+
+    @Inject
+    private PatcherSupport patcherSupport;
+
+    @Inject
+    private MavenModelProcessor modelProcessor;
+
+    @Inject
+    private DiscoverySourceManager sourceManager;
+
+    @Inject
+    private TypeMapper typeMapper;
+
+    @Inject
+    private TransferManager transferManager;
+
+    protected PromotionValidationTools()
+    {
+    }
+
+    public PromotionValidationTools( ContentManager manager, StoreDataManager storeDataManager,
+                                     MavenPomReader pomReader, MavenMetadataReader metadataReader,
+                                     PatcherSupport patcherSupport, MavenModelProcessor modelProcessor,
+                                     DiscoverySourceManager sourceManager, TypeMapper typeMapper,
+                                     TransferManager transferManager )
     {
         contentManager = manager;
         this.storeDataManager = storeDataManager;
+        this.pomReader = pomReader;
+        this.metadataReader = metadataReader;
+        this.patcherSupport = patcherSupport;
+        this.modelProcessor = modelProcessor;
+        this.sourceManager = sourceManager;
+        this.typeMapper = typeMapper;
+        this.transferManager = transferManager;
     }
 
-    public Transfer getTransfer( List<ArtifactStore> stores, String path, TransferOperation op )
-            throws AproxWorkflowException
+    public String toArtifactPath( ProjectVersionRef ref )
+            throws TransferException
     {
-        return contentManager.getTransfer( stores, path, op );
+        return ArtifactPathUtils.formatArtifactPath( ref, typeMapper );
     }
 
-    public Transfer getTransfer( StoreKey storeKey, String path, TransferOperation op )
-            throws AproxWorkflowException
+    public String toMetadataPath( ProjectRef ref, String filename )
+            throws TransferException
     {
-        return contentManager.getTransfer( storeKey, path, op );
+        return ArtifactPathUtils.formatMetadataPath( ref, filename );
     }
 
-    public Transfer getTransfer( ArtifactStore store, String path, TransferOperation op )
+    public String toMetadataPath( String groupId, String filename )
+            throws TransferException
+    {
+        return ArtifactPathUtils.formatMetadataPath( groupId, filename );
+    }
+
+    public Set<ProjectRelationship<?, ?>> getRelationshipsForPom( String path, DiscoveryConfig dc, PromoteRequest request,
+                                                                   StoreKey... extraLocations )
+            throws AproxWorkflowException, GalleyMavenException, CartoDataException, AproxDataException
+    {
+        ArtifactRef artifactRef = getArtifact( path );
+        if ( artifactRef == null )
+        {
+            return null;
+        }
+
+        StoreKey key = request.getSource();
+        Transfer transfer = getTransfer( key, path );
+
+        List<Location> locations = new ArrayList<>( extraLocations.length + 1 );
+        locations.add( transfer.getLocation() );
+        addLocations( locations, extraLocations );
+
+        MavenPomView pomView =
+                pomReader.read( artifactRef.asProjectVersionRef(), transfer, locations, MavenPomView.ALL_PROFILES );
+
+        URI source = sourceManager.createSourceURI( key.toString() );
+
+        DiscoveryResult discoveryResult = modelProcessor.readRelationships( pomView, source, dc );
+        discoveryResult =
+                patcherSupport.patch( discoveryResult, DepgraphPatcherConstants.ALL_PATCHERS, locations, pomView,
+                                      transfer );
+
+        return discoveryResult.getAcceptedRelationships();
+    }
+
+    public void addLocations( List<Location> locations, StoreKey... extraLocations )
+            throws AproxDataException
+    {
+        for ( StoreKey extra : extraLocations )
+        {
+            ArtifactStore store = getArtifactStore( extra );
+            locations.add( LocationUtils.toLocation( store ) );
+        }
+    }
+
+    public MavenPomView readPom( String path, PromoteRequest request, StoreKey... extraLocations )
+            throws AproxWorkflowException, GalleyMavenException, AproxDataException
+    {
+        ArtifactRef artifactRef = getArtifact( path );
+        if ( artifactRef == null )
+        {
+            return null;
+        }
+
+        StoreKey key = request.getSource();
+        Transfer transfer = getTransfer( key, path );
+
+        List<Location> locations = new ArrayList<>( extraLocations.length + 1 );
+        locations.add( transfer.getLocation() );
+        addLocations( locations, extraLocations );
+
+        return pomReader.read( artifactRef.asProjectVersionRef(), transfer, locations, MavenPomView.ALL_PROFILES );
+    }
+
+    public MavenPomView readLocalPom( String path, PromoteRequest request )
+            throws AproxWorkflowException, GalleyMavenException
+    {
+        ArtifactRef artifactRef = getArtifact( path );
+        if ( artifactRef == null )
+        {
+            throw new AproxWorkflowException( "Invalid artifact path: %s. Could not parse ArtifactRef from path.", path );
+        }
+
+        StoreKey key = request.getSource();
+        Transfer transfer = getTransfer( key, path );
+
+        return pomReader.readLocalPom( artifactRef.asProjectVersionRef(), transfer, MavenPomView.ALL_PROFILES );
+    }
+
+    public ArtifactRef getArtifact( String path )
+    {
+        ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
+        return pathInfo == null ? null : pathInfo.getArtifact();
+    }
+
+    public MavenMetadataView getMetadata( ProjectRef ref, List<? extends Location> locations )
+            throws GalleyMavenException
+    {
+        return metadataReader.getMetadata( ref, locations );
+    }
+
+    public MavenMetadataView readMetadata( ProjectRef ref, List<Transfer> transfers )
+            throws GalleyMavenException
+    {
+        return metadataReader.readMetadata( ref, transfers );
+    }
+
+    public MavenMetadataView getMetadata( ProjectRef ref, List<? extends Location> locations,
+                                          EventMetadata eventMetadata )
+            throws GalleyMavenException
+    {
+        return metadataReader.getMetadata( ref, locations, eventMetadata );
+    }
+
+    public MavenMetadataView readMetadata( ProjectRef ref, List<Transfer> transfers, EventMetadata eventMetadata )
+            throws GalleyMavenException
+    {
+        return metadataReader.readMetadata( ref, transfers, eventMetadata );
+    }
+
+    public MavenPomView read( ProjectVersionRef ref, Transfer pom, List<? extends Location> locations,
+                              String... activeProfileLocations )
+            throws GalleyMavenException
+    {
+        return pomReader.read( ref, pom, locations, activeProfileLocations );
+    }
+
+    public MavenPomView read( ProjectVersionRef ref, List<? extends Location> locations, boolean cache,
+                              EventMetadata eventMetadata, String... activeProfileIds )
+            throws GalleyMavenException
+    {
+        return pomReader.read( ref, locations, cache, eventMetadata, activeProfileIds );
+    }
+
+    public MavenPomView read( ProjectVersionRef ref, List<? extends Location> locations, boolean cache,
+                              String... activeProfileIds )
+            throws GalleyMavenException
+    {
+        return pomReader.read( ref, locations, cache, activeProfileIds );
+    }
+
+    public MavenPomView readLocalPom( ProjectVersionRef ref, Transfer transfer, String... activeProfileIds )
+            throws GalleyMavenException
+    {
+        return pomReader.readLocalPom( ref, transfer, activeProfileIds );
+    }
+
+    public MavenPomView read( ProjectVersionRef ref, List<? extends Location> locations, String... activeProfileIds )
+            throws GalleyMavenException
+    {
+        return pomReader.read( ref, locations, activeProfileIds );
+    }
+
+    public MavenPomView readLocalPom( ProjectVersionRef ref, Transfer transfer, boolean cache,
+                                      EventMetadata eventMetadata, String... activeProfileIds )
+            throws GalleyMavenException
+    {
+        return pomReader.readLocalPom( ref, transfer, cache, eventMetadata, activeProfileIds );
+    }
+
+    public MavenPomView readLocalPom( ProjectVersionRef ref, Transfer transfer, EventMetadata eventMetadata,
+                                      String... activeProfileIds )
+            throws GalleyMavenException
+    {
+        return pomReader.readLocalPom( ref, transfer, eventMetadata, activeProfileIds );
+    }
+
+    public MavenPomView read( ProjectVersionRef ref, List<? extends Location> locations, EventMetadata eventMetadata,
+                              String... activeProfileIds )
+            throws GalleyMavenException
+    {
+        return pomReader.read( ref, locations, eventMetadata, activeProfileIds );
+    }
+
+    public MavenPomView readLocalPom( ProjectVersionRef ref, Transfer transfer, boolean cache,
+                                      String... activeProfileIds )
+            throws GalleyMavenException
+    {
+        return pomReader.readLocalPom( ref, transfer, cache, activeProfileIds );
+    }
+
+    public MavenPomView read( ProjectVersionRef ref, Transfer pom, List<? extends Location> locations,
+                              EventMetadata eventMetadata, String... activeProfileLocations )
+            throws GalleyMavenException
+    {
+        return pomReader.read( ref, pom, locations, eventMetadata, activeProfileLocations );
+    }
+
+    public Transfer getTransfer( List<ArtifactStore> stores, String path )
             throws AproxWorkflowException
     {
-        return contentManager.getTransfer( store, path, op );
+        return readOnlyWrapper( contentManager.getTransfer( stores, path, TransferOperation.DOWNLOAD ) );
+    }
+
+    public Transfer getTransfer( StoreKey storeKey, String path )
+            throws AproxWorkflowException
+    {
+        return readOnlyWrapper( contentManager.getTransfer( storeKey, path, TransferOperation.DOWNLOAD ) );
+    }
+
+    public Transfer getTransfer( ArtifactStore store, String path )
+            throws AproxWorkflowException
+    {
+        return readOnlyWrapper( contentManager.getTransfer( store, path, TransferOperation.DOWNLOAD ) );
     }
 
     public Transfer retrieve( ArtifactStore store, String path, EventMetadata eventMetadata )
             throws AproxWorkflowException
     {
-        return contentManager.retrieve( store, path, eventMetadata );
+        return readOnlyWrapper( contentManager.retrieve( store, path, eventMetadata ) );
     }
 
     public Transfer retrieve( ArtifactStore store, String path )
             throws AproxWorkflowException
     {
-        return contentManager.retrieve( store, path );
+        return readOnlyWrapper( contentManager.retrieve( store, path ) );
     }
 
     public List<Transfer> retrieveAll( List<? extends ArtifactStore> stores, String path, EventMetadata eventMetadata )
             throws AproxWorkflowException
     {
-        return contentManager.retrieveAll( stores, path, eventMetadata );
+        return readOnlyWrappers( contentManager.retrieveAll( stores, path, eventMetadata ) );
     }
 
     public List<Transfer> retrieveAll( List<? extends ArtifactStore> stores, String path )
             throws AproxWorkflowException
     {
-        return contentManager.retrieveAll( stores, path );
+        return readOnlyWrappers( contentManager.retrieveAll( stores, path ) );
     }
 
     public Transfer retrieveFirst( List<? extends ArtifactStore> stores, String path, EventMetadata eventMetadata )
             throws AproxWorkflowException
     {
-        return contentManager.retrieveFirst( stores, path, eventMetadata );
+        return readOnlyWrapper( contentManager.retrieveFirst( stores, path, eventMetadata ) );
     }
 
     public Transfer retrieveFirst( List<? extends ArtifactStore> stores, String path )
             throws AproxWorkflowException
     {
-        return contentManager.retrieveFirst( stores, path );
+        return readOnlyWrapper( contentManager.retrieveFirst( stores, path ) );
     }
 
     public List<StoreResource> list( ArtifactStore store, String path )
@@ -242,5 +505,10 @@ public class PromotionValidationTools
     public RemoteRepository findRemoteRepository( String url )
     {
         return storeDataManager.findRemoteRepository( url );
+    }
+
+    public Transfer getTransfer( StoreResource resource )
+    {
+        return transferManager.getCacheReference( resource );
     }
 }

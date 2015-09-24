@@ -113,7 +113,7 @@ public class PromoteValidationsManager
         {
             final DataFile[] scripts = dataDir.listFiles( (pathname) ->
             {
-                    logger.info( "Checking for autoprox script in: {}", pathname );
+                    logger.info( "Checking for promote validation rule script in: {}", pathname );
                     return pathname.getName()
                                    .endsWith( ".groovy" );
             } );

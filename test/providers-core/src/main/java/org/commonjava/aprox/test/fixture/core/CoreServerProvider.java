@@ -104,19 +104,19 @@ public class CoreServerProvider
         folder.delete();
     }
 
-    @Produces
-    @Default
-    public TypeMapper getTypeMapper()
-    {
-        return typeMapper;
-    }
-
-    @Produces
-    @Default
-    public XMLInfrastructure getXML()
-    {
-        return xml;
-    }
+//    @Produces
+//    @Default
+//    public TypeMapper getTypeMapper()
+//    {
+//        return typeMapper;
+//    }
+//
+//    @Produces
+//    @Default
+//    public XMLInfrastructure getXML()
+//    {
+//        return xml;
+//    }
 
     @Produces
     @Default

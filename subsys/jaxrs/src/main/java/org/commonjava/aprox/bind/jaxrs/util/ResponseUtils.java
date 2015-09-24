@@ -317,8 +317,8 @@ public final class ResponseUtils
 
     public static String generateErrorId()
     {
-        return new String( DigestUtils.sha( Thread.currentThread()
-                                                  .getName() ) );
+        return DigestUtils.sha256Hex( Thread.currentThread()
+                                                  .getName() );
 
         //+ "@" + new SimpleDateFormat( "yyyy-MM-ddThhmmss.nnnZ" ).format( new Date() );
     }

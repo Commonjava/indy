@@ -89,6 +89,11 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-promote-common</artifactId>
+      <classifier>dataset</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-implied-repos-common</artifactId>
     </dependency>
     <dependency>
@@ -185,6 +190,10 @@
                   <forkCount>${test-forkCount}</forkCount>
                   <reuseForks>false</reuseForks>
                   <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
+<!--                   <includes>
+                    <include>**/rule/*Test*</include>
+                  </includes>
+ -->
                   <dependenciesToScan>
                     <dependency>org.commonjava.aprox:aprox-ftests-core</dependency>
                     <dependency>org.commonjava.aprox:aprox-ftests-autoprox</dependency>

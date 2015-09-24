@@ -19,13 +19,15 @@ import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.content.StoreResource;
 import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.promote.model.PathsPromoteRequest;
-import org.commonjava.aprox.promote.model.PathsPromoteResult;
 import org.commonjava.aprox.promote.model.PromoteRequest;
 import org.commonjava.aprox.promote.model.ValidationRuleSet;
 import org.commonjava.aprox.promote.validate.PromotionValidationException;
 import org.commonjava.aprox.promote.validate.PromotionValidationTools;
+import org.commonjava.maven.galley.model.Transfer;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -57,7 +59,7 @@ public class ValidationRequest
             Set<String> paths = null;
             if ( promoteRequest instanceof PathsPromoteRequest )
             {
-                paths = ((PathsPromoteRequest)promoteRequest).getPaths();
+                paths = ( (PathsPromoteRequest) promoteRequest ).getPaths();
             }
 
             if ( paths == null )
@@ -69,22 +71,16 @@ public class ValidationRequest
                 }
                 catch ( AproxDataException e )
                 {
-                    throw new PromotionValidationException( "Failed to retrieve source ArtifactStore: {}. Reason: {}", e,
-                                                            promoteRequest.getSource(), e.getMessage() );
+                    throw new PromotionValidationException( "Failed to retrieve source ArtifactStore: {}. Reason: {}",
+                                                            e, promoteRequest.getSource(), e.getMessage() );
                 }
 
                 if ( store != null )
                 {
                     try
                     {
-                        List<StoreResource> listing = tools.list( store, "/" );
-                        if ( listing != null )
-                        {
-                            for ( StoreResource res : listing )
-                            {
-                                paths.add( res.getPath() );
-                            }
-                        }
+                        paths = new HashSet<>();
+                        listRecursively( store, "/", paths );
                     }
                     catch ( AproxWorkflowException e )
                     {
@@ -97,6 +93,33 @@ public class ValidationRequest
         }
 
         return requestPaths;
+    }
+
+    private void listRecursively( ArtifactStore store, String path, Set<String> paths )
+            throws AproxWorkflowException
+    {
+        List<StoreResource> listing = tools.list( store, path );
+        if ( listing != null )
+        {
+            for ( StoreResource res : listing )
+            {
+                if ( res != null )
+                {
+                    Transfer txfr = tools.getTransfer( res );
+                    if ( txfr != null )
+                    {
+                        if ( txfr.isDirectory() )
+                        {
+                            listRecursively( store, txfr.getPath(), paths );
+                        }
+                        else if ( txfr.exists() )
+                        {
+                            paths.add( txfr.getPath() );
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public PromoteRequest getPromoteRequest()
@@ -112,5 +135,20 @@ public class ValidationRequest
     public PromotionValidationTools getTools()
     {
         return tools;
+    }
+
+    public String getValidationParameter( String key )
+    {
+        return ruleSet.getValidationParameter( key );
+    }
+
+    public StoreKey getSource()
+    {
+        return promoteRequest.getSource();
+    }
+
+    public StoreKey getTarget()
+    {
+        return promoteRequest.getTargetKey();
     }
 }

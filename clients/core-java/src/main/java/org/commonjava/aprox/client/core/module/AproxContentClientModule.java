@@ -68,6 +68,12 @@ public class AproxContentClientModule
         return UrlUtils.buildUrl( null, aggregatePathParts( key, path ) );
     }
 
+    public DirectoryListingDTO listContents( final StoreKey key, final String path )
+            throws AproxClientException
+    {
+        return listContents( key.getType(), key.getName(), path );
+    }
+
     public DirectoryListingDTO listContents( final StoreType type, final String name, final String path )
         throws AproxClientException
     {
@@ -80,10 +86,22 @@ public class AproxContentClientModule
         return http.get( contentPath( type, name, p ), DirectoryListingDTO.class );
     }
 
+    public void delete( final StoreKey key, final String path )
+            throws AproxClientException
+    {
+        http.delete( contentPath( key.getType(), key.getName(), path ) );
+    }
+
     public void delete( final StoreType type, final String name, final String path )
         throws AproxClientException
     {
         http.delete( contentPath( type, name, path ) );
+    }
+
+    public boolean exists( final StoreKey key, final String path )
+            throws AproxClientException
+    {
+        return http.exists( contentPath( key.getType(), key.getName(), path ) );
     }
 
     public boolean exists( final StoreType type, final String name, final String path )
@@ -92,17 +110,36 @@ public class AproxContentClientModule
         return http.exists( contentPath( type, name, path ) );
     }
 
+    public void store( final StoreKey key, final String path, final InputStream stream )
+            throws AproxClientException
+    {
+        http.putWithStream( contentPath( key.getType(), key.getName(), path ), stream );
+    }
+
     public void store( final StoreType type, final String name, final String path, final InputStream stream )
         throws AproxClientException
     {
         http.putWithStream( contentPath( type, name, path ), stream );
     }
 
-    public PathInfo getInfo( final StoreType type, final String name, final String path )
+    public PathInfo getInfo( final StoreKey key, final String path )
         throws AproxClientException
+    {
+        final Map<String, String> headers = http.head( contentPath( key.getType(), key.getName(), path ) );
+        return new PathInfo( headers );
+    }
+
+    public PathInfo getInfo( final StoreType type, final String name, final String path )
+            throws AproxClientException
     {
         final Map<String, String> headers = http.head( contentPath( type, name, path ) );
         return new PathInfo( headers );
+    }
+
+    public InputStream get( final StoreKey key, final String path )
+            throws AproxClientException
+    {
+        return get( key.getType(), key.getName(), path );
     }
 
     public InputStream get( final StoreType type, final String name, final String path )

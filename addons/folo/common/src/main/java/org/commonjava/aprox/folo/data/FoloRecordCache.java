@@ -170,6 +170,9 @@ public class FoloRecordCache
 
     public boolean hasRecord( final TrackingKey key )
     {
+        logger.info( "Looking for tracking record: {}.\nCache record: {}\nRecord file: {}", key,
+                     recordCache.getIfPresent( key ), filer.getRecordFile( key ) );
+
         return recordCache.getIfPresent( key ) != null || filer.getRecordFile( key ).exists();
     }
 

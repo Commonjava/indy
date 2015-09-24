@@ -48,7 +48,7 @@
     <javaVersion>1.8</javaVersion>
     <slf4j-version>1.6.1</slf4j-version>
     <atlasVersion>0.16.0-SNAPSHOT</atlasVersion>
-    <galleyVersion>0.10.0</galleyVersion>
+    <galleyVersion>0.10.1-SNAPSHOT</galleyVersion>
     <cartoVersion>0.11.0-SNAPSHOT</cartoVersion>
     <bomVersion>17</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
@@ -502,6 +502,27 @@
         <groupId>org.commonjava.aprox</groupId>
         <artifactId>aprox-promote-common</artifactId>
         <version>0.25.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-promote-common</artifactId>
+        <version>0.25.0-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>confset</classifier>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-promote-common</artifactId>
+        <version>0.25.0-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>dataset</classifier>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.aprox</groupId>
+        <artifactId>aprox-promote-common</artifactId>
+        <version>0.25.0-SNAPSHOT</version>
+        <classifier>dataset</classifier>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>

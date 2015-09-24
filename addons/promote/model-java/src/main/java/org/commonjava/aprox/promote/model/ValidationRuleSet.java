@@ -129,4 +129,9 @@ public class ValidationRuleSet
     {
         this.validationParameters = validationParameters;
     }
+
+    public String getValidationParameter( String key )
+    {
+        return validationParameters == null ? null : validationParameters.get( key );
+    }
 }
