@@ -264,7 +264,7 @@ public class ImpliedRepoMaintainer
             job.members = loadMemberStores( job.group, job );
 
             // getOrderedConcreteStores(), but we can't use the persisted info...
-            final LinkedHashSet<ArtifactStore> reachable = new LinkedHashSet<>();
+            final LinkedHashSet<ArtifactStore> reachable = new LinkedHashSet<>(job.members.size());
             for ( final ArtifactStore member : job.members )
             {
                 if ( member instanceof Group )

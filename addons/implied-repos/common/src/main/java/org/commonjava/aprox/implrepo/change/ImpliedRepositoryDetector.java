@@ -289,7 +289,7 @@ public class ImpliedRepositoryDetector
                 {
                     logger.debug( "Creating new RemoteRepository for: {}", repo );
 
-                    rr = new RemoteRepository( formatId( repo ), repo.getUrl() );
+                    rr = new RemoteRepository( formatId( repo.getId() ), repo.getUrl() );
                     rr.setDescription( "Implicitly created repo for: " + repo.getName() + " (" + repo.getId()
                         + ") from repository declaration in POM: " + gav );
 
@@ -329,10 +329,10 @@ public class ImpliedRepositoryDetector
         }
     }
 
-    private String formatId( final RepositoryView repo )
+    protected String formatId( final String id )
     {
         //        return "implied-" + repo.getId() + "-" + formatNow();
-        return repo.getId();
+        return "i-" + id.replaceAll( "[^\\p{Alnum}]", "-" );
     }
 
     //    private String formatNow()

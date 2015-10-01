@@ -22,7 +22,7 @@ import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 
 import org.commonjava.aprox.conf.AproxConfiguration;
-import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
+import org.commonjava.aprox.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
 import org.commonjava.aprox.inject.TestData;
 

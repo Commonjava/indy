@@ -31,6 +31,8 @@ import javax.inject.Inject;
 
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.change.event.ArtifactStoreUpdateType;
+import org.commonjava.aprox.conf.AproxConfiguration;
+import org.commonjava.aprox.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.NoOpStoreEventDispatcher;
 import org.commonjava.aprox.data.StoreDataManager;
@@ -61,6 +63,9 @@ public class MemoryStoreDataManager
     @Inject
     private StoreEventDispatcher dispatcher;
 
+    @Inject
+    private AproxConfiguration config;
+
     protected MemoryStoreDataManager()
     {
     }
@@ -68,11 +73,13 @@ public class MemoryStoreDataManager
     public MemoryStoreDataManager( final boolean unitTestUsage )
     {
         this.dispatcher = new NoOpStoreEventDispatcher();
+        this.config = new DefaultAproxConfiguration();
     }
 
-    public MemoryStoreDataManager( final StoreEventDispatcher dispatcher )
+    public MemoryStoreDataManager( final StoreEventDispatcher dispatcher, final AproxConfiguration config )
     {
         this.dispatcher = dispatcher;
+        this.config = config;
     }
 
     @Override
@@ -95,7 +102,18 @@ public class MemoryStoreDataManager
     {
         final StoreKey key = new StoreKey( StoreType.remote, name );
 
-        return (RemoteRepository) stores.get( key );
+        RemoteRepository repo = (RemoteRepository) stores.get( key );
+        if ( repo == null )
+        {
+            return null;
+        }
+
+        if ( repo.getTimeoutSeconds() < 1 )
+        {
+            repo.setTimeoutSeconds( config.getRequestTimeoutSeconds() );
+        }
+
+        return repo;
     }
 
     @Override

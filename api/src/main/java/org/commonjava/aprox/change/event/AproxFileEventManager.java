@@ -52,6 +52,9 @@ public class AproxFileEventManager
     @Inject
     private Event<FileNotFoundEvent> notFoundEvent;
 
+    @Inject
+    private Event<AproxStoreErrorEvent> storeErrorEvent;
+
     @Override
     public void fire( final FileNotFoundEvent evt )
     {
@@ -80,6 +83,11 @@ public class AproxFileEventManager
     public void fire( final FileErrorEvent evt )
     {
         doFire( errorEvent, evt );
+    }
+
+    public void fire( final AproxStoreErrorEvent evt )
+    {
+        doFire( storeErrorEvent, evt );
     }
 
     private <T> void doFire( final Event<T> eventQ, final T evt )

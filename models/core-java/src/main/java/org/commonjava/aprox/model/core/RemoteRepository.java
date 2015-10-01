@@ -33,8 +33,6 @@ public class RemoteRepository
 
     private static final Logger LOGGER = LoggerFactory.getLogger( RemoteRepository.class );
 
-    public static final int DEFAULT_TIMEOUT_SECONDS = 120;
-
     @ApiModelProperty( required = true, value = "The remote URL to proxy" )
     @JsonProperty( "url" )
     private String url;
@@ -217,7 +215,7 @@ public class RemoteRepository
 
     public int getTimeoutSeconds()
     {
-        return timeoutSeconds < 0 ? DEFAULT_TIMEOUT_SECONDS : timeoutSeconds;
+        return timeoutSeconds;
     }
 
     public void setTimeoutSeconds( final int timeoutSeconds )

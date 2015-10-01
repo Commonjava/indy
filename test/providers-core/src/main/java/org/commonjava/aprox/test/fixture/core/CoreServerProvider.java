@@ -25,7 +25,7 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.conf.AproxConfiguration;
-import org.commonjava.aprox.core.conf.DefaultAproxConfiguration;
+import org.commonjava.aprox.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.data.StoreEventDispatcher;
 import org.commonjava.aprox.filer.def.conf.DefaultStorageProviderConfiguration;
 import org.commonjava.aprox.flat.data.DataFileStoreDataManager;
@@ -35,7 +35,6 @@ import org.commonjava.aprox.subsys.datafile.change.DataFileEventManager;
 import org.commonjava.aprox.subsys.datafile.conf.DataFileConfiguration;
 import org.commonjava.maven.galley.maven.internal.type.StandardTypeMapper;
 import org.commonjava.maven.galley.maven.parse.XMLInfrastructure;
-import org.commonjava.maven.galley.maven.spi.type.TypeMapper;
 import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.commonjava.web.config.ConfigurationException;
@@ -82,7 +81,7 @@ public class CoreServerProvider
             this.nfc = new MemoryNotFoundCache();
             this.dataFileManager =
                 new DataFileManager( new DataFileConfiguration( folder.newFolder( "aprox-data" ) ), dataFileEvents );
-            this.storeManager = new DataFileStoreDataManager( dataFileManager, objectMapper, storeDispatch );
+            this.storeManager = new DataFileStoreDataManager( dataFileManager, objectMapper, storeDispatch , new DefaultAproxConfiguration() );
             this.storageConfig = new DefaultStorageProviderConfiguration( folder.newFolder( "aprox-storage" ) );
 
             this.config = aproxConfigFeature.getAproxConfig();

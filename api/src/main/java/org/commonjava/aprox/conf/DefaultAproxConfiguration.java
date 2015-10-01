@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.aprox.core.conf;
+package org.commonjava.aprox.conf;
 
 import java.io.InputStream;
 
@@ -23,11 +23,6 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.commonjava.aprox.conf.AbstractAproxConfigInfo;
-import org.commonjava.aprox.conf.AbstractAproxFeatureConfig;
-import org.commonjava.aprox.conf.AproxConfigClassInfo;
-import org.commonjava.aprox.conf.AproxConfigInfo;
-import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.inject.Production;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.ConfigName;
@@ -97,9 +92,17 @@ public class DefaultAproxConfiguration
 
     public static final int DEFAULT_NOT_FOUND_CACHE_TIMEOUT_SECONDS = 300;
 
+    public static final int DEFAULT_REQUEST_TIMEOUT_SECONDS = 30;
+
+    public static final int DEFAULT_STORE_DISABLE_TIMEOUT_SECONDS = 14400;
+
     private Integer passthroughTimeoutSeconds;
 
     private Integer notFoundCacheTimeoutSeconds;
+
+    private Integer requestTimeoutSeconds;
+
+    private Integer storeDisableTimeoutSeconds;
 
     public DefaultAproxConfiguration()
     {
@@ -129,4 +132,25 @@ public class DefaultAproxConfiguration
         return notFoundCacheTimeoutSeconds == null ? DEFAULT_NOT_FOUND_CACHE_TIMEOUT_SECONDS : notFoundCacheTimeoutSeconds;
     }
 
+    public int getRequestTimeoutSeconds()
+    {
+        return requestTimeoutSeconds == null ? DEFAULT_REQUEST_TIMEOUT_SECONDS : requestTimeoutSeconds;
+    }
+
+    @ConfigName( "request.timeout" )
+    public void setRequestTimeoutSeconds( Integer requestTimeoutSeconds )
+    {
+        this.requestTimeoutSeconds = requestTimeoutSeconds;
+    }
+
+    public int getStoreDisableTimeoutSeconds()
+    {
+        return storeDisableTimeoutSeconds == null ? DEFAULT_STORE_DISABLE_TIMEOUT_SECONDS : storeDisableTimeoutSeconds;
+    }
+
+    @ConfigName( "store.disable.timeout" )
+    public void setStoreDisableTimeoutSeconds( Integer storeDisableTimeoutSeconds )
+    {
+        this.storeDisableTimeoutSeconds = storeDisableTimeoutSeconds;
+    }
 }

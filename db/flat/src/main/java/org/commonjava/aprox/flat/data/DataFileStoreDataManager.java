@@ -23,6 +23,7 @@ import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 
 import org.commonjava.aprox.audit.ChangeSummary;
+import org.commonjava.aprox.conf.AproxConfiguration;
 import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.data.StoreEventDispatcher;
@@ -65,9 +66,9 @@ public class DataFileStoreDataManager
     }
 
     public DataFileStoreDataManager( final DataFileManager manager, final ObjectMapper serializer,
-                                        final StoreEventDispatcher dispatcher )
+                                        final StoreEventDispatcher dispatcher, AproxConfiguration config )
     {
-        super( dispatcher );
+        super( dispatcher, config );
         this.manager = manager;
         this.serializer = serializer;
     }

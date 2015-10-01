@@ -38,4 +38,8 @@ public interface AproxConfiguration
      */
     int getNotFoundCacheTimeoutSeconds();
 
+    int getRequestTimeoutSeconds();
+
+    int getStoreDisableTimeoutSeconds();
+
 }
