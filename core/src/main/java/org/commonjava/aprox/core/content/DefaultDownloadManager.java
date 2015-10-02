@@ -17,12 +17,17 @@ package org.commonjava.aprox.core.content;
 
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.change.event.AproxFileEventManager;
+import org.commonjava.aprox.change.event.AproxStoreErrorEvent;
 import org.commonjava.aprox.change.event.ArtifactStoreRescanEvent;
 import org.commonjava.aprox.content.DownloadManager;
 import org.commonjava.aprox.content.StoreResource;
 import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
-import org.commonjava.aprox.model.core.*;
+import org.commonjava.aprox.model.core.ArtifactStore;
+import org.commonjava.aprox.model.core.HostedRepository;
+import org.commonjava.aprox.model.core.RemoteRepository;
+import org.commonjava.aprox.model.core.StoreKey;
+import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.aprox.util.LocationUtils;
@@ -35,7 +40,12 @@ import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.TransferTimeoutException;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.event.FileAccessEvent;
-import org.commonjava.maven.galley.model.*;
+import org.commonjava.maven.galley.model.ConcreteResource;
+import org.commonjava.maven.galley.model.ListingResult;
+import org.commonjava.maven.galley.model.Location;
+import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.model.TransferOperation;
+import org.commonjava.maven.galley.model.VirtualResource;
 import org.commonjava.maven.galley.spi.transport.LocationExpander;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,9 +113,15 @@ public class DefaultDownloadManager
     public List<StoreResource> list( final ArtifactStore store, final String path )
         throws AproxWorkflowException
     {
+        final List<StoreResource> result = new ArrayList<>();
+
+        if ( store.isDisabled() )
+        {
+            return result;
+        }
+
         //        final String dir = PathUtils.dirname( path );
 
-        final List<StoreResource> result = new ArrayList<>();
         if ( store.getKey()
                   .getType() == StoreType.group )
         {
@@ -127,12 +143,27 @@ public class DefaultDownloadManager
                     }
                 }
             }
-            catch ( final BadGatewayException | TransferTimeoutException e )
+            catch ( final BadGatewayException e )
             {
-                logger.warn( "Timeout / bad gateway: " + e.getMessage(), e );
+                Location location = e.getLocation();
+                KeyedLocation kl = (KeyedLocation) location;
+
+                fileEventManager.fire( new AproxStoreErrorEvent( kl.getKey(), e ) );
+                logger.warn( "Bad gateway: " + e.getMessage(), e );
                 throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
-                                                  "Failed to list ALL paths: {} from: {}. Reason: {}", e, path,
-                                                  store.getKey(), e.getMessage() );
+                                                  "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, store,
+                                                  e.getMessage() );
+            }
+            catch ( final TransferTimeoutException e )
+            {
+                Location location = e.getLocation();
+                KeyedLocation kl = (KeyedLocation) location;
+
+                fileEventManager.fire( new AproxStoreErrorEvent( kl.getKey(), e ) );
+                logger.warn( "Timeout: " + e.getMessage(), e );
+                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
+                                                  "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, store,
+                                                  e.getMessage() );
             }
             catch ( final TransferException e )
             {
@@ -158,12 +189,27 @@ public class DefaultDownloadManager
                         }
                     }
                 }
-                catch ( final BadGatewayException | TransferTimeoutException e )
+                catch ( final BadGatewayException e )
                 {
-                    logger.warn( "Timeout / bad gateway: " + e.getMessage(), e );
+                    Location location = e.getLocation();
+                    KeyedLocation kl = (KeyedLocation) location;
+
+                    fileEventManager.fire( new AproxStoreErrorEvent( kl.getKey(), e ) );
+                    logger.warn( "Bad gateway: " + e.getMessage(), e );
                     throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
-                                                      "Failed to list path: {} from: {}. Reason: {}", e, path,
-                                                      store.getKey(), e.getMessage() );
+                                                      "Failed to list path: {} from: {}. Reason: {}", e, path, store,
+                                                      e.getMessage() );
+                }
+                catch ( final TransferTimeoutException e )
+                {
+                    Location location = e.getLocation();
+                    KeyedLocation kl = (KeyedLocation) location;
+
+                    fileEventManager.fire( new AproxStoreErrorEvent( kl.getKey(), e ) );
+                    logger.warn( "Timeout: " + e.getMessage(), e );
+                    throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
+                                                      "Failed to list path: {} from: {}. Reason: {}", e, path, store,
+                                                      e.getMessage() );
                 }
                 catch ( final TransferException e )
                 {
@@ -208,13 +254,14 @@ public class DefaultDownloadManager
     public List<StoreResource> list( final List<? extends ArtifactStore> stores, final String path )
         throws AproxWorkflowException
     {
+        List<ArtifactStore> enabled = findEnabled( stores );
         final String dir = PathUtils.dirname( path );
 
         final List<StoreResource> result = new ArrayList<>();
         try
         {
             final List<ListingResult> results =
-                transfers.listAll( locationExpander.expand( new VirtualResource( LocationUtils.toLocations( stores ),
+                transfers.listAll( locationExpander.expand( new VirtualResource( LocationUtils.toLocations( enabled ),
                                                                                  path ) ) );
 
             for ( final ListingResult lr : results )
@@ -228,9 +275,24 @@ public class DefaultDownloadManager
                 }
             }
         }
-        catch ( final BadGatewayException | TransferTimeoutException e )
+        catch ( final BadGatewayException e )
         {
-            logger.warn( "Timeout / bad gateway: " + e.getMessage(), e );
+            Location location = e.getLocation();
+            KeyedLocation kl = (KeyedLocation) location;
+
+            fileEventManager.fire( new AproxStoreErrorEvent( kl.getKey(), e ) );
+            logger.warn( "Bad gateway: " + e.getMessage(), e );
+            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
+                                              "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, stores,
+                                              e.getMessage() );
+        }
+        catch ( final TransferTimeoutException e )
+        {
+            Location location = e.getLocation();
+            KeyedLocation kl = (KeyedLocation) location;
+
+            fileEventManager.fire( new AproxStoreErrorEvent( kl.getKey(), e ) );
+            logger.warn( "Timeout: " + e.getMessage(), e );
             throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
                                               "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, stores,
                                               e.getMessage() );
@@ -257,17 +319,34 @@ public class DefaultDownloadManager
                                    final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
+        List<ArtifactStore> enabled = findEnabled( stores );
+
         try
         {
             return transfers.retrieveFirst( locationExpander.expand( new VirtualResource(
-                                                                                          LocationUtils.toLocations( stores ),
+                                                                                          LocationUtils.toLocations( enabled ),
                                                                                           path ) ), eventMetadata );
         }
-        catch ( final BadGatewayException | TransferTimeoutException e )
+        catch ( final BadGatewayException e )
         {
-            logger.warn( "Timeout / bad gateway: " + e.getMessage(), e );
+            Location location = e.getLocation();
+            KeyedLocation kl = (KeyedLocation) location;
+
+            fileEventManager.fire( new AproxStoreErrorEvent( kl.getKey(), e ) );
+            logger.warn( "Bad gateway: " + e.getMessage(), e );
             throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
-                                              "Failed to list first path: {} from: {}. Reason: {}", e, path, stores,
+                                              "Failed to retrieve first path: {} from: {}. Reason: {}", e, path, stores,
+                                              e.getMessage() );
+        }
+        catch ( final TransferTimeoutException e )
+        {
+            Location location = e.getLocation();
+            KeyedLocation kl = (KeyedLocation) location;
+
+            fileEventManager.fire( new AproxStoreErrorEvent( kl.getKey(), e ) );
+            logger.warn( "Timeout: " + e.getMessage(), e );
+            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
+                                              "Failed to retrieve first path: {} from: {}. Reason: {}", e, path, stores,
                                               e.getMessage() );
         }
         catch ( final TransferException e )
@@ -297,17 +376,33 @@ public class DefaultDownloadManager
     public List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores , final String path , final EventMetadata eventMetadata  )
         throws AproxWorkflowException
     {
+        List<ArtifactStore> enabled = findEnabled( stores );
         try
         {
-            return transfers.retrieveAll( locationExpander.expand( new VirtualResource(
-                                                                                        LocationUtils.toLocations( stores ),
-                                                                                        path ) ), eventMetadata );
+            return transfers.retrieveAll(
+                    locationExpander.expand( new VirtualResource( LocationUtils.toLocations( enabled ), path ) ),
+                    eventMetadata );
         }
-        catch ( final BadGatewayException | TransferTimeoutException e )
+        catch ( final BadGatewayException e )
         {
-            logger.warn( "Timeout / bad gateway: " + e.getMessage(), e );
+            Location location = e.getLocation();
+            KeyedLocation kl = (KeyedLocation) location;
+
+            fileEventManager.fire( new AproxStoreErrorEvent( kl.getKey(), e ) );
+            logger.warn( "Bad gateway: " + e.getMessage(), e );
             throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
-                                              "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, stores,
+                                              "Failed to retrieve ALL paths: {} from: {}. Reason: {}", e, path, stores,
+                                              e.getMessage() );
+        }
+        catch ( final TransferTimeoutException e )
+        {
+            Location location = e.getLocation();
+            KeyedLocation kl = (KeyedLocation) location;
+
+            fileEventManager.fire( new AproxStoreErrorEvent( kl.getKey(), e ) );
+            logger.warn( "Timeout: " + e.getMessage(), e );
+            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
+                                              "Failed to retrieve ALL paths: {} from: {}. Reason: {}", e, path, stores,
                                               e.getMessage() );
         }
         catch ( final TransferException e )
@@ -316,6 +411,24 @@ public class DefaultDownloadManager
             throw new AproxWorkflowException( "Failed to retrieve ALL paths: {} from: {}. Reason: {}", e, path, stores,
                                               e.getMessage() );
         }
+    }
+
+    private List<ArtifactStore> findEnabled( List<? extends ArtifactStore> stores )
+    {
+        List<ArtifactStore> enabled = new ArrayList<>( stores.size() );
+        for ( ArtifactStore store: stores )
+        {
+            if ( !store.isDisabled() )
+            {
+                enabled.add( store );
+            }
+            else
+            {
+                logger.debug( "{} is disabled.", store.getKey() );
+            }
+        }
+
+        return enabled;
     }
 
     /*
@@ -346,6 +459,11 @@ public class DefaultDownloadManager
                                final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
+        if ( store.isDisabled() )
+        {
+            return null;
+        }
+
         if ( store.getKey()
                   .getType() == StoreType.group )
         {
@@ -384,6 +502,7 @@ public class DefaultDownloadManager
         }
         catch ( final BadGatewayException | TransferTimeoutException e )
         {
+            fileEventManager.fire( new AproxStoreErrorEvent( store.getKey(), e ) );
             logger.warn( "Timeout / bad gateway: " + e.getMessage(), e );
             throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
                                               "Failed to retrieve path: {} from: {}. Reason: {}", e, path, store,
@@ -420,6 +539,11 @@ public class DefaultDownloadManager
                            final TransferOperation op, final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
+        if ( store.isDisabled() )
+        {
+            return null;
+        }
+
         if ( store.getKey()
                   .getType() == StoreType.group )
         {
@@ -434,28 +558,31 @@ public class DefaultDownloadManager
                                               "Cannot deploy to non-deploy point artifact store: {}.", store.getKey() );
         }
 
-        final HostedRepository deploy = (HostedRepository) store;
-
-        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
-        if ( pathInfo != null && pathInfo.isSnapshot() )
+        if ( store instanceof HostedRepository )
         {
-            if ( !deploy.isAllowSnapshots() )
+            final HostedRepository deploy = (HostedRepository) store;
+
+            final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
+            if ( pathInfo != null && pathInfo.isSnapshot() )
             {
-                logger.error( "Cannot store snapshot in non-snapshot deploy point: {}", deploy.getName() );
+                if ( !deploy.isAllowSnapshots() )
+                {
+                    logger.error( "Cannot store snapshot in non-snapshot deploy point: {}", deploy.getName() );
+                    throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
+                                                      "Cannot store snapshot in non-snapshot deploy point: {}",
+                                                      deploy.getName() );
+                }
+            }
+            else if ( !deploy.isAllowReleases() )
+            {
+                logger.error( "Cannot store release in snapshot-only deploy point: {}", deploy.getName() );
                 throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                                  "Cannot store snapshot in non-snapshot deploy point: {}",
+                                                  "Cannot store release in snapshot-only deploy point: {}",
                                                   deploy.getName() );
             }
         }
-        else if ( !deploy.isAllowReleases() )
-        {
-            logger.error( "Cannot store release in snapshot-only deploy point: {}", deploy.getName() );
-            throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                              "Cannot store release in snapshot-only deploy point: {}",
-                                              deploy.getName() );
-        }
 
-        final Transfer target = getStorageReference( deploy, path );
+//        final Transfer target = getStorageReference( deploy, path );
 
         // TODO: Need some protection for released files!
         // if ( target.exists() )
@@ -464,27 +591,57 @@ public class DefaultDownloadManager
         // Response.status( Status.BAD_REQUEST ).entity( "Deployment path already exists." ).build() );
         // }
 
-        OutputStream out = null;
+//        OutputStream out = null;
         try
         {
-            logger.info( "Writing: {} with event metadata: {}", target, eventMetadata );
-            out = target.openOutputStream( op, true, eventMetadata );
-            copy( stream, out );
-        }
-        catch ( final IOException e )
-        {
-            logger.error( String.format( "Failed to store: %s in deploy store: %s. Reason: %s", path, deploy.getName(),
-                                         e.getMessage() ), e );
+            return transfers.store( new ConcreteResource( LocationUtils.toLocation( store ), path ), stream, eventMetadata );
 
-            throw new AproxWorkflowException( "Failed to store: {} in deploy store: {}. Reason: {}", e, path,
-                                              deploy.getName(), e.getMessage() );
+//            logger.info( "Writing: {} with event metadata: {}", target, eventMetadata );
+//            out = target.openOutputStream( op, true, eventMetadata );
+//            copy( stream, out );
         }
-        finally
+//        catch ( final IOException e )
+//        {
+//            logger.error( String.format( "Failed to store: %s in deploy store: %s. Reason: %s", path, deploy.getName(),
+//                                         e.getMessage() ), e );
+//
+//            throw new AproxWorkflowException( "Failed to store: {} in deploy store: {}. Reason: {}", e, path,
+//                                              deploy.getName(), e.getMessage() );
+//        }
+        catch ( final BadGatewayException e )
         {
-            closeQuietly( out );
-        }
+            Location location = e.getLocation();
+            KeyedLocation kl = (KeyedLocation) location;
 
-        return target;
+            fileEventManager.fire( new AproxStoreErrorEvent( kl.getKey(), e ) );
+            logger.warn( "Bad gateway: " + e.getMessage(), e );
+            throw new AproxWorkflowException( "Failed to store path: {} in: {}. Reason: {}", e, path, store,
+                                              e.getMessage() );
+        }
+        catch ( final TransferTimeoutException e )
+        {
+            Location location = e.getLocation();
+            KeyedLocation kl = (KeyedLocation) location;
+
+            fileEventManager.fire( new AproxStoreErrorEvent( kl.getKey(), e ) );
+            logger.warn( "Timeout: " + e.getMessage(), e );
+            throw new AproxWorkflowException( "Failed to store path: {} in: {}. Reason: {}", e, path, store,
+                                              e.getMessage() );
+        }
+        catch ( TransferException e )
+        {
+            logger.error(
+                    String.format( "Failed to store: %s in: %s. Reason: %s", path, store.getKey(), e.getMessage() ), e );
+
+            throw new AproxWorkflowException( "Failed to store: %s in: %s. Reason: %s", e, path,
+                                              store.getKey(), e.getMessage() );
+        }
+//        finally
+//        {
+//            closeQuietly( out );
+//        }
+//
+//        return target;
     }
 
     /*
@@ -592,6 +749,11 @@ public class DefaultDownloadManager
     private boolean storeIsSuitableFor( final ArtifactStore store, final ArtifactPathInfo pathInfo,
                                         final TransferOperation op )
     {
+        if ( store.isDisabled() )
+        {
+            return false;
+        }
+
         if ( TransferOperation.UPLOAD == op )
         {
             if ( store instanceof HostedRepository )
@@ -618,6 +780,7 @@ public class DefaultDownloadManager
                     return true;
                 }
             }
+            // TODO: Allow push-through via remote repositories too.
         }
         else
         {
@@ -631,6 +794,11 @@ public class DefaultDownloadManager
     public Transfer getStorageReference( final ArtifactStore store, final String path, final TransferOperation op )
         throws AproxWorkflowException
     {
+        if ( store.isDisabled() )
+        {
+            return null;
+        }
+
         final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
         if ( storeIsSuitableFor( store, pathInfo, op ) )
         {
@@ -645,6 +813,11 @@ public class DefaultDownloadManager
     @Override
     public Transfer getStorageReference( final ArtifactStore store, final String... path )
     {
+        if ( store.isDisabled() )
+        {
+            return null;
+        }
+
         return transfers.getCacheReference( new ConcreteResource( LocationUtils.toLocation( store ), path ) );
     }
 
@@ -668,6 +841,11 @@ public class DefaultDownloadManager
             throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(), "Cannot find store: {}", key );
         }
 
+        if ( store.isDisabled() )
+        {
+            return null;
+        }
+
         return transfers.getCacheReference( new ConcreteResource( LocationUtils.toLocation( store ), path ) );
     }
 
@@ -678,6 +856,11 @@ public class DefaultDownloadManager
         boolean result = false;
         for ( final ArtifactStore store : stores )
         {
+            if ( store.isDisabled() )
+            {
+                continue;
+            }
+
             result = delete( store, path, new EventMetadata() ) || result;
         }
 
@@ -695,6 +878,11 @@ public class DefaultDownloadManager
     public boolean delete( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
+        if ( store.isDisabled() )
+        {
+            return false;
+        }
+
         if ( store.getKey()
                   .getType() == StoreType.group )
         {
@@ -748,6 +936,11 @@ public class DefaultDownloadManager
     public void rescan( final ArtifactStore store, final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
+        if ( store.isDisabled() )
+        {
+            return;
+        }
+
         executor.execute( new Rescanner( store, getStorageReference( store.getKey() ), rescansInProgress,
                                          fileEventManager,
  rescanEvent, eventMetadata ) );

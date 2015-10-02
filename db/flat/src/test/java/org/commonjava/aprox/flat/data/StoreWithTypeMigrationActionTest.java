@@ -19,6 +19,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.commonjava.aprox.audit.ChangeSummary;
+import org.commonjava.aprox.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.core.data.testutil.StoreEventDispatcherStub;
 import org.commonjava.aprox.data.StoreEventDispatcher;
 import org.commonjava.aprox.model.core.StoreType;
@@ -45,7 +46,7 @@ public class StoreWithTypeMigrationActionTest
 
     @Before
     public void setup()
-        throws Exception
+            throws Exception
     {
         dfm = new DataFileManager( temp.newFolder( "stores" ), new DataFileEventManager() );
 
@@ -53,21 +54,22 @@ public class StoreWithTypeMigrationActionTest
 
         final StoreEventDispatcher sed = new StoreEventDispatcherStub();
 
-        action = new StoreWithTypeMigrationAction( new DataFileStoreDataManager( dfm, mapper, sed ), mapper );
+        action = new StoreWithTypeMigrationAction(
+                new DataFileStoreDataManager( dfm, mapper, sed, new DefaultAproxConfiguration() ), mapper );
     }
 
     @Test
     public void migrateGroupJSONWithMissingTypeAttribute()
-        throws Exception
+            throws Exception
     {
         final DataFile dir =
-            dfm.getDataFile( DataFileStoreDataManager.APROX_STORE, StoreType.group.singularEndpointName() );
+                dfm.getDataFile( DataFileStoreDataManager.APROX_STORE, StoreType.group.singularEndpointName() );
 
         dir.mkdirs();
 
         final DataFile file = dir.getChild( "test.json" );
         file.writeString( "{\"name\": \"test\", \"key\": \"group:test\"}",
-                               new ChangeSummary( ChangeSummary.SYSTEM_USER, "test group creation" ) );
+                          new ChangeSummary( ChangeSummary.SYSTEM_USER, "test group creation" ) );
 
         final boolean result = action.migrate();
 
@@ -79,10 +81,10 @@ public class StoreWithTypeMigrationActionTest
 
     @Test
     public void noMigrationForGroupJSONWithExistingTypeAttribute()
-        throws Exception
+            throws Exception
     {
         final DataFile dir =
-            dfm.getDataFile( DataFileStoreDataManager.APROX_STORE, StoreType.group.singularEndpointName() );
+                dfm.getDataFile( DataFileStoreDataManager.APROX_STORE, StoreType.group.singularEndpointName() );
 
         dir.mkdirs();
 
@@ -103,10 +105,10 @@ public class StoreWithTypeMigrationActionTest
 
     @Test
     public void migrateHostedRepoJSONWithMissingTypeAttribute()
-        throws Exception
+            throws Exception
     {
         final DataFile dir =
-            dfm.getDataFile( DataFileStoreDataManager.APROX_STORE, StoreType.hosted.singularEndpointName() );
+                dfm.getDataFile( DataFileStoreDataManager.APROX_STORE, StoreType.hosted.singularEndpointName() );
 
         dir.mkdirs();
 
@@ -124,10 +126,10 @@ public class StoreWithTypeMigrationActionTest
 
     @Test
     public void noMigrationForHostedRepoJSONWithExistingTypeAttribute()
-        throws Exception
+            throws Exception
     {
         final DataFile dir =
-            dfm.getDataFile( DataFileStoreDataManager.APROX_STORE, StoreType.hosted.singularEndpointName() );
+                dfm.getDataFile( DataFileStoreDataManager.APROX_STORE, StoreType.hosted.singularEndpointName() );
 
         dir.mkdirs();
 
@@ -148,10 +150,10 @@ public class StoreWithTypeMigrationActionTest
 
     @Test
     public void migrateRemoteRepoJSONWithMissingTypeAttribute()
-        throws Exception
+            throws Exception
     {
         final DataFile dir =
-            dfm.getDataFile( DataFileStoreDataManager.APROX_STORE, StoreType.remote.singularEndpointName() );
+                dfm.getDataFile( DataFileStoreDataManager.APROX_STORE, StoreType.remote.singularEndpointName() );
 
         dir.mkdirs();
 
@@ -169,16 +171,17 @@ public class StoreWithTypeMigrationActionTest
 
     @Test
     public void noMigrationForRemoteRepoJSONWithExistingTypeAttribute()
-        throws Exception
+            throws Exception
     {
         final DataFile dir =
-            dfm.getDataFile( DataFileStoreDataManager.APROX_STORE, StoreType.remote.singularEndpointName() );
+                dfm.getDataFile( DataFileStoreDataManager.APROX_STORE, StoreType.remote.singularEndpointName() );
 
         dir.mkdirs();
 
         final DataFile file = dir.getChild( "test.json" );
-        file.writeString( "{\"name\": \"test\", \"type\" : \"remote\", \"key\": \"remote:test\", \"url\": \"http://www.google.com\"}",
-                          new ChangeSummary( ChangeSummary.SYSTEM_USER, "test repo creation" ) );
+        file.writeString(
+                "{\"name\": \"test\", \"type\" : \"remote\", \"key\": \"remote:test\", \"url\": \"http://www.google.com\"}",
+                new ChangeSummary( ChangeSummary.SYSTEM_USER, "test repo creation" ) );
 
         String json = file.readString();
         assertThat( json.contains( "\"type\" : \"remote\"" ), equalTo( true ) );

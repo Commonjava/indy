@@ -61,6 +61,11 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-promote-common</artifactId>
+      <classifier>dataset</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-ftests-depgraph</artifactId>
       <scope>test</scope>
     </dependency>

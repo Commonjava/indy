@@ -33,7 +33,7 @@ public class PomWithRepoAddsRepoToGroupTest
     extends AbstractSkimFunctionalTest
 {
 
-    private static final String REPO = "repo-one";
+    private static final String REPO = "i-repo-one";
 
     @Test
     public void skimPomForRepoAndAddIt() throws Exception

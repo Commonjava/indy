@@ -36,6 +36,8 @@ import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.model.galley.RepositoryLocation;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.event.FileStorageEvent;
+import org.commonjava.maven.galley.maven.model.view.RepositoryView;
+import org.commonjava.maven.galley.maven.parse.MavenPomReader;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
@@ -46,8 +48,23 @@ import org.junit.Test;
 
 public class ImpliedRepositoryDetectorTest
 {
+    public static final class TestImpliedRepositoryDetector
+            extends ImpliedRepositoryDetector
+    {
+        public TestImpliedRepositoryDetector( MavenPomReader pomReader, StoreDataManager storeManager,
+                                              ImpliedRepoMetadataManager metadataManager, ImpliedRepoConfig config )
+        {
+            super( pomReader, storeManager, metadataManager, config );
+        }
 
-    private ImpliedRepositoryDetector detector;
+        @Override
+        public String formatId( String id )
+        {
+            return super.formatId( id );
+        }
+    }
+
+    private TestImpliedRepositoryDetector detector;
 
     private StoreDataManager storeManager;
 
@@ -74,7 +91,7 @@ public class ImpliedRepositoryDetectorTest
         final ImpliedRepoConfig config = new ImpliedRepoConfig();
         config.setEnabled( true );
 
-        detector = new ImpliedRepositoryDetector( fixture.getPomReader(), storeManager, metadataManager, config );
+        detector = new TestImpliedRepositoryDetector( fixture.getPomReader(), storeManager, metadataManager, config );
 
         summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" );
 
@@ -83,6 +100,22 @@ public class ImpliedRepositoryDetectorTest
 
         storeManager.storeArtifactStore( remote, summary, new EventMetadata() );
         storeManager.storeArtifactStore( group, summary, new EventMetadata() );
+    }
+
+    @Test
+    public void idWithSpaceInIt_ConvertToDashes()
+    {
+        String in = "my id";
+        String out = detector.formatId( in );
+        assertThat( out, equalTo( "i-my-id" ) );
+    }
+
+    @Test
+    public void idWithPlusInIt_ConvertToDashes()
+    {
+        String in = "my+id";
+        String out = detector.formatId( in );
+        assertThat( out, equalTo( "i-my-id" ) );
     }
 
     @Test
@@ -104,10 +137,10 @@ public class ImpliedRepositoryDetectorTest
         final FileStorageEvent event = new FileStorageEvent( TransferOperation.DOWNLOAD, txfr, new EventMetadata() );
         detector.detectRepos( event );
 
-        assertThat( storeManager.getRemoteRepository( "repo-one" ), notNullValue() );
+        assertThat( storeManager.getRemoteRepository( "i-repo-one" ), notNullValue() );
 
         assertThat( group.getConstituents()
-                         .contains( new StoreKey( StoreType.remote, "repo-one" ) ), equalTo( true ) );
+                         .contains( new StoreKey( StoreType.remote, "i-repo-one" ) ), equalTo( true ) );
     }
 
     @Test
@@ -129,10 +162,10 @@ public class ImpliedRepositoryDetectorTest
         final FileStorageEvent event = new FileStorageEvent( TransferOperation.DOWNLOAD, txfr, new EventMetadata() );
         detector.detectRepos( event );
 
-        assertThat( storeManager.getRemoteRepository( "repo-one" ), notNullValue() );
+        assertThat( storeManager.getRemoteRepository( "i-repo-one" ), notNullValue() );
 
         assertThat( group.getConstituents()
-                         .contains( new StoreKey( StoreType.remote, "repo-one" ) ), equalTo( true ) );
+                         .contains( new StoreKey( StoreType.remote, "i-repo-one" ) ), equalTo( true ) );
     }
 
 }

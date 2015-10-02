@@ -13,22 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.aprox.mem.data;
+package org.commonjava.aprox.change.event;
 
-import org.commonjava.aprox.core.data.TCKFixtureProvider;
-import org.commonjava.aprox.core.data.testutil.StoreEventDispatcherStub;
-import org.commonjava.aprox.data.StoreDataManager;
+import org.commonjava.aprox.model.core.StoreKey;
 
-public class MemoryTCKFixtureProvider
-    implements TCKFixtureProvider
+/**
+ * Created by jdcasey on 9/30/15.
+ */
+public class AproxStoreErrorEvent
 {
 
-    private final MemoryStoreDataManager dataManager = new MemoryStoreDataManager( true );
+    private StoreKey storeKey;
 
-    @Override
-    public StoreDataManager getDataManager()
+    private Throwable error;
+
+    public AproxStoreErrorEvent( StoreKey storeKey, Throwable error )
     {
-        return dataManager;
+        this.storeKey = storeKey;
+        this.error = error;
+    }
+
+    public StoreKey getStoreKey()
+    {
+        return storeKey;
+    }
+
+    public Throwable getError()
+    {
+        return error;
     }
 
 }

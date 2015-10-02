@@ -43,7 +43,7 @@ public class TestAutoProxyDataManager
 
     public TestAutoProxyDataManager( final AutoProxCatalogManager catalog, final AproxHttpProvider http )
     {
-        super( new MemoryStoreDataManager( new DefaultStoreEventDispatcher() ), catalog, http );
+        super( new MemoryStoreDataManager( true ), catalog, http );
         delegate = getDelegate();
     }
 

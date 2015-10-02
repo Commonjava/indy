@@ -60,7 +60,7 @@ public class DownloadManagerTest
     public void setupTest()
         throws Exception
     {
-        data = new MemoryStoreDataManager( new DefaultStoreEventDispatcher() );
+        data = new MemoryStoreDataManager( true );
 
         downloader = new DefaultDownloadManager( data, fixture.getTransferManager(), new AproxLocationExpander( data ) );
     }

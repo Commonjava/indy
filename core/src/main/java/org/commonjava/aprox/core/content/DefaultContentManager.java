@@ -143,6 +143,11 @@ public class DefaultContentManager
         final List<Transfer> txfrs = new ArrayList<Transfer>();
         for ( final ArtifactStore store : stores )
         {
+            if ( store.isDisabled() )
+            {
+                continue;
+            }
+
             if ( StoreType.group == store.getKey()
                                          .getType() )
             {
@@ -210,6 +215,11 @@ public class DefaultContentManager
     public Transfer retrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
+        if ( store.isDisabled() )
+        {
+            return null;
+        }
+
         Transfer item;
         if ( StoreType.group == store.getKey()
                                      .getType() )
@@ -258,6 +268,11 @@ public class DefaultContentManager
     private Transfer doRetrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
+        if ( store.isDisabled() )
+        {
+            return null;
+        }
+
         logger.info( "Attempting to retrieve: {} from: {}", path, store.getKey() );
         Transfer item = downloadManager.retrieve( store, path, eventMetadata );
 
@@ -290,6 +305,11 @@ public class DefaultContentManager
                            final TransferOperation op , final EventMetadata eventMetadata  )
         throws AproxWorkflowException
     {
+        if ( store.isDisabled() )
+        {
+            return null;
+        }
+
         if ( StoreType.group == store.getKey()
                                      .getType() )
         {
@@ -391,6 +411,11 @@ public class DefaultContentManager
     public boolean delete( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
         throws AproxWorkflowException
     {
+        if ( store.isDisabled() )
+        {
+            return false;
+        }
+
         boolean result = false;
         if ( StoreType.group == store.getKey()
                                      .getType() )
@@ -500,6 +525,11 @@ public class DefaultContentManager
     public List<StoreResource> list( final ArtifactStore store , final String path , final EventMetadata eventMetadata  )
         throws AproxWorkflowException
     {
+        if ( store.isDisabled() )
+        {
+            return null;
+        }
+
         List<StoreResource> listed;
         if ( StoreType.group == store.getKey()
                                      .getType() )
@@ -654,6 +684,11 @@ public class DefaultContentManager
     public Transfer getTransfer( final ArtifactStore store, final String path, final TransferOperation op )
         throws AproxWorkflowException
     {
+        if ( store.isDisabled() )
+        {
+            return null;
+        }
+
         if ( StoreType.group == store.getKey()
                                      .getType() )
         {

@@ -18,6 +18,7 @@ package org.commonjava.aprox.flat.data;
 import java.io.File;
 
 import org.commonjava.aprox.audit.ChangeSummary;
+import org.commonjava.aprox.conf.DefaultAproxConfiguration;
 import org.commonjava.aprox.core.data.TCKFixtureProvider;
 import org.commonjava.aprox.core.data.testutil.StoreEventDispatcherStub;
 import org.commonjava.aprox.data.StoreDataManager;
@@ -31,8 +32,8 @@ import org.junit.rules.TemporaryFolder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class DataFileTCKFixtureProvider
-    extends TemporaryFolder
-    implements TCKFixtureProvider
+        extends TemporaryFolder
+        implements TCKFixtureProvider
 {
     private TestFlatFileDataManager dataManager;
 
@@ -49,7 +50,7 @@ public class DataFileTCKFixtureProvider
 
     @Override
     protected void before()
-        throws Throwable
+            throws Throwable
     {
         super.before();
 
@@ -58,20 +59,20 @@ public class DataFileTCKFixtureProvider
         final ObjectMapper serializer = new AproxObjectMapper( true );
 
         dataManager =
-            new TestFlatFileDataManager( new DataFileConfiguration().withDataBasedir( configDir ), serializer );
+                new TestFlatFileDataManager( new DataFileConfiguration().withDataBasedir( configDir ), serializer );
 
         dataManager.install();
         dataManager.clear( new ChangeSummary( ChangeSummary.SYSTEM_USER, "Setting up test" ) );
     }
 
     private static final class TestFlatFileDataManager
-        extends DataFileStoreDataManager
+            extends DataFileStoreDataManager
     {
 
         public TestFlatFileDataManager( final DataFileConfiguration config, final ObjectMapper serializer )
         {
             super( new DataFileManager( config, new DataFileEventManager() ), serializer,
-                   new StoreEventDispatcherStub() );
+                   new StoreEventDispatcherStub(), new DefaultAproxConfiguration() );
         }
 
         //        @Override

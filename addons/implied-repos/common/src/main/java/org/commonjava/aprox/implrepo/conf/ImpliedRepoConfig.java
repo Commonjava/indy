@@ -92,8 +92,26 @@ public class ImpliedRepoConfig
             port = "https".equals( proto ) ? 443 : 80;
         }
 
-        return blacklist.contains( host ) || blacklist.contains( host + ":" + port )
-            || blacklist.contains( proto + "://" + host ) || blacklist.contains( proto + "://" + host + ":" + port );
+        String hostAndPort = host + ":" + port;
+        String hostAndPortAndProto = proto + "://" + hostAndPort;
+        String hostAndProto = proto + "://" + host;
+        String u = url.toString();
+
+        if ( blacklist.contains( host ) || blacklist.contains( hostAndPort ) || blacklist.contains(
+                hostAndPortAndProto ) || blacklist.contains( hostAndProto ) || blacklist.contains( u ) )
+        {
+            return true;
+        }
+
+        for ( String bl : blacklist )
+        {
+            if ( u.matches( bl ) )
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public List<String> getBlacklist()

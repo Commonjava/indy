@@ -51,6 +51,8 @@ public abstract class ArtifactStore
 
     private Map<String, String> metadata;
 
+    private boolean disabled;
+
     protected ArtifactStore()
     {
     }
@@ -120,6 +122,16 @@ public abstract class ArtifactStore
             return false;
         }
         return true;
+    }
+
+    public boolean isDisabled()
+    {
+        return disabled;
+    }
+
+    public void setDisabled( boolean disabled )
+    {
+        this.disabled = disabled;
     }
 
     public void setMetadata( final Map<String, String> metadata )

@@ -165,7 +165,7 @@ public abstract class AbstractAproxFunctionalTest
     {
     }
 
-    protected final void initBaseTestConfig( CoreServerFixture fixture )
+    protected void initBaseTestConfig( CoreServerFixture fixture )
             throws IOException
     {
         writeConfigFile( "conf.d/scheduler.conf", "[scheduler]\nenabled=false" );

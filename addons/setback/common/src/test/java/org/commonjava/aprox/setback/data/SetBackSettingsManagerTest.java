@@ -66,7 +66,7 @@ public class SetBackSettingsManagerTest
     public void setup()
         throws Exception
     {
-        storeManager = new MemoryStoreDataManager( new DefaultStoreEventDispatcher() );
+        storeManager = new MemoryStoreDataManager( true );
 
         final File dataSrc = new File( "./src/main/data" );
         final File data = temp.newFolder( "data" );

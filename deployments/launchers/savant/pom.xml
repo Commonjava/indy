@@ -137,6 +137,18 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-promote-common</artifactId>
+      <type>tar.gz</type>
+      <classifier>dataset</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
+      <artifactId>aprox-promote-common</artifactId>
+      <type>tar.gz</type>
+      <classifier>confset</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.aprox</groupId>
       <artifactId>aprox-httprox-common</artifactId>
       <type>tar.gz</type>
       <classifier>confset</classifier>

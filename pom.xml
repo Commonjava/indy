@@ -47,9 +47,9 @@
     <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
     <javaVersion>1.8</javaVersion>
     <slf4j-version>1.6.1</slf4j-version>
-    <atlasVersion>0.16.0-SNAPSHOT</atlasVersion>
-    <galleyVersion>0.10.1-SNAPSHOT</galleyVersion>
-    <cartoVersion>0.11.0-SNAPSHOT</cartoVersion>
+    <atlasVersion>0.15.2-SNAPSHOT</atlasVersion>
+    <galleyVersion>0.10.2-SNAPSHOT</galleyVersion>
+    <cartoVersion>0.10.2-SNAPSHOT</cartoVersion>
     <bomVersion>17</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <resteasyVersion>3.0.9.Final</resteasyVersion>

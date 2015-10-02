@@ -60,9 +60,9 @@ public class ContentControllerTest
     {
         fixture.initMissingComponents();
 
-        final StoreDataManager storeManager = new MemoryStoreDataManager( new DefaultStoreEventDispatcher() );
+        final StoreDataManager storeManager = new MemoryStoreDataManager( true );
         final DownloadManager fileManager =
-            new DefaultDownloadManager( storeManager, fixture.getTransfers(), fixture.getLocations() );
+            new DefaultDownloadManager( storeManager, fixture.getTransferManager(), fixture.getLocationExpander() );
 
         final ContentManager contentManager =
             new DefaultContentManager( storeManager, fileManager, new AproxObjectMapper( true ),

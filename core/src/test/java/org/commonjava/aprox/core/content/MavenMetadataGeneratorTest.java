@@ -77,7 +77,7 @@ public class MavenMetadataGeneratorTest
     public void setup()
         throws Exception
     {
-        stores = new MemoryStoreDataManager( new DefaultStoreEventDispatcher() );
+        stores = new MemoryStoreDataManager( true );
 
         final LocationExpander locations = new AproxLocationExpander( stores );
 
