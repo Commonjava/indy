@@ -447,7 +447,7 @@ public class ScheduleManager
                 }
 
                 final Date nextFire = trigger.getFireTimeAfter( new Date() );
-                if ( !nextFire.after( to ) )
+                if ( nextFire == null || !nextFire.after( to ) )
                 {
                     scheduler.unscheduleJob( key );
                     canceled.add( key );
