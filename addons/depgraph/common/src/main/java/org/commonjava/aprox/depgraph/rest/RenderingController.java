@@ -192,7 +192,7 @@ public class RenderingController
         final RepositoryContentRequest dto = new RepositoryContentRequest();
         dto.setWorkspaceId( workspaceId );
 
-        final GraphDescription desc = new GraphDescription( filter, ref );
+        final GraphDescription desc = new GraphDescription( filter, null, ref );
         dto.setGraphComposition( new GraphComposition( GraphCalculationType.ADD, Collections.singletonList( desc ) ) );
 
         return tree( dto );
