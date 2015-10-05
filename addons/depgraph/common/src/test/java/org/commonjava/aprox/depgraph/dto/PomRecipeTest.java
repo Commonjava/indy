@@ -44,7 +44,7 @@ public class PomRecipeTest
                                    new ProjectRelationshipSerializerModule() );
 
         final GraphDescription desc =
-            new GraphDescription( "runtime", Collections.<String, Object> emptyMap(),
+            new GraphDescription( "runtime", null, Collections.<String, Object> emptyMap(),
                                   Collections.singleton( new SimpleProjectVersionRef( "org.foo", "bar", "1.0" ) ) );
 
         final GraphComposition comp = new GraphComposition( null, Collections.singletonList( desc ) );
