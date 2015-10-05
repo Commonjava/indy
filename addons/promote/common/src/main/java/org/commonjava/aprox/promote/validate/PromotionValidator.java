@@ -80,12 +80,12 @@ public class PromotionValidator
                             String error = rule.getRule().validate( req );
                             if ( StringUtils.isNotEmpty( error ) )
                             {
-                                logger.debug( "Failed" );
+                                logger.debug( "{} failed", rule.getName() );
                                 result.addValidatorError( rule.getName(), error );
                             }
                             else
                             {
-                                logger.debug( "Succeeded" );
+                                logger.debug( "{} succeeded", rule.getName() );
                             }
                         }
                         catch ( Exception e )

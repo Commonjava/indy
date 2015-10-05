@@ -727,23 +727,31 @@ public class DefaultDownloadManager
     {
         final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
 
-        ArtifactStore selected = null;
+        Transfer transfer = null;
         for ( final ArtifactStore store : stores )
         {
             if ( storeIsSuitableFor( store, pathInfo, op ) )
             {
-                selected = store;
-                break;
+                logger.info( "Attempting to retrieve storage reference in: {} for: {} (operation: {})", store, path,
+                             op );
+
+                transfer = getStorageReference( store, path );
+                if ( transfer != null && ( ( op != TransferOperation.DOWNLOAD && op != TransferOperation.LISTING )
+                        || transfer.exists() ) )
+                {
+                    logger.info( "Using transfer: {}", transfer );
+                    break;
+                }
             }
         }
 
-        if ( selected == null )
+        if ( transfer == null )
         {
             logger.warn( "No suitable stores in list." );
             throw new AproxWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "No suitable store available." );
         }
 
-        return getStorageReference( selected.getKey(), path );
+        return transfer;
     }
 
     private boolean storeIsSuitableFor( final ArtifactStore store, final ArtifactPathInfo pathInfo,

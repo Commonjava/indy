@@ -54,14 +54,20 @@ public abstract class AbstractValidationRuleTest<T extends ArtifactStore> extend
 
         module = client.module( AproxPromoteClientModule.class );
 
-        source = client.stores().create( new HostedRepository( "source" ), "creating test source", HostedRepository.class );
+        HostedRepository shr = new HostedRepository( "target" );
+        shr.setAllowSnapshots( true );
+
+        source = client.stores().create( shr, "creating test source", HostedRepository.class );
         if ( Group.class.equals( targetCls ) )
         {
             target = (T) client.stores().create( new Group( "target" ), "creating test target", Group.class );
         }
         else if ( HostedRepository.class.equals( targetCls ) )
         {
-            target = (T) client.stores().create( new HostedRepository( "target" ), "creating test target", HostedRepository.class );
+            HostedRepository hr = new HostedRepository( "target" );
+            hr.setAllowSnapshots( true );
+
+            target = (T) client.stores().create( hr, "creating test target", HostedRepository.class );
         }
         else
         {

@@ -15,7 +15,7 @@ class ProjectArtifacts implements ValidationRule {
             def ctStrings = classifierAndTypeSet.split("\\s*,\\s*")
             def tcs = []
             ctStrings.each { ctString ->
-                def parts = cdString.split(":")
+                def parts = ctString.split(":")
                 if (parts.length > 0) {
                     if (parts.length < 2) {
                         parts << ""

@@ -20,7 +20,7 @@ class ProjectVersionPattern implements ValidationRule {
                         if (builder.length() > 0) {
                             builder.append("\n")
                         }
-                        builder.append(path).append(" does not match version pattern: '").append(versionPattern).append("' (version was: '").append(vs).append("')")
+                        builder.append(it).append(" does not match version pattern: '").append(versionPattern).append("' (version was: '").append(vs).append("')")
                     }
                 }
             }

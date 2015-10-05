@@ -3,6 +3,8 @@ package org.commonjava.aprox.promote.rules
 import org.commonjava.aprox.promote.validate.model.ValidationRequest
 import org.commonjava.aprox.promote.validate.model.ValidationRule
 import org.commonjava.cartographer.graph.discover.DiscoveryConfig
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class NoVersionRanges implements ValidationRule {
 
@@ -18,13 +20,13 @@ class NoVersionRanges implements ValidationRule {
             if (it.endsWith(".pom")) {
                 def relationships = tools.getRelationshipsForPom(it, dc, request.getPromoteRequest())
                 if (relationships != null) {
-                    relatioships.each { rel ->
+                    relationships.each { rel ->
                         def target = rel.getTarget()
                         if (!target.getVersionSpec().isSingle()) {
                             if (builder.length() > 0) {
                                 builder.append("\n")
                             }
-                            builder.append(target).append(" uses a compound version in: ").append(path)
+                            builder.append(target).append(" uses a compound version in: ").append(it)
                         }
                     }
                 }
