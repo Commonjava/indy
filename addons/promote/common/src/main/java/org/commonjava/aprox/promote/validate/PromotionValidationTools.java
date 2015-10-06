@@ -58,6 +58,8 @@ import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.net.URI;
@@ -323,7 +325,11 @@ public class PromotionValidationTools
     public Transfer getTransfer( StoreKey storeKey, String path )
             throws AproxWorkflowException
     {
-        return readOnlyWrapper( contentManager.getTransfer( storeKey, path, TransferOperation.DOWNLOAD ) );
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.info( "Retrieving transfer for: {} in {}", path, storeKey );
+        Transfer result = readOnlyWrapper( contentManager.getTransfer( storeKey, path, TransferOperation.DOWNLOAD ) );
+        logger.info( "Result: {}", result );
+        return result;
     }
 
     public Transfer getTransfer( ArtifactStore store, String path )

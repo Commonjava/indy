@@ -5,6 +5,7 @@ import org.commonjava.aprox.promote.validate.model.ValidationRequest
 import org.commonjava.aprox.promote.validate.model.ValidationRule
 import org.commonjava.cartographer.graph.discover.DiscoveryConfig
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef
+import org.commonjava.maven.atlas.ident.ref.SimpleTypeAndClassifier
 import org.slf4j.LoggerFactory
 
 class ArtifactRefAvailability implements ValidationRule {
@@ -30,30 +31,34 @@ class ArtifactRefAvailability implements ValidationRule {
         dc.setIncludeBuildSection(false)
         dc.setIncludeManagedDependencies(false)
 
+        def logger = LoggerFactory.getLogger(ValidationRule.class)
+
         def pomTC = new SimpleTypeAndClassifier("pom")
         request.getSourcePaths().each { it ->
             if (it.endsWith(".pom")) {
                 def relationships = tools.getRelationshipsForPom(it, dc, request.getPromoteRequest(), verifyStoreKey)
                 if (relationships != null) {
-                    relatioships.each { rel ->
+                    relationships.each { rel ->
                         def target = rel.getTarget()
                         def path = tools.toArtifactPath(target)
                         def txfr = tools.getTransfer(verifyStoreKey, path)
+                        logger.info("{} in {}: {}. Exists? {}", target, verifyStoreKey, txfr, txfr.exists())
                         if (!txfr.exists()) {
                             if (builder.length() > 0) {
                                 builder.append("\n")
                             }
-                            builder.append(path).append(" not available via: ").append(verifyStore)
+                            builder.append(it).append(" is invalid: ").append(path).append(" is not available via: ").append(verifyStoreKey)
                         }
 
                         if ((target instanceof ArtifactRef) && !pomTC.equals(((ArtifactRef) target).getTypeAndClassifier())) {
                             path = tools.toArtifactPath(target.asPomArtifact())
                             txfr = tools.getTransfer(verifyStoreKey, path)
+                            logger.info("POM {} in {}: {}. Exists? {}", target.asPomArtifact(), verifyStoreKey, txfr, txfr.exists())
                             if (!txfr.exists()) {
                                 if (builder.length() > 0) {
                                     builder.append("\n")
                                 }
-                                builder.append(path).append(" not available via: ").append(verifyStore)
+                                builder.append(it).append(" is invalid: ").append(path).append(" is not available via: ").append(verifyStoreKey)
                             }
                         }
                     }

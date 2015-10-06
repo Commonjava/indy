@@ -169,6 +169,7 @@ public abstract class AbstractAproxFunctionalTest
             throws IOException
     {
         writeConfigFile( "conf.d/scheduler.conf", "[scheduler]\nenabled=false" );
+        writeConfigFile( "conf.d/indexer.conf", "[indexer]\nenabled=false" );
     }
 
     protected String readTestResource( String resource )
