@@ -40,7 +40,15 @@ public abstract class AbstractAutoproxCalculatorTest
     public void setup()
         throws Exception
     {
-        installRule( "0001-simple-rule.groovy", "rules/simple-rule.groovy" );
+        if ( doRuleInit() )
+        {
+            installRule( "0001-simple-rule.groovy", "rules/simple-rule.groovy" );
+        }
+    }
+
+    protected boolean doRuleInit()
+    {
+        return true;
     }
 
     protected RuleDTO installRule( final String named, final String ruleScriptResource )

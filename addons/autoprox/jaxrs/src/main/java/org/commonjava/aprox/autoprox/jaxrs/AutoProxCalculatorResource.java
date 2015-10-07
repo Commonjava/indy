@@ -28,6 +28,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
 import org.commonjava.aprox.AproxWorkflowException;
+import org.commonjava.aprox.autoprox.conf.AutoProxConfig;
 import org.commonjava.aprox.autoprox.rest.AutoProxCalculatorController;
 import org.commonjava.aprox.autoprox.rest.dto.AutoProxCalculation;
 import org.commonjava.aprox.bind.jaxrs.AproxResources;
@@ -51,12 +52,20 @@ public class AutoProxCalculatorResource
     @Inject
     private AutoProxCalculatorController controller;
 
+    @Inject
+    private AutoProxConfig config;
+
     @Path( "/remote/{name}" )
     @GET
     @Consumes( ApplicationContent.application_json )
     public Response evalRemote( final @PathParam( "name" ) String remoteName )
     {
-        Response response;
+        Response response = checkEnabled();
+        if ( response != null )
+        {
+            return response;
+        }
+
         try
         {
             final AutoProxCalculation calc = controller.evalRemoteRepository( remoteName );
@@ -82,12 +91,27 @@ public class AutoProxCalculatorResource
         return response;
     }
 
+    private Response checkEnabled()
+    {
+        if ( !config.isEnabled() )
+        {
+            return Response.status( Response.Status.BAD_REQUEST ).entity( "Autoprox is disabled." ).build();
+        }
+
+        return null;
+    }
+
     @Path( "/hosted/{name}" )
     @GET
     @Consumes( ApplicationContent.application_json )
     public Response evalHosted( final @PathParam( "name" ) String hostedName )
     {
-        Response response;
+        Response response = checkEnabled();
+        if ( response != null )
+        {
+            return response;
+        }
+
         try
         {
             final AutoProxCalculation calc = controller.evalHostedRepository( hostedName );
@@ -117,7 +141,12 @@ public class AutoProxCalculatorResource
     @Consumes( ApplicationContent.application_json )
     public Response evalGroup( final @PathParam( "name" ) String groupName )
     {
-        Response response;
+        Response response = checkEnabled();
+        if ( response != null )
+        {
+            return response;
+        }
+
         try
         {
             final AutoProxCalculation calc = controller.evalGroup( groupName );

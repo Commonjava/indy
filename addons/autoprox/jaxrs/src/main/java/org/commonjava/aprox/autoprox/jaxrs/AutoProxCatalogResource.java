@@ -42,6 +42,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
+import org.commonjava.aprox.autoprox.conf.AutoProxConfig;
 import org.commonjava.aprox.autoprox.data.AutoProxRuleException;
 import org.commonjava.aprox.autoprox.rest.AutoProxAdminController;
 import org.commonjava.aprox.autoprox.rest.dto.CatalogDTO;
@@ -70,10 +71,28 @@ public class AutoProxCatalogResource
     @Inject
     private SecurityManager securityManager;
 
+    @Inject
+    private AutoProxConfig config;
+
+    private Response checkEnabled()
+    {
+        if ( !config.isEnabled() )
+        {
+            return Response.status( Response.Status.BAD_REQUEST ).entity( "Autoprox is disabled." ).build();
+        }
+
+        return null;
+    }
+
     @DELETE
     public Response reparseCatalog()
     {
-        Response response;
+        Response response = checkEnabled();
+        if ( response != null )
+        {
+            return response;
+        }
+
         try
         {
             controller.reparseCatalog();
@@ -93,6 +112,12 @@ public class AutoProxCatalogResource
     @Consumes( ApplicationContent.application_json )
     public Response getCatalog()
     {
+        Response response = checkEnabled();
+        if ( response != null )
+        {
+            return response;
+        }
+
         final CatalogDTO dto = controller.getCatalog();
         if ( dto == null )
         {
@@ -107,6 +132,12 @@ public class AutoProxCatalogResource
     @Path( "{name}" )
     public Response getRule( @PathParam( "name" ) final String name )
     {
+        Response response = checkEnabled();
+        if ( response != null )
+        {
+            return response;
+        }
+
         final RuleDTO dto = controller.getRule( name );
         if ( dto == null )
         {
@@ -124,7 +155,12 @@ public class AutoProxCatalogResource
     public Response deleteRule( @PathParam( "name" ) final String name, @Context final HttpServletRequest request,
                                 @Context final SecurityContext securityContext )
     {
-        Response response;
+        Response response = checkEnabled();
+        if ( response != null )
+        {
+            return response;
+        }
+
         try
         {
             String user = securityManager.getUser( securityContext, request );
@@ -153,7 +189,12 @@ public class AutoProxCatalogResource
     public Response createRule( @Context final HttpServletRequest request, @Context final UriInfo uriInfo,
                                 @Context SecurityContext securityContext )
     {
-        Response response = null;
+        Response response = checkEnabled();
+        if ( response != null )
+        {
+            return response;
+        }
+
         RuleDTO dto = null;
         try
         {
@@ -199,6 +240,12 @@ public class AutoProxCatalogResource
     public Response updateRule( @PathParam( "name" ) final String name, @Context final HttpServletRequest request,
                                 @Context final UriInfo uriInfo, @Context final SecurityContext securityContext )
     {
+        Response response = checkEnabled();
+        if ( response != null )
+        {
+            return response;
+        }
+
         RuleDTO dto = controller.getRule( name );
 
         boolean updating = true;
@@ -207,7 +254,6 @@ public class AutoProxCatalogResource
             updating = false;
         }
 
-        Response response = null;
         try
         {
             dto = serializer.readValue( request.getInputStream(), RuleDTO.class );
