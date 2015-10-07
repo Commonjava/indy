@@ -158,4 +158,11 @@ public final class RuleMapping
         return scriptName.compareTo( other.scriptName );
     }
 
+    @Override
+    public String toString()
+    {
+        return "RuleMapping{" +
+                "scriptName='" + scriptName + '\'' +
+                '}';
+    }
 }

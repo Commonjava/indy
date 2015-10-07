@@ -91,7 +91,7 @@ public class ScriptRuleParser
             return null;
         }
 
-        AutoProxRule rule = null;
+        AutoProxRule rule;
         try
         {
 
@@ -110,6 +110,7 @@ public class ScriptRuleParser
             return new RuleMapping( scriptName, spec, rule );
         }
 
+        logger.warn( "Rule named: {} parsed to null AutoProxRule instance. Spec was:\n\n{}\n\n", scriptName, spec );
         return null;
     }
 

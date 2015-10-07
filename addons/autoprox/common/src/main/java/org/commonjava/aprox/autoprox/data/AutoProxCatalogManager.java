@@ -90,15 +90,10 @@ public class AutoProxCatalogManager
     public synchronized void parseRules()
         throws AutoProxRuleException
     {
-        if ( !apConfig.isEnabled() )
+        if ( !checkEnabled() )
         {
-            this.enabled = false;
-            this.ruleMappings = Collections.emptyList();
-
-            logger.info( "Autoprox is disabled." );
             return;
         }
-
 
         final List<RuleMapping> ruleMappings = new ArrayList<RuleMapping>();
 
@@ -112,8 +107,7 @@ public class AutoProxCatalogManager
                 public boolean accept( final File pathname )
                 {
                     logger.info( "Checking for autoprox script in: {}", pathname );
-                    return pathname.getName()
-                                   .endsWith( ".groovy" );
+                    return pathname.getName().endsWith( ".groovy" );
                 }
             } );
 
@@ -132,8 +126,27 @@ public class AutoProxCatalogManager
         this.enabled = true;
     }
 
+    private boolean checkEnabled()
+    {
+        if ( !apConfig.isEnabled() )
+        {
+            this.enabled = false;
+            this.ruleMappings = new ArrayList<>();
+
+            logger.info( "Autoprox is disabled." );
+            return false;
+        }
+
+        return true;
+    }
+
     public CatalogDTO toDTO()
     {
+        if ( !checkEnabled() )
+        {
+            return null;
+        }
+
         final List<RuleDTO> rules = new ArrayList<>();
         for ( final RuleMapping mapping : new ArrayList<>( ruleMappings ) )
         {
@@ -145,12 +158,17 @@ public class AutoProxCatalogManager
 
     public List<RuleMapping> getRuleMappings()
     {
+        if ( !checkEnabled() )
+        {
+            return null;
+        }
+
         return ruleMappings;
     }
 
     public boolean isEnabled()
     {
-        return enabled;
+        return checkEnabled() && enabled;
     }
 
     public void setEnabled( final boolean enabled )
@@ -160,6 +178,11 @@ public class AutoProxCatalogManager
 
     public RuleMapping getRuleMappingMatching( final String name )
     {
+        if ( !checkEnabled() )
+        {
+            return null;
+        }
+
         //        logger.info( "Called via:\n  {}", join( Thread.currentThread()
         //                                                      .getStackTrace(), "\n  " ) );
         for ( final RuleMapping mapping : getRuleMappings() )
@@ -179,6 +202,11 @@ public class AutoProxCatalogManager
 
     public AutoProxRule getRuleMatching( final String name )
     {
+        if ( !checkEnabled() )
+        {
+            return null;
+        }
+
         final RuleMapping mapping = getRuleMappingMatching( name );
         return mapping == null ? null : mapping.getRule();
     }
@@ -186,6 +214,11 @@ public class AutoProxCatalogManager
     public RemoteRepository createRemoteRepository( final String name )
         throws AutoProxRuleException
     {
+        if ( !checkEnabled() )
+        {
+            throw new AutoProxRuleException( "AutoProx is disabled" );
+        }
+
         final AutoProxRule rule = getRuleMatching( name );
         try
         {
@@ -205,6 +238,11 @@ public class AutoProxCatalogManager
     public HostedRepository createHostedRepository( final String name )
         throws AutoProxRuleException
     {
+        if ( !checkEnabled() )
+        {
+            throw new AutoProxRuleException( "AutoProx is disabled" );
+        }
+
         final AutoProxRule rule = getRuleMatching( name );
         try
         {
@@ -220,6 +258,11 @@ public class AutoProxCatalogManager
     public Group createGroup( final String name )
         throws AutoProxRuleException
     {
+        if ( !checkEnabled() )
+        {
+            throw new AutoProxRuleException( "AutoProx is disabled" );
+        }
+
         final AutoProxRule rule = getRuleMatching( name );
         try
         {
@@ -235,6 +278,11 @@ public class AutoProxCatalogManager
     public String getRemoteValidationUrl( final String name )
         throws AutoProxRuleException
     {
+        if ( !checkEnabled() )
+        {
+            throw new AutoProxRuleException( "AutoProx is disabled" );
+        }
+
         final AutoProxRule rule = getRuleMatching( name );
         try
         {
@@ -250,6 +298,11 @@ public class AutoProxCatalogManager
     public RemoteRepository createValidationRemote( final String name )
         throws AutoProxRuleException
     {
+        if ( !checkEnabled() )
+        {
+            throw new AutoProxRuleException( "AutoProx is disabled" );
+        }
+
         final AutoProxRule rule = getRuleMatching( name );
         try
         {
@@ -268,6 +321,11 @@ public class AutoProxCatalogManager
 
     public boolean isValidationEnabled( final String name )
     {
+        if ( !checkEnabled() )
+        {
+            return false;
+        }
+
         final AutoProxRule rule = getRuleMatching( name );
         return rule != null && rule.isValidationEnabled();
     }
@@ -275,6 +333,11 @@ public class AutoProxCatalogManager
     public synchronized RuleMapping removeRuleNamed( final String name, final ChangeSummary changelog )
         throws AutoProxRuleException
     {
+        if ( !checkEnabled() )
+        {
+            throw new AutoProxRuleException( "AutoProx is disabled" );
+        }
+
         RuleMapping mapping = null;
         for ( final Iterator<RuleMapping> mappingIt = ruleMappings.iterator(); mappingIt.hasNext(); )
         {
@@ -321,7 +384,17 @@ public class AutoProxCatalogManager
     public synchronized RuleMapping storeRule( final String name, final String spec, final ChangeSummary changelog )
         throws AutoProxRuleException
     {
+        if ( !checkEnabled() )
+        {
+            throw new AutoProxRuleException( "AutoProx is disabled" );
+        }
+
         final RuleMapping mapping = ruleParser.parseRule( spec, name );
+        if( mapping == null )
+        {
+            throw new AutoProxRuleException( "Cannot construct RuleMapping for: {} with spec:\n\n{}\n\n", name, spec );
+        }
+
         final int idx = ruleMappings.indexOf( mapping );
         if ( idx > -1 )
         {
@@ -332,10 +405,14 @@ public class AutoProxCatalogManager
                 return existing;
             }
 
+            logger.info( "Replacing rule: {} at index: {}. Spec was:\n\n{}\n\n", mapping, idx, spec );
+
             ruleMappings.set( idx, mapping );
         }
         else
         {
+            logger.info( "Appending rule: {}. Spec was:\n\n{}\n\n", mapping, spec );
+
             ruleMappings.add( mapping );
             Collections.sort( ruleMappings );
         }
@@ -362,6 +439,11 @@ public class AutoProxCatalogManager
 
     public synchronized RuleMapping getRuleNamed( final String name )
     {
+        if ( !checkEnabled() )
+        {
+            return null;
+        }
+
         for ( final RuleMapping mapping : ruleMappings )
         {
             if ( mapping.getScriptName()
