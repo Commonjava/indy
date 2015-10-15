@@ -150,9 +150,9 @@ public class DefaultDownloadManager
 
                 fileEventManager.fire( new AproxStoreErrorEvent( kl.getKey(), e ) );
                 logger.warn( "Bad gateway: " + e.getMessage(), e );
-                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
-                                                  "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, store,
-                                                  e.getMessage() );
+//                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
+//                                                  "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, store,
+//                                                  e.getMessage() );
             }
             catch ( final TransferTimeoutException e )
             {
@@ -161,9 +161,9 @@ public class DefaultDownloadManager
 
                 fileEventManager.fire( new AproxStoreErrorEvent( kl.getKey(), e ) );
                 logger.warn( "Timeout: " + e.getMessage(), e );
-                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
-                                                  "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, store,
-                                                  e.getMessage() );
+//                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
+//                                                  "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, store,
+//                                                  e.getMessage() );
             }
             catch ( final TransferException e )
             {
@@ -196,9 +196,9 @@ public class DefaultDownloadManager
 
                     fileEventManager.fire( new AproxStoreErrorEvent( kl.getKey(), e ) );
                     logger.warn( "Bad gateway: " + e.getMessage(), e );
-                    throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
-                                                      "Failed to list path: {} from: {}. Reason: {}", e, path, store,
-                                                      e.getMessage() );
+//                    throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
+//                                                      "Failed to list path: {} from: {}. Reason: {}", e, path, store,
+//                                                      e.getMessage() );
                 }
                 catch ( final TransferTimeoutException e )
                 {
@@ -207,9 +207,9 @@ public class DefaultDownloadManager
 
                     fileEventManager.fire( new AproxStoreErrorEvent( kl.getKey(), e ) );
                     logger.warn( "Timeout: " + e.getMessage(), e );
-                    throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
-                                                      "Failed to list path: {} from: {}. Reason: {}", e, path, store,
-                                                      e.getMessage() );
+//                    throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
+//                                                      "Failed to list path: {} from: {}. Reason: {}", e, path, store,
+//                                                      e.getMessage() );
                 }
                 catch ( final TransferException e )
                 {
@@ -233,10 +233,14 @@ public class DefaultDownloadManager
                 }
                 catch ( final BadGatewayException | TransferTimeoutException e )
                 {
+                    Location location = res.getLocation();
+                    KeyedLocation kl = (KeyedLocation) location;
+
                     logger.warn( "Timeout  / bad gateway: " + e.getMessage(), e );
-                    throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
-                                                      "Failed to list path: {} from: {}. Reason: {}", e, path,
-                                                      store.getKey(), e.getMessage() );
+                    fileEventManager.fire( new AproxStoreErrorEvent( kl.getKey(), e ) );
+//                    throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
+//                                                      "Failed to list path: {} from: {}. Reason: {}", e, path,
+//                                                      store.getKey(), e.getMessage() );
                 }
                 catch ( final TransferException e )
                 {
@@ -282,9 +286,9 @@ public class DefaultDownloadManager
 
             fileEventManager.fire( new AproxStoreErrorEvent( kl.getKey(), e ) );
             logger.warn( "Bad gateway: " + e.getMessage(), e );
-            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
-                                              "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, stores,
-                                              e.getMessage() );
+//            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
+//                                              "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, stores,
+//                                              e.getMessage() );
         }
         catch ( final TransferTimeoutException e )
         {
@@ -293,9 +297,9 @@ public class DefaultDownloadManager
 
             fileEventManager.fire( new AproxStoreErrorEvent( kl.getKey(), e ) );
             logger.warn( "Timeout: " + e.getMessage(), e );
-            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
-                                              "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, stores,
-                                              e.getMessage() );
+//            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
+//                                              "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, stores,
+//                                              e.getMessage() );
         }
         catch ( final TransferException e )
         {
@@ -334,9 +338,9 @@ public class DefaultDownloadManager
 
             fileEventManager.fire( new AproxStoreErrorEvent( kl.getKey(), e ) );
             logger.warn( "Bad gateway: " + e.getMessage(), e );
-            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
-                                              "Failed to retrieve first path: {} from: {}. Reason: {}", e, path, stores,
-                                              e.getMessage() );
+//            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
+//                                              "Failed to retrieve first path: {} from: {}. Reason: {}", e, path, stores,
+//                                              e.getMessage() );
         }
         catch ( final TransferTimeoutException e )
         {
@@ -345,9 +349,9 @@ public class DefaultDownloadManager
 
             fileEventManager.fire( new AproxStoreErrorEvent( kl.getKey(), e ) );
             logger.warn( "Timeout: " + e.getMessage(), e );
-            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
-                                              "Failed to retrieve first path: {} from: {}. Reason: {}", e, path, stores,
-                                              e.getMessage() );
+//            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
+//                                              "Failed to retrieve first path: {} from: {}. Reason: {}", e, path, stores,
+//                                              e.getMessage() );
         }
         catch ( final TransferException e )
         {
@@ -355,6 +359,8 @@ public class DefaultDownloadManager
             throw new AproxWorkflowException( "Failed to retrieve first path: {} from: {}. Reason: {}", e, path,
                                               stores, e.getMessage() );
         }
+
+        return null;
     }
 
     /*
@@ -382,28 +388,6 @@ public class DefaultDownloadManager
             return transfers.retrieveAll(
                     locationExpander.expand( new VirtualResource( LocationUtils.toLocations( enabled ), path ) ),
                     eventMetadata );
-        }
-        catch ( final BadGatewayException e )
-        {
-            Location location = e.getLocation();
-            KeyedLocation kl = (KeyedLocation) location;
-
-            fileEventManager.fire( new AproxStoreErrorEvent( kl.getKey(), e ) );
-            logger.warn( "Bad gateway: " + e.getMessage(), e );
-            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
-                                              "Failed to retrieve ALL paths: {} from: {}. Reason: {}", e, path, stores,
-                                              e.getMessage() );
-        }
-        catch ( final TransferTimeoutException e )
-        {
-            Location location = e.getLocation();
-            KeyedLocation kl = (KeyedLocation) location;
-
-            fileEventManager.fire( new AproxStoreErrorEvent( kl.getKey(), e ) );
-            logger.warn( "Timeout: " + e.getMessage(), e );
-            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
-                                              "Failed to retrieve ALL paths: {} from: {}. Reason: {}", e, path, stores,
-                                              e.getMessage() );
         }
         catch ( final TransferException e )
         {
@@ -470,7 +454,7 @@ public class DefaultDownloadManager
             return null;
         }
 
-        Transfer target;
+        Transfer target = null;
         try
         {
             final ConcreteResource res = new ConcreteResource( LocationUtils.toLocation( store ), path );
@@ -487,7 +471,6 @@ public class DefaultDownloadManager
                 }
             }
 
-            return target;
             //            if ( target != null && target.exists() )
             //            {
             //                //                logger.info( "Using stored copy from artifact store: {} for: {}", store.getName(), path );
@@ -504,9 +487,10 @@ public class DefaultDownloadManager
         {
             fileEventManager.fire( new AproxStoreErrorEvent( store.getKey(), e ) );
             logger.warn( "Timeout / bad gateway: " + e.getMessage(), e );
-            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
-                                              "Failed to retrieve path: {} from: {}. Reason: {}", e, path, store,
-                                              e.getMessage() );
+            target = null;
+//            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
+//                                              "Failed to retrieve path: {} from: {}. Reason: {}", e, path, store,
+//                                              e.getMessage() );
         }
         catch ( final TransferException e )
         {
@@ -514,6 +498,8 @@ public class DefaultDownloadManager
             throw new AproxWorkflowException( "Failed to retrieve path: {} from: {}. Reason: {}", e, path, store,
                                               e.getMessage() );
         }
+
+        return target;
     }
 
     /*

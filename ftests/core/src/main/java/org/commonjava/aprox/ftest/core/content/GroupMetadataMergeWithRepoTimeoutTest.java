@@ -29,6 +29,7 @@ import org.commonjava.aprox.model.core.Group;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.test.http.TestHttpServer;
+import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -45,7 +46,7 @@ public class GroupMetadataMergeWithRepoTimeoutTest
         {
             try
             {
-                Thread.sleep( 5 );
+                Thread.sleep( 5000 );
             }
             catch ( final InterruptedException e )
             {
@@ -56,7 +57,7 @@ public class GroupMetadataMergeWithRepoTimeoutTest
     }
 
     @Rule
-    public TestHttpServer server = new TestHttpServer();
+    public ExpectationServer server = new ExpectationServer();
 
     @Test
     public void run()
