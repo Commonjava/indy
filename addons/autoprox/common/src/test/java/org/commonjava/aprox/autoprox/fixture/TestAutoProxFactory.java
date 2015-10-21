@@ -27,14 +27,15 @@ import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.test.fixture.core.HttpTestFixture;
+import org.commonjava.test.http.expect.ExpectationServer;
 
 public class TestAutoProxFactory
     implements AutoProxRule
 {
 
-    private final HttpTestFixture http;
+    private final ExpectationServer http;
 
-    public TestAutoProxFactory( final HttpTestFixture http )
+    public TestAutoProxFactory( final ExpectationServer http )
     {
         this.http = http;
     }

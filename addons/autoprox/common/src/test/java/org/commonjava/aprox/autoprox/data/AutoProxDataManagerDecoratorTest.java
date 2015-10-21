@@ -39,6 +39,16 @@ import org.commonjava.aprox.subsys.datafile.DataFileManager;
 import org.commonjava.aprox.subsys.datafile.change.DataFileEventManager;
 import org.commonjava.aprox.subsys.template.ScriptEngine;
 import org.commonjava.aprox.test.fixture.core.HttpTestFixture;
+import org.commonjava.maven.galley.auth.MemoryPasswordManager;
+import org.commonjava.maven.galley.cache.FileCacheProvider;
+import org.commonjava.maven.galley.event.NoOpFileEventManager;
+import org.commonjava.maven.galley.io.HashedLocationPathGenerator;
+import org.commonjava.maven.galley.io.NoOpTransferDecorator;
+import org.commonjava.maven.galley.maven.GalleyMaven;
+import org.commonjava.maven.galley.maven.GalleyMavenBuilder;
+import org.commonjava.maven.galley.transport.htcli.HttpClientTransport;
+import org.commonjava.maven.galley.transport.htcli.HttpImpl;
+import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -55,13 +65,15 @@ public class AutoProxDataManagerDecoratorTest
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Rule
-    public final HttpTestFixture http = new HttpTestFixture( "server-targets" );
+    public final ExpectationServer http = new ExpectationServer( "server-targets" );
 
     @Rule
     public final TestName name = new TestName();
 
     @Rule
     public final TemporaryFolder temp = new TemporaryFolder();
+
+    private GalleyMaven galley;
 
     private AutoProxCatalogManager catalog;
 
@@ -77,18 +89,26 @@ public class AutoProxDataManagerDecoratorTest
 
     @Before
     public final void setup()
-        throws Exception
+            throws Exception
     {
         rootDir = temp.newFolder( "aprox.root" );
         autoproxDataDir = new File( rootDir, "data/autoprox" );
         autoproxDataDir.mkdirs();
+
+        File cacheDir = temp.newFolder();
+        FileCacheProvider cache =
+                new FileCacheProvider( cacheDir, new HashedLocationPathGenerator(), new NoOpFileEventManager(),
+                                       new NoOpTransferDecorator() );
+
+        galley = new GalleyMavenBuilder( cache ).withEnabledTransports(
+                new HttpClientTransport( new HttpImpl( new MemoryPasswordManager() ) ) ).build();
 
         final DataFileManager dataFiles = new DataFileManager( rootDir, new DataFileEventManager() );
 
         final AutoProxConfig aproxConfig = new AutoProxConfig( autoproxDataDir.getName(), true );
 
         catalog = new AutoProxCatalogManager( dataFiles, aproxConfig, ruleParser );
-        proxyManager = new TestAutoProxyDataManager( catalog, http.getHttp() );
+        proxyManager = new TestAutoProxyDataManager( catalog, galley.getTransferManager() );
 
         proxyManager.install();
         proxyManager.clear( summary );
@@ -98,11 +118,10 @@ public class AutoProxDataManagerDecoratorTest
 
     @Test
     public void repositoryCreatedFromScannedDataDirRules()
-        throws Exception
+            throws Exception
     {
-        final URL u = Thread.currentThread()
-                            .getContextClassLoader()
-                            .getResource( "data/autoprox/simple-factory.groovy" );
+        final URL u =
+                Thread.currentThread().getContextClassLoader().getResource( "data/autoprox/simple-factory.groovy" );
         final File f = new File( u.getPath() );
 
         final File scriptFile = new File( autoproxDataDir, f.getName() );
@@ -114,10 +133,7 @@ public class AutoProxDataManagerDecoratorTest
         final String testUrl = http.formatUrl( "target", "test" );
 
         logger.info( "\n\nSETTING UP / VERIFYING REMOTE SERVER EXPECTATIONS" );
-        http.get( testUrl, 404 );
-        http.expect( testUrl, 200 );
-        //        targetResponder.approveTargets( "test" );
-        http.get( testUrl, 200 );
+        http.expect( testUrl + "/", 200, "" );
         logger.info( "DONE: SETTING UP / VERIFYING REMOTE SERVER EXPECTATIONS\n\n" );
 
         catalog.setEnabled( false );
@@ -133,11 +149,10 @@ public class AutoProxDataManagerDecoratorTest
 
     @Test
     public void repositoryNOTCreatedFromScannedDataDirRulesWhenNameNotTest()
-        throws Exception
+            throws Exception
     {
-        final URL u = Thread.currentThread()
-                            .getContextClassLoader()
-                            .getResource( "data/autoprox/simple-factory.groovy" );
+        final URL u =
+                Thread.currentThread().getContextClassLoader().getResource( "data/autoprox/simple-factory.groovy" );
         final File f = new File( u.getPath() );
         final File scriptFile = new File( autoproxDataDir, f.getName() );
         FileUtils.copyFile( f, scriptFile );
@@ -146,10 +161,7 @@ public class AutoProxDataManagerDecoratorTest
         catalog.parseRules();
 
         final String testUrl = http.formatUrl( "target", "test" );
-        http.get( testUrl, 404 );
-        http.expect( testUrl, 200 );
-        //        targetResponder.approveTargets( "test" );
-        http.get( testUrl, 200 );
+        http.expect( testUrl, 200, "" );
 
         catalog.setEnabled( false );
         assertThat( proxyManager.getRemoteRepository( "foo" ), nullValue() );
@@ -162,16 +174,13 @@ public class AutoProxDataManagerDecoratorTest
 
     @Test
     public void repositoryAutoCreated()
-        throws Exception
+            throws Exception
     {
         simpleCatalog();
 
         final String testUrl = http.formatUrl( "target", "test" );
-        http.get( testUrl, 404 );
-        http.expect( testUrl, 200 );
-        http.expect( testUrl, 200 );
-        //        targetResponder.approveTargets( "test" );
-        http.get( testUrl, 200 );
+        System.out.println( "Registering expectation of GET/HEAD to: " + testUrl + "/ with 200 response code." );
+        http.expect( testUrl + "/", 200, "" );
 
         catalog.setEnabled( false );
         assertThat( proxyManager.getRemoteRepository( "test" ), nullValue() );
@@ -188,24 +197,19 @@ public class AutoProxDataManagerDecoratorTest
     private void simpleCatalog()
     {
         final TestAutoProxFactory fac = new TestAutoProxFactory( http );
-        catalog.getRuleMappings()
-               .add( new RuleMapping( "test.groovy", null, fac ) );
+        catalog.getRuleMappings().add( new RuleMapping( "test.groovy", null, fac ) );
     }
 
     @Test
     public void groupAutoCreatedWithDeployPointAndTwoRepos()
-        throws Exception
+            throws Exception
     {
         simpleCatalog();
 
         final String testUrl = http.formatUrl( "target", "test" );
-        http.get( testUrl, 404 );
-
-        http.expect( testUrl, 200 );
-        http.expect( http.formatUrl( "target", "first" ), 200 );
-        http.expect( http.formatUrl( "target", "second" ), 200 );
-        //        targetResponder.approveTargets( "test" );
-        http.get( testUrl, 200 );
+        http.expect( testUrl + "/", 200, "" );
+        http.expect( http.formatUrl( "target", "first/" ), 200, "" );
+        http.expect( http.formatUrl( "target", "second/" ), 200, "" );
 
         catalog.setEnabled( false );
         assertThat( proxyManager.getGroup( "test" ), nullValue() );
@@ -250,12 +254,12 @@ public class AutoProxDataManagerDecoratorTest
 
     @Test
     public void repositoryNotAutoCreatedWhenTargetIsInvalid()
-        throws Exception
+            throws Exception
     {
         simpleCatalog();
 
         final String testUrl = http.formatUrl( "target", "test" );
-        http.get( testUrl, 404 );
+        http.expect( testUrl, 404, "" );
 
         catalog.setEnabled( false );
         assertThat( proxyManager.getRemoteRepository( "test" ), nullValue() );
@@ -269,12 +273,12 @@ public class AutoProxDataManagerDecoratorTest
 
     @Test
     public void groupNotAutoCreatedWhenTargetIsInvalid()
-        throws Exception
+            throws Exception
     {
         simpleCatalog();
 
         final String testUrl = http.formatUrl( "target", "test" );
-        http.get( testUrl, 404 );
+        http.expect( testUrl, 404, "" );
 
         catalog.setEnabled( false );
         assertThat( proxyManager.getGroup( "test" ), nullValue() );

@@ -17,7 +17,6 @@ package org.commonjava.aprox.autoprox.data;
 
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,11 +25,6 @@ import javax.decorator.Delegate;
 import javax.enterprise.inject.Any;
 import javax.inject.Inject;
 
-import org.apache.http.HttpStatus;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpHead;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.aprox.audit.ChangeSummary;
 import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
@@ -41,14 +35,18 @@ import org.commonjava.aprox.model.core.HostedRepository;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
-import org.commonjava.aprox.subsys.http.AproxHttpProvider;
+import org.commonjava.aprox.util.LocationUtils;
+import org.commonjava.maven.galley.TransferException;
+import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.model.ConcreteResource;
+import org.commonjava.maven.galley.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Decorator
 public abstract class AutoProxDataManagerDecorator
-    implements StoreDataManager
+        implements StoreDataManager
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -62,18 +60,18 @@ public abstract class AutoProxDataManagerDecorator
     private AutoProxCatalogManager catalog;
 
     @Inject
-    private AproxHttpProvider http;
+    private TransferManager transferManager;
 
     protected AutoProxDataManagerDecorator()
     {
     }
 
-    public AutoProxDataManagerDecorator( final MemoryStoreDataManager dataManager,
-                                         final AutoProxCatalogManager catalog, final AproxHttpProvider http )
+    public AutoProxDataManagerDecorator( final MemoryStoreDataManager dataManager, final AutoProxCatalogManager catalog,
+                                         final TransferManager transferManager )
     {
         this.dataManager = dataManager;
         this.catalog = catalog;
-        this.http = http;
+        this.transferManager = transferManager;
     }
 
     protected final StoreDataManager getDelegate()
@@ -83,13 +81,13 @@ public abstract class AutoProxDataManagerDecorator
 
     @Override
     public Group getGroup( final String name )
-        throws AproxDataException
+            throws AproxDataException
     {
         return getGroup( name, null );
     }
 
     private Group getGroup( final String name, final StoreKey impliedBy )
-        throws AproxDataException
+            throws AproxDataException
     {
         logger.debug( "DECORATED (getGroup: {})", name );
         Group g = dataManager.getGroup( name );
@@ -111,18 +109,13 @@ public abstract class AutoProxDataManagerDecorator
             catch ( final AutoProxRuleException e )
             {
                 throw new AproxDataException(
-                                              "[AUTOPROX] Failed to create new group from factory matching: '%s'. Reason: %s",
-                                              e, name, e.getMessage() );
+                        "[AUTOPROX] Failed to create new group from factory matching: '%s'. Reason: %s", e, name,
+                        e.getMessage() );
             }
 
             if ( g != null )
             {
                 logger.info( "Validating group: {}", g );
-                if ( !checkValidity( name ) )
-                {
-                    return null;
-                }
-
                 for ( final StoreKey key : new ArrayList<StoreKey>( g.getConstituents() ) )
                 {
                     final ArtifactStore store = getArtifactStore( key, impliedBy == null ? g.getKey() : impliedBy );
@@ -132,16 +125,15 @@ public abstract class AutoProxDataManagerDecorator
                     }
                 }
 
-                if ( g.getConstituents()
-                      .isEmpty() )
+                if ( g.getConstituents().isEmpty() )
                 {
                     return null;
                 }
 
                 final Group group = g;
-                dataManager.storeArtifactStore( group,
-                                                new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                   "AUTOPROX: Creating group for: '" + name + "'" ),
+                dataManager.storeArtifactStore( group, new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                          "AUTOPROX: Creating group for: '" + name
+                                                                                  + "'" ),
                                                 new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
                                                                          AutoProxConstants.STORE_ORIGIN )
                                                                    .set( AutoProxConstants.ORIGINATING_STORE,
@@ -155,7 +147,7 @@ public abstract class AutoProxDataManagerDecorator
     /**
      * Validates the remote connection, produced from rule-set for given name, 
      * for a remote repo or group containing a remote. If:
-     * 
+     *
      * <ul>
      *   <li>rule.isValidationEnabled() == false, return true</li>
      *   <li>rule.getValidationRemote() == null, return true</li>
@@ -170,7 +162,7 @@ public abstract class AutoProxDataManagerDecorator
      * @throws AproxDataException if the selected rule encounters an error while creating the new group/repository instance(s).
      */
     private boolean checkValidity( final String name )
-        throws AproxDataException
+            throws AproxDataException
     {
         if ( catalog.isValidationEnabled( name ) )
         {
@@ -183,54 +175,34 @@ public abstract class AutoProxDataManagerDecorator
                     return true;
                 }
 
-                String url = catalog.getRemoteValidationUrl( name );
-                if ( url == null )
+                String path = catalog.getRemoteValidationPath( name );
+                if ( path == null )
                 {
-                    url = validationRepo.getUrl();
-                }
-                else
-                {
-                    url = normalize( validationRepo.getUrl(), url );
+                    path = PathUtils.ROOT;
                 }
 
-                logger.debug( "\n\n\n\n\n[AutoProx] Checking URL: {}", url );
-                final HttpHead head = new HttpHead( url );
-                CloseableHttpClient client = null;
-                CloseableHttpResponse response = null;
-
+                logger.debug( "\n\n\n\n\n[AutoProx] Checking path: {} under remote URL: {}", path, validationRepo.getUrl() );
                 boolean result = false;
                 try
                 {
-                    client = http.createClient( validationRepo );
-                    response = client.execute( head, http.createContext( validationRepo ) );
-
-                    final StatusLine statusLine = response.getStatusLine();
-                    final int status = statusLine.getStatusCode();
-                    logger.debug( "[AutoProx] HTTP Status: {}", statusLine );
-                    result = status == HttpStatus.SC_OK;
-
-                    if ( !result )
-                    {
-                        logger.warn( "Invalid repository URL: {} (status: {})", validationRepo.getUrl(), statusLine );
-                    }
+                    result = transferManager.exists(
+                            new ConcreteResource( LocationUtils.toLocation( validationRepo ), path ) );
                 }
-                catch ( final IOException e )
+                catch ( final TransferException e )
                 {
-                    logger.warn( "[AutoProx] Cannot connect to target repository: '{}'.", url );
-                    logger.debug( "exception from validation attempt", e );
+                    logger.warn( "[AutoProx] Cannot connect to target repository: '{}'. Reason: {}", validationRepo, e.getMessage() );
+                    logger.debug( "[AutoProx] exception from validation attempt for: " + validationRepo, e );
                 }
-                finally
-                {
-                    http.cleanup( client, head, response );
-                }
+
+                logger.debug( "Validation result for: {} is: {}", validationRepo, result );
 
                 return result;
             }
             catch ( final AutoProxRuleException e )
             {
                 throw new AproxDataException(
-                                              "[AUTOPROX] Failed to create new group from factory matching: '%s'. Reason: %s",
-                                              e, name, e.getMessage() );
+                        "[AUTOPROX] Failed to create new group from factory matching: '%s'. Reason: %s", e, name,
+                        e.getMessage() );
             }
         }
 
@@ -239,13 +211,13 @@ public abstract class AutoProxDataManagerDecorator
 
     @Override
     public RemoteRepository getRemoteRepository( final String name )
-        throws AproxDataException
+            throws AproxDataException
     {
         return getRemoteRepository( name, null );
     }
 
     private RemoteRepository getRemoteRepository( final String name, final StoreKey impliedBy )
-        throws AproxDataException
+            throws AproxDataException
     {
         logger.debug( "DECORATED (getRemoteRepository: {})", name );
         RemoteRepository repo = dataManager.getRemoteRepository( name );
@@ -271,22 +243,22 @@ public abstract class AutoProxDataManagerDecorator
                     }
 
                     final RemoteRepository remote = repo;
-                    dataManager.storeArtifactStore( remote,
-                                                    new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                       "AUTOPROX: Creating remote repository for: '"
-                                                                           + name + "'" ),
+                    dataManager.storeArtifactStore( remote, new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                               "AUTOPROX: Creating remote repository for: '"
+                                                                                       + name + "'" ),
                                                     new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
                                                                              AutoProxConstants.STORE_ORIGIN )
                                                                        .set( AutoProxConstants.ORIGINATING_STORE,
-                                                                             impliedBy == null ? repo.getKey()
-                                                                                             : impliedBy ) );
+                                                                             impliedBy == null ?
+                                                                                     repo.getKey() :
+                                                                                     impliedBy ) );
                 }
             }
             catch ( final AutoProxRuleException e )
             {
                 throw new AproxDataException(
-                                              "[AUTOPROX] Failed to create new remote repository from factory matching: '%s'. Reason: %s",
-                                              e, name, e.getMessage() );
+                        "[AUTOPROX] Failed to create new remote repository from factory matching: '%s'. Reason: %s", e,
+                        name, e.getMessage() );
             }
         }
 
@@ -295,13 +267,13 @@ public abstract class AutoProxDataManagerDecorator
 
     @Override
     public HostedRepository getHostedRepository( final String name )
-        throws AproxDataException
+            throws AproxDataException
     {
         return getHostedRepository( name, null );
     }
 
     private HostedRepository getHostedRepository( final String name, final StoreKey impliedBy )
-        throws AproxDataException
+            throws AproxDataException
     {
         logger.debug( "DECORATED (getHostedRepository: {})", name );
         HostedRepository repo = dataManager.getHostedRepository( name );
@@ -323,21 +295,22 @@ public abstract class AutoProxDataManagerDecorator
             catch ( final AutoProxRuleException e )
             {
                 throw new AproxDataException(
-                                              "[AUTOPROX] Failed to create new hosted repository from factory matching: '%s'. Reason: %s",
-                                              e, name, e.getMessage() );
+                        "[AUTOPROX] Failed to create new hosted repository from factory matching: '%s'. Reason: %s", e,
+                        name, e.getMessage() );
             }
 
             if ( repo != null )
             {
                 final HostedRepository hosted = repo;
-                dataManager.storeArtifactStore( hosted,
-                                                new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                   "AUTOPROX: Creating remote repository for: '" + name
-                                                                       + "'" ),
+                dataManager.storeArtifactStore( hosted, new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                           "AUTOPROX: Creating remote repository for: '"
+                                                                                   + name + "'" ),
                                                 new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
                                                                          AutoProxConstants.STORE_ORIGIN )
                                                                    .set( AutoProxConstants.ORIGINATING_STORE,
-                                                                         impliedBy == null ? repo.getKey() : impliedBy ) );
+                                                                         impliedBy == null ?
+                                                                                 repo.getKey() :
+                                                                                 impliedBy ) );
             }
         }
 
@@ -346,13 +319,13 @@ public abstract class AutoProxDataManagerDecorator
 
     @Override
     public ArtifactStore getArtifactStore( final StoreKey key )
-        throws AproxDataException
+            throws AproxDataException
     {
         return getArtifactStore( key, null );
     }
 
     private ArtifactStore getArtifactStore( final StoreKey key, final StoreKey impliedBy )
-        throws AproxDataException
+            throws AproxDataException
     {
         if ( key == null )
         {
@@ -375,7 +348,7 @@ public abstract class AutoProxDataManagerDecorator
 
     @Override
     public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
-        throws AproxDataException
+            throws AproxDataException
     {
         getGroup( groupName );
         return dataManager.getOrderedConcreteStoresInGroup( groupName );
@@ -383,7 +356,7 @@ public abstract class AutoProxDataManagerDecorator
 
     @Override
     public List<ArtifactStore> getOrderedStoresInGroup( final String groupName )
-        throws AproxDataException
+            throws AproxDataException
     {
         getGroup( groupName );
         return dataManager.getOrderedStoresInGroup( groupName );
@@ -398,7 +371,8 @@ public abstract class AutoProxDataManagerDecorator
         }
         catch ( final AproxDataException e )
         {
-            logger.error( String.format( "Failed to retrieve/create remote: %s. Reason: %s", name, e.getMessage() ), e );
+            logger.error( String.format( "Failed to retrieve/create remote: %s. Reason: %s", name, e.getMessage() ),
+                          e );
         }
 
         return false;
@@ -413,7 +387,8 @@ public abstract class AutoProxDataManagerDecorator
         }
         catch ( final AproxDataException e )
         {
-            logger.error( String.format( "Failed to retrieve/create hosted: %s. Reason: %s", name, e.getMessage() ), e );
+            logger.error( String.format( "Failed to retrieve/create hosted: %s. Reason: %s", name, e.getMessage() ),
+                          e );
         }
 
         return false;

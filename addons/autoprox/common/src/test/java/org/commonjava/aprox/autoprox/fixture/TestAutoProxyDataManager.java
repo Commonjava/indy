@@ -32,6 +32,7 @@ import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
+import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.event.EventMetadata;
 
 public class TestAutoProxyDataManager
@@ -41,9 +42,9 @@ public class TestAutoProxyDataManager
 
     private final StoreDataManager delegate;
 
-    public TestAutoProxyDataManager( final AutoProxCatalogManager catalog, final AproxHttpProvider http )
+    public TestAutoProxyDataManager( final AutoProxCatalogManager catalog, final TransferManager transferManager )
     {
-        super( new MemoryStoreDataManager( true ), catalog, http );
+        super( new MemoryStoreDataManager( true ), catalog, transferManager );
         delegate = getDelegate();
     }
 
