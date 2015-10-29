@@ -354,6 +354,7 @@
         <version>0.25.2-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
@@ -509,6 +510,7 @@
         <version>0.25.2-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
@@ -516,6 +518,7 @@
         <version>0.25.2-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>dataset</classifier>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
