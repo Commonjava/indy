@@ -102,6 +102,11 @@ public abstract class AutoProxDataManagerDecorator
         if ( g == null )
         {
             logger.debug( "AutoProx: creating repository for: {}", name );
+            if ( !checkValidity( name ) )
+            {
+                return null;
+            }
+
             try
             {
                 g = catalog.createGroup( name );
