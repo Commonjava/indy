@@ -275,7 +275,7 @@ public class AutoProxCatalogManager
         }
     }
 
-    public String getRemoteValidationUrl( final String name )
+    public String getRemoteValidationPath( final String name )
         throws AutoProxRuleException
     {
         if ( !checkEnabled() )

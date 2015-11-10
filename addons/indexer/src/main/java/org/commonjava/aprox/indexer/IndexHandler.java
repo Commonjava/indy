@@ -560,8 +560,13 @@ public class IndexHandler
 
     private IndexingContext getIndexingContext( final ArtifactStore store, final List<IndexCreator> indexers )
     {
-        final File indexDir = fileManager.getStorageReference( store, INDEX_DIR )
-                                         .getDetachedFile();
+        Transfer txfr = fileManager.getStorageReference( store, INDEX_DIR );
+        if ( txfr == null )
+        {
+            return null;
+        }
+
+        File indexDir = txfr.getDetachedFile();
         indexDir.mkdirs();
 
         final File rootDir = fileManager.getStorageReference( store, DownloadManager.ROOT_PATH )

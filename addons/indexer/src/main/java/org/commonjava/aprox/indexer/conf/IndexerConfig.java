@@ -39,7 +39,7 @@ import org.commonjava.web.config.annotation.SectionName;
 public class IndexerConfig
 {
 
-    private static final boolean DEFAULT_ENABLED = true;
+    private static final boolean DEFAULT_ENABLED = false;
 
     private Boolean enabled;
 

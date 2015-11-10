@@ -39,10 +39,13 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.commonjava.aprox.subsys.http.AproxHttpException;
+import org.commonjava.aprox.subsys.http.AproxHttpProvider;
 import org.commonjava.aprox.subsys.keycloak.conf.KeycloakConfig;
 import org.commonjava.aprox.subsys.http.util.UserPass;
 import org.commonjava.aprox.subsys.keycloak.util.KeycloakBearerTokenDebug;
 import org.commonjava.maven.galley.transport.htcli.Http;
+import org.commonjava.util.jhttpc.JHttpCException;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.constants.ServiceUrlConstants;
 import org.keycloak.representations.AccessTokenResponse;
@@ -83,7 +86,7 @@ public class BasicAuthenticationOAuthTranslator
     private KeycloakConfig config;
 
     @Inject
-    private Http http;
+    private AproxHttpProvider http;
 
     private boolean enabled;
 
@@ -91,7 +94,7 @@ public class BasicAuthenticationOAuthTranslator
     {
     }
 
-    public BasicAuthenticationOAuthTranslator( final KeycloakConfig config, final Http http )
+    public BasicAuthenticationOAuthTranslator( final KeycloakConfig config, final AproxHttpProvider http )
     {
         this.config = config;
         this.http = http;
@@ -203,8 +206,6 @@ public class BasicAuthenticationOAuthTranslator
         request.setHeader( AUTHORIZATION_HEADER, authorization );
 
         CloseableHttpClient client = null;
-        CloseableHttpResponse response = null;
-
         AccessTokenResponse tokenResponse = null;
         try
         {
@@ -213,7 +214,7 @@ public class BasicAuthenticationOAuthTranslator
             final UrlEncodedFormEntity form = new UrlEncodedFormEntity( params, "UTF-8" );
             request.setEntity( form );
 
-            response = client.execute( request );
+            CloseableHttpResponse response =  client.execute( request );
 
             logger.debug( "Got response status: {}", response.getStatusLine() );
             if ( response.getStatusLine()
@@ -228,10 +229,13 @@ public class BasicAuthenticationOAuthTranslator
                 }
             }
         }
-        catch ( final IOException e )
+        catch ( IOException | AproxHttpException e )
         {
             logger.error( String.format( "Keycloak token request failed: %s", e.getMessage() ), e );
-            http.cleanup( client, request, response );
+        }
+        finally
+        {
+            IOUtils.closeQuietly( client );
         }
 
         return tokenResponse;

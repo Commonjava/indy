@@ -22,6 +22,7 @@ import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.transport.htcli.model.HttpLocation;
+import org.commonjava.maven.galley.transport.htcli.model.LocationTrustType;
 
 /**
  * {@link KeyedLocation} implementation that represents a {@link RemoteRepository} AProx store, and bridges the handling of {@link RemoteRepository}
@@ -145,6 +146,12 @@ public class RepositoryLocation
     public String getServerCertPem()
     {
         return repository.getServerCertPem();
+    }
+
+    @Override
+    public LocationTrustType getTrustType()
+    {
+        return LocationTrustType.getType( repository.getServerTrustPolicy() );
     }
 
     @Override

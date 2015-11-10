@@ -48,7 +48,7 @@
     <javaVersion>1.8</javaVersion>
     <slf4j-version>1.6.1</slf4j-version>
     <atlasVersion>0.15.2</atlasVersion>
-    <galleyVersion>0.10.3</galleyVersion>
+    <galleyVersion>0.10.4-SNAPSHOT</galleyVersion>
     <cartoVersion>0.10.2</cartoVersion>
     <bomVersion>17</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
@@ -57,6 +57,7 @@
     <xnioVersion>3.3.0.Final</xnioVersion>
     <partylineVersion>1.4</partylineVersion>
     <keycloakVersion>1.2.0.Final</keycloakVersion>
+    <jhttpcVersion>1.0</jhttpcVersion>
     
     <test-forkCount>1C</test-forkCount>
     <test-redirectOutput>true</test-redirectOutput>
@@ -354,6 +355,7 @@
         <version>0.25.2-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
@@ -509,6 +511,7 @@
         <version>0.25.2-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
@@ -516,6 +519,7 @@
         <version>0.25.2-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>dataset</classifier>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.aprox</groupId>
@@ -689,6 +693,12 @@
         <groupId>org.commonjava.util.partyline</groupId>
         <artifactId>partyline</artifactId>
         <version>${partylineVersion}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>jhttpc</artifactId>
+        <version>${jhttpcVersion}</version>
       </dependency>
       
       <dependency>

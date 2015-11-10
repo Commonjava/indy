@@ -27,10 +27,14 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.commonjava.aprox.mem.data.MemoryStoreDataManager;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
+import org.commonjava.aprox.subsys.http.util.AproxSiteConfigLookup;
 import org.commonjava.maven.galley.auth.MemoryPasswordManager;
 import org.commonjava.test.http.expect.ContentResponse;
 import org.commonjava.test.http.TestHttpServer;
+import org.commonjava.test.http.expect.ExpectationServer;
+import org.commonjava.util.jhttpc.auth.AttributePasswordManager;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 
@@ -40,13 +44,13 @@ public class HttpTestFixture
 
     public TemporaryFolder folder = new TemporaryFolder();
 
-    public TestHttpServer server;
+    public ExpectationServer server;
 
     private final AproxHttpProvider http;
 
     public HttpTestFixture( final String baseResource )
     {
-        server = new TestHttpServer( baseResource );
+        server = new ExpectationServer( baseResource );
 
         try
         {
@@ -57,7 +61,7 @@ public class HttpTestFixture
             throw new RuntimeException( "Failed to setup temp folder.", e );
         }
 
-        http = new AproxHttpProvider( new MemoryPasswordManager() );
+        http = new AproxHttpProvider( new AproxSiteConfigLookup( new MemoryStoreDataManager( true ) ) );
         http.setup();
     }
 
@@ -82,7 +86,7 @@ public class HttpTestFixture
         return folder;
     }
 
-    public TestHttpServer getServer()
+    public ExpectationServer getServer()
     {
         return server;
     }
