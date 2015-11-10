@@ -27,6 +27,7 @@ import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
@@ -52,9 +53,11 @@ import org.commonjava.aprox.model.core.dto.ReplicationAction;
 import org.commonjava.aprox.model.core.dto.ReplicationAction.ActionType;
 import org.commonjava.aprox.model.core.dto.ReplicationDTO;
 import org.commonjava.aprox.model.core.dto.StoreListingDTO;
+import org.commonjava.aprox.subsys.http.AproxHttpException;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
 import org.commonjava.aprox.subsys.http.util.HttpResources;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.util.jhttpc.JHttpCException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -251,11 +254,10 @@ public class ReplicationController
     {
         final HttpGet req = newGet( remotesUrl, dto );
         CloseableHttpClient client = null;
-        CloseableHttpResponse response = null;
         try
         {
             client = http.createClient();
-            response = client.execute( req, http.createContext() );
+            CloseableHttpResponse response = client.execute( req, http.createContext() );
 
             final StatusLine statusLine = response.getStatusLine();
             final int status = statusLine.getStatusCode();
@@ -282,19 +284,14 @@ public class ReplicationController
                 throw new AproxWorkflowException( status, "Request: %s failed: %s", remotesUrl, statusLine );
             }
         }
-        catch ( final ClientProtocolException e )
+        catch ( final IOException | AproxHttpException e )
         {
             throw new AproxWorkflowException( "Failed to retrieve endpoints from: %s. Reason: %s", e, remotesUrl,
                                               e.getMessage() );
         }
-        catch ( final IOException e )
-        {
-            throw new AproxWorkflowException( "Failed to read endpoints from: %s. Reason: %s", e, remotesUrl,
-                                              e.getMessage() );
-        }
         finally
         {
-            http.cleanup( client, req, response );
+            IOUtils.closeQuietly( client );
         }
     }
 
@@ -338,11 +335,11 @@ public class ReplicationController
 
         final HttpGet req = newGet( url, dto );
         CloseableHttpClient client = null;
-        CloseableHttpResponse response = null;
         try
         {
             client = http.createClient();
-            response = client.execute( req, http.createContext() );
+
+            CloseableHttpResponse response = client.execute( req, http.createContext() );
 
             final StatusLine statusLine = response.getStatusLine();
             final int status = statusLine.getStatusCode();
@@ -355,18 +352,14 @@ public class ReplicationController
 
             throw new AproxWorkflowException( status, "Endpoint request failed: {}", statusLine );
         }
-        catch ( final ClientProtocolException e )
+        catch ( final IOException | AproxHttpException e )
         {
             throw new AproxWorkflowException( "Failed to retrieve endpoints from: {}. Reason: {}", e, url,
                                               e.getMessage() );
         }
-        catch ( final IOException e )
-        {
-            throw new AproxWorkflowException( "Failed to read endpoints from: {}. Reason: {}", e, url, e.getMessage() );
-        }
         finally
         {
-            http.cleanup( client, req, response );
+            IOUtils.closeQuietly( client );
         }
     }
 

@@ -22,6 +22,7 @@ import java.util.concurrent.Executors;
 import org.commonjava.aprox.change.event.AproxFileEventManager;
 import org.commonjava.aprox.content.KeyBasedPathGenerator;
 import org.commonjava.aprox.subsys.http.AproxHttpProvider;
+import org.commonjava.aprox.subsys.http.util.HttpFactoryPasswordDelegate;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.auth.MemoryPasswordManager;
 import org.commonjava.maven.galley.cache.FileCacheProvider;
@@ -39,6 +40,7 @@ import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.commonjava.maven.galley.spi.transport.TransportManager;
 import org.commonjava.maven.galley.transport.TransportManagerImpl;
 import org.commonjava.maven.galley.transport.htcli.HttpClientTransport;
+import org.commonjava.maven.galley.transport.htcli.HttpImpl;
 
 public class GalleyFixture
 {
@@ -61,11 +63,9 @@ public class GalleyFixture
 
     public GalleyFixture( final File repoRoot )
     {
-        final AproxHttpProvider aproxHttp = new AproxHttpProvider( new MemoryPasswordManager() );
+        MemoryPasswordManager passwordManager = new MemoryPasswordManager();
 
-        aproxHttp.setup();
-
-        transports = new TransportManagerImpl( new HttpClientTransport( aproxHttp.getHttpComponent() ) );
+        transports = new TransportManagerImpl( new HttpClientTransport( new HttpImpl(passwordManager) ) );
 
         events = new AproxFileEventManager();
         decorator = new NoOpTransferDecorator();

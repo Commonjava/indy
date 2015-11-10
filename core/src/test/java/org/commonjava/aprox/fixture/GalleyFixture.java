@@ -39,6 +39,7 @@ import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.commonjava.maven.galley.spi.transport.TransportManager;
 import org.commonjava.maven.galley.transport.TransportManagerImpl;
 import org.commonjava.maven.galley.transport.htcli.HttpClientTransport;
+import org.commonjava.maven.galley.transport.htcli.HttpImpl;
 
 public class GalleyFixture
 {
@@ -61,11 +62,7 @@ public class GalleyFixture
 
     public GalleyFixture( final File repoRoot )
     {
-        final AproxHttpProvider aproxHttp = new AproxHttpProvider( new MemoryPasswordManager() );
-
-        aproxHttp.setup();
-
-        transports = new TransportManagerImpl( new HttpClientTransport( aproxHttp.getHttpComponent() ) );
+        transports = new TransportManagerImpl( new HttpClientTransport( new HttpImpl(new MemoryPasswordManager()) ) );
 
         events = new AproxFileEventManager();
         decorator = new NoOpTransferDecorator();

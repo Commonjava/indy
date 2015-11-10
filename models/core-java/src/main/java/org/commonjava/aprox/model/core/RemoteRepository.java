@@ -25,9 +25,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;
 
-@ApiModel( description = "Proxy to a remote server's artifact content, with local cache storage.", parent = ArtifactStore.class )
+@ApiModel( description = "Proxy to a remote server's artifact content, with local cache storage.",
+           parent = ArtifactStore.class )
 public class RemoteRepository
-    extends ArtifactStore
+        extends ArtifactStore
 {
     private static final long serialVersionUID = 1L;
 
@@ -77,6 +78,9 @@ public class RemoteRepository
 
     @JsonProperty( "proxy_password" )
     private String proxyPassword;
+
+    @JsonProperty( "server_trust_policy" )
+    private String serverTrustPolicy;
 
     RemoteRepository()
     {
@@ -204,8 +208,7 @@ public class RemoteRepository
         host = url.getHost();
         if ( url.getPort() < 0 )
         {
-            port = url.getProtocol()
-                      .equals( "https" ) ? 443 : 80;
+            port = url.getProtocol().equals( "https" ) ? 443 : 80;
         }
         else
         {
@@ -226,8 +229,9 @@ public class RemoteRepository
     @Override
     public String toString()
     {
-        return String.format( "Repository [url=%s, timeoutSeconds=%s, host=%s, port=%s, user=%s, password=%s, getName()=%s, getKey()=%s]", url,
-                              timeoutSeconds, host, port, user, password, getName(), getKey() );
+        return String.format(
+                "Repository [url=%s, timeoutSeconds=%s, host=%s, port=%s, user=%s, password=%s, getName()=%s, getKey()=%s]",
+                url, timeoutSeconds, host, port, user, password, getName(), getKey() );
     }
 
     public boolean isPassthrough()
@@ -336,4 +340,13 @@ public class RemoteRepository
         this.nfcTimeoutSeconds = nfcTimeoutSeconds;
     }
 
+    public String getServerTrustPolicy()
+    {
+        return serverTrustPolicy;
+    }
+
+    public void setServerTrustPolicy( String serverTrustPolicy )
+    {
+        this.serverTrustPolicy = serverTrustPolicy;
+    }
 }

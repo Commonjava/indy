@@ -15,32 +15,37 @@
  */
 package org.commonjava.aprox.subsys.http;
 
-import static org.commonjava.aprox.util.LocationUtils.toLocation;
-
-import java.io.IOException;
-
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Produces;
-import javax.inject.Singleton;
-
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.aprox.model.core.RemoteRepository;
-import org.commonjava.maven.galley.auth.AttributePasswordManager;
+import org.commonjava.aprox.subsys.http.util.AproxSiteConfigLookup;
 import org.commonjava.maven.galley.spi.auth.PasswordManager;
 import org.commonjava.maven.galley.transport.htcli.Http;
 import org.commonjava.maven.galley.transport.htcli.HttpImpl;
-import org.commonjava.maven.galley.transport.htcli.model.HttpLocation;
+import org.commonjava.util.jhttpc.HttpFactory;
+import org.commonjava.util.jhttpc.INTERNAL.util.HttpUtils;
+import org.commonjava.util.jhttpc.JHttpCException;
+import org.commonjava.util.jhttpc.auth.AttributePasswordManager;
+
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Default;
+import javax.enterprise.inject.Produces;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 @ApplicationScoped
 public class AproxHttpProvider
 {
 
+    private HttpFactory httpFactory;
+
     private Http http;
+
+    @Inject
+    private AproxSiteConfigLookup siteConfigLookup;
 
     private PasswordManager passwordManager;
 
@@ -48,21 +53,18 @@ public class AproxHttpProvider
     {
     }
 
-    public AproxHttpProvider( final PasswordManager passwordManager )
+    public AproxHttpProvider( AproxSiteConfigLookup siteConfigLookup )
     {
-        this.passwordManager = passwordManager;
+        this.siteConfigLookup = siteConfigLookup;
         setup();
     }
 
     @PostConstruct
     public void setup()
     {
-        if ( passwordManager == null )
-        {
-            passwordManager = new AttributePasswordManager();
-        }
-
+        passwordManager = new org.commonjava.maven.galley.auth.AttributePasswordManager();
         http = new HttpImpl( passwordManager );
+        httpFactory = new HttpFactory( new AttributePasswordManager(siteConfigLookup) );
     }
 
     @Produces
@@ -76,37 +78,67 @@ public class AproxHttpProvider
     @Produces
     @Default
     @Singleton
-    public Http getHttpComponent()
+    public Http getHttp()
     {
         return http;
     }
 
     public HttpClientContext createContext()
+            throws AproxHttpException
     {
-        return http.createContext();
+        try
+        {
+            return httpFactory.createContext();
+        }
+        catch ( JHttpCException e )
+        {
+            throw new AproxHttpException( "Failed to create http client context: %s", e, e.getMessage() );
+        }
     }
 
     public HttpClientContext createContext( final RemoteRepository repository )
+            throws AproxHttpException
     {
-        return http.createContext( (HttpLocation) toLocation( repository ) );
+        try
+        {
+            return httpFactory.createContext( siteConfigLookup.toSiteConfig( repository ) );
+        }
+        catch ( JHttpCException e )
+        {
+            throw new AproxHttpException( "Failed to create http client context for remote repository: %s. Reason: %s", e, repository.getName(), e.getMessage() );
+        }
     }
 
     public CloseableHttpClient createClient()
-        throws IOException
+            throws AproxHttpException
     {
-        return http.createClient();
+        try
+        {
+            return httpFactory.createClient();
+        }
+        catch ( JHttpCException e )
+        {
+            throw new AproxHttpException( "Failed to create http client: %s", e, e.getMessage() );
+        }
     }
 
-    public CloseableHttpClient createClient( final RemoteRepository validationRepo )
-        throws IOException
+    public CloseableHttpClient createClient( final RemoteRepository repository )
+            throws AproxHttpException
     {
-        return http.createClient( (HttpLocation) toLocation( validationRepo ) );
+        try
+        {
+            return httpFactory.createClient( siteConfigLookup.toSiteConfig( repository ) );
+        }
+        catch ( JHttpCException e )
+        {
+            throw new AproxHttpException( "Failed to create http client for remote repository: %s. Reason: %s", e, repository.getName(), e.getMessage() );
+        }
     }
 
     public void cleanup( final CloseableHttpClient client, final HttpUriRequest request,
                          final CloseableHttpResponse response )
     {
-        http.cleanup( client, request, response );
+        HttpUtils.cleanupResources( client, request, response );
     }
 
 }
