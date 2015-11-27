@@ -15,6 +15,9 @@
  */
 package org.commonjava.aprox.promote.bind.jaxrs;
 
+import static org.commonjava.aprox.util.ApplicationContent.application_aprox_star_json;
+import static org.commonjava.aprox.util.ApplicationContent.application_json;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.AproxWorkflowException;
@@ -35,6 +38,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
@@ -45,6 +49,7 @@ import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.aprox.bind.jaxrs.util.ResponseUtils.throwError;
 
 @Path( "/api/promotion" )
+@Produces( { application_json, application_aprox_star_json } )
 public class PromoteResource
         implements AproxResources
 {
@@ -85,7 +90,7 @@ public class PromoteResource
     @Path( "/groups/rollback" )
     @POST
     @Consumes( ApplicationContent.application_json )
-    public GroupPromoteResult rollbackGroupPromote( GroupPromoteResult result,
+    public GroupPromoteResult rollbackGroupPromote( final GroupPromoteResult result,
                                                     @Context final HttpServletRequest servletRequest,
                                                     @Context final SecurityContext securityContext )
     {
