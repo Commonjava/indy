@@ -44,10 +44,14 @@ class ArtifactRefAvailability implements ValidationRule {
                         def txfr = tools.getTransfer(verifyStoreKey, path)
                         logger.info("{} in {}: {}. Exists? {}", target, verifyStoreKey, txfr, txfr.exists())
                         if (!txfr.exists()) {
-                            if (builder.length() > 0) {
-                                builder.append("\n")
+                            txfr = tools.getTransfer(request.getSource(), path)
+                            logger.info("{} in {}: {}. Exists? {}", target, request.getSource(), txfr, txfr.exists())
+                            if (!txfr.exists()) {
+                                if (builder.length() > 0) {
+                                    builder.append("\n")
+                                }
+                                builder.append(it).append(" is invalid: ").append(path).append(" is not available via: ").append(verifyStoreKey)
                             }
-                            builder.append(it).append(" is invalid: ").append(path).append(" is not available via: ").append(verifyStoreKey)
                         }
 
                         if ((target instanceof ArtifactRef) && !pomTC.equals(((ArtifactRef) target).getTypeAndClassifier())) {
@@ -55,10 +59,14 @@ class ArtifactRefAvailability implements ValidationRule {
                             txfr = tools.getTransfer(verifyStoreKey, path)
                             logger.info("POM {} in {}: {}. Exists? {}", target.asPomArtifact(), verifyStoreKey, txfr, txfr.exists())
                             if (!txfr.exists()) {
-                                if (builder.length() > 0) {
-                                    builder.append("\n")
+                                txfr = tools.getTransfer(request.getSource(), path)
+                                logger.info("{} in {}: {}. Exists? {}", target, request.getSource(), txfr, txfr.exists())
+                                if (!txfr.exists()) {
+                                    if (builder.length() > 0) {
+                                        builder.append("\n")
+                                    }
+                                    builder.append(it).append(" is invalid: ").append(path).append(" is not available via: ").append(verifyStoreKey)
                                 }
-                                builder.append(it).append(" is invalid: ").append(path).append(" is not available via: ").append(verifyStoreKey)
                             }
                         }
                     }
