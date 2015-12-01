@@ -78,6 +78,11 @@ public class ProxyAcceptHandler implements ChannelListener<AcceptingChannel<Stre
             return;
         }
 
+        if ( accepted == null )
+        {
+            return;
+        }
+
         logger.debug( "accepted {}", accepted.getPeerAddress() );
 
         final ConduitStreamSourceChannel source = accepted.getSourceChannel();

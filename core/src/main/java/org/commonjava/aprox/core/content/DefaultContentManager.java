@@ -50,6 +50,7 @@ import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.galley.BadGatewayException;
+import org.commonjava.maven.galley.TransferLocationException;
 import org.commonjava.maven.galley.TransferTimeoutException;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
@@ -294,17 +295,17 @@ public class DefaultContentManager
         }
         catch ( AproxWorkflowException e )
         {
-            filterTimeouts( e );
+            filterLocationErrors( e );
         }
 
         return item;
     }
 
-    private void filterTimeouts( AproxWorkflowException e )
+    private void filterLocationErrors( AproxWorkflowException e )
             throws AproxWorkflowException
     {
         Throwable cause = e.getCause();
-        if ( !( cause instanceof BadGatewayException ) && !( cause instanceof TransferTimeoutException ) )
+        if ( !( cause instanceof TransferLocationException ) )
         {
             throw e;
         }
@@ -581,7 +582,7 @@ public class DefaultContentManager
                 }
                 catch ( AproxWorkflowException e )
                 {
-                    filterTimeouts( e );
+                    filterLocationErrors( e );
                 }
 
                 if ( storeListing != null )
@@ -622,7 +623,7 @@ public class DefaultContentManager
             }
             catch ( AproxWorkflowException e )
             {
-                filterTimeouts( e );
+                filterLocationErrors( e );
             }
 
             if ( storeListing != null )

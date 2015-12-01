@@ -43,7 +43,7 @@ public class RetrievedContentMatchesContentLength_SlowClient_Test
     // NOTE: anything less, and it seems like this test doesn't check for stream truncation.
     private static final int CONTENT_LENGTH = 1024 * 384;
 
-    private static int SELECTION_OFFSET = 32; // let's get to printable ASCII characters
+    private static int SELECTION_OFFSET = 32; // let's getOrCreate to printable ASCII characters
 
     private static int SELECTION_RANGE_SIZE = 126 - SELECTION_OFFSET;
                     // from the ASCII table...let's just keep it simple

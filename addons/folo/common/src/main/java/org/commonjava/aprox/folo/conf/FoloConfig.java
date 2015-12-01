@@ -73,6 +73,7 @@ public class FoloConfig
 
     public FoloConfig( final Integer cacheTimeoutSeconds )
     {
+        this.cacheTimeoutSeconds = cacheTimeoutSeconds;
     }
 
     public Integer getCacheTimeoutSeconds()

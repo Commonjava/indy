@@ -302,7 +302,7 @@ public class FoloContentAccessHandler
                 {
                     final String contentType = contentController.getContentType( path );
 
-                    item.touch();
+                    item.touch( metadata );
 
                     response = Response.ok( new TransferStreamingOutput( item, metadata ) )
                                        .header( ApplicationHeader.content_type.key(), contentType )
