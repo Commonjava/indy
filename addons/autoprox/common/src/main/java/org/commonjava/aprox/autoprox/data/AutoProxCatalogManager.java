@@ -133,7 +133,7 @@ public class AutoProxCatalogManager
             this.enabled = false;
             this.ruleMappings = new ArrayList<>();
 
-            logger.info( "Autoprox is disabled." );
+            logger.debug( "Autoprox is disabled." );
             return false;
         }
 

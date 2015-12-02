@@ -34,6 +34,7 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.content.ContentDigest;
 import org.commonjava.aprox.content.ContentGenerator;
@@ -235,6 +236,11 @@ public class DefaultContentManager
                                                   e.getMessage() );
             }
 
+            if ( logger.isDebugEnabled() )
+            {
+                logger.debug( "{} is a group. Attempting downloads from (in order):\n  {}", StringUtils.join(members, "\n  ") );
+            }
+
             item = null;
             for ( final ContentGenerator generator : contentGenerators )
             {
@@ -261,6 +267,8 @@ public class DefaultContentManager
         {
             item = doRetrieve( store, path, eventMetadata );
         }
+
+        logger.info( "Returning transfer: {}", item );
 
         return item;
     }
