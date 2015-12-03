@@ -21,14 +21,18 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 import org.commonjava.aprox.folo.conf.FoloConfig;
+import org.commonjava.aprox.folo.model.AffectedStoreRecord;
+import org.commonjava.aprox.folo.model.StoreEffect;
 import org.commonjava.aprox.folo.model.TrackedContentRecord;
 import org.commonjava.aprox.folo.model.TrackingKey;
+import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.subsys.datafile.DataFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.File;
@@ -70,15 +74,78 @@ public class FoloRecordCache
         this.config = config;
     }
 
+    @PreDestroy
+    public void shutdown()
+    {
+        // force eviction of all in memory to make sure they're written to disk.
+        recordCache.invalidateAll();
+    }
+
     @PostConstruct
-    public void buildCache()
+    public void startCache()
+    {
+        buildCache();
+    }
+
+    protected Cache<TrackingKey, TrackedContentRecord> buildCache()
+    {
+        return buildCache( null );
+    }
+
+    protected Cache<TrackingKey, TrackedContentRecord> buildCache( FoloRecordCacheConfigurator builderConfigurator )
     {
         final CacheBuilder<Object, Object> builder = CacheBuilder.newBuilder();
+        builder.removalListener( this );
 
-        builder.expireAfterAccess( config.getCacheTimeoutSeconds(), TimeUnit.SECONDS )
-               .removalListener( this );
+        if ( builderConfigurator != null )
+        {
+            builderConfigurator.configure( builder );
+        }
+        else
+        {
+            builder.expireAfterAccess( config.getCacheTimeoutSeconds(), TimeUnit.SECONDS );
+        }
 
         recordCache = builder.build( this );
+        return recordCache;
+    }
+
+    /**
+     * Add a new artifact upload/download item to given affected store within a tracked-content record. If the tracked-content record doesn't exist,
+     * or doesn't contain the specified affected store, values will be created on-demand.
+     * @param key The key to the tracking record
+     * @param affectedStore The store where the artifact was downloaded via / uploaded to
+     * @param path The artifact's file path in the repo
+     * @param effect Whether this is an upload or download event
+     * @return The changed record
+     * @throws FoloContentException In case there is some problem loading an existing record from disk.
+     */
+    public synchronized TrackedContentRecord recordArtifact( final TrackingKey key, final StoreKey affectedStore, final String path,
+                                                final StoreEffect effect )
+            throws FoloContentException
+    {
+        final TrackedContentRecord record;
+        try
+        {
+            record = recordCache.get( key, newCallable( key ) );
+        }
+        catch ( ExecutionException e )
+        {
+            throw new FoloContentException( "Failed to load tracking record for: %s. Reason: %s", e, key,
+                                            e.getMessage() );
+        }
+
+        final AffectedStoreRecord affected = record.getAffectedStore( affectedStore, true );
+        affected.add( path, effect );
+
+        recordCache.put( record.getKey(), record );
+
+        return record;
+    }
+
+    private Callable<? extends TrackedContentRecord> newCallable( TrackingKey key )
+    {
+        return ()->FoloRecordCache.this.load( key );
     }
 
     @Override
@@ -136,58 +203,69 @@ public class FoloRecordCache
         }
     }
 
-    public void delete( final TrackingKey key )
+    public synchronized void delete( final TrackingKey key )
     {
         recordCache.invalidate( key );
         filer.deleteFiles( key );
     }
 
-    public Callable<? extends TrackedContentRecord> newCallable( final TrackingKey trackedStore )
+    public synchronized boolean hasRecord( final TrackingKey key )
     {
-        return new LoaderCall( this, trackedStore );
+        DataFile rf = filer.getRecordFile( key );
+
+        logger.info( "Looking for tracking record: {}.\nCache record: {}\nRecord file: {} (exists? {})", key,
+                     recordCache.getIfPresent( key ), rf, rf.exists() );
+
+        return recordCache.getIfPresent( key ) != null || rf.exists();
     }
 
-    private static final class LoaderCall
-        implements Callable<TrackedContentRecord>
-    {
-        private final FoloRecordCache persister;
-
-        private final TrackingKey key;
-
-        public LoaderCall( final FoloRecordCache persister, final TrackingKey key )
-        {
-            this.persister = persister;
-            this.key = key;
-        }
-
-        @Override
-        public TrackedContentRecord call()
-            throws Exception
-        {
-            return persister.load( key );
-        }
-    }
-
-    public boolean hasRecord( final TrackingKey key )
-    {
-        logger.info( "Looking for tracking record: {}.\nCache record: {}\nRecord file: {}", key,
-                     recordCache.getIfPresent( key ), filer.getRecordFile( key ) );
-
-        return recordCache.getIfPresent( key ) != null || filer.getRecordFile( key ).exists();
-    }
-
-    public TrackedContentRecord get( final TrackingKey key )
+    public synchronized TrackedContentRecord getOrCreate( final TrackingKey key )
         throws FoloContentException
     {
         try
         {
-            return recordCache.get( key, newCallable( key ) );
+            return recordCache.get( key, ()-> FoloRecordCache.this.load( key ) );
         }
         catch ( final ExecutionException e )
         {
             throw new FoloContentException( "Failed to load tracking record for: %s. Reason: %s", e, key,
                                             e.getMessage() );
         }
+    }
+
+    public synchronized TrackedContentRecord getIfExists( TrackingKey key )
+    {
+        DataFile rf = filer.getRecordFile( key );
+
+        TrackedContentRecord record = recordCache.getIfPresent( key );
+        logger.info( "Looking for tracking record: {}.\nCache record: {}\nRecord file: {} (exists? {})", key,
+                     record, rf, rf.exists() );
+
+        if ( record == null && rf.exists() )
+        {
+            try
+            {
+                record = recordCache.get( key, () -> FoloRecordCache.this.load( key ) );
+            }
+            catch ( ExecutionException e )
+            {
+                logger.error(
+                        String.format( "Failed to load Folo tracking record from: %s. Reason: %s", rf, e.getMessage() ),
+                        e );
+
+                record = null;
+            }
+        }
+
+        return record;
+    }
+
+    /**
+     * Mostly useful for testing, this allows fine-tuning of the configuration for the underlying Guava cache.
+     */
+    public interface FoloRecordCacheConfigurator
+    {
+        void configure(CacheBuilder<Object, Object> builder );
     }
 
 }

@@ -303,60 +303,66 @@ public class ContentController
             uriFormatter.formatAbsolutePathTo( serviceUrl, key.getType()
                                                               .singularEndpointName(), key.getName() );
 
-        // first pass, process only obvious directory entries (ending in '/')
-        // second pass, process the remainder.
-        for ( int pass = 0; pass < 2; pass++ )
+        if ( listed != null )
         {
-            for ( final ConcreteResource res : listed )
+            // first pass, process only obvious directory entries (ending in '/')
+            // second pass, process the remainder.
+            for ( int pass = 0; pass < 2; pass++ )
             {
-                String p = res.getPath();
-                if ( pass == 0 && !p.endsWith( "/" ) )
+                for ( final ConcreteResource res : listed )
                 {
-                    continue;
-                }
-                else if ( pass == 1 )
-                {
-                    if ( !p.endsWith( "/" ) )
-                    {
-                        final String dirpath = p + "/";
-                        if ( listingUrls.containsKey( normalize( storeUrl, dirpath ) ) )
-                        {
-                            p = dirpath;
-                        }
-                    }
-                    else
+                    String p = res.getPath();
+                    if ( pass == 0 && !p.endsWith( "/" ) )
                     {
                         continue;
                     }
-                }
+                    else if ( pass == 1 )
+                    {
+                        if ( !p.endsWith( "/" ) )
+                        {
+                            final String dirpath = p + "/";
+                            if ( listingUrls.containsKey( normalize( storeUrl, dirpath ) ) )
+                            {
+                                p = dirpath;
+                            }
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
 
-                final String localUrl = normalize( storeUrl, p );
-                Set<String> sources = listingUrls.get( localUrl );
-                if ( sources == null )
-                {
-                    sources = new HashSet<String>();
-                    listingUrls.put( localUrl, sources );
-                }
+                    final String localUrl = normalize( storeUrl, p );
+                    Set<String> sources = listingUrls.get( localUrl );
+                    if ( sources == null )
+                    {
+                        sources = new HashSet<String>();
+                        listingUrls.put( localUrl, sources );
+                    }
 
-                sources.add( normalize( res.getLocationUri(), res.getPath() ) );
+                    sources.add( normalize( res.getLocationUri(), res.getPath() ) );
+                }
             }
         }
 
         final List<String> sources = new ArrayList<String>();
-        for ( final ConcreteResource res : listed )
+        if ( listed != null )
         {
-            // KeyedLocation is all we use in AProx.
-            logger.debug( "Formatting sources URL for: {}", res );
-            final KeyedLocation kl = (KeyedLocation) res.getLocation();
-
-            final String uri = uriFormatter.formatAbsolutePathTo( serviceUrl, kl.getKey()
-                                                                                .getType()
-                                                                                .singularEndpointName(), kl.getKey()
-                                                                                                           .getName() );
-            if ( !sources.contains( uri ) )
+            for ( final ConcreteResource res : listed )
             {
-                logger.debug( "adding source URI: '{}'", uri );
-                sources.add( uri );
+                // KeyedLocation is all we use in AProx.
+                logger.debug( "Formatting sources URL for: {}", res );
+                final KeyedLocation kl = (KeyedLocation) res.getLocation();
+
+                final String uri = uriFormatter.formatAbsolutePathTo( serviceUrl, kl.getKey()
+                                                                                    .getType()
+                                                                                    .singularEndpointName(), kl.getKey()
+                                                                                                               .getName() );
+                if ( !sources.contains( uri ) )
+                {
+                    logger.debug( "adding source URI: '{}'", uri );
+                    sources.add( uri );
+                }
             }
         }
 

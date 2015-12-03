@@ -15,12 +15,9 @@
  */
 package org.commonjava.aprox.folo.change;
 
-import javax.enterprise.event.Observes;
-import javax.inject.Inject;
-
 import org.commonjava.aprox.folo.ctl.FoloConstants;
 import org.commonjava.aprox.folo.data.FoloContentException;
-import org.commonjava.aprox.folo.data.FoloRecordManager;
+import org.commonjava.aprox.folo.data.FoloRecordCache;
 import org.commonjava.aprox.folo.model.StoreEffect;
 import org.commonjava.aprox.folo.model.TrackingKey;
 import org.commonjava.aprox.model.galley.KeyedLocation;
@@ -32,13 +29,16 @@ import org.commonjava.maven.galley.model.TransferOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.event.Observes;
+import javax.inject.Inject;
+
 public class FoloTrackingListener
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private FoloRecordManager recordManager;
+    private FoloRecordCache recordManager;
 
     public void onFileAccess( @Observes final FileAccessEvent event )
     {

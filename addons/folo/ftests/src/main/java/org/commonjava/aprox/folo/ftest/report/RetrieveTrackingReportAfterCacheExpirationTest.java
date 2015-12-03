@@ -15,16 +15,6 @@
  */
 package org.commonjava.aprox.folo.ftest.report;
 
-import static org.commonjava.aprox.model.core.StoreType.remote;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.util.Set;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.aprox.client.core.util.UrlUtils;
@@ -34,17 +24,35 @@ import org.commonjava.aprox.folo.dto.TrackedContentDTO;
 import org.commonjava.aprox.folo.dto.TrackedContentEntryDTO;
 import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
-import org.commonjava.test.http.TestHttpServer;
+import org.commonjava.aprox.test.fixture.core.CoreServerFixture;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
 import org.junit.Test;
 
-public class RetrieveFileAndVerifyInTrackingReportTest
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Set;
+
+import static org.commonjava.aprox.model.core.StoreType.remote;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
+
+public class RetrieveTrackingReportAfterCacheExpirationTest
     extends AbstractTrackingReportTest
 {
 
     @Rule
     public ExpectationServer server = new ExpectationServer();
+
+    @Override
+    protected void initTestConfig( CoreServerFixture fixture )
+            throws IOException
+    {
+        writeConfigFile( "conf.d/folo.conf", "[folo]\ncache.timeout.seconds=1" );
+    }
 
     @Test
     public void run()
@@ -76,6 +84,9 @@ public class RetrieveFileAndVerifyInTrackingReportTest
 
         assertThat( md5, equalTo( DigestUtils.md5Hex( bytes ) ) );
         assertThat( sha256, equalTo( DigestUtils.sha256Hex( bytes ) ) );
+
+        // sleep so the cache evicts the record
+        Thread.sleep( 2000 );
 
         final TrackedContentDTO report = client.module( AproxFoloAdminClientModule.class )
                                                .getTrackingReport( trackingId );

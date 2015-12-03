@@ -15,27 +15,6 @@
  */
 package org.commonjava.aprox.folo.ctl;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipOutputStream;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.content.ContentDigest;
 import org.commonjava.aprox.content.ContentManager;
@@ -44,7 +23,7 @@ import org.commonjava.aprox.data.AproxDataException;
 import org.commonjava.aprox.data.StoreDataManager;
 import org.commonjava.aprox.folo.data.FoloContentException;
 import org.commonjava.aprox.folo.data.FoloFiler;
-import org.commonjava.aprox.folo.data.FoloRecordManager;
+import org.commonjava.aprox.folo.data.FoloRecordCache;
 import org.commonjava.aprox.folo.dto.TrackedContentDTO;
 import org.commonjava.aprox.folo.dto.TrackedContentEntryDTO;
 import org.commonjava.aprox.folo.model.AffectedStoreRecord;
@@ -54,18 +33,28 @@ import org.commonjava.aprox.model.core.RemoteRepository;
 import org.commonjava.aprox.model.core.StoreKey;
 import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.util.ApplicationStatus;
-import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
-import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.galley.TransferException;
-import org.commonjava.maven.galley.TransferManager;
-import org.commonjava.maven.galley.event.EventMetadata;
-import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
-import org.commonjava.maven.galley.model.TransferBatch;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.util.UrlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.apache.commons.io.IOUtils.copy;
@@ -77,7 +66,7 @@ public class FoloAdminController
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private FoloRecordManager recordManager;
+    private FoloRecordCache recordManager;
 
     @Inject
     private FoloFiler filer;
@@ -95,8 +84,9 @@ public class FoloAdminController
     {
     }
 
-    public FoloAdminController( final FoloRecordManager recordManager, final FoloFiler filer, final DownloadManager downloadManager,
-                                ContentManager contentManager, StoreDataManager storeManager )
+    public FoloAdminController( final FoloRecordCache recordManager, final FoloFiler filer,
+                                final DownloadManager downloadManager, ContentManager contentManager,
+                                StoreDataManager storeManager )
     {
         this.recordManager = recordManager;
         this.filer = filer;
@@ -112,64 +102,58 @@ public class FoloAdminController
 
         File file = filer.getRepositoryZipFile( tk ).getDetachedFile();
         file.getParentFile().mkdirs();
-        try
+        logger.debug( "Retrieving tracking record for: {}", tk );
+        final TrackedContentRecord record = recordManager.getIfExists( tk );
+        logger.debug( "Got: {}", record );
+
+        if ( record == null )
         {
-            logger.debug( "Retrieving tracking record for: {}", tk );
-            final TrackedContentRecord record = recordManager.getRecord( tk );
-            logger.debug( "Got: {}", record );
+            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
+                                              "No tracking record available for: %s", tk );
+        }
 
-            if ( record == null )
+        final Set<String> seenPaths = new HashSet<>();
+        final List<Transfer> items = new ArrayList<>();
+        for ( final AffectedStoreRecord asr : record )
+        {
+            final StoreKey sk = asr.getKey();
+
+            addTransfers( asr.getUploadedPaths(), sk, items, id, seenPaths );
+            addTransfers( asr.getDownloadedPaths(), sk, items, id, seenPaths );
+        }
+
+        logger.debug( "Retrieved {} files. Creating zip.", items.size() );
+
+        Collections.sort( items, ( f, s ) -> f.getPath().compareTo( s.getPath() ) );
+
+        try (ZipOutputStream stream = new ZipOutputStream( new FileOutputStream( file ) ))
+        {
+            for ( final Transfer item : items )
             {
-                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
-                                                  "No tracking record available for: %s", tk );
-            }
-
-            final Set<String> seenPaths = new HashSet<>();
-            final List<Transfer> items = new ArrayList<>();
-            for ( final AffectedStoreRecord asr : record )
-            {
-                final StoreKey sk = asr.getKey();
-
-                addTransfers( asr.getUploadedPaths(), sk, items, id, seenPaths );
-                addTransfers( asr.getDownloadedPaths(), sk, items, id, seenPaths );
-            }
-
-            logger.debug( "Retrieved {} files. Creating zip.", items.size() );
-
-            Collections.sort( items, ( f, s ) -> f.getPath().compareTo( s.getPath() ) );
-
-            try(ZipOutputStream stream = new ZipOutputStream( new FileOutputStream( file)))
-            {
-                for ( final Transfer item : items )
+                //                    logger.info( "Adding: {}", item );
+                if ( item != null )
                 {
-                    //                    logger.info( "Adding: {}", item );
-                    if ( item != null )
-                    {
-                        final String path = item.getPath();
-                        final ZipEntry ze = new ZipEntry( path );
-                        stream.putNextEntry( ze );
+                    final String path = item.getPath();
+                    final ZipEntry ze = new ZipEntry( path );
+                    stream.putNextEntry( ze );
 
-                        InputStream itemStream = null;
-                        try
-                        {
-                            itemStream = item.openInputStream();
-                            copy( itemStream, stream );
-                        }
-                        finally
-                        {
-                            closeQuietly( itemStream );
-                        }
+                    InputStream itemStream = null;
+                    try
+                    {
+                        itemStream = item.openInputStream();
+                        copy( itemStream, stream );
+                    }
+                    finally
+                    {
+                        closeQuietly( itemStream );
                     }
                 }
             }
-            catch ( final IOException e )
-            {
-                throw new AproxWorkflowException( "Failed to generate repository zip from tracking record: {}. Reason: {}", e, id, e.getMessage() );
-            }
         }
-        catch ( FoloContentException e )
+        catch ( final IOException e )
         {
-            throw new AproxWorkflowException( "Failed to retrieve record: %s. Reason: %s", e, tk, e.getMessage() );
+            throw new AproxWorkflowException( "Failed to generate repository zip from tracking record: {}. Reason: {}",
+                                              e, id, e.getMessage() );
         }
 
         return file;
@@ -207,43 +191,36 @@ public class FoloAdminController
             throws AproxWorkflowException
     {
         final TrackingKey tk = new TrackingKey( id );
-        try
-        {
-            logger.debug( "Retrieving tracking record for: {}", tk );
-            final TrackedContentRecord record = recordManager.getRecord( tk );
-            logger.debug( "Got: {}", record );
+        logger.debug( "Retrieving tracking record for: {}", tk );
+        final TrackedContentRecord record = recordManager.getIfExists( tk );
+        logger.debug( "Got: {}", record );
 
-            if ( record == null )
+        if ( record == null )
+        {
+            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
+                                              "No tracking record available for: %s", tk );
+        }
+
+        final Set<TrackedContentEntryDTO> uploads = new TreeSet<>();
+        final Set<TrackedContentEntryDTO> downloads = new TreeSet<>();
+        for ( final AffectedStoreRecord asr : record )
+        {
+            final StoreKey sk = asr.getKey();
+
+            Set<String> paths = asr.getUploadedPaths();
+            if ( paths != null )
             {
-                throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
-                                                  "No tracking record available for: %s", tk );
+                addEntries( uploads, sk, paths, apiBaseUrl );
             }
 
-            final Set<TrackedContentEntryDTO> uploads = new TreeSet<>();
-            final Set<TrackedContentEntryDTO> downloads = new TreeSet<>();
-            for ( final AffectedStoreRecord asr : record )
+            paths = asr.getDownloadedPaths();
+            if ( paths != null )
             {
-                final StoreKey sk = asr.getKey();
-
-                Set<String> paths = asr.getUploadedPaths();
-                if ( paths != null )
-                {
-                    addEntries( uploads, sk, paths, apiBaseUrl );
-                }
-
-                paths = asr.getDownloadedPaths();
-                if ( paths != null )
-                {
-                    addEntries( downloads, sk, paths, apiBaseUrl );
-                }
+                addEntries( downloads, sk, paths, apiBaseUrl );
             }
+        }
 
-            return new TrackedContentDTO( tk, uploads, downloads );
-        }
-        catch ( final FoloContentException e )
-        {
-            throw new AproxWorkflowException( "Failed to retrieve record: %s. Reason: %s", e, tk, e.getMessage() );
-        }
+        return new TrackedContentDTO( tk, uploads, downloads );
     }
 
     private void addEntries( final Set<TrackedContentEntryDTO> entries, final StoreKey key, final Set<String> paths,
@@ -301,21 +278,13 @@ public class FoloAdminController
             throws AproxWorkflowException
     {
         final TrackingKey tk = new TrackingKey( id );
-        try
-        {
-            return recordManager.getRecord( tk );
-        }
-        catch ( final FoloContentException e )
-        {
-            throw new AproxWorkflowException( ApplicationStatus.NOT_FOUND.code(),
-                                              "Failed to retrieve record: %s. Reason: %s", e, tk, e.getMessage() );
-        }
+        return recordManager.getIfExists( tk );
     }
 
     public void clearRecord( final String id )
     {
         final TrackingKey tk = new TrackingKey( id );
-        recordManager.clearRecord( tk );
+        recordManager.delete( tk );
     }
 
     public boolean hasRecord( final String id )
@@ -328,7 +297,7 @@ public class FoloAdminController
     {
         try
         {
-            recordManager.initRecord( new TrackingKey( id ) );
+            recordManager.getOrCreate( new TrackingKey( id ) );
         }
         catch ( final FoloContentException e )
         {

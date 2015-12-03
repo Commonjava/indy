@@ -21,12 +21,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.PatternSyntaxException;
 
 import javax.enterprise.context.ApplicationScoped;
 
 import org.commonjava.aprox.conf.AbstractAproxMapConfig;
 import org.commonjava.aprox.conf.AproxConfigInfo;
 import org.commonjava.web.config.ConfigurationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class ImpliedRepoConfig
@@ -105,9 +108,17 @@ public class ImpliedRepoConfig
 
         for ( String bl : blacklist )
         {
-            if ( u.matches( bl ) )
+            try
             {
-                return true;
+                if ( u.matches( bl ) )
+                {
+                    return true;
+                }
+            }
+            catch ( PatternSyntaxException e )
+            {
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.warn( "[BLACKLIST SKIP] Regex comparison failed on pattern: " + bl, e);
             }
         }
 

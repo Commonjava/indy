@@ -188,7 +188,7 @@ public class StoreAdminHandler
         {
             String user = securityManager.getUser( securityContext, request );
 
-            if ( adminController.store( store, user, true ) )
+            if ( adminController.store( store, user, false ) )
             {
                 final URI uri = uriInfo.getBaseUriBuilder()
                                        .path( getClass() )

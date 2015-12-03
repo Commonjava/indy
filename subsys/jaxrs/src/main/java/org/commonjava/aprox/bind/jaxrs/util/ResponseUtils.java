@@ -56,20 +56,17 @@ public final class ResponseUtils
     }
 
     public static Response formatRedirect( final URI uri )
-        throws URISyntaxException
+            throws URISyntaxException
     {
-        return Response.status( Status.MOVED_PERMANENTLY )
-                       .location( uri )
-                       .build();
+        return Response.status( Status.MOVED_PERMANENTLY ).location( uri ).build();
     }
 
     public static Response formatCreatedResponse( final String baseUri, final UriFormatter uriFormatter,
                                                   final String... params )
-        throws URISyntaxException
+            throws URISyntaxException
     {
         final URI location = new URI( uriFormatter.formatAbsolutePathTo( baseUri, params ) );
-        return Response.created( location )
-                       .build();
+        return Response.created( location ).build();
     }
 
     public static Response formatCreatedResponseWithJsonEntity( final URI location, final Object dto,
@@ -77,8 +74,7 @@ public final class ResponseUtils
     {
         if ( dto == null )
         {
-            return Response.noContent()
-                           .build();
+            return Response.noContent().build();
         }
 
         Response response;
@@ -99,9 +95,7 @@ public final class ResponseUtils
 
     public static Response formatCreatedResponse( final String baseUri, final CreationDTO dto )
     {
-        return Response.created( dto.getUri() )
-                       .entity( dto.getJsonResponse() )
-                       .build();
+        return Response.created( dto.getUri() ).entity( dto.getJsonResponse() ).build();
     }
 
     public static Response formatOkResponseWithJsonEntity( final String json )
@@ -113,15 +107,14 @@ public final class ResponseUtils
     {
         if ( dto == null )
         {
-            return Response.noContent()
-                           .build();
+            return Response.noContent().build();
         }
 
         Response response;
         try
         {
-            response = Response.ok( objectMapper.writeValueAsString( dto ), ApplicationContent.application_json )
-                               .build();
+            response =
+                    Response.ok( objectMapper.writeValueAsString( dto ), ApplicationContent.application_json ).build();
         }
         catch ( final JsonProcessingException e )
         {
@@ -131,11 +124,11 @@ public final class ResponseUtils
         return response;
     }
 
-    public static ResponseBuilder setInfoHeaders( final ResponseBuilder builder, final Transfer item,
-                                                  final StoreKey sk, final String path,
-                                                  final boolean includeContentLength, final String contentType,
+    public static ResponseBuilder setInfoHeaders( final ResponseBuilder builder, final Transfer item, final StoreKey sk,
+                                                  final String path, final boolean includeContentLength,
+                                                  final String contentType,
                                                   final HttpExchangeMetadata exchangeMetadata )
-        throws AproxWorkflowException
+            throws AproxWorkflowException
     {
         // I don't think we want to use the result from upstream; it's often junk...we should retain control of this.
         builder.header( ApplicationHeader.content_type.key(), contentType );
@@ -145,22 +138,18 @@ public final class ResponseUtils
 
         if ( exchangeMetadata != null )
         {
-            for ( final Map.Entry<String, List<String>> headerSet : exchangeMetadata.getResponseHeaders()
-                                                                                    .entrySet() )
+            for ( final Map.Entry<String, List<String>> headerSet : exchangeMetadata.getResponseHeaders().entrySet() )
             {
                 final String key = headerSet.getKey();
-                if ( ApplicationHeader.content_type.upperKey()
-                                                   .equals( key ) )
+                if ( ApplicationHeader.content_type.upperKey().equals( key ) )
                 {
                     continue;
                 }
-                else if ( ApplicationHeader.last_modified.upperKey()
-                                                         .equals( key ) )
+                else if ( ApplicationHeader.last_modified.upperKey().equals( key ) )
                 {
                     lastModSet = true;
                 }
-                else if ( ApplicationHeader.content_length.upperKey()
-                                                          .equals( key ) )
+                else if ( ApplicationHeader.content_length.upperKey().equals( key ) )
                 {
                     lenSet = true;
                     if ( !includeContentLength )
@@ -211,36 +200,31 @@ public final class ResponseUtils
         final ResponseBuilder builder = Response.status( metadata.getResponseStatusCode() );
         // The code below was triggering empty responses via GET requests when something was missing upstream.
         // See https://github.com/Commonjava/aprox/issues/207
-//        Logger logger = LoggerFactory.getLogger( ResponseUtils.class );
-//        for ( final Map.Entry<String, List<String>> headerSet : metadata.getResponseHeaders()
-//                                                                        .entrySet() )
-//        {
-//            for ( final String value : headerSet.getValue() )
-//            {
-//                logger.info( "Setting response header from http metadata: key={}, value={}", headerSet.getKey(),
-//                             value );
-//
-//                builder.header( headerSet.getKey(), value );
-//            }
-//        }
+        //        Logger logger = LoggerFactory.getLogger( ResponseUtils.class );
+        //        for ( final Map.Entry<String, List<String>> headerSet : metadata.getResponseHeaders()
+        //                                                                        .entrySet() )
+        //        {
+        //            for ( final String value : headerSet.getValue() )
+        //            {
+        //                logger.info( "Setting response header from http metadata: key={}, value={}", headerSet.getKey(),
+        //                             value );
+        //
+        //                builder.header( headerSet.getKey(), value );
+        //            }
+        //        }
 
         return builder.build();
     }
 
     public static Response formatOkResponseWithEntity( final Object output, final String contentType )
     {
-        return Response.ok( output )
-                       .type( contentType )
-                       .build();
+        return Response.ok( output ).type( contentType ).build();
     }
 
     public static Response formatBadRequestResponse( final String error )
     {
         final String msg = "{\"error\": \"" + error + "\"}\n";
-        return Response.status( Status.BAD_REQUEST )
-                       .type( MediaType.APPLICATION_JSON )
-                       .entity( msg )
-                       .build();
+        return Response.status( Status.BAD_REQUEST ).type( MediaType.APPLICATION_JSON ).entity( msg ).build();
     }
 
     public static Response formatResponse( final Throwable error )
@@ -284,8 +268,7 @@ public final class ResponseUtils
     }
 
     private static Response formulateResponse( final ApplicationStatus status, final Throwable error,
-                                               final String message,
-                                               final boolean throwIt )
+                                               final String message, final boolean throwIt )
     {
         final String id = generateErrorId();
         final String msg = formatEntity( id, error, message ).toString();
@@ -305,20 +288,22 @@ public final class ResponseUtils
 
         LOGGER.error( "Sending error response: {} {}\n{}", code.getStatusCode(), code.getReasonPhrase(), msg );
 
-        if ( throwIt )
-        {
-            throw new WebApplicationException( msg, error, code );
-        }
-
-        return Response.status( code )
+        Response response = Response.status( code )
+                       .header( ApplicationHeader.content_type.key(), ApplicationContent.text_plain )
                        .entity( msg )
                        .build();
+
+        if ( throwIt )
+        {
+            throw new WebApplicationException( error, response );
+        }
+
+        return response;
     }
 
     public static String generateErrorId()
     {
-        return DigestUtils.sha256Hex( Thread.currentThread()
-                                                  .getName() );
+        return DigestUtils.sha256Hex( Thread.currentThread().getName() );
 
         //+ "@" + new SimpleDateFormat( "yyyy-MM-ddThhmmss.nnnZ" ).format( new Date() );
     }
@@ -337,15 +322,14 @@ public final class ResponseUtils
     {
         return formatEntity( generateErrorId(), error, message );
     }
+
     public static CharSequence formatEntity( final String id, final Throwable error, final String message )
     {
         final StringWriter sw = new StringWriter();
-        sw.append( "Id: " )
-          .append( id );
+        sw.append( "Id: " ).append( id );
         if ( message != null )
         {
-            sw.append( "\nMessage: " )
-              .append( message );
+            sw.append( "\nMessage: " ).append( message );
         }
 
         sw.append( error.getMessage() );

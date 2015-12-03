@@ -17,15 +17,19 @@ package org.commonjava.aprox.folo.data;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import org.commonjava.aprox.folo.conf.FoloConfig;
+import org.commonjava.aprox.folo.model.StoreEffect;
 import org.commonjava.aprox.folo.model.TrackedContentRecord;
 import org.commonjava.aprox.folo.model.TrackingKey;
+import org.commonjava.aprox.model.core.StoreKey;
+import org.commonjava.aprox.model.core.StoreType;
 import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.subsys.datafile.DataFileManager;
 import org.commonjava.aprox.subsys.datafile.change.DataFileEventManager;
@@ -41,24 +45,42 @@ import com.google.common.cache.CacheBuilder;
 public class FoloRecordCacheTest
 {
 
-    private final class TestCache
-        extends FoloRecordCache
+    private interface WriteProcessor
     {
-        private TestCache( final FoloFiler filer, final AproxObjectMapper objectMapper,
-                           final FoloConfig config )
+        void write( TestCache cache, TrackedContentRecord record );
+    }
+
+    private final class TestCache
+            extends FoloRecordCache
+    {
+        private WriteProcessor writer = ( cache, record ) -> cache.doWrite( record );
+
+        private TestCache( final FoloFiler filer, final AproxObjectMapper objectMapper, final FoloConfig config )
         {
             super( filer, objectMapper, config );
+        }
+
+        public void doWrite( final TrackedContentRecord record )
+        {
+            super.write( record );
         }
 
         @Override
         public void write( final TrackedContentRecord record )
         {
-            super.write( record );
+            writer.write( this, record );
         }
 
-        public void setRecordCache( final Cache<TrackingKey, TrackedContentRecord> cache )
+        @Override
+        public Cache<TrackingKey, TrackedContentRecord> buildCache()
         {
-            this.recordCache = cache;
+            return super.buildCache();
+        }
+
+        @Override
+        public Cache<TrackingKey, TrackedContentRecord> buildCache( FoloRecordCacheConfigurator builderConfigurator )
+        {
+            return super.buildCache( builderConfigurator );
         }
     }
 
@@ -79,35 +101,52 @@ public class FoloRecordCacheTest
 
     @Before
     public void setup()
-        throws Exception
+            throws Exception
     {
         dataFileManager = new DataFileManager( temp.newFolder(), new DataFileEventManager() );
         objectMapper = new AproxObjectMapper( false );
         filer = new FoloFiler( dataFileManager );
-        cache = new TestCache( filer, objectMapper, new FoloConfig( 0 ) );
-        cache.buildCache();
+        cache = new TestCache( filer, objectMapper, new FoloConfig( 2 ) );
     }
 
     @Test
     public void cacheCreatesNewRecordIfNoneExist()
-        throws Exception
+            throws Exception
     {
-        final Cache<TrackingKey, TrackedContentRecord> cache = CacheBuilder.newBuilder()
-                                                                           .build();
+        final Cache<TrackingKey, TrackedContentRecord> cache = this.cache.buildCache();
 
         final TrackingKey key = newKey();
-        final TrackedContentRecord record = cache.get( key, this.cache.newCallable( key ) );
+        final TrackedContentRecord record = cache.get( key, ()->this.cache.load( key ) );
         assertThat( record, notNullValue() );
 
         assertThat( cache.size(), equalTo( 1L ) );
     }
 
     @Test
+    public void addRecordThenLoadAfterTimedOut()
+            throws Exception
+    {
+        final Cache<TrackingKey, TrackedContentRecord> cache = this.cache.buildCache();
+
+        final TrackingKey key = newKey();
+        TrackedContentRecord record = new TrackedContentRecord( key );
+        cache.put( key, record );
+
+        assertThat( cache.size(), equalTo( 1L ) );
+
+        System.out.println( "Wait for timeout" );
+        Thread.sleep( 2000 );
+
+//        assertThat( cache.size(), equalTo( 0L ) );
+
+        TrackedContentRecord retrieved = this.cache.getOrCreate( key );
+        assertThat( retrieved, equalTo( record ) );
+    }
+
+    @Test
     public void createCacheAddItemAndInvalidateAll_VerifyFileWritten()
     {
-        final Cache<TrackingKey, TrackedContentRecord> cache = CacheBuilder.newBuilder()
-                                                                           .removalListener( this.cache )
-                                                                           .build();
+        Cache<TrackingKey, TrackedContentRecord> cache = this.cache.buildCache();
 
         final TrackedContentRecord record = newRecord();
         cache.put( record.getKey(), record );
@@ -123,6 +162,50 @@ public class FoloRecordCacheTest
         assertThat( f.exists(), equalTo( true ) );
     }
 
+    @Test
+    public void slowWrite_LoadWhileWriting()
+            throws Exception
+    {
+        this.cache.writer = (cache, record)-> {
+            try
+            {
+                System.out.println("Waiting 500ms before writing");
+                Thread.sleep( 500 );
+            }
+            catch ( InterruptedException e )
+            {
+                fail( "Interrupted!" );
+            }
+
+            cache.doWrite( record );
+            System.out.println("Write done");
+        };
+
+        Cache<TrackingKey, TrackedContentRecord> cache = this.cache.buildCache();
+
+        final TrackedContentRecord record = newRecord();
+        cache.put( record.getKey(), record );
+        System.out.println("Put done");
+
+        assertThat( cache.size(), equalTo( 1L ) );
+
+        System.out.println("Invalidating all");
+        cache.invalidateAll();
+        System.out.println("All invalidated");
+
+        System.out.println("Retrieving record");
+        TrackedContentRecord retrieved = this.cache.getOrCreate( record.getKey() );
+        System.out.println("Record retrieved");
+        assertThat( retrieved, notNullValue() );
+
+        System.out.println("Waiting for slow write to finish" );
+        Thread.sleep( 600 );
+
+        final File f = getFile( record );
+        System.out.println( "Checking: " + f );
+        assertThat( f.exists(), equalTo( true ) );
+    }
+
     private File getFile( TrackedContentRecord record )
     {
         return this.filer.getRecordFile( record.getKey() ).getDetachedFile();
@@ -131,9 +214,7 @@ public class FoloRecordCacheTest
     @Test
     public void createCacheAddItem_InvalidateAll_VerifyFileWritten_ThenDeleteAndVerifyFileRemoved()
     {
-        final Cache<TrackingKey, TrackedContentRecord> cache = CacheBuilder.newBuilder()
-                                                                           .removalListener( this.cache )
-                                                                           .build();
+        Cache<TrackingKey, TrackedContentRecord> cache = this.cache.buildCache();
 
         final TrackedContentRecord record = newRecord();
         cache.put( record.getKey(), record );
@@ -154,23 +235,20 @@ public class FoloRecordCacheTest
 
     @Test
     public void createCacheAddItemAndWaitForExpiration_VerifyFileWritten_RawCache()
-        throws Exception
+            throws Exception
     {
         ticker = System.nanoTime();
 
-        final Cache<TrackingKey, TrackedContentRecord> recordCache =
-            CacheBuilder.newBuilder()
-                                                                           .expireAfterAccess( 1, TimeUnit.MINUTES )
-                                                                           .ticker( new Ticker()
-                                                                           {
-                                                                               @Override
-                                                                               public long read()
-                                                                               {
-                                                                                   return ticker;
-                                                                               }
-                                                                           } )
-                        .removalListener( this.cache )
-                                                                           .build();
+        Cache<TrackingKey, TrackedContentRecord> recordCache = this.cache.buildCache( ( builder ) -> {
+            builder.expireAfterAccess( 1, TimeUnit.MINUTES ).ticker( new Ticker()
+            {
+                @Override
+                public long read()
+                {
+                    return ticker;
+                }
+            } );
+        } );
 
         final TrackedContentRecord record = newRecord();
         recordCache.put( record.getKey(), record );
@@ -178,15 +256,9 @@ public class FoloRecordCacheTest
         assertThat( recordCache.size(), equalTo( 1L ) );
 
         ticker += 60 * 1000000000L + 1;
-        assertThat( recordCache.get( record.getKey(), new Callable<TrackedContentRecord>()
-        {
-            @Override
-            public TrackedContentRecord call()
-                throws Exception
-            {
-                loadCalled = true;
-                return record;
-            }
+        assertThat( recordCache.get( record.getKey(), () -> {
+            loadCalled = true;
+            return record;
         } ), notNullValue() );
 
         assertThat( loadCalled, equalTo( true ) );
@@ -198,25 +270,20 @@ public class FoloRecordCacheTest
 
     @Test
     public void createCacheAddItemAndWaitForExpiration_VerifyFileWritten()
-        throws Exception
+            throws Exception
     {
         ticker = System.nanoTime();
 
-        final Cache<TrackingKey, TrackedContentRecord> recordCache =
-            CacheBuilder.newBuilder()
-                        .expireAfterAccess( 1, TimeUnit.MINUTES )
-                        .ticker( new Ticker()
-                        {
-                            @Override
-                            public long read()
-                            {
-                                return ticker;
-                            }
-                        } )
-                        .removalListener( this.cache )
-                        .build();
-
-        this.cache.setRecordCache( recordCache );
+        final Cache<TrackingKey, TrackedContentRecord> recordCache = this.cache.buildCache( (builder)->{
+                builder.expireAfterAccess( 1, TimeUnit.MINUTES ).ticker( new Ticker()
+                {
+                    @Override
+                    public long read()
+                    {
+                        return ticker;
+                    }
+                } );
+        } );
 
         final TrackedContentRecord record = newRecord();
         recordCache.put( record.getKey(), record );
@@ -224,7 +291,7 @@ public class FoloRecordCacheTest
         assertThat( recordCache.size(), equalTo( 1L ) );
 
         ticker += 60 * 1000000000L + 1;
-        assertThat( this.cache.get( record.getKey() ), notNullValue() );
+        assertThat( this.cache.getOrCreate( record.getKey() ), notNullValue() );
 
         final File f = getFile( record );
         System.out.println( "Checking: " + f );
@@ -233,8 +300,9 @@ public class FoloRecordCacheTest
 
     @Test
     public void writeRecordCreateCacheWithLoaderAndGetItem_VerifyRecordLoaded()
-        throws Exception
+            throws Exception
     {
+        this.cache.buildCache();
         final TrackedContentRecord record = newRecord();
         this.cache.write( record );
 
@@ -242,15 +310,66 @@ public class FoloRecordCacheTest
         System.out.println( "Checking: " + f );
         assertThat( f.exists(), equalTo( true ) );
 
-        final Cache<TrackingKey, TrackedContentRecord> cache = CacheBuilder.newBuilder()
-                                                                           .build();
+        final Cache<TrackingKey, TrackedContentRecord> cache = CacheBuilder.newBuilder().build();
 
-        final TrackedContentRecord result = cache.get( record.getKey(), this.cache.newCallable( record.getKey() ) );
+        final TrackedContentRecord result = cache.get( record.getKey(), ()->this.cache.load( record.getKey() ) );
 
         assertThat( result, notNullValue() );
         assertThat( result.getKey(), equalTo( record.getKey() ) );
         assertThat( cache.size(), equalTo( 1L ) );
 
+    }
+
+    @Test
+    public void recordArtifactCreatesNewRecordIfNoneExist()
+            throws Exception
+    {
+        this.cache.buildCache();
+        final TrackingKey key = newKey();
+        assertThat( cache.hasRecord( key ), equalTo( false ) );
+
+        final TrackedContentRecord record =
+                cache.recordArtifact( key, new StoreKey( StoreType.remote, "foo" ), "/path", StoreEffect.DOWNLOAD );
+
+        assertThat( record, notNullValue() );
+        assertThat( cache.hasRecord( key ), equalTo( true ) );
+    }
+
+    @Test
+    public void clearRecordDeletesRecord()
+            throws Exception
+    {
+        this.cache.buildCache();
+        final TrackingKey key = newKey();
+        assertThat( cache.hasRecord( key ), equalTo( false ) );
+
+        final TrackedContentRecord record =
+                cache.recordArtifact( key, new StoreKey( StoreType.remote, "foo" ), "/path", StoreEffect.DOWNLOAD );
+
+        assertThat( record, notNullValue() );
+        assertThat( cache.hasRecord( key ), equalTo( true ) );
+
+        cache.delete( key );
+        assertThat( cache.hasRecord( key ), equalTo( false ) );
+        assertThat( cache.getIfExists( key ), nullValue() );
+    }
+
+    @Test
+    public void getRecordReturnsNullIfNoneExists()
+            throws Exception
+    {
+        this.cache.buildCache();
+        final TrackingKey key = newKey();
+        assertThat( cache.getIfExists( key ), nullValue() );
+    }
+
+    @Test
+    public void hasRecordReturnsFalseIfNoneExists()
+            throws Exception
+    {
+        this.cache.buildCache();
+        final TrackingKey key = newKey();
+        assertThat( cache.hasRecord( key ), equalTo( false ) );
     }
 
     private TrackingKey newKey()

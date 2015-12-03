@@ -187,7 +187,7 @@ public abstract class ArtifactStore
     @Override
     public String toString()
     {
-        return String.format( "ArtifactStore [key=%s]", key );
+        return String.format( "%s [key=%s]", getClass().getSimpleName(), key );
     }
 
     public String getDescription()

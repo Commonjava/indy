@@ -34,6 +34,7 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.commonjava.aprox.AproxWorkflowException;
 import org.commonjava.aprox.content.ContentDigest;
 import org.commonjava.aprox.content.ContentGenerator;
@@ -50,6 +51,7 @@ import org.commonjava.aprox.model.core.io.AproxObjectMapper;
 import org.commonjava.aprox.model.galley.KeyedLocation;
 import org.commonjava.aprox.util.ApplicationStatus;
 import org.commonjava.maven.galley.BadGatewayException;
+import org.commonjava.maven.galley.TransferLocationException;
 import org.commonjava.maven.galley.TransferTimeoutException;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
@@ -234,6 +236,11 @@ public class DefaultContentManager
                                                   e.getMessage() );
             }
 
+            if ( logger.isDebugEnabled() )
+            {
+                logger.debug( "{} is a group. Attempting downloads from (in order):\n  {}", StringUtils.join(members, "\n  ") );
+            }
+
             item = null;
             for ( final ContentGenerator generator : contentGenerators )
             {
@@ -260,6 +267,8 @@ public class DefaultContentManager
         {
             item = doRetrieve( store, path, eventMetadata );
         }
+
+        logger.info( "Returning transfer: {}", item );
 
         return item;
     }
@@ -294,17 +303,17 @@ public class DefaultContentManager
         }
         catch ( AproxWorkflowException e )
         {
-            filterTimeouts( e );
+            filterLocationErrors( e );
         }
 
         return item;
     }
 
-    private void filterTimeouts( AproxWorkflowException e )
+    private void filterLocationErrors( AproxWorkflowException e )
             throws AproxWorkflowException
     {
         Throwable cause = e.getCause();
-        if ( !( cause instanceof BadGatewayException ) && !( cause instanceof TransferTimeoutException ) )
+        if ( !( cause instanceof TransferLocationException ) )
         {
             throw e;
         }
@@ -581,7 +590,7 @@ public class DefaultContentManager
                 }
                 catch ( AproxWorkflowException e )
                 {
-                    filterTimeouts( e );
+                    filterLocationErrors( e );
                 }
 
                 if ( storeListing != null )
@@ -622,7 +631,7 @@ public class DefaultContentManager
             }
             catch ( AproxWorkflowException e )
             {
-                filterTimeouts( e );
+                filterLocationErrors( e );
             }
 
             if ( storeListing != null )
