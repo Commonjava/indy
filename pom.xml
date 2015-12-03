@@ -57,7 +57,7 @@
     <xnioVersion>3.3.0.Final</xnioVersion>
     <partylineVersion>1.4</partylineVersion>
     <keycloakVersion>1.2.0.Final</keycloakVersion>
-    <jhttpcVersion>1.0</jhttpcVersion>
+    <jhttpcVersion>1.1-SNAPSHOT</jhttpcVersion>
     
     <test-forkCount>1C</test-forkCount>
     <test-redirectOutput>true</test-redirectOutput>
