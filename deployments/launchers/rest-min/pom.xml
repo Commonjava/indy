@@ -19,35 +19,35 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.commonjava.aprox.launch</groupId>
-    <artifactId>aprox-launchers</artifactId>
+    <groupId>org.commonjava.indy.launch</groupId>
+    <artifactId>indy-launchers</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-launcher-min</artifactId>
+  <artifactId>indy-launcher-min</artifactId>
   
-  <name>AProx :: Launchers :: Minimal REST Launcher</name>
+  <name>Indy :: Launchers :: Minimal REST Launcher</name>
   
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.aprox.embed</groupId>
-      <artifactId>aprox-embedder-min</artifactId>
+      <groupId>org.commonjava.indy.embed</groupId>
+      <artifactId>indy-embedder-min</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox.launch</groupId>
-      <artifactId>aprox-launcher-base</artifactId>
+      <groupId>org.commonjava.indy.launch</groupId>
+      <artifactId>indy-launcher-base</artifactId>
       <classifier>binset</classifier>
       <type>tar.gz</type>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox.launch</groupId>
-      <artifactId>aprox-launcher-base</artifactId>
+      <groupId>org.commonjava.indy.launch</groupId>
+      <artifactId>indy-launcher-base</artifactId>
       <classifier>confset</classifier>
       <type>tar.gz</type>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox.launch</groupId>
-      <artifactId>aprox-launcher-base</artifactId>
+      <groupId>org.commonjava.indy.launch</groupId>
+      <artifactId>indy-launcher-base</artifactId>
       <classifier>dataset</classifier>
       <type>tar.gz</type>
     </dependency>

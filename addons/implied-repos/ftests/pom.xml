@@ -19,37 +19,37 @@
   <modelVersion>4.0.0</modelVersion>
   
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-implied-repos</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-implied-repos</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-ftests-implied-repos</artifactId>
-  <name>AProx :: Implied Repositories :: Functional Tests</name>
+  <artifactId>indy-ftests-implied-repos</artifactId>
+  <name>Indy :: Implied Repositories :: Functional Tests</name>
   
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-implied-repos-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-implied-repos-common</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-client-core-java</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-client-core-java</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-ftests-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-common</artifactId>
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-test-fixtures-core</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-test-fixtures-core</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox.boot</groupId>
-      <artifactId>aprox-booter-api</artifactId>
+      <groupId>org.commonjava.indy.boot</groupId>
+      <artifactId>indy-booter-api</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -68,8 +68,8 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-implied-repos-client-java</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-implied-repos-client-java</artifactId>
     </dependency>
   </dependencies>
 </project>

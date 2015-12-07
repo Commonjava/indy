@@ -19,22 +19,22 @@
   <modelVersion>4.0.0</modelVersion>
   
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-clients-parent</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-clients-parent</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-client-core-java</artifactId>
-  <name>AProx :: Client APIs :: Core for Java</name>
+  <artifactId>indy-client-core-java</artifactId>
+  <name>Indy :: Client APIs :: Core for Java</name>
   
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-model-core-java</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-model-core-java</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-test-fixtures-core</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-test-fixtures-core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>

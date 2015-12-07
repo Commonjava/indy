@@ -19,13 +19,13 @@
   <modelVersion>4.0.0</modelVersion>
   
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-models-parent</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-models-parent</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-model-core-java</artifactId>
-  <name>AProx :: Object Models :: Core for Java</name>
+  <artifactId>indy-model-core-java</artifactId>
+  <name>Indy :: Object Models :: Core for Java</name>
   
   <dependencies>
     <dependency>

@@ -19,36 +19,36 @@
   <modelVersion>4.0.0</modelVersion>
   
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-folo</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-folo</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-ftests-folo</artifactId>
-  <name>AProx :: Folo Usage Tracker :: Functional Tests</name>
+  <artifactId>indy-ftests-folo</artifactId>
+  <name>Indy :: Folo Usage Tracker :: Functional Tests</name>
   
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-folo-jaxrs</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-folo-jaxrs</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-folo-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-folo-common</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-folo-client-java</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-folo-client-java</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-client-core-java</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-client-core-java</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-ftests-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-common</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.util</groupId>
@@ -66,8 +66,8 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-test-fixtures-core</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-test-fixtures-core</artifactId>
       <scope>compile</scope>
     </dependency>
   </dependencies>

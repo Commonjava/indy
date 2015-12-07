@@ -19,37 +19,37 @@
   <modelVersion>4.0.0</modelVersion>
   
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-dot-maven</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-dot-maven</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-ftests-dot-maven</artifactId>
-  <name>AProx :: dotMaven :: Functional Tests</name>
+  <artifactId>indy-ftests-dot-maven</artifactId>
+  <name>Indy :: dotMaven :: Functional Tests</name>
   
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-dot-maven-jaxrs</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-dot-maven-jaxrs</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-dot-maven-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-dot-maven-common</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-client-core-java</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-client-core-java</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-ftests-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-common</artifactId>
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-test-fixtures-core</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-test-fixtures-core</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>

@@ -19,27 +19,27 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-depgraph</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-depgraph</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-depgraph-jaxrs</artifactId>
+  <artifactId>indy-depgraph-jaxrs</artifactId>
 
-  <name>AProx :: Add-Ons :: DepGraph (Cartographer Integration) :: JAX-RS Bindings</name>
+  <name>Indy :: Add-Ons :: DepGraph (Cartographer Integration) :: JAX-RS Bindings</name>
 
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-subsys-jaxrs</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-jaxrs</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-depgraph-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-depgraph-common</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-bindings-jaxrs</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-bindings-jaxrs</artifactId>
     </dependency>
     
     <dependency>
@@ -70,13 +70,13 @@
       <artifactId>configuration-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-filer-default</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-filer-default</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-db-flat</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-db-flat</artifactId>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>

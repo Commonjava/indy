@@ -19,13 +19,13 @@
   <modelVersion>4.0.0</modelVersion>
   
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-test</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-test</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-test-utils</artifactId>
-  <name>AProx :: TCK :: Utils</name>
+  <artifactId>indy-test-utils</artifactId>
+  <name>Indy :: TCK :: Utils</name>
   
   <dependencies>
     <dependency>

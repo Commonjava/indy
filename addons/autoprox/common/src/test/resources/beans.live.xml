@@ -23,6 +23,6 @@
   </alternatives>
   
   <decorators>
-    <class>org.commonjava.aprox.autoprox.data.AutoProxDataManagerDecorator</class>
+    <class>org.commonjava.indy.autoprox.data.AutoProxDataManagerDecorator</class>
   </decorators>
 </beans>

@@ -22,7 +22,7 @@
         <include>org.commonjava*</include>
       </includes>
       <excludes>
-        <exclude>org.commonjava.aprox.ui*</exclude>
+        <exclude>org.commonjava.indy.ui*</exclude>
         <exclude>org.commonjava*:*:war:*</exclude>
       </excludes>
       
@@ -49,7 +49,7 @@
     <dependencySet>
       <scope>runtime</scope>
       <includes>
-        <include>org.commonjava.aprox.ui*</include>
+        <include>org.commonjava.indy.ui*</include>
       </includes>
       <outputDirectory>/</outputDirectory>
       <unpack>true</unpack>

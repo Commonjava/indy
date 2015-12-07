@@ -19,22 +19,22 @@
   <modelVersion>4.0.0</modelVersion>
   
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-db</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-db</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-db-flat</artifactId>
-  <name>AProx :: DB :: Flat-File</name>
+  <artifactId>indy-db-flat</artifactId>
+  <name>Indy :: DB :: Flat-File</name>
   
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>aprox-api</artifactId>
+      <artifactId>indy-api</artifactId>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>aprox-db-memory</artifactId>
+      <artifactId>indy-db-memory</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -49,12 +49,12 @@
       <artifactId>configuration-dotconf</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-test-db</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-test-db</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-subsys-flatfile</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-flatfile</artifactId>
     </dependency>
   </dependencies>
 </project>

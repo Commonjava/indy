@@ -19,30 +19,30 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-dot-maven</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-dot-maven</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-dot-maven-jaxrs</artifactId>
-  <name>AProx :: Add-Ons :: Dot-Maven (.m2 WebDAV) :: JAX-RS Bindings</name>
+  <artifactId>indy-dot-maven-jaxrs</artifactId>
+  <name>Indy :: Add-Ons :: Dot-Maven (.m2 WebDAV) :: JAX-RS Bindings</name>
 
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-subsys-jaxrs</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-jaxrs</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-subsys-keycloak</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-keycloak</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-dot-maven-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-dot-maven-common</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-bindings-jaxrs</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-bindings-jaxrs</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.web</groupId>
@@ -73,13 +73,13 @@
       <artifactId>hamcrest-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-db-memory</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-db-memory</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-filer-default</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-filer-default</artifactId>
       <scope>test</scope>
     </dependency>
     

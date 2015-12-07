@@ -19,64 +19,64 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.commonjava.aprox.embed.test</groupId>
-    <artifactId>aprox-embedder-tests</artifactId>
+    <groupId>org.commonjava.indy.embed.test</groupId>
+    <artifactId>indy-embedder-tests</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-embedder-test-savant</artifactId>
+  <artifactId>indy-embedder-test-savant</artifactId>
   
-  <name>AProx :: Embedder-Tests :: Savant</name>
+  <name>Indy :: Embedder-Tests :: Savant</name>
   <description>REST + Cartographer + DotMaven + Autoprox + Folo + Revisions + SetBack</description>
   
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.aprox.embed</groupId>
-      <artifactId>aprox-embedder-savant</artifactId>
+      <groupId>org.commonjava.indy.embed</groupId>
+      <artifactId>indy-embedder-savant</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-ftests-autoprox</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-autoprox</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-ftests-folo</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-folo</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-ftests-httprox</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-httprox</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-ftests-implied-repos</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-implied-repos</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-ftests-promote</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-promote</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-promote-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-promote-common</artifactId>
       <classifier>dataset</classifier>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-ftests-depgraph</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-depgraph</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-ftests-dot-maven</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-dot-maven</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-ftests-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-common</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -99,14 +99,14 @@
             <reuseForks>false</reuseForks>
             <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
             <dependenciesToScan>
-              <dependency>org.commonjava.aprox:aprox-ftests-autoprox</dependency>
-              <dependency>org.commonjava.aprox:aprox-ftests-core</dependency>
-              <dependency>org.commonjava.aprox:aprox-ftests-depgraph</dependency>
-              <dependency>org.commonjava.aprox:aprox-ftests-dot-maven</dependency>
-              <dependency>org.commonjava.aprox:aprox-ftests-folo</dependency>
-              <dependency>org.commonjava.aprox:aprox-ftests-httprox</dependency>
-              <dependency>org.commonjava.aprox:aprox-ftests-implied-repos</dependency>
-              <dependency>org.commonjava.aprox:aprox-ftests-promote</dependency>
+              <dependency>org.commonjava.indy:indy-ftests-autoprox</dependency>
+              <dependency>org.commonjava.indy:indy-ftests-core</dependency>
+              <dependency>org.commonjava.indy:indy-ftests-depgraph</dependency>
+              <dependency>org.commonjava.indy:indy-ftests-dot-maven</dependency>
+              <dependency>org.commonjava.indy:indy-ftests-folo</dependency>
+              <dependency>org.commonjava.indy:indy-ftests-httprox</dependency>
+              <dependency>org.commonjava.indy:indy-ftests-implied-repos</dependency>
+              <dependency>org.commonjava.indy:indy-ftests-promote</dependency>
               <dependency>org.commonjava.maven.cartographer:cartographer-tck</dependency>
             </dependenciesToScan> 
           </configuration>

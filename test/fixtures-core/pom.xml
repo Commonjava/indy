@@ -19,33 +19,33 @@
   <modelVersion>4.0.0</modelVersion>
   
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-test</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-test</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-test-fixtures-core</artifactId>
-  <name>AProx :: TCK :: Fixtures for Core</name>
+  <artifactId>indy-test-fixtures-core</artifactId>
+  <name>Indy :: TCK :: Fixtures for Core</name>
   
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-core</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-core</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-bindings-jaxrs</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-bindings-jaxrs</artifactId>
       <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-db-flat</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-db-flat</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox.boot</groupId>
-      <artifactId>aprox-booter-api</artifactId>
+      <groupId>org.commonjava.indy.boot</groupId>
+      <artifactId>indy-booter-api</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>

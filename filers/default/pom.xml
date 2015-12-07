@@ -19,18 +19,18 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-file-managers</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-file-managers</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-filer-default</artifactId>
+  <artifactId>indy-filer-default</artifactId>
 
-  <name>AProx :: File Management :: Default</name>
+  <name>Indy :: File Management :: Default</name>
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-api</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-api</artifactId>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>

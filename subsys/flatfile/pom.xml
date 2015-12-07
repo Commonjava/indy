@@ -19,19 +19,19 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-subsystems</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-subsystems</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-subsys-flatfile</artifactId>
+  <artifactId>indy-subsys-flatfile</artifactId>
 
-  <name>AProx :: Subsystems :: Flat-File</name>
+  <name>Indy :: Subsystems :: Flat-File</name>
   
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-api</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-api</artifactId>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

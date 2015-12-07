@@ -19,17 +19,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-promote</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-promote</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
-  <artifactId>aprox-promote-model-java</artifactId>
-  <name>AProx :: Add-Ons :: Artifact Promotion :: Java Domain Model</name>
+  <artifactId>indy-promote-model-java</artifactId>
+  <name>Indy :: Add-Ons :: Artifact Promotion :: Java Domain Model</name>
 
   <dependencies>
     <dependency>
-    	<groupId>org.commonjava.aprox</groupId>
-    	<artifactId>aprox-model-core-java</artifactId>
+    	<groupId>org.commonjava.indy</groupId>
+    	<artifactId>indy-model-core-java</artifactId>
     </dependency>
     <dependency>
     	<groupId>junit</groupId>

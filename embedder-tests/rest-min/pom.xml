@@ -19,19 +19,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.commonjava.aprox.embed.test</groupId>
-    <artifactId>aprox-embedder-tests</artifactId>
+    <groupId>org.commonjava.indy.embed.test</groupId>
+    <artifactId>indy-embedder-tests</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-embedder-test-min</artifactId>
+  <artifactId>indy-embedder-test-min</artifactId>
   
-  <name>AProx :: Embedder-Tests :: Minimal REST Embedder</name>
+  <name>Indy :: Embedder-Tests :: Minimal REST Embedder</name>
   
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.aprox.embed</groupId>
-      <artifactId>aprox-embedder-min</artifactId>
+      <groupId>org.commonjava.indy.embed</groupId>
+      <artifactId>indy-embedder-min</artifactId>
     </dependency>
   </dependencies>
   

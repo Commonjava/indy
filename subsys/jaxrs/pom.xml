@@ -19,13 +19,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-subsystems</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-subsystems</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-subsys-jaxrs</artifactId>
-  <name>AProx :: Subsystems :: JAX-RS</name>
+  <artifactId>indy-subsys-jaxrs</artifactId>
+  <name>Indy :: Subsystems :: JAX-RS</name>
   
   <dependencies>
     <dependency>
@@ -79,16 +79,16 @@
       <artifactId>args4j</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-api</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-subsys-keycloak</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-keycloak</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-subsys-flatfile</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-flatfile</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.cdi.util</groupId>
@@ -104,8 +104,8 @@
       <artifactId>swagger-jaxrs_2.10</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-subsys-http</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-http</artifactId>
     </dependency>
   </dependencies>
   

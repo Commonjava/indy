@@ -19,25 +19,25 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-httprox</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-httprox</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
-  <artifactId>aprox-httprox-common</artifactId>
-  <name>AProx :: Add-Ons :: HTTProx (HTTP Proxy) :: Common Core</name>
+  <artifactId>indy-httprox-common</artifactId>
+  <name>Indy :: Add-Ons :: HTTProx (HTTP Proxy) :: Common Core</name>
 
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.aprox.boot</groupId>
-      <artifactId>aprox-booter-api</artifactId>
+      <groupId>org.commonjava.indy.boot</groupId>
+      <artifactId>indy-booter-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-core</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-subsys-keycloak</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-keycloak</artifactId>
     </dependency>
     <dependency>
       <groupId>org.keycloak</groupId>
@@ -63,22 +63,22 @@
     </dependency>
 
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-db-memory</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-db-memory</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-filer-default</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-filer-default</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-folo-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-folo-common</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-test-fixtures-core</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-test-fixtures-core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.maven.galley</groupId>

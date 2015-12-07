@@ -19,29 +19,29 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-implied-repos</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-implied-repos</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
-  <artifactId>aprox-implied-repos-common</artifactId>
-  <name>AProx :: Add-Ons :: Implied Repositories :: Common</name>
+  <artifactId>indy-implied-repos-common</artifactId>
+  <name>Indy :: Add-Ons :: Implied Repositories :: Common</name>
 
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-implied-repos-model-java</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-implied-repos-model-java</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-api</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.maven.galley</groupId>
       <artifactId>galley-maven</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-db-memory</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-db-memory</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

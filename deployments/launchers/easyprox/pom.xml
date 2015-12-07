@@ -19,108 +19,108 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.commonjava.aprox.launch</groupId>
-    <artifactId>aprox-launchers</artifactId>
+    <groupId>org.commonjava.indy.launch</groupId>
+    <artifactId>indy-launchers</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-launcher-easyprox</artifactId>
+  <artifactId>indy-launcher-easyprox</artifactId>
   <!-- <packaging>war</packaging> -->
   
-  <name>AProx :: Launchers :: Easyprox</name>
+  <name>Indy :: Launchers :: Easyprox</name>
   <description>REST + JS UI + DotMaven + Autoprox</description>
   
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.aprox.ui</groupId>
-      <artifactId>aprox-ui-layover</artifactId>
+      <groupId>org.commonjava.indy.ui</groupId>
+      <artifactId>indy-ui-layover</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox.embed</groupId>
-      <artifactId>aprox-embedder-easyprox</artifactId>
+      <groupId>org.commonjava.indy.embed</groupId>
+      <artifactId>indy-embedder-easyprox</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox.launch</groupId>
-      <artifactId>aprox-launcher-base</artifactId>
+      <groupId>org.commonjava.indy.launch</groupId>
+      <artifactId>indy-launcher-base</artifactId>
       <classifier>binset</classifier>
       <type>tar.gz</type>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox.launch</groupId>
-      <artifactId>aprox-launcher-base</artifactId>
+      <groupId>org.commonjava.indy.launch</groupId>
+      <artifactId>indy-launcher-base</artifactId>
       <classifier>confset</classifier>
       <type>tar.gz</type>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox.launch</groupId>
-      <artifactId>aprox-launcher-base</artifactId>
+      <groupId>org.commonjava.indy.launch</groupId>
+      <artifactId>indy-launcher-base</artifactId>
       <classifier>dataset</classifier>
       <type>tar.gz</type>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-indexer</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-indexer</artifactId>
       <type>tar.gz</type>
       <classifier>confset</classifier>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-autoprox-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-autoprox-common</artifactId>
       <type>tar.gz</type>
       <classifier>dataset</classifier>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-autoprox-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-autoprox-common</artifactId>
       <type>tar.gz</type>
       <classifier>docset</classifier>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-autoprox-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-autoprox-common</artifactId>
       <type>tar.gz</type>
       <classifier>confset</classifier>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-autoprox-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-autoprox-common</artifactId>
       <type>tar.gz</type>
       <classifier>uiset</classifier>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-dot-maven-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-dot-maven-common</artifactId>
       <type>tar.gz</type>
       <classifier>dataset</classifier>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-setback-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-setback-common</artifactId>
       <type>tar.gz</type>
       <classifier>dataset</classifier>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-setback-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-setback-common</artifactId>
       <type>tar.gz</type>
       <classifier>confset</classifier>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-revisions-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-revisions-common</artifactId>
       <type>tar.gz</type>
       <classifier>confset</classifier>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-revisions-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-revisions-common</artifactId>
       <type>tar.gz</type>
       <classifier>uiset</classifier>
     </dependency>
   </dependencies>
   
   <build>
-    <!-- <finalName>aprox</finalName> -->
+    <!-- <finalName>indy</finalName> -->
     
     <plugins>
       <plugin>

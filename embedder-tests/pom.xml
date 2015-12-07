@@ -19,16 +19,16 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-parent</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-parent</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <groupId>org.commonjava.aprox.embed.test</groupId>
-  <artifactId>aprox-embedder-tests</artifactId>
+  <groupId>org.commonjava.indy.embed.test</groupId>
+  <artifactId>indy-embedder-tests</artifactId>
   <packaging>pom</packaging>
 
-  <name>AProx :: Embedder-Tests :: Parent</name>
+  <name>Indy :: Embedder-Tests :: Parent</name>
   
   <modules>
     <module>savant</module>
@@ -42,8 +42,8 @@
   
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-ftests-core</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-core</artifactId>
     </dependency>
   </dependencies>
   
@@ -73,7 +73,7 @@
             <reuseForks>false</reuseForks>
             <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
             <dependenciesToScan>
-              <dependency>org.commonjava.aprox:aprox-ftests-core</dependency>
+              <dependency>org.commonjava.indy:indy-ftests-core</dependency>
             </dependenciesToScan> 
           </configuration>
         </plugin>

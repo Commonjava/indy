@@ -19,26 +19,26 @@
   <modelVersion>4.0.0</modelVersion>
   
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-ftests-parent</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-ftests-parent</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-ftests-core</artifactId>
-  <name>AProx :: Functional Tests :: Core</name>
+  <artifactId>indy-ftests-core</artifactId>
+  <name>Indy :: Functional Tests :: Core</name>
   
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>aprox-client-core-java</artifactId>
+      <artifactId>indy-client-core-java</artifactId>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>aprox-ftests-common</artifactId>
+      <artifactId>indy-ftests-common</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-test-fixtures-core</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-test-fixtures-core</artifactId>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -47,8 +47,8 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-bindings-jaxrs</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-bindings-jaxrs</artifactId>
       <scope>provided</scope>
     </dependency>
   </dependencies>

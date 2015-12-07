@@ -19,14 +19,14 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-subsystems</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-subsystems</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-subsys-maven</artifactId>
+  <artifactId>indy-subsys-maven</artifactId>
 
-  <name>AProx :: Subsystems :: Maven Components</name>
+  <name>Indy :: Subsystems :: Maven Components</name>
   
   <dependencies>
   	<dependency>
@@ -34,8 +34,8 @@
   	 <artifactId>log4j-over-slf4j</artifactId>
   	</dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-api</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-api</artifactId>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

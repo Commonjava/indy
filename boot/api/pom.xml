@@ -19,15 +19,15 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.commonjava.aprox.boot</groupId>
-    <artifactId>aprox-booters</artifactId>
+    <groupId>org.commonjava.indy.boot</groupId>
+    <artifactId>indy-booters</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <groupId>org.commonjava.aprox.boot</groupId>
-  <artifactId>aprox-booter-api</artifactId>
+  <groupId>org.commonjava.indy.boot</groupId>
+  <artifactId>indy-booter-api</artifactId>
 
-  <name>AProx :: Booters :: API</name>
+  <name>Indy :: Booters :: API</name>
   
   <dependencies>
     <dependency>

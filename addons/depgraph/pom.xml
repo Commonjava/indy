@@ -19,15 +19,15 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-addons</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-addons</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-depgraph</artifactId>
+  <artifactId>indy-depgraph</artifactId>
   <packaging>pom</packaging>
 
-  <name>AProx :: Add-Ons :: DepGraph (Cartographer Integration) :: Parent</name>
+  <name>Indy :: Add-Ons :: DepGraph (Cartographer Integration) :: Parent</name>
   
   <modules>
     <module>model-java</module>

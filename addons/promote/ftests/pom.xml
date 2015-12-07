@@ -19,46 +19,46 @@
   <modelVersion>4.0.0</modelVersion>
   
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-promote</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-promote</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-ftests-promote</artifactId>
-  <name>AProx :: Artifact Promotion :: Functional Tests</name>
+  <artifactId>indy-ftests-promote</artifactId>
+  <name>Indy :: Artifact Promotion :: Functional Tests</name>
   
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-promote-jaxrs</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-promote-jaxrs</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-promote-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-promote-common</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-promote-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-promote-common</artifactId>
       <classifier>dataset</classifier>
       <!-- <scope>provided</scope> -->
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-promote-client-java</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-promote-client-java</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-client-core-java</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-client-core-java</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-ftests-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-common</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-test-fixtures-core</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-test-fixtures-core</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>

@@ -24,8 +24,8 @@
         <include>org.commonjava*</include>
       </includes>
       <excludes>
-        <exclude>org.commonjava.aprox.ui*</exclude>
-        <exclude>org.commonjava.aprox.launch:aprox-launcher-base</exclude>
+        <exclude>org.commonjava.indy.ui*</exclude>
+        <exclude>org.commonjava.indy.launch:aprox-launcher-base</exclude>
         <exclude>*tar.gz*</exclude>
       </excludes>
       <outputDirectory>/</outputDirectory>

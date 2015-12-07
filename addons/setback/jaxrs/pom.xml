@@ -19,28 +19,28 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-setback</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-setback</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-setback-jaxrs</artifactId>
+  <artifactId>indy-setback-jaxrs</artifactId>
 
-  <name>AProx :: Add-Ons :: Set-Back :: JAX-RS Bindings</name>
+  <name>Indy :: Add-Ons :: Set-Back :: JAX-RS Bindings</name>
 
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-setback-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-setback-common</artifactId>
     </dependency>
     
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-subsys-jaxrs</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-jaxrs</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-bindings-jaxrs</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-bindings-jaxrs</artifactId>
     </dependency>
     
     <dependency>

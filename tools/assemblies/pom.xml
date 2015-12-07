@@ -19,12 +19,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.commonjava.aprox.tools</groupId>
-    <artifactId>aprox-tools</artifactId>
+    <groupId>org.commonjava.indy.tools</groupId>
+    <artifactId>indy-tools</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-assemblies</artifactId>
+  <artifactId>indy-assemblies</artifactId>
 
-  <name>AProx :: Tooling :: Assemblies</name>
+  <name>Indy :: Tooling :: Assemblies</name>
 </project>

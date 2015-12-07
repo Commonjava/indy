@@ -19,21 +19,21 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.commonjava.aprox.ui</groupId>
-    <artifactId>aprox-uis</artifactId>
+    <groupId>org.commonjava.indy.ui</groupId>
+    <artifactId>indy-uis</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-ui-layover</artifactId>
+  <artifactId>indy-ui-layover</artifactId>
   
-  <name>AProx :: UIs :: Layover</name>
+  <name>Indy :: UIs :: Layover</name>
   
   <properties>
     <maven.test.skip>true</maven.test.skip>
   </properties>
   
   <build>
-    <finalName>aprox-ui</finalName>
+    <finalName>indy-ui</finalName>
     <resources>
       <resource>
         <directory>src/main/js/app</directory>

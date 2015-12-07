@@ -19,18 +19,18 @@
   <modelVersion>4.0.0</modelVersion>
   
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-db</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-db</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-db-memory</artifactId>
-  <name>AProx :: DB :: In-Memory</name>
+  <artifactId>indy-db-memory</artifactId>
+  <name>Indy :: DB :: In-Memory</name>
   
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>aprox-api</artifactId>
+      <artifactId>indy-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -42,7 +42,7 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>aprox-test-db</artifactId>
+      <artifactId>indy-test-db</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

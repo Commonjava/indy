@@ -19,28 +19,28 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-folo</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-folo</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-folo-jaxrs</artifactId>
+  <artifactId>indy-folo-jaxrs</artifactId>
 
-  <name>AProx :: Add-Ons :: Folo Usage Tracker :: JAX-RS Bindings</name>
+  <name>Indy :: Add-Ons :: Folo Usage Tracker :: JAX-RS Bindings</name>
 
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-folo-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-folo-common</artifactId>
     </dependency>
     
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-subsys-jaxrs</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-jaxrs</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-bindings-jaxrs</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-bindings-jaxrs</artifactId>
     </dependency>
     
     <dependency>

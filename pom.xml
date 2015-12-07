@@ -24,19 +24,19 @@
     <version>10</version>
   </parent>
   
-  <groupId>org.commonjava.aprox</groupId>
-  <artifactId>aprox-parent</artifactId>
+  <groupId>org.commonjava.indy</groupId>
+  <artifactId>indy-parent</artifactId>
   <version>0.25.2-SNAPSHOT</version>
   
   <packaging>pom</packaging>
   
-  <name>AProx :: Project Root</name>
+  <name>Indy :: Project Root</name>
   <inceptionYear>2011</inceptionYear>
   
   <scm>
-    <connection>scm:git:https://github.com/Commonjava/aprox.git</connection>
-    <developerConnection>scm:git:git@github.com:Commonjava/aprox.git</developerConnection>
-    <url>http://github.com/Commonjava/aprox</url>
+    <connection>scm:git:https://github.com/Commonjava/indy.git</connection>
+    <developerConnection>scm:git:git@github.com:Commonjava/indy.git</developerConnection>
+    <url>http://github.com/Commonjava/indy</url>
     <tag>HEAD</tag>
   </scm>
   
@@ -96,499 +96,499 @@
       </dependency>
       
       <dependency>
-        <groupId>org.commonjava.aprox.ui</groupId>
-        <artifactId>aprox-ui-layover</artifactId>
+        <groupId>org.commonjava.indy.ui</groupId>
+        <artifactId>indy-ui-layover</artifactId>
         <version>0.25.2-SNAPSHOT</version>
         <!-- <type>war</type> -->
         <scope>runtime</scope>
       </dependency>
       
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-model-core-java</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-model-core-java</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-api</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-api</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-core</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-core</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-core</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-core</artifactId>
         <version>0.25.2-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-db-flat</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-db-flat</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-bindings-jaxrs</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-bindings-jaxrs</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox.launch</groupId>
-        <artifactId>aprox-launcher-base</artifactId>
+        <groupId>org.commonjava.indy.launch</groupId>
+        <artifactId>indy-launcher-base</artifactId>
         <version>0.25.2-SNAPSHOT</version>
         <classifier>binset</classifier>
         <type>tar.gz</type>
         <scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox.launch</groupId>
-        <artifactId>aprox-launcher-base</artifactId>
+        <groupId>org.commonjava.indy.launch</groupId>
+        <artifactId>indy-launcher-base</artifactId>
         <version>0.25.2-SNAPSHOT</version>
         <classifier>confset</classifier>
         <type>tar.gz</type>
         <scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox.launch</groupId>
-        <artifactId>aprox-launcher-base</artifactId>
+        <groupId>org.commonjava.indy.launch</groupId>
+        <artifactId>indy-launcher-base</artifactId>
         <version>0.25.2-SNAPSHOT</version>
         <classifier>dataset</classifier>
         <type>tar.gz</type>
         <scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-depgraph-common</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-depgraph-common</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-depgraph-common</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-depgraph-common</artifactId>
         <version>0.25.2-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-depgraph-model-java</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-depgraph-model-java</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-depgraph-client-java</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-depgraph-client-java</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-depgraph-jaxrs</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-depgraph-jaxrs</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-ftests-depgraph</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-ftests-depgraph</artifactId>
         <version>0.25.2-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-autoprox-jaxrs</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-autoprox-jaxrs</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-autoprox-common</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-autoprox-common</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-autoprox-common</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-autoprox-common</artifactId>
         <version>0.25.2-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>dataset</classifier>
         <scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-autoprox-common</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-autoprox-common</artifactId>
         <version>0.25.2-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>docset</classifier>
         <scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-autoprox-common</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-autoprox-common</artifactId>
         <version>0.25.2-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-autoprox-common</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-autoprox-common</artifactId>
         <version>0.25.2-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>uiset</classifier>
         <scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-autoprox-model-java</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-autoprox-model-java</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-autoprox-client-java</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-autoprox-client-java</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-ftests-autoprox</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-ftests-autoprox</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-setback-jaxrs</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-setback-jaxrs</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-setback-common</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-setback-common</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-setback-common</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-setback-common</artifactId>
         <version>0.25.2-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>dataset</classifier>
         <scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-setback-common</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-setback-common</artifactId>
         <version>0.25.2-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-revisions-jaxrs</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-revisions-jaxrs</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-revisions-common</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-revisions-common</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-revisions-common</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-revisions-common</artifactId>
         <version>0.25.2-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-revisions-common</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-revisions-common</artifactId>
         <version>0.25.2-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>uiset</classifier>
         <scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-dot-maven-common</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-dot-maven-common</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-dot-maven-common</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-        <type>tar.gz</type>
-        <classifier>dataset</classifier>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-dot-maven-jaxrs</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-ftests-dot-maven</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-httprox-common</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-httprox-common</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-        <type>tar.gz</type>
-        <classifier>confset</classifier>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-ftests-httprox</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-indexer</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-indexer</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-        <type>tar.gz</type>
-        <classifier>confset</classifier>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-db-memory</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-test-db</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-test-fixtures-core</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-test-providers-core</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-test-utils</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-filer-default</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-subsys-jaxrs</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-subsys-flatfile</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-subsys-http</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-subsys-maven</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-subsys-git</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-subsys-groovy</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-client-core-java</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-ftests-common</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-ftests-core</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-folo-jaxrs</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-ftests-folo</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-folo-client-java</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-folo-model-java</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-folo-common</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-folo-common</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-dot-maven-common</artifactId>
         <version>0.25.2-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>dataset</classifier>
         <scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-folo-common</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-dot-maven-jaxrs</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-ftests-dot-maven</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-httprox-common</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-httprox-common</artifactId>
         <version>0.25.2-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-promote-jaxrs</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-ftests-httprox</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-ftests-promote</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-indexer</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-indexer</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>confset</classifier>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-db-memory</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-test-db</artifactId>
         <version>0.25.2-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-promote-client-java</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-test-fixtures-core</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-test-providers-core</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-test-utils</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-filer-default</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-promote-model-java</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-jaxrs</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-promote-common</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-flatfile</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-promote-common</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-http</artifactId>
         <version>0.25.2-SNAPSHOT</version>
-        <type>tar.gz</type>
-        <classifier>confset</classifier>
-        <scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-promote-common</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-maven</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-git</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-groovy</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-client-core-java</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-ftests-common</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-ftests-core</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-folo-jaxrs</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-ftests-folo</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-folo-client-java</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-folo-model-java</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-folo-common</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-folo-common</artifactId>
         <version>0.25.2-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>dataset</classifier>
         <scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-promote-common</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-        <classifier>dataset</classifier>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-implied-repos-common</artifactId>
-        <version>0.25.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-implied-repos-common</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-folo-common</artifactId>
         <version>0.25.2-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-implied-repos-model-java</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-promote-jaxrs</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-implied-repos-client-java</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-ftests-promote</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-promote-client-java</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-ftests-implied-repos</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-promote-model-java</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox.embed</groupId>
-        <artifactId>aprox-embedder-min</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-promote-common</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox.embed</groupId>
-        <artifactId>aprox-embedder-easyprox</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-promote-common</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>confset</classifier>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-promote-common</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>dataset</classifier>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-promote-common</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+        <classifier>dataset</classifier>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-implied-repos-common</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox.embed</groupId>
-        <artifactId>aprox-embedder-savant</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-implied-repos-common</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>confset</classifier>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-implied-repos-model-java</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox.boot</groupId>
-        <artifactId>aprox-booter-api</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-implied-repos-client-java</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox.boot</groupId>
-        <artifactId>aprox-booter-jaxrs</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-ftests-implied-repos</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-subsys-keycloak</artifactId>
+        <groupId>org.commonjava.indy.embed</groupId>
+        <artifactId>indy-embedder-min</artifactId>
         <version>0.25.2-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.aprox</groupId>
-        <artifactId>aprox-subsys-keycloak</artifactId>
+        <groupId>org.commonjava.indy.embed</groupId>
+        <artifactId>indy-embedder-easyprox</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy.embed</groupId>
+        <artifactId>indy-embedder-savant</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy.boot</groupId>
+        <artifactId>indy-booter-api</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy.boot</groupId>
+        <artifactId>indy-booter-jaxrs</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-keycloak</artifactId>
+        <version>0.25.2-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-keycloak</artifactId>
         <version>0.25.2-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
@@ -1001,8 +1001,8 @@
           <artifactId>maven-assembly-plugin</artifactId>
           <dependencies>
             <dependency>
-              <groupId>org.commonjava.aprox.tools</groupId>
-              <artifactId>aprox-assemblies</artifactId>
+              <groupId>org.commonjava.indy.tools</groupId>
+              <artifactId>indy-assemblies</artifactId>
               <version>${project.version}</version>
             </dependency>
           </dependencies>
@@ -1051,7 +1051,7 @@
                 <proc>only</proc>
                 <compilerArguments>
                   <AtargetDirectory>${project.build.directory}/classes/META-INF/rest-docs</AtargetDirectory>
-                  <AmodelPkg>org.commonjava.aprox.model</AmodelPkg>
+                  <AmodelPkg>org.commonjava.indy.model</AmodelPkg>
                   <Averbose>true</Averbose>
                 </compilerArguments>
                 <verbose>false</verbose>

@@ -19,16 +19,16 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-parent</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-parent</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <groupId>org.commonjava.aprox.embed</groupId>
-  <artifactId>aprox-embedders</artifactId>
+  <groupId>org.commonjava.indy.embed</groupId>
+  <artifactId>indy-embedders</artifactId>
   <packaging>pom</packaging>
 
-  <name>AProx :: Embedders :: Parent</name>
+  <name>Indy :: Embedders :: Parent</name>
   
   <modules>
     <module>savant</module>
@@ -38,32 +38,32 @@
   
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-bindings-jaxrs</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-bindings-jaxrs</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-api</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-core</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-subsys-keycloak</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-keycloak</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-db-flat</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-db-flat</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-filer-default</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-filer-default</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox.boot</groupId>
-      <artifactId>aprox-booter-jaxrs</artifactId>
+      <groupId>org.commonjava.indy.boot</groupId>
+      <artifactId>indy-booter-jaxrs</artifactId>
     </dependency>
     
     <dependency>
@@ -114,8 +114,8 @@
                 <!--
                 <relocations>
                   <relocation>
-                    <pattern>org.commonjava.aprox</pattern>
-                    <shadedPattern>org.commonjava.aprox.shaded</shadedPattern>
+                    <pattern>org.commonjava.indy</pattern>
+                    <shadedPattern>org.commonjava.indy.shaded</shadedPattern>
                   </relocation>
                 </relocations>
                 <transformers>
@@ -165,12 +165,12 @@
 
       <dependencies>
         <dependency>
-          <groupId>org.commonjava.aprox</groupId>
-          <artifactId>aprox-ftests-core</artifactId>
+          <groupId>org.commonjava.indy</groupId>
+          <artifactId>indy-ftests-core</artifactId>
         </dependency>
         <dependency>
-          <groupId>org.commonjava.aprox</groupId>
-          <artifactId>aprox-test-providers-core</artifactId>
+          <groupId>org.commonjava.indy</groupId>
+          <artifactId>indy-test-providers-core</artifactId>
         </dependency>
       </dependencies>
       
@@ -187,7 +187,7 @@
                 <reuseForks>false</reuseForks>
                 <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
                 <dependenciesToScan>
-                  <dependency>org.commonjava.aprox:aprox-ftests-core</dependency>
+                  <dependency>org.commonjava.indy:indy-ftests-core</dependency>
                 </dependenciesToScan> 
               </configuration>
             </plugin>

@@ -19,20 +19,20 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.commonjava.aprox.boot</groupId>
-    <artifactId>aprox-booters</artifactId>
+    <groupId>org.commonjava.indy.boot</groupId>
+    <artifactId>indy-booters</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <groupId>org.commonjava.aprox.boot</groupId>
-  <artifactId>aprox-booter-jaxrs</artifactId>
+  <groupId>org.commonjava.indy.boot</groupId>
+  <artifactId>indy-booter-jaxrs</artifactId>
 
-  <name>AProx :: Booters :: JAX-RS</name>
+  <name>Indy :: Booters :: JAX-RS</name>
   
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.aprox.boot</groupId>
-      <artifactId>aprox-booter-api</artifactId>
+      <groupId>org.commonjava.indy.boot</groupId>
+      <artifactId>indy-booter-api</artifactId>
     </dependency>
     
     <dependency>
@@ -79,8 +79,8 @@
       <artifactId>log4j-over-slf4j</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-subsys-jaxrs</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-jaxrs</artifactId>
     </dependency>
 
     <dependency>

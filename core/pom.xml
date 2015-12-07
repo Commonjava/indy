@@ -19,22 +19,22 @@
   <modelVersion>4.0.0</modelVersion>
   
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-parent</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-parent</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-core</artifactId>
-  <name>AProx :: Core</name>
+  <artifactId>indy-core</artifactId>
+  <name>Indy :: Core</name>
   
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-api</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-subsys-groovy</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-groovy</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.archetype</groupId>
@@ -81,8 +81,8 @@
     	<artifactId>weld-se-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-db-memory</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-db-memory</artifactId>
       <scope>test</scope>
     </dependency>
     <!-- <dependency>
@@ -90,13 +90,13 @@
       <artifactId>shelflife-filer</artifactId>
     </dependency> -->
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-filer-default</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-filer-default</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-subsys-http</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-http</artifactId>
     </dependency>
     
     <dependency>
@@ -126,13 +126,13 @@
       <artifactId>h2</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-subsys-flatfile</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-flatfile</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-test-utils</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-test-utils</artifactId>
     </dependency>
   </dependencies>
   

@@ -19,28 +19,28 @@
   <modelVersion>4.0.0</modelVersion>
   
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-depgraph</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-depgraph</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-ftests-depgraph</artifactId>
-  <name>AProx :: Add-Ons :: DepGraph (Cartographer Integration) :: :: Functional Tests</name>
+  <artifactId>indy-ftests-depgraph</artifactId>
+  <name>Indy :: Add-Ons :: DepGraph (Cartographer Integration) :: :: Functional Tests</name>
   
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-depgraph-jaxrs</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-depgraph-jaxrs</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-depgraph-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-depgraph-common</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-depgraph-client-java</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-depgraph-client-java</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.util</groupId>
@@ -48,13 +48,13 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-test-fixtures-core</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-test-fixtures-core</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox.boot</groupId>
-      <artifactId>aprox-booter-api</artifactId>
+      <groupId>org.commonjava.indy.boot</groupId>
+      <artifactId>indy-booter-api</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -64,17 +64,17 @@
     </dependency>
     <!--
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-depgraph-client-java</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-depgraph-client-java</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-client-core-java</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-client-core-java</artifactId>
     </dependency>
     -->
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-ftests-common</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-common</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>

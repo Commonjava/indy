@@ -19,15 +19,15 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-parent</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-parent</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-clients-parent</artifactId>
+  <artifactId>indy-clients-parent</artifactId>
   <packaging>pom</packaging>
 
-  <name>AProx :: Client APIs :: Parent</name>
+  <name>Indy :: Client APIs :: Parent</name>
   
   <modules>
     <module>core-java</module>

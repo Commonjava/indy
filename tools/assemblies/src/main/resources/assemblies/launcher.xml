@@ -34,7 +34,7 @@
       <useProjectArtifact>false</useProjectArtifact>
       <scope>runtime</scope>
       <includes>
-        <include>org.commonjava.aprox.ui*</include>
+        <include>org.commonjava.indy.ui*</include>
       </includes>
       <outputDirectory>var/lib/aprox/ui</outputDirectory>
       <directoryMode>775</directoryMode>
@@ -103,7 +103,7 @@
       <useProjectArtifact>true</useProjectArtifact>
       <useProjectAttachments>true</useProjectAttachments>
       <includes>
-        <include>org.commonjava.aprox.embed:*</include>
+        <include>org.commonjava.indy.embed:*</include>
       </includes>
       <outputDirectory>lib</outputDirectory>
     </dependencySet>
@@ -113,7 +113,7 @@
       <useProjectArtifact>false</useProjectArtifact>
       <scope>runtime</scope>
       <excludes>
-        <exclude>org.commonjava.aprox.embed:*</exclude>
+        <exclude>org.commonjava.indy.embed:*</exclude>
       </excludes>
       <outputDirectory>lib/thirdparty</outputDirectory>
     </dependencySet>

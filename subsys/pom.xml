@@ -19,15 +19,15 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-parent</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-parent</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-subsystems</artifactId>
+  <artifactId>indy-subsystems</artifactId>
   <packaging>pom</packaging>
 
-  <name>AProx :: Subsystems :: Parent</name>
+  <name>Indy :: Subsystems :: Parent</name>
   
   <modules>
     <module>flatfile</module>

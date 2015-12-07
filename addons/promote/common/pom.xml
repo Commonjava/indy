@@ -19,33 +19,33 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-promote</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-promote</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
-  <artifactId>aprox-promote-common</artifactId>
-  <name>AProx :: Add-Ons :: Artifact Promotion :: Common</name>
+  <artifactId>indy-promote-common</artifactId>
+  <name>Indy :: Add-Ons :: Artifact Promotion :: Common</name>
 
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-promote-model-java</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-promote-model-java</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-api</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-core</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-core</artifactId>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-db-memory</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-db-memory</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

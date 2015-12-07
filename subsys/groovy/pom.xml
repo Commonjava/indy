@@ -19,14 +19,14 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.commonjava.aprox</groupId>
-    <artifactId>aprox-subsystems</artifactId>
+    <groupId>org.commonjava.indy</groupId>
+    <artifactId>indy-subsystems</artifactId>
     <version>0.25.2-SNAPSHOT</version>
   </parent>
   
-  <artifactId>aprox-subsys-groovy</artifactId>
+  <artifactId>indy-subsys-groovy</artifactId>
 
-  <name>AProx :: Subsystems :: Groovy Support</name>
+  <name>Indy :: Subsystems :: Groovy Support</name>
   
   <dependencies>
     <dependency>
@@ -42,8 +42,8 @@
       <artifactId>weld-se-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-subsys-flatfile</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-flatfile</artifactId>
     </dependency>
   </dependencies>
 </project>
