@@ -22,9 +22,9 @@
 . /etc/rc.d/init.d/functions
 
 PROG=indy
-APROX_HOME=/opt/indy
+INDY_HOME=/opt/indy
 #LOCKFILE=/var/lock/subsys/$PROG
-EXEC="cd $APROX_HOME && bin/indy.sh > /dev/null & echo \$!"
+EXEC="cd $INDY_HOME && bin/indy.sh > /dev/null & echo \$!"
 RETVAL=0
 RUNAS=indy
 PIDFILE=/var/run/indy.pid
@@ -45,12 +45,12 @@ start() {
 }
 stop() {
     if [ -f $PIDFILE ] && [ "x$(cat $PIDFILE)" != "x" ] && kill -0 $(cat $PIDFILE) 2> /dev/null; then
-        APROXPID=$(cat $PIDFILE)
-        JAVAPID=$(pgrep -P $APROXPID)
+        INDYPID=$(cat $PIDFILE)
+        JAVAPID=$(pgrep -P $INDYPID)
 
         if [ "x$JAVAPID" == "x" ]; then
             echo -n $"Shutting down $PROG: " >&2
-            kill -15 $APROXPID &> /dev/null && rm -f "$PIDFILE"
+            kill -15 $INDYPID &> /dev/null && rm -f "$PIDFILE"
             RETVAL=$?
         else
             echo -n $"Shutting down java started by $PROG: " >&2

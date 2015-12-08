@@ -19,7 +19,7 @@
 # 3. Execute `systemctl enable indy` to install
 
 [Unit]
-Description=AProx Local Service
+Description=Indy Local Service
 After=network.target
 
 [Service]

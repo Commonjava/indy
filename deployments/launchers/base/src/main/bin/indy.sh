@@ -26,12 +26,12 @@ BASEDIR=`dirname ${BASEDIR}`
 
 # echo "basedir: ${BASEDIR}"
 
-APROX_LOCALLIB_DIR=${APROX_LOCALLIB_DIR:-${BASEDIR}/lib/local}
-APROX_LOGCONF_DIR=${APROX_LOGCONF_DIR:-${BASEDIR}/etc/indy/logging}
+INDY_LOCALLIB_DIR=${APROX_LOCALLIB_DIR:-${BASEDIR}/lib/local}
+INDY_LOGCONF_DIR=${APROX_LOGCONF_DIR:-${BASEDIR}/etc/indy/logging}
 
-echo "Loading logging config from: ${APROX_LOGCONF_DIR}"
+echo "Loading logging config from: ${INDY_LOGCONF_DIR}"
 
-CP="${APROX_LOCALLIB_DIR}:${APROX_LOGCONF_DIR}"
+CP="${INDY_LOCALLIB_DIR}:${INDY_LOGCONF_DIR}"
 for f in $(find $BASEDIR/lib/indy-embedder-*.jar -type f)
 do
   CP=${CP}:${f}
@@ -51,11 +51,8 @@ if [ $? != 0 ]; then
   JAVA=${JAVA_HOME}/bin/java
 fi
 
-APROX_ENV=${APROX_ENV:-${BASEDIR}/etc/indy/env.sh}
-test -f ${APROX_ENV} && source ${APROX_ENV}
-
-# echo "Command: '${JAVA} -cp ${CP} -Dindy.home=${BASEDIR} -Dindy.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS} $@'"
-# exec "$JAVA" ${JAVA_OPTS} -cp "${CP}" -Dindy.logging="${APROX_LOGCONF}" -Dindy.home="${BASEDIR}" -Dindy.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS} "$@"
+INDY_ENV=${INDY_ENV:-${BASEDIR}/etc/indy/env.sh}
+test -f ${INDY_ENV} && source ${INDY_ENV}
 
 #JAVA_DEBUG_OPTS="-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n"
 JAVA_OPTS="$JAVA_OPTS $JAVA_DEBUG_OPTS"
