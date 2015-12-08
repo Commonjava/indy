@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import org.commonjava.aprox.autoprox.conf.AutoProxFactory;
+import org.commonjava.indy.autoprox.conf.AutoProxFactory;
 
 import java.net.MalformedURLException;
 
-import org.commonjava.aprox.model.*;
+import org.commonjava.indy.model.*;
 
 class ProdFactory implements AutoProxFactory
 {

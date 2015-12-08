@@ -1,7 +1,7 @@
 package GroupPromoteMatchesSucceedingValidationTest
 
-import org.commonjava.aprox.promote.validate.model.ValidationRequest
-import org.commonjava.aprox.promote.validate.model.ValidationRule
+import org.commonjava.indy.promote.validate.model.ValidationRequest
+import org.commonjava.indy.promote.validate.model.ValidationRule
 
 class FailAll implements ValidationRule
 {

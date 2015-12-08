@@ -16,10 +16,10 @@
       http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
       
   <alternatives>
-    <stereotype>org.commonjava.aprox.inject.TestData</stereotype>
+    <stereotype>org.commonjava.indy.inject.TestData</stereotype>
     
     <class>org.commonjava.shelflife.clock.ThreadedClockSource</class>
     <class>org.commonjava.shelflife.event.JEEEventManager</class>
-    <class>org.commonjava.aprox.mem.data.MemoryStoreDataManager</class>
+    <class>org.commonjava.indy.mem.data.MemoryStoreDataManager</class>
   </alternatives>
 </beans>

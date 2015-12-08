@@ -1,7 +1,7 @@
 'use strict'
 var addons = ${addonsJson};
 
-var aproxAddons = angular.module('aprox.addons', ['ngResource']);
+var aproxAddons = angular.module('indy.addons', ['ngResource']);
 
 <% if( addonsLogic ){ addonsLogic.each{ key,js -> %>
 /** START: ${key} **/

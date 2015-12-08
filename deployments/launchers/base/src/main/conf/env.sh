@@ -15,4 +15,4 @@
 #
 
 
-MAIN_CLASS=org.commonjava.aprox.boot.vertx.VertxBooter
+MAIN_CLASS=org.commonjava.indy.boot.vertx.VertxBooter

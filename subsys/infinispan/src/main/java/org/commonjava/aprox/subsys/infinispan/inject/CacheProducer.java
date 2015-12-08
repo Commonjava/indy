@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.aprox.subsys.infinispan.inject;
+package org.commonjava.indy.subsys.infinispan.inject;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 
@@ -29,8 +29,8 @@ import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
-import org.commonjava.aprox.data.ProxyDataException;
-import org.commonjava.aprox.subsys.infinispan.conf.CacheConfiguration;
+import org.commonjava.indy.data.ProxyDataException;
+import org.commonjava.indy.subsys.infinispan.conf.CacheConfiguration;
 import org.commonjava.util.logging.Logger;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
@@ -49,7 +49,7 @@ public class CacheProducer
     private CacheConfiguration config;
 
     @Inject
-    private Instance<AproxCacheConfigurator> configurators;
+    private Instance<IndyCacheConfigurator> configurators;
 
     private EmbeddedCacheManager container;
 
@@ -80,7 +80,7 @@ public class CacheProducer
 
             if ( configurators != null )
             {
-                for ( final AproxCacheConfigurator conf : configurators )
+                for ( final IndyCacheConfigurator conf : configurators )
                 {
                     logger.info( "Running cache configurator: {}", conf.getClass()
                                                                        .getName() );

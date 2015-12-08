@@ -16,9 +16,9 @@
       http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
       
   <alternatives>
-    <stereotype>org.commonjava.aprox.inject.TestData</stereotype>
+    <stereotype>org.commonjava.indy.inject.TestData</stereotype>
     
-    <class>org.commonjava.aprox.flat.data.DataFileStoreDataManager</class>
+    <class>org.commonjava.indy.flat.data.DataFileStoreDataManager</class>
   </alternatives>
   
   <decorators>

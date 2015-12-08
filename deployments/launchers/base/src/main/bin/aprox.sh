@@ -60,7 +60,7 @@ test -f ${APROX_ENV} && source ${APROX_ENV}
 #JAVA_DEBUG_OPTS="-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n"
 JAVA_OPTS="$JAVA_OPTS $JAVA_DEBUG_OPTS"
 
-MAIN_CLASS=org.commonjava.aprox.boot.jaxrs.JaxRsBooter
+MAIN_CLASS=org.commonjava.indy.boot.jaxrs.JaxRsBooter
 
 "$JAVA" ${JAVA_OPTS} -cp "${CP}" -Daprox.home="${BASEDIR}" -Daprox.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS} "$@"
 ret=$?

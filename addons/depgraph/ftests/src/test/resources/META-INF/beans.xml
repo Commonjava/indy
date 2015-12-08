@@ -16,7 +16,7 @@
       http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
 
   <alternatives>
-    <stereotype>org.commonjava.aprox.inject.Production</stereotype>
+    <stereotype>org.commonjava.indy.inject.Production</stereotype>
   </alternatives>
   
 </beans>

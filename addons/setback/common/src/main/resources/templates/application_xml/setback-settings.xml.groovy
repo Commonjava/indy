@@ -21,7 +21,7 @@ allStores.each {
   </mirrors><% } 
 %>  <profiles>
     <profile>
-      <id>aprox-repos</id>
+      <id>indy-repos</id>
       <repositories><% remotes.each{ %>
         <repository>
           <id>${it.name}</id>

@@ -1,8 +1,5 @@
-
-import java.net.MalformedURLException;
-
-import org.commonjava.aprox.model.core.*;
-import org.commonjava.aprox.autoprox.data.*;
+import org.commonjava.indy.model.core.*;
+import org.commonjava.indy.autoprox.data.*;
 
 class ProdFactory extends AbstractAutoProxRule
 {

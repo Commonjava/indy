@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import org.commonjava.aprox.autoprox.data.*;
+import org.commonjava.indy.autoprox.data.*;
 import java.net.MalformedURLException;
-import org.commonjava.aprox.model.core.*;
+import org.commonjava.indy.model.core.*;
 
 class RedHatRule extends AbstractAutoProxRule
 {

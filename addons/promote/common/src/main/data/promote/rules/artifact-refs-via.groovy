@@ -1,8 +1,8 @@
-package org.commonjava.aprox.promote.rules
+package org.commonjava.indy.promote.rules
 
-import org.commonjava.aprox.model.core.StoreKey
-import org.commonjava.aprox.promote.validate.model.ValidationRequest
-import org.commonjava.aprox.promote.validate.model.ValidationRule
+import org.commonjava.indy.model.core.StoreKey
+import org.commonjava.indy.promote.validate.model.ValidationRequest
+import org.commonjava.indy.promote.validate.model.ValidationRule
 import org.commonjava.cartographer.graph.discover.DiscoveryConfig
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef
 import org.commonjava.maven.atlas.ident.ref.SimpleTypeAndClassifier

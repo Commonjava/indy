@@ -22,6 +22,6 @@
       
 
   <alternatives>
-    <stereotype>org.commonjava.aprox.inject.TestData</stereotype>
+    <stereotype>org.commonjava.indy.inject.TestData</stereotype>
   </alternatives>
 </beans>

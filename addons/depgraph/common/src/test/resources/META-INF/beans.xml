@@ -16,7 +16,7 @@
       http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
       
   <alternatives>
-    <stereotype>org.commonjava.aprox.inject.TestData</stereotype>
-<!--     <class>org.commonjava.aprox.depbase.fixture.TestDiscoverer</class>
+    <stereotype>org.commonjava.indy.inject.TestData</stereotype>
+<!--     <class>org.commonjava.indydepbase.fixture.TestDiscoverer</class>
  -->  </alternatives>
 </beans>

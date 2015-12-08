@@ -49,7 +49,7 @@
   <logger name="org.commonjava" level="DEBUG" />
   -->
   
-  <logger name="org.commonjava.aprox.implrepo" level="DEBUG" />
+  <logger name="org.commonjava.indy.implrepo" level="DEBUG" />
   <logger name="org.commonjava.maven.galley.transport" level="DEBUG" />
   <logger name="org.commonjava.util.partyline" level="DEBUG" />
 
