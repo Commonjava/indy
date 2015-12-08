@@ -58,7 +58,7 @@ public class SettingsSubStore
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private StoreDataManager aprox;
+    private StoreDataManager indy;
 
     @Inject
     private StorageAdvisor advisor;
@@ -132,7 +132,7 @@ public class SettingsSubStore
             List<? extends ArtifactStore> all;
             try
             {
-                all = aprox.getAllArtifactStores( type );
+                all = indy.getAllArtifactStores( type );
             }
             catch ( final IndyDataException e )
             {
@@ -175,7 +175,7 @@ public class SettingsSubStore
         ArtifactStore store;
         try
         {
-            store = aprox.getArtifactStore( key );
+            store = indy.getArtifactStore( key );
         }
         catch ( final IndyDataException e )
         {

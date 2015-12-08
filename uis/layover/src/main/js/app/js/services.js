@@ -18,9 +18,9 @@
 /* Services */
 
 
-var aproxServices = angular.module('aprox.services', ['ngResource']);
+var indyServices = angular.module('indy.services', ['ngResource']);
 
-aproxServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
+indyServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
   return {
     promptForChangelog: function(scope, confirmLabel, callback){
       scope.raw.confirmLabel=confirmLabel;
@@ -113,7 +113,7 @@ aproxServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
   };
 }]);
 
-aproxServices.factory('StoreUtilSvc', function(){
+indyServices.factory('StoreUtilSvc', function(){
   return {
     resourceMode: function(){
       if ( window.location.hash.match( ".+/edit/.+" ) ){
@@ -325,7 +325,7 @@ aproxServices.factory('StoreUtilSvc', function(){
 });
 
 
-aproxServices.factory('RemoteSvc', ['$resource', '$http',
+indyServices.factory('RemoteSvc', ['$resource', '$http',
   function($resource, $http){
     return {
       resource: $resource(appPath( '/api/admin/remote/:name' ), {}, {
@@ -343,7 +343,7 @@ aproxServices.factory('RemoteSvc', ['$resource', '$http',
     };
   }]);
 
-aproxServices.factory('HostedSvc', ['$resource', '$http',
+indyServices.factory('HostedSvc', ['$resource', '$http',
   function($resource, $http){
     return {
       resource: $resource(appPath( '/api/admin/hosted/:name' ), {}, {
@@ -361,7 +361,7 @@ aproxServices.factory('HostedSvc', ['$resource', '$http',
     }
   }]);
 
-aproxServices.factory('GroupSvc', ['$resource', '$http',
+indyServices.factory('GroupSvc', ['$resource', '$http',
   function($resource, $http){
     return {
       resource: $resource(appPath( '/api/admin/group/:name' ), {}, {
@@ -379,7 +379,7 @@ aproxServices.factory('GroupSvc', ['$resource', '$http',
     };
   }]);
 
-aproxServices.factory('NfcSvc', ['$resource',
+indyServices.factory('NfcSvc', ['$resource',
   function($resource) {
     return {
       resource: $resource(appPath('/api/nfc/:type/:name/:path'), {}, {
@@ -391,7 +391,7 @@ aproxServices.factory('NfcSvc', ['$resource',
     };
 }]);
 
-aproxServices.factory('AllEndpointsSvc', ['$resource',
+indyServices.factory('AllEndpointsSvc', ['$resource',
   function($resource){
     return {
       resource: $resource(appPath( '/api/stats/all-endpoints' ), {}, {
@@ -400,7 +400,7 @@ aproxServices.factory('AllEndpointsSvc', ['$resource',
     }
   }]);
 
-aproxServices.factory('FooterSvc', ['$resource',
+indyServices.factory('FooterSvc', ['$resource',
   function($resource){
     return {
       resource: $resource(appPath( '/api/stats/version-info' ), {}, {

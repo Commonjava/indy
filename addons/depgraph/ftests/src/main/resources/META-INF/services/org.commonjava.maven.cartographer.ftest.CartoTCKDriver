@@ -1,1 +1,1 @@
-indy.depgraph.ftest.AproxCartoTCKDriver
+org.commonjava.indy.depgraph.ftest.IndyCartoTCKDriver

@@ -64,7 +64,7 @@ public class ArtifactStoreSubStore
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private StoreDataManager aprox;
+    private StoreDataManager indy;
 
     @Inject
     private StorageAdvisor advisor;
@@ -182,7 +182,7 @@ public class ArtifactStoreSubStore
         {
             if ( StoreType.group == key.getType() )
             {
-                final List<ArtifactStore> stores = aprox.getOrderedStoresInGroup( key.getName() );
+                final List<ArtifactStore> stores = indy.getOrderedStoresInGroup( key.getName() );
                 for ( final ArtifactStore store : stores )
                 {
                     //                    logger.info( "Getting Transfer for: {} from: {}", path, store );
@@ -197,7 +197,7 @@ public class ArtifactStoreSubStore
             }
             else
             {
-                final ArtifactStore store = aprox.getArtifactStore( key );
+                final ArtifactStore store = indy.getArtifactStore( key );
                 if ( store == null )
                 {
                     throw new WebdavException( "Cannot find store: " + key );
@@ -284,7 +284,7 @@ public class ArtifactStoreSubStore
             {
                 if ( StoreType.group == key.getType() )
                 {
-                    final List<ArtifactStore> stores = aprox.getOrderedStoresInGroup( key.getName() );
+                    final List<ArtifactStore> stores = indy.getOrderedStoresInGroup( key.getName() );
                     final Set<String> noms = new TreeSet<String>();
                     for ( final ArtifactStore store : stores )
                     {
@@ -307,7 +307,7 @@ public class ArtifactStoreSubStore
                 }
                 else
                 {
-                    final ArtifactStore store = aprox.getArtifactStore( key );
+                    final ArtifactStore store = indy.getArtifactStore( key );
 
                     if ( store == null )
                     {
@@ -346,7 +346,7 @@ public class ArtifactStoreSubStore
             List<? extends ArtifactStore> stores;
             try
             {
-                stores = aprox.getAllArtifactStores( type );
+                stores = indy.getAllArtifactStores( type );
             }
             catch ( final IndyDataException e )
             {
@@ -460,7 +460,7 @@ public class ArtifactStoreSubStore
         ArtifactStore store;
         try
         {
-            store = aprox.getArtifactStore( key );
+            store = indy.getArtifactStore( key );
         }
         catch ( final IndyDataException e )
         {

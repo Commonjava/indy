@@ -16,7 +16,7 @@
 package org.commonjava.indy.depgraph.jaxrs.resolve;
 
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
-import static org.commonjava.indy.util.ApplicationContent.application_aprox_star_json;
+import static org.commonjava.indy.util.ApplicationContent.application_indy_star_json;
 import static org.commonjava.indy.util.ApplicationContent.application_json;
 
 import javax.inject.Inject;
@@ -31,7 +31,7 @@ import org.commonjava.indy.depgraph.rest.ResolverController;
 import org.commonjava.cartographer.request.MultiGraphRequest;
 
 @Path( "/api/depgraph/graph" )
-@Consumes( { application_json, application_aprox_star_json } )
+@Consumes( { application_json, application_indy_star_json } )
 public class ResolverResource
     implements IndyResources
 {

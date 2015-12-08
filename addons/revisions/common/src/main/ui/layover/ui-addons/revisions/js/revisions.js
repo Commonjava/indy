@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var aprox = angular.module('aprox');
+var indy = angular.module('indy');
 
-aprox.provide.factory('StoreChangelogSvc', ['$resource', function($resource){
+indy.provide.factory('StoreChangelogSvc', ['$resource', function($resource){
   return {
     resource: $resource(appPath('/api/revisions/changelog/store/:type/:name'), {}, {
       list: {
@@ -31,7 +31,7 @@ aprox.provide.factory('StoreChangelogSvc', ['$resource', function($resource){
 }]);
 
 
-aprox.controllerProvider.register('StoreChangelogCtl', ['$scope', '$location', '$q', 'StoreChangelogSvc', 'AllEndpointsSvc', 'StoreUtilSvc', 
+indy.controllerProvider.register('StoreChangelogCtl', ['$scope', '$location', '$q', 'StoreChangelogSvc', 'AllEndpointsSvc', 'StoreUtilSvc',
                                                             function($scope, $location, $q, StoreChangelogSvc, AllEndpointsSvc, StoreUtilSvc) {
   var tz = -1 * (new Date().getTimezoneOffset() / 60);
   var tzLabel = 'GMT';
@@ -128,7 +128,7 @@ aprox.controllerProvider.register('StoreChangelogCtl', ['$scope', '$location', '
   $scope.change();
 }]);
 
-aprox.controllerProvider.register( 'StoreChangelogEntryCtl', ['$scope', function($scope){
+indy.controllerProvider.register( 'StoreChangelogEntryCtl', ['$scope', function($scope){
   $scope.display=false;
   
   $scope.toggleSummary = function(){

@@ -22,7 +22,7 @@ import java.util.Map;
 public final class ApplicationContent
 {
 
-    public static final String application_aprox_star_json = "application/indy*+json";
+    public static final String application_indy_star_json = "application/indy*+json";
 
     public static final String application_json = "application/json";
 
@@ -34,15 +34,15 @@ public final class ApplicationContent
 
     public static final String text_html = "text/html";
 
-    public static String aprox_json = "application/indy+json";
+    public static String indy_json = "application/indy+json";
 
-    public static String aprox_xml = "application/indy+xml";
+    public static String indy_xml = "application/indy+xml";
 
-    public static String aprox_zip = "application/indy+zip";
+    public static String indy_zip = "application/indy+zip";
 
-    public static String aprox_plain = "application/indy+plain";
+    public static String indy_plain = "application/indy+plain";
 
-    public static String aprox_html = "application/indy+html";
+    public static String indy_html = "application/indy+html";
 
     private ApplicationContent()
     {
@@ -51,16 +51,16 @@ public final class ApplicationContent
     private static final Map<String, String> APROX_ACCEPTS = Collections.unmodifiableMap( new HashMap<String, String>()
     {
         {
-            put( application_json, aprox_json );
-            put( text_html, aprox_html );
-            put( text_plain, aprox_plain );
-            put( application_zip, aprox_zip );
-            put( application_xml, aprox_xml );
-            put( aprox_json, aprox_json );
-            put( aprox_html, aprox_html );
-            put( aprox_plain, aprox_plain );
-            put( aprox_zip, aprox_zip );
-            put( aprox_xml, aprox_xml );
+            put( application_json, indy_json );
+            put( text_html, indy_html );
+            put( text_plain, indy_plain );
+            put( application_zip, indy_zip );
+            put( application_xml, indy_xml );
+            put( indy_json, indy_json );
+            put( indy_html, indy_html );
+            put( indy_plain, indy_plain );
+            put( indy_zip, indy_zip );
+            put( indy_xml, indy_xml );
         }
 
         private static final long serialVersionUID = 1L;
@@ -70,11 +70,11 @@ public final class ApplicationContent
         Collections.unmodifiableMap( new HashMap<String, String>()
         {
             {
-                put( aprox_json, application_json );
-                put( aprox_html, text_html );
-                put( aprox_plain, text_plain );
-                put( aprox_zip, application_zip );
-                put( aprox_xml, application_xml );
+                put( indy_json, application_json );
+                put( indy_html, text_html );
+                put( indy_plain, text_plain );
+                put( indy_zip, application_zip );
+                put( indy_xml, application_xml );
                 put( application_json, application_json );
                 put( text_html, text_html );
                 put( text_plain, text_plain );
@@ -90,8 +90,8 @@ public final class ApplicationContent
         return standardAccept == null ? null : APROX_ACCEPTS.get( standardAccept );
     }
 
-    public static String getStandardAccept( final String aproxAccept )
+    public static String getStandardAccept( final String indyAccept )
     {
-        return aproxAccept == null ? null : STANDARD_ACCEPTS.get( aproxAccept );
+        return indyAccept == null ? null : STANDARD_ACCEPTS.get( indyAccept );
     }
 }

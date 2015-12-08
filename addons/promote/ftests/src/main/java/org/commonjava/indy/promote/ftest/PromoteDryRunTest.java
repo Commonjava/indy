@@ -32,7 +32,7 @@ public class PromoteDryRunTest
 {
 
     @Test
-    public void promoteAll_PushTwoArtifactsToHostedRepo_DryRun_VerifyPendingPathsPopulated()
+    public void run()
         throws Exception
     {
         final PathsPromoteResult result =

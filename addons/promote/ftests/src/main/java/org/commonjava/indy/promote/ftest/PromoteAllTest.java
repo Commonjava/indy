@@ -32,7 +32,7 @@ public class PromoteAllTest
 {
 
     @Test
-    public void promoteAll_PushTwoArtifactsToHostedRepo_VerifyCopiedToOtherHostedRepo()
+    public void run()
         throws Exception
     {
         final PathsPromoteResult result = client.module( IndyPromoteClientModule.class )

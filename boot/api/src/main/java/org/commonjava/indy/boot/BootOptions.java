@@ -70,7 +70,7 @@ public class BootOptions
 
     private Properties bootProps;
 
-    private String aproxHome;
+    private String indyHome;
     
     public static BootOptions loadFromSysprops()
         throws IndyBootException
@@ -84,10 +84,10 @@ public class BootOptions
         
         try
         {
-            final String aproxHome =
+            final String indyHome =
                 System.getProperty( BootInterface.APROX_HOME_PROP, new File( "." ).getCanonicalPath() );
 
-            return new BootOptions( bootDefaults, aproxHome);
+            return new BootOptions( bootDefaults, indyHome);
         }
         catch ( final IOException e )
         {
@@ -107,7 +107,7 @@ public class BootOptions
 
         System.out.printf( "\n\nUsing Indy configuration: %s\n", config );
         properties.setProperty( BootInterface.CONFIG_PATH_PROP, config );
-        properties.setProperty( BootInterface.APROX_HOME_PROP, aproxHome );
+        properties.setProperty( BootInterface.APROX_HOME_PROP, indyHome );
         System.setProperties( properties );
     }
 
@@ -117,17 +117,17 @@ public class BootOptions
     }
 
     
-    public BootOptions( final String aproxHome )
+    public BootOptions( final String indyHome )
             throws IOException, InterpolationException
         {
-            this( null, aproxHome );
+            this( null, indyHome );
         }
     
 
-    public BootOptions( final File bootDefaults, final String aproxHome )
+    public BootOptions( final File bootDefaults, final String indyHome )
         throws IOException, InterpolationException
     {
-        this.aproxHome = aproxHome;
+        this.indyHome = indyHome;
         this.bootProps = new Properties();
         
         if ( bootDefaults != null && bootDefaults.exists() )
@@ -157,7 +157,7 @@ public class BootOptions
 
         if ( config == null )
         {
-            final String defaultConfigPath = new File( aproxHome, "etc/indy/main.conf" ).getPath();
+            final String defaultConfigPath = new File( indyHome, "etc/indy/main.conf" ).getPath();
             config = resolve( bootProps.getProperty( CONFIG_PROP, defaultConfigPath ) );
         }
 
@@ -173,7 +173,7 @@ public class BootOptions
         this.contextPath = options.contextPath;
         this.interp = options.interp;
         this.bootProps = options.bootProps;
-        this.aproxHome = options.aproxHome;
+        this.indyHome = options.indyHome;
     }
 
     public String resolve( final String value )
@@ -187,7 +187,7 @@ public class BootOptions
 
         if ( bootProps == null )
         {
-            if ( aproxHome == null )
+            if ( indyHome == null )
             {
                 return value;
             }
@@ -197,7 +197,7 @@ public class BootOptions
             }
         }
 
-        bootProps.setProperty( "indy.home", aproxHome );
+        bootProps.setProperty( "indy.home", indyHome );
 
         if ( interp == null )
         {
@@ -326,12 +326,12 @@ public class BootOptions
 
     public String getIndyHome()
     {
-        return aproxHome;
+        return indyHome;
     }
 
-    public void setIndyHome( final String aproxHome )
+    public void setIndyHome( final String indyHome )
     {
-        this.aproxHome = aproxHome;
+        this.indyHome = indyHome;
     }
 
     public void setPort( final Integer port )

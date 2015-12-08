@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
-# 1. Adjust /opt/aprox/bin to match the deployment location
+# 1. Adjust /opt/indy/bin to match the deployment location
 # 2. Put in /etc/systemd/system/
-# 3. Execute `systemctl enable aprox` to install
+# 3. Execute `systemctl enable indy` to install
 
 [Unit]
 Description=AProx Local Service
@@ -25,8 +25,8 @@ After=network.target
 [Service]
 Restart=always
 RestartSec=10
-ExecStart=/opt/aprox/bin/aprox.sh
-ExecStop=/usr/bin/pkill -f aprox
+ExecStart=/opt/indy/bin/indy.sh
+ExecStop=/usr/bin/pkill -f indy
 
 [Install]
 WantedBy=multi-user.target

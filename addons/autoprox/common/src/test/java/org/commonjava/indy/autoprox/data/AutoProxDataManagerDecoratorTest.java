@@ -104,9 +104,9 @@ public class AutoProxDataManagerDecoratorTest
 
         final DataFileManager dataFiles = new DataFileManager( rootDir, new DataFileEventManager() );
 
-        final AutoProxConfig aproxConfig = new AutoProxConfig( autoproxDataDir.getName(), true );
+        final AutoProxConfig indyConfig = new AutoProxConfig( autoproxDataDir.getName(), true );
 
-        catalog = new AutoProxCatalogManager( dataFiles, aproxConfig, ruleParser );
+        catalog = new AutoProxCatalogManager( dataFiles, indyConfig, ruleParser );
         proxyManager = new TestAutoProxyDataManager( catalog, galley.getTransferManager() );
 
         proxyManager.install();

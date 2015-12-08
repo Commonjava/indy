@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 public class IndyVersioningProvider
 {
 
-    private static final String APROX_VERSIONING_PROPERTIES = "aprox-version.properties";
+    private static final String APROX_VERSIONING_PROPERTIES = "indy-version.properties";
 
     private final IndyVersioning versioning;
 

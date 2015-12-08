@@ -27,12 +27,12 @@ BASEDIR=`dirname ${BASEDIR}`
 # echo "basedir: ${BASEDIR}"
 
 APROX_LOCALLIB_DIR=${APROX_LOCALLIB_DIR:-${BASEDIR}/lib/local}
-APROX_LOGCONF_DIR=${APROX_LOGCONF_DIR:-${BASEDIR}/etc/aprox/logging}
+APROX_LOGCONF_DIR=${APROX_LOGCONF_DIR:-${BASEDIR}/etc/indy/logging}
 
 echo "Loading logging config from: ${APROX_LOGCONF_DIR}"
 
 CP="${APROX_LOCALLIB_DIR}:${APROX_LOGCONF_DIR}"
-for f in $(find $BASEDIR/lib/aprox-embedder-*.jar -type f)
+for f in $(find $BASEDIR/lib/indy-embedder-*.jar -type f)
 do
   CP=${CP}:${f}
 done
@@ -51,18 +51,18 @@ if [ $? != 0 ]; then
   JAVA=${JAVA_HOME}/bin/java
 fi
 
-APROX_ENV=${APROX_ENV:-${BASEDIR}/etc/aprox/env.sh}
+APROX_ENV=${APROX_ENV:-${BASEDIR}/etc/indy/env.sh}
 test -f ${APROX_ENV} && source ${APROX_ENV}
 
-# echo "Command: '${JAVA} -cp ${CP} -Daprox.home=${BASEDIR} -Daprox.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS} $@'"
-# exec "$JAVA" ${JAVA_OPTS} -cp "${CP}" -Daprox.logging="${APROX_LOGCONF}" -Daprox.home="${BASEDIR}" -Daprox.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS} "$@"
+# echo "Command: '${JAVA} -cp ${CP} -Dindy.home=${BASEDIR} -Dindy.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS} $@'"
+# exec "$JAVA" ${JAVA_OPTS} -cp "${CP}" -Dindy.logging="${APROX_LOGCONF}" -Dindy.home="${BASEDIR}" -Dindy.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS} "$@"
 
 #JAVA_DEBUG_OPTS="-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n"
 JAVA_OPTS="$JAVA_OPTS $JAVA_DEBUG_OPTS"
 
 MAIN_CLASS=org.commonjava.indy.boot.jaxrs.JaxRsBooter
 
-"$JAVA" ${JAVA_OPTS} -cp "${CP}" -Daprox.home="${BASEDIR}" -Daprox.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS} "$@"
+"$JAVA" ${JAVA_OPTS} -cp "${CP}" -Dindy.home="${BASEDIR}" -Dindy.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS} "$@"
 ret=$?
 if [ $ret == 0 -o $ret == 130 ]; then
   exit 0

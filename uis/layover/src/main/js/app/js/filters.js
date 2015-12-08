@@ -17,7 +17,7 @@
 
 /* Filters */
 
-var filterModule = angular.module('aprox.filters', []);
+var filterModule = angular.module('indy.filters', []);
 
 filterModule
   .filter('checkmark', function() {

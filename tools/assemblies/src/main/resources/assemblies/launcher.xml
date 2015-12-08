@@ -16,7 +16,7 @@
   </formats>
   
   <includeBaseDirectory>true</includeBaseDirectory>
-  <baseDirectory>aprox</baseDirectory>
+  <baseDirectory>indy</baseDirectory>
   
   <dependencySets>
     <!-- this main project artifact -->
@@ -36,7 +36,7 @@
       <includes>
         <include>org.commonjava.indy.ui*</include>
       </includes>
-      <outputDirectory>var/lib/aprox/ui</outputDirectory>
+      <outputDirectory>var/lib/indy/ui</outputDirectory>
       <directoryMode>775</directoryMode>
       <fileMode>664</fileMode>
       <unpack>true</unpack>
@@ -54,7 +54,7 @@
       <includes>
         <include>*:tar.gz:dataset:*</include>
       </includes>
-      <outputDirectory>var/lib/aprox/data</outputDirectory>
+      <outputDirectory>var/lib/indy/data</outputDirectory>
       <unpack>true</unpack>
     </dependencySet>
     <!-- document sets -->
@@ -64,7 +64,7 @@
       <includes>
         <include>*:tar.gz:docset:*</include>
       </includes>
-      <outputDirectory>usr/share/doc/aprox</outputDirectory>
+      <outputDirectory>usr/share/doc/indy</outputDirectory>
       <unpack>true</unpack>
     </dependencySet>
     <!-- bin sets -->
@@ -84,7 +84,7 @@
       <includes>
         <include>*:tar.gz:confset:*</include>
       </includes>
-      <outputDirectory>etc/aprox</outputDirectory>
+      <outputDirectory>etc/indy</outputDirectory>
       <unpack>true</unpack>
     </dependencySet>
     <!-- UI sets -->
@@ -94,7 +94,7 @@
       <includes>
         <include>*:tar.gz:uiset:*</include>
       </includes>
-      <outputDirectory>var/lib/aprox/ui</outputDirectory>
+      <outputDirectory>var/lib/indy/ui</outputDirectory>
       <unpack>true</unpack>
     </dependencySet>
     

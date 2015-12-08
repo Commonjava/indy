@@ -53,6 +53,6 @@ allStores.each {
     </profile>
   </profiles>
   <activeProfiles>
-    <activeProfile>aprox-repos</activeProfile>
+    <activeProfile>indy-repos</activeProfile>
   </activeProfiles>
 </settings>

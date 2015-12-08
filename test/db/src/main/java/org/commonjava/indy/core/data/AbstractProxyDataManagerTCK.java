@@ -45,7 +45,7 @@ public abstract class AbstractProxyDataManagerTCK
     //
     // // umConfig =
     // // new DefaultUserManagerConfig( "admin@nowhere.com", "password", "Admin", "User",
-    // // "http://localhost:5984/test-aprox" );
+    // // "http://localhost:5984/test-indy" );
     //
     // final Serializer serializer = new Serializer();
     //

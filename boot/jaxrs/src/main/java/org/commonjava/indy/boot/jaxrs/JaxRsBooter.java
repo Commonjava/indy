@@ -225,11 +225,11 @@ public class JaxRsBooter
     public boolean deploy()
     {
         boolean started;
-        final IndyDeployment aproxDeployment = container.instance()
+        final IndyDeployment indyDeployment = container.instance()
                                                          .select( IndyDeployment.class )
                                                          .get();
 
-        final DeploymentInfo di = aproxDeployment.getDeployment( bootOptions.getContextPath() )
+        final DeploymentInfo di = indyDeployment.getDeployment( bootOptions.getContextPath() )
                                                  .setContextPath( "/" );
         
         final DeploymentManager dm = Servlets.defaultContainer()

@@ -39,7 +39,7 @@ public class DepgraphStorageListener
     private IndyModelDiscoverer discoverer;
 
     @Inject
-    private StoreDataManager aprox;
+    private StoreDataManager indy;
 
     @Inject
     @ExecutorConfig( priority = 8, threads = 2, named = "depgraph-listener" )
@@ -72,7 +72,7 @@ public class DepgraphStorageListener
 
         logger.info( "[SUBMIT] DepgraphStorageListenerRunnable for: {}", event );
 
-        executor.execute( new DepgraphStorageListenerRunnable( discoverer, aprox, graphFactory, patcherSupport,
+        executor.execute( new DepgraphStorageListenerRunnable( discoverer, indy, graphFactory, patcherSupport,
                                                                event.getTransfer() ) );
     }
 }

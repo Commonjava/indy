@@ -47,7 +47,7 @@ public class CoreServerProvider
     private final TemporaryFolder folder = new TemporaryFolder();
 
     @Inject
-    private DefaultIndyConfiguration.FeatureConfig aproxConfigFeature;
+    private DefaultIndyConfiguration.FeatureConfig indyConfigFeature;
 
     private IndyConfiguration config;
 
@@ -84,7 +84,7 @@ public class CoreServerProvider
             this.storeManager = new DataFileStoreDataManager( dataFileManager, objectMapper, storeDispatch , new DefaultIndyConfiguration() );
             this.storageConfig = new DefaultStorageProviderConfiguration( folder.newFolder( "indy-storage" ) );
 
-            this.config = aproxConfigFeature.getIndyConfig();
+            this.config = indyConfigFeature.getIndyConfig();
             this.xml = new XMLInfrastructure();
             this.typeMapper = new StandardTypeMapper();
         }

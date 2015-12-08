@@ -32,7 +32,7 @@ public class RollbackTwoArtifactsTest
 {
 
     @Test
-    public void rollback_PushTwoArtifactsToHostedRepo_PromoteSuccessThenRollback()
+    public void run()
         throws Exception
     {
         PathsPromoteResult result = client.module( IndyPromoteClientModule.class )

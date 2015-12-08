@@ -95,7 +95,7 @@ Usage:
 
           opts.on('-H', '--host=HOST', 'Aprox hostname'){|host| @options[:host] = host}
           opts.on('-p', '--port=PORT', 'Aprox port'){|port| @options[:port] = port.to_i}
-          opts.on('-c', '--context=PATH', 'Aprox context base-path (default: /aprox)'){|context_path| @options[:context_path]=context_path}
+          opts.on('-c', '--context=PATH', 'Aprox context base-path (default: /indy)'){|context_path| @options[:context_path]=context_path}
 
           opts.separator ""
 

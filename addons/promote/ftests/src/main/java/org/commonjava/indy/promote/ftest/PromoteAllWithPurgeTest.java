@@ -32,7 +32,7 @@ public class PromoteAllWithPurgeTest
 {
 
     @Test
-    public void promoteAll_PurgeSource_PushTwoArtifactsToHostedRepo_VerifyCopiedToOtherHostedRepo()
+    public void run()
         throws Exception
     {
         final PathsPromoteResult result =

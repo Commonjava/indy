@@ -16,7 +16,7 @@
   </formats>
   
   <includeBaseDirectory>true</includeBaseDirectory>
-  <baseDirectory>aprox-etc</baseDirectory>
+  <baseDirectory>indy-etc</baseDirectory>
   
   <dependencySets>
     <!-- configuration sets -->
@@ -33,7 +33,7 @@
   
   <fileSets>
     <fileSet>
-      <directory>${project.build.directory}/etc/aprox</directory>
+      <directory>${project.build.directory}/etc/indy</directory>
       <outputDirectory>/</outputDirectory>
     </fileSet>
   </fileSets>

@@ -2,5 +2,5 @@
 var auth={loggedIn: false, keycloak: {authenticated: false, loginRequired: false}};
 
 angular.element(document).ready(function () {
-  angular.bootstrap(document, ['aprox']);
+  angular.bootstrap(document, ['indy']);
 });

@@ -57,18 +57,18 @@ public class DepgraphStorageListenerRunnable
 
     private Throwable error;
 
-    private final StoreDataManager aprox;
+    private final StoreDataManager indy;
 
     private final RelationshipGraphFactory graphFactory;
 
     private final PatcherSupport patcherSupport;
 
-    public DepgraphStorageListenerRunnable( final IndyModelDiscoverer discoverer, final StoreDataManager aprox,
+    public DepgraphStorageListenerRunnable( final IndyModelDiscoverer discoverer, final StoreDataManager indy,
                                             final RelationshipGraphFactory graphFactory,
                                             final PatcherSupport patcherSupport, final Transfer item )
     {
         this.discoverer = discoverer;
-        this.aprox = aprox;
+        this.indy = indy;
         this.graphFactory = graphFactory;
         this.patcherSupport = patcherSupport;
         this.item = item;
@@ -95,7 +95,7 @@ public class DepgraphStorageListenerRunnable
         ArtifactStore originatingStore = null;
         try
         {
-            originatingStore = aprox.getArtifactStore( key );
+            originatingStore = indy.getArtifactStore( key );
         }
         catch ( final IndyDataException e )
         {
@@ -181,7 +181,7 @@ public class DepgraphStorageListenerRunnable
 
         try
         {
-            final Set<? extends Group> groups = aprox.getGroupsContaining( originatingStore.getKey() );
+            final Set<? extends Group> groups = indy.getGroupsContaining( originatingStore.getKey() );
             for ( final Group group : groups )
             {
                 if ( group == null )
@@ -190,7 +190,7 @@ public class DepgraphStorageListenerRunnable
                 }
 
                 final List<? extends ArtifactStore> orderedStores =
-                    aprox.getOrderedConcreteStoresInGroup( group.getName() );
+                    indy.getOrderedConcreteStoresInGroup( group.getName() );
 
                 if ( orderedStores != null )
                 {

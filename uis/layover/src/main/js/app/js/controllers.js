@@ -17,16 +17,16 @@
 
 /* Controllers */
 
-var aproxControllers = angular.module('aprox.controllers', []);
+var indyControllers = angular.module('indy.controllers', []);
 
-aproxControllers.controller('DisplayHtmlCtl', ['$scope', '$element', function($scope, $element) {
+indyControllers.controller('DisplayHtmlCtl', ['$scope', '$element', function($scope, $element) {
   console.log($element);
   $scope.showHtml = function() {
       alert($element.html());
   };
 }]);
 
-aproxControllers.controller('NavCtl', ['$scope', function($scope){
+indyControllers.controller('NavCtl', ['$scope', function($scope){
   $scope.addon_navs = [];
   if ( auth.loggedIn ){
     $scope.username = auth.keycloak.tokenParsed.name;
@@ -43,7 +43,7 @@ aproxControllers.controller('NavCtl', ['$scope', function($scope){
   }
 }]);
 
-aproxControllers.controller('RemoteListCtl', ['$scope', '$location', 'RemoteSvc', 'StoreUtilSvc', 'ControlSvc', function($scope, $location, RemoteSvc, StoreUtilSvc, ControlSvc) {
+indyControllers.controller('RemoteListCtl', ['$scope', '$location', 'RemoteSvc', 'StoreUtilSvc', 'ControlSvc', function($scope, $location, RemoteSvc, StoreUtilSvc, ControlSvc) {
     ControlSvc.addListingControlHrefs($scope, $location);
   
     $scope.listing = RemoteSvc.resource.query({}, function(listing){
@@ -59,7 +59,7 @@ aproxControllers.controller('RemoteListCtl', ['$scope', '$location', 'RemoteSvc'
     $scope.orderProp = 'key';
   }]);
 
-aproxControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 'RemoteSvc', 'StoreUtilSvc', 'ControlSvc', function($scope, $routeParams, $location, RemoteSvc, StoreUtilSvc, ControlSvc) {
+indyControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 'RemoteSvc', 'StoreUtilSvc', 'ControlSvc', function($scope, $routeParams, $location, RemoteSvc, StoreUtilSvc, ControlSvc) {
   $scope.mode = StoreUtilSvc.resourceMode();
   $scope.storeUtils = StoreUtilSvc;
 
@@ -145,7 +145,7 @@ aproxControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location',
 
 }]);
 
-aproxControllers.controller('HostedListCtl', ['$scope', '$location', 'HostedSvc', 'StoreUtilSvc', 'ControlSvc', function($scope, $location, HostedSvc, StoreUtilSvc, ControlSvc) {
+indyControllers.controller('HostedListCtl', ['$scope', '$location', 'HostedSvc', 'StoreUtilSvc', 'ControlSvc', function($scope, $location, HostedSvc, StoreUtilSvc, ControlSvc) {
     ControlSvc.addListingControlHrefs($scope, $location);
     
     $scope.hostedOptionLegend = StoreUtilSvc.hostedOptionLegend();
@@ -165,7 +165,7 @@ aproxControllers.controller('HostedListCtl', ['$scope', '$location', 'HostedSvc'
     $scope.orderProp = 'key';
   }]);
 
-aproxControllers.controller('HostedCtl', ['$scope', '$routeParams', '$location', 'HostedSvc', 'StoreUtilSvc', 'ControlSvc', function($scope, $routeParams, $location, HostedSvc, StoreUtilSvc, ControlSvc) {
+indyControllers.controller('HostedCtl', ['$scope', '$routeParams', '$location', 'HostedSvc', 'StoreUtilSvc', 'ControlSvc', function($scope, $routeParams, $location, HostedSvc, StoreUtilSvc, ControlSvc) {
   $scope.mode = StoreUtilSvc.resourceMode();
   $scope.storeUtils = StoreUtilSvc;
 
@@ -227,7 +227,7 @@ aproxControllers.controller('HostedCtl', ['$scope', '$routeParams', '$location',
   }
 }]);
 
-aproxControllers.controller('GroupListCtl', ['$scope', '$location', 'GroupSvc', 'StoreUtilSvc', 'ControlSvc', function($scope, $location, GroupSvc, StoreUtilSvc, ControlSvc) {
+indyControllers.controller('GroupListCtl', ['$scope', '$location', 'GroupSvc', 'StoreUtilSvc', 'ControlSvc', function($scope, $location, GroupSvc, StoreUtilSvc, ControlSvc) {
     ControlSvc.addListingControlHrefs($scope, $location);
     
     $scope.listing = GroupSvc.resource.query({}, function(listing){
@@ -276,7 +276,7 @@ aproxControllers.controller('GroupListCtl', ['$scope', '$location', 'GroupSvc', 
     $scope.orderProp = 'key';
   }]);
 
-aproxControllers.controller('GroupCtl', ['$scope', '$routeParams', '$location', 'GroupSvc', 'StoreUtilSvc', 'ControlSvc', 'AllEndpointsSvc', function($scope, $routeParams, $location, GroupSvc, StoreUtilSvc, ControlSvc, AllEndpointsSvc) {
+indyControllers.controller('GroupCtl', ['$scope', '$routeParams', '$location', 'GroupSvc', 'StoreUtilSvc', 'ControlSvc', 'AllEndpointsSvc', function($scope, $routeParams, $location, GroupSvc, StoreUtilSvc, ControlSvc, AllEndpointsSvc) {
   $scope.mode = StoreUtilSvc.resourceMode();
   $scope.storeUtils = StoreUtilSvc;
 
@@ -333,7 +333,7 @@ aproxControllers.controller('GroupCtl', ['$scope', '$routeParams', '$location', 
   }
 }]);
 
-aproxControllers.controller('NfcController', ['$scope', '$routeParams', '$location', 'NfcSvc', 'StoreUtilSvc', 'AllEndpointsSvc', 
+indyControllers.controller('NfcController', ['$scope', '$routeParams', '$location', 'NfcSvc', 'StoreUtilSvc', 'AllEndpointsSvc',
                                               function($scope, $routeParams, $location, NfcSvc, StoreUtilSvc, AllEndpointsSvc){
   $scope.raw = {
     available: [],
@@ -452,11 +452,11 @@ aproxControllers.controller('NfcController', ['$scope', '$routeParams', '$locati
   }
 }]);
 
-aproxControllers.controller('FooterCtl', ['$scope', 'FooterSvc', function($scope, FooterSvc){
+indyControllers.controller('FooterCtl', ['$scope', 'FooterSvc', function($scope, FooterSvc){
   $scope.stats = FooterSvc.resource.query();
 }]);
 
-aproxControllers.controller('LogoutCtl', ['$scope', '$location', function($scope, $location){
+indyControllers.controller('LogoutCtl', ['$scope', '$location', function($scope, $location){
   if ( auth.loggedIn ){
     console.log("Logging out.");
     auth.logout();

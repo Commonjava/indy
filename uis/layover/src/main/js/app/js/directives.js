@@ -18,7 +18,7 @@
 /* Directives */
 
 
-var directives = angular.module('aprox.directives', []);
+var directives = angular.module('indy.directives', []);
 
 directives.directive('apPasswordMask', function(){
   return {

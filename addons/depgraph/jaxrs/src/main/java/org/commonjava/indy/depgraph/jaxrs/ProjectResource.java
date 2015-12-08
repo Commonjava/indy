@@ -31,12 +31,12 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
-import static org.commonjava.indy.util.ApplicationContent.application_aprox_star_json;
+import static org.commonjava.indy.util.ApplicationContent.application_indy_star_json;
 import static org.commonjava.indy.util.ApplicationContent.application_json;
 
 @Path( "/api/depgraph/project" )
-@Consumes( { application_json, application_aprox_star_json } )
-@Produces( { application_json, application_aprox_star_json } )
+@Consumes( { application_json, application_indy_star_json } )
+@Produces( { application_json, application_indy_star_json } )
 public class ProjectResource
     implements IndyResources
 {

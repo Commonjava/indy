@@ -39,7 +39,7 @@ public class GroupPromoteFailsValidationTest
 {
 
     @Test
-    public void promoteToGroup_PushTwoArtifactsToHostedRepo_VerifyAvailableViaGroupMembership()
+    public void run()
         throws Exception
     {
         final GroupPromoteResult result = client.module( IndyPromoteClientModule.class )

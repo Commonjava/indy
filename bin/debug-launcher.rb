@@ -71,24 +71,24 @@ class Launcher
     puts "Launching: #{launcher}"
 
     target = File.join( BASEDIR, 'deployments/launchers', launcher, 'target' )
-    launch_dir = File.join(target, "aprox" )
+    launch_dir = File.join(target, "indy" )
 
     if config[:clean]
       puts "Deleting AProx launch dir..."
       rm_rf( launch_dir )
       
-      glob = File.join( target, "aprox-launcher-*-launcher.tar.gz" )
+      glob = File.join( target, "indy-launcher-*-launcher.tar.gz" )
 
       puts "Looking for launcher archives: '#{glob}"
       archives = Dir.glob(glob)
 
       puts "Found matching archives: #{archives}"
       do_exec( "tar -zxvf #{archives[0]} -C #{target}" )
-      rm_rf("#{target}/aprox/etc/aprox/logging") if config[:verbose]
+      rm_rf("#{target}/indy/etc/indy/logging") if config[:verbose]
     end
 
     if (config[:uidev])
-      uibase = "#{launch_dir}/var/lib/aprox/ui"
+      uibase = "#{launch_dir}/var/lib/indy/ui"
       
       mv( uibase, "#{uibase}.bak" )
       mkdir(uibase)
@@ -108,7 +108,7 @@ class Launcher
     end
 
     if ( config[:debug] )
-      env_sh = "#{launch_dir}/etc/aprox/env.sh"
+      env_sh = "#{launch_dir}/etc/indy/env.sh"
 
       lines = []
       lines = File.readlines(env_sh) if ( File.exists?(env_sh))
@@ -131,7 +131,7 @@ class Launcher
     end
 
     if ( config[:launch] )
-      cmd = "#{launch_dir}/bin/aprox.sh #{config[:args].join(' ')}"
+      cmd = "#{launch_dir}/bin/indy.sh #{config[:args].join(' ')}"
       puts "Running: '#{cmd}'"
       exec( cmd )
     else

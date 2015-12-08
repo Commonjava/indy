@@ -32,7 +32,7 @@ import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
 import static org.commonjava.indy.util.ApplicationContent.*;
 
 @Path( "/api/depgraph/render" )
-//@Consumes( { application_json, application_aprox_star_json } )
+//@Consumes( { application_json, application_indy_star_json } )
 public class GraphRenderingResource
         implements IndyResources
 {

@@ -35,7 +35,7 @@
 # targets are useful for verfication and trouble-shooting.
  
 # Environment varibles
-REPOS="atlas galley cartographer aprox"
+REPOS="atlas galley cartographer indy"
 UPSTREAM=$(git config -l | grep upstream)
 PWD=`pwd`
 WORKSPACE=${WORKSPACE:=$HOME/workspace}

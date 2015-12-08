@@ -32,7 +32,7 @@ public class PromoteWithPurgeThenRollbackTest
 {
 
     @Test
-    public void rollback_PurgeSource_PushTwoArtifactsToHostedRepo_PromoteSuccessThenRollback_VerifyContentInSource()
+    public void run()
         throws Exception
     {
         PathsPromoteResult result =

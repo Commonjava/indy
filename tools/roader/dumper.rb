@@ -28,7 +28,7 @@ class Loader
   GROUPS_PATH = "#{BASE_PATH}/groups"
   REPOS_PATH = "#{BASE_PATH}/repositories"
   
-  DEF_URL = 'http://localhost/aprox'
+  DEF_URL = 'http://localhost/indy'
   DEF_DEPLOYS_FILE = File.join( Dir.pwd, 'deploys.json' )
   DEF_GROUPS_FILE = File.join( Dir.pwd, 'groups.json' )
   DEF_REPOS_FILE = File.join( Dir.pwd, 'repos.json' )

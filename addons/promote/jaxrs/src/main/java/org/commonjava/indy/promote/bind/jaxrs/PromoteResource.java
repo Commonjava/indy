@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.promote.bind.jaxrs;
 
-import static org.commonjava.indy.util.ApplicationContent.application_aprox_star_json;
+import static org.commonjava.indy.util.ApplicationContent.application_indy_star_json;
 import static org.commonjava.indy.util.ApplicationContent.application_json;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,7 +49,7 @@ import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
 
 @Path( "/api/promotion" )
-@Produces( { application_json, application_aprox_star_json } )
+@Produces( { application_json, application_indy_star_json } )
 public class PromoteResource
         implements IndyResources
 {

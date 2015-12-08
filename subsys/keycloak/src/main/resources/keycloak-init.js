@@ -12,7 +12,7 @@ angular.element(document).ready(function () {
       auth.keycloak = null;
       window.location = buildUrl( keycloak.authServerUrl, '/realms/' + keycloak.realm + '/tokens/logout?redirect_uri=' + appUrl('/index.html') );
     };
-    angular.bootstrap(document, ['aprox']);
+    angular.bootstrap(document, ['indy']);
   }).error(function () {
     alert("Reloading window after login error");
     window.location.reload();
@@ -20,11 +20,11 @@ angular.element(document).ready(function () {
 
 });
 
-aprox.factory('Auth', function () {
+indy.factory('Auth', function () {
   return auth;
 });
 
-aprox.factory('authInterceptor', function ($q, $log, Auth) {
+indy.factory('authInterceptor', function ($q, $log, Auth) {
   return {
     request: function (config) {
       var deferred = $q.defer();
@@ -50,6 +50,6 @@ aprox.factory('authInterceptor', function ($q, $log, Auth) {
   };
 });
 
-aprox.config(function ($httpProvider) {
+indy.config(function ($httpProvider) {
   $httpProvider.interceptors.push('authInterceptor');
 });

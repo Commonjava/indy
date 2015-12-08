@@ -16,6 +16,7 @@
 package org.commonjava.indy.dotmaven.inject;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
@@ -49,6 +50,7 @@ public class DotMavenProvider
     private IMimeTyper mimeTyper;
 
     @Produces
+    @Default
     public DotMavenService getService()
     {
         if ( service == null )
@@ -61,6 +63,7 @@ public class DotMavenProvider
     }
 
     @Produces
+    @Default
     public synchronized IMimeTyper getMimeTyper()
     {
         if ( mimeTyper == null )
@@ -72,6 +75,7 @@ public class DotMavenProvider
     }
 
     @Produces
+    @Default
     public synchronized WebdavConfig getConfig()
     {
         if ( config == null )

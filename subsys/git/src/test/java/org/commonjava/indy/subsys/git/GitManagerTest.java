@@ -46,7 +46,7 @@ public class GitManagerTest
     public void cloneRepoOnStart()
         throws Exception
     {
-        final File root = unpackRepo( "test-aprox-data.zip" );
+        final File root = unpackRepo( "test-indy-data.zip" );
 
         final File cloneDir = temp.newFolder();
         FileUtils.forceDelete( cloneDir );
@@ -61,7 +61,7 @@ public class GitManagerTest
     public void addToClonedRepoAndRetrieveCommitLog()
         throws Exception
     {
-        final File root = unpackRepo( "test-aprox-data.zip" );
+        final File root = unpackRepo( "test-indy-data.zip" );
 
         final File cloneDir = temp.newFolder();
         FileUtils.forceDelete( cloneDir );

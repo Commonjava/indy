@@ -202,12 +202,12 @@ public class DefaultIndyConfigFactory
     {
         /* Set config path */
         String confPath = System.getProperty( IndyConfigFactory.CONFIG_PATH_PROP );
-        final String aproxHome = System.getProperty( "indy.home" );
+        final String indyHome = System.getProperty( "indy.home" );
         if ( confPath == null )
         {
-            if ( aproxHome != null )
+            if ( indyHome != null )
             {
-                final String path = PathUtils.join( aproxHome, "etc/indy/main.conf" );
+                final String path = PathUtils.join( indyHome, "etc/indy/main.conf" );
                 if ( new File( path ).exists() )
                 {
                     confPath = path;

@@ -107,7 +107,7 @@ module Depgraph
 
         EOB
       
-        opts.on('-c', '--context=PATH', 'Aprox context base-path (default: /aprox)'){|context_path| @options[:context_path]=context_path}
+        opts.on('-c', '--context=PATH', 'Aprox context base-path (default: /indy)'){|context_path| @options[:context_path]=context_path}
         opts.on('-C', '--config-prefix=PREFIX', 'Filename prefix for the configuration generated when a new workspace is created'){|prefix| @options[:config_prefix] = prefix}
         opts.on('-H', '--host=HOST', 'Aprox hostname'){|host| @options[:host] = host}
         opts.on('-O', '--output-prefix=PREFIX', 'Filename prefix for the output JSON'){|prefix| @options[:output_prefix] = prefix}

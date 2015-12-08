@@ -46,15 +46,15 @@ public class RepoSourceMetadataListener
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    protected StoreDataManager aprox;
+    protected StoreDataManager indy;
 
     protected RepoSourceMetadataListener()
     {
     }
 
-    public RepoSourceMetadataListener( final StoreDataManager aprox )
+    public RepoSourceMetadataListener( final StoreDataManager indy )
     {
-        this.aprox = aprox;
+        this.indy = indy;
     }
 
     public void addRepoMetadata( @Observes final RelationshipStorageEvent event )
@@ -104,7 +104,7 @@ public class RepoSourceMetadataListener
                         final String sub = src.getSchemeSpecificPart();
                         try
                         {
-                            repo = aprox.getRemoteRepository( sub );
+                            repo = indy.getRemoteRepository( sub );
                         }
                         catch ( final IndyDataException e )
                         {

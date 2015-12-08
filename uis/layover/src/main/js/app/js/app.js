@@ -17,26 +17,26 @@
 
 // Declare app level module which depends on filters, and services
 
-var aprox = angular.module('aprox', [
+var indy = angular.module('indy', [
   'ngRoute',
   'ngDialog',
-  'aprox.filters',
-  'aprox.directives',
-  'aprox.services',
-  'aprox.controllers',
-  'aprox.addons'
+  'indy.filters',
+  'indy.directives',
+  'indy.services',
+  'indy.controllers',
+  'indy.addons'
 ]);
 
 
 // NOTE: In the routes below, the '#' route prefix is implied.
-aprox.config(['$routeProvider', '$controllerProvider', '$compileProvider', '$filterProvider', '$provide', 
+indy.config(['$routeProvider', '$controllerProvider', '$compileProvider', '$filterProvider', '$provide',
               function($routeProvider, $controllerProvider, $compileProvider, $filterProvider, $provide) {
   
-  aprox.routeProvider = $routeProvider;
-  aprox.controllerProvider = $controllerProvider;
-  aprox.compileProvider = $compileProvider;
-  aprox.filterProvider = $filterProvider;
-  aprox.provide = $provide;
+  indy.routeProvider = $routeProvider;
+  indy.controllerProvider = $controllerProvider;
+  indy.compileProvider = $compileProvider;
+  indy.filterProvider = $filterProvider;
+  indy.provide = $provide;
   
   $routeProvider.when('/remote', {templateUrl: 'partials/remote-list.html'});
   $routeProvider.when('/remote/view/:name', {templateUrl: 'partials/remote-detail.html'});

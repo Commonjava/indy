@@ -6,12 +6,12 @@
 # description: AProx is a simple repository manager and tooling platform.
 #              It is designed for use with Apache Maven and other applications
 #              that use the Maven repository format.
-# processname: aprox
-# config: /etc/sysconfig/aprox
-# pidfile: /var/run/aprox.pid
+# processname: indy
+# config: /etc/sysconfig/indy
+# pidfile: /var/run/indy.pid
 #
 ### BEGIN INIT INFO
-# Provides: aprox
+# Provides: indy
 # Required-Start: $local_fs $remote_fs $network
 # Required-Stop: $local_fs $remote_fs $network
 # Short-Description: start and stop AProx Repo Manager
@@ -21,13 +21,13 @@
 # Source function library.
 . /etc/rc.d/init.d/functions
 
-PROG=aprox
-APROX_HOME=/opt/aprox
+PROG=indy
+APROX_HOME=/opt/indy
 #LOCKFILE=/var/lock/subsys/$PROG
-EXEC="cd $APROX_HOME && bin/aprox.sh > /dev/null & echo \$!"
+EXEC="cd $APROX_HOME && bin/indy.sh > /dev/null & echo \$!"
 RETVAL=0
-RUNAS=aprox
-PIDFILE=/var/run/aprox.pid
+RUNAS=indy
+PIDFILE=/var/run/indy.pid
 
 start() {
     if [ -f $PIDFILE ] && [ "x$(cat $PIDFILE)" != "x" ] && kill -0 $(cat $PIDFILE) 2> /dev/null; then

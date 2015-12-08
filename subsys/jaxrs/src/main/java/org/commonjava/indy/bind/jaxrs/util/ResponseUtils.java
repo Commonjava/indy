@@ -199,7 +199,7 @@ public final class ResponseUtils
     {
         final ResponseBuilder builder = Response.status( metadata.getResponseStatusCode() );
         // The code below was triggering empty responses via GET requests when something was missing upstream.
-        // See https://github.com/Commonjava/aprox/issues/207
+        // See https://github.com/Commonjava/indy/issues/207
         //        Logger logger = LoggerFactory.getLogger( ResponseUtils.class );
         //        for ( final Map.Entry<String, List<String>> headerSet : metadata.getResponseHeaders()
         //                                                                        .entrySet() )

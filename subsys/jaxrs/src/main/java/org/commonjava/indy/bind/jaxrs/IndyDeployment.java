@@ -107,9 +107,9 @@ public class IndyDeployment
     {
         providerClasses = new HashSet<>();
         resourceClasses = new HashSet<>();
-        for ( final IndyResources aproxResources : resources )
+        for ( final IndyResources indyResources : resources )
         {
-            resourceClasses.add( aproxResources.getClass() );
+            resourceClasses.add( indyResources.getClass() );
         }
 
         for ( final RestProvider restProvider : providerInstances )

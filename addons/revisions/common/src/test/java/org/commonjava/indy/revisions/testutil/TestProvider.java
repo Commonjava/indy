@@ -55,7 +55,7 @@ public class TestProvider
 
     private TypeMapper typeMapper;
 
-    private IndyConfiguration aproxConfig;
+    private IndyConfiguration indyConfig;
 
     private DataFileConfiguration dataConfig;
 
@@ -78,7 +78,7 @@ public class TestProvider
         this.nfc = new MemoryNotFoundCache();
         this.xmlInfra = new XMLInfrastructure();
         this.typeMapper = new StandardTypeMapper();
-        this.aproxConfig = new DefaultIndyConfiguration();
+        this.indyConfig = new DefaultIndyConfiguration();
         this.objectMapper = new IndyObjectMapper( true );
     }
 
@@ -127,7 +127,7 @@ public class TestProvider
     @Default
     public IndyConfiguration getIndyConfig()
     {
-        return aproxConfig;
+        return indyConfig;
     }
 
     @Produces

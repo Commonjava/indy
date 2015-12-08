@@ -16,7 +16,7 @@
 package org.commonjava.indy.depgraph.jaxrs;
 
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
-import static org.commonjava.indy.util.ApplicationContent.application_aprox_star_json;
+import static org.commonjava.indy.util.ApplicationContent.application_indy_star_json;
 import static org.commonjava.indy.util.ApplicationContent.application_json;
 
 import javax.inject.Inject;
@@ -37,8 +37,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Path( "/api/depgraph/graph" )
-@Consumes( { application_json, application_aprox_star_json } )
-@Produces( { application_json, application_aprox_star_json } )
+@Consumes( { application_json, application_indy_star_json } )
+@Produces( { application_json, application_indy_star_json } )
 public class GraphResource
     implements IndyResources
 {

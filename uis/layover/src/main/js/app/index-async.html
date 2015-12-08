@@ -24,7 +24,7 @@
   <link rel="stylesheet" href="bower_components/ngDialog/css/ngDialog.css"/>
   <link rel="stylesheet" href="bower_components/ngDialog/css/ngDialog-theme-default.css"/>
   <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet"/>
-  <link rel="stylesheet" href="css/aprox.css"/>
+  <link rel="stylesheet" href="css/indy.css"/>
   <style>
     [ng-cloak] {
       display: none;
@@ -59,7 +59,7 @@
       'js/controllers.js',
     ], function() {
       // when all is done, execute bootstrap angular application
-      angular.bootstrap(document, ['aprox']);
+      angular.bootstrap(document, ['indy']);
     });
   </script>
   <title>AProx</title>
@@ -89,10 +89,10 @@
 
   <footer ng-controller="FooterCtl">
     <div class="footer-section right">
-      <span class="stat-label"><a target="_new" href="http://github.com/jdcasey/aprox">AProx @GitHub</a></span>
-      | <span class="stat-label"><a target="_new" href="http://github.com/jdcasey/aprox/issues">Issues</a></span>
+      <span class="stat-label"><a target="_new" href="http://github.com/jdcasey/indy">AProx @GitHub</a></span>
+      | <span class="stat-label"><a target="_new" href="http://github.com/jdcasey/indy/issues">Issues</a></span>
       | <span class="stat-label">Version:</span> <span class="stat-value">{{stats.version}}</span>
-      | <span class="stat-label">Commit ID:</span> <span class="stat-value"><a target="_new" href="http://github.com/{{stats.built_by}}/aprox/commit/{{stats.commit_id}}">{{stats.commit_id}}</a></span>
+      | <span class="stat-label">Commit ID:</span> <span class="stat-value"><a target="_new" href="http://github.com/{{stats.built_by}}/indy/commit/{{stats.commit_id}}">{{stats.commit_id}}</a></span>
       | <span class="stat-label">Built</span> <span class="stat-value">on {{stats.built_on}} by <a target="_new" href="http://github.com/{{stats.built_by}}">{{stats.built_by}}</a></span>
     </div>
   </footer>

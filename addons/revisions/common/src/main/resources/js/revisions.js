@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-aproxAddons.factory('StoreChangelogSvc', ['$resource', function($resource){
+indyAddons.factory('StoreChangelogSvc', ['$resource', function($resource){
   return {
     resource: $resource(appPath('/api/revisions/changelog/store/:type/:name'), {}, {
       list: {
@@ -29,7 +29,7 @@ aproxAddons.factory('StoreChangelogSvc', ['$resource', function($resource){
 }]);
 
 
-aproxAddons.controller('StoreChangelogCtl', ['$scope', '$location', '$q', 'StoreChangelogSvc', 'AllEndpointsSvc', 'StoreUtilSvc', 
+indyAddons.controller('StoreChangelogCtl', ['$scope', '$location', '$q', 'StoreChangelogSvc', 'AllEndpointsSvc', 'StoreUtilSvc',
                                                             function($scope, $location, $q, StoreChangelogSvc, AllEndpointsSvc, StoreUtilSvc) {
   var tz = -1 * (new Date().getTimezoneOffset() / 60);
   var tzLabel = 'GMT';
@@ -126,7 +126,7 @@ aproxAddons.controller('StoreChangelogCtl', ['$scope', '$location', '$q', 'Store
   $scope.change();
 }]);
 
-aproxAddons.controller( 'StoreChangelogEntryCtl', ['$scope', function($scope){
+indyAddons.controller( 'StoreChangelogEntryCtl', ['$scope', function($scope){
   $scope.display=false;
   
   $scope.toggleSummary = function(){

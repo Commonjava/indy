@@ -36,8 +36,8 @@ import org.commonjava.cartographer.result.MetadataResult;
 import org.commonjava.cartographer.result.ProjectListResult;
 
 @Path( "/api/depgraph/meta" )
-@Consumes( { application_json, application_aprox_star_json } )
-@Produces( { application_json, application_aprox_star_json } )
+@Consumes( { application_json, application_indy_star_json } )
+@Produces( { application_json, application_indy_star_json } )
 public class MetadataResource
     implements IndyResources
 {

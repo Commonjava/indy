@@ -16,7 +16,7 @@
   </formats>
   
   <includeBaseDirectory>true</includeBaseDirectory>
-  <baseDirectory>aprox-data</baseDirectory>
+  <baseDirectory>indy-data</baseDirectory>
   
   <dependencySets>
     <!-- data sets -->
@@ -33,7 +33,7 @@
   
   <fileSets>
     <fileSet>
-      <directory>${project.build.directory}/var/lib/aprox/data</directory>
+      <directory>${project.build.directory}/var/lib/indy/data</directory>
       <outputDirectory>/</outputDirectory>
     </fileSet>
   </fileSets>

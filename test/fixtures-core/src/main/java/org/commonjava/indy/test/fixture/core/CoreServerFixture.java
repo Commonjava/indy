@@ -71,15 +71,15 @@ public class CoreServerFixture
                                                  .getAbsolutePath() );
     }
 
-    public CoreServerFixture( final BootInterface booter, final File bootDefaults, final File aproxHome )
+    public CoreServerFixture( final BootInterface booter, final File bootDefaults, final File indyHome )
     {
-        this( booter, newBootOptions( bootDefaults, aproxHome.getAbsolutePath() ) );
+        this( booter, newBootOptions( bootDefaults, indyHome.getAbsolutePath() ) );
     }
 
-    public CoreServerFixture( final BootInterface booter, final File aproxHome,
+    public CoreServerFixture( final BootInterface booter, final File indyHome,
                                    final BootOptions bootOptions )
     {
-        this( booter, editBootOptions( bootOptions, aproxHome.getAbsolutePath() ) );
+        this( booter, editBootOptions( bootOptions, indyHome.getAbsolutePath() ) );
     }
 
     public TemporaryFolder getTempFolder()
@@ -163,16 +163,16 @@ public class CoreServerFixture
         return folder;
     }
 
-    private static BootOptions newBootOptions( final File bootDefaults, final String aproxHome )
+    private static BootOptions newBootOptions( final File bootDefaults, final String indyHome )
     {
         final Properties properties = System.getProperties();
-        properties.setProperty( "indy.home", aproxHome );
+        properties.setProperty( "indy.home", indyHome );
         System.setProperties( properties );
 
         try
         {
-            final BootOptions options = new BootOptions( bootDefaults, aproxHome );
-            options.setPort( -1 );
+            final BootOptions options = new BootOptions( bootDefaults, indyHome );
+            options.setPort( findOpenPort( MAX_PORTGEN_TRIES ) );
 
             return options;
         }
@@ -183,12 +183,12 @@ public class CoreServerFixture
         }
     }
 
-    private static BootOptions editBootOptions( final BootOptions options, final String aproxHome )
+    private static BootOptions editBootOptions( final BootOptions options, final String indyHome )
     {
-        if ( aproxHome != null )
+        if ( indyHome != null )
         {
             final Properties properties = System.getProperties();
-            properties.setProperty( "indy.home", aproxHome );
+            properties.setProperty( "indy.home", indyHome );
             System.setProperties( properties );
         }
 
