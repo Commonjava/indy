@@ -74,7 +74,7 @@ class Launcher
     launch_dir = File.join(target, "indy" )
 
     if config[:clean]
-      puts "Deleting AProx launch dir..."
+      puts "Deleting Indy launch dir..."
       rm_rf( launch_dir )
       
       glob = File.join( target, "indy-launcher-*-launcher.tar.gz" )

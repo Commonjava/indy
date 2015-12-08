@@ -78,7 +78,7 @@ module Depgraph
 
           opts.banner =<<-EOB
 
-#{File.basename($0)} provides access to workspace features of the dependency-graphing addon for Aprox.
+#{File.basename($0)} provides access to workspace features of the dependency-graphing addon for Indy.
 
 Usage: 
 
@@ -93,9 +93,9 @@ Usage:
 
           EOB
 
-          opts.on('-H', '--host=HOST', 'Aprox hostname'){|host| @options[:host] = host}
-          opts.on('-p', '--port=PORT', 'Aprox port'){|port| @options[:port] = port.to_i}
-          opts.on('-c', '--context=PATH', 'Aprox context base-path (default: /indy)'){|context_path| @options[:context_path]=context_path}
+          opts.on('-H', '--host=HOST', 'Indy hostname'){|host| @options[:host] = host}
+          opts.on('-p', '--port=PORT', 'Indy port'){|port| @options[:port] = port.to_i}
+          opts.on('-c', '--context=PATH', 'Indy context base-path (default: /indy)'){|context_path| @options[:context_path]=context_path}
 
           opts.separator ""
 

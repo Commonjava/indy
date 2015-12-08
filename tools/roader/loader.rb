@@ -46,7 +46,7 @@ class Loader
 
 Usage: #{$0} [-d <deploy-file>] [-g <group-file>] [-r <repo-file>] [url]
 
-Bulk-loads repository, deploy-point, group, and other data into an AProx instance.
+Bulk-loads repository, deploy-point, group, and other data into an Indy instance.
 
 DEFAULTS:
 ---------

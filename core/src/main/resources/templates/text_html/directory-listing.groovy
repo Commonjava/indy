@@ -3,7 +3,7 @@ def dir=new java.io.File(path).parent
 %>
 <html>
   <head>
-    <title>AProx: Directory listing for ${dir} on ${storeKey.name}</title>
+    <title>Indy: Directory listing for ${dir} on ${storeKey.name}</title>
     <style media="screen" type="text/css">
       h2{
         color: #333;

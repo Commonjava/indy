@@ -1,4 +1,4 @@
-# AProx Keycloak Security HOW-TO
+# Indy Keycloak Security HOW-TO
 
 ## Local / Test Installation
 
@@ -20,9 +20,9 @@
     - enabled=true
     - realm.public.key=[Public Key field from Keycloak realm > Keys]
     - server.credential.secret=[Secret field from Keycloak realm > Clients > indy > Credentials]
-4. Enjoy your secured AProx instance!
+4. Enjoy your secured Indy instance!
 
 ## Notes
 
-1. This has only been tested in the 'savant' AProx flavor. For now, YMMV when using min and easyprox flavors.
+1. This has only been tested in the 'savant' Indy flavor. For now, YMMV when using min and easyprox flavors.
 2. Java client API is not yet compatible with Keycloak security. Work is in progress on this feature.

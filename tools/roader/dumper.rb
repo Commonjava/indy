@@ -46,7 +46,7 @@ class Loader
 
 Usage: #{$0} [-d <deploy-file>] [-g <group-file>] [-r <repo-file>] [url]
 
-Bulk-dumps repository, deploy-point, group, and other data from an AProx instance into JSON files.
+Bulk-dumps repository, deploy-point, group, and other data from an Indy instance into JSON files.
 
 DEFAULTS:
 ---------

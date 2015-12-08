@@ -1,9 +1,9 @@
 #!/bin/sh
 #
-# Aprox        Startup script for Aprox
+# Indy        Startup script for Indy
 #
 # chkconfig: - 86 14
-# description: AProx is a simple repository manager and tooling platform.
+# description: Indy is a simple repository manager and tooling platform.
 #              It is designed for use with Apache Maven and other applications
 #              that use the Maven repository format.
 # processname: indy
@@ -14,8 +14,8 @@
 # Provides: indy
 # Required-Start: $local_fs $remote_fs $network
 # Required-Stop: $local_fs $remote_fs $network
-# Short-Description: start and stop AProx Repo Manager
-# Description: AProx is a simple repository manager and tooling platform. 
+# Short-Description: start and stop Indy Repo Manager
+# Description: Indy is a simple repository manager and tooling platform. 
 ### END INIT INFO
 
 # Source function library.

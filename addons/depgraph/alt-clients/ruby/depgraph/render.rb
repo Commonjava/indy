@@ -120,17 +120,17 @@ module Depgraph
       
         opts.banner =<<-EOB
 
-  #{File.basename($0)} provides access to rendering features of the dependency-graphing addon for Aprox.
+  #{File.basename($0)} provides access to rendering features of the dependency-graphing addon for Indy.
 
   Usage: #{File.basename($0)} [options] <config-file>
 
         EOB
       
-        opts.on('-c', '--context=PATH', 'Aprox context base-path (default: /indy)'){|context_path| @options[:context_path]=context_path}
+        opts.on('-c', '--context=PATH', 'Indy context base-path (default: /indy)'){|context_path| @options[:context_path]=context_path}
         opts.on('-C', '--config-prefix=PREFIX', 'Filename prefix for the configuration generated when a new workspace is created'){|prefix| @options[:config_prefix] = prefix}
-        opts.on('-H', '--host=HOST', 'Aprox hostname'){|host| @options[:host] = host}
+        opts.on('-H', '--host=HOST', 'Indy hostname'){|host| @options[:host] = host}
         opts.on('-O', '--output-prefix=PREFIX', 'Filename prefix for the output JSON'){|prefix| @options[:output_prefix] = prefix}
-        opts.on('-p', '--port=PORT', 'Aprox port'){|port| @options[:port] = port.to_i}
+        opts.on('-p', '--port=PORT', 'Indy port'){|port| @options[:port] = port.to_i}
         opts.on('-v', '--verb=VERB', 'Depgraph repository endpoint to use (default: urlmap)'){|verb| @options[:verb] = verb}
         opts.on('-w', '--create-workspace', 'Create a new workspace to use in the call'){@options[:create_ws] = true}
         opts.on('-W', '--delete-workspace', 'Delete the workspace used in the call after it runs'){@options[:delete_ws] = true}

@@ -2,7 +2,7 @@
 <settings>
 <% def overridesCentral = false %>
 <!-- 
-This settings.xml for ${key} incorporates the following stores from AProx:<% allStores.each { %>
+This settings.xml for ${key} incorporates the following stores from Indy:<% allStores.each { %>
   * ${it.key}<% } %>
  --><%
 allStores.each {
