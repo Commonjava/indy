@@ -172,7 +172,7 @@ public class CoreServerFixture
         try
         {
             final BootOptions options = new BootOptions( bootDefaults, aproxHome );
-            options.setPort( findOpenPort( MAX_PORTGEN_TRIES ) );
+            options.setPort( -1 );
 
             return options;
         }

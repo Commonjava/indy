@@ -111,8 +111,6 @@ public class HttpProxyTest
     public void setup()
             throws Exception
     {
-        proxyPort = PortFinder.findOpenPort( 16 );
-
         core.initGalley();
 
         final TransportManager transports =
@@ -124,7 +122,8 @@ public class HttpProxyTest
 
         final HttproxConfig config = new HttproxConfig();
         config.setEnabled( true );
-        config.setPort( proxyPort );
+
+        proxyPort = config.getPort();
 
         final BootOptions bootOpts = new BootOptions();
         bootOpts.setBind( HOST );

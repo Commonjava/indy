@@ -25,6 +25,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import javax.enterprise.inject.spi.BeanManager;
 import javax.servlet.ServletException;
+import javax.xml.ws.Holder;
 
 import org.commonjava.aprox.action.AproxLifecycleException;
 import org.commonjava.aprox.action.AproxLifecycleManager;
@@ -33,6 +34,7 @@ import org.commonjava.aprox.boot.AproxBootException;
 import org.commonjava.aprox.boot.BootInterface;
 import org.commonjava.aprox.boot.BootOptions;
 import org.commonjava.aprox.boot.BootStatus;
+import org.commonjava.aprox.boot.PortFinder;
 import org.commonjava.aprox.boot.WeldBootInterface;
 import org.commonjava.aprox.conf.AproxConfigFactory;
 import org.commonjava.atservice.annotation.Service;
@@ -237,12 +239,54 @@ public class JaxRsBooter
         status = new BootStatus();
         try
         {
-            server = Undertow.builder()
-                             .setHandler( dm.start() )
-                             .addHttpListener( bootOptions.getPort(), bootOptions.getBind() )
-                             .build();
+            Integer port = bootOptions.getPort();
+            if ( port < 1 )
+            {
+                System.out.println("Looking for open port...");
 
-            server.start();
+                final ThreadLocal<ServletException> errorHolder = new ThreadLocal<>();
+                ThreadLocal<Integer> usingPort = new ThreadLocal<>();
+                server = PortFinder.findPortFor( 16, (foundPort)->{
+                    Undertow undertow = null;
+                    try
+                    {
+                        undertow = Undertow.builder()
+                                                 .setHandler( dm.start() )
+                                                 .addHttpListener( foundPort, bootOptions.getBind() )
+                                                 .build();
+
+                        undertow.start();
+                        usingPort.set( foundPort );
+                    }
+                    catch ( ServletException e )
+                    {
+                        errorHolder.set( e );
+                    }
+
+                    return undertow;
+                });
+
+                ServletException e = errorHolder.get();
+                if ( e != null )
+                {
+                    throw e;
+                }
+
+                bootOptions.setPort( usingPort.get() );
+            }
+            else
+            {
+                server = Undertow.builder()
+                                 .setHandler( dm.start() )
+                                 .addHttpListener( port, bootOptions.getBind() )
+                                 .build();
+
+
+                server.start();
+            }
+
+            System.out.println( "Using: " + bootOptions.getPort() );
+
             status.markSuccess();
             started = true;
 
