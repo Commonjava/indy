@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-parent</artifactId>
-    <version>0.25.2-SNAPSHOT</version>
+    <version>1.0-SNAPSHOT</version>
   </parent>
   
   <groupId>org.commonjava.indy.tools</groupId>
