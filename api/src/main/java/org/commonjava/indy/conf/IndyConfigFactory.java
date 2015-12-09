@@ -24,11 +24,20 @@ import org.commonjava.web.config.ConfigurationException;
  */
 public interface IndyConfigFactory
 {
-    String APROX_HOME_PROP = "indy.home";
+    String INDY_HOME_PROP = "indy.home";
 
     String CONFIG_PATH_PROP = "indy.config";
 
     String CONFIG_DIR_PROP = CONFIG_PATH_PROP + ".dir";
+
+    @Deprecated
+    String APROX_HOME_PROP = "aprox.home";
+
+    @Deprecated
+    String APROX_CONFIG_PATH_PROP = "aprox.config";
+
+    @Deprecated
+    String APROX_CONFIG_DIR_PROP = APROX_CONFIG_PATH_PROP + ".dir";
 
     String DEFAULT_CONFIG_DIR = "/etc/indy";
 

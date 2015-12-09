@@ -47,7 +47,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class DataFileStoreDataManager
     extends MemoryStoreDataManager
 {
-    public static final String APROX_STORE = "indy";
+    public static final String INDY_STORE = "indy";
 
     public static final String LOAD_FROM_DISK = "load-from-disk";
 
@@ -78,7 +78,7 @@ public class DataFileStoreDataManager
     {
         try
         {
-            DataFile dir = manager.getDataFile( APROX_STORE, StoreType.hosted.singularEndpointName() );
+            DataFile dir = manager.getDataFile( INDY_STORE, StoreType.hosted.singularEndpointName() );
             final ChangeSummary summary =
                 new ChangeSummary( ChangeSummary.SYSTEM_USER,
                                    "Reading definitions from disk, culling invalid definition files." );
@@ -111,7 +111,7 @@ public class DataFileStoreDataManager
                 }
             }
 
-            dir = manager.getDataFile( APROX_STORE, StoreType.remote.singularEndpointName() );
+            dir = manager.getDataFile( INDY_STORE, StoreType.remote.singularEndpointName() );
             files = dir.list();
             if ( files != null )
             {
@@ -140,7 +140,7 @@ public class DataFileStoreDataManager
                 }
             }
 
-            dir = manager.getDataFile( APROX_STORE, StoreType.group.singularEndpointName() );
+            dir = manager.getDataFile( INDY_STORE, StoreType.group.singularEndpointName() );
             files = dir.list();
             if ( files != null )
             {
@@ -182,7 +182,7 @@ public class DataFileStoreDataManager
         for ( final ArtifactStore store : stores )
         {
             final DataFile f =
-                manager.getDataFile( APROX_STORE, store.getKey()
+                manager.getDataFile( INDY_STORE, store.getKey()
                                                        .getType()
                                                        .singularEndpointName(), store.getName() + ".json" );
             if ( skipIfExists && f.exists() )
@@ -213,7 +213,7 @@ public class DataFileStoreDataManager
     private void delete( final StoreType type, final String name, final ChangeSummary summary )
         throws IndyDataException
     {
-        final DataFile f = manager.getDataFile( APROX_STORE, type.singularEndpointName(), name + ".json" );
+        final DataFile f = manager.getDataFile( INDY_STORE, type.singularEndpointName(), name + ".json" );
         try
         {
             f.delete( summary );
@@ -250,7 +250,7 @@ public class DataFileStoreDataManager
     {
         super.clear( summary );
 
-        final DataFile basedir = manager.getDataFile( APROX_STORE );
+        final DataFile basedir = manager.getDataFile( INDY_STORE );
         try
         {
             basedir.delete( summary );
@@ -265,7 +265,7 @@ public class DataFileStoreDataManager
     public void install()
         throws IndyDataException
     {
-        if ( !manager.getDataFile( APROX_STORE )
+        if ( !manager.getDataFile( INDY_STORE )
                      .isDirectory() )
         {
             final ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, "Initializing defaults" );
@@ -289,7 +289,7 @@ public class DataFileStoreDataManager
 
     public DataFile getDataFile( final StoreKey key )
     {
-        return manager.getDataFile( APROX_STORE, key.getType()
+        return manager.getDataFile( INDY_STORE, key.getType()
                                                     .singularEndpointName(), key.getName() + ".json" );
     }
 

@@ -38,11 +38,21 @@ public interface BootInterface
     String BOOT_DEFAULTS_PROP = "indy.boot.defaults";
     
     // FIXME: These two are duplicated from IndyConfigFactory!
-    String APROX_HOME_PROP = "indy.home";
+    String INDY_HOME_PROP = "indy.home";
 
     String CONFIG_PATH_PROP = "indy.config";
 
     String CONFIG_DIR_PROP = CONFIG_PATH_PROP + ".dir";
+
+    @Deprecated
+    // FIXME: These two are duplicated from IndyConfigFactory!
+    String APROX_HOME_PROP = "aprox.home";
+
+    @Deprecated
+    String APROX_CONFIG_PATH_PROP = "aprox.config";
+
+    @Deprecated
+    String APROX_CONFIG_DIR_PROP = APROX_CONFIG_PATH_PROP + ".dir";
 
     int ERR_CANT_LOAD_BOOT_DEFAULTS = 1;
 
@@ -52,9 +62,9 @@ public interface BootInterface
 
     int ERR_CANT_CONFIGURE_LOGGING = 4;
 
-    int ERR_CANT_CONFIGURE_APROX = 5;
+    int ERR_CANT_CONFIGURE_INDY = 5;
 
-    int ERR_CANT_START_APROX = 6;
+    int ERR_CANT_START_INDY = 6;
 
     int ERR_CANT_LISTEN = 7;
 

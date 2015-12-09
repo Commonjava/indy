@@ -76,7 +76,7 @@ public class BasicAuthenticationOAuthTranslator
 
     private static final String AUTHORIZATION_HEADER = "Authorization";
 
-    private static final String APROX_BEARER_TOKEN = "Indy-Bearer";
+    private static final String INDY_BEARER_TOKEN = "Indy-Bearer";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -171,7 +171,7 @@ public class BasicAuthenticationOAuthTranslator
                     resultValues.add( value );
 
                     KeycloakBearerTokenDebug.debugToken( encodedToken );
-                    exchange.getResponseHeaders().add( new HttpString( APROX_BEARER_TOKEN ), encodedToken );
+                    exchange.getResponseHeaders().add( new HttpString( INDY_BEARER_TOKEN ), encodedToken );
                 }
             }
         }

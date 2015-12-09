@@ -214,11 +214,14 @@ public class DefaultIndyConfigFactory
                 }
             }
         }
+
         if ( confPath == null )
         {
             confPath = IndyConfigFactory.DEFAULT_CONFIG_PATH;
         }
+
         System.setProperty( IndyConfigFactory.CONFIG_PATH_PROP, confPath );
+        System.setProperty( IndyConfigFactory.APROX_CONFIG_PATH_PROP, confPath );
 
         /* Set config dir */
         final String confDir = System.getProperty( IndyConfigFactory.CONFIG_DIR_PROP );
@@ -227,6 +230,7 @@ public class DefaultIndyConfigFactory
             final File f = new File( confPath );
             final String dir = f.getParent();
             System.setProperty( IndyConfigFactory.CONFIG_DIR_PROP, dir );
+            System.setProperty( IndyConfigFactory.APROX_CONFIG_DIR_PROP, dir );
         }
     }
 

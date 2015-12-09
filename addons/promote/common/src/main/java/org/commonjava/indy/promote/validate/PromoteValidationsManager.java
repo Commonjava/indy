@@ -42,7 +42,7 @@ import java.util.Set;
 public class PromoteValidationsManager
 {
 
-    private static final String RULES_DIR = "rules";
+    public static final String RULES_DIR = "rules";
 
     private static final String RULES_SETS_DIR = "rule-sets";
 

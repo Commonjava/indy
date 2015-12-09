@@ -157,7 +157,7 @@ public class JaxRsBooter
             logger.info( "\n\n\nStarted BeanManager: {}\n\n\n", bmgr );
             initialized = true;
         }
-        catch ( final RuntimeException e )
+        catch ( final Throwable e )
         {
             logger.error( "Failed to initialize Booter: " + e.getMessage(), e );
             exit = ERR_CANT_INIT_BOOTER;
@@ -188,7 +188,7 @@ public class JaxRsBooter
         {
             logger.error( "Failed to configure Indy: {}", e.getMessage() );
             e.printStackTrace();
-            exit = ERR_CANT_CONFIGURE_APROX;
+            exit = ERR_CANT_CONFIGURE_INDY;
             status = new BootStatus( exit, e );
             loaded = false;
         }
@@ -213,7 +213,7 @@ public class JaxRsBooter
         {
             logger.error( "\n\nFailed to start Indy: " + e.getMessage(), e );
 
-            exit = ERR_CANT_START_APROX;
+            exit = ERR_CANT_START_INDY;
             status = new BootStatus( exit, e );
             started = false;
         }
@@ -314,9 +314,6 @@ public class JaxRsBooter
         return bootOptions;
     }
 
-    /* (non-Javadoc)
-     * @see org.commonjava.indy.bind.vertx.boot.BootInterface#start()
-     */
     @Override
     public BootStatus start( final BootOptions bootOptions )
         throws IndyBootException
@@ -341,9 +338,6 @@ public class JaxRsBooter
         return status;
     }
 
-    /* (non-Javadoc)
-     * @see org.commonjava.indy.bind.vertx.boot.BootInterface#stop()
-     */
     @Override
     public void stop()
     {

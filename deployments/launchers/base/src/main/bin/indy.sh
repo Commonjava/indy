@@ -26,8 +26,8 @@ BASEDIR=`dirname ${BASEDIR}`
 
 # echo "basedir: ${BASEDIR}"
 
-INDY_LOCALLIB_DIR=${APROX_LOCALLIB_DIR:-${BASEDIR}/lib/local}
-INDY_LOGCONF_DIR=${APROX_LOGCONF_DIR:-${BASEDIR}/etc/indy/logging}
+INDY_LOCALLIB_DIR=${INDY_LOCALLIB_DIR:-${BASEDIR}/lib/local}
+INDY_LOGCONF_DIR=${INDY_LOGCONF_DIR:-${BASEDIR}/etc/indy/logging}
 
 echo "Loading logging config from: ${INDY_LOGCONF_DIR}"
 

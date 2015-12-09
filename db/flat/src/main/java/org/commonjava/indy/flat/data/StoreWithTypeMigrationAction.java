@@ -78,7 +78,7 @@ public class StoreWithTypeMigrationAction
         final DataFileStoreDataManager data = (DataFileStoreDataManager) this.data;
 
         final DataFile basedir = data.getFileManager()
-                                     .getDataFile( DataFileStoreDataManager.APROX_STORE );
+                                     .getDataFile( DataFileStoreDataManager.INDY_STORE );
 
         if ( !basedir.exists() )
         {

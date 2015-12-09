@@ -65,7 +65,7 @@ public class LegacyDataMigrationAction
         final DataFileStoreDataManager data = (DataFileStoreDataManager) this.data;
 
         final DataFile basedir = data.getFileManager()
-                                     .getDataFile( DataFileStoreDataManager.APROX_STORE );
+                                     .getDataFile( DataFileStoreDataManager.INDY_STORE );
         final ChangeSummary summary =
             new ChangeSummary( ChangeSummary.SYSTEM_USER, "Migrating legacy store definitions." );
 

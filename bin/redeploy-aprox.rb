@@ -16,14 +16,14 @@
 #
 
 
-APROX_BASEDIR = '/Users/jdcasey/workspace/server-apps/indy'
+INDY_BASEDIR = '/Users/jdcasey/workspace/server-apps/indy'
 WAR_DIR = 'savant'
 AS7_HOME = '/Users/jdcasey/apps/as7/current'
 CONTROLLER_HOST_PORT = 'localhost:10999'
 
 cmds =<<-EOC
   undeploy indy.war
-  deploy #{APROX_BASEDIR}/wars/#{WAR_DIR}/target/indy.war
+  deploy #{INDY_BASEDIR}/wars/#{WAR_DIR}/target/indy.war
 EOC
 
 path = '/tmp/redeploy.commands'

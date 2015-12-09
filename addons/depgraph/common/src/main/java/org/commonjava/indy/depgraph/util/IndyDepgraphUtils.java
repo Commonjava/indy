@@ -23,9 +23,9 @@ import org.commonjava.indy.model.core.StoreKey;
 public final class IndyDepgraphUtils
 {
 
-    public static final String APROX_SCHEME = "indy";
+    public static final String INDY_SCHEME = "indy";
 
-    public static final String APROX_URI_PREFIX = APROX_SCHEME + ":";
+    public static final String INDY_URI_PREFIX = INDY_SCHEME + ":";
 
     private IndyDepgraphUtils()
     {
@@ -34,7 +34,7 @@ public final class IndyDepgraphUtils
     public static StoreKey getDiscoveryStore( final URI source )
     {
         final String scheme = source.getScheme();
-        if ( !APROX_SCHEME.equals( scheme ) )
+        if ( !INDY_SCHEME.equals( scheme ) )
         {
             throw new UnsupportedOperationException(
                                                      "Discovery from arbitrary external locations is not supported within Indy. Instead, use 'indy:<groupname>' as the discovery source." );
@@ -49,7 +49,7 @@ public final class IndyDepgraphUtils
     {
         try
         {
-            return new URI( APROX_URI_PREFIX + key.getType()
+            return new URI( INDY_URI_PREFIX + key.getType()
                                                   .name() + ":" + key.getName() );
         }
         catch ( final URISyntaxException e )

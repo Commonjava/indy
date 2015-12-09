@@ -197,7 +197,7 @@ public class KeycloakConfig
         String confDir = System.getProperty( IndyConfigFactory.CONFIG_DIR_PROP );
         if ( confDir == null )
         {
-            confDir = PathUtils.normalize( System.getProperty( IndyConfigFactory.APROX_HOME_PROP ), "etc/indy" );
+            confDir = PathUtils.normalize( System.getProperty( IndyConfigFactory.INDY_HOME_PROP ), "etc/indy" );
         }
 
         return PathUtils.normalize( confDir, confFile );

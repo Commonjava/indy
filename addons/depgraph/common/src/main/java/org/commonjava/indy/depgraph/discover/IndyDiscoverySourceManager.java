@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.depgraph.discover;
 
-import static org.commonjava.indy.depgraph.util.IndyDepgraphUtils.APROX_URI_PREFIX;
+import static org.commonjava.indy.depgraph.util.IndyDepgraphUtils.INDY_URI_PREFIX;
 import static org.commonjava.indy.depgraph.util.IndyDepgraphUtils.toDiscoveryURI;
 
 import java.net.URI;
@@ -128,9 +128,9 @@ public class IndyDiscoverySourceManager
     private String normalize( final String source )
     {
         logger.debug( "Normalizing source URI: '{}'", source );
-        if ( source.startsWith( APROX_URI_PREFIX ) )
+        if ( source.startsWith( INDY_URI_PREFIX ) )
         {
-            final String result = source.substring( APROX_URI_PREFIX.length() );
+            final String result = source.substring( INDY_URI_PREFIX.length() );
             logger.debug( "Normalized source URI: '{}'", result );
             return result;
         }

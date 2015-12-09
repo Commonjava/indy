@@ -48,7 +48,7 @@ public final class ApplicationContent
     {
     }
 
-    private static final Map<String, String> APROX_ACCEPTS = Collections.unmodifiableMap( new HashMap<String, String>()
+    private static final Map<String, String> INDY_ACCEPTS = Collections.unmodifiableMap( new HashMap<String, String>()
     {
         {
             put( application_json, indy_json );
@@ -87,7 +87,7 @@ public final class ApplicationContent
 
     public static String getIndyAccept( final String standardAccept )
     {
-        return standardAccept == null ? null : APROX_ACCEPTS.get( standardAccept );
+        return standardAccept == null ? null : INDY_ACCEPTS.get( standardAccept );
     }
 
     public static String getStandardAccept( final String indyAccept )

@@ -65,7 +65,7 @@ public class CacheProducer
                                           config.getPath() );
         }
 
-        logger.info( "\n\n\n\n[APROX-ISPN] Reading Infinispan configuration from: {}", f.getAbsolutePath() );
+        logger.info( "\n\n\n\n[INDY-ISPN] Reading Infinispan configuration from: {}", f.getAbsolutePath() );
 
         FileInputStream fin = null;
         try

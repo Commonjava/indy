@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 public class IndyVersioningProvider
 {
 
-    private static final String APROX_VERSIONING_PROPERTIES = "indy-version.properties";
+    private static final String INDY_VERSIONING_PROPERTIES = "indy-version.properties";
 
     private final IndyVersioning versioning;
 
@@ -50,7 +50,7 @@ public class IndyVersioningProvider
         {
             is = Thread.currentThread()
                        .getContextClassLoader()
-                       .getResourceAsStream( APROX_VERSIONING_PROPERTIES );
+                       .getResourceAsStream( INDY_VERSIONING_PROPERTIES );
             if ( is != null )
             {
                 props.load( is );
@@ -59,7 +59,7 @@ public class IndyVersioningProvider
         catch ( final IOException e )
         {
             logger.error( "Failed to read Indy versioning information from classpath resource: "
-                + APROX_VERSIONING_PROPERTIES, e );
+                + INDY_VERSIONING_PROPERTIES, e );
         }
         finally
         {

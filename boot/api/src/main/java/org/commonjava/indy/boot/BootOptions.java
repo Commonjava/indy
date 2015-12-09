@@ -85,7 +85,7 @@ public class BootOptions
         try
         {
             final String indyHome =
-                System.getProperty( BootInterface.APROX_HOME_PROP, new File( "." ).getCanonicalPath() );
+                System.getProperty( BootInterface.INDY_HOME_PROP, new File( "." ).getCanonicalPath() );
 
             return new BootOptions( bootDefaults, indyHome);
         }
@@ -107,6 +107,8 @@ public class BootOptions
 
         System.out.printf( "\n\nUsing Indy configuration: %s\n", config );
         properties.setProperty( BootInterface.CONFIG_PATH_PROP, config );
+        properties.setProperty( BootInterface.INDY_HOME_PROP, indyHome );
+        properties.setProperty( BootInterface.APROX_CONFIG_PATH_PROP, config );
         properties.setProperty( BootInterface.APROX_HOME_PROP, indyHome );
         System.setProperties( properties );
     }

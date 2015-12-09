@@ -63,7 +63,7 @@ public class StoreWithTypeMigrationActionTest
             throws Exception
     {
         final DataFile dir =
-                dfm.getDataFile( DataFileStoreDataManager.APROX_STORE, StoreType.group.singularEndpointName() );
+                dfm.getDataFile( DataFileStoreDataManager.INDY_STORE, StoreType.group.singularEndpointName() );
 
         dir.mkdirs();
 
@@ -84,7 +84,7 @@ public class StoreWithTypeMigrationActionTest
             throws Exception
     {
         final DataFile dir =
-                dfm.getDataFile( DataFileStoreDataManager.APROX_STORE, StoreType.group.singularEndpointName() );
+                dfm.getDataFile( DataFileStoreDataManager.INDY_STORE, StoreType.group.singularEndpointName() );
 
         dir.mkdirs();
 
@@ -108,7 +108,7 @@ public class StoreWithTypeMigrationActionTest
             throws Exception
     {
         final DataFile dir =
-                dfm.getDataFile( DataFileStoreDataManager.APROX_STORE, StoreType.hosted.singularEndpointName() );
+                dfm.getDataFile( DataFileStoreDataManager.INDY_STORE, StoreType.hosted.singularEndpointName() );
 
         dir.mkdirs();
 
@@ -129,7 +129,7 @@ public class StoreWithTypeMigrationActionTest
             throws Exception
     {
         final DataFile dir =
-                dfm.getDataFile( DataFileStoreDataManager.APROX_STORE, StoreType.hosted.singularEndpointName() );
+                dfm.getDataFile( DataFileStoreDataManager.INDY_STORE, StoreType.hosted.singularEndpointName() );
 
         dir.mkdirs();
 
@@ -153,7 +153,7 @@ public class StoreWithTypeMigrationActionTest
             throws Exception
     {
         final DataFile dir =
-                dfm.getDataFile( DataFileStoreDataManager.APROX_STORE, StoreType.remote.singularEndpointName() );
+                dfm.getDataFile( DataFileStoreDataManager.INDY_STORE, StoreType.remote.singularEndpointName() );
 
         dir.mkdirs();
 
@@ -174,7 +174,7 @@ public class StoreWithTypeMigrationActionTest
             throws Exception
     {
         final DataFile dir =
-                dfm.getDataFile( DataFileStoreDataManager.APROX_STORE, StoreType.remote.singularEndpointName() );
+                dfm.getDataFile( DataFileStoreDataManager.INDY_STORE, StoreType.remote.singularEndpointName() );
 
         dir.mkdirs();
 
