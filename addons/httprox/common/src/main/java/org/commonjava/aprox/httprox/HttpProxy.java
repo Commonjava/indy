@@ -19,6 +19,7 @@ import org.commonjava.aprox.action.AproxLifecycleException;
 import org.commonjava.aprox.action.ShutdownAction;
 import org.commonjava.aprox.action.StartupAction;
 import org.commonjava.aprox.boot.BootOptions;
+import org.commonjava.aprox.boot.PortFinder;
 import org.commonjava.aprox.httprox.conf.HttproxConfig;
 import org.commonjava.aprox.httprox.handler.ProxyAcceptHandler;
 import org.slf4j.Logger;
@@ -73,10 +74,14 @@ public class HttpProxy
             return;
         }
 
-        String bind = bootOptions.getBind();
-        if ( bind == null )
+        String bind;
+        if ( bootOptions.getBind() == null )
         {
             bind = "0.0.0.0";
+        }
+        else
+        {
+            bind = bootOptions.getBind();
         }
 
         logger.info( "Starting HTTProx proxy on: {}:{}", bind, config.getPort() );
@@ -87,11 +92,32 @@ public class HttpProxy
             worker = Xnio.getInstance()
                          .createWorker( OptionMap.EMPTY );
 
-            final InetSocketAddress addr = new InetSocketAddress( bind, config.getPort() );
+            final InetSocketAddress addr;
+            if ( config.getPort() < 1 )
+            {
+                ThreadLocal<InetSocketAddress> using = new ThreadLocal<>();
+                ThreadLocal<IOException> errorHolder = new ThreadLocal<>();
+                server = PortFinder.findPortFor( 16, (foundPort)->{
+                    InetSocketAddress a = new InetSocketAddress( bind, config.getPort() );
+                    AcceptingChannel<StreamConnection> result =
+                            worker.createStreamConnectionServer( a, acceptHandler, OptionMap.EMPTY );
 
-            server = worker.createStreamConnectionServer( addr, acceptHandler, OptionMap.EMPTY );
+                    result.resumeAccepts();
+                    using.set( a );
 
-            server.resumeAccepts();
+                    return result;
+                });
+
+                addr = using.get();
+                config.setPort( addr.getPort() );
+            }
+            else
+            {
+                addr = new InetSocketAddress( bind, config.getPort() );
+                server = worker.createStreamConnectionServer( addr, acceptHandler, OptionMap.EMPTY );
+
+                server.resumeAccepts();
+            }
             logger.info( "HTTProxy listening on: {}", addr );
         }
         catch ( IllegalArgumentException | IOException e )

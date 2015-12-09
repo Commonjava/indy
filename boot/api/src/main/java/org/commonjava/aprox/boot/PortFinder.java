@@ -16,6 +16,7 @@
 package org.commonjava.aprox.boot;
 
 import java.io.IOException;
+import java.net.BindException;
 import java.net.ServerSocket;
 import java.util.Random;
 
@@ -27,6 +28,24 @@ public final class PortFinder
 
     private PortFinder()
     {
+    }
+
+    public static <T> T findPortFor( final int maxTries, PortConsumer<T> consumer )
+    {
+        for ( int i = 0; i < maxTries; i++ )
+        {
+            final int port = 1024 + ( Math.abs( RANDOM.nextInt() ) % 30000 );
+            T result = null;
+            try
+            {
+                return consumer.call( port );
+            }
+            catch ( final IOException e )
+            {
+            }
+        }
+
+        throw new IllegalStateException( "Cannot find open port after " + maxTries + " attempts." );
     }
 
     public static int findOpenPort( final int maxTries )
@@ -50,6 +69,11 @@ public final class PortFinder
         }
 
         throw new IllegalStateException( "Cannot find open port after " + maxTries + " attempts." );
+    }
+
+    public interface PortConsumer<T>
+    {
+        T call(int port) throws IOException;
     }
 
 }

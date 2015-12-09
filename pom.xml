@@ -55,7 +55,7 @@
     <resteasyVersion>3.0.9.Final</resteasyVersion>
     <undertowVersion>1.1.2.Final</undertowVersion>
     <xnioVersion>3.3.0.Final</xnioVersion>
-    <partylineVersion>1.4</partylineVersion>
+    <partylineVersion>1.5-SNAPSHOT</partylineVersion>
     <keycloakVersion>1.2.0.Final</keycloakVersion>
     <jhttpcVersion>1.1-SNAPSHOT</jhttpcVersion>
     

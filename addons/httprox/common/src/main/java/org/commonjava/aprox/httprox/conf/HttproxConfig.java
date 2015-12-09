@@ -25,6 +25,7 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.commonjava.aprox.boot.PortFinder;
 import org.commonjava.aprox.conf.AbstractAproxConfigInfo;
 import org.commonjava.aprox.conf.AbstractAproxFeatureConfig;
 import org.commonjava.aprox.conf.AproxConfigClassInfo;
