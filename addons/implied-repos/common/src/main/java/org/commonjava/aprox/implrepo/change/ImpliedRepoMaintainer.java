@@ -58,8 +58,8 @@ public class ImpliedRepoMaintainer
     {
     }
 
-    public ImpliedRepoMaintainer( final StoreDataManager storeManager,
-                                  final ImpliedRepoMetadataManager metadataManager, final ImpliedRepoConfig config )
+    public ImpliedRepoMaintainer( final StoreDataManager storeManager, final ImpliedRepoMetadataManager metadataManager,
+                                  final ImpliedRepoConfig config )
     {
         this.storeManager = storeManager;
         this.metadataManager = metadataManager;
@@ -90,6 +90,11 @@ public class ImpliedRepoMaintainer
         {
             logger.error( "Failed to retrieve all known stores.", e );
         }
+        catch ( Throwable error )
+        {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.error( String.format( "Implied-repository maintenance failed: %s", error.getMessage() ), error );
+        }
 
     }
 
@@ -109,11 +114,19 @@ public class ImpliedRepoMaintainer
             return;
         }
 
-        final Map<StoreKey, ArtifactStore> currentStores = mapStores( event );
-
-        for ( final ArtifactStore store : event )
+        try
         {
-            processStore( store, currentStores );
+            final Map<StoreKey, ArtifactStore> currentStores = mapStores( event );
+
+            for ( final ArtifactStore store : event )
+            {
+                processStore( store, currentStores );
+            }
+        }
+        catch ( Throwable error )
+        {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.error( String.format( "Implied-repository maintenance failed: %s", error.getMessage() ), error );
         }
     }
 
@@ -173,7 +186,8 @@ public class ImpliedRepoMaintainer
             processed.add( member.getKey() );
         }
 
-        logger.debug( "Preset processed-implications to reachable members:\n  {}", new JoinString( "\n  ", processed ) );
+        logger.debug( "Preset processed-implications to reachable members:\n  {}",
+                      new JoinString( "\n  ", processed ) );
 
         int lastLen = 0;
         boolean changed = false;
@@ -264,7 +278,7 @@ public class ImpliedRepoMaintainer
             job.members = loadMemberStores( job.group, job );
 
             // getOrderedConcreteStores(), but we can't use the persisted info...
-            final LinkedHashSet<ArtifactStore> reachable = new LinkedHashSet<>(job.members.size());
+            final LinkedHashSet<ArtifactStore> reachable = new LinkedHashSet<>( job.members.size() );
             for ( final ArtifactStore member : job.members )
             {
                 if ( member instanceof Group )
@@ -297,11 +311,17 @@ public class ImpliedRepoMaintainer
     }
 
     private List<ArtifactStore> loadMemberStores( final Group group, final ImpliedRepoMaintJob job )
-        throws AproxDataException
+            throws AproxDataException
     {
-        final List<ArtifactStore> members = new ArrayList<>( group.getConstituents()
-                                                                  .size() );
-        for ( final StoreKey memberKey : group.getConstituents() )
+        final List<ArtifactStore> members = new ArrayList<>( group.getConstituents().size() );
+
+        List<StoreKey> constituents;
+        synchronized ( group )
+        {
+            constituents = new ArrayList<>( group.getConstituents() );
+        }
+
+        for ( final StoreKey memberKey : constituents )
         {
             ArtifactStore store = job.currentStores.get( memberKey );
             if ( store == null )

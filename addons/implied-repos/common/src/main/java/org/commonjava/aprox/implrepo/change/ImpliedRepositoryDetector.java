@@ -93,31 +93,39 @@ public class ImpliedRepositoryDetector
             return;
         }
 
-        logger.debug( "STARTED Processing: {}", event );
-        final ImplicationsJob job = new ImplicationsJob( event );
-        if ( !initJob( job ) )
+        try
         {
-            return;
-        }
-
-        addImpliedRepositories( job );
-
-        if ( job.implied != null && !job.implied.isEmpty() )
-        {
-            // Store in source remote repo metadata for future groups.
-            if ( !addImpliedMetadata( job ) )
+            logger.debug( "STARTED Processing: {}", event );
+            final ImplicationsJob job = new ImplicationsJob( event );
+            if ( !initJob( job ) )
             {
                 return;
             }
 
-            // Update existing groups
-            if ( !updateExistingGroups( job ) )
-            {
-                return;
-            }
-        }
+            addImpliedRepositories( job );
 
-        logger.debug( "FINISHED Processing: {}", event );
+            if ( job.implied != null && !job.implied.isEmpty() )
+            {
+                // Store in source remote repo metadata for future groups.
+                if ( !addImpliedMetadata( job ) )
+                {
+                    return;
+                }
+
+                // Update existing groups
+                if ( !updateExistingGroups( job ) )
+                {
+                    return;
+                }
+            }
+
+            logger.debug( "FINISHED Processing: {}", event );
+        }
+        catch ( Throwable error )
+        {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.error( String.format( "Implied-repository maintenance failed: %s", error.getMessage() ), error );
+        }
     }
 
     private boolean initJob( final ImplicationsJob job )
