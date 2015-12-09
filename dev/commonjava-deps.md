@@ -2,9 +2,9 @@
 title: "Commonjava Project Dependencies"
 ---
 
-### AProx Technology Spin-Offs
+### Indy Technology Spin-Offs
 
-During development of AProx, several other libraries have been developed that have usefulness outside of AProx itself. These libraries address problems that are largely self-contained. In order to enable their use outside of AProx, they have been spun off into separate projects. The downside of this is that sometimes new features or bugfixes require changes in these dependency projects as well as AProx itself. When this happens, AProx's pre-release codebase will depend on SNAPSHOT artifacts from these projects until the new feature or bugfix has been stabilized and the project can be released. While this does inject some build risk, the benefits of reuse make this well worthwhile.
+During development of Indy, several other libraries have been developed that have usefulness outside of Indy itself. These libraries address problems that are largely self-contained. In order to enable their use outside of Indy, they have been spun off into separate projects. The downside of this is that sometimes new features or bugfixes require changes in these dependency projects as well as Indy itself. When this happens, Indy's pre-release codebase will depend on SNAPSHOT artifacts from these projects until the new feature or bugfix has been stabilized and the project can be released. While this does inject some build risk, the benefits of reuse make this well worthwhile.
 
 These projects are:
 

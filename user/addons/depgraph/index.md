@@ -9,7 +9,7 @@ At its most basic, every Maven POM file is an expression of some collection of r
 
 This is the purpose of the depgraph add-on.
 
-Depgraph is an integration point with the Cartographer project, which provides operations to discover and traverse these relationship graphs. It defines a REST-ish facade that makes Cartographer available via HTTP, and the typical client api and domain model you're no doubt used to seeing with AProx add-ons.
+Depgraph is an integration point with the Cartographer project, which provides operations to discover and traverse these relationship graphs. It defines a REST-ish facade that makes Cartographer available via HTTP, and the typical client api and domain model you're no doubt used to seeing with Indy add-ons.
 
 ### Contents
 

@@ -2,9 +2,9 @@
 title: "Architectural Overview"
 ---
 
-### Gross Anatomy of AProx
+### Gross Anatomy of Indy
 
-Broadly speaking, AProx's architecture consists of several types of code:
+Broadly speaking, Indy's architecture consists of several types of code:
 
 * [Core API and Implementation](core.html)
 * Object models
@@ -14,7 +14,7 @@ Broadly speaking, AProx's architecture consists of several types of code:
 * Service Bindings
 * UIs
 
-These are the categories we'll discuss below in greater detail. However, if you've looked at the project directory structure, you'll notice other directories and project modules (POMs). Going beyond the architecture itself, AProx also contains the following additional types of project modules:
+These are the categories we'll discuss below in greater detail. However, if you've looked at the project directory structure, you'll notice other directories and project modules (POMs). Going beyond the architecture itself, Indy also contains the following additional types of project modules:
 
 * Embedders
 * Deployments

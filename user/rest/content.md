@@ -45,9 +45,9 @@ And here's a sample exchange for a file that's available:
 
 ### Creating content
 
-Storing content (deploying artifacts) is a critical function of any repository manager. Since it's tuned to be compatible with Apache Maven, AProx makes a departure from normal REST design in this function.
+Storing content (deploying artifacts) is a critical function of any repository manager. Since it's tuned to be compatible with Apache Maven, Indy makes a departure from normal REST design in this function.
 
-Maven expects to use HTTP **PUT** requests to send content to the server, where most REST services use a **POST** request to the resource base URL in order to create a new resource. For the content function **only**, AProx embraces the idiosyncracies of Maven over REST. So, to upload a new file to AProx, you'd use something like this:
+Maven expects to use HTTP **PUT** requests to send content to the server, where most REST services use a **POST** request to the resource base URL in order to create a new resource. For the content function **only**, Indy embraces the idiosyncracies of Maven over REST. So, to upload a new file to Indy, you'd use something like this:
 
     $ curl -i -X PUT --data @foo-1.pom \
        http://localhost:8080/api/hosted/local-deployments/org/foo/1/foo-1.pom
@@ -85,7 +85,7 @@ For files (and artifacts), retrieval is just what you'd expect. A simple **GET**
       <name>CommonJava Top-Level Parent POM</name>
       [...]
 
-For directories, it's a little more complicated. When you **GET** a directory path, AProx will *try* to generate a directory listing and return it. *Try* is a critical word here; see below for details.
+For directories, it's a little more complicated. When you **GET** a directory path, Indy will *try* to generate a directory listing and return it. *Try* is a critical word here; see below for details.
 
 If you set the `Accept` header to `application/json` you'll get JSON back:
 
@@ -115,7 +115,7 @@ If you set the `Accept` header to `application/json` you'll get JSON back:
       [...]
     }
 
-On the other hand, if you leave off the `Accept` header, AProx will generate a HTML directory listing and send it back:
+On the other hand, if you leave off the `Accept` header, Indy will generate a HTML directory listing and send it back:
 
     $ curl -i \
         http://localhost:8080/api/remote/central/org/commonjava/commonjava/
@@ -128,7 +128,7 @@ On the other hand, if you leave off the `Accept` header, AProx will generate a H
 
     <html>
       <head>
-        <title>AProx: Directory listing for org/commonjava on central</title>
+        <title>Indy: Directory listing for org/commonjava on central</title>
         <style media="screen" type="text/css">
           h2{
             color: #333;
@@ -153,9 +153,9 @@ On the other hand, if you leave off the `Accept` header, AProx will generate a H
 
 #### A note about directory listing contents
 
-Note that the directory listing contains files we haven't yet proxied. AProx basically screen-scrapes the generated directory listings from upstream remote repositories, and merges the items it comes up with into those it already knows about from its local cache. If you're requesting a directory listing from a repository group, it will perform all these steps for each member repository, then merge the individual repository listings before generating the output JSON (or HTML).
+Note that the directory listing contains files we haven't yet proxied. Indy basically screen-scrapes the generated directory listings from upstream remote repositories, and merges the items it comes up with into those it already knows about from its local cache. If you're requesting a directory listing from a repository group, it will perform all these steps for each member repository, then merge the individual repository listings before generating the output JSON (or HTML).
 
-As I'm sure you've noticed, the weak point in all of this is the screen-scraping AProx does to come up with a listing of what content is available on the upstream repository. This depends heavily on that upstream server rendering directory listings in a fairly basic way, without additional links in the HTML. Any extra links usually wind up in the AProx directory listing, and can be a bit confusing to deal with. For this reason, it's not really recommended for you to depend on AProx directory listing information in an automated way. While you can retrieve the listing in JSON format, that JSON could very well include junk links that originated as page decoration on the remote server. Likewise, if the upstream repository doesn't allow directory browsing, you may not see any results at all.
+As I'm sure you've noticed, the weak point in all of this is the screen-scraping Indy does to come up with a listing of what content is available on the upstream repository. This depends heavily on that upstream server rendering directory listings in a fairly basic way, without additional links in the HTML. Any extra links usually wind up in the Indy directory listing, and can be a bit confusing to deal with. For this reason, it's not really recommended for you to depend on Indy directory listing information in an automated way. While you can retrieve the listing in JSON format, that JSON could very well include junk links that originated as page decoration on the remote server. Likewise, if the upstream repository doesn't allow directory browsing, you may not see any results at all.
 
 Unfortunately, there just isn't a standard way to render this type of information in the Maven repository format.
 
@@ -163,7 +163,7 @@ Unfortunately, there just isn't a standard way to render this type of informatio
 
 ### Deleting content
 
-Content deletion works about like you'd expect. You send a **DELETE** request, and AProx returns `204 No Content` signifying the content no longer exists on the server. In the case of a remote repository, sending a delete request **only removes the file from the proxy cache**, not from the upstream remote repository.
+Content deletion works about like you'd expect. You send a **DELETE** request, and Indy returns `204 No Content` signifying the content no longer exists on the server. In the case of a remote repository, sending a delete request **only removes the file from the proxy cache**, not from the upstream remote repository.
 
 For example:
 

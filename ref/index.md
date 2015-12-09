@@ -1,5 +1,5 @@
 ---
-title: "AProx Reference"
+title: "Indy Reference"
 ---
 
 ### Contents

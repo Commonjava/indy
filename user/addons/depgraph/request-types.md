@@ -22,7 +22,7 @@ Regardless of what flavor of Depgraph request you're building, it will have some
 **Required:**
 
 * **workspaceId** - The graph's database name
-* **source** - The AProx store key to use when discovering graph relationships and nodes
+* **source** - The Indy store key to use when discovering graph relationships and nodes
 
 **Optional:**
 

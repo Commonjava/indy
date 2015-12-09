@@ -12,16 +12,16 @@ Or, maybe you just want to ensure that repositories created with a given naming 
 
 If any of this sounds familiar, you could probably benefit from the Autoprox add-on. This add-on allows you to write store-creation templates (also called rules), using Groovy, that match particular repository naming patterns. When matched, a template is invoked to create the appropriate store type and in the case of remote repositories, a validation URL (to ensure the repository has a chance of working). By developing one or two of these templates, you can avoid the drudgery and risk of human error involved with creating dozens or hundreds of new repository-resolution environments.
 
-Any request for a non-existent repository or group will trigger Autoprox to try to auto-create the corresponding store. This means you can configure Maven (or some other tool) to use a repository that doesn't exist yet, and AProx will create - and then use - it automatically when you run your build. If you use Autoprox templates in conjunction with the [DotMaven Add-On](dot-maven-addon.html), any attempt to access the auto-generated settings.xml file corresponding to a non-existent store will trigger its creation, then use it to generate the appropriate settings.xml for use with it.
+Any request for a non-existent repository or group will trigger Autoprox to try to auto-create the corresponding store. This means you can configure Maven (or some other tool) to use a repository that doesn't exist yet, and Indy will create - and then use - it automatically when you run your build. If you use Autoprox templates in conjunction with the [DotMaven Add-On](dot-maven-addon.html), any attempt to access the auto-generated settings.xml file corresponding to a non-existent store will trigger its creation, then use it to generate the appropriate settings.xml for use with it.
 
 ### Writing Templates
 
-All Autoprox templates must implement [org.commonjava.aprox.autoprox.data.AutoProxRule](https://github.com/Commonjava/aprox/blob/master/addons/autoprox/common/src/main/java/org/commonjava/aprox/autoprox/data/AutoProxRule.java). But normally it's much simpler to extend [org.commonjava.aprox.autoprox.data.AbstractAutoProxRule](https://github.com/Commonjava/aprox/blob/master/addons/autoprox/common/src/main/java/org/commonjava/aprox/autoprox/data/AbstractAutoProxRule.java) instead, since it allows you to implement only the behavior you're interested in.
+All Autoprox templates must implement [org.commonjava.indy.autoprox.data.AutoProxRule](https://github.com/Commonjava/indy/blob/master/addons/autoprox/common/src/main/java/org/commonjava/indy/autoprox/data/AutoProxRule.java). But normally it's much simpler to extend [org.commonjava.indy.autoprox.data.AbstractAutoProxRule](https://github.com/Commonjava/indy/blob/master/addons/autoprox/common/src/main/java/org/commonjava/indy/autoprox/data/AbstractAutoProxRule.java) instead, since it allows you to implement only the behavior you're interested in.
 
 For example, if you wanted to create a rule where any request to a remote repository named `CI-<name>` points to a corresponding remote URL `http://www.foo.com/<name>/repository` you could simply implement the name matcher and the remote repository creation rule:
 
-    import org.commonjava.aprox.autoprox.data.*;
-    import org.commonjava.aprox.model.core.*;
+    import org.commonjava.indy.autoprox.data.*;
+    import org.commonjava.indy.model.core.*;
     import java.net.MalformedURLException;
     
     class CIRule extends AbstractAutoProxRule
@@ -87,7 +87,7 @@ If you have two templates that match on overlapping name patterns, you can use t
 
 In the above template listing, you probably noticed a file called `9980-autocompose.groovy`. This template is included with Autoprox by default, and covers a somewhat unique case.
 
-In most situations where Autoprox makes sense, you'll be able to cover a large majority of your store-creation needs using templates. But there will always be those times when you need something special; some composition of repositories and groups that is an outlier situation. If you're able to administer AProx, you can just add these new groups and make the composition whatever it needs to be, without involving Autoprox at all.
+In most situations where Autoprox makes sense, you'll be able to cover a large majority of your store-creation needs using templates. But there will always be those times when you need something special; some composition of repositories and groups that is an outlier situation. If you're able to administer Indy, you can just add these new groups and make the composition whatever it needs to be, without involving Autoprox at all.
 
 However, if you want to provide a self-service option for developers, you can use the autocompose template. This template only supports creation of groups, and matches any name of the form:
 
@@ -97,8 +97,8 @@ The group name is actually a `+`-delimited list of repositories and groups which
 
 While the name winds up being pretty ugly, especially for groups with large memberships, it's an effective way to create groups with flexible membership on-demand. The template implementation is actually quite simple:
 
-    import org.commonjava.aprox.autoprox.data.*;
-    import org.commonjava.aprox.model.core.*;
+    import org.commonjava.indy.autoprox.data.*;
+    import org.commonjava.indy.model.core.*;
     import java.net.MalformedURLException;
     
     class ComplexGroupsRule extends AbstractAutoProxRule
@@ -138,7 +138,7 @@ While the name winds up being pretty ugly, especially for groups with large memb
 
 For example, if I wanted to auto-create a group that pointed at:
 
-1. `hosted:local-deployments` (a hosted repository created by default with AProx)
+1. `hosted:local-deployments` (a hosted repository created by default with Indy)
 2. `remote:central` (the Maven central repository)
 3. `remote:jboss.org` (a remote repository pointing at JBoss.org's public repository)
 
@@ -184,11 +184,11 @@ Most of the real work done by Autoprox is automatic, and decorates existing func
 
 #### Rule Browser
 
-In most deployments, it won't be all that simple to login to the AProx server and inspect your Autoprox templates directly. While you can get your own copy - and even branch and modify them - if you're using the [Revisions Data-Versioning Add-On](revisions-addon.html), it's often simpler to just go look at the templates (aka rules) through your AProx web UI's Autoprox Rule Browser, located under the `More > AutoProx Rules` menu at the top.
+In most deployments, it won't be all that simple to login to the Indy server and inspect your Autoprox templates directly. While you can get your own copy - and even branch and modify them - if you're using the [Revisions Data-Versioning Add-On](revisions-addon.html), it's often simpler to just go look at the templates (aka rules) through your Indy web UI's Autoprox Rule Browser, located under the `More > AutoProx Rules` menu at the top.
 
 [![AutoProx Rule Browser Menu](grabs/autoprox-rule-browser-menu.png)](grabs/autoprox-rule-browser-menu.png)
 
-The rule browser gives you a selectable view of all the templates available on your AProx instance. Currently, this feature is restricted to read-only access, but a full CRUD-enabled version is [planned](https://github.com/Commonjava/aprox/issues/120).
+The rule browser gives you a selectable view of all the templates available on your Indy instance. Currently, this feature is restricted to read-only access, but a full CRUD-enabled version is [planned](https://github.com/Commonjava/indy/issues/120).
 
 [![AutoProx Rule Browser](grabs/autoprox-rule-browser.png)](grabs/autoprox-rule-browser.png)
 
@@ -221,17 +221,17 @@ From here, you have the option to create the resulting structure using the `Crea
 
 If you use Apache Maven, you'll need the following dependencies in order to use the Java client API for this add-on:
 
-    <!-- The core of the AProx client API -->
+    <!-- The core of the Indy client API -->
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-client-core-java</artifactId>
-      <version>${aproxVersion}</version>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-client-core-java</artifactId>
+      <version>${indyVersion}</version>
     </dependency>
-    <!-- AProx client API module for autoprox -->
+    <!-- Indy client API module for autoprox -->
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-autoprox-client-java</artifactId>
-      <version>${aproxVersion}</version>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-autoprox-client-java</artifactId>
+      <version>${indyVersion}</version>
     </dependency>
 
 #### Administering Rules
@@ -241,9 +241,9 @@ While not yet available via the web UI, the REST and Java client APIs both suppo
 For example, here is a snippet written in Java that verifies creation and deletion of a rule remotely. It also uses listing to verify an initially empty rule set, and retrieval by name to verify deletion:
 
     AutoProxCatalogModule module = new AutoProxCatalogModule();
-    Aprox aprox = new Aprox( 
+    Indy indy = new Indy( 
         "http://localhost:8080/api/", 
-        new AproxObjectMapper(), module ).connect();
+        new IndyObjectMapper(), module ).connect();
     
     final CatalogDTO catalog = module.getCatalog();
     assertThat( catalog.isEnabled(), equalTo( true ) );
@@ -272,9 +272,9 @@ For example, here is a snippet written in Java that verifies creation and deleti
     
     assertThat( dto, nullValue() );
     
-    IOUtils.closeQuietly( aprox );
+    IOUtils.closeQuietly( indy );
 
 #### Further Java Examples
 
-For more examples of using the Java client API to access Autoprox functions, check out the [Autoprox functional tests](https://github.com/Commonjava/aprox/tree/master/addons/autoprox/ftests/src/main/java/org/commonjava/aprox/autoprox/ftest).
+For more examples of using the Java client API to access Autoprox functions, check out the [Autoprox functional tests](https://github.com/Commonjava/indy/tree/master/addons/autoprox/ftests/src/main/java/org/commonjava/indy/autoprox/ftest).
 

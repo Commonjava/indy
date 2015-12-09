@@ -48,10 +48,10 @@ defaults:
       - href: "../features.html"
         title: "Depgraph Features"
 
-title: "AProx Artifact Repository"
+title: "Indy Artifact Management Platform"
 siteTitle: "Commonjava"
-projectTitle: "AProx"
-tagline: "Management Platform for Maven-Style Artifacts and Repositories"
+projectTitle: "Indy"
+tagline: "Management Platform for Artifacts and Repositories"
 owner: "John Casey"
 ownerEmail: jdcasey@commonjava.org
 

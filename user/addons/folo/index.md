@@ -6,9 +6,9 @@ title: "Folo Content-Tracking Add-On"
 
 Sometimes it's nice to have a list of all the artifacts you used during a build. The manifest of files you downloaded is useful for anything from creating an offline repository for your project's build, to auditing your project's dependencies in some sort of database for future reference.
 
-Sure, you can capture the build log and parse all the `Downloading...` lines to get at a similar list of paths. But if you're using a repository manager, it can be hard to know where those artifacts originated. Also, if you push content up to the repository manager ("deploy" in Maven parlance), that's a whole different set of console log lines to parse. And if you're deploying to a repository manager group (which is possible in AProx), you might not exactly know where the artifacts were stored. Add to this the complication that certain artifacts could be downloaded during the build without any console logging. I mean, it's not like the console log has a set of requirements for its format.
+Sure, you can capture the build log and parse all the `Downloading...` lines to get at a similar list of paths. But if you're using a repository manager, it can be hard to know where those artifacts originated. Also, if you push content up to the repository manager ("deploy" in Maven parlance), that's a whole different set of console log lines to parse. And if you're deploying to a repository manager group (which is possible in Indy), you might not exactly know where the artifacts were stored. Add to this the complication that certain artifacts could be downloaded during the build without any console logging. I mean, it's not like the console log has a set of requirements for its format.
 
-So, you want to get a full accounting of artifacts transferred to and from your AProx instance during a build, preferably without having to depend on console logging to give you everything. How can you do that?
+So, you want to get a full accounting of artifacts transferred to and from your Indy instance during a build, preferably without having to depend on console logging to give you everything. How can you do that?
 
 ### Identify and Track Your Build
 
@@ -44,17 +44,17 @@ After the build completes, you can either retrieve the content report via the RE
 
 If you use Apache Maven, you'll need the following dependencies in order to use this add-on via the Java client API:
 
-    <!-- The core of the AProx client API -->
+    <!-- The core of the Indy client API -->
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-client-core-java</artifactId>
-      <version>${aproxVersion}</version>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-client-core-java</artifactId>
+      <version>${indyVersion}</version>
     </dependency>
-    <!-- AProx client API module for folo -->
+    <!-- Indy client API module for folo -->
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-folo-client-java</artifactId>
-      <version>${aproxVersion}</version>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-folo-client-java</artifactId>
+      <version>${indyVersion}</version>
     </dependency>
 
 #### REST API
@@ -119,12 +119,12 @@ Now, let's try the same example using Java:
     final String downloadPath = "/org/commonjava/commonjava/4/" + 
         "commonjava-4.pom";
 
-    final String uploadPath = "/org/commonjava/aprox/aprox-parent/" + 
-        "0.20.0/aprox-parent-0.20.0.pom";
+    final String uploadPath = "/org/commonjava/indy/indy-parent/" + 
+        "0.20.0/indy-parent-0.20.0.pom";
     
-    AproxFoloContentClientModule content = new AproxFoloContentClientModule();
-    AproxFoloAdminClientModule admin = new AproxFoloAdminClientModule();
-    Aprox aprox = new Aprox( "http://localhost:8080/api/", content, admin );
+    IndyFoloContentClientModule content = new IndyFoloContentClientModule();
+    IndyFoloAdminClientModule admin = new IndyFoloAdminClientModule();
+    Indy indy = new Indy( "http://localhost:8080/api/", content, admin );
     
     InputStream stream = content.get( 
         trackingId, 
@@ -169,8 +169,8 @@ Now, let's try the same example using Java:
     
     admin.clearTrackingRecord( trackingId );
     
-    IOUtils.closeQuietly( aprox );
+    IOUtils.closeQuietly( indy );
 
 ### Web UI
 
-The Folo add-on does not currently have any web UI visibility, but one is [planned](https://github.com/Commonjava/aprox/issues/124).
+The Folo add-on does not currently have any web UI visibility, but one is [planned](https://github.com/Commonjava/indy/issues/124).

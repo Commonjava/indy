@@ -1,5 +1,5 @@
 ---
-title: "AProx Developer Guide"
+title: "Indy Developer Guide"
 ---
 
 ### Basics

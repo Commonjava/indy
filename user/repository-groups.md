@@ -43,7 +43,7 @@ You can then point cleanroom builds to use the `cleanroom` repository group URL,
 
 #### Merged (remote) directory listings
 
-Just as AProx provides a means of browsing the content of remote repositories, it also provides merged directory listings for repository groups. These merged listings include remote content that hasn't been cached yet along with content that it hosts or has cached. Additionally, hovering over any entry in a directory listing will provide information about what specific repositories in the group contains that listing entry. In the case of directories, this information could list multiple member repositories.
+Just as Indy provides a means of browsing the content of remote repositories, it also provides merged directory listings for repository groups. These merged listings include remote content that hasn't been cached yet along with content that it hosts or has cached. Additionally, hovering over any entry in a directory listing will provide information about what specific repositories in the group contains that listing entry. In the case of directories, this information could list multiple member repositories.
 
 ### How to Setup a Repository Group
 

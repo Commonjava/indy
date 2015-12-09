@@ -2,9 +2,9 @@
 title: "Listing workspaces"
 ---
 
-### BUG: AProx versions <= 0.24.0
+### BUG: Indy versions <= 0.24.0
 
-Versions of AProx up to and including 0.24.0 have a bug in the Depgraph add-on. If you have not saved your first workspace (by discovering a dependency graph) and you try to list the workspaces on the system, it will throw a `NullPointerException`. The issue is tracked in [AProx #223](https://github.com/Commonjava/aprox/issues/223).
+Versions of Indy up to and including 0.24.0 have a bug in the Depgraph add-on. If you have not saved your first workspace (by discovering a dependency graph) and you try to list the workspaces on the system, it will throw a `NullPointerException`. The issue is tracked in [Indy #223](https://github.com/Commonjava/indy/issues/223).
 
 ### Examples
 

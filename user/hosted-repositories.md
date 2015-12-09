@@ -9,7 +9,7 @@ title: "The Basics: Hosted Repositories"
 
 If you produce software that isn't always available to the public, or you have a development process that includes continuous integration and you use snapshot builds, then you need someplace to park your artifacts. This place needs to be accessible to other Maven-ish builds (otherwise what's the point?) and ideally, it should be easy to push artifacts up to it with minimal configuration of your build tooling.
 
-This is what hosted repositories were designed to handle. Hosted repositories normally allow build tools to use HTTP PUT to push new artifacts up into storage, and will serve them via a normal HTTP GET, just like any other type of repository. While there isn't a lot to distinguish one repository manager from another when it comes to hosting artifacts, it's still useful to talk about the "standard" form of hosting and the little extras that AProx provides.
+This is what hosted repositories were designed to handle. Hosted repositories normally allow build tools to use HTTP PUT to push new artifacts up into storage, and will serve them via a normal HTTP GET, just like any other type of repository. While there isn't a lot to distinguish one repository manager from another when it comes to hosting artifacts, it's still useful to talk about the "standard" form of hosting and the little extras that Indy provides.
 
 ### Standard Features
 
@@ -35,13 +35,13 @@ When doing large-scale deployment of a typical repository manager - especially i
 * One for hosting snapshots in the CI group
 * One repository group to tie the hosted repositories together with public repository proxies and provide a single URL for resolving artifacts
 
-AProx simplifies this a bit by allowing you to configure hosted repositories to store release artifacts, snapshot artifacts, or **both**. It's not enough to completely eliminate this tedium (check out the [Autoprox add-on](autoprox.html) to completely eliminate this tedium), but in these environments every little bit can help.
+Indy simplifies this a bit by allowing you to configure hosted repositories to store release artifacts, snapshot artifacts, or **both**. It's not enough to completely eliminate this tedium (check out the [Autoprox add-on](autoprox.html) to completely eliminate this tedium), but in these environments every little bit can help.
 
 #### Flexible storage locations (directories)
 
-Perhaps you have filled your disk with proxied remote artifacts. Perhaps you need a RAID array to host your new hotness and make sure nothing happens to it. Perhaps you've got a networked filesystem and a ton of AProx instances around the globe that all share the same hosted artifacts. Perhaps for *some* of your hosted repositories, you want to make sure their content is as safe as safe can be, for the next 10 years or more...while for others, their content could go up in a puff of smoke tomorrow without prompting much more than a slight shrug.
+Perhaps you have filled your disk with proxied remote artifacts. Perhaps you need a RAID array to host your new hotness and make sure nothing happens to it. Perhaps you've got a networked filesystem and a ton of Indy instances around the globe that all share the same hosted artifacts. Perhaps for *some* of your hosted repositories, you want to make sure their content is as safe as safe can be, for the next 10 years or more...while for others, their content could go up in a puff of smoke tomorrow without prompting much more than a slight shrug.
 
-There are any number of reasons why you might need to specify where you store hosted artifacts. With AProx, you can configure each hosted repository to store its artifacts on a different disk if you want to.
+There are any number of reasons why you might need to specify where you store hosted artifacts. With Indy, you can configure each hosted repository to store its artifacts on a different disk if you want to.
 
 ### How to Setup a Hosted Repository
 

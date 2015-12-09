@@ -1,10 +1,10 @@
 ---
-title: "REST API: AProx Statistic Functions"
+title: "REST API: Indy Statistic Functions"
 ---
 
 ### Contents
 
-**NOTE:** These functions are more about the features of a given AProx instance, not about content statistics. The corresponding URL base-path may change in the future to better reflect this (and avoid confusion in the context of a possible future statistics add-on). If this happens, the url path `/api/stats` will likely be deprecated in favor of two new, clearer paths (one for these functions, one for the statistics add-on).
+**NOTE:** These functions are more about the features of a given Indy instance, not about content statistics. The corresponding URL base-path may change in the future to better reflect this (and avoid confusion in the context of a possible future statistics add-on). If this happens, the url path `/api/stats` will likely be deprecated in favor of two new, clearer paths (one for these functions, one for the statistics add-on).
 
 * [Version Info](#version)
 * [Add-Ons](#addon)
@@ -13,9 +13,9 @@ title: "REST API: AProx Statistic Functions"
 
 ### Version Information
 
-AProx is designed to respond to a **GET** request on `/api/stats/version-info` with its version, timestamp it was built, user-id of the person who built it, and the commit-id from which it was built. In the web UI, this information is used to render links for reporting issues, browsing code, etc.
+Indy is designed to respond to a **GET** request on `/api/stats/version-info` with its version, timestamp it was built, user-id of the person who built it, and the commit-id from which it was built. In the web UI, this information is used to render links for reporting issues, browsing code, etc.
 
-However, it also makes a handy way to monitor AProx to ensure it is responding to requests. The response you receive will look like this:
+However, it also makes a handy way to monitor Indy to ensure it is responding to requests. The response you receive will look like this:
 
     $ curl -i http://localhost:8080/api/stats/version-info
     HTTP/1.1 200 OK
@@ -156,4 +156,4 @@ For completeness, it's worth mentioning that a **GET** request to the `/api/stat
       } ]
     };
 
-If you wanted to construct an alternative [angular.js](http://www.angularjs.org) UI for AProx, this Javascript might be useful to you.
+If you wanted to construct an alternative [angular.js](http://www.angularjs.org) UI for Indy, this Javascript might be useful to you.

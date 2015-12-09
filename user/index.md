@@ -1,5 +1,5 @@
 ---
-title: "AProx User's Guide"
+title: "Indy User's Guide"
 ---
 
 ### Basics
@@ -17,7 +17,7 @@ title: "AProx User's Guide"
 
 ### Features and Add-Ons
 
-AProx provides various add-ons that supplement the core functionality. For the full list, with links to documentation on each, take a look here:
+Indy provides various add-ons that supplement the core functionality. For the full list, with links to documentation on each, take a look here:
 
 * [Feature Documentation](addons/index.html)
 

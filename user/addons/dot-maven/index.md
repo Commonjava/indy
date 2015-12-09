@@ -4,7 +4,7 @@ title: "dotMaven WebDAV/Settings Add-On"
 
 ### Getting Started: Mount Up!
 
-You can mount the dotMaven view of your AProx server using the URL:
+You can mount the dotMaven view of your Indy server using the URL:
 
     http://localhost:8080/mavdav
 
@@ -25,7 +25,7 @@ Using the Linux `davfs2` package, you can mount dotMaven with a command like thi
 
 If you've ever used a repository manager, you're familiar with the Maven `settings.xml` file. The first thing you always have to do after setting up your shiny new repository manager is go configure a `<mirror/>` in your settings, so Maven knows to use the proxy location instead of hitting the central repository directly. Ugh, editing XML!
 
-To make life easier, dotMaven delivers Maven `settings.xml` files that are generated specifically for use with each and every repository available on your AProx server. You can access these generated settings files directly, using a HTTP **GET** request, or you can access them via a mounted WebDAV directory. 
+To make life easier, dotMaven delivers Maven `settings.xml` files that are generated specifically for use with each and every repository available on your Indy server. You can access these generated settings files directly, using a HTTP **GET** request, or you can access them via a mounted WebDAV directory. 
 
 For example, you might use the default `public` repository group like this:
 
@@ -68,7 +68,7 @@ For example:
 
 ### WebDAV for Your Stored Artifacts
 
-The dotMaven AProx add-on aims to give you a filesystem mount that you can browse to see what content AProx has cached (or is hosting). Sometimes this can be a convenient way to quickly look at what a certain POM or metadata file contains, in your native text editor. This is a read-only view of the content AProx manages, and as such there really isn't too much to add.
+The dotMaven Indy add-on aims to give you a filesystem mount that you can browse to see what content Indy has cached (or is hosting). Sometimes this can be a convenient way to quickly look at what a certain POM or metadata file contains, in your native text editor. This is a read-only view of the content Indy manages, and as such there really isn't too much to add.
 
 ### Client APIs
 

@@ -48,31 +48,31 @@ This leaves the Java client API and the REST API. In both cases, the user intera
 
 If you use Apache Maven, you'll need the following dependencies in order to use this add-on:
 
-    <!-- The core of the AProx client API -->
+    <!-- The core of the Indy client API -->
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-client-core-java</artifactId>
-      <version>${aproxVersion}</version>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-client-core-java</artifactId>
+      <version>${indyVersion}</version>
     </dependency>
-    <!-- AProx client API module for promote -->
+    <!-- Indy client API module for promote -->
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-promote-client-java</artifactId>
-      <version>${aproxVersion}</version>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-promote-client-java</artifactId>
+      <version>${indyVersion}</version>
     </dependency>
 
 #### Promote a single file [PATH-BASED]
 
 In Java:
 
-    Aprox client = new Aprox("http://localhost:8080/api", 
-                             new AproxPromoteClientModule() );
+    Indy client = new Indy("http://localhost:8080/api", 
+                             new IndyPromoteClientModule() );
     
     String path = "org/commonjava/commonjava/4/commonjava-4.pom";
     StoreKey sourceRepo = new StoreKey( StoreType.hosted, "my-build" );
     StoreKey targetRepo = new StoreKey( StoreType.hosted, "releases" );
     
-    PathsPromoteResult result = client.module(AproxPromoteClientModule.class)
+    PathsPromoteResult result = client.module(IndyPromoteClientModule.class)
           .promoteByPath( new PathsPromoteRequest( sourceRepo, targetRepo, path ) );
 
 Pure REST:
@@ -120,14 +120,14 @@ To promote all the content in a given repository, simply leave out the paths whe
 
 In Java:
 
-    Aprox client = new Aprox("http://localhost:8080/api", 
-                             new AproxPromoteClientModule() );
+    Indy client = new Indy("http://localhost:8080/api", 
+                             new IndyPromoteClientModule() );
     
     //String path = "org/commonjava/commonjava/4/commonjava-4.pom";
     StoreKey sourceRepo = new StoreKey( StoreType.hosted, "my-build" );
     StoreKey targetRepo = new StoreKey( StoreType.hosted, "releases" );
     
-    PathsPromoteResult result = client.module(AproxPromoteClientModule.class)
+    PathsPromoteResult result = client.module(IndyPromoteClientModule.class)
           .promoteByPath( new PathsPromoteRequest( sourceRepo, 
                                         targetRepo /*, path*/ ) );
 
@@ -174,14 +174,14 @@ To promote a given repository to a target group, you use a slightly different re
 
 In Java:
 
-    Aprox client = new Aprox("http://localhost:8080/api", 
-                             new AproxPromoteClientModule() );
+    Indy client = new Indy("http://localhost:8080/api", 
+                             new IndyPromoteClientModule() );
     
     //String path = "org/commonjava/commonjava/4/commonjava-4.pom";
     StoreKey sourceRepo = new StoreKey( StoreType.hosted, "my-build" );
     String targetGroup = "releases";
     
-    GroupPromoteResult result = client.module(AproxPromoteClientModule.class)
+    GroupPromoteResult result = client.module(IndyPromoteClientModule.class)
           .promoteToGroup( new GroupPromoteRequest( sourceRepo, 
                                         targetGroup ) );
 
@@ -227,7 +227,7 @@ Purging the source repository (removing paths that haven been promoted) is a sim
 
 In Java, use the fluent PromoteRequest API and call the `setPurgeSource()` method:
 
-    PromoteResult result = client.module(AproxPromoteClientModule.class)
+    PromoteResult result = client.module(IndyPromoteClientModule.class)
           .promote( new PromoteRequest( sourceRepo, targetRepo )
                             .setPurgeSource( true ) );
 
@@ -249,7 +249,7 @@ Changing your request to perform a dry run and calculate the changes your promot
 
 In Java, use the fluent PathsPromoteRequest API and call the `setDryRun()` method:
 
-    PathsPromoteResult result = client.module(AproxPromoteClientModule.class)
+    PathsPromoteResult result = client.module(IndyPromoteClientModule.class)
           .promote( new GroupPromoteRequest( sourceRepo, "releases" )
                             .setDryRun( true ) );
 
@@ -267,7 +267,7 @@ The dry run behavior is much the same for group-based requests as it is for path
 
 In Java, use the fluent GroupPromoteRequest API and call the `setDryRun()` method:
 
-    GroupPromoteResult result = client.module(AproxPromoteClientModule.class)
+    GroupPromoteResult result = client.module(IndyPromoteClientModule.class)
           .promoteToGroup( new PathsPromoteRequest( sourceRepo, targetRepo )
                             .setDryRun( true ) );
 
@@ -287,12 +287,12 @@ Promotion requests are not transactional, so the result you receive will give tw
 
 Java:
 
-    Aprox client = new Aprox("http://localhost:8080/api", 
-                             new AproxPromoteClientModule() );
+    Indy client = new Indy("http://localhost:8080/api", 
+                             new IndyPromoteClientModule() );
     
     PathsPromoteResult result = // from previous promotion request...
     
-    PathsPromoteResult secondResult = client.module(AproxPromoteClientModule.class)
+    PathsPromoteResult secondResult = client.module(IndyPromoteClientModule.class)
           .resumePathPromote( result );
     
 REST:
@@ -344,12 +344,12 @@ When performing a path-based rollback, it's often helpful to have the original p
 
 Java:
 
-    Aprox client = new Aprox("http://localhost:8080/api", 
-                             new AproxPromoteClientModule() );
+    Indy client = new Indy("http://localhost:8080/api", 
+                             new IndyPromoteClientModule() );
     
     PathsPromoteResult result = // from previous promotion request...
     
-    PathsPromoteResult secondResult = client.module(AproxPromoteClientModule.class)
+    PathsPromoteResult secondResult = client.module(IndyPromoteClientModule.class)
           .rollbackPathPromote( result );
     
 REST:
@@ -384,8 +384,8 @@ With a group-based rollback, you can either use the result from the previous cal
 
 Java:
 
-    Aprox client = new Aprox("http://localhost:8080/api", 
-                             new AproxPromoteClientModule() );
+    Indy client = new Indy("http://localhost:8080/api", 
+                             new IndyPromoteClientModule() );
     
     GroupPromoteResult result;
 
@@ -397,7 +397,7 @@ Java:
     result = new GroupPromoteResult( new GroupPromoteRequest( sourceRepo, targetGroup ) );
     
     // anyhow, just call the rollback!
-    GroupPromoteResult secondResult = client.module(AproxPromoteClientModule.class)
+    GroupPromoteResult secondResult = client.module(IndyPromoteClientModule.class)
           .rollbackGroupPromote( result );
     
 REST:
@@ -458,7 +458,7 @@ One extra piece you may notice above is the `validationParameters` map. This is 
 
 #### Rules are Groovy Scripts
 
-A validation rule is just a Groovy script dropped in your `${aprox.home}/var/lib/aprox/data/promote/rules` directory. Your script should define a class implementing the `ValidationRule` interfacewhich contists of a single method:
+A validation rule is just a Groovy script dropped in your `${indy.home}/var/lib/indy/data/promote/rules` directory. Your script should define a class implementing the `ValidationRule` interfacewhich contists of a single method:
 
     String validate( ValidationRequest request ) throws Exception;
 
@@ -466,7 +466,7 @@ If the `validate()` method returns `null`, it is considered to have passed valid
 
 #### I'll Just Need Some Tools...
 
-Any non-trivial validation rule will probably need some access to AProx infrastructure in order to do its job. Maybe it needs to access existing content in the target repository (perhaps in order to validate that runtime dependencies are available?), or maybe it needs to verify that some *other* repository group that contains the target as its constituent doesn't already contain the promotable content.
+Any non-trivial validation rule will probably need some access to Indy infrastructure in order to do its job. Maybe it needs to access existing content in the target repository (perhaps in order to validate that runtime dependencies are available?), or maybe it needs to verify that some *other* repository group that contains the target as its constituent doesn't already contain the promotable content.
 
 For these purposes, the validation framework exposes selected operations from ContentManager (retrieval of existing content) and StoreDataManager (retrieval of existing store definitions) to validation rules for their use.
 

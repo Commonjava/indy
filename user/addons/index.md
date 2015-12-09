@@ -1,10 +1,10 @@
 ---
-title: "AProx Add-Ons"
+title: "Indy Add-Ons"
 ---
 
-AProx provides the following add-ons, which appear in various deployment flavors. All add-ons are available in the `savant` deployment flavor.
+Indy provides the following add-ons, which appear in various deployment flavors. All add-ons are available in the `savant` deployment flavor.
 
-**NOTE:** While many of these add-ons are listed as stable, you should remember that AProx is considered a pre-1.0 project. As such, it's possible these add-ons may be refactored prior to the 1.0 release without preserving backward compatibility. Refactoring events this large should be rare, but you've been warned!
+**NOTE:** While many of these add-ons are listed as stable, you should remember that Indy is considered a pre-1.0 project. As such, it's possible these add-ons may be refactored prior to the 1.0 release without preserving backward compatibility. Refactoring events this large should be rare, but you've been warned!
 
 ### Stable
 

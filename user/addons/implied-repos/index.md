@@ -14,26 +14,26 @@ And your build fails.
 
 The key point to remember in this scenario is that your repository manager is serving up the dependency POM that declares the new repository. This means your repository manager sees the POM before Maven does, and could use its contents to trigger some sort of event...
 
-This is where the Implied Repositories add-on comes into play. Each file that gets cached in AProx triggers an event, which add-ons can listen for. In this case, for each POM stored, Implied Repositories parses it and looks for any repository declarations it might contain. If it finds one, creates a new remote repository in AProx for it. Implied Repositories then tags the "source" repository (where the POM came from) with a piece of metadata noting that it now "implies" the repository declared in the POM. This way, any time the "source" repository is added to the membership of an AProx group, any implied repositories are also added.
+This is where the Implied Repositories add-on comes into play. Each file that gets cached in Indy triggers an event, which add-ons can listen for. In this case, for each POM stored, Implied Repositories parses it and looks for any repository declarations it might contain. If it finds one, creates a new remote repository in Indy for it. Implied Repositories then tags the "source" repository (where the POM came from) with a piece of metadata noting that it now "implies" the repository declared in the POM. This way, any time the "source" repository is added to the membership of an Indy group, any implied repositories are also added.
 
 ### Growing Pains
 
 This add-on is new, so there are still some kinks to be worked out. One of the most important questions is how to automatically remove an implied repository from a group when the repository that implied it is removed.
 
-So, while Implied Repositories will be included in releases of the AProx Savant distribution flavor for any version beyond 0.20.0, it will not be enabled by default.
+So, while Implied Repositories will be included in releases of the Indy Savant distribution flavor for any version beyond 0.20.0, it will not be enabled by default.
 
 #### Enabling Implied Repositories
 
 To enable this feature in your Savant deployment, add the following configuration:
 
-`etc/aprox/conf.d/implied-repos.conf`:
+`etc/indy/conf.d/implied-repos.conf`:
 
     [implied-repos]
     enabled=true
 
 ### Java Client API
 
-The Implied Repositories add-on provides a very small client API module, `ImpliedRepoClientModule`. This module is simply responsible for managing the repository implication metadata attached to store definitions. As such, it uses the AproxStoresClientModule to load and update store definitions, and merely reads metadata objects from existing store definitions. You'll probably need to use it in conjunction with the AproxStoresClientModule, available via the `Aprox.stores()` convenience method.
+The Implied Repositories add-on provides a very small client API module, `ImpliedRepoClientModule`. This module is simply responsible for managing the repository implication metadata attached to store definitions. As such, it uses the IndyStoresClientModule to load and update store definitions, and merely reads metadata objects from existing store definitions. You'll probably need to use it in conjunction with the IndyStoresClientModule, available via the `Indy.stores()` convenience method.
 
 Using the Implied Repositories client module, you can retrieve and even modify the list of implied repositories for a given "source" repository.
 
@@ -41,24 +41,24 @@ Using the Implied Repositories client module, you can retrieve and even modify t
 
 If you use Apache Maven, you'll need the following dependencies in order to use this add-on:
 
-    <!-- The core of the AProx client API -->
+    <!-- The core of the Indy client API -->
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-client-core-java</artifactId>
-      <version>${aproxVersion}</version>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-client-core-java</artifactId>
+      <version>${indyVersion}</version>
     </dependency>
-    <!-- AProx client API module for implied-repos -->
+    <!-- Indy client API module for implied-repos -->
     <dependency>
-      <groupId>org.commonjava.aprox</groupId>
-      <artifactId>aprox-implied-repos-client-java</artifactId>
-      <version>${aproxVersion}</version>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-implied-repos-client-java</artifactId>
+      <version>${indyVersion}</version>
     </dependency>
 
 #### Get Repositories Implied by This One
 
 To retrieve the list of stores (repositories and groups) that are known to be implied by the given repository, you would use something like the following:
 
-    Aprox client = new Aprox( "http://localhost:8080/api",
+    Indy client = new Indy( "http://localhost:8080/api",
                               new ImpliedRepoClientModule() );
     
     // StoreKey is an aggregation of type and name.
@@ -72,7 +72,7 @@ To retrieve the list of stores (repositories and groups) that are known to be im
 
 To retrieve the list of stores (repositories and groups) that are known to imply the given repository, you would use something like the following:
 
-    Aprox client = new Aprox( "http://localhost:8080/api",
+    Indy client = new Indy( "http://localhost:8080/api",
                               new ImpliedRepoClientModule() );
     
     // StoreKey is an aggregation of type and name.
@@ -86,7 +86,7 @@ To retrieve the list of stores (repositories and groups) that are known to imply
 
 If you want to forcibly setup an implication relationship between stores, you can use something like the following:
 
-    Aprox client = new Aprox( "http://localhost:8080/api",
+    Indy client = new Indy( "http://localhost:8080/api",
                               new ImpliedRepoClientModule() );
     
     RemoteRepository central = client.stores().load(
