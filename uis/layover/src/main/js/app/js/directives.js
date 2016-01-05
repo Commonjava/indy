@@ -102,6 +102,13 @@ directives.directive('apGroupConstituent', ['$timeout', function(timer) {
           scope.storeUtils.sortEndpoints(scope.raw.available);
         };
         
+        if ( scope.isDisabled(scope.constituent) ){
+          element.addClass("disabled-store");
+        }
+        else{
+          element.addClass("enabled-store");
+        }
+
         scope.promote = function(){
           var idx = scope.store.constituents.indexOf(scope.constituent);
           if ( idx > 0){
@@ -146,6 +153,13 @@ directives.directive('apGroupAvailable', ['$timeout', function( timer ) {
         var key = scope.available.type + ':' + scope.available.name;
         var idx = scope.store.constituents.indexOf(key);
         var gKey = 'group:' + scope.raw.name;
+
+        if ( scope.isDisabled(key) ){
+          element.addClass("disabled-store");
+        }
+        else{
+          element.addClass("enabled-store");
+        }
         
         if ( idx > -1 ){
           element.addClass('hidden');

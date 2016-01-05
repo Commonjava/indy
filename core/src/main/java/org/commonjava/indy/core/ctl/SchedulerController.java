@@ -7,6 +7,9 @@ import org.commonjava.indy.core.expire.ExpirationSet;
 import org.commonjava.indy.core.expire.IndySchedulerException;
 import org.commonjava.indy.core.expire.ScheduleManager;
 import org.commonjava.indy.core.expire.StoreKeyMatcher;
+import org.commonjava.indy.data.IndyDataException;
+import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.quartz.impl.matchers.GroupMatcher;
 
@@ -20,13 +23,17 @@ public class SchedulerController
     @Inject
     private ScheduleManager scheduleManager;
 
+    @Inject
+    private StoreDataManager storeDataManager;
+
     protected SchedulerController()
     {
     }
 
-    public SchedulerController( ScheduleManager scheduleManager )
+    public SchedulerController( ScheduleManager scheduleManager, StoreDataManager storeDataManager )
     {
         this.scheduleManager = scheduleManager;
+        this.storeDataManager = storeDataManager;
     }
 
     public Expiration getStoreDisableTimeout( StoreKey storeKey )
@@ -34,11 +41,27 @@ public class SchedulerController
     {
         try
         {
-            return scheduleManager.findSingleExpiration( new StoreKeyMatcher( storeKey, StoreEnablementListener.DISABLE_TIMEOUT ) );
+            Expiration expiration = scheduleManager.findSingleExpiration(
+                    new StoreKeyMatcher( storeKey, StoreEnablementListener.DISABLE_TIMEOUT ) );
+
+            if ( expiration == null )
+            {
+                ArtifactStore store = storeDataManager.getArtifactStore( storeKey );
+                if ( store != null && store.isDisabled() )
+                {
+                    expiration = indefiniteDisable( store );
+                }
+            }
+
+            return expiration;
         }
         catch ( IndySchedulerException e )
         {
             throw new IndyWorkflowException( "Failed to load disable-timeout schedule for: %s. Reason: %s", e, storeKey, e.getMessage() );
+        }
+        catch ( IndyDataException e )
+        {
+            throw new IndyWorkflowException( "Failed to load store: %s to check for indefinite disable. Reason: %s", e, storeKey, e.getMessage() );
         }
     }
 
@@ -47,13 +70,31 @@ public class SchedulerController
     {
         try
         {
-            return scheduleManager.findMatchingExpirations(
+            ExpirationSet expirations = scheduleManager.findMatchingExpirations(
                     GroupMatcher.groupEndsWith( StoreEnablementListener.DISABLE_TIMEOUT ) );
+
+            storeDataManager.getAllArtifactStores().forEach( (store)->{
+                if ( store.isDisabled() )
+                {
+                    expirations.getItems().add( indefiniteDisable( store ) );
+                }
+            });
+
+            return expirations;
         }
         catch ( IndySchedulerException e )
         {
             throw new IndyWorkflowException( "Failed to load disable-timeout schedules. Reason: %s", e, e.getMessage() );
         }
+        catch ( IndyDataException e )
+        {
+            throw new IndyWorkflowException( "Failed to load stores to check for indefinite disable. Reason: %s", e, e.getMessage() );
+        }
+    }
+
+    private Expiration indefiniteDisable( ArtifactStore store )
+    {
+        return new Expiration( ScheduleManager.groupName( store.getKey(), StoreEnablementListener.DISABLE_TIMEOUT ), StoreEnablementListener.DISABLE_TIMEOUT );
     }
 
 }

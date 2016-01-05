@@ -23,7 +23,7 @@
 		<span class="key">{{raw.name}}</span>
 	</div>
 	<div class="detail-field">
-		<span>{{!enabled | checkmark}}</span>
+		<span>{{raw.enabled | checkmark}}</span>
 		<label>Enabled?</label>
 		<span class="hint" ng-if="!raw.enabled && raw.disableExpiration">Set to automatically re-enable at {{raw.disableExpiration}}</span>
 	</div>

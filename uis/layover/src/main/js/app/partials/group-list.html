@@ -41,8 +41,8 @@
         <div ng-repeat="store in listing.items | filter:query | orderBy:orderProp" class="list-item store-listing-item listing-item-start">
 					<div class="fieldset-caption">
 					    <a href="#/group/view/{{store.name}}">
-                            <span class="enabled-store" ng-if="!isDisabled">{{store.key}}</span>
-                            <span class="disabled-store" ng-if="isDisabled">{{store.key}}</span>
+                            <span class="enabled-store" ng-if="!isDisabled(store.key)">{{store.key}}</span>
+                            <span class="disabled-store" ng-if="isDisabled(store.key)">{{store.key}}</span>
                         </a>
 					</div>
 					<div class="fieldset">

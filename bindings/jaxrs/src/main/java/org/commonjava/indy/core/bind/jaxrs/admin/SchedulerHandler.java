@@ -65,6 +65,6 @@ public class SchedulerHandler
             throwError( e );
         }
 
-        return null;
+        throw new WebApplicationException( "Impossible Error", 500 );
     }
 }

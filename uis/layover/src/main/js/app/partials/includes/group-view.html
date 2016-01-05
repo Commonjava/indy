@@ -46,7 +46,10 @@
 <div class="fieldset">
 	<ol class="detail-value detail-value-list">
 	  <li ng-if="raw.constituentHrefs" ng-repeat="constituent in store.constituents" class="detail-value-list-item">
-	    <a ng-if="raw.constituentHrefs[constituent].detailHref" ng-href="{{raw.constituentHrefs[constituent].detailHref}}">{{constituent}}</a>
+	    <a ng-if="raw.constituentHrefs[constituent].detailHref" ng-href="{{raw.constituentHrefs[constituent].detailHref}}">
+			<span class="enabled-store" ng-if="!isDisabled(constituent)">{{constituent}}</span>
+			<span class="disabled-store" ng-if="isDisabled(constituent)">{{constituent}}</span>
+		</a>
 	    <span ng-if="!raw.constituentHrefs[constituent].detailHref">{{constituent}}</span>
 	  </li>
 	</ol>

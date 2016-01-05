@@ -65,7 +65,7 @@ indyServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
       var self=this;
 
       scope.enable = function(){
-        console.log("Enable: " + scope.raw.name + "(enabled already? " + scope.raw.enabled);
+        console.log("Enable: " + scope.raw.name + " (enabled already? " + scope.raw.enabled + ")");
         if ( !scope.raw.enabled ){
           if ( !scope.store.metadata ){
             scope.store.metadata = {};
@@ -76,6 +76,7 @@ indyServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
 
           scope.store.disabled = false;
           scope.raw.enabled = true;
+          console.log("Set enabled == " + scope.raw.enabled + " in raw metadata");
 
           if ( fixups && fixups.save){
             fixups.save(scope);
@@ -90,7 +91,7 @@ indyServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
       };
       
       scope.disable = function(){
-        console.log("Disable: " + scope.raw.name + "(enabled already? " + scope.raw.enabled);
+        console.log("Disable: " + scope.raw.name + " (enabled already? " + scope.raw.enabled + ")");
         if ( scope.raw.enabled ){
           if ( !scope.store.metadata ){
             scope.store.metadata = {};
@@ -101,6 +102,7 @@ indyServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
 
           scope.store.disabled = true;
           scope.raw.enabled = false;
+          console.log("Set enabled == " + scope.raw.enabled + " in raw metadata");
 
           if ( fixups && fixups.save){
             fixups.save(scope);
@@ -444,22 +446,25 @@ indyServices.factory('NfcSvc', ['$resource',
 indyServices.factory('StoreDisableSvc', ['$resource',
   function($resource) {
     var self = this;
-    return {
-      resource: $resource(appPath('/api/admin/schedule/store/:type/:name/disable-timeout'), {}, {
+    var obj = {};
+    obj.storeTimeouts = $resource(appPath('/api/admin/schedule/store/:type/:name/disable-timeout'), {}, {
         query: { method : 'GET', params: {}, isArray : false }
-      }),
+    });
 
-      allResources: $resource(appPath('/api/admin/schedule/store/all/disable-timeout'), {}, {
+    obj.allTimeouts = $resource(appPath('/api/admin/schedule/store/all/disable-timeout'), {}, {
         query: {method: 'GET', params: {}, isArray: false}
-      }),
+    });
 
-      setEnableAttributes: function(raw, store, StoreUtilSvc){
+    obj.setEnableAttributes = function(raw, store, StoreUtilSvc){
+          console.log("Store:\n\n" + JSON.stringify(store));
           var disabled = store.disabled === undefined ? false : store.disabled;
+          console.log( "is " + store.key + " disabled? " + disabled);
           raw.enabled = !disabled;
           if ( disabled ){
             var type = StoreUtilSvc.typeFromKey(store.key);
-            StoreDisableSvc.resource.query({type: type, name: raw.name},
+            obj.storeTimeouts.query({type: type, name: raw.name},
               function(exp){
+                console.log("Got expiration: " + JSON.stringify(exp) + " for: " + type + " with name: " + raw.name);
                 raw.disableExpiration = exp.expiration;
               },
               function(error){
@@ -467,8 +472,38 @@ indyServices.factory('StoreDisableSvc', ['$resource',
               }
             );
           }
-      },
     };
+
+    obj.setDisabledMap = function(scope){
+        scope.disabledMap = {};
+
+        obj.allTimeouts.query({},
+          function(listing){
+            console.log("LISTING: " + JSON.stringify(listing));
+            if ( listing.items ) {
+              for(var i=0; i<listing.items.length; i++){
+                var item = listing.items[i];
+                var parts = item.group.split(':');
+                var key = parts[0] + ':' + parts[1];
+                console.log("DISABLED: " + key + " (until: " + item.expiration + ")");
+                scope.disabledMap[key] = item.expiration;
+              }
+            }
+          },
+          function(error){
+            console.log("ERROR: " + JSON.stringify(error));
+          }
+        );
+
+        scope.isDisabled = function(key){
+            var result = key in scope.disabledMap;
+            console.log( "Is " + key + " disabled? " + result);
+            return result;
+        };
+
+    };
+
+    return obj;
 }]);
 
 indyServices.factory('AllStoreDisableSvc', ['$resource',

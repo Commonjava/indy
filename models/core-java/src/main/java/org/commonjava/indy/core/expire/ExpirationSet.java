@@ -12,15 +12,18 @@ import java.util.function.Consumer;
  * Created by jdcasey on 1/4/16.
  */
 public class ExpirationSet
-    implements Iterable<Expiration>
+        implements Iterable<Expiration>
 {
     private Set<Expiration> items;
 
-    public ExpirationSet(){}
+    public ExpirationSet()
+    {
+        items = new HashSet<>();
+    }
 
     public ExpirationSet( Expiration... items )
     {
-        this.items = new HashSet<>( Arrays.asList( items ));
+        this.items = new HashSet<>( Arrays.asList( items ) );
     }
 
     public ExpirationSet( Set<Expiration> items )
@@ -59,6 +62,6 @@ public class ExpirationSet
     @Override
     public Spliterator<Expiration> spliterator()
     {
-        return items == null ? Collections.<Expiration> emptySet().spliterator() : items.spliterator();
+        return items == null ? Collections.<Expiration>emptySet().spliterator() : items.spliterator();
     }
 }

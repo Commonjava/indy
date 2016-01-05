@@ -23,6 +23,12 @@ public class Expiration
         this.expiration = expiration;
     }
 
+    public Expiration( String group, String name )
+    {
+        this.group = group;
+        this.name = name;
+    }
+
     public String getName()
     {
         return name;
