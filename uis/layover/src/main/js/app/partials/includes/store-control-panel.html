@@ -16,6 +16,12 @@
 
 -->
 <div class="cp-row-group" ng-if="mode == 'view'">
+  <div class="cp-row" ng-if="raw.enabled==false">
+    <button ng-click="enable()">Enable</button>
+  </div>
+  <div class="cp-row" ng-if="raw.enabled == true">
+    <button ng-click="disable()">Disable</button>
+  </div>
   <div class="cp-row">
     <button ng-click="edit()">Edit</button>
 	  <button ng-click="createNew()">New...</button>

@@ -43,7 +43,7 @@ indyControllers.controller('NavCtl', ['$scope', function($scope){
   }
 }]);
 
-indyControllers.controller('RemoteListCtl', ['$scope', '$location', 'RemoteSvc', 'StoreUtilSvc', 'ControlSvc', function($scope, $location, RemoteSvc, StoreUtilSvc, ControlSvc) {
+indyControllers.controller('RemoteListCtl', ['$scope', '$location', 'RemoteSvc', 'StoreUtilSvc', 'ControlSvc', 'StoreDisableSvc', function($scope, $location, RemoteSvc, StoreUtilSvc, ControlSvc, StoreDisableSvc) {
     ControlSvc.addListingControlHrefs($scope, $location);
   
     $scope.listing = RemoteSvc.resource.query({}, function(listing){
@@ -53,13 +53,22 @@ indyControllers.controller('RemoteListCtl', ['$scope', '$location', 'RemoteSvc',
         item.storeHref = StoreUtilSvc.storeHref(item.key);
         item.name = StoreUtilSvc.nameFromKey(item.key);
         item.description = StoreUtilSvc.defaultDescription(item.description);
+
+        var disabled = item.disabled !== undefined;
+        item.enabled = !disabled;
+        if ( disabled ){
+            StoreDisableSvc.resource.query({type: 'remote', name: item.name}, function(exp){
+                item.disableExpiration = exp.expiration;
+            });
+        }
+
       }
     });
     $scope.storeUtils = StoreUtilSvc;
     $scope.orderProp = 'key';
   }]);
 
-indyControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 'RemoteSvc', 'StoreUtilSvc', 'ControlSvc', function($scope, $routeParams, $location, RemoteSvc, StoreUtilSvc, ControlSvc) {
+indyControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 'RemoteSvc', 'StoreUtilSvc', 'ControlSvc', 'StoreDisableSvc', function($scope, $routeParams, $location, RemoteSvc, StoreUtilSvc, ControlSvc, StoreDisableSvc) {
   $scope.mode = StoreUtilSvc.resourceMode();
   $scope.storeUtils = StoreUtilSvc;
 
@@ -99,6 +108,8 @@ indyControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 
 
       $scope.raw.use_x509 = useX509;
 
+      StoreDisableSvc.setEnableAttributes($scope.raw, store, StoreUtilSvc);
+
       var useProxy = store.proxy_host !== undefined;
       $scope.raw.use_proxy = useProxy;
 
@@ -111,6 +122,7 @@ indyControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 
     });
   }
   else if ($scope.mode == 'new'){
+    $scope.raw.new = true;
     $scope.store = {
       url: '',
       timeout_seconds: 60,
@@ -131,6 +143,8 @@ indyControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 
 
       $scope.raw.use_x509 = useX509;
 
+      StoreDisableSvc.setEnableAttributes($scope.raw, store, StoreUtilSvc);
+
       var useProxy = store.proxy_host !== undefined;
       $scope.raw.use_proxy = useProxy;
 
@@ -145,7 +159,7 @@ indyControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 
 
 }]);
 
-indyControllers.controller('HostedListCtl', ['$scope', '$location', 'HostedSvc', 'StoreUtilSvc', 'ControlSvc', function($scope, $location, HostedSvc, StoreUtilSvc, ControlSvc) {
+indyControllers.controller('HostedListCtl', ['$scope', '$location', 'HostedSvc', 'StoreUtilSvc', 'ControlSvc', 'StoreDisableSvc', function($scope, $location, HostedSvc, StoreUtilSvc, ControlSvc, StoreDisableSvc) {
     ControlSvc.addListingControlHrefs($scope, $location);
     
     $scope.hostedOptionLegend = StoreUtilSvc.hostedOptionLegend();
@@ -158,6 +172,14 @@ indyControllers.controller('HostedListCtl', ['$scope', '$location', 'HostedSvc',
         item.name = StoreUtilSvc.nameFromKey(item.key);
         item.hostedOptions = StoreUtilSvc.hostedOptions(item);
         item.description = StoreUtilSvc.defaultDescription(item.description);
+
+        var disabled = item.disabled !== undefined;
+        item.enabled = !disabled;
+        if ( disabled ){
+            StoreDisableSvc.resource.query({type: 'hosted', name: item.name}, function(exp){
+                item.disableExpiration = exp.expiration;
+            });
+        }
       }
     });
 
@@ -165,7 +187,7 @@ indyControllers.controller('HostedListCtl', ['$scope', '$location', 'HostedSvc',
     $scope.orderProp = 'key';
   }]);
 
-indyControllers.controller('HostedCtl', ['$scope', '$routeParams', '$location', 'HostedSvc', 'StoreUtilSvc', 'ControlSvc', function($scope, $routeParams, $location, HostedSvc, StoreUtilSvc, ControlSvc) {
+indyControllers.controller('HostedCtl', ['$scope', '$routeParams', '$location', 'HostedSvc', 'StoreUtilSvc', 'ControlSvc', 'StoreDisableSvc', function($scope, $routeParams, $location, HostedSvc, StoreUtilSvc, ControlSvc, StoreDisableSvc) {
   $scope.mode = StoreUtilSvc.resourceMode();
   $scope.storeUtils = StoreUtilSvc;
 
@@ -203,11 +225,13 @@ indyControllers.controller('HostedCtl', ['$scope', '$routeParams', '$location', 
       $scope.raw.name = $scope.storeUtils.nameFromKey(store.key);
       $scope.raw.snapshotTimeoutSeconds = StoreUtilSvc.secondsToDuration(store.snapshotTimeoutSeconds);
       
-      
+      StoreDisableSvc.setEnableAttributes($scope.raw, store, StoreUtilSvc);
+
       $scope.controls( store );
     });
   }
   else if($scope.mode == 'new'){
+    $scope.raw.new = true;
     $scope.store = {
       allow_releases: true,
       allow_snapshots: true,
@@ -222,13 +246,27 @@ indyControllers.controller('HostedCtl', ['$scope', '$routeParams', '$location', 
       $scope.raw.storeHref = StoreUtilSvc.storeHref(store.key);
       $scope.raw.description = StoreUtilSvc.defaultDescription(store.description);
       
+      StoreDisableSvc.setEnableAttributes($scope.raw, store, StoreUtilSvc);
+
       $scope.controls(store);
     });
   }
 }]);
 
-indyControllers.controller('GroupListCtl', ['$scope', '$location', 'GroupSvc', 'StoreUtilSvc', 'ControlSvc', function($scope, $location, GroupSvc, StoreUtilSvc, ControlSvc) {
+indyControllers.controller('GroupListCtl', ['$q', '$scope', '$location', 'GroupSvc', 'StoreUtilSvc', 'ControlSvc', 'StoreDisableSvc', 'AllStoreDisableSvc', function($q, $scope, $location, GroupSvc, StoreUtilSvc, ControlSvc, StoreDisableSvc, AllStoreDisableSvc) {
     ControlSvc.addListingControlHrefs($scope, $location);
+
+    $scope.disabledMap = {};
+
+    $scope.disabledListing = AllStoreDisableSvc.resource.query({}, function(listing){
+      console.log(JSON.stringify(listing));
+      for(var i=0; i<listing.items.length; i++){
+        var item = listing.items[i];
+        var parts = item.group.split('\\s*[-:]\\s*');
+        var key = parts[0] + ':' + parts[1];
+        $scope.disabledMap[key] = item.expiration;
+      }
+    });
     
     $scope.listing = GroupSvc.resource.query({}, function(listing){
       for(var i=0; i<listing.items.length; i++){
@@ -241,6 +279,13 @@ indyControllers.controller('GroupListCtl', ['$scope', '$location', 'GroupSvc', '
         
         item.display = false;
         
+        var disabled = item.disabled !== undefined;
+        item.enabled = !disabled;
+        if ( disabled ){
+            StoreDisableSvc.resource.query({type: 'group', name: item.name}, function(exp){
+                item.disableExpiration = exp.expiration;
+            });
+        }
         var oldConstituents = item.constituents;
         item.constituents = [oldConstituents.length];
         for( var j=0; j<oldConstituents.length; j++ ){
@@ -256,13 +301,17 @@ indyControllers.controller('GroupListCtl', ['$scope', '$location', 'GroupSvc', '
         }
       }
     });
-    
+
     $scope.displayConstituents = function(item){
       item.display = true;
     };
     
     $scope.hideConstituents = function(item){
       item.display = false;
+    };
+
+    $scope.isDisabled = function(key){
+        return $scope.disabledMap.containsKey(key);
     };
     
     $scope.hideAll = function(){
@@ -276,7 +325,7 @@ indyControllers.controller('GroupListCtl', ['$scope', '$location', 'GroupSvc', '
     $scope.orderProp = 'key';
   }]);
 
-indyControllers.controller('GroupCtl', ['$scope', '$routeParams', '$location', 'GroupSvc', 'StoreUtilSvc', 'ControlSvc', 'AllEndpointsSvc', function($scope, $routeParams, $location, GroupSvc, StoreUtilSvc, ControlSvc, AllEndpointsSvc) {
+indyControllers.controller('GroupCtl', ['$scope', '$routeParams', '$location', 'GroupSvc', 'StoreUtilSvc', 'ControlSvc', 'AllEndpointsSvc', 'StoreDisableSvc', function($scope, $routeParams, $location, GroupSvc, StoreUtilSvc, ControlSvc, AllEndpointsSvc, StoreDisableSvc) {
   $scope.mode = StoreUtilSvc.resourceMode();
   $scope.storeUtils = StoreUtilSvc;
 
@@ -301,6 +350,8 @@ indyControllers.controller('GroupCtl', ['$scope', '$routeParams', '$location', '
     GroupSvc.resource.get({name: $routeParams.name}, function(store){
       $scope.raw.name = $scope.storeUtils.nameFromKey(store.key);
       
+      StoreDisableSvc.setEnableAttributes($scope.raw, store, StoreUtilSvc);
+
       if ( !store.constituents ){
         store.constituents = [];
       }
@@ -309,6 +360,7 @@ indyControllers.controller('GroupCtl', ['$scope', '$routeParams', '$location', '
     });
   }
   else if ($scope.mode == 'new'){
+    $scope.raw.new = true;
     $scope.store = {
       constituents: [],
     };
@@ -320,6 +372,12 @@ indyControllers.controller('GroupCtl', ['$scope', '$routeParams', '$location', '
       $scope.raw.name = StoreUtilSvc.nameFromKey(store.key);
       $scope.raw.storeHref = StoreUtilSvc.storeHref(store.key);
       $scope.raw.description = StoreUtilSvc.defaultDescription(store.description);
+
+      StoreDisableSvc.setEnableAttributes($scope.raw, store, StoreUtilSvc);
+
+      if ( !store.constituents ){
+        store.constituents = [];
+      }
 
       for(var i=0; i<store.constituents.length; i++){
         var item = store.constituents[i];
