@@ -17,6 +17,7 @@ package org.commonjava.indy.core.change;
 
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.change.event.ArtifactStorePostUpdateEvent;
 import org.commonjava.indy.change.event.IndyStoreErrorEvent;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.core.expire.IndySchedulerException;
@@ -32,14 +33,18 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import java.io.IOException;
 
-public class StoreErrorListener
+import static org.apache.commons.lang.StringUtils.isNotEmpty;
+
+@ApplicationScoped
+public class StoreEnablementListener
 {
 
-    private static final String DISABLE_TIMEOUT = "Disable-Timeout";
+    public static final String DISABLE_TIMEOUT = "Disable-Timeout";
 
     @Inject
     private StoreDataManager storeDataManager;
@@ -52,6 +57,42 @@ public class StoreErrorListener
 
     @Inject
     private IndyConfiguration config;
+
+    public void onStoreUpdate( @Observes ArtifactStorePostUpdateEvent event )
+    {
+        for ( ArtifactStore store : event )
+        {
+            if ( store.isDisabled() )
+            {
+                String toStr = store.getMetadata( DISABLE_TIMEOUT );
+                if ( isNotEmpty( toStr ) )
+                {
+                    int timeout = Integer.parseInt( toStr );
+                    try
+                    {
+                        setReEnablementTimeout( store.getKey(), timeout );
+                    }
+                    catch ( IndySchedulerException e )
+                    {
+                        Logger logger = LoggerFactory.getLogger( getClass() );
+                        logger.error( String.format( "Failed to schedule re-enablement of %s.", store.getKey() ), e );
+                    }
+                }
+            }
+            else
+            {
+                try
+                {
+                    cancelReEnablementTimeout( store.getKey() );
+                }
+                catch ( IndySchedulerException e )
+                {
+                    Logger logger = LoggerFactory.getLogger( getClass() );
+                    logger.error( String.format( "Failed to delete re-enablement job for %s.", store.getKey() ), e );
+                }
+            }
+        }
+    }
 
     public void onStoreError( @Observes IndyStoreErrorEvent evt )
     {
@@ -70,8 +111,7 @@ public class StoreErrorListener
             logger.warn( "{} has been disabled due to store-level error: {}\n Will re-enable in {} seconds.", key,
                          error, config.getStoreDisableTimeoutSeconds() );
 
-            scheduleManager.scheduleForStore( key, DISABLE_TIMEOUT, disableJobName( key ), key,
-                                              config.getStoreDisableTimeoutSeconds(), 99999 );
+            setReEnablementTimeout( key, config.getStoreDisableTimeoutSeconds() );
         }
         catch ( IndyDataException e )
         {
@@ -81,11 +121,6 @@ public class StoreErrorListener
         {
             logger.error( String.format( "Failed to schedule re-enablement of %s for retry.", key ), e );
         }
-    }
-
-    private String disableJobName( StoreKey key )
-    {
-        return String.format( "%s-%s", key, DISABLE_TIMEOUT );
     }
 
     public void onDisableTimeout( @Observes SchedulerEvent evt )
@@ -108,7 +143,6 @@ public class StoreErrorListener
             }
 
             logger.debug( "Read key: {} from JSON string: '{}' in event payload.", key, keystr );
-
             if ( key != null )
             {
                 try
@@ -120,9 +154,7 @@ public class StoreErrorListener
                                                                                    "Re-enabling " + key ),
                                                          new EventMetadata() );
 
-                    logger.warn( "{} has been re-enabled for use.", key );
-
-                    scheduleManager.deleteJob( scheduleManager.groupName( key, DISABLE_TIMEOUT ), disableJobName( key ) );
+                    cancelReEnablementTimeout( key );
                 }
                 catch ( IndyDataException e )
                 {
@@ -135,4 +167,24 @@ public class StoreErrorListener
             }
         }
     }
+
+    private void cancelReEnablementTimeout( StoreKey key )
+            throws IndySchedulerException
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.warn( "{} has been re-enabled for use.", key );
+
+        scheduleManager.deleteJob( ScheduleManager.groupName( key, DISABLE_TIMEOUT ), DISABLE_TIMEOUT );
+    }
+
+    private void setReEnablementTimeout( StoreKey key, int timeoutSeconds )
+            throws IndySchedulerException
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.warn( "Disabling: {} for {} seconds.", key, timeoutSeconds );
+
+        scheduleManager.scheduleForStore( key, DISABLE_TIMEOUT, DISABLE_TIMEOUT, key,
+                                          timeoutSeconds, 99999 );
+    }
+
 }

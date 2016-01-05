@@ -27,6 +27,11 @@
           <span ng-if="editMode" class="key">{{raw.name}}</span>
         </div>
       </div>
+      <div class="detail-field">
+        <input type="checkbox" ng-model="raw.enabled" />
+        <label>Enabled?</label>
+        <span class="hint" ng-if="!raw.enabled && raw.disableExpiration">Set to automatically re-enable at {{raw.disableExpiration}}</span>
+      </div>
 
       <div class="fieldset-caption">Description</div>
       <div class="fieldset">

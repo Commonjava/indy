@@ -142,6 +142,8 @@ public class ScheduleManager
 
                 scheduler.getListenerManager()
                          .addTriggerListener( new IndyTriggerListener( eventDispatcher ) );
+
+                scheduler.getListenerManager().addJobListener( new IndyJobListener() );
             }
 
             scheduler.start();
@@ -526,6 +528,70 @@ public class ScheduleManager
         return canceled;
     }
 
+    public Expiration findSingleExpiration( final GroupMatcher<TriggerKey> matcher )
+            throws IndySchedulerException
+    {
+        if ( !schedulerConfig.isEnabled() )
+        {
+            logger.debug( "Scheduler disabled." );
+            return null;
+        }
+
+        try
+        {
+            final Set<TriggerKey> keys = scheduler.getTriggerKeys( matcher );
+            if ( keys != null && !keys.isEmpty() )
+            {
+                TriggerKey triggerKey = keys.iterator().next();
+                return toExpiration( triggerKey );
+            }
+        }
+        catch ( final SchedulerException e )
+        {
+            throw new IndySchedulerException( "Failed to find trigger matching: " + matcher, e );
+        }
+
+        return null;
+    }
+
+    public ExpirationSet findMatchingExpirations( final GroupMatcher<TriggerKey> matcher )
+            throws IndySchedulerException
+    {
+        if ( !schedulerConfig.isEnabled() )
+        {
+            logger.debug( "Scheduler disabled." );
+            return null;
+        }
+
+        try
+        {
+            final Set<TriggerKey> keys = scheduler.getTriggerKeys( matcher );
+            Set<Expiration> expirations = new HashSet<>( keys.size() );
+            if ( keys != null && !keys.isEmpty() )
+            {
+                for ( TriggerKey key : keys )
+                {
+                    expirations.add( toExpiration( key ) );
+                }
+            }
+
+            return new ExpirationSet( expirations );
+        }
+        catch ( final SchedulerException e )
+        {
+            throw new IndySchedulerException( "Failed to find trigger matching: " + matcher, e );
+        }
+    }
+
+    private Expiration toExpiration( TriggerKey key )
+            throws SchedulerException
+    {
+        Trigger trigger = scheduler.getTrigger( key );
+
+        return new Expiration( trigger.getJobKey().getGroup(), trigger.getJobKey().getName(),
+                               trigger.getNextFireTime() );
+    }
+
     public TriggerKey findFirstMatchingTrigger( final GroupMatcher<TriggerKey> matcher )
         throws IndySchedulerException
     {
@@ -552,7 +618,7 @@ public class ScheduleManager
         return null;
     }
 
-    public String groupName( final StoreKey key, final String jobType )
+    public static String groupName( final StoreKey key, final String jobType )
     {
         return key.toString() + ":" + jobType;
     }
@@ -572,13 +638,13 @@ public class ScheduleManager
         return null;
     }
 
-    public void deleteJobs( final Set<TriggerKey> keys )
+    public boolean deleteJobs( final Set<TriggerKey> keys )
         throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
         {
             logger.debug( "Scheduler disabled." );
-            return;
+            return false;
         }
 
         for ( final TriggerKey key : keys )
@@ -586,28 +652,30 @@ public class ScheduleManager
             try
             {
                 final JobKey jk = new JobKey( key.getName(), key.getGroup() );
-                scheduler.deleteJob( jk );
+                return scheduler.deleteJob( jk );
             }
             catch ( final SchedulerException e )
             {
                 throw new IndySchedulerException( "Failed to delete job corresponding to: %s", e, key, e.getMessage() );
             }
         }
+
+        return false;
     }
 
-    public void deleteJob( final String group, final String name )
+    public boolean deleteJob( final String group, final String name )
         throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
         {
             logger.debug( "Scheduler disabled." );
-            return;
+            return false;
         }
 
         final JobKey jk = new JobKey( name, group );
         try
         {
-            scheduler.deleteJob( jk );
+            return scheduler.deleteJob( jk );
         }
         catch ( final SchedulerException e )
         {

@@ -41,6 +41,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.conf.UIConfiguration;
+import org.commonjava.indy.util.ApplicationContent;
 import org.commonjava.indy.util.ApplicationHeader;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.slf4j.Logger;
@@ -178,6 +179,12 @@ public class UIServlet
 
             if ( method == "GET" )
             {
+                logger.debug( "sending OK" );
+                response.setStatus( ApplicationStatus.OK.code() );
+                response.addHeader( ApplicationHeader.content_type.key(),
+                                    typeMap.getContentType( resource.toExternalForm() ) );
+                response.addHeader( ApplicationHeader.content_length.key(), Long.toString( data.length ) );
+
                 logger.debug( "sending file" );
                 OutputStream outputStream = null;
                 try
@@ -225,7 +232,12 @@ public class UIServlet
             if ( method == "GET" )
             {
                 logger.debug( "sending file" );
+                response.setStatus( ApplicationStatus.OK.code() );
                 response.addHeader( ApplicationHeader.last_modified.key(), formatDateHeader( resource.lastModified() ) );
+
+                response.addHeader( ApplicationHeader.content_type.key(), getContentType( resource.getName() ) );
+                response.addHeader( ApplicationHeader.content_length.key(), Long.toString( resource.length() ) );
+
                 InputStream inputStream = null;
                 OutputStream outputStream = null;
                 try
@@ -270,5 +282,23 @@ public class UIServlet
             logger.debug( "sending 404" );
             response.setStatus( ApplicationStatus.NOT_FOUND.code() );
         }
+    }
+
+    private String getContentType( String resource )
+    {
+        if ( resource.endsWith( ".html" ) )
+        {
+            return ApplicationContent.text_html;
+        }
+        else if ( resource.endsWith( ".css" ) )
+        {
+            return ApplicationContent.text_css;
+        }
+        else if ( resource.endsWith( ".js" ) )
+        {
+            return ApplicationContent.application_javascript;
+        }
+
+        return typeMap.getContentType( resource );
     }
 }
