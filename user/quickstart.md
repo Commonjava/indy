@@ -4,7 +4,7 @@ title: "Quick Start"
 
 ### Requirements
 
-* Java 1.7 or above
+* Java 1.8 or above
 
 
 ### Download, Unpack, and Start
