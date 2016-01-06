@@ -3,7 +3,6 @@ title: "Indy Documentation"
 ---
 
 ### Indy
->>>>>>> 7dd5fedabdd8189f0c8c11207110b06c24618c91
 
 Indy (formerly AProx) has its roots in the relatively simple task of managing proxies to remote Maven repositories, and the grouping logic necessary to aggregate them. However, its feature set has grown far beyond this initial purpose to make it simpler to work with Maven artifacts and repositories in a number of ways. This is no mere repository manager; it is a platform for managing access to Maven artifacts and the repositories that contain them.
 
