@@ -2,7 +2,11 @@
 title: "AProx Documentation"
 ---
 
-### AProx (Approximately A Proxy)
+### AProx Has Moved!
+
+**The AProx project has been renamed to [Indy](https://commonjava.github.io/indy). Please update your bookmarks accordingly.**
+
+### Approximately a Proxy
 
 AProx has its roots in the relatively simple task of managing proxies to remote Maven repositories, and the grouping logic necessary to aggregate them. However, its feature set has grown far beyond this initial purpose to make it simpler to work with Maven artifacts and repositories in a number of ways. This is no mere repository manager; it is a platform for managing access to Maven artifacts and the repositories that contain them.
 
