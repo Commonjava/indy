@@ -40,7 +40,10 @@
       <div class="store-listing">
         <div ng-repeat="store in listing.items | filter:query | orderBy:orderProp" class="list-item store-listing-item listing-item-start">
 					<div class="fieldset-caption">
-					    <a href="#/group/view/{{store.name}}">{{store.name}}</a>
+					    <a href="#/group/view/{{store.name}}">
+                            <span class="enabled-store" ng-if="!isDisabled(store.key)">{{store.key}}</span>
+                            <span class="disabled-store" ng-if="isDisabled(store.key)">{{store.key}}</span>
+                        </a>
 					</div>
 					<div class="fieldset">
 					  <div class="two-col">
@@ -63,7 +66,10 @@
                 </div>
 					      <ol ng-if="store.display" class="content-panel item-expanded subsection">
 					        <li ng-repeat="item in store.constituents">
-					          <a href="#/{{item.type}}/view/{{item.name}}">{{item.key}}</a>
+					          <a href="#/{{item.type}}/view/{{item.name}}">
+                                  <span class="enabled-store" ng-if="!isDisabled(item.key)">{{item.key}}</span>
+                                  <span class="disabled-store" ng-if="isDisabled(item.key)">{{item.key}}</span>
+                              </a>
 					          <div ng-if="item.type == 'remote'" class="subfields">
 					           <span class="description field">(Remote URL: <a target="_new" href="{{item.storeHref}}">{{item.storeHref}}</a>)</span>
 					          </div>

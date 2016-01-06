@@ -23,6 +23,7 @@ import java.util.Set;
 import com.fasterxml.jackson.databind.Module;
 import org.commonjava.indy.client.core.auth.IndyClientAuthenticator;
 import org.commonjava.indy.client.core.module.IndyContentClientModule;
+import org.commonjava.indy.client.core.module.IndySchedulerClientModule;
 import org.commonjava.indy.client.core.module.IndyStatsClientModule;
 import org.commonjava.indy.client.core.module.IndyStoresClientModule;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
@@ -134,6 +135,12 @@ public class Indy
         return module( IndyStoresClientModule.class );
     }
 
+    public IndySchedulerClientModule schedules()
+            throws IndyClientException
+    {
+        return module( IndySchedulerClientModule.class );
+    }
+
     public IndyContentClientModule content()
         throws IndyClientException
     {
@@ -183,6 +190,7 @@ public class Indy
         final Set<IndyClientModule> standardModules = new HashSet<>();
         standardModules.add( new IndyStoresClientModule() );
         standardModules.add( new IndyContentClientModule() );
+        standardModules.add( new IndySchedulerClientModule() );
         standardModules.add( new IndyStatsClientModule() );
 
         for ( final IndyClientModule module : standardModules )

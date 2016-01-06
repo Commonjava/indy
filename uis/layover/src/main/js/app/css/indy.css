@@ -20,6 +20,13 @@ body{
   padding-bottom: 70px;
 }
 
+.enabled-store{
+}
+
+.disabled-store{
+  text-decoration: line-through;
+}
+
 .product-name, .navbar-content{
   font-variant: small-caps;
 }

@@ -22,6 +22,11 @@
 		<span class="key">{{raw.name}}</span>
 	</div>
 	<div class="detail-field">
+		<span>{{raw.enabled | checkmark}}</span>
+		<label>Enabled?</label>
+		<span class="hint" ng-if="!raw.enabled && raw.disableExpiration">Set to automatically re-enable at {{raw.disableExpiration}}</span>
+	</div>
+	<div class="detail-field">
 		<label>Local URL:</label>
     <span><a ng-if="!raw.demo" ng-href="{{raw.storeHref}}" target="_new">{{raw.storeHref}}</a></span>
     <span ng-if="raw.demo">{{raw.storeHref}}</span>

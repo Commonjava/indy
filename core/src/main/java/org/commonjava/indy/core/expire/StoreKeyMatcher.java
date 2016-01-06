@@ -27,7 +27,7 @@ public class StoreKeyMatcher
 
     public StoreKeyMatcher( final StoreKey key, final String eventType )
     {
-        super( key.toString() + ":" + eventType, StringOperatorName.EQUALS );
+        super( ScheduleManager.groupName( key, eventType ), StringOperatorName.EQUALS );
     }
 
 }

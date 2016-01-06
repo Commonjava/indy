@@ -27,12 +27,18 @@
 	        <span ng-if="!editMode"><input type="text" ng-model="raw.name" size="25" /></span>
 	        <span ng-if="editMode" class="key">{{raw.name}}</span>
 	      </div>
-	      
-	      <div class="detail-field">
+
+          <div class="detail-field">
+              <input type="checkbox" ng-model="raw.enabled" />
+              <label>Enabled?</label>
+              <span class="hint" ng-if="!raw.enabled && raw.disableExpiration">Set to automatically re-enable at {{raw.disableExpiration}}</span>
+          </div>
+
+          <div class="detail-field">
 	        <label>Remote URL:</label>
 	        <input type="text" ng-model="store.url" size="92"/>
 	      </div>
-	      
+
 	      <div class="sub-fields">
           <div class="detail-field">
              <input type="checkbox" ng-model="store.is_passthrough" />

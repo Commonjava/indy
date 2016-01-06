@@ -94,7 +94,7 @@ public class DefaultIndyConfiguration
 
     public static final int DEFAULT_REQUEST_TIMEOUT_SECONDS = 30;
 
-    public static final int DEFAULT_STORE_DISABLE_TIMEOUT_SECONDS = 14400;
+    public static final int DEFAULT_STORE_DISABLE_TIMEOUT_SECONDS = 1800; // 30 minutes
 
     private Integer passthroughTimeoutSeconds;
 

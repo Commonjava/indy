@@ -23,6 +23,11 @@
 		<span class="key">{{raw.name}}</span>
 	</div>
 	<div class="detail-field">
+		<span>{{raw.enabled | checkmark}}</span>
+		<label>Enabled?</label>
+		<span class="hint" ng-if="!raw.enabled && raw.disableExpiration">Set to automatically re-enable at {{raw.disableExpiration}}</span>
+	</div>
+	<div class="detail-field">
 		<label>Local URL:</label>
     <span><a ng-if="!raw.demo" ng-href="{{raw.storeHref}}" target="_new">{{raw.storeHref}}</a></span>
     <span ng-if="raw.demo">{{raw.storeHref}}</span>
@@ -31,7 +36,7 @@
 		<label>Remote URL:</label>
 		<span><a ng-href="{{store.url}}" target="_new">{{store.url}}</a></span>
 	</div>
-	
+
 	<div class="sub-fields">
 	  <div class="detail-field">
 	    <span>{{!store.is_passthrough | checkmark}}</span>

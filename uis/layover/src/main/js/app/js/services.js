@@ -63,7 +63,59 @@ indyServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
     
     addStoreControls: function(scope, location, storeType, storeService, StoreUtilSvc, fixups){
       var self=this;
+
+      scope.enable = function(){
+        console.log("Enable: " + scope.raw.name + " (enabled already? " + scope.raw.enabled + ")");
+        if ( !scope.raw.enabled ){
+          if ( !scope.store.metadata ){
+            scope.store.metadata = {};
+          }
+
+          scope.store.metadata['changelog'] = "Enabling via UI";
+          scope.store.type = storeType;
+
+          scope.store.disabled = false;
+          scope.raw.enabled = true;
+          console.log("Set enabled == " + scope.raw.enabled + " in raw metadata");
+
+          if ( fixups && fixups.save){
+            fixups.save(scope);
+          }
+
+          if ( !scope.raw.new ){
+            storeService.resource.update({name: scope.raw.name}, scope.store, function(){
+              location.path( StoreUtilSvc.detailPath(scope.store.key) );
+            });
+          }
+        }
+      };
       
+      scope.disable = function(){
+        console.log("Disable: " + scope.raw.name + " (enabled already? " + scope.raw.enabled + ")");
+        if ( scope.raw.enabled ){
+          if ( !scope.store.metadata ){
+            scope.store.metadata = {};
+          }
+
+          scope.store.metadata['changelog'] = "Disabling indefinitely via UI";
+          scope.store.type = storeType;
+
+          scope.store.disabled = true;
+          scope.raw.enabled = false;
+          console.log("Set enabled == " + scope.raw.enabled + " in raw metadata");
+
+          if ( fixups && fixups.save){
+            fixups.save(scope);
+          }
+
+          if ( !scope.raw.new ){
+            storeService.resource.update({name: scope.raw.name}, scope.store, function(){
+              location.path( StoreUtilSvc.detailPath(scope.store.key) );
+            });
+          }
+        }
+      };
+
       scope.save = function(){
         scope.store.metadata={};
         self.promptForChangelog(scope, 'Save', function(changelog){
@@ -387,6 +439,78 @@ indyServices.factory('NfcSvc', ['$resource',
         get : { method : 'GET', params : { path: '' }, isArray : false },
         deleteAll: {method: 'DELETE', params: {type:'', name:'', path:''}},
         delete: {method: 'DELETE'},
+      }),
+    };
+}]);
+
+indyServices.factory('StoreDisableSvc', ['$resource',
+  function($resource) {
+    var self = this;
+    var obj = {};
+    obj.storeTimeouts = $resource(appPath('/api/admin/schedule/store/:type/:name/disable-timeout'), {}, {
+        query: { method : 'GET', params: {}, isArray : false }
+    });
+
+    obj.allTimeouts = $resource(appPath('/api/admin/schedule/store/all/disable-timeout'), {}, {
+        query: {method: 'GET', params: {}, isArray: false}
+    });
+
+    obj.setEnableAttributes = function(raw, store, StoreUtilSvc){
+          console.log("Store:\n\n" + JSON.stringify(store));
+          var disabled = store.disabled === undefined ? false : store.disabled;
+          console.log( "is " + store.key + " disabled? " + disabled);
+          raw.enabled = !disabled;
+          if ( disabled ){
+            var type = StoreUtilSvc.typeFromKey(store.key);
+            obj.storeTimeouts.query({type: type, name: raw.name},
+              function(exp){
+                console.log("Got expiration: " + JSON.stringify(exp) + " for: " + type + " with name: " + raw.name);
+                raw.disableExpiration = exp.expiration;
+              },
+              function(error){
+                console.log("Retrieval of disabled expiration failed: " + JSON.stringify(error));
+              }
+            );
+          }
+    };
+
+    obj.setDisabledMap = function(scope){
+        scope.disabledMap = {};
+
+        obj.allTimeouts.query({},
+          function(listing){
+            console.log("LISTING: " + JSON.stringify(listing));
+            if ( listing.items ) {
+              for(var i=0; i<listing.items.length; i++){
+                var item = listing.items[i];
+                var parts = item.group.split(':');
+                var key = parts[0] + ':' + parts[1];
+                console.log("DISABLED: " + key + " (until: " + item.expiration + ")");
+                scope.disabledMap[key] = item.expiration;
+              }
+            }
+          },
+          function(error){
+            console.log("ERROR: " + JSON.stringify(error));
+          }
+        );
+
+        scope.isDisabled = function(key){
+            var result = key in scope.disabledMap;
+            console.log( "Is " + key + " disabled? " + result);
+            return result;
+        };
+
+    };
+
+    return obj;
+}]);
+
+indyServices.factory('AllStoreDisableSvc', ['$resource',
+  function($resource) {
+    return {
+      resource: $resource(appPath('/api/admin/schedule/store/all/disable-timeout'), {}, {
+        query: { method: 'GET', params: {}, isArray: false }
       }),
     };
 }]);
