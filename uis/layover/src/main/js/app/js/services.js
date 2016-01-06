@@ -479,7 +479,6 @@ indyServices.factory('StoreDisableSvc', ['$resource',
 
         obj.allTimeouts.query({},
           function(listing){
-            console.log("LISTING: " + JSON.stringify(listing));
             if ( listing.items ) {
               for(var i=0; i<listing.items.length; i++){
                 var item = listing.items[i];

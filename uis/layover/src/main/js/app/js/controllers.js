@@ -49,12 +49,14 @@ indyControllers.controller('RemoteListCtl', ['$scope', '$location', 'RemoteSvc',
     StoreDisableSvc.setDisabledMap($scope);
 
     $scope.listing = RemoteSvc.resource.query({}, function(listing){
-      for(var i=0; i<listing.items.length; i++){
-        var item = listing.items[i];
-        item.detailHref = StoreUtilSvc.detailHref(item.key);
-        item.storeHref = StoreUtilSvc.storeHref(item.key);
-        item.name = StoreUtilSvc.nameFromKey(item.key);
-        item.description = StoreUtilSvc.defaultDescription(item.description);
+      if ( listing.items ){
+          for(var i=0; i<listing.items.length; i++){
+            var item = listing.items[i];
+            item.detailHref = StoreUtilSvc.detailHref(item.key);
+            item.storeHref = StoreUtilSvc.storeHref(item.key);
+            item.name = StoreUtilSvc.nameFromKey(item.key);
+            item.description = StoreUtilSvc.defaultDescription(item.description);
+          }
       }
     });
     $scope.storeUtils = StoreUtilSvc;
@@ -162,13 +164,15 @@ indyControllers.controller('HostedListCtl', ['$scope', '$location', 'HostedSvc',
     $scope.hostedOptionLegend = StoreUtilSvc.hostedOptionLegend();
   
     $scope.listing = HostedSvc.resource.query({}, function(listing){
-      for(var i=0; i<listing.items.length; i++){
-        var item = listing.items[i];
-        item.detailHref = StoreUtilSvc.detailHref(item.key);
-        item.storeHref = StoreUtilSvc.storeHref(item.key);
-        item.name = StoreUtilSvc.nameFromKey(item.key);
-        item.hostedOptions = StoreUtilSvc.hostedOptions(item);
-        item.description = StoreUtilSvc.defaultDescription(item.description);
+      if ( listing.items ){
+          for(var i=0; i<listing.items.length; i++){
+            var item = listing.items[i];
+            item.detailHref = StoreUtilSvc.detailHref(item.key);
+            item.storeHref = StoreUtilSvc.storeHref(item.key);
+            item.name = StoreUtilSvc.nameFromKey(item.key);
+            item.hostedOptions = StoreUtilSvc.hostedOptions(item);
+            item.description = StoreUtilSvc.defaultDescription(item.description);
+          }
       }
     });
 
@@ -248,31 +252,33 @@ indyControllers.controller('GroupListCtl', ['$q', '$scope', '$location', 'GroupS
     StoreDisableSvc.setDisabledMap($scope);
 
     $scope.listing = GroupSvc.resource.query({}, function(listing){
-      for(var i=0; i<listing.items.length; i++){
-        var item = listing.items[i];
-        item.detailHref = StoreUtilSvc.detailHref(item.key);
-        item.storeHref = StoreUtilSvc.storeHref(item.key);
-        item.type = StoreUtilSvc.typeFromKey( item.key );
-        item.name = StoreUtilSvc.nameFromKey(item.key);
-        item.description = StoreUtilSvc.defaultDescription(item.description);
-        
-        item.display = false;
+      if ( listing.items ){
+          for(var i=0; i<listing.items.length; i++){
+            var item = listing.items[i];
+            item.detailHref = StoreUtilSvc.detailHref(item.key);
+            item.storeHref = StoreUtilSvc.storeHref(item.key);
+            item.type = StoreUtilSvc.typeFromKey( item.key );
+            item.name = StoreUtilSvc.nameFromKey(item.key);
+            item.description = StoreUtilSvc.defaultDescription(item.description);
 
-        StoreDisableSvc.setEnableAttributes(item, item, StoreUtilSvc);
+            item.display = false;
 
-        var oldConstituents = item.constituents;
-        item.constituents = [oldConstituents.length];
-        for( var j=0; j<oldConstituents.length; j++ ){
-          var key = oldConstituents[j];
-          var c = {
-              key: oldConstituents[j],
-              detailHref: StoreUtilSvc.detailHref(key),
-              storeHref: StoreUtilSvc.storeHref(key),
-              type: StoreUtilSvc.typeFromKey( key ),
-              name: StoreUtilSvc.nameFromKey(key),
+            StoreDisableSvc.setEnableAttributes(item, item, StoreUtilSvc);
+
+            var oldConstituents = item.constituents;
+            item.constituents = [oldConstituents.length];
+            for( var j=0; j<oldConstituents.length; j++ ){
+              var key = oldConstituents[j];
+              var c = {
+                  key: oldConstituents[j],
+                  detailHref: StoreUtilSvc.detailHref(key),
+                  storeHref: StoreUtilSvc.storeHref(key),
+                  type: StoreUtilSvc.typeFromKey( key ),
+                  name: StoreUtilSvc.nameFromKey(key),
+              }
+              item.constituents[j] = c;
+            }
           }
-          item.constituents[j] = c;
-        }
       }
     });
 
