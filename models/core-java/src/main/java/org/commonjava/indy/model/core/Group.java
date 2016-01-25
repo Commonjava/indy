@@ -75,16 +75,12 @@ public class Group
             constituents = new CopyOnWriteArrayList<>();
         }
 
-        synchronized ( constituents )
+        if ( constituents.contains( repository ) )
         {
-            if ( constituents.contains( repository ) )
-            {
-                return false;
-            }
-
-            return constituents.add( repository );
+            return false;
         }
 
+        return constituents.add( repository );
     }
 
     public boolean removeConstituent( final ArtifactStore constituent )
