@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
@@ -169,12 +170,12 @@ public class MemoryStoreDataManager
         }
 
         final List<ArtifactStore> result = new ArrayList<ArtifactStore>();
-        recurseGroup( master, result, includeGroups, recurseGroups );
+        recurseGroup( master, result, new HashSet<>(), includeGroups, recurseGroups );
 
         return result;
     }
 
-    private synchronized void recurseGroup( final Group master, final List<ArtifactStore> result,
+    private void recurseGroup( final Group master, final List<ArtifactStore> result, final Set<StoreKey> seen,
                                             final boolean includeGroups, final boolean recurseGroups )
     {
         if ( master == null )
@@ -187,42 +188,39 @@ public class MemoryStoreDataManager
             result.add( master );
         }
 
-        for ( final StoreKey key : master.getConstituents() )
-        {
-            final StoreType type = key.getType();
-            if ( recurseGroups && type == StoreType.group )
+        master.getConstituents().forEach( (key)->{
+            if ( !seen.contains( key ) )
             {
-                // if we're here, we're definitely recursing groups...
-                recurseGroup( (Group) stores.get( key ), result, includeGroups, true );
-            }
-            else
-            {
-                final ArtifactStore store = stores.get( key );
-                if ( store != null )
+                seen.add( key );
+                final StoreType type = key.getType();
+                if ( recurseGroups && type == StoreType.group )
                 {
-                    result.add( store );
+                    // if we're here, we're definitely recursing groups...
+                    recurseGroup( (Group) stores.get( key ), result, seen, includeGroups, true );
+                }
+                else
+                {
+                    final ArtifactStore store = stores.get( key );
+                    if ( store != null )
+                    {
+                        result.add( store );
+                    }
                 }
             }
-        }
+        });
     }
 
     @Override
     public Set<Group> getGroupsContaining( final StoreKey repo )
         throws IndyDataException
     {
-        final Set<Group> groups = new HashSet<Group>();
-        for ( final Group group : getAllGroups() )
-        {
-            if ( groupContains( group, repo ) )
-            {
-                groups.add( group );
-            }
-        }
+        final Set<Group> groups =
+                getAllGroups().stream().filter( group -> groupContains( group, repo ) ).collect( Collectors.toSet() );
 
         return groups;
     }
 
-    private synchronized boolean groupContains( final Group g, final StoreKey key )
+    private boolean groupContains( final Group g, final StoreKey key )
     {
         if ( g == null || g.getConstituents() == null )
         {

@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.wordnik.swagger.annotations.ApiModel;
 
@@ -29,7 +30,7 @@ public class Group
 
     private static final long serialVersionUID = 1L;
 
-    private List<StoreKey> constituents;
+    private CopyOnWriteArrayList<StoreKey> constituents;
 
     Group()
     {
@@ -38,18 +39,18 @@ public class Group
     public Group( final String name, final List<StoreKey> constituents )
     {
         super( name );
-        this.constituents = constituents;
+        this.constituents = new CopyOnWriteArrayList<>( constituents );
     }
 
     public Group( final String name, final StoreKey... constituents )
     {
         super( name );
-        this.constituents = new ArrayList<StoreKey>( Arrays.asList( constituents ) );
+        this.constituents = new CopyOnWriteArrayList<>( Arrays.asList( constituents ) );
     }
 
     public List<StoreKey> getConstituents()
     {
-        return constituents == null ? Collections.<StoreKey> emptyList() : constituents;
+        return constituents == null ? Collections.emptyList() : constituents;
     }
 
     public boolean addConstituent( final ArtifactStore store )
@@ -62,7 +63,7 @@ public class Group
         return addConstituent( store.getKey() );
     }
 
-    public synchronized boolean addConstituent( final StoreKey repository )
+    public boolean addConstituent( final StoreKey repository )
     {
         if ( repository == null )
         {
@@ -71,7 +72,7 @@ public class Group
 
         if ( constituents == null )
         {
-            constituents = new ArrayList<StoreKey>();
+            constituents = new CopyOnWriteArrayList<>();
         }
 
         if ( constituents.contains( repository ) )
@@ -89,20 +90,30 @@ public class Group
 
     public boolean removeConstituent( final StoreKey repository )
     {
-        return constituents != null && constituents.remove( repository );
+        if ( constituents != null )
+        {
+            synchronized ( constituents )
+            {
+                return constituents.remove( repository );
+            }
+        }
+
+        return false;
     }
 
     public void setConstituents( final List<StoreKey> constituents )
     {
-        this.constituents = constituents;
-    }
-
-    public void setConstituentProxies( final List<RemoteRepository> constituents )
-    {
-        this.constituents = null;
-        for ( final ArtifactStore proxy : constituents )
+        if ( this.constituents == null )
         {
-            addConstituent( proxy );
+            this.constituents = new CopyOnWriteArrayList<>( constituents );
+        }
+        else
+        {
+            synchronized ( constituents )
+            {
+                this.constituents.clear();
+                this.constituents.addAll( constituents );
+            }
         }
     }
 
