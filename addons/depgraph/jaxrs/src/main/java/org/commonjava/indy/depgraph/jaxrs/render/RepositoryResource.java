@@ -73,7 +73,7 @@ public class RepositoryResource
         return null;
     }
 
-    @Path( "/urlmap" )
+    @Path( "/content" )
     @Produces( { "application/json", "application/indy*+json" } )
     @POST
     public UrlMapResult getUrlMap( final RepositoryContentRequest request, final @Context UriInfo uriInfo )

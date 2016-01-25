@@ -198,7 +198,7 @@ public class DepgraphIndyClientModule
     public UrlMapResult repositoryUrlMap( RepositoryContentRequest request )
             throws IndyClientException
     {
-        return getHttp().postWithResponse( "depgraph/repo/urlmap", request, UrlMapResult.class );
+        return getHttp().postWithResponse( "depgraph/repo/content", request, UrlMapResult.class );
     }
 
     public RepoContentResult repositoryContent( RepositoryContentRequest request )
