@@ -243,7 +243,7 @@ public class ContentAccessHandler
         return response;
     }
 
-    @ApiOperation( "Store file/artifact content under the given artifact store (type/name) and path." )
+    @ApiOperation( "Retrieve file/artifact content under the given artifact store (type/name) and path." )
     @ApiResponses( {
         @ApiResponse( code = 200, response = String.class, message = "Rendered content listing (when path ends with '/index.html' or '/')" ),
         @ApiResponse( code = 200, response = StreamingOutput.class, message = "Content stream" ), } )
@@ -262,7 +262,7 @@ public class ContentAccessHandler
 
         Response response = null;
 
-        logger.info( "User asked for: {}\nStandard accept header for that is: {}", acceptInfo.getRawAccept(),
+        logger.info( "GET path: '{}' (RAW: '{}')\nIn store: '{}'\nUser accept header is: '{}'\nStandard accept header for that is: '{}'", path, request.getPathInfo(), sk, acceptInfo.getRawAccept(),
                      standardAccept );
 
         final String baseUri = uriInfo.getBaseUriBuilder()
@@ -270,7 +270,7 @@ public class ContentAccessHandler
                                       .build()
                                       .toString();
 
-        if ( path == null || path.equals( "" ) || path.endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )
+        if ( path == null || path.equals( "" ) || request.getPathInfo().endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )
         {
             try
             {

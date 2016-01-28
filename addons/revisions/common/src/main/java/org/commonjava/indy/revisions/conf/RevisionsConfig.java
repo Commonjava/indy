@@ -93,6 +93,8 @@ public class RevisionsConfig
         }
     }
 
+    private boolean enabled = true;
+
     private boolean pushEnabled = false;
 
     private String dataUpstreamUrl;
@@ -102,6 +104,17 @@ public class RevisionsConfig
     private String branchName;
 
     private String userEmail;
+
+    public boolean isEnabled()
+    {
+        return enabled;
+    }
+
+    @ConfigName( "enabled" )
+    public void setEnabled( boolean enabled )
+    {
+        this.enabled = enabled;
+    }
 
     public boolean isPushEnabled()
     {
