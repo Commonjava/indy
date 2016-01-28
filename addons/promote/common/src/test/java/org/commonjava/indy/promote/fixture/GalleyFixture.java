@@ -30,6 +30,7 @@ import org.commonjava.maven.galley.internal.xfer.ExistenceHandler;
 import org.commonjava.maven.galley.internal.xfer.ListingHandler;
 import org.commonjava.maven.galley.internal.xfer.UploadHandler;
 import org.commonjava.maven.galley.io.NoOpTransferDecorator;
+import org.commonjava.maven.galley.io.SpecialPathManagerImpl;
 import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.maven.galley.spi.event.FileEventManager;
@@ -59,6 +60,8 @@ public class GalleyFixture
 
     private final ExecutorService batchExecutor;
 
+    private final SpecialPathManagerImpl specialPathManager;
+
     public GalleyFixture( final File repoRoot )
     {
         MemoryPasswordManager passwordManager = new MemoryPasswordManager();
@@ -71,13 +74,14 @@ public class GalleyFixture
         executor = Executors.newFixedThreadPool( 2 );
         batchExecutor = Executors.newFixedThreadPool( 2 );
         nfc = new MemoryNotFoundCache();
+        specialPathManager = new SpecialPathManagerImpl();
 
         final DownloadHandler dh = new DownloadHandler( nfc, executor );
         final UploadHandler uh = new UploadHandler( nfc, executor );
         final ListingHandler lh = new ListingHandler( nfc );
         final ExistenceHandler eh = new ExistenceHandler( nfc );
 
-        transfers = new TransferManagerImpl( transports, cache, nfc, events, dh, uh, lh, eh, batchExecutor );
+        transfers = new TransferManagerImpl( transports, cache, nfc, events, dh, uh, lh, eh, specialPathManager, batchExecutor );
     }
 
     public TransferManager getTransfers()

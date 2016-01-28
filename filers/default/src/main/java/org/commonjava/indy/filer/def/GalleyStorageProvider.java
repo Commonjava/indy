@@ -33,18 +33,17 @@ import org.commonjava.maven.galley.cache.partyline.PartyLineCacheProviderConfig;
 import org.commonjava.maven.galley.io.ChecksummingTransferDecorator;
 import org.commonjava.maven.galley.io.checksum.Md5GeneratorFactory;
 import org.commonjava.maven.galley.io.checksum.Sha1GeneratorFactory;
+import org.commonjava.maven.galley.model.FilePatternMatcher;
+import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.spi.event.FileEventManager;
 import org.commonjava.maven.galley.spi.io.PathGenerator;
+import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.commonjava.maven.galley.spi.io.TransferDecorator;
 
 @ApplicationScoped
 public class GalleyStorageProvider
 {
-
-    private static final Set<String> UNDECORATED_FILE_ENDINGS =
-        Collections.unmodifiableSet( new HashSet<String>( Arrays.asList( new String[] { ".sha1", ".md5", ".info",
-            ".http-metadata.json" } ) ) );
 
     @Inject
     private DefaultStorageProviderConfiguration config;
@@ -54,6 +53,9 @@ public class GalleyStorageProvider
 
     @Inject
     private PathGenerator pathGenerator;
+
+    @Inject
+    private SpecialPathManager specialPathManager;
 
     private TransferDecorator transferDecorator;
 
@@ -72,9 +74,20 @@ public class GalleyStorageProvider
     @PostConstruct
     public void setup()
     {
+        SpecialPathInfo infoSpi = SpecialPathInfo.from( new FilePatternMatcher( ".+\\.info" ) )
+                                                 .setDecoratable( false )
+                                                 .setDeletable( false )
+                                                 .setListable( false )
+                                                 .setPublishable( false )
+                                                 .setRetrievable( false )
+                                                 .setStorable( false )
+                                                 .build();
+
+        specialPathManager.registerSpecialPathInfo( infoSpi );
+
         transferDecorator =
-            new ChecksummingTransferDecorator( Collections.singleton( TransferOperation.GENERATE ),
-                                               UNDECORATED_FILE_ENDINGS, new Md5GeneratorFactory(),
+            new ChecksummingTransferDecorator( Collections.singleton( TransferOperation.GENERATE ), specialPathManager,
+                                               new Md5GeneratorFactory(),
                                                new Sha1GeneratorFactory() );
 
         final PartyLineCacheProviderConfig cacheProviderConfig =
