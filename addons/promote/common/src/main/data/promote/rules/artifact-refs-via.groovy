@@ -4,6 +4,9 @@ import org.commonjava.indy.model.core.StoreKey
 import org.commonjava.indy.promote.validate.model.ValidationRequest
 import org.commonjava.indy.promote.validate.model.ValidationRule
 import org.commonjava.cartographer.graph.discover.DiscoveryConfig
+import org.commonjava.maven.atlas.graph.rel.DependencyRelationship
+import org.commonjava.maven.atlas.graph.rel.RelationshipType
+import org.commonjava.maven.atlas.ident.DependencyScope
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef
 import org.commonjava.maven.atlas.ident.ref.SimpleTypeAndClassifier
 import org.slf4j.LoggerFactory
@@ -39,25 +42,19 @@ class ArtifactRefAvailability implements ValidationRule {
                 def relationships = tools.getRelationshipsForPom(it, dc, request.getPromoteRequest(), verifyStoreKey)
                 if (relationships != null) {
                     relationships.each { rel ->
-                        def target = rel.getTarget()
-                        def path = tools.toArtifactPath(target)
-                        def txfr = tools.getTransfer(verifyStoreKey, path)
-                        logger.info("{} in {}: {}. Exists? {}", target, verifyStoreKey, txfr, txfr.exists())
-                        if (!txfr.exists()) {
-                            txfr = tools.getTransfer(request.getSource(), path)
-                            logger.info("{} in {}: {}. Exists? {}", target, request.getSource(), txfr, txfr.exists())
-                            if (!txfr.exists()) {
-                                if (builder.length() > 0) {
-                                    builder.append("\n")
-                                }
-                                builder.append(it).append(" is invalid: ").append(path).append(" is not available via: ").append(verifyStoreKey)
+                        def skip = false
+                        if (rel.getType() == RelationshipType.DEPENDENCY) {
+                            def dr = (DependencyRelationship) rel
+                            if ((dr.getScope() == DependencyScope.system) || dr.isOptional()) {
+                                skip = true
                             }
                         }
 
-                        if ((target instanceof ArtifactRef) && !pomTC.equals(((ArtifactRef) target).getTypeAndClassifier())) {
-                            path = tools.toArtifactPath(target.asPomArtifact())
-                            txfr = tools.getTransfer(verifyStoreKey, path)
-                            logger.info("POM {} in {}: {}. Exists? {}", target.asPomArtifact(), verifyStoreKey, txfr, txfr.exists())
+                        if (!skip) {
+                            def target = rel.getTarget()
+                            def path = tools.toArtifactPath(target)
+                            def txfr = tools.getTransfer(verifyStoreKey, path)
+                            logger.info("{} in {}: {}. Exists? {}", target, verifyStoreKey, txfr, txfr.exists())
                             if (!txfr.exists()) {
                                 txfr = tools.getTransfer(request.getSource(), path)
                                 logger.info("{} in {}: {}. Exists? {}", target, request.getSource(), txfr, txfr.exists())
@@ -66,6 +63,22 @@ class ArtifactRefAvailability implements ValidationRule {
                                         builder.append("\n")
                                     }
                                     builder.append(it).append(" is invalid: ").append(path).append(" is not available via: ").append(verifyStoreKey)
+                                }
+                            }
+
+                            if ((target instanceof ArtifactRef) && !pomTC.equals(((ArtifactRef) target).getTypeAndClassifier())) {
+                                path = tools.toArtifactPath(target.asPomArtifact())
+                                txfr = tools.getTransfer(verifyStoreKey, path)
+                                logger.info("POM {} in {}: {}. Exists? {}", target.asPomArtifact(), verifyStoreKey, txfr, txfr.exists())
+                                if (!txfr.exists()) {
+                                    txfr = tools.getTransfer(request.getSource(), path)
+                                    logger.info("{} in {}: {}. Exists? {}", target, request.getSource(), txfr, txfr.exists())
+                                    if (!txfr.exists()) {
+                                        if (builder.length() > 0) {
+                                            builder.append("\n")
+                                        }
+                                        builder.append(it).append(" is invalid: ").append(path).append(" is not available via: ").append(verifyStoreKey)
+                                    }
                                 }
                             }
                         }
