@@ -20,6 +20,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.Date;
 
@@ -49,13 +50,15 @@ public class AutomaticPomDownloadTest
     {
         final String repoId = "test-repo";
         final String pathFormat = "/org/foo/bar/1.0/bar-1.0.%s";
-        final String jarPath = server.formatUrl( repoId, String.format( pathFormat, "jar" ) );
-        final String pomPath = server.formatUrl( repoId, String.format( pathFormat, "pom" ) );
+        final String jarPath = String.format( pathFormat, "jar" );
+        final String jarUrl = server.formatUrl( repoId, jarPath );
+        final String pomPath = String.format( pathFormat, "pom" );
+        final String pomUrl = server.formatUrl( repoId, pomPath );
 
         // mocking up a http server that expects access to both a .jar and the accompanying .pom
         String datetime = ( new Date() ).toString();
-        server.expect( pomPath, 200, String.format( "pom %s", datetime ) );
-        server.expect( jarPath, 200, String.format( "jar %s", datetime ) );
+        server.expect( pomUrl, 200, String.format( "pom %s", datetime ) );
+        server.expect( jarUrl, 200, String.format( "jar %s", datetime ) );
 
         // set up remote repository pointing to the test http server
         final String changelog = "Setup: " + name.getMethodName();
@@ -63,10 +66,13 @@ public class AutomaticPomDownloadTest
                                 RemoteRepository.class );
 
         // ensure the pom does not exist before the jar download
-        IndyFoloContentClientModule clientModule = client.module( IndyFoloContentClientModule.class );
-        assertThat( clientModule.exists( newName(), remote, repoId, pomPath ), equalTo( false ) );
+        final File pomFile = new File( String.format( "%s/var/lib/indy/storage/%s-%s%s",
+                                                      fixture.getBootOptions().getIndyHome(),
+                                                      remote.name(), repoId, pomPath ) );
+        assertThat( pomFile.exists(), equalTo( false ) );
 
         // download the .jar
+        IndyFoloContentClientModule clientModule = client.module( IndyFoloContentClientModule.class );
         final InputStream result = clientModule.get( newName(), remote, repoId, jarPath );
         assertThat( result, notNullValue() );
 
@@ -74,7 +80,7 @@ public class AutomaticPomDownloadTest
 
         // verify the existence of the .pom file after 1 seconds of Thread.sleep()
         Thread.sleep( 1000 );
-        assertThat( clientModule.exists( newName(), remote, repoId, pomPath ), equalTo( true ) );
+        assertThat( pomFile.exists(), equalTo( true ) );
     }
 
 }
