@@ -318,7 +318,7 @@ public class ImpliedRepoMaintainer
         List<StoreKey> constituents;
         synchronized ( group )
         {
-            constituents = new ArrayList<>( group.getConstituents() );
+            constituents = group.getConstituents();
         }
 
         for ( final StoreKey memberKey : constituents )

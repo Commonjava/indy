@@ -34,6 +34,7 @@ import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.subsys.datafile.DataFile;
 import org.commonjava.indy.subsys.datafile.DataFileManager;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -57,7 +58,7 @@ public class DataFileStoreDataManager
     private DataFileManager manager;
 
     @Inject
-    private ObjectMapper serializer;
+    private IndyObjectMapper serializer;
 
     private boolean started;
 
@@ -65,7 +66,7 @@ public class DataFileStoreDataManager
     {
     }
 
-    public DataFileStoreDataManager( final DataFileManager manager, final ObjectMapper serializer,
+    public DataFileStoreDataManager( final DataFileManager manager, final IndyObjectMapper serializer,
                                         final StoreEventDispatcher dispatcher, IndyConfiguration config )
     {
         super( dispatcher, config );
