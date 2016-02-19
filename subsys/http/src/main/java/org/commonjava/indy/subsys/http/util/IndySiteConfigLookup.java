@@ -57,6 +57,9 @@ public class IndySiteConfigLookup
     {
         SiteConfigBuilder builder = new SiteConfigBuilder( repository.getName(), repository.getUrl() );
 
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Adding server PEM to site config for: {}\n{}", repository.getKey(), repository.getServerCertPem() );
+
         builder.withKeyCertPem( repository.getKeyCertPem() )
                .withProxyHost( repository.getProxyHost() )
                .withProxyPort( repository.getProxyPort() )
@@ -67,6 +70,7 @@ public class IndySiteConfigLookup
                .withUser( repository.getUser() );
 
         SiteConfig config = builder.build();
+        logger.debug( "Got server PEM in site config:\n{}", config.getServerCertPem() );
         config.setAttribute( PASSWORD_PREFIX + KEY.name(),
                              repository.getKeyPassword() );
 

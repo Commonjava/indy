@@ -18,6 +18,7 @@ package org.commonjava.indy.model.core;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -259,6 +260,7 @@ public class RemoteRepository
         this.keyPassword = keyPassword;
     }
 
+    @JsonIgnore
     public String getKeyPassword()
     {
         return keyPassword;
@@ -269,6 +271,7 @@ public class RemoteRepository
         this.keyCertificatePem = keyCertificatePem;
     }
 
+    @JsonIgnore
     public String getKeyCertPem()
     {
         return keyCertificatePem;
@@ -279,6 +282,7 @@ public class RemoteRepository
         this.serverCertificatePem = serverCertificatePem;
     }
 
+    @JsonIgnore
     public String getServerCertPem()
     {
         return serverCertificatePem;

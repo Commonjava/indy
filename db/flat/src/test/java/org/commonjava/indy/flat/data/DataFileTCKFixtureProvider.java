@@ -56,7 +56,7 @@ public class DataFileTCKFixtureProvider
 
         configDir = newFolder( "db" );
 
-        final ObjectMapper serializer = new IndyObjectMapper( true );
+        final IndyObjectMapper serializer = new IndyObjectMapper( true );
 
         dataManager =
                 new TestFlatFileDataManager( new DataFileConfiguration().withDataBasedir( configDir ), serializer );
@@ -69,7 +69,7 @@ public class DataFileTCKFixtureProvider
             extends DataFileStoreDataManager
     {
 
-        public TestFlatFileDataManager( final DataFileConfiguration config, final ObjectMapper serializer )
+        public TestFlatFileDataManager( final DataFileConfiguration config, final IndyObjectMapper serializer )
         {
             super( new DataFileManager( config, new DataFileEventManager() ), serializer,
                    new StoreEventDispatcherStub(), new DefaultIndyConfiguration() );

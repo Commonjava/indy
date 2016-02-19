@@ -15,13 +15,13 @@
  */
 package org.commonjava.indy.model.core;
 
+import com.wordnik.swagger.annotations.ApiModel;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import com.wordnik.swagger.annotations.ApiModel;
 
 @ApiModel( description = "Grouping of other artifact stores, with a defined order to the membership that determines content preference", parent = ArtifactStore.class )
 public class Group
@@ -30,7 +30,7 @@ public class Group
 
     private static final long serialVersionUID = 1L;
 
-    private CopyOnWriteArrayList<StoreKey> constituents;
+    private List<StoreKey> constituents;
 
     Group()
     {
@@ -39,18 +39,18 @@ public class Group
     public Group( final String name, final List<StoreKey> constituents )
     {
         super( name );
-        this.constituents = new CopyOnWriteArrayList<>( constituents );
+        this.constituents = new ArrayList<>( constituents );
     }
 
     public Group( final String name, final StoreKey... constituents )
     {
         super( name );
-        this.constituents = new CopyOnWriteArrayList<>( Arrays.asList( constituents ) );
+        this.constituents = new ArrayList<>( Arrays.asList( constituents ) );
     }
 
     public List<StoreKey> getConstituents()
     {
-        return constituents == null ? Collections.emptyList() : constituents;
+        return constituents == null ? Collections.emptyList() : Collections.unmodifiableList( constituents );
     }
 
     public boolean addConstituent( final ArtifactStore store )
@@ -72,15 +72,18 @@ public class Group
 
         if ( constituents == null )
         {
-            constituents = new CopyOnWriteArrayList<>();
+            constituents = new ArrayList<>();
         }
 
-        if ( constituents.contains( repository ) )
+        synchronized ( constituents )
         {
-            return false;
-        }
+            if ( constituents.contains( repository ) )
+            {
+                return false;
+            }
 
-        return constituents.add( repository );
+            return constituents.add( repository );
+        }
     }
 
     public boolean removeConstituent( final ArtifactStore constituent )
@@ -105,7 +108,7 @@ public class Group
     {
         if ( this.constituents == null )
         {
-            this.constituents = new CopyOnWriteArrayList<>( constituents );
+            this.constituents = new ArrayList<>( constituents );
         }
         else
         {
