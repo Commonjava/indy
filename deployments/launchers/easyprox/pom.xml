@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy.launch</groupId>
     <artifactId>indy-launchers</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.99.0</version>
   </parent>
   
   <artifactId>indy-launcher-easyprox</artifactId>
