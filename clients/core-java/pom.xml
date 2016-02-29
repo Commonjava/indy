@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-clients-parent</artifactId>
-    <version>0.99.0</version>
+    <version>1.0.0-SNAPSHOT</version>
   </parent>
   
   <artifactId>indy-client-core-java</artifactId>
