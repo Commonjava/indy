@@ -47,17 +47,17 @@
     <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
     <javaVersion>1.8</javaVersion>
     <slf4j-version>1.6.1</slf4j-version>
-    <atlasVersion>0.15.3-SNAPSHOT</atlasVersion>
-    <galleyVersion>0.10.4-SNAPSHOT</galleyVersion>
+    <atlasVersion>0.16.0</atlasVersion>
+    <galleyVersion>0.11.0</galleyVersion>
     <cartoVersion>0.10.3-SNAPSHOT</cartoVersion>
     <bomVersion>17</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <resteasyVersion>3.0.9.Final</resteasyVersion>
     <undertowVersion>1.1.2.Final</undertowVersion>
     <xnioVersion>3.3.0.Final</xnioVersion>
-    <partylineVersion>1.5-SNAPSHOT</partylineVersion>
+    <partylineVersion>1.5</partylineVersion>
     <keycloakVersion>1.2.0.Final</keycloakVersion>
-    <jhttpcVersion>1.1-SNAPSHOT</jhttpcVersion>
+    <jhttpcVersion>1.1</jhttpcVersion>
     
     <test-forkCount>1C</test-forkCount>
     <test-redirectOutput>true</test-redirectOutput>
