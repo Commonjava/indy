@@ -49,7 +49,7 @@
     <slf4j-version>1.6.1</slf4j-version>
     <atlasVersion>0.16.0</atlasVersion>
     <galleyVersion>0.11.0</galleyVersion>
-    <cartoVersion>0.10.3</cartoVersion>
+    <cartoVersion>0.10.4-SNAPSHOT</cartoVersion>
     <bomVersion>17</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <resteasyVersion>3.0.9.Final</resteasyVersion>
