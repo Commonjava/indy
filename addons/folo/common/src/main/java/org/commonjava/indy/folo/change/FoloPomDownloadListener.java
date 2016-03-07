@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author pkocandr
  */
-public class FoloPomDonwloadListener
+public class FoloPomDownloadListener
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -109,7 +109,7 @@ public class FoloPomDonwloadListener
         }
         try
         {
-            contentManager.retrieve( store, pomResource.getPath() );
+            contentManager.retrieve( store, pomResource.getPath(), event.getEventMetadata() );
         }
         catch ( final IndyWorkflowException ex )
         {
