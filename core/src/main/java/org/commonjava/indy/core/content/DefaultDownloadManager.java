@@ -18,7 +18,7 @@ package org.commonjava.indy.core.content;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.change.event.ArtifactStoreRescanEvent;
-import org.commonjava.indy.change.event.IndyFileEventManager;
+import org.commonjava.indy.core.change.event.IndyFileEventManager;
 import org.commonjava.indy.change.event.IndyStoreErrorEvent;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.StoreResource;

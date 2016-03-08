@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.change.event;
+package org.commonjava.indy.core.change.event;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
-
+import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.indy.change.event.IndyStoreErrorEvent;
 import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileErrorEvent;
@@ -27,12 +25,17 @@ import org.commonjava.maven.galley.event.FileStorageEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
+import java.util.concurrent.Executor;
+
 /**
  * Helper class to provide simple methods to handle null-checking, etc. around the firing of Indy filesystem events.
  */
 @ApplicationScoped
 public class IndyFileEventManager
-    implements org.commonjava.maven.galley.spi.event.FileEventManager
+        implements org.commonjava.maven.galley.spi.event.FileEventManager
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -54,6 +57,11 @@ public class IndyFileEventManager
 
     @Inject
     private Event<IndyStoreErrorEvent> storeErrorEvent;
+
+    @ExecutorConfig( named = CoreEventManagerConstants.DISPATCH_EXECUTOR_NAME,
+                     priority = CoreEventManagerConstants.DISPATCH_EXECUTOR_PRIORITY )
+    @Inject
+    private Executor executor;
 
     @Override
     public void fire( final FileNotFoundEvent evt )
@@ -92,15 +100,16 @@ public class IndyFileEventManager
 
     private <T> void doFire( final Event<T> eventQ, final T evt )
     {
-        logger.info( "Firing {} event: {}", evt.getClass()
-                                               .getSimpleName(), evt );
-        if ( eventQ != null )
-        {
-            eventQ.fire( evt );
-        }
-        else
-        {
-            logger.warn( "ERROR: No event queue available for firing: {}", evt );
-        }
+        executor.execute( () -> {
+            logger.info( "Firing {} event: {}", evt.getClass().getSimpleName(), evt );
+            if ( eventQ != null )
+            {
+                eventQ.fire( evt );
+            }
+            else
+            {
+                logger.warn( "ERROR: No event queue available for firing: {}", evt );
+            }
+        } );
     }
 }

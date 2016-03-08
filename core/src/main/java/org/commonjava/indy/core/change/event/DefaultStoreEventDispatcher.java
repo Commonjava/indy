@@ -13,14 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.core.data;
+package org.commonjava.indy.core.change.event;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
-
+import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.indy.change.event.ArtifactStoreDeletePostEvent;
 import org.commonjava.indy.change.event.ArtifactStoreDeletePreEvent;
 import org.commonjava.indy.change.event.ArtifactStorePostUpdateEvent;
@@ -32,8 +27,14 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Executor;
+
 public class DefaultStoreEventDispatcher
-    implements StoreEventDispatcher
+        implements StoreEventDispatcher
 {
 
     //    private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -51,6 +52,11 @@ public class DefaultStoreEventDispatcher
     private Event<ArtifactStoreDeletePostEvent> postDelEvent;
 
     @Inject
+    @ExecutorConfig( named = CoreEventManagerConstants.DISPATCH_EXECUTOR_NAME,
+                     priority = CoreEventManagerConstants.DISPATCH_EXECUTOR_PRIORITY )
+    private Executor executor;
+
+    @Inject
     private DownloadManager fileManager;
 
     @Override
@@ -58,21 +64,23 @@ public class DefaultStoreEventDispatcher
     {
         if ( preDelEvent != null )
         {
-            final Map<ArtifactStore, Transfer> storeRoots = new HashMap<>();
-            for ( final ArtifactStore store : stores )
-            {
-                if ( store == null )
+            executor.execute( () -> {
+                final Map<ArtifactStore, Transfer> storeRoots = new HashMap<>();
+                for ( final ArtifactStore store : stores )
                 {
-                    continue;
+                    if ( store == null )
+                    {
+                        continue;
+                    }
+
+                    final Transfer root = fileManager.getStoreRootDirectory( store );
+                    storeRoots.put( store, root );
                 }
 
-                final Transfer root = fileManager.getStoreRootDirectory( store );
-                storeRoots.put( store, root );
-            }
+                final ArtifactStoreDeletePreEvent event = new ArtifactStoreDeletePreEvent( eventMetadata, storeRoots );
 
-            final ArtifactStoreDeletePreEvent event = new ArtifactStoreDeletePreEvent( eventMetadata, storeRoots );
-
-            preDelEvent.fire( event );
+                preDelEvent.fire( event );
+            } );
         }
     }
 
@@ -81,21 +89,24 @@ public class DefaultStoreEventDispatcher
     {
         if ( postDelEvent != null )
         {
-            final Map<ArtifactStore, Transfer> storeRoots = new HashMap<>();
-            for ( final ArtifactStore store : stores )
-            {
-                if ( store == null )
+            executor.execute( () -> {
+                final Map<ArtifactStore, Transfer> storeRoots = new HashMap<>();
+                for ( final ArtifactStore store : stores )
                 {
-                    continue;
+                    if ( store == null )
+                    {
+                        continue;
+                    }
+
+                    final Transfer root = fileManager.getStoreRootDirectory( store );
+                    storeRoots.put( store, root );
                 }
 
-                final Transfer root = fileManager.getStoreRootDirectory( store );
-                storeRoots.put( store, root );
-            }
+                final ArtifactStoreDeletePostEvent event =
+                        new ArtifactStoreDeletePostEvent( eventMetadata, storeRoots );
 
-            final ArtifactStoreDeletePostEvent event = new ArtifactStoreDeletePostEvent( eventMetadata, storeRoots );
-
-            postDelEvent.fire( event );
+                postDelEvent.fire( event );
+            } );
         }
     }
 
@@ -106,11 +117,14 @@ public class DefaultStoreEventDispatcher
         //        logger.debug( "Trying to fire pre-update event for: {}", new JoinString( ", ", stores ) );
         if ( updatePreEvent != null )
         {
-            final ArtifactStorePreUpdateEvent event = new ArtifactStorePreUpdateEvent( type, eventMetadata, stores );
-            //            logger.debug( "Firing pre-update event: {} (for: {}) via:\n  {}", event, new JoinString( ", ", stores ),
-            //                          new JoinString( "\n  ", Thread.currentThread()
-            //                                                        .getStackTrace() ) );
-            updatePreEvent.fire( event );
+            executor.execute( () -> {
+                final ArtifactStorePreUpdateEvent event =
+                        new ArtifactStorePreUpdateEvent( type, eventMetadata, stores );
+                //            logger.debug( "Firing pre-update event: {} (for: {}) via:\n  {}", event, new JoinString( ", ", stores ),
+                //                          new JoinString( "\n  ", Thread.currentThread()
+                //                                                        .getStackTrace() ) );
+                updatePreEvent.fire( event );
+            } );
         }
     }
 
@@ -120,8 +134,11 @@ public class DefaultStoreEventDispatcher
     {
         if ( updatePostEvent != null )
         {
-            final ArtifactStorePostUpdateEvent event = new ArtifactStorePostUpdateEvent( type, eventMetadata, stores );
-            updatePostEvent.fire( event );
+            executor.execute( () -> {
+                final ArtifactStorePostUpdateEvent event =
+                        new ArtifactStorePostUpdateEvent( type, eventMetadata, stores );
+                updatePostEvent.fire( event );
+            } );
         }
     }
 

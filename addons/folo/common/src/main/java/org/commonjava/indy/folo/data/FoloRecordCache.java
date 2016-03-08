@@ -20,6 +20,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
+import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.indy.folo.conf.FoloConfig;
 import org.commonjava.indy.folo.model.AffectedStoreRecord;
 import org.commonjava.indy.folo.model.StoreEffect;
@@ -38,13 +39,15 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 @ApplicationScoped
 public class FoloRecordCache
-    extends CacheLoader<TrackingKey, TrackedContentRecord>
-    implements RemovalListener<TrackingKey, TrackedContentRecord>
 {
 
     private static final String JSON_TYPE = "json";
@@ -60,17 +63,26 @@ public class FoloRecordCache
     @Inject
     private FoloFiler filer;
 
+    @Inject
+    @ExecutorConfig( named="folo-records", priority=6 )
+    private ExecutorService executor;
+
     protected Cache<TrackingKey, TrackedContentRecord> recordCache;
+
+    private ConcurrentHashMap<TrackingKey, Future<TrackedContentRecord>> writesInProgress = new ConcurrentHashMap<>();
+
+    protected CacheGuts guts;
 
     protected FoloRecordCache()
     {
     }
 
     public FoloRecordCache( final FoloFiler filer, final IndyObjectMapper objectMapper,
-                            final FoloConfig config )
+                            final ExecutorService executor, final FoloConfig config )
     {
         this.filer = filer;
         this.objectMapper = objectMapper;
+        this.executor = executor;
         this.config = config;
     }
 
@@ -95,7 +107,9 @@ public class FoloRecordCache
     protected Cache<TrackingKey, TrackedContentRecord> buildCache( FoloRecordCacheConfigurator builderConfigurator )
     {
         final CacheBuilder<Object, Object> builder = CacheBuilder.newBuilder();
-        builder.removalListener( this );
+        guts = new CacheGuts( filer, objectMapper );
+
+        builder.removalListener( guts );
 
         if ( builderConfigurator != null )
         {
@@ -106,7 +120,7 @@ public class FoloRecordCache
             builder.expireAfterAccess( config.getCacheTimeoutSeconds(), TimeUnit.SECONDS );
         }
 
-        recordCache = builder.build( this );
+        recordCache = builder.build( guts );
         return recordCache;
     }
 
@@ -124,96 +138,152 @@ public class FoloRecordCache
                                                 final StoreEffect effect )
             throws FoloContentException
     {
-        final TrackedContentRecord record;
+        TrackedContentRecord record = getOrCreate( key );
+
+        Future<TrackedContentRecord> future = executor.submit( () -> {
+            final AffectedStoreRecord affected = record.getAffectedStore( affectedStore, true );
+            affected.add( path, effect );
+
+            recordCache.put( record.getKey(), record );
+
+            writesInProgress.remove( key );
+
+            return record;
+        } );
+
+        writesInProgress.put(key, future);
+
+        TrackedContentRecord result = null;
         try
         {
-            record = recordCache.get( key, newCallable( key ) );
+            result = future.get();
+        }
+        catch ( InterruptedException e )
+        {
+            logger.error( String.format( "Interrupted while waiting for tracking record write: %s", key ), e );
         }
         catch ( ExecutionException e )
         {
-            throw new FoloContentException( "Failed to load tracking record for: %s. Reason: %s", e, key,
-                                            e.getMessage() );
+            throw new FoloContentException( "Failed to write tracking record: %s. Reason: %s", e, key, e.getMessage() );
         }
 
-        final AffectedStoreRecord affected = record.getAffectedStore( affectedStore, true );
-        affected.add( path, effect );
-
-        recordCache.put( record.getKey(), record );
-
-        return record;
+        return result;
     }
 
     private Callable<? extends TrackedContentRecord> newCallable( TrackingKey key )
     {
-        return ()->FoloRecordCache.this.load( key );
-    }
-
-    @Override
-    public void onRemoval( final RemovalNotification<TrackingKey, TrackedContentRecord> notification )
-    {
-        final TrackingKey key = notification.getKey();
-        if ( key == null )
-        {
-            logger.info( "Nothing to persist. Skipping." );
-            return;
-        }
-
-        write( notification.getValue() );
+        return ()->guts.load( key );
     }
 
     protected void write( final TrackedContentRecord record )
     {
-        final TrackingKey key = record.getKey();
-
-        final File file = filer.getRecordFile( key ).getDetachedFile();
-        logger.info( "Writing {} to: {}", key, file );
-        try
-        {
-            file.getParentFile()
-                .mkdirs();
-            objectMapper.writeValue( file, record );
-        }
-        catch ( final IOException e )
-        {
-            logger.error( "Failed to persist folo log of artifact usage via: " + key, e );
-        }
+        guts.write( record );
     }
 
-    @Override
-    public TrackedContentRecord load( final TrackingKey key )
-        throws Exception
+    protected static final class CacheGuts
+            extends CacheLoader<TrackingKey, TrackedContentRecord>
+            implements RemovalListener<TrackingKey, TrackedContentRecord>
     {
-        final DataFile file = filer.getRecordFile( key );
-        if ( !file.exists() )
+        private FoloFiler filer;
+
+        private IndyObjectMapper objectMapper;
+
+        CacheGuts( FoloFiler filer, IndyObjectMapper objectMapper )
         {
-            logger.info( "Creating new record for: {}", key );
-            return new TrackedContentRecord( key );
+
+            this.filer = filer;
+            this.objectMapper = objectMapper;
         }
 
-        logger.info( "Loading: {} from: {}", key, file );
-        try
+        void write( TrackedContentRecord record )
         {
-            return objectMapper.readValue( file.getDetachedFile(), TrackedContentRecord.class );
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            final TrackingKey key = record.getKey();
+
+            final File file = filer.getRecordFile( key ).getDetachedFile();
+            logger.trace( "Writing {} to: {}", key, file );
+            try
+            {
+                file.getParentFile()
+                    .mkdirs();
+                objectMapper.writeValue( file, record );
+            }
+            catch ( final IOException e )
+            {
+                logger.error( "Failed to persist folo log of artifact usage via: " + key, e );
+            }
         }
-        catch ( final IOException e )
+
+        @Override
+        public void onRemoval( final RemovalNotification<TrackingKey, TrackedContentRecord> notification )
         {
-            logger.error( "Failed to read folo tracked record: " + key, e );
-            throw new IllegalStateException( "Requested artimon tracked record: " + key
-                + " is corrupt, and cannot be read.", e );
+            final TrackingKey key = notification.getKey();
+            if ( key == null )
+            {
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.info( "Nothing to persist. Skipping." );
+                return;
+            }
+
+            write( notification.getValue() );
+        }
+
+        @Override
+        public TrackedContentRecord load( final TrackingKey key )
+                throws Exception
+        {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+
+            final DataFile file = filer.getRecordFile( key );
+            if ( !file.exists() )
+            {
+                logger.info( "Creating new record for: {}", key );
+                return new TrackedContentRecord( key );
+            }
+
+            logger.info( "Loading: {} from: {}", key, file );
+            try
+            {
+                return objectMapper.readValue( file.getDetachedFile(), TrackedContentRecord.class );
+            }
+            catch ( final IOException e )
+            {
+                logger.error( "Failed to read folo tracked record: " + key, e );
+                throw new IllegalStateException( "Requested artimon tracked record: " + key
+                                                         + " is corrupt, and cannot be read.", e );
+            }
         }
     }
 
     public synchronized void delete( final TrackingKey key )
+            throws FoloContentException
     {
+        TrackedContentRecord record = waitForWrite( key );
         recordCache.invalidate( key );
         filer.deleteFiles( key );
     }
 
     public synchronized boolean hasRecord( final TrackingKey key )
     {
+        TrackedContentRecord record = null;
+        try
+        {
+            record = waitForWrite( key );
+        }
+        catch ( FoloContentException e )
+        {
+            logger.error( String.format( "Failed to wait for tracking record to be written: %s. Reason: %s", key,
+                                         e.getMessage() ), e );
+        }
+
+        if ( record != null )
+        {
+            return true;
+        }
+
         DataFile rf = filer.getRecordFile( key );
 
-        logger.info( "Looking for tracking record: {}.\nCache record: {}\nRecord file: {} (exists? {})", key,
+        logger.trace( "Looking for tracking record: {}.\nCache record: {}\nRecord file: {} (exists? {})", key,
                      recordCache.getIfPresent( key ), rf, rf.exists() );
 
         return recordCache.getIfPresent( key ) != null || rf.exists();
@@ -222,35 +292,84 @@ public class FoloRecordCache
     public synchronized TrackedContentRecord getOrCreate( final TrackingKey key )
         throws FoloContentException
     {
-        try
+        TrackedContentRecord record = recordCache.getIfPresent( key );
+        if ( record != null )
         {
-            return recordCache.get( key, ()-> FoloRecordCache.this.load( key ) );
+            return record;
         }
-        catch ( final ExecutionException e )
+
+//        record = waitForWrite( key );
+        if ( record == null )
         {
-            throw new FoloContentException( "Failed to load tracking record for: %s. Reason: %s", e, key,
-                                            e.getMessage() );
+            try
+            {
+                return recordCache.get( key, ()-> guts.load( key ) );
+            }
+            catch ( final ExecutionException e )
+            {
+                throw new FoloContentException( "Failed to load tracking record for: %s. Reason: %s", e, key,
+                                                e.getMessage() );
+            }
         }
+
+        return record;
+    }
+
+    private TrackedContentRecord waitForWrite( TrackingKey key )
+            throws FoloContentException
+    {
+        Future<TrackedContentRecord> future = writesInProgress.get( key );
+        if ( future != null )
+        {
+            try
+            {
+                return future.get();
+            }
+            catch ( InterruptedException e )
+            {
+                logger.debug("Interrupted while waiting for tracking record to write...");
+            }
+            catch ( ExecutionException e )
+            {
+                throw new FoloContentException( "Failed to join thread writing tracking record for: %s. Reason: %s", e, key,
+                                                e.getMessage() );
+            }
+
+        }
+
+        return null;
     }
 
     public synchronized TrackedContentRecord getIfExists( TrackingKey key )
     {
-        DataFile rf = filer.getRecordFile( key );
-
         TrackedContentRecord record = recordCache.getIfPresent( key );
-        logger.info( "Looking for tracking record: {}.\nCache record: {}\nRecord file: {} (exists? {})", key,
-                     record, rf, rf.exists() );
-
-        if ( record == null && rf.exists() )
+        if ( record == null )
         {
+            DataFile rf = filer.getRecordFile( key );
             try
             {
-                record = recordCache.get( key, () -> FoloRecordCache.this.load( key ) );
+                record = waitForWrite( key );
+
+                if ( rf.exists() )
+                {
+                    logger.info( "Looking for tracking record: {}.\nCache record: {}\nRecord file: {} (exists? {})", key,
+                                 record, rf, rf.exists() );
+
+                    record = recordCache.get( key, () -> guts.load( key ) );
+                }
             }
             catch ( ExecutionException e )
             {
                 logger.error(
                         String.format( "Failed to load Folo tracking record from: %s. Reason: %s", rf, e.getMessage() ),
+                        e );
+
+                record = null;
+            }
+            catch ( FoloContentException e )
+            {
+                logger.error(
+                        String.format( "Failed to wait for tracking record write: %s. Reason: %s", key, e.getMessage() ),
                         e );
 
                 record = null;

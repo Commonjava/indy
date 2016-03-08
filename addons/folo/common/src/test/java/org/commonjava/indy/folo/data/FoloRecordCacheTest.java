@@ -22,6 +22,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.commonjava.indy.folo.conf.FoloConfig;
@@ -57,7 +58,7 @@ public class FoloRecordCacheTest
 
         private TestCache( final FoloFiler filer, final IndyObjectMapper objectMapper, final FoloConfig config )
         {
-            super( filer, objectMapper, config );
+            super( filer, objectMapper, Executors.newCachedThreadPool(), config );
         }
 
         public void doWrite( final TrackedContentRecord record )
@@ -116,7 +117,7 @@ public class FoloRecordCacheTest
         final Cache<TrackingKey, TrackedContentRecord> cache = this.cache.buildCache();
 
         final TrackingKey key = newKey();
-        final TrackedContentRecord record = cache.get( key, ()->this.cache.load( key ) );
+        final TrackedContentRecord record = cache.get( key, ()->this.cache.guts.load( key ) );
         assertThat( record, notNullValue() );
 
         assertThat( cache.size(), equalTo( 1L ) );
@@ -213,6 +214,7 @@ public class FoloRecordCacheTest
 
     @Test
     public void createCacheAddItem_InvalidateAll_VerifyFileWritten_ThenDeleteAndVerifyFileRemoved()
+            throws FoloContentException
     {
         Cache<TrackingKey, TrackedContentRecord> cache = this.cache.buildCache();
 
@@ -312,7 +314,7 @@ public class FoloRecordCacheTest
 
         final Cache<TrackingKey, TrackedContentRecord> cache = CacheBuilder.newBuilder().build();
 
-        final TrackedContentRecord result = cache.get( record.getKey(), ()->this.cache.load( record.getKey() ) );
+        final TrackedContentRecord result = cache.get( record.getKey(), ()->this.cache.getOrCreate( record.getKey() ) );
 
         assertThat( result, notNullValue() );
         assertThat( result.getKey(), equalTo( record.getKey() ) );

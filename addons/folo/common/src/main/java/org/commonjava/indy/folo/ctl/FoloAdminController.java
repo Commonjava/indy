@@ -282,6 +282,7 @@ public class FoloAdminController
     }
 
     public void clearRecord( final String id )
+            throws FoloContentException
     {
         final TrackingKey tk = new TrackingKey( id );
         recordManager.delete( tk );

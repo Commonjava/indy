@@ -23,7 +23,7 @@ import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
 
-import org.commonjava.indy.change.event.IndyFileEventManager;
+import org.commonjava.indy.core.change.event.IndyFileEventManager;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.core.content.group.ArchetypeCatalogMerger;
 import org.commonjava.indy.core.content.group.GroupMergeHelper;

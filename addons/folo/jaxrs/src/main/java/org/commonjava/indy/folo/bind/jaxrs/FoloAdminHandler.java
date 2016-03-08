@@ -19,6 +19,7 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.folo.ctl.FoloAdminController;
+import org.commonjava.indy.folo.data.FoloContentException;
 import org.commonjava.indy.folo.dto.TrackedContentDTO;
 import org.commonjava.indy.folo.model.TrackedContentRecord;
 import org.commonjava.indy.folo.model.TrackingKey;
@@ -186,9 +187,19 @@ public class FoloAdminHandler
     @DELETE
     public Response clearRecord( final @PathParam( "id" ) String id )
     {
-        controller.clearRecord( id );
-        return Response.status( Status.NO_CONTENT )
-                       .build();
+        Response response;
+        try
+        {
+            controller.clearRecord( id );
+            response = Response.status( Status.NO_CONTENT )
+                           .build();
+        }
+        catch ( FoloContentException e )
+        {
+            response = formatResponse( e );
+        }
+
+        return response;
     }
 
 }

@@ -19,7 +19,7 @@ import java.io.File;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.commonjava.indy.change.event.IndyFileEventManager;
+import org.commonjava.indy.core.change.event.IndyFileEventManager;
 import org.commonjava.indy.content.KeyBasedPathGenerator;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.auth.MemoryPasswordManager;
