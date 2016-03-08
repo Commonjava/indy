@@ -49,12 +49,12 @@
   <logger name="org.commonjava" level="DEBUG" />
   -->
   
-  <logger name="org.commonjava.indy.implrepo" level="DEBUG" />
-  <logger name="org.commonjava.maven.galley.transport" level="DEBUG" />
-  <logger name="org.commonjava.util.partyline" level="DEBUG" />
+  <logger name="org.commonjava" level="WARN" />
+
+  <!-- <logger name="org.commonjava.maven.galley.transport" level="DEBUG" /> -->
 
   <root level="INFO">
-    <appender-ref ref="STDOUT" />
+    <!-- <appender-ref ref="STDOUT" /> -->
     <appender-ref ref="FILE" />
   </root>
   

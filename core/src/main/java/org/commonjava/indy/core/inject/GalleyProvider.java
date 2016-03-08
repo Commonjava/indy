@@ -20,6 +20,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
+import org.commonjava.maven.galley.config.TransportManagerConfig;
 import org.commonjava.maven.galley.maven.internal.defaults.StandardMaven304PluginDefaults;
 import org.commonjava.maven.galley.maven.internal.defaults.StandardMavenPluginImplications;
 import org.commonjava.maven.galley.maven.parse.XMLInfrastructure;
@@ -37,11 +38,22 @@ public class GalleyProvider
 
     private MavenPluginImplications pluginImplications;
 
+    private TransportManagerConfig transportManagerConfig;
+
     @PostConstruct
     public void setup()
     {
         pluginDefaults = new StandardMaven304PluginDefaults();
         pluginImplications = new StandardMavenPluginImplications( xml );
+
+        // TODO: Tie this into a config file!
+        transportManagerConfig = new TransportManagerConfig();
+    }
+
+    @Produces
+    public TransportManagerConfig getTransportManagerConfig()
+    {
+        return transportManagerConfig;
     }
 
     @Produces

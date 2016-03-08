@@ -164,7 +164,7 @@ public class ScheduleManager
         return new SchedulerEvent( eventType, type, data );
     }
 
-    public void rescheduleSnapshotTimeouts( final HostedRepository deploy )
+    public synchronized void rescheduleSnapshotTimeouts( final HostedRepository deploy )
         throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
@@ -194,7 +194,7 @@ public class ScheduleManager
         }
     }
 
-    public void rescheduleProxyTimeouts( final RemoteRepository repo )
+    public synchronized void rescheduleProxyTimeouts( final RemoteRepository repo )
         throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
@@ -227,7 +227,7 @@ public class ScheduleManager
         }
     }
 
-    public void setProxyTimeouts( final StoreKey key, final String path )
+    public synchronized void setProxyTimeouts( final StoreKey key, final String path )
         throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
@@ -267,7 +267,7 @@ public class ScheduleManager
         }
     }
 
-    public void scheduleForStore( final StoreKey key, final String jobType, final String jobName, final Object payload,
+    public synchronized void scheduleForStore( final StoreKey key, final String jobType, final String jobName, final Object payload,
                                   final int startSeconds, final int repeatSeconds )
         throws IndySchedulerException
     {
@@ -334,7 +334,7 @@ public class ScheduleManager
         }
     }
 
-    public void scheduleContentExpiration( final StoreKey key, final String path, final int timeoutSeconds )
+    public synchronized void scheduleContentExpiration( final StoreKey key, final String path, final int timeoutSeconds )
         throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
@@ -347,7 +347,7 @@ public class ScheduleManager
         scheduleForStore( key, CONTENT_JOB_TYPE, path, new ContentExpiration( key, path ), timeoutSeconds, -1 );
     }
 
-    public void setSnapshotTimeouts( final StoreKey key, final String path )
+    public synchronized void setSnapshotTimeouts( final StoreKey key, final String path )
         throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
@@ -426,7 +426,7 @@ public class ScheduleManager
         return null;
     }
 
-    public Set<TriggerKey> cancelAllBefore( final GroupMatcher<TriggerKey> matcher, final long timeout )
+    public synchronized Set<TriggerKey> cancelAllBefore( final GroupMatcher<TriggerKey> matcher, final long timeout )
         throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
@@ -464,13 +464,13 @@ public class ScheduleManager
         return canceled;
     }
 
-    public Set<TriggerKey> cancelAll( final GroupMatcher<TriggerKey> matcher )
+    public synchronized Set<TriggerKey> cancelAll( final GroupMatcher<TriggerKey> matcher )
         throws IndySchedulerException
     {
         return cancel( matcher, ANY );
     }
 
-    public Set<TriggerKey> cancel( final GroupMatcher<TriggerKey> matcher, final String name )
+    public synchronized Set<TriggerKey> cancel( final GroupMatcher<TriggerKey> matcher, final String name )
         throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
@@ -528,7 +528,7 @@ public class ScheduleManager
         return canceled;
     }
 
-    public Expiration findSingleExpiration( final GroupMatcher<TriggerKey> matcher )
+    public synchronized Expiration findSingleExpiration( final GroupMatcher<TriggerKey> matcher )
             throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
@@ -554,7 +554,7 @@ public class ScheduleManager
         return null;
     }
 
-    public ExpirationSet findMatchingExpirations( final GroupMatcher<TriggerKey> matcher )
+    public synchronized ExpirationSet findMatchingExpirations( final GroupMatcher<TriggerKey> matcher )
             throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
@@ -592,7 +592,7 @@ public class ScheduleManager
                                trigger.getNextFireTime() );
     }
 
-    public TriggerKey findFirstMatchingTrigger( final GroupMatcher<TriggerKey> matcher )
+    public synchronized TriggerKey findFirstMatchingTrigger( final GroupMatcher<TriggerKey> matcher )
         throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
@@ -638,7 +638,7 @@ public class ScheduleManager
         return null;
     }
 
-    public boolean deleteJobs( final Set<TriggerKey> keys )
+    public synchronized boolean deleteJobs( final Set<TriggerKey> keys )
         throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
@@ -663,7 +663,7 @@ public class ScheduleManager
         return false;
     }
 
-    public boolean deleteJob( final String group, final String name )
+    public synchronized boolean deleteJob( final String group, final String name )
         throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )

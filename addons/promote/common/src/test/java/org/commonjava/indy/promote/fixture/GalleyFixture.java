@@ -24,6 +24,7 @@ import org.commonjava.indy.content.KeyBasedPathGenerator;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.auth.MemoryPasswordManager;
 import org.commonjava.maven.galley.cache.FileCacheProvider;
+import org.commonjava.maven.galley.config.TransportManagerConfig;
 import org.commonjava.maven.galley.internal.TransferManagerImpl;
 import org.commonjava.maven.galley.internal.xfer.DownloadHandler;
 import org.commonjava.maven.galley.internal.xfer.ExistenceHandler;
@@ -76,8 +77,10 @@ public class GalleyFixture
         nfc = new MemoryNotFoundCache();
         specialPathManager = new SpecialPathManagerImpl();
 
-        final DownloadHandler dh = new DownloadHandler( nfc, executor );
-        final UploadHandler uh = new UploadHandler( nfc, executor );
+        TransportManagerConfig transportManagerConfig = new TransportManagerConfig();
+
+        final DownloadHandler dh = new DownloadHandler( nfc, transportManagerConfig, executor );
+        final UploadHandler uh = new UploadHandler( nfc, transportManagerConfig, executor );
         final ListingHandler lh = new ListingHandler( nfc );
         final ExistenceHandler eh = new ExistenceHandler( nfc );
 

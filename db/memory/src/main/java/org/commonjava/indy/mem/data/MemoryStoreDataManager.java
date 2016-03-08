@@ -15,25 +15,10 @@
  */
 package org.commonjava.indy.mem.data;
 
-import static org.commonjava.indy.model.core.StoreType.group;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Alternative;
-import javax.inject.Inject;
-
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
-import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.conf.DefaultIndyConfiguration;
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.NoOpStoreEventDispatcher;
 import org.commonjava.indy.data.StoreDataManager;
@@ -48,10 +33,24 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Alternative;
+import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.commonjava.indy.model.core.StoreType.group;
+
 @ApplicationScoped
 @Alternative
 public class MemoryStoreDataManager
-    implements StoreDataManager
+        implements StoreDataManager
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -85,21 +84,21 @@ public class MemoryStoreDataManager
 
     @Override
     public HostedRepository getHostedRepository( final String name )
-        throws IndyDataException
+            throws IndyDataException
     {
         return (HostedRepository) stores.get( new StoreKey( StoreType.hosted, name ) );
     }
 
     @Override
     public ArtifactStore getArtifactStore( final StoreKey key )
-        throws IndyDataException
+            throws IndyDataException
     {
         return stores.get( key );
     }
 
     @Override
     public RemoteRepository getRemoteRepository( final String name )
-        throws IndyDataException
+            throws IndyDataException
     {
         final StoreKey key = new StoreKey( StoreType.remote, name );
 
@@ -119,49 +118,49 @@ public class MemoryStoreDataManager
 
     @Override
     public Group getGroup( final String name )
-        throws IndyDataException
+            throws IndyDataException
     {
         return (Group) stores.get( new StoreKey( StoreType.group, name ) );
     }
 
     @Override
     public List<Group> getAllGroups()
-        throws IndyDataException
+            throws IndyDataException
     {
         return getAll( StoreType.group, Group.class );
     }
 
     @Override
     public List<RemoteRepository> getAllRemoteRepositories()
-        throws IndyDataException
+            throws IndyDataException
     {
         return getAll( StoreType.remote, RemoteRepository.class );
     }
 
     @Override
     public List<HostedRepository> getAllHostedRepositories()
-        throws IndyDataException
+            throws IndyDataException
     {
         return getAll( StoreType.hosted, HostedRepository.class );
     }
 
     @Override
     public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
-        throws IndyDataException
+            throws IndyDataException
     {
         return getGroupOrdering( groupName, false, true );
     }
 
     @Override
     public List<ArtifactStore> getOrderedStoresInGroup( final String groupName )
-        throws IndyDataException
+            throws IndyDataException
     {
         return getGroupOrdering( groupName, true, false );
     }
 
     private List<ArtifactStore> getGroupOrdering( final String groupName, final boolean includeGroups,
                                                   final boolean recurseGroups )
-        throws IndyDataException
+            throws IndyDataException
     {
         final Group master = (Group) stores.get( new StoreKey( StoreType.group, groupName ) );
         if ( master == null )
@@ -176,11 +175,17 @@ public class MemoryStoreDataManager
     }
 
     private void recurseGroup( final Group master, final List<ArtifactStore> result, final Set<StoreKey> seen,
-                                            final boolean includeGroups, final boolean recurseGroups )
+                               final boolean includeGroups, final boolean recurseGroups )
     {
-        if ( master == null )
+        List<StoreKey> members = null;
+        synchronized ( master )
         {
-            return;
+            if ( master == null || master.getConstituents() == null )
+            {
+                return;
+            }
+
+            members = new ArrayList<>( master.getConstituents() );
         }
 
         if ( includeGroups )
@@ -188,7 +193,7 @@ public class MemoryStoreDataManager
             result.add( master );
         }
 
-        master.getConstituents().forEach( (key)->{
+        members.forEach( ( key ) -> {
             if ( !seen.contains( key ) )
             {
                 seen.add( key );
@@ -207,12 +212,12 @@ public class MemoryStoreDataManager
                     }
                 }
             }
-        });
+        } );
     }
 
     @Override
     public Set<Group> getGroupsContaining( final StoreKey repo )
-        throws IndyDataException
+            throws IndyDataException
     {
         final Set<Group> groups =
                 getAllGroups().stream().filter( group -> groupContains( group, repo ) ).collect( Collectors.toSet() );
@@ -222,27 +227,30 @@ public class MemoryStoreDataManager
 
     private boolean groupContains( final Group g, final StoreKey key )
     {
-        if ( g == null || g.getConstituents() == null )
+        List<StoreKey> members = null;
+        synchronized ( g )
         {
-            return false;
+            if ( g == null || g.getConstituents() == null )
+            {
+                return false;
+            }
+
+            if ( g.getConstituents().contains( key ) )
+            {
+                return true;
+            }
+
+            members = new ArrayList<>( g.getConstituents() );
         }
 
-        if ( g.getConstituents()
-              .contains( key ) )
+        for ( final StoreKey constituent : members )
         {
-            return true;
-        }
-        else
-        {
-            for ( final StoreKey constituent : g.getConstituents() )
+            if ( constituent.getType() == group )
             {
-                if ( constituent.getType() == group )
+                final Group embedded = (Group) stores.get( constituent );
+                if ( embedded != null && groupContains( embedded, key ) )
                 {
-                    final Group embedded = (Group) stores.get( constituent );
-                    if ( embedded != null && groupContains( embedded, key ) )
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
         }
@@ -252,7 +260,7 @@ public class MemoryStoreDataManager
 
     @Override
     public boolean storeArtifactStore( final ArtifactStore store, final ChangeSummary summary )
-        throws IndyDataException
+            throws IndyDataException
     {
         return storeArtifactStore( store, summary, new EventMetadata() );
     }
@@ -260,7 +268,7 @@ public class MemoryStoreDataManager
     @Override
     public boolean storeArtifactStore( final ArtifactStore store, final ChangeSummary summary,
                                        final EventMetadata eventMetadata )
-        throws IndyDataException
+            throws IndyDataException
     {
         return storeArtifactStore( store, summary, false, true, new EventMetadata() );
     }
@@ -268,7 +276,7 @@ public class MemoryStoreDataManager
     @Override
     public boolean storeArtifactStore( final ArtifactStore store, final ChangeSummary summary,
                                        final boolean skipIfExists )
-        throws IndyDataException
+            throws IndyDataException
     {
         return storeArtifactStore( store, summary, skipIfExists, new EventMetadata() );
     }
@@ -276,7 +284,7 @@ public class MemoryStoreDataManager
     @Override
     public boolean storeArtifactStore( final ArtifactStore store, final ChangeSummary summary,
                                        final boolean skipIfExists, final EventMetadata eventMetadata )
-        throws IndyDataException
+            throws IndyDataException
     {
         return storeArtifactStore( store, summary, skipIfExists, true, new EventMetadata() );
     }
@@ -284,7 +292,7 @@ public class MemoryStoreDataManager
     @Override
     public boolean storeArtifactStore( final ArtifactStore store, final ChangeSummary summary,
                                        final boolean skipIfExists, final boolean fireEvents )
-        throws IndyDataException
+            throws IndyDataException
     {
         return storeArtifactStore( store, summary, skipIfExists, fireEvents, new EventMetadata() );
     }
@@ -293,7 +301,7 @@ public class MemoryStoreDataManager
     public boolean storeArtifactStore( final ArtifactStore store, final ChangeSummary summary,
                                        final boolean skipIfExists, final boolean fireEvents,
                                        final EventMetadata eventMetadata )
-        throws IndyDataException
+            throws IndyDataException
     {
         final boolean result = store( store, summary, skipIfExists, fireEvents, eventMetadata );
         if ( result && ( store instanceof RemoteRepository ) )
@@ -308,7 +316,7 @@ public class MemoryStoreDataManager
     private synchronized boolean store( final ArtifactStore store, final ChangeSummary summary,
                                         final boolean skipIfExists, final boolean fireEvents,
                                         final EventMetadata eventMetadata )
-        throws IndyDataException
+            throws IndyDataException
     {
         final boolean exists = stores.containsKey( store.getKey() );
         if ( !skipIfExists || !exists )
@@ -332,7 +340,7 @@ public class MemoryStoreDataManager
 
     protected void preStore( final ArtifactStore store, final ChangeSummary summary, final boolean exists,
                              final boolean fireEvents, final EventMetadata eventMetadata )
-        throws IndyDataException
+            throws IndyDataException
     {
         if ( isStarted() && fireEvents )
         {
@@ -343,7 +351,7 @@ public class MemoryStoreDataManager
 
     protected void postStore( final ArtifactStore store, final ChangeSummary summary, final boolean exists,
                               final boolean fireEvents, final EventMetadata eventMetadata )
-        throws IndyDataException
+            throws IndyDataException
     {
         if ( isStarted() && fireEvents )
         {
@@ -354,7 +362,7 @@ public class MemoryStoreDataManager
 
     protected void preDelete( final ArtifactStore store, final ChangeSummary summary, final boolean fireEvents,
                               final EventMetadata eventMetadata )
-        throws IndyDataException
+            throws IndyDataException
     {
         if ( isStarted() && fireEvents )
         {
@@ -364,7 +372,7 @@ public class MemoryStoreDataManager
 
     protected void postDelete( final ArtifactStore store, final ChangeSummary summary, final boolean fireEvents,
                                final EventMetadata eventMetadata )
-        throws IndyDataException
+            throws IndyDataException
     {
         if ( isStarted() && fireEvents )
         {
@@ -374,7 +382,7 @@ public class MemoryStoreDataManager
 
     @Override
     public synchronized void deleteArtifactStore( final StoreKey key, final ChangeSummary summary )
-        throws IndyDataException
+            throws IndyDataException
     {
         deleteArtifactStore( key, summary, new EventMetadata() );
     }
@@ -382,7 +390,7 @@ public class MemoryStoreDataManager
     @Override
     public synchronized void deleteArtifactStore( final StoreKey key, final ChangeSummary summary,
                                                   final EventMetadata eventMetadata )
-        throws IndyDataException
+            throws IndyDataException
     {
         final ArtifactStore store = stores.get( key );
         if ( store == null )
@@ -399,13 +407,13 @@ public class MemoryStoreDataManager
 
     @Override
     public void install()
-        throws IndyDataException
+            throws IndyDataException
     {
     }
 
     @Override
     public void clear( final ChangeSummary summary )
-        throws IndyDataException
+            throws IndyDataException
     {
         stores.clear();
     }
@@ -420,8 +428,7 @@ public class MemoryStoreDataManager
                 continue;
             }
 
-            if ( store.getKey()
-                      .getType() == storeType )
+            if ( store.getKey().getType() == storeType )
             {
                 result.add( type.cast( store.getValue() ) );
             }
@@ -437,8 +444,7 @@ public class MemoryStoreDataManager
         {
             for ( final StoreType type : storeTypes )
             {
-                if ( store.getKey()
-                          .getType() == type )
+                if ( store.getKey().getType() == type )
                 {
                     result.add( store.getValue() );
                 }
@@ -450,7 +456,7 @@ public class MemoryStoreDataManager
 
     @Override
     public List<ArtifactStore> getAllArtifactStores()
-        throws IndyDataException
+            throws IndyDataException
     {
         return new ArrayList<ArtifactStore>( stores.values() );
     }
@@ -463,7 +469,7 @@ public class MemoryStoreDataManager
 
     @Override
     public List<? extends ArtifactStore> getAllArtifactStores( final StoreType type )
-        throws IndyDataException
+            throws IndyDataException
     {
         return getAll( type, type.getStoreClass() );
     }
@@ -494,7 +500,7 @@ public class MemoryStoreDataManager
 
     @Override
     public void reload()
-        throws IndyDataException
+            throws IndyDataException
     {
     }
 

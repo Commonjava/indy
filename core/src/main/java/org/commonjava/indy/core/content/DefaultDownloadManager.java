@@ -15,10 +15,11 @@
  */
 package org.commonjava.indy.core.content;
 
+import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.change.event.ArtifactStoreRescanEvent;
 import org.commonjava.indy.change.event.IndyFileEventManager;
 import org.commonjava.indy.change.event.IndyStoreErrorEvent;
-import org.commonjava.indy.change.event.ArtifactStoreRescanEvent;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.data.IndyDataException;
@@ -32,7 +33,6 @@ import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.indy.util.PathUtils;
-import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 import org.commonjava.maven.galley.BadGatewayException;
 import org.commonjava.maven.galley.TransferException;
@@ -62,13 +62,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
-import static org.apache.commons.io.IOUtils.copy;
 import static org.commonjava.indy.util.ContentUtils.dedupeListing;
 
 @javax.enterprise.context.ApplicationScoped
 public class DefaultDownloadManager
-    implements DownloadManager
+        implements DownloadManager
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -111,26 +109,18 @@ public class DefaultDownloadManager
 
     @Override
     public List<StoreResource> list( final ArtifactStore store, final String path )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
         final List<StoreResource> result = new ArrayList<>();
 
-        if ( store.isDisabled() )
-        {
-            return result;
-        }
-
         //        final String dir = PathUtils.dirname( path );
 
-        if ( store.getKey()
-                  .getType() == StoreType.group )
+        if ( store.getKey().getType() == StoreType.group )
         {
             try
             {
-                final List<ListingResult> results =
-                    transfers.listAll( locationExpander.expand( new VirtualResource(
-                                                                                     LocationUtils.toLocations( store ),
-                                                                                     path ) ) );
+                final List<ListingResult> results = transfers.listAll(
+                        locationExpander.expand( new VirtualResource( LocationUtils.toLocations( store ), path ) ) );
 
                 for ( final ListingResult lr : results )
                 {
@@ -171,7 +161,7 @@ public class DefaultDownloadManager
             {
                 logger.error( e.getMessage(), e );
                 throw new IndyWorkflowException( "Failed to list ALL paths: {} from: {}. Reason: {}", e, path,
-                                                  store.getKey(), e.getMessage() );
+                                                 store.getKey(), e.getMessage() );
             }
         }
         else
@@ -219,7 +209,7 @@ public class DefaultDownloadManager
                 {
                     logger.error( e.getMessage(), e );
                     throw new IndyWorkflowException( "Failed to list path: {} from: {}. Reason: {}", e, path,
-                                                      store.getKey(), e.getMessage() );
+                                                     store.getKey(), e.getMessage() );
                 }
             }
             else
@@ -247,7 +237,7 @@ public class DefaultDownloadManager
                 {
                     logger.error( e.getMessage(), e );
                     throw new IndyWorkflowException( "Failed to list path: {} from: {}. Reason: {}", e, path,
-                                                      store.getKey(), e.getMessage() );
+                                                     store.getKey(), e.getMessage() );
                 }
             }
         }
@@ -257,17 +247,15 @@ public class DefaultDownloadManager
 
     @Override
     public List<StoreResource> list( final List<? extends ArtifactStore> stores, final String path )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
-        List<ArtifactStore> enabled = findEnabled( stores );
         final String dir = PathUtils.dirname( path );
 
         final List<StoreResource> result = new ArrayList<>();
         try
         {
-            final List<ListingResult> results =
-                transfers.listAll( locationExpander.expand( new VirtualResource( LocationUtils.toLocations( enabled ),
-                                                                                 path ) ) );
+            final List<ListingResult> results = transfers.listAll(
+                    locationExpander.expand( new VirtualResource( LocationUtils.toLocations( stores ), path ) ) );
 
             for ( final ListingResult lr : results )
             {
@@ -308,7 +296,7 @@ public class DefaultDownloadManager
         {
             logger.error( e.getMessage(), e );
             throw new IndyWorkflowException( "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, stores,
-                                              e.getMessage() );
+                                             e.getMessage() );
         }
 
         return dedupeListing( result );
@@ -316,7 +304,7 @@ public class DefaultDownloadManager
 
     @Override
     public Transfer retrieveFirst( final List<? extends ArtifactStore> stores, final String path )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
         return retrieveFirst( stores, path, new EventMetadata() );
     }
@@ -324,15 +312,13 @@ public class DefaultDownloadManager
     @Override
     public Transfer retrieveFirst( final List<? extends ArtifactStore> stores, final String path,
                                    final EventMetadata eventMetadata )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
-        List<ArtifactStore> enabled = findEnabled( stores );
-
         try
         {
-            return transfers.retrieveFirst( locationExpander.expand( new VirtualResource(
-                                                                                          LocationUtils.toLocations( enabled ),
-                                                                                          path ) ), eventMetadata );
+            return transfers.retrieveFirst(
+                    locationExpander.expand( new VirtualResource( LocationUtils.toLocations( stores ), path ) ),
+                    eventMetadata );
         }
         catch ( final BadGatewayException e )
         {
@@ -361,8 +347,8 @@ public class DefaultDownloadManager
         catch ( final TransferException e )
         {
             logger.error( e.getMessage(), e );
-            throw new IndyWorkflowException( "Failed to retrieve first path: {} from: {}. Reason: {}", e, path,
-                                              stores, e.getMessage() );
+            throw new IndyWorkflowException( "Failed to retrieve first path: {} from: {}. Reason: {}", e, path, stores,
+                                             e.getMessage() );
         }
 
         return null;
@@ -374,7 +360,7 @@ public class DefaultDownloadManager
      */
     @Override
     public List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
         return retrieveAll( stores, path, new EventMetadata() );
     }
@@ -384,40 +370,22 @@ public class DefaultDownloadManager
      * @see org.commonjava.indy.core.rest.util.FileManager#downloadAll(java.util.List, java.lang.String)
      */
     @Override
-    public List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores , final String path , final EventMetadata eventMetadata  )
-        throws IndyWorkflowException
+    public List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path,
+                                       final EventMetadata eventMetadata )
+            throws IndyWorkflowException
     {
-        List<ArtifactStore> enabled = findEnabled( stores );
         try
         {
             return transfers.retrieveAll(
-                    locationExpander.expand( new VirtualResource( LocationUtils.toLocations( enabled ), path ) ),
+                    locationExpander.expand( new VirtualResource( LocationUtils.toLocations( stores ), path ) ),
                     eventMetadata );
         }
         catch ( final TransferException e )
         {
             logger.error( e.getMessage(), e );
             throw new IndyWorkflowException( "Failed to retrieve ALL paths: {} from: {}. Reason: {}", e, path, stores,
-                                              e.getMessage() );
+                                             e.getMessage() );
         }
-    }
-
-    private List<ArtifactStore> findEnabled( List<? extends ArtifactStore> stores )
-    {
-        List<ArtifactStore> enabled = new ArrayList<>( stores.size() );
-        for ( ArtifactStore store: stores )
-        {
-            if ( !store.isDisabled() )
-            {
-                enabled.add( store );
-            }
-            else
-            {
-                logger.debug( "{} is disabled.", store.getKey() );
-            }
-        }
-
-        return enabled;
     }
 
     /*
@@ -427,7 +395,7 @@ public class DefaultDownloadManager
      */
     @Override
     public Transfer retrieve( final ArtifactStore store, final String path )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
         return retrieve( store, path, new EventMetadata() );
     }
@@ -439,22 +407,16 @@ public class DefaultDownloadManager
      */
     @Override
     public Transfer retrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
         return retrieve( store, path, false, eventMetadata );
     }
 
     private Transfer retrieve( final ArtifactStore store, final String path, final boolean suppressFailures,
                                final EventMetadata eventMetadata )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
-        if ( store.isDisabled() )
-        {
-            return null;
-        }
-
-        if ( store.getKey()
-                  .getType() == StoreType.group )
+        if ( store.getKey().getType() == StoreType.group )
         {
             return null;
         }
@@ -493,15 +455,15 @@ public class DefaultDownloadManager
             fileEventManager.fire( new IndyStoreErrorEvent( store.getKey(), e ) );
             logger.warn( "Timeout / bad gateway: " + e.getMessage(), e );
             target = null;
-//            throw new IndyWorkflowException( ApplicationStatus.NOT_FOUND.code(),
-//                                              "Failed to retrieve path: {} from: {}. Reason: {}", e, path, store,
-//                                              e.getMessage() );
+            //            throw new IndyWorkflowException( ApplicationStatus.NOT_FOUND.code(),
+            //                                              "Failed to retrieve path: {} from: {}. Reason: {}", e, path, store,
+            //                                              e.getMessage() );
         }
         catch ( final TransferException e )
         {
             logger.error( e.getMessage(), e );
             throw new IndyWorkflowException( "Failed to retrieve path: {} from: {}. Reason: {}", e, path, store,
-                                              e.getMessage() );
+                                             e.getMessage() );
         }
 
         return target;
@@ -515,7 +477,7 @@ public class DefaultDownloadManager
     @Override
     public Transfer store( final ArtifactStore store, final String path, final InputStream stream,
                            final TransferOperation op )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
         return store( store, path, stream, op, new EventMetadata() );
     }
@@ -528,25 +490,18 @@ public class DefaultDownloadManager
     @Override
     public Transfer store( final ArtifactStore store, final String path, final InputStream stream,
                            final TransferOperation op, final EventMetadata eventMetadata )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
-        if ( store.isDisabled() )
-        {
-            return null;
-        }
-
-        if ( store.getKey()
-                  .getType() == StoreType.group )
+        if ( store.getKey().getType() == StoreType.group )
         {
             //FIXME: Why is this null? Investigate.
             return null;
         }
 
-        if ( store.getKey()
-                  .getType() != StoreType.hosted )
+        if ( store.getKey().getType() != StoreType.hosted )
         {
             throw new IndyWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                              "Cannot deploy to non-deploy point artifact store: {}.", store.getKey() );
+                                             "Cannot deploy to non-deploy point artifact store: {}.", store.getKey() );
         }
 
         if ( store instanceof HostedRepository )
@@ -560,20 +515,20 @@ public class DefaultDownloadManager
                 {
                     logger.error( "Cannot store snapshot in non-snapshot deploy point: {}", deploy.getName() );
                     throw new IndyWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                                      "Cannot store snapshot in non-snapshot deploy point: {}",
-                                                      deploy.getName() );
+                                                     "Cannot store snapshot in non-snapshot deploy point: {}",
+                                                     deploy.getName() );
                 }
             }
             else if ( !deploy.isAllowReleases() )
             {
                 logger.error( "Cannot store release in snapshot-only deploy point: {}", deploy.getName() );
                 throw new IndyWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                                  "Cannot store release in snapshot-only deploy point: {}",
-                                                  deploy.getName() );
+                                                 "Cannot store release in snapshot-only deploy point: {}",
+                                                 deploy.getName() );
             }
         }
 
-//        final Transfer target = getStorageReference( deploy, path );
+        //        final Transfer target = getStorageReference( deploy, path );
 
         // TODO: Need some protection for released files!
         // if ( target.exists() )
@@ -584,7 +539,8 @@ public class DefaultDownloadManager
 
         try
         {
-            return transfers.store( new ConcreteResource( LocationUtils.toLocation( store ), path ), stream, eventMetadata );
+            return transfers.store( new ConcreteResource( LocationUtils.toLocation( store ), path ), stream,
+                                    eventMetadata );
         }
         catch ( final BadGatewayException e )
         {
@@ -594,7 +550,7 @@ public class DefaultDownloadManager
             fileEventManager.fire( new IndyStoreErrorEvent( kl.getKey(), e ) );
             logger.warn( "Bad gateway: " + e.getMessage(), e );
             throw new IndyWorkflowException( "Failed to store path: {} in: {}. Reason: {}", e, path, store,
-                                              e.getMessage() );
+                                             e.getMessage() );
         }
         catch ( final TransferTimeoutException e )
         {
@@ -604,7 +560,7 @@ public class DefaultDownloadManager
             fileEventManager.fire( new IndyStoreErrorEvent( kl.getKey(), e ) );
             logger.warn( "Timeout: " + e.getMessage(), e );
             throw new IndyWorkflowException( "Failed to store path: {} in: {}. Reason: {}", e, path, store,
-                                              e.getMessage() );
+                                             e.getMessage() );
         }
         catch ( final TransferLocationException e )
         {
@@ -614,15 +570,16 @@ public class DefaultDownloadManager
             fileEventManager.fire( new IndyStoreErrorEvent( kl.getKey(), e ) );
             logger.warn( "Location Error: " + e.getMessage(), e );
             throw new IndyWorkflowException( "Failed to store path: {} in: {}. Reason: {}", e, path, store,
-                                              e.getMessage() );
+                                             e.getMessage() );
         }
         catch ( TransferException e )
         {
             logger.error(
-                    String.format( "Failed to store: %s in: %s. Reason: %s", path, store.getKey(), e.getMessage() ), e );
+                    String.format( "Failed to store: %s in: %s. Reason: %s", path, store.getKey(), e.getMessage() ),
+                    e );
 
-            throw new IndyWorkflowException( "Failed to store: %s in: %s. Reason: %s", e, path,
-                                              store.getKey(), e.getMessage() );
+            throw new IndyWorkflowException( "Failed to store: %s in: %s. Reason: %s", e, path, store.getKey(),
+                                             e.getMessage() );
         }
     }
 
@@ -634,7 +591,7 @@ public class DefaultDownloadManager
     @Override
     public Transfer store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream,
                            final TransferOperation op )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
         return store( stores, path, stream, op, new EventMetadata() );
     }
@@ -645,9 +602,9 @@ public class DefaultDownloadManager
      * java.io.InputStream)
      */
     @Override
-    public Transfer store( final List<? extends ArtifactStore> stores , final String path , final InputStream stream ,
-                           final TransferOperation op , final EventMetadata eventMetadata  )
-        throws IndyWorkflowException
+    public Transfer store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream,
+                           final TransferOperation op, final EventMetadata eventMetadata )
+            throws IndyWorkflowException
     {
         final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
 
@@ -665,7 +622,7 @@ public class DefaultDownloadManager
         {
             logger.warn( "Cannot deploy. No valid deploy points in group." );
             throw new IndyWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                              "No deployment locations available." );
+                                             "No deployment locations available." );
         }
 
         logger.info( "Storing: {} in selected: {} with event metadata: {}", path, selected, eventMetadata );
@@ -676,7 +633,7 @@ public class DefaultDownloadManager
 
     @Override
     public Transfer getStoreRootDirectory( final StoreKey key )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
         ArtifactStore store;
         try
@@ -686,7 +643,7 @@ public class DefaultDownloadManager
         catch ( final IndyDataException e )
         {
             throw new IndyWorkflowException( "Failed to retrieve ArtifactStore for: %s. Reason: %s", e, key,
-                                              e.getMessage() );
+                                             e.getMessage() );
         }
 
         if ( store == null )
@@ -704,8 +661,9 @@ public class DefaultDownloadManager
     }
 
     @Override
-    public Transfer getStorageReference( final List<ArtifactStore> stores, final String path, final TransferOperation op )
-        throws IndyWorkflowException
+    public Transfer getStorageReference( final List<ArtifactStore> stores, final String path,
+                                         final TransferOperation op )
+            throws IndyWorkflowException
     {
         final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
 
@@ -739,11 +697,6 @@ public class DefaultDownloadManager
     private boolean storeIsSuitableFor( final ArtifactStore store, final ArtifactPathInfo pathInfo,
                                         final TransferOperation op )
     {
-        if ( store.isDisabled() )
-        {
-            return false;
-        }
-
         if ( TransferOperation.UPLOAD == op )
         {
             if ( store instanceof HostedRepository )
@@ -782,13 +735,8 @@ public class DefaultDownloadManager
 
     @Override
     public Transfer getStorageReference( final ArtifactStore store, final String path, final TransferOperation op )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
-        if ( store.isDisabled() )
-        {
-            return null;
-        }
-
         final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
         if ( storeIsSuitableFor( store, pathInfo, op ) )
         {
@@ -797,23 +745,18 @@ public class DefaultDownloadManager
 
         logger.warn( "Store {} not suitable for: {}", store, op );
         throw new IndyWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                          "Store is not suitable for this operation." );
+                                         "Store is not suitable for this operation." );
     }
 
     @Override
     public Transfer getStorageReference( final ArtifactStore store, final String... path )
     {
-        if ( store.isDisabled() )
-        {
-            return null;
-        }
-
         return transfers.getCacheReference( new ConcreteResource( LocationUtils.toLocation( store ), path ) );
     }
 
     @Override
     public Transfer getStorageReference( final StoreKey key, final String... path )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
         ArtifactStore store;
         try
@@ -823,7 +766,7 @@ public class DefaultDownloadManager
         catch ( final IndyDataException e )
         {
             throw new IndyWorkflowException( "Failed to retrieve ArtifactStore for: %s. Reason: %s", e, key,
-                                              e.getMessage() );
+                                             e.getMessage() );
         }
 
         if ( store == null )
@@ -831,26 +774,16 @@ public class DefaultDownloadManager
             throw new IndyWorkflowException( ApplicationStatus.NOT_FOUND.code(), "Cannot find store: {}", key );
         }
 
-        if ( store.isDisabled() )
-        {
-            return null;
-        }
-
         return transfers.getCacheReference( new ConcreteResource( LocationUtils.toLocation( store ), path ) );
     }
 
     @Override
     public boolean deleteAll( final List<? extends ArtifactStore> stores, final String path )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
         boolean result = false;
         for ( final ArtifactStore store : stores )
         {
-            if ( store.isDisabled() )
-            {
-                continue;
-            }
-
             result = delete( store, path, new EventMetadata() ) || result;
         }
 
@@ -859,22 +792,16 @@ public class DefaultDownloadManager
 
     @Override
     public boolean delete( final ArtifactStore store, final String path )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
         return delete( store, path, new EventMetadata() );
     }
 
     @Override
     public boolean delete( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
-        if ( store.isDisabled() )
-        {
-            return false;
-        }
-
-        if ( store.getKey()
-                  .getType() == StoreType.group )
+        if ( store.getKey().getType() == StoreType.group )
         {
             return false;
         }
@@ -884,7 +811,7 @@ public class DefaultDownloadManager
     }
 
     private Boolean doDelete( final Transfer item, final EventMetadata eventMetadata )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
         try
         {
@@ -900,14 +827,14 @@ public class DefaultDownloadManager
 
     @Override
     public void rescanAll( final List<? extends ArtifactStore> stores )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
         rescanAll( stores, new EventMetadata() );
     }
 
     @Override
     public void rescanAll( final List<? extends ArtifactStore> stores, final EventMetadata eventMetadata )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
         for ( final ArtifactStore store : stores )
         {
@@ -917,27 +844,22 @@ public class DefaultDownloadManager
 
     @Override
     public void rescan( final ArtifactStore store )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
         rescan( store, new EventMetadata() );
     }
 
     @Override
     public void rescan( final ArtifactStore store, final EventMetadata eventMetadata )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
-        if ( store.isDisabled() )
-        {
-            return;
-        }
-
-        executor.execute( new Rescanner( store, getStorageReference( store.getKey() ), rescansInProgress,
-                                         fileEventManager,
- rescanEvent, eventMetadata ) );
+        executor.execute(
+                new Rescanner( store, getStorageReference( store.getKey() ), rescansInProgress, fileEventManager,
+                               rescanEvent, eventMetadata ) );
     }
 
     private static final class Rescanner
-        implements Runnable
+            implements Runnable
     {
         private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -1029,7 +951,7 @@ public class DefaultDownloadManager
 
     @Override
     public List<Transfer> listRecursively( final StoreKey src, final String startPath )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
         final List<Transfer> result = new ArrayList<>();
         final Transfer transfer = getStorageReference( src, startPath );
@@ -1039,7 +961,7 @@ public class DefaultDownloadManager
     }
 
     private void recurseListing( final Transfer transfer, final List<Transfer> result )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
         if ( transfer.isDirectory() )
         {
@@ -1055,7 +977,7 @@ public class DefaultDownloadManager
             catch ( final IOException e )
             {
                 throw new IndyWorkflowException( "Failed to list children of: %s. Reason: %s", e, transfer,
-                                                  e.getMessage() );
+                                                 e.getMessage() );
             }
         }
         else if ( transfer.exists() )

@@ -38,9 +38,13 @@ public class RepositoryLocation
 
     private final Map<String, Object> attributes = new HashMap<String, Object>();
 
+    private boolean enabled;
+
     public RepositoryLocation( final RemoteRepository repository )
     {
         this.repository = repository;
+        this.enabled = !repository.isDisabled();
+
         if ( repository.getNfcTimeoutSeconds() > 0 )
         {
             attributes.put( ATTR_NFC_TIMEOUT_SECONDS, repository.getNfcTimeoutSeconds() );
@@ -181,7 +185,7 @@ public class RepositoryLocation
     @Override
     public boolean allowsDownloading()
     {
-        return true;
+        return enabled;
     }
 
     @Override
