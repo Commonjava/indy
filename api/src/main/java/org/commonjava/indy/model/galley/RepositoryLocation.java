@@ -76,13 +76,13 @@ public class RepositoryLocation
     @Override
     public boolean allowsSnapshots()
     {
-        return true;
+        return repository.isAllowSnapshots();
     }
 
     @Override
     public boolean allowsReleases()
     {
-        return true;
+        return repository.isAllowReleases();
     }
 
     @Override

@@ -15,60 +15,49 @@
  */
 package org.commonjava.indy.model.core;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.wordnik.swagger.annotations.ApiModel;
 
 @ApiModel( description = "Hosts artifact content on the local system", parent = ArtifactStore.class )
-public class HostedRepository
-    extends AbstractRepository
+public abstract class AbstractRepository
+    extends ArtifactStore
 {
 
     private static final long serialVersionUID = 1L;
 
-    private String storage;
+    @JsonProperty( "allow_snapshots" )
+    private boolean allowSnapshots = false;
 
-    private int snapshotTimeoutSeconds;
+    @JsonProperty( "allow_releases" )
+    private boolean allowReleases = true;
 
-    HostedRepository()
+    AbstractRepository()
     {
-        super();
     }
 
-    public HostedRepository( final String name )
+    public AbstractRepository( final String name )
     {
         super( name );
     }
 
-    @Override
-    public String toString()
+    public boolean isAllowSnapshots()
     {
-        return String.format( "HostedRepository [allowSnapshots=%s, allowReleases=%s, key=%s, storage-directory=%s]",
-                              isAllowSnapshots(), isAllowReleases(), getKey(), getStorage() );
+        return allowSnapshots;
     }
 
-    public int getSnapshotTimeoutSeconds()
+    public void setAllowSnapshots( final boolean allowSnapshots )
     {
-        return snapshotTimeoutSeconds;
+        this.allowSnapshots = allowSnapshots;
     }
 
-    public void setSnapshotTimeoutSeconds( final int snapshotTimeoutSeconds )
+    public boolean isAllowReleases()
     {
-        this.snapshotTimeoutSeconds = snapshotTimeoutSeconds;
+        return allowReleases;
     }
 
-    public String getStorage()
+    public void setAllowReleases( final boolean allowReleases )
     {
-        return storage;
-    }
-
-    public void setStorage( final String storage )
-    {
-        this.storage = storage;
-    }
-
-    @Override
-    protected StoreKey initKey( final String name )
-    {
-        return new StoreKey( StoreType.hosted, name );
+        this.allowReleases = allowReleases;
     }
 
 }

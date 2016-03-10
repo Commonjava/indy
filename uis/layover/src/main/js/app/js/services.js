@@ -258,6 +258,27 @@ indyServices.factory('StoreUtilSvc', function(){
       return options;
     },
 
+    remoteOptionLegend: function(){
+      return [
+        {icon: 'S', title: 'Snapshots allowed'},
+        {icon: 'R', title: 'Releases allowed'}
+      ];
+    },
+
+    remoteOptions: function(store){
+      var options = [];
+
+      if ( store.allow_snapshots ){
+        options.push({icon: 'S', title: 'Snapshots allowed'});
+      }
+
+      if ( store.allow_releases ){
+        options.push({icon: 'R', title: 'Releases allowed'});
+      }
+
+      return options;
+    },
+
     durationToSeconds: function(duration){
       if ( duration == 'never' ){
         return 0;
