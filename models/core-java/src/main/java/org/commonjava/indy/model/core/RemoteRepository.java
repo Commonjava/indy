@@ -29,7 +29,7 @@ import com.wordnik.swagger.annotations.ApiModelProperty;
 @ApiModel( description = "Proxy to a remote server's artifact content, with local cache storage.",
            parent = ArtifactStore.class )
 public class RemoteRepository
-        extends ArtifactStore
+        extends AbstractRepository
 {
     private static final long serialVersionUID = 1L;
 
@@ -231,8 +231,8 @@ public class RemoteRepository
     public String toString()
     {
         return String.format(
-                "Repository [url=%s, timeoutSeconds=%s, host=%s, port=%s, user=%s, password=%s, getName()=%s, getKey()=%s]",
-                url, timeoutSeconds, host, port, user, password, getName(), getKey() );
+                "Repository [url=%s, allowSnapshots=%s, allowReleases=%s, timeoutSeconds=%s, host=%s, port=%s, user=%s, password=%s, getName()=%s, getKey()=%s]",
+                url, isAllowSnapshots(), isAllowReleases(), timeoutSeconds, host, port, user, password, getName(), getKey() );
     }
 
     public boolean isPassthrough()
@@ -349,7 +349,7 @@ public class RemoteRepository
         return serverTrustPolicy;
     }
 
-    public void setServerTrustPolicy( String serverTrustPolicy )
+    public void setServerTrustPolicy( final String serverTrustPolicy )
     {
         this.serverTrustPolicy = serverTrustPolicy;
     }

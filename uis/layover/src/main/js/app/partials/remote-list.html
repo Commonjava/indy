@@ -30,6 +30,17 @@
           <option value="url">Remote URL</option>
         </select>
       </div>
+      <div class="cp-row">
+        <div class="legend">
+          <div class="label">Capability Legend:</div>
+            <ul>
+              <li ng-repeat="option in remoteOptionLegend">
+                <span class="key">{{option.icon}}</span>
+                <span class="value">{{option.title}}</span> 
+              </li>
+            </ul>
+        </div>
+      </div>
       <div class="cp-row cp-debug">
         <input type="checkbox" ng-model="enableDebug" ng-init="checked=false" /> Debug Data
       </div>
@@ -45,15 +56,20 @@
           </div>
           <div class="fieldset two-col">
             <div class="two-col">
-	            <div class="field left-half">
-	              <label>Local URL:</label>
-	              <a ng-href="{{store.storeHref}}" target="_new">{{store.storeHref}}</a>
-	            </div>
-	            <div class="field right-half">
-	              <label>Remote URL:</label>
-	              <a ng-href="{{store.url}}" target="_new">{{store.url}}</a>
-	            </div>
-	          </div>
+                <div class="field left-half">
+                  <label>Local URL:</label>
+                  <a ng-href="{{store.storeHref}}" target="_new">{{store.storeHref}}</a>
+                  <br/>
+                  <label>Remote URL:</label>
+                  <a ng-href="{{store.url}}" target="_new">{{store.url}}</a>
+                </div>
+                <div class="options-field field right-half">
+                  <label>Capabilities:</label>
+                  <div class="options" ng-repeat="option in store.remoteOptions">
+                    <span class="key">{{option.icon}}</span>
+                  </div>
+                </div>
+              </div>
             <div class="description field"><span>{{store.description}}</span></div>
           </div>
         </div>

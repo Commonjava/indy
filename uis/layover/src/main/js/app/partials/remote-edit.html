@@ -22,11 +22,11 @@
     
       <div class="fieldset-caption">Basics</div>
       <div class="fieldset">
-	      <div class="detail-field">
-	        <label>Name:</label>
-	        <span ng-if="!editMode"><input type="text" ng-model="raw.name" size="25" /></span>
-	        <span ng-if="editMode" class="key">{{raw.name}}</span>
-	      </div>
+          <div class="detail-field">
+            <label>Name:</label>
+            <span ng-if="!editMode"><input type="text" ng-model="raw.name" size="25" /></span>
+            <span ng-if="editMode" class="key">{{raw.name}}</span>
+          </div>
 
           <div class="detail-field">
               <input type="checkbox" ng-model="raw.enabled" />
@@ -35,28 +35,40 @@
           </div>
 
           <div class="detail-field">
-	        <label>Remote URL:</label>
-	        <input type="text" ng-model="store.url" size="92"/>
-	      </div>
+            <label>Remote URL:</label>
+            <input type="text" ng-model="store.url" size="92"/>
+          </div>
 
-	      <div class="sub-fields">
+          <div class="sub-fields">
           <div class="detail-field">
              <input type="checkbox" ng-model="store.is_passthrough" />
              <label>Don't Cache Content</label>
              <ap-hint key="passthrough"></ap-hint>
           </div>
-	        <div ng-if="!store.is_passthrough" class="detail-field">
-	          <label>Content Cache Timeout:</label>
-	          <input type="text" ng-model="raw.cache_timeout_seconds"/>
-	          <ap-duration-hint></ap-duration-hint>
-	        </div>
-	      </div>
+            <div ng-if="!store.is_passthrough" class="detail-field">
+              <label>Content Cache Timeout:</label>
+              <input type="text" ng-model="raw.cache_timeout_seconds"/>
+              <ap-duration-hint></ap-duration-hint>
+            </div>
+          </div>
       </div>
 
 
       <div class="fieldset-caption">Description</div>
       <div class="fieldset">
         <textarea rows="3" class="text-description" ng-model="store.description"></textarea>
+      </div>
+
+      <div class="fieldset-caption">Capabilities</div>
+      <div class="fieldset">
+        <div class="detail-field">
+          <span><input type="checkbox" ng-model="store.allow_releases"/></span>
+          <label>Allow Releases</label>
+        </div>
+        <div class="detail-field">
+          <span><input type="checkbox" ng-model="store.allow_snapshots"/></span>
+          <label>Allow Snapshots</label>
+        </div>
       </div>
 
       <div class="fieldset-caption">Remote Access</div>
@@ -76,14 +88,14 @@
           <label>Use Proxy?</label>
         </div>
         <div class="sub-fields" ng-if="raw.use_proxy">
-	        <div class="detail-field">
-	          <label>Proxy Host:</label>
-	          <input type="text" ng-model="store.proxy_host" size="20"/>
-	        </div>
-	        <div class="detail-field">
-	          <label>Proxy Port:</label>
-	          <input type="text" ng-model="store.proxy_port" size="6"/>
-	        </div>
+            <div class="detail-field">
+              <label>Proxy Host:</label>
+              <input type="text" ng-model="store.proxy_host" size="20"/>
+            </div>
+            <div class="detail-field">
+              <label>Proxy Port:</label>
+              <input type="text" ng-model="store.proxy_port" size="6"/>
+            </div>
         </div>
 
         <!-- X.509 / auth -->
@@ -92,21 +104,21 @@
           <label>Use Authentication?</label>
         </div>
         <div class="sub-fields" ng-if="raw.use_auth">
-	        <div class="detail-field">
-	          <label>Username:</label>
-	          <input type="text" ng-model="store.user" size="25"/>
-	        </div>
-	        <div class="detail-field">
-	          <label>Password:</label>
-	          <input type="password" ng-model="store.password" size="25"/>
-	        </div>
-	        <div class="detail-field" ng-if="raw.use_proxy">
-	          <label>Proxy Username:</label>
-	          <input type="text" ng-model="store.proxy_user" size="20"/>
-	        </div>
-	        <div class="detail-field" ng-if="raw.use_proxy">
-	          <label>Proxy Password:</label>
-	          <input type="password" ng-model="store.proxy_password" size="20"/>
+            <div class="detail-field">
+              <label>Username:</label>
+              <input type="text" ng-model="store.user" size="25"/>
+            </div>
+            <div class="detail-field">
+              <label>Password:</label>
+              <input type="password" ng-model="store.password" size="25"/>
+            </div>
+            <div class="detail-field" ng-if="raw.use_proxy">
+              <label>Proxy Username:</label>
+              <input type="text" ng-model="store.proxy_user" size="20"/>
+            </div>
+            <div class="detail-field" ng-if="raw.use_proxy">
+              <label>Proxy Password:</label>
+              <input type="password" ng-model="store.proxy_password" size="20"/>
           </div>
         </div>
         
@@ -116,26 +128,26 @@
         </div>
         
         <div class="sub-fields" ng-if="raw.use_x509">
-		      <div class="detail-field" ng-if="raw.use_auth">
-		        <label>Client Key Password:</label>
-		        <input type="password" ng-model="store.key_password"/><ap-hint key="client_key"></ap-hint>
-		      </div>
-		      <div class="fieldset two-col">
-		        <div class="left-col" ng-if="raw.use_auth">
-		          <div class="textarea-label">
-		            <label>Client Key</label><span class="hint">(PEM Format)</span>
-		          </div>
-		          <!-- 64 columns is the original PEM line-length spec -->
-		          <textarea class="cert" cols="68" ng-model="store.key_certificate_pem"></textarea>
-		        </div>
-		
-		        <div class="right-col">
-		          <div class="textarea-label">
-		            <label>Server Certificate</label><span class="hint">(PEM Format)</span>
-		          </div>
-		          <!-- 64 columns is the original PEM line-length spec -->
-		          <textarea class="cert" cols="68" ng-model="store.server_certificate_pem"></textarea>
-		        </div>
+              <div class="detail-field" ng-if="raw.use_auth">
+                <label>Client Key Password:</label>
+                <input type="password" ng-model="store.key_password"/><ap-hint key="client_key"></ap-hint>
+              </div>
+              <div class="fieldset two-col">
+                <div class="left-col" ng-if="raw.use_auth">
+                  <div class="textarea-label">
+                    <label>Client Key</label><span class="hint">(PEM Format)</span>
+                  </div>
+                  <!-- 64 columns is the original PEM line-length spec -->
+                  <textarea class="cert" cols="68" ng-model="store.key_certificate_pem"></textarea>
+                </div>
+        
+                <div class="right-col">
+                  <div class="textarea-label">
+                    <label>Server Certificate</label><span class="hint">(PEM Format)</span>
+                  </div>
+                  <!-- 64 columns is the original PEM line-length spec -->
+                  <textarea class="cert" cols="68" ng-model="store.server_certificate_pem"></textarea>
+                </div>
           </div>
         </div>
       </div>
