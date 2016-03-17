@@ -351,7 +351,7 @@ public class MavenMetadataGenerator
     {
         ArtifactPathInfo samplePomInfo = null;
 
-        // first level will contain version directories...for each directory, we need to verify the presence of a .pom file before including 
+        // first level will contain version directories...for each directory, we need to verify the presence of a .pom file before including
         // as a valid version
         final List<SingleVersion> versions = new ArrayList<SingleVersion>();
         nextTopResource: for ( final StoreResource topResource : firstLevelFiles )
@@ -365,13 +365,18 @@ public class MavenMetadataGenerator
                     if ( fileResource.getPath()
                                      .endsWith( ".pom" ) )
                     {
-                        versions.add( VersionUtils.createSingleVersion( new File( topPath ).getName() ) );
-                        if ( samplePomInfo == null )
+                        ArtifactPathInfo filePomInfo = ArtifactPathInfo.parse( fileResource.getPath() );
+                        // check if the pom is valid for the path
+                        if ( filePomInfo != null )
                         {
-                            samplePomInfo = ArtifactPathInfo.parse( fileResource.getPath() );
-                        }
+                            versions.add( VersionUtils.createSingleVersion( new File( topPath ).getName() ) );
+                            if ( samplePomInfo == null )
+                            {
+                                samplePomInfo = filePomInfo;
+                            }
 
-                        continue nextTopResource;
+                            continue nextTopResource;
+                        }
                     }
                 }
             }
