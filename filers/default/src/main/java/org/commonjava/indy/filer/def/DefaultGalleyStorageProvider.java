@@ -16,11 +16,7 @@
 package org.commonjava.indy.filer.def;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
@@ -40,6 +36,7 @@ import org.commonjava.maven.galley.spi.event.FileEventManager;
 import org.commonjava.maven.galley.spi.io.PathGenerator;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.commonjava.maven.galley.spi.io.TransferDecorator;
+import org.commonjava.maven.galley.transport.htcli.ContentsFilteringTransferDecorator;
 
 @ApplicationScoped
 public class DefaultGalleyStorageProvider
@@ -89,6 +86,7 @@ public class DefaultGalleyStorageProvider
             new ChecksummingTransferDecorator( Collections.singleton( TransferOperation.GENERATE ), specialPathManager,
                                                new Md5GeneratorFactory(),
                                                new Sha1GeneratorFactory() );
+        transferDecorator = new ContentsFilteringTransferDecorator( transferDecorator );
 
         final PartyLineCacheProviderConfig cacheProviderConfig =
             new PartyLineCacheProviderConfig( config.getStorageRootDirectory() );
