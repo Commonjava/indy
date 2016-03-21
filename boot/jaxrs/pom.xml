@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy.boot</groupId>
     <artifactId>indy-booters</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>0.99.2-SNAPSHOT</version>
   </parent>
   
   <groupId>org.commonjava.indy.boot</groupId>

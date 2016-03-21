@@ -48,6 +48,8 @@ indyControllers.controller('RemoteListCtl', ['$scope', '$location', 'RemoteSvc',
   
     StoreDisableSvc.setDisabledMap($scope);
 
+    $scope.remoteOptionLegend = StoreUtilSvc.remoteOptionLegend();
+    
     $scope.listing = RemoteSvc.resource.query({}, function(listing){
       if ( listing.items ){
           for(var i=0; i<listing.items.length; i++){
@@ -55,6 +57,7 @@ indyControllers.controller('RemoteListCtl', ['$scope', '$location', 'RemoteSvc',
             item.detailHref = StoreUtilSvc.detailHref(item.key);
             item.storeHref = StoreUtilSvc.storeHref(item.key);
             item.name = StoreUtilSvc.nameFromKey(item.key);
+            item.remoteOptions = StoreUtilSvc.remoteOptions(item);
             item.description = StoreUtilSvc.defaultDescription(item.description);
           }
       }
