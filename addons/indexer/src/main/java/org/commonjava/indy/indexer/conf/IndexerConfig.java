@@ -15,28 +15,18 @@
  */
 package org.commonjava.indy.indexer.conf;
 
-import java.io.File;
-import java.io.InputStream;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Alternative;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
-import javax.inject.Named;
-
-import org.commonjava.indy.conf.AbstractIndyConfigInfo;
-import org.commonjava.indy.conf.AbstractIndyFeatureConfig;
-import org.commonjava.indy.conf.IndyConfigClassInfo;
 import org.commonjava.indy.conf.IndyConfigInfo;
-import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 
+import javax.enterprise.context.ApplicationScoped;
+import java.io.File;
+import java.io.InputStream;
+
 @SectionName( "indexer" )
-@Alternative
-@Named
+@ApplicationScoped
 public class IndexerConfig
+    implements IndyConfigInfo
 {
 
     private static final boolean DEFAULT_ENABLED = false;
@@ -54,56 +44,17 @@ public class IndexerConfig
         this.enabled = enabled;
     }
 
-    @javax.enterprise.context.ApplicationScoped
-    public static class ConfigInfo
-        extends AbstractIndyConfigInfo
+    @Override
+    public String getDefaultConfigFileName()
     {
-        public ConfigInfo()
-        {
-            super( IndexerConfig.class );
-        }
-
-        @Override
-        public String getDefaultConfigFileName()
-        {
-            return new File( IndyConfigInfo.CONF_INCLUDES_DIR, "indexer.conf" ).getPath();
-        }
-
-        @Override
-        public InputStream getDefaultConfig()
-        {
-            return Thread.currentThread()
-                         .getContextClassLoader()
-                         .getResourceAsStream( "default-indexer.conf" );
-        }
+        return new File( IndyConfigInfo.CONF_INCLUDES_DIR, "indexer.conf" ).getPath();
     }
 
-    @javax.enterprise.context.ApplicationScoped
-    public static class FeatureConfig
-        extends AbstractIndyFeatureConfig<IndexerConfig, IndexerConfig>
+    @Override
+    public InputStream getDefaultConfig()
     {
-        @Inject
-        private ConfigInfo info;
-
-        public FeatureConfig()
-        {
-            super( IndexerConfig.class );
-        }
-
-        @Produces
-        @Default
-        @ApplicationScoped
-        public IndexerConfig getIndexerConfig()
-            throws ConfigurationException
-        {
-            return getConfig();
-        }
-
-        @Override
-        public IndyConfigClassInfo getInfo()
-        {
-            return info;
-        }
+        return Thread.currentThread()
+                     .getContextClassLoader()
+                     .getResourceAsStream( "default-indexer.conf" );
     }
-
 }

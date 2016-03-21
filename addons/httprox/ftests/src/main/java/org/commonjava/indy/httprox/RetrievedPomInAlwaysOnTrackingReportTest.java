@@ -79,6 +79,9 @@ public class RetrievedPomInAlwaysOnTrackingReportTest
             HttpResources.cleanupResources( get, response, client );
         }
 
+        assertThat( this.client.module( IndyFoloAdminClientModule.class ).sealTrackingRecord( USER ),
+                    equalTo( true ) );
+
         final String repoName = "httprox_127-0-0-1";
         final TrackedContentRecord record = this.client.module( IndyFoloAdminClientModule.class )
                                                        .getRawTrackingRecord( USER );

@@ -34,6 +34,7 @@ import org.xnio.conduits.ConduitStreamSinkChannel;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
@@ -150,7 +151,7 @@ public class HttpConduitWrapper
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "Valid transfer found." );
-        try (FileChannel sourceChannel = new FileInputStream( txfr.getDetachedFile() ).getChannel())
+        try (InputStream in = txfr.openInputStream())
         {
             writeStatus( ApplicationStatus.OK );
             writeHeader( ApplicationHeader.content_length, Long.toString( txfr.length() ) );
@@ -161,7 +162,18 @@ public class HttpConduitWrapper
             {
                 sinkChannel.write( ByteBuffer.wrap( "\r\n".getBytes() ) );
 
-                Channels.transferBlocking( sinkChannel, sourceChannel, 0, txfr.length() );
+                int capacity = 16384;
+                ByteBuffer bbuf = ByteBuffer.allocate( capacity );
+                byte[] buf = new byte[capacity];
+                int read = -1;
+                while ( ( read = in.read( buf ) ) > -1 )
+                {
+                    bbuf.clear();
+                    bbuf.put( buf, 0, read );
+                    bbuf.flip();
+                    sinkChannel.write( bbuf );
+                }
+
                 txfr.touch( eventMetadata );
             }
         }

@@ -15,80 +15,37 @@
  */
 package org.commonjava.indy.subsys.datafile.conf;
 
-import java.io.File;
-import java.io.InputStream;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Alternative;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
-import javax.inject.Named;
-
-import org.commonjava.indy.conf.AbstractIndyConfigInfo;
-import org.commonjava.indy.conf.AbstractIndyFeatureConfig;
-import org.commonjava.indy.conf.IndyConfigClassInfo;
 import org.commonjava.indy.conf.IndyConfigInfo;
-import org.commonjava.web.config.ConfigurationException;
+import org.commonjava.indy.conf.SystemPropertyProvider;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
+import org.commonjava.web.config.section.BeanSectionListener;
+import org.commonjava.web.config.section.SectionListenerWrapper;
 
-@SectionName( "flatfiles" )
-@Alternative
-@Named
+import javax.enterprise.context.ApplicationScoped;
+import java.io.File;
+import java.io.InputStream;
+import java.util.Properties;
+
+@SectionName( DataFileConfiguration.SECTION_NAME )
+@ApplicationScoped
 public class DataFileConfiguration
+    implements IndyConfigInfo, SystemPropertyProvider
 {
 
-    @javax.enterprise.context.ApplicationScoped
-    public static class FlatFileFeatureConfig
-        extends AbstractIndyFeatureConfig<DataFileConfiguration, DataFileConfiguration>
+    public static final String SECTION_NAME = "flatfiles";
+
+    private static final String INDY_WORK_BASEDIR = "indy.work";
+
+    private static final String INDY_DATA_BASEDIR = "indy.data";
+
+    public Properties getSystemProperties()
     {
-        @Inject
-        private FlatFileConfigInfo info;
+        Properties properties = new Properties();
+        properties.setProperty( INDY_DATA_BASEDIR, getDataBasedir().getAbsolutePath() );
+        properties.setProperty( INDY_WORK_BASEDIR, getWorkBasedir().getAbsolutePath() );
 
-        public FlatFileFeatureConfig()
-        {
-            super( DataFileConfiguration.class );
-        }
-
-        @Produces
-        @Default
-        @ApplicationScoped
-        public DataFileConfiguration getFlatFileConfig()
-            throws ConfigurationException
-        {
-            return getConfig();
-        }
-
-        @Override
-        public IndyConfigClassInfo getInfo()
-        {
-            return info;
-        }
-    }
-
-    @javax.enterprise.context.ApplicationScoped
-    public static class FlatFileConfigInfo
-        extends AbstractIndyConfigInfo
-    {
-        public FlatFileConfigInfo()
-        {
-            super( DataFileConfiguration.class );
-        }
-
-        @Override
-        public String getDefaultConfigFileName()
-        {
-            return IndyConfigInfo.APPEND_DEFAULTS_TO_MAIN_CONF;
-        }
-
-        @Override
-        public InputStream getDefaultConfig()
-        {
-            return Thread.currentThread()
-                         .getContextClassLoader()
-                         .getResourceAsStream( "default-flatfiles.conf" );
-        }
+        return properties;
     }
 
     public static final String DEFAULT_ROOT_DIR = "/var/lib/indy";
@@ -140,7 +97,7 @@ public class DataFileConfiguration
         return this;
     }
 
-    File getDataDir( final String name )
+    public File getDataDir( final String name )
     {
         final File d = new File( getDataBasedir(), name );
         d.mkdirs();
@@ -163,6 +120,20 @@ public class DataFileConfiguration
     {
         this.workBasedir = workBasedir;
         return this;
+    }
+
+    @Override
+    public String getDefaultConfigFileName()
+    {
+        return IndyConfigInfo.APPEND_DEFAULTS_TO_MAIN_CONF;
+    }
+
+    @Override
+    public InputStream getDefaultConfig()
+    {
+        return Thread.currentThread()
+                     .getContextClassLoader()
+                     .getResourceAsStream( "default-flatfiles.conf" );
     }
 
 }

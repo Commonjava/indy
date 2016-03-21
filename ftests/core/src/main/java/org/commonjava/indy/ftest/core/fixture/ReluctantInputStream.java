@@ -59,7 +59,7 @@ public class ReluctantInputStream
             return -1;
         }
 
-        return data[idx++];
+        return data.length > idx+1 ? data[idx++] : -1;
     }
 
     @Override

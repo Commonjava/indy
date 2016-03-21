@@ -15,79 +15,18 @@
  */
 package org.commonjava.indy.autoprox.conf;
 
-import java.io.InputStream;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Alternative;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
-import javax.inject.Named;
-
-import org.commonjava.indy.conf.AbstractIndyConfigInfo;
-import org.commonjava.indy.conf.AbstractIndyFeatureConfig;
-import org.commonjava.indy.conf.IndyConfigClassInfo;
-import org.commonjava.web.config.ConfigurationException;
+import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 
-@Alternative
-@Named( "autoprox-config" )
+import javax.enterprise.context.ApplicationScoped;
+import java.io.InputStream;
+
 @SectionName( AutoProxConfig.SECTION )
+@ApplicationScoped
 public class AutoProxConfig
+        implements IndyConfigInfo
 {
-    @javax.enterprise.context.ApplicationScoped
-    public static class FeatureConfig
-        extends AbstractIndyFeatureConfig<AutoProxConfig, AutoProxConfig>
-    {
-        @Inject
-        private ConfigInfo info;
-
-        public FeatureConfig()
-        {
-            super( AutoProxConfig.class );
-        }
-
-        @Produces
-        @Default
-        @ApplicationScoped
-        public AutoProxConfig getAutoProxConfig()
-            throws ConfigurationException
-        {
-            return getConfig();
-        }
-
-        @Override
-        public IndyConfigClassInfo getInfo()
-        {
-            return info;
-        }
-    }
-
-    @javax.enterprise.context.ApplicationScoped
-    public static class ConfigInfo
-        extends AbstractIndyConfigInfo
-    {
-        public ConfigInfo()
-        {
-            super( AutoProxConfig.class );
-        }
-
-        @Override
-        public String getDefaultConfigFileName()
-        {
-            return "conf.d/autoprox.conf";
-        }
-
-        @Override
-        public InputStream getDefaultConfig()
-        {
-            return Thread.currentThread()
-                         .getContextClassLoader()
-                         .getResourceAsStream( "default-autoprox.conf" );
-        }
-    }
-
     public static final String SECTION = "autoprox";
 
     public static final String DEFAULT_DIR = "autoprox";
@@ -130,6 +69,20 @@ public class AutoProxConfig
     public void setEnabled( final boolean enabled )
     {
         this.enabled = enabled;
+    }
+
+    @Override
+    public String getDefaultConfigFileName()
+    {
+        return "conf.d/autoprox.conf";
+    }
+
+    @Override
+    public InputStream getDefaultConfig()
+    {
+        return Thread.currentThread()
+                     .getContextClassLoader()
+                     .getResourceAsStream( "default-autoprox.conf" );
     }
 
 }

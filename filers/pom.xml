@@ -31,5 +31,6 @@
   
   <modules>
     <module>default</module>
+    <module>infinispan</module>
   </modules>
 </project>

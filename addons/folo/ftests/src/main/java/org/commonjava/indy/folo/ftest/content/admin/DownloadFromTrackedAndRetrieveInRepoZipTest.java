@@ -51,7 +51,11 @@ public class DownloadFromTrackedAndRetrieveInRepoZipTest
         result.close();
         assertThat( pom.contains( "<groupId>org.commonjava</groupId>" ), equalTo( true ) );
 
-        result = client.module( IndyFoloAdminClientModule.class ).getTrackingRepoZip( trackingId );
+        IndyFoloAdminClientModule module = client.module( IndyFoloAdminClientModule.class );
+        boolean success = module.sealTrackingRecord( trackingId );
+        assertThat( success, equalTo( true ) );
+
+        result = module.getTrackingRepoZip( trackingId );
 
         assertThat( result, notNullValue() );
 

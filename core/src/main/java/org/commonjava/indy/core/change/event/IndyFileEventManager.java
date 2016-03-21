@@ -16,6 +16,7 @@
 package org.commonjava.indy.core.change.event;
 
 import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.change.event.IndyStoreErrorEvent;
 import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
@@ -59,7 +60,9 @@ public class IndyFileEventManager
     private Event<IndyStoreErrorEvent> storeErrorEvent;
 
     @ExecutorConfig( named = CoreEventManagerConstants.DISPATCH_EXECUTOR_NAME,
+                     threads = CoreEventManagerConstants.DISPATCH_EXECUTOR_THREADS,
                      priority = CoreEventManagerConstants.DISPATCH_EXECUTOR_PRIORITY )
+    @WeftManaged
     @Inject
     private Executor executor;
 

@@ -29,6 +29,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
+import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.BootupAction;
 import org.commonjava.indy.action.ShutdownAction;
@@ -73,11 +74,12 @@ public class ScheduleManager
 
     private static final String ANY = "__ANY__";
 
-    static final String CONTENT_JOB_TYPE = "CONTENT";
+    public static final String CONTENT_JOB_TYPE = "CONTENT";
 
     private static final String JOB_TYPE = "JOB_TYPE";
 
     @Inject
+    @WeftManaged
     @ExecutorConfig( daemon = true, priority = 7, named = "indy-events" )
     private Executor executor;
 

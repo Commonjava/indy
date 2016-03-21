@@ -18,6 +18,7 @@ package org.commonjava.indy.client.core.util;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public final class UrlUtils
 {
@@ -31,7 +32,7 @@ public final class UrlUtils
         return buildUrl( baseUrl, null, parts );
     }
 
-    public static String buildUrl( final String baseUrl, final Map<String, String> params, final String... parts )
+    public static String buildUrl( final String baseUrl, final Supplier<Map<String, String>> paramSupplier, final String... parts )
     {
         if ( parts == null || parts.length < 1 )
         {
@@ -89,8 +90,10 @@ public final class UrlUtils
         //            urlBuilder.append( part );
         //        }
 
-        if ( params != null && !params.isEmpty() )
+        if ( paramSupplier != null )
         {
+            Map<String, String> params = paramSupplier.get();
+
             urlBuilder.append( "?" );
             boolean first = true;
             for ( final Map.Entry<String, String> param : params.entrySet() )

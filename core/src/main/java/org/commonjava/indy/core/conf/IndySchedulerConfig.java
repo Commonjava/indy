@@ -15,21 +15,22 @@
  */
 package org.commonjava.indy.core.conf;
 
+import org.commonjava.indy.conf.IndyConfigInfo;
+import org.commonjava.web.config.ConfigurationException;
+import org.commonjava.web.config.annotation.SectionName;
+import org.commonjava.web.config.section.MapSectionListener;
+
+import javax.enterprise.context.ApplicationScoped;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Named;
-
-import org.commonjava.indy.conf.AbstractIndyMapConfig;
-import org.commonjava.web.config.ConfigurationException;
-
 @ApplicationScoped
-@Named( IndySchedulerConfig.SECTION_NAME )
+@SectionName( IndySchedulerConfig.SECTION_NAME )
 public class IndySchedulerConfig
-    extends AbstractIndyMapConfig
+    extends MapSectionListener
+        implements IndyConfigInfo
 {
 
     public static final String SECTION_NAME = "scheduler";
@@ -64,13 +65,11 @@ public class IndySchedulerConfig
 
     public IndySchedulerConfig()
     {
-        super( SECTION_NAME );
     }
 
     public IndySchedulerConfig( final Properties props )
         throws ConfigurationException
     {
-        super( SECTION_NAME );
         this.sectionStarted( SECTION_NAME );
         for ( final String key : props.stringPropertyNames() )
         {

@@ -15,33 +15,7 @@
  */
 package org.commonjava.indy.core.bind.jaxrs;
 
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithEntity;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponseFromMetadata;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.setInfoHeaders;
-import static org.commonjava.indy.core.ctl.ContentController.LISTING_HTML_FILE;
-
-import java.io.IOException;
-import java.net.URI;
-import java.util.Date;
-
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HEAD;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.StreamingOutput;
-import javax.ws.rs.core.UriInfo;
-
 import org.commonjava.indy.IndyWorkflowException;
-import org.commonjava.indy.bind.jaxrs.IndyDeployment;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.JaxRsRequestHelper;
 import org.commonjava.indy.core.bind.jaxrs.util.TransferStreamingOutput;
@@ -57,20 +31,29 @@ import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.indy.util.UriFormatter;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
+import java.io.IOException;
+import java.net.URI;
+import java.util.Date;
+import java.util.function.Supplier;
 
-@Api( value = "/<type>/<name>", description = "Handles retrieval and management of file/artifact content. This is the main point of access for most users." )
-@Path( "/api/{type: (hosted|group|remote)}/{name}" )
+import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithEntity;
+import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
+import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponseFromMetadata;
+import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.setInfoHeaders;
+import static org.commonjava.indy.core.ctl.ContentController.LISTING_HTML_FILE;
+
 public class ContentAccessHandler
-    implements IndyResources
+        implements IndyResources
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -84,26 +67,20 @@ public class ContentAccessHandler
     @Inject
     private JaxRsRequestHelper jaxRsRequestHelper;
 
-    public ContentAccessHandler()
+    protected ContentAccessHandler()
     {
     }
 
-    public ContentAccessHandler( final ContentController controller, final UriFormatter uriFormatter )
+    public ContentAccessHandler( final ContentController controller, final UriFormatter uriFormatter,
+                                 JaxRsRequestHelper jaxRsRequestHelper )
     {
         this.contentController = controller;
         this.uriFormatter = uriFormatter;
+        this.jaxRsRequestHelper = jaxRsRequestHelper;
     }
 
-    @ApiOperation( "Store file/artifact content under the given artifact store (type/name) and path." )
-    @ApiResponses( {
-        @ApiResponse( code = 201, message = "Content was stored successfully" ),
-        @ApiResponse( code = 400, message = "No appropriate storage location was found in the specified store (this store, or a member if a group is specified)." ) } )
-    @PUT
-    @Path( "/{path: (.+)?}" )
-    public Response doCreate( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
-                              final @ApiParam( required = true ) @PathParam( "name" ) String name,
-                              final @PathParam( "path" ) String path, final @Context UriInfo uriInfo,
-                              final @Context HttpServletRequest request )
+    public Response doCreate( final String type, final String name, final String path, final HttpServletRequest request,
+                              final EventMetadata eventMetadata, Supplier<URI> uriBuilder )
     {
         final StoreType st = StoreType.get( type );
 
@@ -111,18 +88,15 @@ public class ContentAccessHandler
         final Transfer transfer;
         try
         {
-            transfer = contentController.store( new StoreKey( st, name ), path, request.getInputStream() );
+            transfer =
+                    contentController.store( new StoreKey( st, name ), path, request.getInputStream(), eventMetadata );
 
             final StoreKey storageKey = LocationUtils.getKey( transfer );
             logger.info( "Key for storage location: {}", storageKey );
 
-            final URI uri = uriInfo.getBaseUriBuilder()
-                                   .path( getClass() )
-                                   .path( path )
-                                   .build( type, name );
+            final URI uri = uriBuilder.get();
 
-            response = Response.created( uri )
-                               .build();
+            response = Response.created( uri ).build();
         }
         catch ( final IndyWorkflowException | IOException e )
         {
@@ -134,13 +108,7 @@ public class ContentAccessHandler
         return response;
     }
 
-    @ApiOperation( "Delete file/artifact content under the given artifact store (type/name) and path." )
-    @ApiResponses( { @ApiResponse( code = 204, message = "Content was deleted successfully" ) } )
-    @DELETE
-    @Path( "/{path: (.*)}" )
-    public Response doDelete( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
-                              final @ApiParam( required = true ) @PathParam( "name" ) String name,
-                              final @PathParam( "path" ) String path )
+    public Response doDelete( String type, String name, String path )
     {
         final StoreType st = StoreType.get( type );
 
@@ -148,26 +116,20 @@ public class ContentAccessHandler
         try
         {
             final ApplicationStatus result = contentController.delete( st, name, path );
-            response = Response.status( result.code() )
-                               .build();
+            response = Response.status( result.code() ).build();
         }
         catch ( final IndyWorkflowException e )
         {
-            logger.error( String.format( "Failed to delete artifact: %s from: %s. Reason: %s", path, name,
-                                         e.getMessage() ), e );
+            logger.error(
+                    String.format( "Failed to delete artifact: %s from: %s. Reason: %s", path, name, e.getMessage() ),
+                    e );
             response = formatResponse( e );
         }
         return response;
     }
 
-    @ApiOperation( "Store file/artifact content under the given artifact store (type/name) and path." )
-    @ApiResponses( { @ApiResponse( code = 200, message = "Header metadata for content (or rendered listing when path ends with '/index.html' or '/'" ), } )
-    @HEAD
-    @Path( "/{path: (.*)}" )
-    public Response doHead( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
-                            final @ApiParam( required = true ) @PathParam( "name" ) String name,
-                            final @PathParam( "path" ) String path, @Context final UriInfo uriInfo,
-                            @Context final HttpServletRequest request )
+    public Response doHead( String type, String name, String path, Boolean cacheOnly, String baseUri,
+                            HttpServletRequest request, EventMetadata eventMetadata )
     {
         final StoreType st = StoreType.get( type );
         final StoreKey sk = new StoreKey( st, name );
@@ -175,10 +137,6 @@ public class ContentAccessHandler
         final AcceptInfo acceptInfo = jaxRsRequestHelper.findAccept( request, ApplicationContent.text_html );
 
         Response response = null;
-        final String baseUri = uriInfo.getBaseUriBuilder()
-                                      .path( IndyDeployment.API_PREFIX )
-                                      .build()
-                                      .toString();
 
         if ( path == null || path.equals( "" ) || path.endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )
         {
@@ -186,19 +144,20 @@ public class ContentAccessHandler
             {
                 logger.info( "Getting listing at: {}", path );
                 final String content =
-                    contentController.renderListing( acceptInfo.getBaseAccept(), sk, path, baseUri, uriFormatter );
+                        contentController.renderListing( acceptInfo.getBaseAccept(), sk, path, baseUri, uriFormatter );
 
-                response =
-                    Response.ok()
-                            .header( ApplicationHeader.content_type.key(), acceptInfo.getRawAccept() )
-                            .header( ApplicationHeader.content_length.key(), Long.toString( content.length() ) )
-                            .header( ApplicationHeader.last_modified.key(), HttpUtils.formatDateHeader( new Date() ) )
-                            .build();
+                response = Response.ok()
+                                   .header( ApplicationHeader.content_type.key(), acceptInfo.getRawAccept() )
+                                   .header( ApplicationHeader.content_length.key(), Long.toString( content.length() ) )
+                                   .header( ApplicationHeader.last_modified.key(),
+                                            HttpUtils.formatDateHeader( new Date() ) )
+                                   .build();
             }
             catch ( final IndyWorkflowException e )
             {
-                logger.error( String.format( "Failed to list content: %s from: %s. Reason: %s", path, name,
-                                             e.getMessage() ), e );
+                logger.error(
+                        String.format( "Failed to list content: %s from: %s. Reason: %s", path, name, e.getMessage() ),
+                        e );
                 response = formatResponse( e );
             }
         }
@@ -206,8 +165,19 @@ public class ContentAccessHandler
         {
             try
             {
-                final Transfer item = contentController.get( sk, path );
-                if ( item == null )
+                Transfer item;
+                if ( Boolean.TRUE.equals( cacheOnly ) )
+                {
+                    logger.info( "[CACHE-ONLY] Checking existence of: {}:{}", sk, path );
+                    item = contentController.getTransfer( sk, path, TransferOperation.DOWNLOAD );
+                }
+                else
+                {
+                    logger.info( "Retrieving: {}:{} for existence test", sk, path );
+                    item = contentController.get( sk, path, eventMetadata );
+                }
+
+                if ( item == null || !item.exists() )
                 {
                     if ( StoreType.remote == st )
                     {
@@ -220,8 +190,7 @@ public class ContentAccessHandler
 
                     if ( response == null )
                     {
-                        response = Response.status( Status.NOT_FOUND )
-                                           .build();
+                        response = Response.status( Status.NOT_FOUND ).build();
                     }
                 }
                 else
@@ -243,16 +212,8 @@ public class ContentAccessHandler
         return response;
     }
 
-    @ApiOperation( "Retrieve file/artifact content under the given artifact store (type/name) and path." )
-    @ApiResponses( {
-        @ApiResponse( code = 200, response = String.class, message = "Rendered content listing (when path ends with '/index.html' or '/')" ),
-        @ApiResponse( code = 200, response = StreamingOutput.class, message = "Content stream" ), } )
-    @GET
-    @Path( "/{path: (.*)}" )
-    public Response doGet( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
-                           final @ApiParam( required = true ) @PathParam( "name" ) String name,
-                           final @PathParam( "path" ) String path, @Context final UriInfo uriInfo,
-                           @Context final HttpServletRequest request )
+    public Response doGet( String type, String name, String path, String baseUri, HttpServletRequest request,
+                           EventMetadata eventMetadata )
     {
         final StoreType st = StoreType.get( type );
         final StoreKey sk = new StoreKey( st, name );
@@ -262,21 +223,18 @@ public class ContentAccessHandler
 
         Response response = null;
 
-        logger.info( "GET path: '{}' (RAW: '{}')\nIn store: '{}'\nUser accept header is: '{}'\nStandard accept header for that is: '{}'", path, request.getPathInfo(), sk, acceptInfo.getRawAccept(),
-                     standardAccept );
+        logger.info(
+                "GET path: '{}' (RAW: '{}')\nIn store: '{}'\nUser accept header is: '{}'\nStandard accept header for that is: '{}'",
+                path, request.getPathInfo(), sk, acceptInfo.getRawAccept(), standardAccept );
 
-        final String baseUri = uriInfo.getBaseUriBuilder()
-                                      .path( IndyDeployment.API_PREFIX )
-                                      .build()
-                                      .toString();
-
-        if ( path == null || path.equals( "" ) || request.getPathInfo().endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )
+        if ( path == null || path.equals( "" ) || request.getPathInfo().endsWith( "/" ) || path.endsWith(
+                LISTING_HTML_FILE ) )
         {
             try
             {
                 logger.info( "Getting listing at: {}", path );
                 final String content =
-                    contentController.renderListing( standardAccept, st, name, path, baseUri, uriFormatter );
+                        contentController.renderListing( standardAccept, st, name, path, baseUri, uriFormatter );
 
                 response = formatOkResponseWithEntity( content, acceptInfo.getRawAccept() );
             }
@@ -291,33 +249,11 @@ public class ContentAccessHandler
         {
             try
             {
-                final Transfer item = contentController.get( sk, path );
+                final Transfer item = contentController.get( sk, path, eventMetadata );
 
-                if ( item == null )
+                if ( item == null || !item.exists() )
                 {
-                    if ( StoreType.remote == st )
-                    {
-                        try
-                        {
-                            final HttpExchangeMetadata metadata = contentController.getHttpMetadata( sk, path );
-                            if ( metadata != null )
-                            {
-                                response = formatResponseFromMetadata( metadata );
-                            }
-                        }
-                        catch ( final IndyWorkflowException e )
-                        {
-                            logger.error( String.format( "Error retrieving status metadata for: %s from: %s. Reason: %s",
-                                                         path, name, e.getMessage() ), e );
-                            response = formatResponse( e );
-                        }
-                    }
-
-                    if ( response == null )
-                    {
-                        response = Response.status( Status.NOT_FOUND )
-                                           .build();
-                    }
+                    response = handleMissingContentQuery( sk, path );
                 }
                 else if ( item.isDirectory() || ( path.endsWith( "index.html" ) ) )
                 {
@@ -327,23 +263,25 @@ public class ContentAccessHandler
 
                         logger.info( "Getting listing at: {}", path + "/" );
                         final String content =
-                            contentController.renderListing( standardAccept, st, name, path + "/", baseUri,
-                                                             uriFormatter );
+                                contentController.renderListing( standardAccept, st, name, path + "/", baseUri,
+                                                                 uriFormatter );
 
                         response = formatOkResponseWithEntity( content, acceptInfo.getRawAccept() );
                     }
                     catch ( final IndyWorkflowException | IOException e )
                     {
-                        logger.error( String.format( "Failed to render content listing: %s from: %s. Reason: %s", path,
-                                                     name, e.getMessage() ), e );
+                        logger.error(
+                                String.format( "Failed to render content listing: %s from: %s. Reason: %s", path, name,
+                                               e.getMessage() ), e );
                         response = formatResponse( e );
                     }
                 }
                 else
                 {
-                    item.touch();
+                    // TODO: Do we need this if the TransferStreamingOutput is triggering an access event??
+                    item.touch( eventMetadata );
 
-                    final ResponseBuilder builder = Response.ok( new TransferStreamingOutput( item ,new EventMetadata() ) );
+                    final ResponseBuilder builder = Response.ok( new TransferStreamingOutput( item, eventMetadata ) );
                     setInfoHeaders( builder, item, sk, path, false, contentController.getContentType( path ),
                                     contentController.getHttpMetadata( sk, path ) );
 
@@ -356,6 +294,43 @@ public class ContentAccessHandler
                                              e.getMessage() ), e );
                 response = formatResponse( e );
             }
+        }
+
+        return response;
+    }
+
+    private Response handleMissingContentQuery( StoreKey sk, String path )
+    {
+        Response response = null;
+
+        logger.trace( "Transfer not found: {}/{}", sk, path );
+        if ( StoreType.remote == sk.getType() )
+        {
+            logger.trace( "Transfer was from remote repo. Trying to get HTTP metadata for: {}/{}", sk, path );
+            try
+            {
+                final HttpExchangeMetadata metadata = contentController.getHttpMetadata( sk, path );
+                if ( metadata != null )
+                {
+                    logger.trace( "Using HTTP metadata to formulate response status for: {}/{}", sk, path );
+                    response = formatResponseFromMetadata( metadata );
+                }
+                else
+                {
+                    logger.trace( "No HTTP metadata found!" );
+                }
+            }
+            catch ( final IndyWorkflowException e )
+            {
+                logger.error( String.format( "Error retrieving status metadata for: %s from: %s. Reason: %s", path,
+                                             sk.getName(), e.getMessage() ), e );
+                response = formatResponse( e );
+            }
+        }
+
+        if ( response == null )
+        {
+            response = Response.status( Status.NOT_FOUND ).build();
         }
 
         return response;

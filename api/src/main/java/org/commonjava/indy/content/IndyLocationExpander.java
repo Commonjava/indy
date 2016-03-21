@@ -15,14 +15,6 @@
  */
 package org.commonjava.indy.content;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -43,12 +35,17 @@ import org.commonjava.maven.galley.spi.transport.LocationExpander;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
 /**
  * {@link LocationExpander} implementation geared to work with {@link ArtifactStore} instances. This is responsible for resolving group references
  * into collections of concrete store references, for the purposes of resolving content. Via its use of {@link LocationUtils}, it also is responsible
  * for creating {@link Location} instances for remote repositories that contain relevant authentication and SSL attributes.
  */
-@ApplicationScoped
 public class IndyLocationExpander
     implements LocationExpander
 {

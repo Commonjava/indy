@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutorService;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
+import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.depgraph.DepgraphStorageListenerRunnable;
 import org.commonjava.indy.depgraph.conf.IndyDepgraphConfig;
@@ -42,6 +43,7 @@ public class DepgraphStorageListener
     private StoreDataManager indy;
 
     @Inject
+    @WeftManaged
     @ExecutorConfig( priority = 8, threads = 2, named = "depgraph-listener" )
     private ExecutorService executor;
 

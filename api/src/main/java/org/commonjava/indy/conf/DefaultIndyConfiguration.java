@@ -15,78 +15,22 @@
  */
 package org.commonjava.indy.conf;
 
-import java.io.InputStream;
-
-import javax.enterprise.inject.Alternative;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
-import javax.inject.Named;
-
-import org.commonjava.indy.inject.Production;
-import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 import org.commonjava.web.config.section.ConfigurationSectionListener;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.io.File;
+import java.io.InputStream;
+
+import static org.apache.commons.lang.StringUtils.isEmpty;
+
 @SectionName( ConfigurationSectionListener.DEFAULT_SECTION )
-@Alternative
-@Named( "not-used-directly" )
+@ApplicationScoped
 public class DefaultIndyConfiguration
-    implements IndyConfiguration
+    implements IndyConfiguration, IndyConfigInfo
 {
-
-    @javax.enterprise.context.ApplicationScoped
-    public static class FeatureConfig
-        extends AbstractIndyFeatureConfig<IndyConfiguration, DefaultIndyConfiguration>
-    {
-        @Inject
-        private ConfigInfo info;
-
-        public FeatureConfig()
-        {
-            super( DefaultIndyConfiguration.class );
-        }
-
-        @Produces
-        @Production
-        @Default
-        public IndyConfiguration getIndyConfig()
-            throws ConfigurationException
-        {
-            return getConfig();
-        }
-
-        @Override
-        public IndyConfigClassInfo getInfo()
-        {
-            return info;
-        }
-    }
-
-    @javax.enterprise.context.ApplicationScoped
-    public static class ConfigInfo
-        extends AbstractIndyConfigInfo
-    {
-        public ConfigInfo()
-        {
-            super( DefaultIndyConfiguration.class );
-        }
-
-        @Override
-        public String getDefaultConfigFileName()
-        {
-            return IndyConfigInfo.APPEND_DEFAULTS_TO_MAIN_CONF;
-        }
-
-        @Override
-        public InputStream getDefaultConfig()
-        {
-            return Thread.currentThread()
-                         .getContextClassLoader()
-                         .getResourceAsStream( "default-main.conf" );
-        }
-    }
 
     public static final int DEFAULT_PASSTHROUGH_TIMEOUT_SECONDS = 300;
 
@@ -148,9 +92,40 @@ public class DefaultIndyConfiguration
         return storeDisableTimeoutSeconds == null ? DEFAULT_STORE_DISABLE_TIMEOUT_SECONDS : storeDisableTimeoutSeconds;
     }
 
+    @Override
+    public File getIndyHomeDir()
+    {
+        return getSyspropDir( IndyConfigFactory.INDY_HOME_PROP );
+    }
+
+    @Override
+    public File getIndyConfDir()
+    {
+        return getSyspropDir( IndyConfigFactory.CONFIG_DIR_PROP );
+    }
+
+    private File getSyspropDir( String property )
+    {
+        String dir = System.getProperty( property );
+        return isEmpty(dir) ? null : new File( dir );
+    }
+
     @ConfigName( "store.disable.timeout" )
     public void setStoreDisableTimeoutSeconds( Integer storeDisableTimeoutSeconds )
     {
         this.storeDisableTimeoutSeconds = storeDisableTimeoutSeconds;
     }
+
+    @Override
+    public String getDefaultConfigFileName()
+    {
+        return IndyConfigInfo.APPEND_DEFAULTS_TO_MAIN_CONF;
+    }
+
+    @Override
+    public InputStream getDefaultConfig()
+    {
+        return Thread.currentThread().getContextClassLoader().getResourceAsStream( "default-main.conf" );
+    }
+
 }

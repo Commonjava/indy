@@ -15,27 +15,18 @@
  */
 package org.commonjava.indy.setback.conf;
 
-import org.commonjava.indy.conf.AbstractIndyConfigInfo;
-import org.commonjava.indy.conf.AbstractIndyFeatureConfig;
-import org.commonjava.indy.conf.IndyConfigClassInfo;
 import org.commonjava.indy.conf.IndyConfigInfo;
-import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Alternative;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.io.File;
 import java.io.InputStream;
 
 @SectionName( "setback" )
-@Alternative
-@Named
+@ApplicationScoped
 public class SetbackConfig
+    implements IndyConfigInfo
 {
 
     private static final boolean DEFAULT_ENABLED = false;
@@ -60,56 +51,17 @@ public class SetbackConfig
         this.enabled = enabled;
     }
 
-    @ApplicationScoped
-    public static class ConfigInfo
-        extends AbstractIndyConfigInfo
+    @Override
+    public String getDefaultConfigFileName()
     {
-        public ConfigInfo()
-        {
-            super( SetbackConfig.class );
-        }
-
-        @Override
-        public String getDefaultConfigFileName()
-        {
-            return new File( IndyConfigInfo.CONF_INCLUDES_DIR, "setback.conf" ).getPath();
-        }
-
-        @Override
-        public InputStream getDefaultConfig()
-        {
-            return Thread.currentThread()
-                         .getContextClassLoader()
-                         .getResourceAsStream( "default-setback.conf" );
-        }
+        return new File( IndyConfigInfo.CONF_INCLUDES_DIR, "setback.conf" ).getPath();
     }
 
-    @ApplicationScoped
-    public static class FeatureConfig
-        extends AbstractIndyFeatureConfig<SetbackConfig, SetbackConfig>
+    @Override
+    public InputStream getDefaultConfig()
     {
-        @Inject
-        private ConfigInfo info;
-
-        public FeatureConfig()
-        {
-            super( SetbackConfig.class );
-        }
-
-        @Produces
-        @Default
-        @ApplicationScoped
-        public SetbackConfig getSetbackConfig()
-            throws ConfigurationException
-        {
-            return getConfig();
-        }
-
-        @Override
-        public IndyConfigClassInfo getInfo()
-        {
-            return info;
-        }
+        return Thread.currentThread()
+                     .getContextClassLoader()
+                     .getResourceAsStream( "default-setback.conf" );
     }
-
 }

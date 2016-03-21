@@ -15,22 +15,23 @@
  */
 package org.commonjava.indy.core.conf;
 
-import java.io.InputStream;
+import org.commonjava.cdi.util.weft.config.DefaultWeftConfig;
+import org.commonjava.indy.conf.IndyConfigInfo;
+import org.commonjava.indy.inject.Production;
+import org.commonjava.web.config.ConfigurationException;
+import org.commonjava.web.config.annotation.SectionName;
+import org.commonjava.web.config.section.MapSectionListener;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
-import javax.inject.Named;
-
-import org.commonjava.indy.conf.AbstractIndyMapConfig;
-import org.commonjava.indy.inject.Production;
-import org.commonjava.cdi.util.weft.config.DefaultWeftConfig;
-import org.commonjava.web.config.ConfigurationException;
+import java.io.InputStream;
 
 @ApplicationScoped
-@Named( IndyWeftConfig.SECTION_NAME )
+@SectionName( IndyWeftConfig.SECTION_NAME )
 public class IndyWeftConfig
-    extends AbstractIndyMapConfig
+        extends MapSectionListener
+        implements IndyConfigInfo
 {
 
     public static final String SECTION_NAME = "threadpools";
@@ -49,7 +50,6 @@ public class IndyWeftConfig
 
     public IndyWeftConfig()
     {
-        super( SECTION_NAME );
     }
 
     @Override

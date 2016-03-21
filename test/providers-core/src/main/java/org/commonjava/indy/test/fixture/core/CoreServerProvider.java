@@ -46,15 +46,11 @@ public class CoreServerProvider
 
     private final TemporaryFolder folder = new TemporaryFolder();
 
-    @Inject
-    private DefaultIndyConfiguration.FeatureConfig indyConfigFeature;
-
-    private IndyConfiguration config;
-
     private NotFoundCache nfc;
 
     private DataFileStoreDataManager storeManager;
 
+    @Inject
     private DefaultStorageProviderConfiguration storageConfig;
 
     private XMLInfrastructure xml;
@@ -82,13 +78,12 @@ public class CoreServerProvider
             this.dataFileManager =
                 new DataFileManager( new DataFileConfiguration( folder.newFolder( "indy-data" ) ), dataFileEvents );
             this.storeManager = new DataFileStoreDataManager( dataFileManager, objectMapper, storeDispatch , new DefaultIndyConfiguration() );
-            this.storageConfig = new DefaultStorageProviderConfiguration( folder.newFolder( "indy-storage" ) );
 
-            this.config = indyConfigFeature.getIndyConfig();
+            storageConfig.setStorageRootDirectory( folder.newFolder( "indy-storage" ) );
             this.xml = new XMLInfrastructure();
             this.typeMapper = new StandardTypeMapper();
         }
-        catch ( IOException | ConfigurationException e )
+        catch ( IOException e )
         {
             throw new IllegalStateException( "Failed to start core server provider: " + e.getMessage(), e );
         }
@@ -101,34 +96,6 @@ public class CoreServerProvider
     public void stop()
     {
         folder.delete();
-    }
-
-//    @Produces
-//    @Default
-//    public TypeMapper getTypeMapper()
-//    {
-//        return typeMapper;
-//    }
-//
-//    @Produces
-//    @Default
-//    public XMLInfrastructure getXML()
-//    {
-//        return xml;
-//    }
-
-    @Produces
-    @Default
-    public IndyConfiguration getIndyConfig()
-    {
-        return config;
-    }
-
-    @Produces
-    @Default
-    public DefaultStorageProviderConfiguration getStorageProviderConfig()
-    {
-        return storageConfig;
     }
 
     @Produces

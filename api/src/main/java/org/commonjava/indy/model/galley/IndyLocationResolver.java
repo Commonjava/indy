@@ -15,8 +15,6 @@
  */
 package org.commonjava.indy.model.galley;
 
-import javax.inject.Inject;
-
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -27,6 +25,8 @@ import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.spi.transport.LocationResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
 
 public class IndyLocationResolver
     implements LocationResolver

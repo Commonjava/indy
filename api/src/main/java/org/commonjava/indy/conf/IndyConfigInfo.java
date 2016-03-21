@@ -29,11 +29,6 @@ public interface IndyConfigInfo
     String CONF_INCLUDES_DIR = "conf.d";
 
     /**
-     * The name of the configuration file subsection that applies to this configuration.
-     */
-    String getSectionName();
-
-    /**
      * The name of the file to be written in case no configuration is provided, to allow modification of defaults in future executions.
      * @return a filename, of the form *.conf (unless it's 'main.conf', in which case it'll be appended to the main config file), 
      *  which will be written to the etc/indy/conf.d directory.
@@ -48,4 +43,10 @@ public interface IndyConfigInfo
      */
     InputStream getDefaultConfig();
 
+//    /**
+//     * Return the section name. Note that we cannot use the @SectionName annotation because CDI will proxy the class and
+//     * lose the annotation.
+//     * @return
+//     */
+//    String getSection();
 }

@@ -54,7 +54,7 @@ public class CoreProvider
 
     @Produces
     @Default
-    @Production
+//    @Production
     public IndyObjectMapper getIndyObjectMapper()
     {
         Logger logger = LoggerFactory.getLogger( getClass() );

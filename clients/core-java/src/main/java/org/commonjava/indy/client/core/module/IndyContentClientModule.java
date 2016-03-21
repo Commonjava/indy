@@ -17,9 +17,11 @@ package org.commonjava.indy.client.core.module;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
+import org.commonjava.indy.IndyContentConstants;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.client.core.helper.HttpResources;
@@ -104,10 +106,26 @@ public class IndyContentClientModule
         return http.exists( contentPath( key.getType(), key.getName(), path ) );
     }
 
+    public Boolean exists( StoreKey key, String path, boolean cacheOnly )
+            throws IndyClientException
+    {
+        return http.exists( contentPath( key.getType(), key.getName(), path ),
+                            () -> Collections.<String, String>singletonMap( IndyContentConstants.CHECK_CACHE_ONLY,
+                                                                            Boolean.toString( cacheOnly ) ) );
+    }
+
     public boolean exists( final StoreType type, final String name, final String path )
         throws IndyClientException
     {
         return http.exists( contentPath( type, name, path ) );
+    }
+
+    public Boolean exists( StoreType type, String name, String path, boolean cacheOnly )
+            throws IndyClientException
+    {
+        return http.exists( contentPath( type, name, path ),
+                            () -> Collections.<String, String>singletonMap( IndyContentConstants.CHECK_CACHE_ONLY,
+                                                                            Boolean.toString( cacheOnly ) ) );
     }
 
     public void store( final StoreKey key, final String path, final InputStream stream )

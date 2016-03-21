@@ -27,6 +27,13 @@
   <artifactId>indy-embedder-min</artifactId>
   
   <name>Indy :: Embedders :: Minimal REST Embedder</name>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-filer-default</artifactId>
+    </dependency>
+  </dependencies>
   
   <build>
     <plugins>

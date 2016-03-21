@@ -58,10 +58,6 @@
       <artifactId>indy-db-flat</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-filer-default</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.commonjava.indy.boot</groupId>
       <artifactId>indy-booter-jaxrs</artifactId>
     </dependency>
@@ -86,6 +82,10 @@
       <groupId>org.jboss.weld.se</groupId>
       <artifactId>weld-se</artifactId>
       <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.cache</groupId>
+      <artifactId>cache-api</artifactId>
     </dependency>
   </dependencies>
   
@@ -168,10 +168,10 @@
           <groupId>org.commonjava.indy</groupId>
           <artifactId>indy-ftests-core</artifactId>
         </dependency>
-        <dependency>
+<!--         <dependency>
           <groupId>org.commonjava.indy</groupId>
           <artifactId>indy-test-providers-core</artifactId>
-        </dependency>
+        </dependency> -->
       </dependencies>
       
       <build>

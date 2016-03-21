@@ -15,83 +15,27 @@
  */
 package org.commonjava.indy.filer.def.conf;
 
-import java.io.File;
-import java.io.InputStream;
-
-import javax.enterprise.inject.Alternative;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
-import javax.inject.Named;
-
-import org.commonjava.indy.conf.AbstractIndyConfigInfo;
-import org.commonjava.indy.conf.AbstractIndyFeatureConfig;
-import org.commonjava.indy.conf.IndyConfigClassInfo;
+import org.commonjava.indy.conf.IndyConfigFactory;
 import org.commonjava.indy.conf.IndyConfigInfo;
-import org.commonjava.indy.inject.Production;
-import org.commonjava.web.config.ConfigurationException;
-import org.commonjava.web.config.annotation.ConfigNames;
+import org.commonjava.indy.conf.IndyConfiguration;
+import org.commonjava.indy.conf.SystemPropertyProvider;
+import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 
+import javax.enterprise.context.ApplicationScoped;
+import java.io.File;
+import java.io.InputStream;
+import java.util.Properties;
+
 @SectionName( "storage-default" )
-@Alternative
-@Named( "unused" )
+@ApplicationScoped
 public class DefaultStorageProviderConfiguration
+    implements IndyConfigInfo, SystemPropertyProvider
 {
 
-    @javax.enterprise.context.ApplicationScoped
-    public static class FilerDefaultFeatureConfig
-        extends AbstractIndyFeatureConfig<DefaultStorageProviderConfiguration, DefaultStorageProviderConfiguration>
-    {
-        @Inject
-        private FilerDefaultConfigInfo info;
-
-        public FilerDefaultFeatureConfig()
-        {
-            super( DefaultStorageProviderConfiguration.class );
-        }
-
-        @Produces
-        @Production
-        @Default
-        public DefaultStorageProviderConfiguration getFilerDefaultConfig()
-            throws ConfigurationException
-        {
-            return getConfig();
-        }
-
-        @Override
-        public IndyConfigClassInfo getInfo()
-        {
-            return info;
-        }
-    }
-
-    @javax.enterprise.context.ApplicationScoped
-    public static class FilerDefaultConfigInfo
-        extends AbstractIndyConfigInfo
-    {
-        public FilerDefaultConfigInfo()
-        {
-            super( DefaultStorageProviderConfiguration.class );
-        }
-
-        @Override
-        public String getDefaultConfigFileName()
-        {
-            return IndyConfigInfo.APPEND_DEFAULTS_TO_MAIN_CONF;
-        }
-
-        @Override
-        public InputStream getDefaultConfig()
-        {
-            return Thread.currentThread()
-                         .getContextClassLoader()
-                         .getResourceAsStream( "default-storage.conf" );
-        }
-    }
-
     public static final File DEFAULT_BASEDIR = new File( "/var/lib/indy/storage" );
+
+    public static final String STORAGE_DIR = "indy.storage.dir";
 
     private File storageBasedir;
 
@@ -99,7 +43,6 @@ public class DefaultStorageProviderConfiguration
     {
     }
 
-    @ConfigNames( "storage.dir" )
     public DefaultStorageProviderConfiguration( final File storageBasedir )
     {
         this.storageBasedir = storageBasedir;
@@ -110,9 +53,31 @@ public class DefaultStorageProviderConfiguration
         return storageBasedir == null ? DEFAULT_BASEDIR : storageBasedir;
     }
 
+    @ConfigName( "storage.dir" )
     public void setStorageRootDirectory( final File storageBasedir )
     {
         this.storageBasedir = storageBasedir;
     }
 
+    @Override
+    public String getDefaultConfigFileName()
+    {
+        return IndyConfigInfo.APPEND_DEFAULTS_TO_MAIN_CONF;
+    }
+
+    @Override
+    public InputStream getDefaultConfig()
+    {
+        return Thread.currentThread()
+                     .getContextClassLoader()
+                     .getResourceAsStream( "default-storage.conf" );
+    }
+
+    @Override
+    public Properties getSystemProperties()
+    {
+        Properties p = new Properties();
+        p.setProperty( STORAGE_DIR, getStorageRootDirectory().getAbsolutePath() );
+        return p;
+    }
 }

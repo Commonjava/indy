@@ -28,9 +28,27 @@
   <!-- <packaging>war</packaging> -->
   
   <name>Indy :: Embedders :: Savant</name>
-  <description>REST + Cartographer + DotMaven + Autoprox + Folo + Revisions + SetBack</description>
+  <description>REST + Cartographer + DotMaven + Autoprox + Folo + Revisions + SetBack + Infinispan infrastructure</description>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.jboss.logging</groupId>
+        <artifactId>jboss-logging</artifactId>
+        <version>3.3.0.Final</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   
   <dependencies>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-filer-default</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-infinispan</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-autoprox-jaxrs</artifactId>
@@ -69,7 +87,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-indexer</artifactId>
+      <artifactId>indy-content-index</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
@@ -119,6 +137,40 @@
     <dependency>
       <groupId>org.commonjava.maven.atlas</groupId>
       <artifactId>atlas-relationships-api</artifactId>
+    </dependency>
+
+
+    <dependency>
+      <groupId>org.infinispan</groupId>
+      <artifactId>infinispan-cdi-embedded</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.infinispan</groupId>
+      <artifactId>infinispan-embedded</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.infinispan</groupId>
+      <artifactId>infinispan-embedded-query</artifactId>
+    </dependency>
+<!--     <dependency>
+       <groupId>org.jboss.logging</groupId>
+       <artifactId>jboss-logging-processor</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.logmanager</groupId>
+      <artifactId>jboss-logmanager</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.logging</groupId>
+      <artifactId>jboss-logging</artifactId>
+    </dependency> -->
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-search-orm</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.cache</groupId>
+      <artifactId>cache-api</artifactId>
     </dependency>
 
     <!-- Tests -->
@@ -190,10 +242,6 @@
                   <forkCount>${test-forkCount}</forkCount>
                   <reuseForks>false</reuseForks>
                   <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
-<!--                   <includes>
-                    <include>**/rule/*Test*</include>
-                  </includes>
- -->
                   <dependenciesToScan>
                     <dependency>org.commonjava.indy:indy-ftests-core</dependency>
                     <dependency>org.commonjava.indy:indy-ftests-autoprox</dependency>

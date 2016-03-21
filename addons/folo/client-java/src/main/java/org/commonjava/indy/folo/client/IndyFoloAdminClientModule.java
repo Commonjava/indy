@@ -15,7 +15,11 @@
  */
 package org.commonjava.indy.folo.client;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.StatusLine;
+import org.apache.http.client.methods.HttpPost;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.client.core.IndyResponseErrorDetails;
@@ -24,9 +28,13 @@ import org.commonjava.indy.client.core.util.UrlUtils;
 import org.commonjava.indy.folo.dto.TrackedContentDTO;
 import org.commonjava.indy.folo.model.TrackedContentRecord;
 import org.commonjava.indy.model.core.StoreType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+
+import static org.commonjava.indy.client.core.helper.HttpResources.entityToString;
 
 public class IndyFoloAdminClientModule
     extends IndyClientModule
@@ -92,4 +100,34 @@ public class IndyFoloAdminClientModule
         http.delete( UrlUtils.buildUrl( "/folo/admin", trackingId, "record" ) );
     }
 
+    public boolean sealTrackingRecord( String trackingId )
+            throws IndyClientException
+    {
+        http.connect();
+
+        HttpPost request = http.newRawPost( UrlUtils.buildUrl( http.getBaseUrl(), "/folo/admin", trackingId, "record" ) );
+        HttpResources resources = null;
+        try
+        {
+            resources = http.execute( request );
+            HttpResponse response = resources.getResponse();
+            StatusLine sl = response.getStatusLine();
+            if ( sl.getStatusCode() != 200 )
+            {
+                if ( sl.getStatusCode() == 404 )
+                {
+                    return false;
+                }
+
+                throw new IndyClientException( sl.getStatusCode(), "Error sealing tracking record %s.\n%s",
+                                               trackingId, new IndyResponseErrorDetails( response ) );
+            }
+
+            return true;
+        }
+        finally
+        {
+            IOUtils.closeQuietly( resources );
+        }
+    }
 }

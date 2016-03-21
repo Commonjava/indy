@@ -32,14 +32,23 @@
   
   <modules>
     <module>autoprox</module>
+    <module>content-index</module>
     <module>depgraph</module>
     <module>dot-maven</module>
     <module>folo</module>
     <module>httprox</module>
     <module>implied-repos</module>
-    <module>indexer</module>
     <module>promote</module>
     <module>revisions</module>
     <module>setback</module>
   </modules>
+
+  <profiles>
+    <profile>
+      <id>decommissioned</id>
+      <modules>
+        <module>indexer</module>
+      </modules>
+    </profile>
+  </profiles>
 </project>

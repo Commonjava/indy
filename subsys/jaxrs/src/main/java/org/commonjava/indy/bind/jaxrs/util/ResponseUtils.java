@@ -197,23 +197,16 @@ public final class ResponseUtils
 
     public static Response formatResponseFromMetadata( final HttpExchangeMetadata metadata )
     {
-        final ResponseBuilder builder = Response.status( metadata.getResponseStatusCode() );
-        // The code below was triggering empty responses via GET requests when something was missing upstream.
-        // See https://github.com/Commonjava/indy/issues/207
-        //        Logger logger = LoggerFactory.getLogger( ResponseUtils.class );
-        //        for ( final Map.Entry<String, List<String>> headerSet : metadata.getResponseHeaders()
-        //                                                                        .entrySet() )
-        //        {
-        //            for ( final String value : headerSet.getValue() )
-        //            {
-        //                logger.info( "Setting response header from http metadata: key={}, value={}", headerSet.getKey(),
-        //                             value );
-        //
-        //                builder.header( headerSet.getKey(), value );
-        //            }
-        //        }
+        int code = metadata.getResponseStatusCode();
+        // 500-level error; use 502 response.
+        Logger logger = LoggerFactory.getLogger( ResponseUtils.class );
+        logger.info( "Formatting response with code: {}", code );
+        if ( code / 100 == 5 )
+        {
+            return Response.status( 502 ).build();
+        }
 
-        return builder.build();
+        return Response.status( code ).build();
     }
 
     public static Response formatOkResponseWithEntity( final Object output, final String contentType )

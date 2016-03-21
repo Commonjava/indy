@@ -15,6 +15,14 @@
  */
 package org.commonjava.indy.implrepo.conf;
 
+import org.commonjava.indy.conf.IndyConfigInfo;
+import org.commonjava.web.config.ConfigurationException;
+import org.commonjava.web.config.annotation.SectionName;
+import org.commonjava.web.config.section.MapSectionListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -23,18 +31,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
 
-import javax.enterprise.context.ApplicationScoped;
-
-import org.commonjava.indy.conf.AbstractIndyMapConfig;
-import org.commonjava.indy.conf.IndyConfigInfo;
-import org.commonjava.web.config.ConfigurationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 @ApplicationScoped
+@SectionName( ImpliedRepoConfig.SECTION_NAME)
 public class ImpliedRepoConfig
-    extends AbstractIndyMapConfig
-//    implements IndyConfigClassInfo
+        extends MapSectionListener
+    implements IndyConfigInfo
 {
 
     public static final String SECTION_NAME = "implied-repos";
@@ -57,7 +58,6 @@ public class ImpliedRepoConfig
 
     public ImpliedRepoConfig()
     {
-        super( SECTION_NAME );
     }
 
     public boolean isEnabled()

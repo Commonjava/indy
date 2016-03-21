@@ -44,6 +44,8 @@ public class GroupAdjustmentToMemberDeletionTest
               .delete( repo.getKey()
                            .getType(), repo.getName(), name.getMethodName() );
 
+        waitForEventPropagation();
+
         final Group result = client.stores()
                                            .load( group.getKey()
                                                .getType(), group.getName(), Group.class );

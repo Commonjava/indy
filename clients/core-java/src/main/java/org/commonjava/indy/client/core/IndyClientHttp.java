@@ -27,6 +27,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
@@ -34,12 +35,14 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.AbstractExecutionAwareRequest;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.conn.HttpClientConnectionManager;
@@ -205,6 +208,7 @@ public class IndyClientHttp
             response = client.execute( request );
 
             final StatusLine sl = response.getStatusLine();
+
             if ( sl.getStatusCode() != 200 )
             {
                 if ( sl.getStatusCode() == 404 )
@@ -217,7 +221,7 @@ public class IndyClientHttp
             }
 
             final String json = entityToString( response );
-            logger.info( "Got JSON:\n\n{}\n\n", json );
+            logger.debug( "Got JSON:\n\n{}\n\n", json );
             final T value = objectMapper.readValue( json, type );
 
             logger.debug( "Got result object: {}", value );
@@ -420,6 +424,30 @@ public class IndyClientHttp
         return true;
     }
 
+    public HttpResources execute( HttpRequestBase request )
+            throws IndyClientException
+    {
+        connect();
+
+        CloseableHttpResponse response = null;
+        try
+        {
+            final CloseableHttpClient client = newClient();
+
+            response = client.execute( request );
+            return new HttpResources( request, response, client );
+        }
+        catch ( final IOException e )
+        {
+            throw new IndyClientException( "Indy request failed: %s", e, e.getMessage() );
+        }
+        finally
+        {
+            // DO NOT CLOSE!!!! We're handing off control of the response to the caller!
+            //            closeQuietly( response );
+        }
+    }
+
     public HttpResources postRaw( final String path, Object value )
             throws IndyClientException
     {
@@ -578,7 +606,7 @@ public class IndyClientHttp
     @Override
     public void close()
     {
-        logger.info( "Shutting down indy client HTTP manager" );
+        logger.debug( "Shutting down indy client HTTP manager" );
         connectionManager.reallyShutdown();
     }
 
@@ -660,10 +688,22 @@ public class IndyClientHttp
     public boolean exists( final String path )
             throws IndyClientException
     {
-        return exists( path, HttpStatus.SC_OK );
+        return exists( path, null, HttpStatus.SC_OK );
+    }
+
+    public boolean exists( final String path, Supplier<Map<String, String>> querySupplier )
+            throws IndyClientException
+    {
+        return exists( path, querySupplier, HttpStatus.SC_OK );
     }
 
     public boolean exists( final String path, final int... responseCodes )
+            throws IndyClientException
+    {
+        return exists( path, null, responseCodes );
+    }
+
+    public boolean exists( final String path, Supplier<Map<String, String>> querySupplier, final int... responseCodes )
             throws IndyClientException
     {
         connect();
@@ -674,7 +714,7 @@ public class IndyClientHttp
         try
         {
             client = newClient();
-            request = newJsonHead( buildUrl( baseUrl, path ) );
+            request = newJsonHead( buildUrl( baseUrl, querySupplier, path ) );
 
             response = client.execute( request );
             final StatusLine sl = response.getStatusLine();

@@ -30,6 +30,7 @@ import org.commonjava.indy.ftest.core.fixture.ReluctantInputStream;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.test.http.TestHttpServer;
+import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -38,7 +39,7 @@ public class LateJoinDownloadWhileProxyingInProgressTest
 {
 
     @Rule
-    public TestHttpServer server = new TestHttpServer( "repos" );
+    public ExpectationServer server = new ExpectationServer( "repos" );
 
     @Override
     protected boolean createStandardTestStructures()

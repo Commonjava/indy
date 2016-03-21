@@ -36,6 +36,9 @@ public class InitTrackingRecordThenPullEmptyRecordTest
         assertThat( client.module( IndyFoloAdminClientModule.class )
                           .initReport( trackingId ), equalTo( true ) );
 
+        assertThat( client.module( IndyFoloAdminClientModule.class ).sealTrackingRecord( trackingId ),
+                    equalTo( true ) );
+
         final TrackedContentDTO report = client.module( IndyFoloAdminClientModule.class )
                                                .getTrackingReport( trackingId );
         assertThat( report, notNullValue() );

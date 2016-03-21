@@ -15,10 +15,14 @@
  */
 package org.commonjava.indy.folo.model;
 
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
 
+@Indexed
 public class TrackingKey
 {
 
+    @Field
     private String id;
 
     protected TrackingKey()

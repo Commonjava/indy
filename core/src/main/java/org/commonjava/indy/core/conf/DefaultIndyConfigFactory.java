@@ -15,31 +15,34 @@
  */
 package org.commonjava.indy.core.conf;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
-import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import org.apache.commons.io.IOUtils;
-import org.commonjava.indy.conf.AbstractIndyMapConfig;
-import org.commonjava.indy.conf.IndyConfigClassInfo;
 import org.commonjava.indy.conf.IndyConfigFactory;
 import org.commonjava.indy.conf.IndyConfigInfo;
+import org.commonjava.indy.conf.SystemPropertyProvider;
 import org.commonjava.indy.util.PathUtils;
+import org.commonjava.web.config.ConfigUtils;
 import org.commonjava.web.config.ConfigurationException;
+import org.commonjava.web.config.ConfigurationListener;
 import org.commonjava.web.config.DefaultConfigurationListener;
 import org.commonjava.web.config.dotconf.DotConfConfigurationReader;
 import org.commonjava.web.config.io.ConfigFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Singleton
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
+import javax.inject.Inject;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import static org.apache.commons.io.IOUtils.closeQuietly;
+
+@ApplicationScoped
 public class DefaultIndyConfigFactory
     extends DefaultConfigurationListener
     implements IndyConfigFactory
@@ -48,10 +51,10 @@ public class DefaultIndyConfigFactory
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private Instance<IndyConfigClassInfo> configSections;
+    private Instance<ConfigurationListener> configListeners;
 
     @Inject
-    private Instance<AbstractIndyMapConfig> mapConfigs;
+    private Instance<IndyConfigInfo> configSections;
 
     //    private static String configPath = System.getProperty( CONFIG_PATH_PROP, DEFAULT_CONFIG_PATH );
     //
@@ -65,20 +68,21 @@ public class DefaultIndyConfigFactory
     public synchronized void load( final String configPath )
         throws ConfigurationException
     {
-        setSystemProperties();
+        Properties props = getBaseSystemProperties();
 
         logger.info( "\n\n\n\n[CONFIG] Reading Indy configuration in: '{}'\n\nAdding configuration section listeners:",
                      Thread.currentThread()
                            .getName() );
 
-        for ( final IndyConfigClassInfo section : configSections )
+        logger.info( "Adding configuration sections..." );
+        if ( configSections != null )
         {
-            with( section.getSectionName(), section.getConfigurationClass() );
-        }
-
-        for ( final AbstractIndyMapConfig section : mapConfigs )
-        {
-            with( section.getSectionName(), section );
+            for ( final IndyConfigInfo section : configSections )
+            {
+                String sectionName = ConfigUtils.getSectionName( section.getClass() );
+                logger.info( "Adding configuration section: {}", sectionName );
+                with( sectionName, section );
+            }
         }
 
         final String config = configPath( configPath );
@@ -114,11 +118,33 @@ public class DefaultIndyConfigFactory
             writeDefaultConfigs( dir );
         }
 
+        List<ConfigurationListener> listeners = new ArrayList<>();
+        listeners.add( this );
+
+        if ( configListeners != null )
+        {
+            configListeners.forEach( (listener)->listeners.add( listener ) );
+        }
+
         InputStream stream = null;
         try
         {
-            stream = ConfigFileUtils.readFileWithIncludes( config );
-            new DotConfConfigurationReader( this ).loadConfiguration( stream );
+            stream = ConfigFileUtils.readFileWithIncludes( config, props );
+
+            new DotConfConfigurationReader( listeners ).loadConfiguration( stream );
+
+            Properties sysprops = System.getProperties();
+            props.stringPropertyNames().forEach( ( name ) -> sysprops.setProperty( name, props.getProperty( name ) ) );
+
+            configSections.forEach( (section)->{
+                if ( section instanceof SystemPropertyProvider)
+                {
+                    Properties p = ( (SystemPropertyProvider) section ).getSystemProperties();
+                    p.stringPropertyNames().forEach( ( name ) -> sysprops.setProperty( name, p.getProperty( name ) ) );
+                }
+            });
+
+            System.setProperties( sysprops );
         }
         catch ( final IOException e )
         {
@@ -138,15 +164,12 @@ public class DefaultIndyConfigFactory
     public void writeDefaultConfigs( final File dir )
         throws ConfigurationException
     {
-        setSystemProperties();
+        Properties props = getBaseSystemProperties();
 
-        for ( final IndyConfigClassInfo section : configSections )
+        for ( final IndyConfigInfo section : configSections )
         {
-            writeDefaultsFor( section, dir );
-        }
-
-        for ( final AbstractIndyMapConfig section : mapConfigs )
-        {
+            String sectionName = ConfigUtils.getSectionName( section.getClass() );
+            logger.info( "Config section: {} with name: {}", section, sectionName );
             writeDefaultsFor( section, dir );
         }
     }
@@ -154,6 +177,8 @@ public class DefaultIndyConfigFactory
     private void writeDefaultsFor( final IndyConfigInfo section, final File dir )
         throws ConfigurationException
     {
+        String sectionName = ConfigUtils.getSectionName( section.getClass() );
+        logger.info( "Attempting to write default configuration for section: {}", sectionName );
         final InputStream configStream = section.getDefaultConfig();
         if ( configStream != null )
         {
@@ -168,7 +193,7 @@ public class DefaultIndyConfigFactory
             file.getParentFile()
                 .mkdirs();
 
-            logger.info( "Writing defaults for: {} to: {}", section.getSectionName(), file );
+            logger.info( "Writing defaults for: {} to: {}", sectionName, file );
             FileOutputStream out = null;
             try
             {
@@ -198,8 +223,10 @@ public class DefaultIndyConfigFactory
         return System.getProperty( CONFIG_PATH_PROP );
     }
 
-    private void setSystemProperties()
+    private Properties getBaseSystemProperties()
     {
+        Properties props = new Properties();
+
         /* Set config path */
         String confPath = System.getProperty( IndyConfigFactory.CONFIG_PATH_PROP );
         final String indyHome = System.getProperty( "indy.home" );
@@ -220,8 +247,8 @@ public class DefaultIndyConfigFactory
             confPath = IndyConfigFactory.DEFAULT_CONFIG_PATH;
         }
 
-        System.setProperty( IndyConfigFactory.CONFIG_PATH_PROP, confPath );
-        System.setProperty( IndyConfigFactory.APROX_CONFIG_PATH_PROP, confPath );
+        props.setProperty( IndyConfigFactory.CONFIG_PATH_PROP, confPath );
+        props.setProperty( IndyConfigFactory.APROX_CONFIG_PATH_PROP, confPath );
 
         /* Set config dir */
         final String confDir = System.getProperty( IndyConfigFactory.CONFIG_DIR_PROP );
@@ -229,9 +256,11 @@ public class DefaultIndyConfigFactory
         {
             final File f = new File( confPath );
             final String dir = f.getParent();
-            System.setProperty( IndyConfigFactory.CONFIG_DIR_PROP, dir );
-            System.setProperty( IndyConfigFactory.APROX_CONFIG_DIR_PROP, dir );
+            props.setProperty( IndyConfigFactory.CONFIG_DIR_PROP, dir );
+            props.setProperty( IndyConfigFactory.APROX_CONFIG_DIR_PROP, dir );
         }
+
+        return props;
     }
 
 }

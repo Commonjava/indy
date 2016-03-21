@@ -227,12 +227,12 @@ public class ReadOnlyTransfer
         return delegate.list();
     }
 
-    @Override
-    // FIXME: This is a leak of the read-only mechanism, but may be necessary.
-    public File getDetachedFile()
-    {
-        return delegate.getDetachedFile();
-    }
+//    @Override
+//    // FIXME: This is a leak of the read-only mechanism, but may be necessary.
+//    public File getDetachedFile()
+//    {
+//        return delegate.getDetachedFile();
+//    }
 
     @Override
     public void mkdirs()

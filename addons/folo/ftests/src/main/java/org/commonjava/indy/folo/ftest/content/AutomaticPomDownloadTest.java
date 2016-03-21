@@ -66,10 +66,7 @@ public class AutomaticPomDownloadTest
                                 RemoteRepository.class );
 
         // ensure the pom does not exist before the jar download
-        final File pomFile = new File( String.format( "%s/var/lib/indy/storage/%s-%s%s",
-                                                      fixture.getBootOptions().getIndyHome(),
-                                                      remote.name(), repoId, pomPath ) );
-        assertThat( pomFile.exists(), equalTo( false ) );
+        assertThat( client.content().exists( remote, repoId, pomPath, true ), equalTo( false ) );
 
         // download the .jar
         IndyFoloContentClientModule clientModule = client.module( IndyFoloContentClientModule.class );
@@ -78,9 +75,10 @@ public class AutomaticPomDownloadTest
 
         result.close();
 
-        // verify the existence of the .pom file after 1 seconds of Thread.sleep()
-        Thread.sleep( 1000 );
-        assertThat( pomFile.exists(), equalTo( true ) );
+        // verify the existence of the .pom file after sleeping a bit to allow the event to propagate
+        Thread.sleep( 3000 );
+
+        assertThat( client.content().exists( remote, repoId, pomPath, true ), equalTo( true ) );
     }
 
 }

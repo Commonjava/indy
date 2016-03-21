@@ -15,83 +15,20 @@
  */
 package org.commonjava.indy.revisions.conf;
 
-import java.io.File;
-import java.io.InputStream;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Alternative;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
-import javax.inject.Named;
-
-import org.commonjava.indy.conf.AbstractIndyConfigInfo;
-import org.commonjava.indy.conf.AbstractIndyFeatureConfig;
-import org.commonjava.indy.conf.IndyConfigClassInfo;
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.indy.subsys.git.ConflictStrategy;
-import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 
+import javax.enterprise.context.ApplicationScoped;
+import java.io.File;
+import java.io.InputStream;
+
 @SectionName( "revisions" )
-@Alternative
-@Named
+@ApplicationScoped
 public class RevisionsConfig
+    implements IndyConfigInfo
 {
-
-    @javax.enterprise.context.ApplicationScoped
-    public static class ConfigInfo
-        extends AbstractIndyConfigInfo
-    {
-        public ConfigInfo()
-        {
-            super( RevisionsConfig.class );
-        }
-
-        @Override
-        public String getDefaultConfigFileName()
-        {
-            return new File( IndyConfigInfo.CONF_INCLUDES_DIR, "revisions.conf" ).getPath();
-        }
-
-        @Override
-        public InputStream getDefaultConfig()
-        {
-            return Thread.currentThread()
-                         .getContextClassLoader()
-                         .getResourceAsStream( "default-revisions.conf" );
-        }
-    }
-
-    @javax.enterprise.context.ApplicationScoped
-    public static class FeatureConfig
-        extends AbstractIndyFeatureConfig<RevisionsConfig, RevisionsConfig>
-    {
-        @Inject
-        private ConfigInfo info;
-
-        public FeatureConfig()
-        {
-            super( RevisionsConfig.class );
-        }
-
-        @Produces
-        @Default
-        @ApplicationScoped
-        public RevisionsConfig getRevisionsConfig()
-            throws ConfigurationException
-        {
-            final RevisionsConfig config = getConfig();
-            return config == null ? new RevisionsConfig() : config;
-        }
-
-        @Override
-        public IndyConfigClassInfo getInfo()
-        {
-            return info;
-        }
-    }
 
     private boolean enabled = true;
 
@@ -192,4 +129,17 @@ public class RevisionsConfig
         this.userEmail = userEmail;
     }
 
+    @Override
+    public String getDefaultConfigFileName()
+    {
+        return new File( IndyConfigInfo.CONF_INCLUDES_DIR, "revisions.conf" ).getPath();
+    }
+
+    @Override
+    public InputStream getDefaultConfig()
+    {
+        return Thread.currentThread()
+                     .getContextClassLoader()
+                     .getResourceAsStream( "default-revisions.conf" );
+    }
 }

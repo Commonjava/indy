@@ -16,6 +16,7 @@
 package org.commonjava.indy.core.change.event;
 
 import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.change.event.ArtifactStoreDeletePostEvent;
 import org.commonjava.indy.change.event.ArtifactStoreDeletePreEvent;
 import org.commonjava.indy.change.event.ArtifactStorePostUpdateEvent;
@@ -52,7 +53,9 @@ public class DefaultStoreEventDispatcher
     private Event<ArtifactStoreDeletePostEvent> postDelEvent;
 
     @Inject
+    @WeftManaged
     @ExecutorConfig( named = CoreEventManagerConstants.DISPATCH_EXECUTOR_NAME,
+                     threads = CoreEventManagerConstants.DISPATCH_EXECUTOR_THREADS,
                      priority = CoreEventManagerConstants.DISPATCH_EXECUTOR_PRIORITY )
     private Executor executor;
 

@@ -15,31 +15,21 @@
  */
 package org.commonjava.indy.subsys.keycloak.conf;
 
+import org.commonjava.indy.conf.IndyConfigFactory;
+import org.commonjava.indy.conf.IndyConfigInfo;
+import org.commonjava.maven.galley.util.PathUtils;
+import org.commonjava.web.config.annotation.ConfigName;
+import org.commonjava.web.config.annotation.SectionName;
+
+import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Properties;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Alternative;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
-import javax.inject.Named;
-
-import org.commonjava.indy.conf.AbstractIndyConfigInfo;
-import org.commonjava.indy.conf.AbstractIndyFeatureConfig;
-import org.commonjava.indy.conf.IndyConfigClassInfo;
-import org.commonjava.indy.conf.IndyConfigFactory;
-import org.commonjava.indy.conf.IndyConfigInfo;
-import org.commonjava.maven.galley.util.PathUtils;
-import org.commonjava.web.config.ConfigurationException;
-import org.commonjava.web.config.annotation.ConfigName;
-import org.commonjava.web.config.annotation.SectionName;
-
 @SectionName( "keycloak" )
-@Alternative
-@Named
+@ApplicationScoped
 public class KeycloakConfig
+    implements IndyConfigInfo
 {
 
     private static final boolean DEFAULT_ENABLED = false;
@@ -203,58 +193,6 @@ public class KeycloakConfig
         return PathUtils.normalize( confDir, confFile );
     }
 
-    @javax.enterprise.context.ApplicationScoped
-    public static class ConfigInfo
-        extends AbstractIndyConfigInfo
-    {
-        public ConfigInfo()
-        {
-            super( KeycloakConfig.class );
-        }
-
-        @Override
-        public String getDefaultConfigFileName()
-        {
-            return new File( IndyConfigInfo.CONF_INCLUDES_DIR, "keycloak.conf" ).getPath();
-        }
-
-        @Override
-        public InputStream getDefaultConfig()
-        {
-            return Thread.currentThread()
-                         .getContextClassLoader()
-                         .getResourceAsStream( "default-keycloak.conf" );
-        }
-    }
-
-    @javax.enterprise.context.ApplicationScoped
-    public static class FeatureConfig
-        extends AbstractIndyFeatureConfig<KeycloakConfig, KeycloakConfig>
-    {
-        @Inject
-        private ConfigInfo info;
-
-        public FeatureConfig()
-        {
-            super( KeycloakConfig.class );
-        }
-
-        @Produces
-        @Default
-        @ApplicationScoped
-        public KeycloakConfig getKeycloakConfig()
-            throws ConfigurationException
-        {
-            return getConfig().setSystemProperties();
-        }
-
-        @Override
-        public IndyConfigClassInfo getInfo()
-        {
-            return info;
-        }
-    }
-
     public String getUrl()
     {
         return url;
@@ -308,6 +246,20 @@ public class KeycloakConfig
     public void setRealmPublicKey( final String realmPublicKey )
     {
         this.realmPublicKey = realmPublicKey;
+    }
+
+    @Override
+    public String getDefaultConfigFileName()
+    {
+        return new File( IndyConfigInfo.CONF_INCLUDES_DIR, "keycloak.conf" ).getPath();
+    }
+
+    @Override
+    public InputStream getDefaultConfig()
+    {
+        return Thread.currentThread()
+                     .getContextClassLoader()
+                     .getResourceAsStream( "default-keycloak.conf" );
     }
 
 }

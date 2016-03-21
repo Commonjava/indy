@@ -15,78 +15,18 @@
  */
 package org.commonjava.indy.promote.conf;
 
-import org.commonjava.indy.conf.AbstractIndyConfigInfo;
-import org.commonjava.indy.conf.AbstractIndyFeatureConfig;
-import org.commonjava.indy.conf.IndyConfigClassInfo;
-import org.commonjava.web.config.ConfigurationException;
+import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Alternative;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.io.InputStream;
 
-@Alternative
-@Named( "promote-config" )
 @SectionName( PromoteConfig.SECTION )
+@ApplicationScoped
 public class PromoteConfig
+        implements IndyConfigInfo
 {
-    @ApplicationScoped
-    public static class FeatureConfig
-        extends AbstractIndyFeatureConfig<PromoteConfig, PromoteConfig>
-    {
-        @Inject
-        private ConfigInfo info;
-
-        public FeatureConfig()
-        {
-            super( PromoteConfig.class );
-        }
-
-        @Produces
-        @Default
-        @ApplicationScoped
-        public PromoteConfig getAutoProxConfig()
-            throws ConfigurationException
-        {
-            return getConfig();
-        }
-
-        @Override
-        public IndyConfigClassInfo getInfo()
-        {
-            return info;
-        }
-    }
-
-    @ApplicationScoped
-    public static class ConfigInfo
-        extends AbstractIndyConfigInfo
-    {
-        public ConfigInfo()
-        {
-            super( PromoteConfig.class );
-        }
-
-        @Override
-        public String getDefaultConfigFileName()
-        {
-            return "conf.d/promote.conf";
-        }
-
-        @Override
-        public InputStream getDefaultConfig()
-        {
-            return Thread.currentThread()
-                         .getContextClassLoader()
-                         .getResourceAsStream( "default-promote.conf" );
-        }
-    }
-
     public static final String SECTION = "promote";
 
     public static final String DEFAULT_DIR = "promote";
@@ -129,6 +69,20 @@ public class PromoteConfig
     public void setEnabled( final boolean enabled )
     {
         this.enabled = enabled;
+    }
+
+    @Override
+    public String getDefaultConfigFileName()
+    {
+        return "conf.d/promote.conf";
+    }
+
+    @Override
+    public InputStream getDefaultConfig()
+    {
+        return Thread.currentThread()
+                     .getContextClassLoader()
+                     .getResourceAsStream( "default-promote.conf" );
     }
 
 }

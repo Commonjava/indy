@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 @Default
-@Production
+//@Production
 public class ExpiringMemoryNotFoundCache
     implements NotFoundCache
 {

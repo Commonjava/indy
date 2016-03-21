@@ -22,6 +22,7 @@ import static org.junit.Assert.assertThat;
 import java.io.ByteArrayInputStream;
 import java.util.Set;
 
+import org.commonjava.indy.folo.client.IndyFoloAdminClientModule;
 import org.commonjava.indy.folo.dto.TrackedContentDTO;
 import org.commonjava.indy.folo.dto.TrackedContentEntryDTO;
 import org.junit.Test;
@@ -43,7 +44,10 @@ public class StoreOneTrackedAndVerifyUrlInReportTest
 
         content.store( trackingId, hosted, STORE, path, stream );
 
-        final TrackedContentDTO report = admin.getTrackingReport( trackingId, hosted, STORE );
+        assertThat( client.module( IndyFoloAdminClientModule.class ).sealTrackingRecord( trackingId ),
+                    equalTo( true ) );
+
+        final TrackedContentDTO report = admin.getTrackingReport( trackingId );
 
         final Set<TrackedContentEntryDTO> uploads = report.getUploads();
         for ( final TrackedContentEntryDTO upload : uploads )

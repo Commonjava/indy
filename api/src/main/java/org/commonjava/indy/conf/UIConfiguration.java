@@ -15,79 +15,22 @@
  */
 package org.commonjava.indy.conf;
 
+import org.commonjava.web.config.annotation.ConfigName;
+import org.commonjava.web.config.annotation.SectionName;
+
+import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
-
-import javax.enterprise.inject.Alternative;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
-import javax.inject.Named;
-
-import org.commonjava.web.config.ConfigurationException;
-import org.commonjava.web.config.annotation.ConfigNames;
-import org.commonjava.web.config.annotation.SectionName;
 
 /**
  * Configuration class that tells Indy where its UI files are. These are static resources that are served up via servlet or similar, and which are
  * designed to be the default UI for Indy (talking to its REST resources).
  */
 @SectionName( "ui" )
-@Alternative
-@Named( "unused" )
+@ApplicationScoped
 public class UIConfiguration
+    implements IndyConfigInfo
 {
-
-    @javax.enterprise.context.ApplicationScoped
-    public static class UIFeatureConfig
-        extends AbstractIndyFeatureConfig<UIConfiguration, UIConfiguration>
-    {
-        @Inject
-        private UIConfigInfo info;
-
-        public UIFeatureConfig()
-        {
-            super( UIConfiguration.class );
-        }
-
-        @Produces
-        @Default
-        public UIConfiguration getFlatFileConfig()
-            throws ConfigurationException
-        {
-            return getConfig();
-        }
-
-        @Override
-        public IndyConfigClassInfo getInfo()
-        {
-            return info;
-        }
-    }
-
-    @javax.enterprise.context.ApplicationScoped
-    public static class UIConfigInfo
-        extends AbstractIndyConfigInfo
-    {
-        public UIConfigInfo()
-        {
-            super( UIConfiguration.class );
-        }
-
-        @Override
-        public String getDefaultConfigFileName()
-        {
-            return IndyConfigInfo.APPEND_DEFAULTS_TO_MAIN_CONF;
-        }
-
-        @Override
-        public InputStream getDefaultConfig()
-        {
-            return Thread.currentThread()
-                         .getContextClassLoader()
-                         .getResourceAsStream( "default-ui.conf" );
-        }
-    }
 
     public static final File DEFAULT_DIR = new File( System.getProperty( "indy.home", "/var/lib/indy" ), "ui" );
 
@@ -97,7 +40,20 @@ public class UIConfiguration
     {
     }
 
-    @ConfigNames( "ui.dir" )
+    @Override
+    public String getDefaultConfigFileName()
+    {
+        return IndyConfigInfo.APPEND_DEFAULTS_TO_MAIN_CONF;
+    }
+
+    @Override
+    public InputStream getDefaultConfig()
+    {
+        return Thread.currentThread()
+                     .getContextClassLoader()
+                     .getResourceAsStream( "default-ui.conf" );
+    }
+
     public UIConfiguration( final File uiDir )
     {
         this.uiDir = uiDir;
@@ -108,6 +64,7 @@ public class UIConfiguration
         return uiDir == null ? DEFAULT_DIR : uiDir;
     }
 
+    @ConfigName( "ui.dir" )
     public void setUIDir( final File uiDir )
     {
         this.uiDir = uiDir;

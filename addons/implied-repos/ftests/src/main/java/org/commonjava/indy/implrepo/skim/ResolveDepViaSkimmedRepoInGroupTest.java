@@ -50,7 +50,8 @@ public class ResolveDepViaSkimmedRepoInGroupTest
 
         assertThat( "SANITY: downloaded POM with repo declaration is wrong!", downloaded, equalTo( pomRef.pom ) );
 
-        Thread.sleep( 10 );
+        // give the events time to propagate
+        Thread.sleep( 3000 );
 
         stream = client.content()
                        .get( StoreType.group, PUBLIC, simplePomRef.path );

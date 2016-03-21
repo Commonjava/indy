@@ -23,6 +23,7 @@ import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
 
+import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.core.change.event.IndyFileEventManager;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.core.content.group.ArchetypeCatalogMerger;
@@ -57,6 +58,7 @@ public class MergedFileUploadListener
     private IndyFileEventManager fileEvent;
 
     @Inject
+    @WeftManaged
     @ExecutorConfig( daemon = true, priority = 7, named = "indy-events" )
     private Executor executor;
 

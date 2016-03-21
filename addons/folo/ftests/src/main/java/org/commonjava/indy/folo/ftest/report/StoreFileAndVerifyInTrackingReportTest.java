@@ -49,7 +49,11 @@ public class StoreFileAndVerifyInTrackingReportTest
         client.module( IndyFoloContentClientModule.class )
               .store( trackingId, hosted, STORE, path, stream );
 
-        final TrackedContentDTO report = client.module( IndyFoloAdminClientModule.class )
+        IndyFoloAdminClientModule adminModule = client.module( IndyFoloAdminClientModule.class );
+        boolean success = adminModule.sealTrackingRecord( trackingId );
+        assertThat( success, equalTo( true ) );
+
+        final TrackedContentDTO report = adminModule
                                                .getTrackingReport( trackingId );
         assertThat( report, notNullValue() );
 

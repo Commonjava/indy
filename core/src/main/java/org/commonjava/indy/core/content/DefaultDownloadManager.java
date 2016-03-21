@@ -16,6 +16,7 @@
 package org.commonjava.indy.core.content;
 
 import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.change.event.ArtifactStoreRescanEvent;
 import org.commonjava.indy.core.change.event.IndyFileEventManager;
@@ -81,6 +82,7 @@ public class DefaultDownloadManager
     private final Map<StoreKey, Byte> rescansInProgress = new ConcurrentHashMap<>();
 
     @Inject
+    @WeftManaged
     @ExecutorConfig( priority = 10, threads = 2, named = "file-manager" )
     private ExecutorService executor; // = Executors.newFixedThreadPool( 8 );
 
@@ -740,7 +742,7 @@ public class DefaultDownloadManager
         final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
         if ( storeIsSuitableFor( store, pathInfo, op ) )
         {
-            return getStorageReference( store.getKey(), path );
+            return getStorageReference( store, path );
         }
 
         logger.warn( "Store {} not suitable for: {}", store, op );

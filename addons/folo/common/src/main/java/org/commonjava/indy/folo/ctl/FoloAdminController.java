@@ -95,6 +95,12 @@ public class FoloAdminController
         this.storeManager = storeManager;
     }
 
+    public TrackedContentRecord seal( final String id )
+    {
+        TrackingKey tk = new TrackingKey( id );
+        return recordManager.seal( tk );
+    }
+
     public File renderRepositoryZip( final String id )
             throws IndyWorkflowException
     {
@@ -103,13 +109,13 @@ public class FoloAdminController
         File file = filer.getRepositoryZipFile( tk ).getDetachedFile();
         file.getParentFile().mkdirs();
         logger.debug( "Retrieving tracking record for: {}", tk );
-        final TrackedContentRecord record = recordManager.getIfExists( tk );
+        final TrackedContentRecord record = recordManager.get( tk );
         logger.debug( "Got: {}", record );
 
         if ( record == null )
         {
             throw new IndyWorkflowException( ApplicationStatus.NOT_FOUND.code(),
-                                              "No tracking record available for: %s", tk );
+                                              "No tracking record available for: %s. Maybe you forgot to seal it?", tk );
         }
 
         final Set<String> seenPaths = new HashSet<>();
@@ -192,13 +198,13 @@ public class FoloAdminController
     {
         final TrackingKey tk = new TrackingKey( id );
         logger.debug( "Retrieving tracking record for: {}", tk );
-        final TrackedContentRecord record = recordManager.getIfExists( tk );
+        final TrackedContentRecord record = recordManager.get( tk );
         logger.debug( "Got: {}", record );
 
         if ( record == null )
         {
             throw new IndyWorkflowException( ApplicationStatus.NOT_FOUND.code(),
-                                              "No tracking record available for: %s", tk );
+                                              "No tracking record available for: %s. Maybe you forgot to seal it?", tk );
         }
 
         final Set<TrackedContentEntryDTO> uploads = new TreeSet<>();
@@ -278,7 +284,7 @@ public class FoloAdminController
             throws IndyWorkflowException
     {
         final TrackingKey tk = new TrackingKey( id );
-        return recordManager.getIfExists( tk );
+        return recordManager.get( tk );
     }
 
     public void clearRecord( final String id )
@@ -291,20 +297,6 @@ public class FoloAdminController
     public boolean hasRecord( final String id )
     {
         return recordManager.hasRecord( new TrackingKey( id ) );
-    }
-
-    public void initRecord( final String id )
-            throws IndyWorkflowException
-    {
-        try
-        {
-            recordManager.getOrCreate( new TrackingKey( id ) );
-        }
-        catch ( final FoloContentException e )
-        {
-            throw new IndyWorkflowException( "Failed to initialize tracking record for: %s. Reason: %s", e, id,
-                                              e.getMessage() );
-        }
     }
 
 }

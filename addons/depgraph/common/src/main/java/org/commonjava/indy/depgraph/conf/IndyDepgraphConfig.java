@@ -15,20 +15,25 @@
  */
 package org.commonjava.indy.depgraph.conf;
 
-import java.io.File;
-
-import javax.enterprise.inject.Alternative;
-import javax.inject.Named;
-
+import org.commonjava.indy.conf.IndyConfigInfo;
+import org.commonjava.web.config.ConfigurationException;
+import org.commonjava.web.config.ConfigurationListener;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
+import org.commonjava.web.config.section.ConfigurationSectionListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.context.ApplicationScoped;
+import java.io.File;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.Map;
+
 @SectionName( "depgraph" )
-@Named( "use-factory-instead" )
-@Alternative
+@ApplicationScoped
 public class IndyDepgraphConfig
+    implements IndyConfigInfo
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -82,6 +87,20 @@ public class IndyDepgraphConfig
     public void setPassiveParsingEnabled( final boolean passiveParsingEnabled )
     {
         this.passiveParsingEnabled = passiveParsingEnabled;
+    }
+
+    @Override
+    public String getDefaultConfigFileName()
+    {
+        return new File( IndyConfigInfo.CONF_INCLUDES_DIR, "depgraph.conf" ).getPath();
+    }
+
+    @Override
+    public InputStream getDefaultConfig()
+    {
+        return Thread.currentThread()
+                     .getContextClassLoader()
+                     .getResourceAsStream( "default-depgraph.conf" );
     }
 
 }

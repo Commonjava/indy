@@ -50,6 +50,9 @@ public class StoreFileViaGroupAndVerifyInTrackingReportTest
         client.module( IndyFoloContentClientModule.class )
               .store( trackingId, group, PUBLIC, path, stream );
 
+        assertThat( client.module( IndyFoloAdminClientModule.class ).sealTrackingRecord( trackingId ),
+                    equalTo( true ) );
+
         final TrackedContentDTO report = client.module( IndyFoloAdminClientModule.class )
                                                .getTrackingReport( trackingId );
         assertThat( report, notNullValue() );

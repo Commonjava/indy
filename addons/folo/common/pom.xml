@@ -48,8 +48,28 @@
       <artifactId>indy-subsys-flatfile</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-infinispan</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.infinispan</groupId>
+      <artifactId>infinispan-embedded-query</artifactId>
+    </dependency>
+<!--     <dependency>
+      <groupId>org.jboss.logging</groupId>
+      <artifactId>jboss-logging</artifactId>
+    </dependency>
+    <dependency>
+       <groupId>org.jboss.logging</groupId>
+       <artifactId>jboss-logging-processor</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.logmanager</groupId>
+      <artifactId>jboss-logmanager</artifactId>
+    </dependency> -->
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-search-orm</artifactId>
     </dependency>
   </dependencies>
   

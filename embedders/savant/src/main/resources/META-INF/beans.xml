@@ -22,6 +22,7 @@
   
   <decorators>
     <class>org.commonjava.indy.autoprox.data.AutoProxDataManagerDecorator</class>
+    <class>org.commonjava.indy.content.index.ContentIndexingContentManagerDecorator</class>
   </decorators>
       
 </beans>

@@ -15,28 +15,18 @@
  */
 package org.commonjava.indy.httprox.conf;
 
-import java.io.File;
-import java.io.InputStream;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Alternative;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
-import javax.inject.Named;
-
-import org.commonjava.indy.conf.AbstractIndyConfigInfo;
-import org.commonjava.indy.conf.AbstractIndyFeatureConfig;
-import org.commonjava.indy.conf.IndyConfigClassInfo;
 import org.commonjava.indy.conf.IndyConfigInfo;
-import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 
+import javax.enterprise.context.ApplicationScoped;
+import java.io.File;
+import java.io.InputStream;
+
 @SectionName( "httprox" )
-@Alternative
-@Named
+@ApplicationScoped
 public class HttproxConfig
+    implements IndyConfigInfo
 {
 
     private static final int DEFAULT_PORT = 8081;
@@ -119,56 +109,18 @@ public class HttproxConfig
         this.proxyRealm = proxyRealm;
     }
 
-    @javax.enterprise.context.ApplicationScoped
-    public static class ConfigInfo
-        extends AbstractIndyConfigInfo
+    @Override
+    public String getDefaultConfigFileName()
     {
-        public ConfigInfo()
-        {
-            super( HttproxConfig.class );
-        }
-
-        @Override
-        public String getDefaultConfigFileName()
-        {
-            return new File( IndyConfigInfo.CONF_INCLUDES_DIR, "httprox.conf" ).getPath();
-        }
-
-        @Override
-        public InputStream getDefaultConfig()
-        {
-            return Thread.currentThread()
-                         .getContextClassLoader()
-                         .getResourceAsStream( "default-httprox.conf" );
-        }
+        return new File( IndyConfigInfo.CONF_INCLUDES_DIR, "httprox.conf" ).getPath();
     }
 
-    @javax.enterprise.context.ApplicationScoped
-    public static class FeatureConfig
-        extends AbstractIndyFeatureConfig<HttproxConfig, HttproxConfig>
+    @Override
+    public InputStream getDefaultConfig()
     {
-        @Inject
-        private ConfigInfo info;
-
-        public FeatureConfig()
-        {
-            super( HttproxConfig.class );
-        }
-
-        @Produces
-        @Default
-        @ApplicationScoped
-        public HttproxConfig getFlatFileConfig()
-            throws ConfigurationException
-        {
-            return getConfig();
-        }
-
-        @Override
-        public IndyConfigClassInfo getInfo()
-        {
-            return info;
-        }
+        return Thread.currentThread()
+                     .getContextClassLoader()
+                     .getResourceAsStream( "default-httprox.conf" );
     }
 
 }

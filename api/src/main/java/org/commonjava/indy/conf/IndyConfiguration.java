@@ -15,6 +15,8 @@
  */
 package org.commonjava.indy.conf;
 
+import java.io.File;
+
 /**
  * Base configuration for Indy's core. This basically sets timeouts for a couple different (relatively obscure) features.
  */
@@ -41,5 +43,9 @@ public interface IndyConfiguration
     int getRequestTimeoutSeconds();
 
     int getStoreDisableTimeoutSeconds();
+
+    File getIndyHomeDir();
+
+    File getIndyConfDir();
 
 }

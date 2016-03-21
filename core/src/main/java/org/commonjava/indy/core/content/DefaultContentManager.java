@@ -739,6 +739,7 @@ public class DefaultContentManager
     private HttpExchangeMetadata readExchangeMetadata( final Transfer meta )
             throws IndyWorkflowException
     {
+        logger.trace( "Reading HTTP exchange metadata from: {}", meta );
         if ( meta != null && meta.exists() )
         {
             InputStream stream = null;
@@ -756,6 +757,10 @@ public class DefaultContentManager
             {
                 IOUtils.closeQuietly( stream );
             }
+        }
+        else
+        {
+            logger.trace( "Cannot read HTTP exchange: {}. Transfer is missing!", meta );
         }
 
         return null;

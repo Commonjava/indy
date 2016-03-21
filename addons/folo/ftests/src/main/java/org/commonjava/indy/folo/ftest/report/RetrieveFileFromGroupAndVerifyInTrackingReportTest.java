@@ -83,6 +83,9 @@ public class RetrieveFileFromGroupAndVerifyInTrackingReportTest
         assertThat( md5, equalTo( DigestUtils.md5Hex( bytes ) ) );
         assertThat( sha256, equalTo( DigestUtils.sha256Hex( bytes ) ) );
 
+        assertThat( client.module( IndyFoloAdminClientModule.class ).sealTrackingRecord( trackingId ),
+                    equalTo( true ) );
+
         final TrackedContentDTO report = client.module( IndyFoloAdminClientModule.class )
                                                .getTrackingReport( trackingId );
         assertThat( report, notNullValue() );

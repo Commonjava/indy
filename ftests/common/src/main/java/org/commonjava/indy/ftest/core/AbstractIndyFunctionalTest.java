@@ -15,7 +15,24 @@
  */
 package org.commonjava.indy.ftest.core;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
+import com.fasterxml.jackson.databind.Module;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.commonjava.indy.boot.BootStatus;
+import org.commonjava.indy.boot.IndyBootException;
+import org.commonjava.indy.client.core.Indy;
+import org.commonjava.indy.client.core.IndyClientModule;
+import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.indy.test.fixture.core.CoreServerFixture;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
+import org.junit.rules.Timeout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,25 +46,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.commonjava.indy.boot.IndyBootException;
-import org.commonjava.indy.boot.BootStatus;
-import org.commonjava.indy.client.core.Indy;
-import org.commonjava.indy.client.core.IndyClientModule;
-import org.commonjava.indy.model.core.io.IndyObjectMapper;
-import org.commonjava.indy.test.fixture.core.CoreServerFixture;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
-import org.junit.rules.TestName;
-import org.junit.rules.Timeout;
-
-import com.fasterxml.jackson.databind.Module;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.junit.Assert.fail;
 
 public abstract class AbstractIndyFunctionalTest
 {
@@ -110,6 +110,20 @@ public abstract class AbstractIndyFunctionalTest
 
         client = new Indy( fixture.getUrl(), new IndyObjectMapper( getAdditionalMapperModules() ),
                             getAdditionalClientModules() ).connect();
+    }
+
+    protected void waitForEventPropagation()
+    {
+        // give events time to propagate
+        try
+        {
+            Thread.sleep( 3000 );
+        }
+        catch ( InterruptedException e )
+        {
+            e.printStackTrace();
+            fail( "Thread interrupted while waiting for server events to propagate.");
+        }
     }
 
     protected final long getTestTimeoutSeconds()

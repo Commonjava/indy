@@ -15,53 +15,19 @@
  */
 package org.commonjava.indy.folo.conf;
 
-import java.io.File;
-import java.io.InputStream;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Alternative;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
-import javax.inject.Named;
-
-import org.commonjava.indy.conf.AbstractIndyConfigInfo;
-import org.commonjava.indy.conf.AbstractIndyFeatureConfig;
-import org.commonjava.indy.conf.IndyConfigClassInfo;
 import org.commonjava.indy.conf.IndyConfigInfo;
-import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 
+import javax.enterprise.context.ApplicationScoped;
+import java.io.File;
+import java.io.InputStream;
+
 @SectionName( "folo" )
-@Alternative
-@Named
+@ApplicationScoped
 public class FoloConfig
+    implements IndyConfigInfo
 {
-
-    @javax.enterprise.context.ApplicationScoped
-    public static class ConfigInfo
-        extends AbstractIndyConfigInfo
-    {
-        public ConfigInfo()
-        {
-            super( FoloConfig.class );
-        }
-
-        @Override
-        public String getDefaultConfigFileName()
-        {
-            return new File( IndyConfigInfo.CONF_INCLUDES_DIR, "folo.conf" ).getPath();
-        }
-
-        @Override
-        public InputStream getDefaultConfig()
-        {
-            return Thread.currentThread()
-                         .getContextClassLoader()
-                         .getResourceAsStream( "default-folo.conf" );
-        }
-    }
 
     public static final int DEFAULT_CACHE_TIMEOUT_SECONDS = 120;
 
@@ -87,32 +53,18 @@ public class FoloConfig
         this.cacheTimeoutSeconds = cacheTimeoutSeconds;
     }
 
-    @javax.enterprise.context.ApplicationScoped
-    public static class FeatureConfig
-        extends AbstractIndyFeatureConfig<FoloConfig, FoloConfig>
+    @Override
+    public String getDefaultConfigFileName()
     {
-        @Inject
-        private ConfigInfo info;
+        return new File( IndyConfigInfo.CONF_INCLUDES_DIR, "folo.conf" ).getPath();
+    }
 
-        public FeatureConfig()
-        {
-            super( FoloConfig.class );
-        }
-
-        @Produces
-        @Default
-        @ApplicationScoped
-        public FoloConfig getFlatFileConfig()
-            throws ConfigurationException
-        {
-            return getConfig();
-        }
-
-        @Override
-        public IndyConfigClassInfo getInfo()
-        {
-            return info;
-        }
+    @Override
+    public InputStream getDefaultConfig()
+    {
+        return Thread.currentThread()
+                     .getContextClassLoader()
+                     .getResourceAsStream( "default-folo.conf" );
     }
 
 }

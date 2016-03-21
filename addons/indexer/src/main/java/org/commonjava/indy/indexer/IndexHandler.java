@@ -43,6 +43,7 @@ import org.apache.maven.index.updater.IndexUpdateRequest;
 import org.apache.maven.index.updater.IndexUpdateResult;
 import org.apache.maven.index.updater.IndexUpdater;
 import org.apache.maven.index.updater.ResourceFetcher;
+import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.change.event.AbstractStoreDeleteEvent;
 import org.commonjava.indy.change.event.ArtifactStorePostUpdateEvent;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateEvent;
@@ -114,6 +115,7 @@ public class IndexHandler
     private IndexerConfig config;
 
     @Inject
+    @WeftManaged
     @ExecutorConfig( daemon = true, priority = 7, named = "indy-indexer" )
     private Executor executor;
 

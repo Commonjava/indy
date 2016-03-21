@@ -18,6 +18,7 @@ package org.commonjava.indy.folo.model;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.commonjava.indy.model.core.StoreKey;
@@ -34,12 +35,12 @@ public class TrackedContentRecord
     {
     }
 
-    protected void setKey( final TrackingKey key )
+    public TrackedContentRecord( final TrackingKey key )
     {
         this.key = key;
     }
 
-    public TrackedContentRecord( final TrackingKey key )
+    protected void setKey( final TrackingKey key )
     {
         this.key = key;
     }
