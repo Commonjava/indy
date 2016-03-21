@@ -52,7 +52,6 @@
     <hibernateVersion>5.5.2.Final</hibernateVersion>
     <atlasVersion>0.16.1-SNAPSHOT</atlasVersion>
     <galleyVersion>0.11.4-SNAPSHOT</galleyVersion>
-    <cartoVersion>0.10.4-SNAPSHOT</cartoVersion>
     <bomVersion>20-SNAPSHOT</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <resteasyVersion>3.0.9.Final</resteasyVersion>
@@ -729,27 +728,6 @@
         <groupId>org.commonjava.maven.galley</groupId>
         <artifactId>galley-transport-httpclient</artifactId>
         <version>${galleyVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.maven.cartographer</groupId>
-        <artifactId>cartographer</artifactId>
-        <version>${cartoVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.maven.cartographer</groupId>
-        <artifactId>cartographer-model-java</artifactId>
-        <version>${cartoVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.maven.cartographer</groupId>
-        <artifactId>cartographer-tck</artifactId>
-        <version>${cartoVersion}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.maven.cartographer</groupId>
-        <artifactId>cartographer-api</artifactId>
-        <version>${cartoVersion}</version>
       </dependency>
 
       <!-- override galley-cache-partyline dep -->

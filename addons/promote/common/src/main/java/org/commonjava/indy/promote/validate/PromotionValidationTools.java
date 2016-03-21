@@ -29,13 +29,6 @@ import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.promote.model.PromoteRequest;
 import org.commonjava.indy.util.LocationUtils;
-import org.commonjava.cartographer.CartoDataException;
-import org.commonjava.cartographer.graph.MavenModelProcessor;
-import org.commonjava.cartographer.graph.discover.DiscoveryConfig;
-import org.commonjava.cartographer.graph.discover.DiscoveryResult;
-import org.commonjava.cartographer.graph.discover.patch.DepgraphPatcherConstants;
-import org.commonjava.cartographer.graph.discover.patch.PatcherSupport;
-import org.commonjava.cartographer.spi.graph.discover.DiscoverySourceManager;
 import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectRef;
@@ -49,6 +42,8 @@ import org.commonjava.maven.galley.maven.model.view.MavenPomView;
 import org.commonjava.maven.galley.maven.model.view.meta.MavenMetadataView;
 import org.commonjava.maven.galley.maven.parse.MavenMetadataReader;
 import org.commonjava.maven.galley.maven.parse.MavenPomReader;
+import org.commonjava.maven.galley.maven.rel.MavenModelProcessor;
+import org.commonjava.maven.galley.maven.rel.ModelProcessorConfig;
 import org.commonjava.maven.galley.maven.spi.type.TypeMapper;
 import org.commonjava.maven.galley.maven.util.ArtifactPathUtils;
 import org.commonjava.maven.galley.model.Location;
@@ -60,6 +55,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -86,13 +82,7 @@ public class PromotionValidationTools
     private MavenMetadataReader metadataReader;
 
     @Inject
-    private PatcherSupport patcherSupport;
-
-    @Inject
     private MavenModelProcessor modelProcessor;
-
-    @Inject
-    private DiscoverySourceManager sourceManager;
 
     @Inject
     private TypeMapper typeMapper;
@@ -106,17 +96,15 @@ public class PromotionValidationTools
 
     public PromotionValidationTools( ContentManager manager, StoreDataManager storeDataManager,
                                      MavenPomReader pomReader, MavenMetadataReader metadataReader,
-                                     PatcherSupport patcherSupport, MavenModelProcessor modelProcessor,
-                                     DiscoverySourceManager sourceManager, TypeMapper typeMapper,
+                                     MavenModelProcessor modelProcessor,
+                                     TypeMapper typeMapper,
                                      TransferManager transferManager )
     {
         contentManager = manager;
         this.storeDataManager = storeDataManager;
         this.pomReader = pomReader;
         this.metadataReader = metadataReader;
-        this.patcherSupport = patcherSupport;
         this.modelProcessor = modelProcessor;
-        this.sourceManager = sourceManager;
         this.typeMapper = typeMapper;
         this.transferManager = transferManager;
     }
@@ -139,9 +127,9 @@ public class PromotionValidationTools
         return ArtifactPathUtils.formatMetadataPath( groupId, filename );
     }
 
-    public Set<ProjectRelationship<?, ?>> getRelationshipsForPom( String path, DiscoveryConfig dc, PromoteRequest request,
-                                                                   StoreKey... extraLocations )
-            throws IndyWorkflowException, GalleyMavenException, CartoDataException, IndyDataException
+    public Set<ProjectRelationship<?, ?>> getRelationshipsForPom( String path, ModelProcessorConfig config, PromoteRequest request,
+                                                                  StoreKey... extraLocations )
+            throws IndyWorkflowException, GalleyMavenException, IndyDataException
     {
         ArtifactRef artifactRef = getArtifact( path );
         if ( artifactRef == null )
@@ -159,14 +147,17 @@ public class PromotionValidationTools
         MavenPomView pomView =
                 pomReader.read( artifactRef.asProjectVersionRef(), transfer, locations, MavenPomView.ALL_PROFILES );
 
-        URI source = sourceManager.createSourceURI( key.toString() );
+        try
+        {
+            URI source = new URI( "indy:" + key.getType()
+                                                 .name() + ":" + key.getName() );
 
-        DiscoveryResult discoveryResult = modelProcessor.readRelationships( pomView, source, dc );
-        discoveryResult =
-                patcherSupport.patch( discoveryResult, DepgraphPatcherConstants.ALL_PATCHERS, locations, pomView,
-                                      transfer );
-
-        return discoveryResult.getAcceptedRelationships();
+            return modelProcessor.readRelationships( pomView, source, config ).getAllRelationships();
+        }
+        catch ( final URISyntaxException e )
+        {
+            throw new IllegalStateException( "Failed to construct URI for ArtifactStore: " + key + ". Reason: " + e.getMessage(), e );
+        }
     }
 
     public void addLocations( List<Location> locations, StoreKey... extraLocations )

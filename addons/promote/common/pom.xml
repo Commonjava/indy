@@ -53,10 +53,6 @@
       <artifactId>galley-test-harness-maven</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.maven.cartographer</groupId>
-      <artifactId>cartographer</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.commonjava.maven.atlas</groupId>
       <artifactId>atlas-identities</artifactId>
     </dependency>

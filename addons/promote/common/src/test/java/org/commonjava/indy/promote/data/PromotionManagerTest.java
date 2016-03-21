@@ -36,11 +36,8 @@ import org.commonjava.indy.promote.validate.ValidationRuleParser;
 import org.commonjava.indy.subsys.datafile.DataFileManager;
 import org.commonjava.indy.subsys.datafile.change.DataFileEventManager;
 import org.commonjava.indy.subsys.template.ScriptEngine;
-import org.commonjava.cartographer.INTERNAL.graph.discover.SourceManagerImpl;
-import org.commonjava.cartographer.graph.MavenModelProcessor;
-import org.commonjava.cartographer.graph.discover.patch.PatcherSupport;
-import org.commonjava.cartographer.spi.graph.discover.DiscoverySourceManager;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.maven.rel.MavenModelProcessor;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.testing.maven.GalleyMavenFixture;
@@ -100,14 +97,12 @@ public class PromotionManagerTest
                                                             new ValidationRuleParser( new ScriptEngine(),
                                                                                       new IndyObjectMapper( true ) ) );
 
-        PatcherSupport patcherSupport = new PatcherSupport();
         MavenModelProcessor modelProcessor = new MavenModelProcessor();
-        DiscoverySourceManager sourceManager = new SourceManagerImpl();
         validator = new PromotionValidator( validationsManager,
                                             new PromotionValidationTools( contentManager, storeManager,
                                                                           galleyParts.getPomReader(),
                                                                           galleyParts.getMavenMetadataReader(),
-                                                                          patcherSupport, modelProcessor, sourceManager,
+                                                                          modelProcessor,
                                                                           galleyParts.getTypeMapper(),
                                                                           galleyParts.getTransferManager() ) );
         manager = new PromotionManager( validator, contentManager, downloadManager, storeManager );
