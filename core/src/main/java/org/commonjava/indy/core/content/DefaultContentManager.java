@@ -700,6 +700,8 @@ public class DefaultContentManager
             {
                 final List<ArtifactStore> allMembers = storeManager.getOrderedConcreteStoresInGroup( store.getName() );
 
+                logger.debug( "Trying to retrieve suitable transfer for: {} in group: {} members:\n{}", path, allMembers, store.getName() );
+
                 return getTransfer( allMembers, path, op );
             }
             catch ( final IndyDataException e )

@@ -24,6 +24,7 @@ import java.io.OutputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.implrepo.conf.ImpliedRepoConfig;
 import org.commonjava.indy.implrepo.data.ImpliedRepoMetadataManager;
@@ -70,9 +71,9 @@ public class ImpliedRepositoryDetectorTest
     @Rule
     public GalleyMavenFixture fixture = new GalleyMavenFixture();
 
-    private RemoteRepository remote;
+    private static final String GROUP_NAME = "group";
 
-    private Group group;
+    private static final String REMOTE_NAME = "test";
 
     private ImpliedRepoMetadataManager metadataManager;
 
@@ -94,12 +95,25 @@ public class ImpliedRepositoryDetectorTest
 
         summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" );
 
-        remote = new RemoteRepository( "test", "http://www.foo.com/repo" );
-        group = new Group( "group", remote.getKey() );
+        RemoteRepository remote = new RemoteRepository( "test", "http://www.foo.com/repo" );
+        Group group = new Group( "group", remote.getKey() );
 
         storeManager.storeArtifactStore( remote, summary, new EventMetadata() );
         storeManager.storeArtifactStore( group, summary, new EventMetadata() );
     }
+
+    private RemoteRepository getRemote()
+            throws IndyDataException
+    {
+        return storeManager.getRemoteRepository( REMOTE_NAME );
+    }
+
+    private Group getGroup()
+            throws IndyDataException
+    {
+        return storeManager.getGroup( GROUP_NAME );
+    }
+
 
     @Test
     public void idWithSpaceInIt_ConvertToDashes()
@@ -123,7 +137,7 @@ public class ImpliedRepositoryDetectorTest
     {
         final String path = "/path/to/1/to-1.pom";
         final Transfer txfr = fixture.getCache()
-                                     .getTransfer( new ConcreteResource( new RepositoryLocation( remote ), path ) );
+                                     .getTransfer( new ConcreteResource( new RepositoryLocation( getRemote() ), path ) );
 
         final OutputStream out = txfr.openOutputStream( TransferOperation.UPLOAD, false );
         final InputStream in = Thread.currentThread()
@@ -138,7 +152,7 @@ public class ImpliedRepositoryDetectorTest
 
         assertThat( storeManager.getRemoteRepository( "i-repo-one" ), notNullValue() );
 
-        assertThat( group.getConstituents()
+        assertThat( getGroup().getConstituents()
                          .contains( new StoreKey( StoreType.remote, "i-repo-one" ) ), equalTo( true ) );
     }
 
@@ -148,7 +162,7 @@ public class ImpliedRepositoryDetectorTest
     {
         final String path = "/path/to/1/to-1.pom";
         final Transfer txfr = fixture.getCache()
-                                     .getTransfer( new ConcreteResource( new RepositoryLocation( remote ), path ) );
+                                     .getTransfer( new ConcreteResource( new RepositoryLocation( getRemote() ), path ) );
 
         final OutputStream out = txfr.openOutputStream( TransferOperation.UPLOAD, false );
         final InputStream in = Thread.currentThread()
@@ -163,7 +177,7 @@ public class ImpliedRepositoryDetectorTest
 
         assertThat( storeManager.getRemoteRepository( "i-repo-one" ), notNullValue() );
 
-        assertThat( group.getConstituents()
+        assertThat( getGroup().getConstituents()
                          .contains( new StoreKey( StoreType.remote, "i-repo-one" ) ), equalTo( true ) );
     }
 

@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.stream.Collectors;
 
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -37,28 +38,21 @@ public class AbstractIndyEvent
     protected AbstractIndyEvent( final EventMetadata eventMetadata, final Collection<ArtifactStore> stores )
     {
         this.eventMetadata = eventMetadata;
-        this.stores = stores == null ? Collections.<ArtifactStore> emptySet() : clearNulls( stores );
+        this.stores = stores == null ? Collections.emptySet() : clearNulls( stores );
     }
 
     protected AbstractIndyEvent( final EventMetadata eventMetadata, final ArtifactStore... stores )
     {
         this.eventMetadata = eventMetadata;
-        this.stores =
-            stores == null || stores.length == 0 ? Collections.<ArtifactStore> emptySet() : Arrays.asList( stores );
+
+        this.stores = stores == null || stores.length == 0 ?
+                Collections.emptySet() :
+                clearNulls( Arrays.asList( stores ) );
     }
 
-    private Collection<ArtifactStore> clearNulls( final Collection<ArtifactStore> stores )
+    public static Collection<ArtifactStore> clearNulls( final Collection<ArtifactStore> stores )
     {
-        for ( final Iterator<ArtifactStore> it = stores.iterator(); it.hasNext(); )
-        {
-            final ArtifactStore store = it.next();
-            if ( store == null )
-            {
-                it.remove();
-            }
-        }
-
-        return stores;
+        return stores.stream().filter( (store)-> store != null ).collect( Collectors.toSet() );
     }
 
     public final EventMetadata getEventMetadata()

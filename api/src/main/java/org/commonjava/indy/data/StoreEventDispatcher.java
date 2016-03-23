@@ -21,6 +21,8 @@ import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.maven.galley.event.EventMetadata;
 
+import java.util.Map;
+
 /**
  * Convenience component that standardizes the process of interacting with JEE {@link Event}s relating to changes in {@link ArtifactStore} definitions.
  */
@@ -31,7 +33,7 @@ public interface StoreEventDispatcher
 
     void deleted( final EventMetadata eventMetadata, final ArtifactStore... stores );
 
-    void updating( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata, final ArtifactStore... stores );
+    void updating( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata, final Map<ArtifactStore, ArtifactStore> stores );
 
-    void updated( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata, final ArtifactStore... stores );
+    void updated( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata, final Map<ArtifactStore, ArtifactStore> stores );
 }

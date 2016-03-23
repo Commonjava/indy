@@ -25,6 +25,7 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.test.http.TestHttpServer;
+import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
@@ -40,10 +41,7 @@ public class AbstractContentManagementTest
     protected static final String PUBLIC = "public";
 
     @Rule
-    public TestName name = new TestName();
-
-    @Rule
-    public TestHttpServer server = new TestHttpServer( "repos" );
+    public ExpectationServer server = new ExpectationServer( "repos" );
 
     protected Thread newThread( final String named, final Runnable runnable )
     {

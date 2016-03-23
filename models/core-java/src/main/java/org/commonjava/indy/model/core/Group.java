@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 @ApiModel( description = "Grouping of other artifact stores, with a defined order to the membership that determines content preference", parent = ArtifactStore.class )
 public class Group
@@ -130,6 +129,15 @@ public class Group
     protected StoreKey initKey( final String name )
     {
         return new StoreKey( StoreType.group, name );
+    }
+
+    @Override
+    public Group copyOf()
+    {
+        Group g = new Group( getName(), new ArrayList<>( getConstituents() ) );
+        copyBase( g );
+
+        return g;
     }
 
 }

@@ -41,8 +41,6 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 @ApplicationScoped
 @Alternative
 public class DataFileStoreDataManager
@@ -227,12 +225,12 @@ public class DataFileStoreDataManager
     }
 
     @Override
-    protected void postStore( final ArtifactStore store, final ChangeSummary summary, final boolean exists,
+    protected void postStore( final ArtifactStore store, ArtifactStore original, final ChangeSummary summary, final boolean exists,
                               final boolean fireEvents, final EventMetadata eventMetadata )
         throws IndyDataException
     {
         store( false, summary, store );
-        super.postStore( store, summary, exists, fireEvents, eventMetadata );
+        super.postStore( store, original, summary, exists, fireEvents, eventMetadata );
     }
 
     @Override

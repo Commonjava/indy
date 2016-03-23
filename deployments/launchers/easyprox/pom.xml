@@ -59,12 +59,6 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-indexer</artifactId>
-      <type>tar.gz</type>
-      <classifier>confset</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-autoprox-common</artifactId>
       <type>tar.gz</type>
       <classifier>dataset</classifier>

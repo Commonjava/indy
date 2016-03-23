@@ -59,7 +59,8 @@ public class CreateGroupWithMemberImplicationsTest
         client.stores()
               .update( pubGroup, "Add test repo that has implied repos" );
 
-        //        Thread.sleep( 1000 );
+        // wait for events...
+        Thread.sleep( 2000 );
 
         pubGroup = client.stores()
                          .load( StoreType.group, PUBLIC, Group.class );

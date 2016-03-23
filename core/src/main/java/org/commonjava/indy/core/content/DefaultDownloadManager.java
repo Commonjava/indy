@@ -670,6 +670,8 @@ public class DefaultDownloadManager
         final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
 
         Transfer transfer = null;
+
+        logger.debug( "Checking {} stores to find one suitable for {} of: {}", stores.size(), op, path );
         for ( final ArtifactStore store : stores )
         {
             if ( storeIsSuitableFor( store, pathInfo, op ) )
@@ -687,7 +689,7 @@ public class DefaultDownloadManager
             }
         }
 
-        if ( transfer == null )
+        if ( !stores.isEmpty() && transfer == null )
         {
             logger.warn( "No suitable stores in list." );
             throw new IndyWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "No suitable store available." );
@@ -718,13 +720,26 @@ public class DefaultDownloadManager
                         //                        logger.info( "Selecting it for snapshot storage: {}", pathInfo );
                         return true;
                     }
+                    else
+                    {
+                        logger.debug( "Hosted repo doesn't allow snapshot uploads: {}", store.getKey() );
+                    }
                 }
                 else if ( dp.isAllowReleases() )
                 {
                     //                    logger.info( "Selecting it for release storage: {}", pathInfo );
                     return true;
                 }
+                else
+                {
+                    logger.debug( "Hosted repo doesn't allow release uploads: {}", store.getKey() );
+                }
             }
+            else
+            {
+                logger.debug( "Store not suitable for upload: {}", store.getKey() );
+            }
+
             // TODO: Allow push-through via remote repositories too.
         }
         else

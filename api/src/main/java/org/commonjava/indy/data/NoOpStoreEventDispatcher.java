@@ -22,6 +22,8 @@ import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.maven.galley.event.EventMetadata;
 
+import java.util.Map;
+
 @Alternative
 @Named
 public class NoOpStoreEventDispatcher
@@ -40,13 +42,13 @@ public class NoOpStoreEventDispatcher
 
     @Override
     public void updating( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata,
-                          final ArtifactStore... stores )
+                          final Map<ArtifactStore, ArtifactStore> stores )
     {
     }
 
     @Override
     public void updated( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata,
-                         final ArtifactStore... stores )
+                         final Map<ArtifactStore, ArtifactStore> stores )
     {
     }
 

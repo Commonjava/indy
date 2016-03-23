@@ -21,9 +21,12 @@ import java.io.InputStream;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.CountingInputStream;
 import org.commonjava.indy.client.core.Indy;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.model.core.StoreKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DelayedDownload
     implements Runnable
@@ -55,8 +58,13 @@ public class DelayedDownload
     @Override
     public void run()
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.info( "Starting: {}", Thread.currentThread().getName() );
+
         if ( initialDelay > 0 )
         {
+            logger.info( "Delaying: {}", initialDelay );
+
             try
             {
                 Thread.sleep( initialDelay );
@@ -70,7 +78,8 @@ public class DelayedDownload
         startTime = System.nanoTime();
         InputStream in = null;
         content = new ByteArrayOutputStream();
-        
+
+        logger.info( "Trying: {}", Thread.currentThread().getName() );
         try
         {
             in = client.content().get( key.getType(), key.getName(), path );
@@ -80,7 +89,9 @@ public class DelayedDownload
             }
             else
             {
-                IOUtils.copy( in, content );
+                CountingInputStream cin = new CountingInputStream( in );
+                IOUtils.copy( cin, content );
+                logger.debug( "Read: {} bytes", cin.getByteCount() );
             }
         }
         catch ( IndyClientException | IOException e )
@@ -94,6 +105,8 @@ public class DelayedDownload
         
         endTime = System.nanoTime();
         latch.countDown();
+
+        logger.info( "Stopping: {}", Thread.currentThread().getName() );
     }
     
     public boolean isMissing()

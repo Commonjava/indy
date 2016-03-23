@@ -18,6 +18,8 @@ package org.commonjava.indy.ftest.core.fixture;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class InputTimer
     implements Runnable
@@ -40,9 +42,13 @@ public class InputTimer
     @Override
     public void run()
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.info( "Starting: {}", Thread.currentThread().getName() );
+
         startTime = System.nanoTime();
         while( stream.hasNext() )
         {
+            logger.debug( "TICK" );
             stream.next();
             
             try
@@ -57,6 +63,9 @@ public class InputTimer
         }
         endTime = System.nanoTime();
         latch.countDown();
+
+        logger.info( "Stopping: {}", Thread.currentThread().getName() );
+
     }
     
     public long getStartTime()

@@ -3,7 +3,7 @@ package org.commonjava.indy.promote.rules
 import org.commonjava.indy.model.core.StoreKey
 import org.commonjava.indy.promote.validate.model.ValidationRequest
 import org.commonjava.indy.promote.validate.model.ValidationRule
-import org.commonjava.cartographer.graph.discover.DiscoveryConfig
+import org.commonjava.maven.galley.maven.rel.ModelProcessorConfig
 import org.slf4j.LoggerFactory
 
 class NoSnapshots implements ValidationRule {
@@ -24,11 +24,7 @@ class NoSnapshots implements ValidationRule {
 
         def builder = new StringBuilder()
         def tools = request.getTools()
-        def dc = DiscoveryConfig.getDisabledConfig();
-
-        dc.setIncludeBuildSection(true)
-        dc.setIncludeManagedPlugins(true)
-        dc.setIncludeManagedDependencies(true)
+        def dc = new ModelProcessorConfig().setIncludeBuildSection(true).setIncludeManagedPlugins(true).setIncludeManagedDependencies(true)
 
         request.getSourcePaths().each { it ->
             if (it.endsWith(".pom")) {

@@ -16,6 +16,9 @@
 package org.commonjava.indy.change.event;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -31,14 +34,9 @@ public class ArtifactStorePreUpdateEvent
 {
 
     public ArtifactStorePreUpdateEvent( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata,
-                                        final Collection<ArtifactStore> changes )
+                                        final Map<ArtifactStore, ArtifactStore> changeMap )
     {
-        super( type, eventMetadata, changes );
+        super( type, eventMetadata, changeMap );
     }
 
-    public ArtifactStorePreUpdateEvent( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata,
-                                        final ArtifactStore... changes )
-    {
-        super( type, eventMetadata, changes );
-    }
 }

@@ -20,6 +20,8 @@ import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.maven.galley.event.EventMetadata;
 
+import java.util.Map;
+
 public class StoreEventDispatcherStub
     implements StoreEventDispatcher
 {
@@ -36,13 +38,13 @@ public class StoreEventDispatcherStub
 
     @Override
     public void updating( final ArtifactStoreUpdateType type, final EventMetadata metadata,
-                          final ArtifactStore... stores )
+                          final Map<ArtifactStore, ArtifactStore> stores )
     {
     }
 
     @Override
     public void updated( final ArtifactStoreUpdateType type, final EventMetadata metadata,
-                         final ArtifactStore... stores )
+                         final Map<ArtifactStore, ArtifactStore> stores )
     {
     }
 

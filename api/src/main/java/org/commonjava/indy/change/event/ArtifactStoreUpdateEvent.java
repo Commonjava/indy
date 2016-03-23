@@ -17,6 +17,8 @@ package org.commonjava.indy.change.event;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -31,20 +33,38 @@ public abstract class ArtifactStoreUpdateEvent
 
     private final ArtifactStoreUpdateType type;
 
+    private Map<ArtifactStore, ArtifactStore> changeMap;
+
     protected ArtifactStoreUpdateEvent( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata,
-                                        final Collection<ArtifactStore> changes )
+                                        final Map<ArtifactStore, ArtifactStore> changeMap )
     {
-        super( eventMetadata, changes );
+        super( eventMetadata, changeMap.keySet() );
+        this.changeMap = cloneOriginals( changeMap );
         this.type = type;
     }
 
-    protected ArtifactStoreUpdateEvent( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata,
-                                        final ArtifactStore... changes )
+    private Map<ArtifactStore,ArtifactStore> cloneOriginals( Map<ArtifactStore, ArtifactStore> changeMap )
     {
-        super( eventMetadata, Arrays.asList( changes ) );
-        this.type = type;
+        Map<ArtifactStore, ArtifactStore> cleaned = new HashMap<>();
+        changeMap.forEach( (key,value)->{
+            if ( key != null && value != null )
+            {
+                cleaned.put( key, value.copyOf() );
+            }
+        });
+
+        return cleaned;
     }
 
+    public <T extends ArtifactStore> T getOriginal( T store )
+    {
+        return (T) changeMap.get( store );
+    }
+
+    public Map<ArtifactStore, ArtifactStore> getChangeMap()
+    {
+        return changeMap;
+    }
     /**
      * Return the type of update that took place.
      */
@@ -61,4 +81,10 @@ public abstract class ArtifactStoreUpdateEvent
         return getStores();
     }
 
+    @Override
+    public String toString()
+    {
+        return getClass().getSimpleName() + "{changed=" + getChanges() + ",type=" + type +
+                '}';
+    }
 }

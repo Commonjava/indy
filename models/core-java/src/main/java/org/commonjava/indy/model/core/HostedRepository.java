@@ -71,4 +71,13 @@ public class HostedRepository
         return new StoreKey( StoreType.hosted, name );
     }
 
+    @Override
+    public HostedRepository copyOf()
+    {
+        HostedRepository repo = new HostedRepository( getName() );
+        copyRestrictions( repo );
+        copyBase( repo );
+
+        return repo;
+    }
 }

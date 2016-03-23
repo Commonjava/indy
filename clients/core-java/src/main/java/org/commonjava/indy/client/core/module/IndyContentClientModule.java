@@ -30,6 +30,8 @@ import org.commonjava.indy.client.core.util.UrlUtils;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.dto.DirectoryListingDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IndyContentClientModule
     extends IndyClientModule
@@ -177,6 +179,8 @@ public class IndyContentClientModule
                                             resources.getStatusLine() );
         }
 
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Returning stream that should contain: {} bytes", resources.getResponse().getFirstHeader( "Content-Length" ) );
         try
         {
             return resources.getResponseStream();

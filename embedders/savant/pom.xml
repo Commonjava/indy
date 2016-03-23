@@ -63,14 +63,6 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-depgraph-common</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-depgraph-jaxrs</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-setback-jaxrs</artifactId>
     </dependency>
     <dependency>
@@ -169,11 +161,6 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-ftests-depgraph</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-dot-maven</artifactId>
       <scope>test</scope>
     </dependency>
@@ -212,7 +199,12 @@
   <profiles>
     <profile>
       <id>run-its</id>
-      
+
+<!--       <properties>
+        <skipTests>false</skipTests>
+        <test>org.commonjava.indy.promote.ftest.GroupPromoteAndRollbackTest</test>
+      </properties>
+ -->      
       <build>
         <pluginManagement>
           <plugins>
@@ -228,7 +220,6 @@
                   <dependenciesToScan>
                     <dependency>org.commonjava.indy:indy-ftests-core</dependency>
                     <dependency>org.commonjava.indy:indy-ftests-autoprox</dependency>
-                    <dependency>org.commonjava.indy:indy-ftests-depgraph</dependency>
                     <dependency>org.commonjava.indy:indy-ftests-dot-maven</dependency>
                     <dependency>org.commonjava.indy:indy-ftests-folo</dependency>
                     <dependency>org.commonjava.indy:indy-ftests-httprox</dependency>

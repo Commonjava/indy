@@ -59,12 +59,6 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-indexer</artifactId>
-      <type>tar.gz</type>
-      <classifier>confset</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-autoprox-common</artifactId>
       <type>tar.gz</type>
       <classifier>dataset</classifier>
@@ -92,12 +86,6 @@
       <artifactId>indy-dot-maven-common</artifactId>
       <type>tar.gz</type>
       <classifier>dataset</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-depgraph-common</artifactId>
-      <type>tar.gz</type>
-      <classifier>confset</classifier>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
@@ -170,43 +158,4 @@
       </plugin>
     </plugins>
   </build>
-  
-  <!--
-  <profiles>
-    <profile>
-      <id>run-its</id>
-      
-      <dependencies>
-        <dependency>
-          <groupId>org.commonjava.indy</groupId>
-          <artifactId>indy-ftests-depgraph</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>org.commonjava.indy</groupId>
-          <artifactId>indy-ftests-folo</artifactId>
-        </dependency>
-      </dependencies>
-      
-      <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <artifactId>maven-surefire-plugin</artifactId>
-              <configuration>
-                <forkCount>${test-forkCount}</forkCount>
-                <reuseForks>false</reuseForks>
-                <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
-                <dependenciesToScan>
-                  <dependency>org.commonjava.indy:indy-ftests-core</dependency>
-                  <dependency>org.commonjava.indy:indy-ftests-folo</dependency>
-                  <dependency>org.commonjava.indy:indy-ftests-depgraph</dependency>
-                </dependenciesToScan> 
-              </configuration>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-      </build>
-    </profile>
-  </profiles>
-  -->
 </project>

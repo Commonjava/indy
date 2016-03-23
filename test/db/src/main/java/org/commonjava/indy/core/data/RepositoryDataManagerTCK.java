@@ -82,9 +82,14 @@ public abstract class RepositoryDataManagerTCK
         final RemoteRepository repo = new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" );
         storeRemoteRepository( repo, true );
 
+        List<? extends RemoteRepository> result = manager.getAllRemoteRepositories();
+
+        assertThat( result, notNullValue() );
+        assertThat( result.size(), equalTo( 1 ) );
+
         storeRemoteRepository( repo, true );
 
-        final List<? extends RemoteRepository> result = manager.getAllRemoteRepositories();
+        result = manager.getAllRemoteRepositories();
 
         assertThat( result, notNullValue() );
         assertThat( result.size(), equalTo( 1 ) );

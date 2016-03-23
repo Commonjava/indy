@@ -172,6 +172,9 @@ public final class ResponseUtils
 
         if ( includeContentLength && !lenSet )
         {
+            Logger logger = LoggerFactory.getLogger( ResponseUtils.class );
+            logger.debug( "Adding Content-Length header: {}", item.length() );
+
             builder.header( ApplicationHeader.content_length.key(), item.length() );
         }
 

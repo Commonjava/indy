@@ -18,22 +18,13 @@ package org.commonjava.indy.content.index;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
-import org.commonjava.indy.change.event.ArtifactStoreDeletePostEvent;
-import org.commonjava.indy.change.event.ArtifactStoreDeletePreEvent;
-import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
-import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.content.ContentManager;
-import org.commonjava.indy.core.expire.ContentExpiration;
-import org.commonjava.indy.core.expire.ScheduleManager;
-import org.commonjava.indy.core.expire.SchedulerEvent;
-import org.commonjava.indy.core.expire.SchedulerEventType;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
@@ -49,10 +40,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.decorator.Decorator;
 import javax.decorator.Delegate;
-import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Any;
 import javax.inject.Inject;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -82,7 +71,7 @@ public abstract class ContentIndexingContentManagerDecorator
     @Inject
     private Cache<IndexedStorePath, IndexedStorePath> contentIndex;
 
-    @ExecutorConfig( named = "content-indexer", threads = 4, daemon = true )
+    @ExecutorConfig( named = "content-indexer", threads = 8, priority = 2, daemon = true )
     @WeftManaged
     @Inject
     private Executor executor;
@@ -112,15 +101,15 @@ public abstract class ContentIndexingContentManagerDecorator
     public Transfer retrieveFirst( List<? extends ArtifactStore> stores, String path, EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
-        Transfer transfer = getIndexedTransfer( stores, path, TransferOperation.DOWNLOAD );
-
-        if ( transfer != null )
+        Transfer transfer = null;
+        for ( ArtifactStore store : stores )
         {
-            return transfer;
+            transfer = retrieve( store, path, eventMetadata );
+            if ( transfer != null )
+            {
+                break;
+            }
         }
-
-        transfer = delegate.retrieveFirst( stores, path, eventMetadata );
-        indexTransfer( transfer );
 
         return transfer;
     }
@@ -136,68 +125,29 @@ public abstract class ContentIndexingContentManagerDecorator
     public List<Transfer> retrieveAll( List<? extends ArtifactStore> stores, String path, EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
-        List<Transfer> indexResults = new ArrayList<>();
+        List<Transfer> results = new ArrayList<>();
         stores.stream().map( ( store ) -> {
-            if ( findByTopKey( store.getKey(), path ) )
+            try
             {
-                try
-                {
-                    return delegate.getTransfer( store, path, TransferOperation.DOWNLOAD );
-                }
-                catch ( IndyWorkflowException e )
-                {
-                    Logger logger = LoggerFactory.getLogger( getClass() );
-                    logger.error(
-                            String.format( "Failed to retrieve indexed content: %s:%s. Reason: %s", store.getKey(),
-                                           path, e.getMessage() ), e );
-                }
+                return retrieve( store, path, eventMetadata );
+            }
+            catch ( IndyWorkflowException e )
+            {
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.error(
+                        String.format( "Failed to retrieve indexed content: %s:%s. Reason: %s", store.getKey(),
+                                       path, e.getMessage() ), e );
             }
 
             return null;
-        } ).forEachOrdered( ( transfer ) -> {
+        } ).filter((transfer)->transfer != null).forEachOrdered( ( transfer ) -> {
             if ( transfer != null )
             {
-                indexResults.add( transfer );
+                results.add( transfer );
             }
         } );
 
-        if ( !indexResults.isEmpty() )
-        {
-            return indexResults;
-        }
-
-        List<Transfer> transfers = delegate.retrieveAll( stores, path, eventMetadata );
-        if ( transfers != null && !transfers.isEmpty() )
-        {
-            executor.execute( () -> {
-                transfers.forEach( ( transfer ) -> {
-                    StoreKey key = LocationUtils.getKey( transfer );
-                    IndexedStorePath isp = new IndexedStorePath( key, key, path );
-                    contentIndex.put( isp, isp );
-
-                    try
-                    {
-                        Set<Group> groups = storeDataManager.getGroupsContaining( key );
-                        if ( groups != null )
-                        {
-                            groups.forEach( ( group ) -> {
-                                IndexedStorePath sp = new IndexedStorePath( group.getKey(), key, path );
-                                contentIndex.put( sp, sp );
-                            } );
-                        }
-                    }
-                    catch ( IndyDataException e )
-                    {
-                        Logger logger = LoggerFactory.getLogger( getClass() );
-                        logger.error(
-                                String.format( "Cannot lookup groups containing: %s for content indexing. Reason: %s",
-                                               key, e.getMessage() ), e );
-                    }
-                } );
-            } );
-        }
-
-        return transfers;
+        return results;
     }
 
     @Override
@@ -211,18 +161,44 @@ public abstract class ContentIndexingContentManagerDecorator
     public Transfer retrieve( ArtifactStore store, String path, EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
-        if ( findByTopKey( store.getKey(), path ) )
+        Logger logger = LoggerFactory.getLogger( getClass() );
+
+        Transfer transfer = getIndexedTransfer( store.getKey(), path, TransferOperation.DOWNLOAD );
+        if ( transfer != null )
         {
-            return delegate.getTransfer( store, path, TransferOperation.DOWNLOAD );
+            return transfer;
         }
 
-        Transfer transfer = delegate.retrieve( store, path, eventMetadata );
-        indexTransfer( transfer );
+        if ( StoreType.group == store.getKey().getType() )
+        {
+            logger.debug( "No group index hits. Devolving to member store indexes." );
+            for ( StoreKey key : ( (Group) store ).getConstituents() )
+            {
+                transfer = getIndexedTransfer( key, path, TransferOperation.DOWNLOAD );
+                if ( transfer != null )
+                {
+                    indexTransferIn( store.getKey(), transfer );
+                    return transfer;
+                }
+            }
+        }
 
+        logger.debug( "No index hits. Delegating to main content manager for: {} in: {}", path, store );
+        transfer = delegate.retrieve( store, path, eventMetadata );
+
+        if ( transfer != null )
+        {
+            logger.debug( "Got transfer from delegate: {} (will index)", transfer );
+
+            indexTransferIn( LocationUtils.getKey( transfer ), transfer );
+            indexTransferIn( store.getKey(), transfer );
+        }
+
+        logger.debug( "Returning transfer: {}", transfer );
         return transfer;
     }
 
-    private boolean findByTopKey( StoreKey key, String path )
+    private List<IndexedStorePath> getByTopKey( StoreKey key, String path )
     {
         QueryFactory queryFactory = Search.getQueryFactory( contentIndex );
         QueryBuilder<Query> queryBuilder = queryFactory.from( IndexedStorePath.class )
@@ -231,22 +207,46 @@ public abstract class ContentIndexingContentManagerDecorator
                                                        .and()
                                                        .having( "storeName" )
                                                        .eq( key.getName() )
+                                                       .and()
+                                                       .having( "path" )
+                                                       .eq( path )
                                                        .toBuilder();
 
-        return queryBuilder.build().getResultSize() > 0;
+        return queryBuilder.build().list();
     }
 
     @Override
     public Transfer getTransfer( ArtifactStore store, String path, TransferOperation op )
             throws IndyWorkflowException
     {
-        if ( findByTopKey( store.getKey(), path ) )
+        Logger logger = LoggerFactory.getLogger( getClass() );
+
+        Transfer transfer = getIndexedTransfer( store.getKey(), path, TransferOperation.DOWNLOAD );
+        if ( transfer != null )
         {
-            return delegate.getTransfer( store, path, op );
+            return transfer;
         }
 
-        Transfer transfer = delegate.getTransfer( store, path, op );
-        indexTransfer( transfer );
+        if ( StoreType.group == store.getKey().getType() )
+        {
+            logger.debug( "No group index hits. Devolving to member store indexes." );
+            for ( StoreKey key : ( (Group) store ).getConstituents() )
+            {
+                transfer = getIndexedTransfer( key, path, TransferOperation.DOWNLOAD );
+                if ( transfer != null )
+                {
+                    indexTransferIn( store.getKey(), transfer );
+                    return transfer;
+                }
+            }
+        }
+
+        transfer = delegate.getTransfer( store, path, op );
+        if ( transfer != null )
+        {
+            indexTransferIn( LocationUtils.getKey( transfer ), transfer );
+            indexTransferIn( store.getKey(), transfer );
+        }
 
         return transfer;
     }
@@ -255,13 +255,45 @@ public abstract class ContentIndexingContentManagerDecorator
     public Transfer getTransfer( StoreKey storeKey, String path, TransferOperation op )
             throws IndyWorkflowException
     {
-        if ( findByTopKey( storeKey, path ) )
+        Logger logger = LoggerFactory.getLogger( getClass() );
+
+        Transfer transfer = getIndexedTransfer( storeKey, path, TransferOperation.DOWNLOAD );
+        if ( transfer != null )
         {
-            return delegate.getTransfer( storeKey, path, op );
+            return transfer;
         }
 
-        Transfer transfer = delegate.getTransfer( storeKey, path, op );
-        indexTransfer( transfer );
+        if ( StoreType.group == storeKey.getType() )
+        {
+            logger.debug( "No group index hits. Devolving to member store indexes." );
+            try
+            {
+                Group g = storeDataManager.getGroup( storeKey.getName() );
+
+                for ( StoreKey key : g.getConstituents() )
+                {
+                    transfer = getIndexedTransfer( key, path, TransferOperation.DOWNLOAD );
+                    if ( transfer != null )
+                    {
+                        indexTransferIn( storeKey, transfer );
+                        return transfer;
+                    }
+                }
+            }
+            catch ( IndyDataException e )
+            {
+                logger.error(
+                        String.format( "Cannot lookup ArtifactStore for key: %s. Reason: %s", storeKey, e.getMessage() ),
+                        e );
+            }
+        }
+
+        transfer = delegate.getTransfer( storeKey, path, op );
+        if ( transfer != null )
+        {
+            indexTransferIn( LocationUtils.getKey( transfer ), transfer );
+            indexTransferIn( storeKey, transfer );
+        }
 
         return transfer;
     }
@@ -270,16 +302,14 @@ public abstract class ContentIndexingContentManagerDecorator
     public Transfer getTransfer( List<ArtifactStore> stores, String path, TransferOperation op )
             throws IndyWorkflowException
     {
-        Transfer transfer = getIndexedTransfer( stores, path, op );
-        if ( transfer != null )
+        Transfer transfer = null;
+        for ( ArtifactStore store : stores )
         {
-            return transfer;
-        }
-
-        transfer = delegate.getTransfer( stores, path, op );
-        if ( transfer != null )
-        {
-            indexTransfer( transfer );
+            transfer = getTransfer( store, path, op );
+            if ( transfer != null )
+            {
+                break;
+            }
         }
 
         return transfer;
@@ -300,7 +330,8 @@ public abstract class ContentIndexingContentManagerDecorator
         Transfer transfer = delegate.store( store, path, stream, op, eventMetadata );
         if ( transfer != null )
         {
-            indexTransfer( transfer );
+            indexTransferIn( LocationUtils.getKey( transfer ), transfer );
+            indexTransferIn( store.getKey(), transfer );
         }
 
         return transfer;
@@ -321,7 +352,7 @@ public abstract class ContentIndexingContentManagerDecorator
         Transfer transfer = delegate.store( stores, path, stream, op, eventMetadata );
         if ( transfer != null )
         {
-            indexTransfer( transfer );
+            indexTransferIn( LocationUtils.getKey( transfer ), transfer );
         }
 
         return transfer;
@@ -415,62 +446,185 @@ public abstract class ContentIndexingContentManagerDecorator
         } );
     }
 
-    private Transfer getIndexedTransfer( List<? extends ArtifactStore> stores, String path, TransferOperation op )
+    private Transfer getIndexedTransfer( StoreKey key, String path, TransferOperation operation )
+            throws IndyWorkflowException
     {
-        Optional<Transfer> indexResult = stores.stream().map( ( store ) -> {
-            if ( findByTopKey( store.getKey(), path ) )
-            {
-                try
-                {
-                    return delegate.getTransfer( store, path, op );
-                }
-                catch ( IndyWorkflowException e )
-                {
-                    Logger logger = LoggerFactory.getLogger( getClass() );
-                    logger.error(
-                            String.format( "Failed to retrieve indexed content: %s:%s. Reason: %s", store.getKey(),
-                                           path, e.getMessage() ), e );
-                }
-            }
+        List<IndexedStorePath> matches = getByTopKey( key, path );
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Found index hits for: {} in store: {}:\n  {}", path, key, matches );
 
-            return null;
+        if ( !matches.isEmpty() )
+        {
+            IndexedStorePath storePath = findFirstMatch( matches, key );
+            logger.debug( "Selected match: {}", storePath );
 
-        } ).findFirst();
+            Transfer result = delegate.getTransfer( storePath.getOriginStoreKey(), path, operation );
 
-        return indexResult.isPresent() ? indexResult.get() : null;
+            logger.debug( "Returning transfer for indexed result: {}", result );
+            return result;
+        }
+
+        return null;
     }
 
-    private void indexTransfer( Transfer transfer )
+    /**
+     * When we store or retrieve content, index it for faster reference next time.
+     */
+    private void indexTransferIn( StoreKey key, Transfer transfer )
     {
         if ( transfer != null && transfer.exists() )
         {
             executor.execute( () -> {
-                StoreKey key = LocationUtils.getKey( transfer );
                 String path = transfer.getPath();
 
                 IndexedStorePath isp = new IndexedStorePath( key, key, path );
                 contentIndex.put( isp, isp );
 
-                try
-                {
-                    Set<Group> groups = storeDataManager.getGroupsContaining( key );
-                    if ( groups != null )
-                    {
-                        groups.forEach( ( group ) -> {
-                            IndexedStorePath sp = new IndexedStorePath( group.getKey(), key, path );
-                            contentIndex.put( sp, sp );
-                        } );
-                    }
-                }
-                catch ( IndyDataException e )
-                {
-                    Logger logger = LoggerFactory.getLogger( getClass() );
-                    logger.error(
-                            String.format( "Cannot lookup groups containing: %s for content indexing. Reason: %s", key,
-                                           e.getMessage() ), e );
-                }
+                indexTransferInGroupsOf( key, key, path );
             } );
         }
+    }
+
+    /**
+     * When we index content, also index it for groups containing its origin stores, to make indexes more efficient.
+     * This will be called recursively for groups of groups.
+     */
+    private void indexTransferInGroupsOf( StoreKey key, StoreKey originKey, String path )
+    {
+//        try
+//        {
+//            Set<Group> groups = storeDataManager.getGroupsContaining( key );
+//            if ( groups != null )
+//            {
+//                new HashSet<>( groups ).forEach( ( group ) -> {
+//                    IndexedStorePath sp = new IndexedStorePath( group.getKey(), originKey, path );
+//                    contentIndex.put( sp, sp );
+//
+//                    // denormalize to groups of groups
+//                    indexTransferInGroupsOf( group.getKey(), originKey, path );
+//                } );
+//            }
+//        }
+//        catch ( IndyDataException e )
+//        {
+//            Logger logger = LoggerFactory.getLogger( getClass() );
+//            logger.error( String.format( "Cannot lookup groups containing: %s for content indexing. Reason: %s", key,
+//                                         e.getMessage() ), e );
+//        }
+    }
+
+    /**
+     * This method is sort of stupid, but I'm trying not to retrieve any more store data than I need. I'm checking if
+     * there is an indexed store path that matches:
+     * <ol>
+     *     <li>The current store (the only option if it's not a group)</li>
+     *     <li>The direct membership of the group (the StoreKey instances already available in the Group constituents list)</li>
+     *     <li>The ordered concrete membership of the group, which includes ArtifactStores that are available by recursing down through groups.</li>
+     * </ol>
+     *
+     * If all of that fails, and the matches list isn't empty, that means something somewhere matched...so let's return
+     * the first of those. But that really should NEVER happen.
+     */
+    private IndexedStorePath findFirstMatch( List<IndexedStorePath> matches, StoreKey key )
+    {
+        if ( matches.isEmpty() )
+        {
+            return null;
+        }
+
+        // we're managing the down-membership indexing for a group aggressively, so we should be able to pop the first
+        // result off the list.
+        return matches.get(0);
+
+//        if ( StoreType.group != store.getKey().getType() )
+//        {
+//            return matches.get( 0 );
+//        }
+//
+//        Group group = (Group) store;
+//        Optional<IndexedStorePath> result = matches.stream().filter( ( match ) -> {
+//            if ( match.getOriginStoreKey().equals( group.getKey() ) )
+//            {
+//                return true;
+//            }
+//
+//            return false;
+//        } ).findAny();
+//
+//        if ( result.isPresent() )
+//        {
+//            return result.get();
+//        }
+//
+//        Optional<StoreKey> matchingKey = group.getConstituents().stream().filter( ( memberKey ) -> {
+//            Optional<IndexedStorePath> found = matches.stream().filter( ( isp ) -> {
+//                if ( isp.getOriginStoreKey().equals( memberKey ) )
+//                {
+//                    return true;
+//                }
+//
+//                return false;
+//            } ).findAny();
+//
+//            return found.isPresent();
+//        } ).findAny();
+//
+//        StoreKey lookupKey = null;
+//        if ( matchingKey.isPresent() )
+//        {
+//            lookupKey = matchingKey.get();
+//        }
+//        else
+//        {
+//            try
+//            {
+//                Optional<ArtifactStore> matchingStore =
+//                        storeDataManager.getOrderedConcreteStoresInGroup( group.getName() )
+//                                        .stream()
+//                                        .filter( ( member ) -> {
+//                                            return matches.stream().filter( ( isp ) -> {
+//                                                if ( isp.getOriginStoreKey().equals( member.getKey() ) )
+//                                                {
+//                                                    return true;
+//                                                }
+//
+//                                                return false;
+//                                            } ).findAny().isPresent();
+//                                        } )
+//                                        .findAny();
+//
+//                if ( matchingStore.isPresent() )
+//                {
+//                    lookupKey = matchingStore.get().getKey();
+//                }
+//            }
+//            catch ( IndyDataException e )
+//            {
+//                Logger logger = LoggerFactory.getLogger( getClass() );
+//                logger.error( String.format( "Failed to find ordered concrete stores for group: %s. Reason: %s",
+//                                             group.getKey(), e.getMessage() ), e );
+//            }
+//        }
+//
+//        if ( lookupKey != null )
+//        {
+//            StoreKey finalLookupKey = lookupKey;
+//            result = matches.stream().filter( ( match ) -> {
+//                if ( match.getOriginStoreKey().equals( finalLookupKey ) )
+//                {
+//                    return true;
+//                }
+//
+//                return false;
+//            } ).findAny();
+//
+//            if ( result.isPresent() )
+//            {
+//                return result.get();
+//            }
+//        }
+//
+//        return matches.get( 0 );
     }
 
 }

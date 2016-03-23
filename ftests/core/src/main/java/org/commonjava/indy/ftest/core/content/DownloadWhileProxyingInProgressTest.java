@@ -30,15 +30,13 @@ import org.commonjava.indy.ftest.core.fixture.ReluctantInputStream;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.test.http.TestHttpServer;
+import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
 import org.junit.Test;
 
 public class DownloadWhileProxyingInProgressTest
     extends AbstractContentManagementTest
 {
-
-    @Rule
-    public TestHttpServer server = new TestHttpServer( "repos" );
 
     @Override
     protected boolean createStandardTestStructures()
@@ -80,8 +78,7 @@ public class DownloadWhileProxyingInProgressTest
         System.out.printf( "Timing results:\n  Input started: {}\n  Input ended: {}\n  Download started: {}\n  Download ended: {}",
                            input.getStartTime(), input.getEndTime(), download.getStartTime(), download.getEndTime() );
 
-        assertThat( Arrays.equals( download.getContent()
-                                           .toByteArray(), data ), equalTo( true ) );
+        assertThat( download.getContent().toByteArray(), equalTo( data ) );
         assertThat( input.getEndTime() > download.getStartTime(), equalTo( true ) );
     }
 

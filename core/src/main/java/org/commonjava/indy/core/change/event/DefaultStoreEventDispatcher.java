@@ -115,14 +115,14 @@ public class DefaultStoreEventDispatcher
 
     @Override
     public void updating( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata,
-                          final ArtifactStore... stores )
+                          final Map<ArtifactStore, ArtifactStore> changeMap )
     {
         //        logger.debug( "Trying to fire pre-update event for: {}", new JoinString( ", ", stores ) );
         if ( updatePreEvent != null )
         {
             executor.execute( () -> {
                 final ArtifactStorePreUpdateEvent event =
-                        new ArtifactStorePreUpdateEvent( type, eventMetadata, stores );
+                        new ArtifactStorePreUpdateEvent( type, eventMetadata, changeMap );
                 //            logger.debug( "Firing pre-update event: {} (for: {}) via:\n  {}", event, new JoinString( ", ", stores ),
                 //                          new JoinString( "\n  ", Thread.currentThread()
                 //                                                        .getStackTrace() ) );
@@ -133,13 +133,13 @@ public class DefaultStoreEventDispatcher
 
     @Override
     public void updated( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata,
-                         final ArtifactStore... stores )
+                         final Map<ArtifactStore, ArtifactStore> changeMap )
     {
         if ( updatePostEvent != null )
         {
             executor.execute( () -> {
                 final ArtifactStorePostUpdateEvent event =
-                        new ArtifactStorePostUpdateEvent( type, eventMetadata, stores );
+                        new ArtifactStorePostUpdateEvent( type, eventMetadata, changeMap );
                 updatePostEvent.fire( event );
             } );
         }

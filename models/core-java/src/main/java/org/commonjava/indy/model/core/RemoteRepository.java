@@ -353,4 +353,29 @@ public class RemoteRepository
     {
         this.serverTrustPolicy = serverTrustPolicy;
     }
+
+    @Override
+    public RemoteRepository copyOf()
+    {
+        RemoteRepository repo = new RemoteRepository( getName(), getUrl() );
+        repo.setServerTrustPolicy( getServerTrustPolicy() );
+        repo.setKeyPassword( getKeyPassword() );
+        repo.setKeyCertPem( getKeyCertPem() );
+        repo.setServerCertPem( getServerCertPem() );
+        repo.setCacheTimeoutSeconds( getCacheTimeoutSeconds() );
+        repo.setNfcTimeoutSeconds( getNfcTimeoutSeconds() );
+        repo.setPassthrough( isPassthrough() );
+        repo.setProxyHost( getProxyHost() );
+        repo.setHost( getHost() );
+        repo.setPort( getPort() );
+        repo.setProxyPort( getProxyPort() );
+        repo.setProxyPassword( getProxyPassword() );
+        repo.setProxyUser( getProxyUser() );
+        repo.setTimeoutSeconds( getTimeoutSeconds() );
+
+        copyRestrictions( repo );
+        copyBase( repo );
+
+        return repo;
+    }
 }

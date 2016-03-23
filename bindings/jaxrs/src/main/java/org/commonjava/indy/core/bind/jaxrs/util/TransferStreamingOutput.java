@@ -23,8 +23,11 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.CountingOutputStream;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TransferStreamingOutput
     implements StreamingOutput
@@ -45,14 +48,19 @@ public class TransferStreamingOutput
         throws IOException, WebApplicationException
     {
         InputStream in = null;
+        CountingOutputStream cout = new CountingOutputStream( out );
         try
         {
             in = item.openInputStream( true, eventMetadata );
-            IOUtils.copy( in, out );
+            IOUtils.copy( in, cout );
+
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.debug( "Wrote: {} bytes", cout.getByteCount() );
         }
         finally
         {
             IOUtils.closeQuietly( in );
+//            IOUtils.closeQuietly( cout );
         }
     }
 

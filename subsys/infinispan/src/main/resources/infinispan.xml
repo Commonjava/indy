@@ -6,7 +6,7 @@
 
   <cache-container default-cache="dont-use" name="IndyCacheManager" shutdown-hook="DEFAULT">
     <local-cache name="folo-in-progress">
-      <eviction max-entries="100000" type="COUNT"/>
+      <eviction size="100000" type="COUNT"/>
       <persistence passivation="false">
         <file-store purge="false" read-only="false" fetch-state="true" path="${indy.work}/folo-in-progress">
           <write-behind/>
@@ -16,7 +16,7 @@
     </local-cache>
 
     <local-cache name="folo-sealed">
-      <eviction max-entries="100" type="COUNT"/>
+      <eviction size="100" type="COUNT"/>
       <persistence passivation="true">
         <file-store shared="false" preload="false" fetch-state="true" path="${indy.data}/folo"/>
       </persistence>
@@ -24,9 +24,11 @@
     </local-cache>
     
     <local-cache name="content-index">
-      <eviction max-entries="1000000" type="COUNT"/>
+      <eviction size="1000000" type="COUNT"/>
       <persistence passivation="true">
-        <file-store shared="false" preload="false" fetch-state="true" path="${indy.data}/content-index"/>
+        <file-store shared="false" preload="false" fetch-state="true" path="${indy.data}/content-index">
+          <write-behind/>
+        </file-store>
       </persistence>
       <indexing index="ALL"/>
     </local-cache>

@@ -118,13 +118,15 @@ public class ImpliedRepositoryDetector
                     return;
                 }
             }
-
-            logger.debug( "FINISHED Processing: {}", event );
         }
         catch ( Throwable error )
         {
             Logger logger = LoggerFactory.getLogger( getClass() );
             logger.error( String.format( "Implied-repository maintenance failed: %s", error.getMessage() ), error );
+        }
+        finally
+        {
+            logger.debug( "FINISHED Processing: {}", event );
         }
     }
 
@@ -196,10 +198,11 @@ public class ImpliedRepositoryDetector
     private boolean updateExistingGroups( final ImplicationsJob job )
     {
         final StoreKey key = job.store.getKey();
+        boolean anyChanged = false;
         try
         {
-            logger.debug( "Looking for groups that contain: {}", key );
             final Set<Group> groups = storeManager.getGroupsContaining( key );
+            logger.debug( "{} groups contain: {}\n  {}", groups.size(), key, new JoinString( "\n  ", groups ) );
             if ( groups != null )
             {
                 final String message =
@@ -207,12 +210,17 @@ public class ImpliedRepositoryDetector
                                    StringUtils.join( job.implied, "\n  " ) );
 
                 final ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, message );
-                for ( final Group group : groups )
+                for ( final Group g : groups )
                 {
+                    Group group = g.copyOf();
+
                     boolean changed = false;
                     for ( final ArtifactStore implied : job.implied )
                     {
-                        changed = group.addConstituent( implied ) || changed;
+                        boolean groupChanged = group.addConstituent( implied );
+                        changed = groupChanged || changed;
+
+                        logger.debug( "After attempting to add: {} to group: {}, changed status is: {}", implied, group, changed );
                     }
 
                     if ( changed )
@@ -225,6 +233,8 @@ public class ImpliedRepositoryDetector
                                                                                   IMPLIED_REPOS_DETECTION )
                                                                             .set( IMPLIED_REPOS, job.implied ) );
                     }
+
+                    anyChanged = changed || anyChanged;
                 }
             }
         }
@@ -233,7 +243,7 @@ public class ImpliedRepositoryDetector
             logger.error( "Failed to lookup groups containing: " + key, e );
         }
 
-        return false;
+        return anyChanged;
     }
 
     private boolean addImpliedMetadata( final ImplicationsJob job )
@@ -256,7 +266,7 @@ public class ImpliedRepositoryDetector
     {
         job.implied = new ArrayList<ArtifactStore>();
 
-        logger.debug( "Retrieving repository/pluginRepository declarations from:\n  ",
+        logger.debug( "Retrieving repository/pluginRepository declarations from:\n  {}",
                       new JoinString( "\n  ", job.pomView.getDocRefStack() ) );
 
         final List<List<RepositoryView>> repoLists =
@@ -298,6 +308,10 @@ public class ImpliedRepositoryDetector
                     logger.debug( "Creating new RemoteRepository for: {}", repo );
 
                     rr = new RemoteRepository( formatId( repo.getId() ), repo.getUrl() );
+
+                    rr.setAllowSnapshots( repo.isSnapshotsEnabled() );
+                    rr.setAllowReleases( repo.isReleasesEnabled() );
+
                     rr.setDescription( "Implicitly created repo for: " + repo.getName() + " (" + repo.getId()
                         + ") from repository declaration in POM: " + gav );
 

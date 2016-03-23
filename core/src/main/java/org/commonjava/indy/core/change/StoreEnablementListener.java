@@ -79,18 +79,18 @@ public class StoreEnablementListener
                     }
                 }
             }
-            else
-            {
-                try
-                {
-                    cancelReEnablementTimeout( store.getKey() );
-                }
-                catch ( IndySchedulerException e )
-                {
-                    Logger logger = LoggerFactory.getLogger( getClass() );
-                    logger.error( String.format( "Failed to delete re-enablement job for %s.", store.getKey() ), e );
-                }
-            }
+//            else
+//            {
+//                try
+//                {
+//                    cancelReEnablementTimeout( store.getKey() );
+//                }
+//                catch ( IndySchedulerException e )
+//                {
+//                    Logger logger = LoggerFactory.getLogger( getClass() );
+//                    logger.error( String.format( "Failed to delete re-enablement job for %s.", store.getKey() ), e );
+//                }
+//            }
         }
     }
 
@@ -148,13 +148,16 @@ public class StoreEnablementListener
                 try
                 {
                     ArtifactStore store = storeDataManager.getArtifactStore( key );
-                    store.setDisabled( false );
+                    if ( store.isDisabled() )
+                    {
+                        store.setDisabled( false );
 
-                    storeDataManager.storeArtifactStore( store, new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                                   "Re-enabling " + key ),
-                                                         new EventMetadata() );
+                        storeDataManager.storeArtifactStore( store, new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                                       "Re-enabling " + key ),
+                                                             new EventMetadata() );
 
-                    cancelReEnablementTimeout( key );
+                        cancelReEnablementTimeout( key );
+                    }
                 }
                 catch ( IndyDataException e )
                 {

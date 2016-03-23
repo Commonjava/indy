@@ -164,40 +164,6 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-depgraph-common</artifactId>
-        <version>0.99.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-depgraph-common</artifactId>
-        <version>0.99.2-SNAPSHOT</version>
-        <type>tar.gz</type>
-        <classifier>confset</classifier>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-depgraph-model-java</artifactId>
-        <version>0.99.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-depgraph-client-java</artifactId>
-        <version>0.99.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-depgraph-jaxrs</artifactId>
-        <version>0.99.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-ftests-depgraph</artifactId>
-        <version>0.99.2-SNAPSHOT</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-autoprox-jaxrs</artifactId>
         <version>0.99.2-SNAPSHOT</version>
       </dependency>
@@ -349,7 +315,7 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-content-index</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>0.99.2-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
@@ -400,11 +366,6 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-filer-infinispan</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-jaxrs</artifactId>
         <version>0.99.2-SNAPSHOT</version>
       </dependency>
@@ -416,7 +377,7 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-infinispan</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>0.99.2-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
@@ -712,11 +673,6 @@
       <dependency>
         <groupId>org.commonjava.maven.galley</groupId>
         <artifactId>galley-cache-partyline</artifactId>
-        <version>${galleyVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.maven.galley</groupId>
-        <artifactId>galley-cache-infinispan</artifactId>
         <version>${galleyVersion}</version>
       </dependency>
       <dependency>
@@ -1128,6 +1084,9 @@
   <profiles>
     <profile>
       <id>run-its</id>
+      <properties>
+        <!-- <skipTests>true</skipTests> -->
+      </properties>
       <modules>
         <!--
         <module>embedder-tests</module>
@@ -1140,6 +1099,64 @@
         <test-forkCount>2</test-forkCount>
         <testTimeout>300</testTimeout>
       </properties>
+    </profile>
+    <profile>
+      <id>decommissioned</id>
+      <dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>org.commonjava.indy</groupId>
+            <artifactId>indy-depgraph-common</artifactId>
+            <version>0.99.2-SNAPSHOT</version>
+          </dependency>
+          <dependency>
+            <groupId>org.commonjava.indy</groupId>
+            <artifactId>indy-depgraph-common</artifactId>
+            <version>0.99.2-SNAPSHOT</version>
+            <type>tar.gz</type>
+            <classifier>confset</classifier>
+            <scope>provided</scope>
+          </dependency>
+          <dependency>
+            <groupId>org.commonjava.indy</groupId>
+            <artifactId>indy-depgraph-model-java</artifactId>
+            <version>0.99.2-SNAPSHOT</version>
+          </dependency>
+          <dependency>
+            <groupId>org.commonjava.indy</groupId>
+            <artifactId>indy-depgraph-client-java</artifactId>
+            <version>0.99.2-SNAPSHOT</version>
+          </dependency>
+          <dependency>
+            <groupId>org.commonjava.indy</groupId>
+            <artifactId>indy-depgraph-jaxrs</artifactId>
+            <version>0.99.2-SNAPSHOT</version>
+          </dependency>
+          <dependency>
+            <groupId>org.commonjava.indy</groupId>
+            <artifactId>indy-ftests-depgraph</artifactId>
+            <version>0.99.2-SNAPSHOT</version>
+            <scope>test</scope>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
+    </profile>
+    <profile>
+      <id>experimental</id>
+      <dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>org.commonjava.maven.galley</groupId>
+            <artifactId>galley-cache-infinispan</artifactId>
+            <version>${galleyVersion}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.commonjava.indy</groupId>
+            <artifactId>indy-filer-infinispan</artifactId>
+            <version>0.99.2-SNAPSHOT</version>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
     </profile>
   </profiles>
   

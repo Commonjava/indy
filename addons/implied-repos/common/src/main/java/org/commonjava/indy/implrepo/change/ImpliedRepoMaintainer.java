@@ -116,10 +116,12 @@ public class ImpliedRepoMaintainer
 
         try
         {
+            // TODO: Update for changes map.
             final Map<StoreKey, ArtifactStore> currentStores = mapStores( event );
 
             for ( final ArtifactStore store : event )
             {
+                logger.debug( "Processing store: {} for implied repo metadata", store );
                 processStore( store, currentStores );
             }
         }
@@ -193,6 +195,8 @@ public class ImpliedRepoMaintainer
         boolean changed = false;
         job.added = new ArrayList<>();
 
+//        job.group = job.group.copyOf();
+
         // iterate through group membership looking for implied stores that aren't already members.
         // For each implied store:
         //  1. load the store
@@ -246,7 +250,9 @@ public class ImpliedRepoMaintainer
 
                     processed.add( key );
                     job.added.add( key );
+
                     job.group.addConstituent( key );
+
                     job.members.add( impliedStore );
                     changed = true;
                 }

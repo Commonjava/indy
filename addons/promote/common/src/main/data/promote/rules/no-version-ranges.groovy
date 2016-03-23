@@ -3,7 +3,7 @@ package org.commonjava.indy.promote.rules
 import org.commonjava.indy.model.core.StoreKey
 import org.commonjava.indy.promote.validate.model.ValidationRequest
 import org.commonjava.indy.promote.validate.model.ValidationRule
-import org.commonjava.cartographer.graph.discover.DiscoveryConfig
+import org.commonjava.maven.galley.maven.rel.ModelProcessorConfig
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -25,10 +25,7 @@ class NoVersionRanges implements ValidationRule {
 
         def builder = new StringBuilder()
         def tools = request.getTools()
-        def dc = DiscoveryConfig.getDisabledConfig();
-
-        dc.setIncludeBuildSection(false)
-        dc.setIncludeManagedDependencies(false)
+        def dc = new ModelProcessorConfig().setIncludeBuildSection(true).setIncludeManagedPlugins(true).setIncludeManagedDependencies(true)
 
         request.getSourcePaths().each { it ->
             if (it.endsWith(".pom")) {

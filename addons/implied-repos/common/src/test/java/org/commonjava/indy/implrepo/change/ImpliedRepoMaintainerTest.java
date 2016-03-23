@@ -76,7 +76,7 @@ public class ImpliedRepoMaintainerTest
         g.addConstituent( repo1 );
 
         final ArtifactStorePreUpdateEvent event =
-            new ArtifactStorePreUpdateEvent( ArtifactStoreUpdateType.UPDATE, new EventMetadata(), g );
+            new ArtifactStorePreUpdateEvent( ArtifactStoreUpdateType.UPDATE, new EventMetadata(), Collections.singletonMap( g.copyOf(), g ) );
         maintainer.updateImpliedStores( event );
 
         assertThat( g.getConstituents()
@@ -103,7 +103,8 @@ public class ImpliedRepoMaintainerTest
         g.addConstituent( repo2 );
 
         final ArtifactStorePreUpdateEvent event =
-            new ArtifactStorePreUpdateEvent( ArtifactStoreUpdateType.UPDATE, new EventMetadata(), g );
+                new ArtifactStorePreUpdateEvent( ArtifactStoreUpdateType.UPDATE, new EventMetadata(),
+                                                 Collections.singletonMap( g.copyOf(), g ) );
         maintainer.updateImpliedStores( event );
 
         assertThat( g.getConstituents()

@@ -43,6 +43,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static org.commonjava.indy.model.core.StoreType.group;
@@ -65,6 +66,8 @@ public class MemoryStoreDataManager
 
     @Inject
     private IndyConfiguration config;
+
+    private Map<StoreKey, Set<Group>> reverseGroupMemberships = new ConcurrentHashMap<>();
 
     protected MemoryStoreDataManager()
     {
@@ -219,10 +222,8 @@ public class MemoryStoreDataManager
     public Set<Group> getGroupsContaining( final StoreKey repo )
             throws IndyDataException
     {
-        final Set<Group> groups =
-                getAllGroups().stream().filter( group -> groupContains( group, repo ) ).collect( Collectors.toSet() );
-
-        return groups;
+        Set<Group> groups = reverseGroupMemberships.get( repo );
+        return groups == null ? Collections.emptySet() : new HashSet<>( groups );
     }
 
     private boolean groupContains( final Group g, final StoreKey key )
@@ -318,14 +319,44 @@ public class MemoryStoreDataManager
                                         final EventMetadata eventMetadata )
             throws IndyDataException
     {
-        final boolean exists = stores.containsKey( store.getKey() );
-        if ( !skipIfExists || !exists )
+        ArtifactStore original = stores.get( store.getKey() );
+        if ( original == store )
         {
-            preStore( store, summary, exists, fireEvents, eventMetadata );
+            // if they're the same instance, warn that preUpdate events may not work correctly!
+            logger.warn(
+                    "Storing changes on existing instance of: {}! You forgot to call {}.copyOf(), so preUpdate events may not accurately reflect before/after differences for this change!",
+                    store, store.getClass().getSimpleName() );
+        }
+
+        if ( !skipIfExists || original == null )
+        {
+            preStore( store, original, summary, original != null, fireEvents, eventMetadata );
             final ArtifactStore old = stores.put( store.getKey(), store );
+            if ( StoreType.group == store.getKey().getType() )
+            {
+                Group g = (Group) store;
+                g.getConstituents().forEach( (memberKey)->{
+                    synchronized ( StoreKey.dedupe( memberKey ) )
+                    {
+                        Set<Group> memberIn = reverseGroupMemberships.get( memberKey );
+                        if ( memberIn == null )
+                        {
+                            memberIn = Collections.singleton( g );
+                        }
+                        else
+                        {
+                            memberIn = new HashSet<>( memberIn );
+                            memberIn.add( g );
+                        }
+
+                        reverseGroupMemberships.put( memberKey, Collections.unmodifiableSet( memberIn ) );
+                    }
+                });
+            }
+
             try
             {
-                postStore( store, summary, exists, fireEvents, eventMetadata );
+                postStore( store, original, summary, original != null, fireEvents, eventMetadata );
                 return true;
             }
             catch ( final IndyDataException e )
@@ -338,25 +369,25 @@ public class MemoryStoreDataManager
         return false;
     }
 
-    protected void preStore( final ArtifactStore store, final ChangeSummary summary, final boolean exists,
+    protected void preStore( final ArtifactStore store, ArtifactStore original, final ChangeSummary summary, final boolean exists,
                              final boolean fireEvents, final EventMetadata eventMetadata )
             throws IndyDataException
     {
         if ( isStarted() && fireEvents )
         {
             dispatcher.updating( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, eventMetadata,
-                                 store );
+                                 Collections.singletonMap( store, original ) );
         }
     }
 
-    protected void postStore( final ArtifactStore store, final ChangeSummary summary, final boolean exists,
+    protected void postStore( final ArtifactStore store, ArtifactStore original, final ChangeSummary summary, final boolean exists,
                               final boolean fireEvents, final EventMetadata eventMetadata )
             throws IndyDataException
     {
         if ( isStarted() && fireEvents )
         {
             dispatcher.updated( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, eventMetadata,
-                                store );
+                                Collections.singletonMap( store, original ) );
         }
     }
 

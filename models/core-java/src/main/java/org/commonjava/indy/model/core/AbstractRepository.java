@@ -60,4 +60,10 @@ public abstract class AbstractRepository
         this.allowReleases = allowReleases;
     }
 
+    protected void copyRestrictions( AbstractRepository repo )
+    {
+        repo.setAllowReleases( isAllowReleases() );
+        repo.setAllowSnapshots( isAllowSnapshots() );
+    }
+
 }

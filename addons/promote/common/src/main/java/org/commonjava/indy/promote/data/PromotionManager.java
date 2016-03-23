@@ -125,6 +125,9 @@ public class PromotionManager
         {
             if ( !request.isDryRun() && !target.getConstituents().contains( request.getSource() ) )
             {
+                // give the preUpdate event a different object to compare vs. the original group.
+                target = target.copyOf();
+
                 target.addConstituent( request.getSource() );
                 try
                 {
@@ -176,6 +179,9 @@ public class PromotionManager
 
         if ( target.getConstituents().contains( request.getSource() ) )
         {
+            // give the preUpdate event a different object to compare vs. the original group.
+            target = target.copyOf();
+
             target.removeConstituent( request.getSource() );
             try
             {

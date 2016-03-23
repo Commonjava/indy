@@ -20,13 +20,12 @@ import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.change.event.ArtifactStoreDeletePreEvent;
 import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
-import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.core.expire.ContentExpiration;
 import org.commonjava.indy.core.expire.ScheduleManager;
 import org.commonjava.indy.core.expire.SchedulerEvent;
 import org.commonjava.indy.core.expire.SchedulerEventType;
-import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
@@ -40,13 +39,12 @@ import org.infinispan.query.dsl.QueryFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.decorator.Delegate;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
-import javax.enterprise.inject.Any;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 
 /**
@@ -62,7 +60,7 @@ public class ContentIndexObserver
     @Inject
     private Cache<IndexedStorePath, IndexedStorePath> contentIndex;
 
-    @ExecutorConfig( named = "content-indexer", threads = 4, daemon = true )
+    @ExecutorConfig( named = "content-indexer", threads = 8, priority=2, daemon = true )
     @WeftManaged
     @Inject
     private Executor executor;
@@ -70,7 +68,9 @@ public class ContentIndexObserver
     @Inject
     private IndyObjectMapper objectMapper;
 
-    protected ContentIndexObserver(){}
+    protected ContentIndexObserver()
+    {
+    }
 
     public ContentIndexObserver( StoreDataManager storeDataManager,
                                  Cache<IndexedStorePath, IndexedStorePath> contentIndex, Executor executor,
@@ -84,102 +84,28 @@ public class ContentIndexObserver
 
     public void onStoreDeletion( @Observes ArtifactStoreDeletePreEvent event )
     {
-        event.forEach( (store)->{
+        for ( ArtifactStore store : event )
+        {
             final StoreKey key = store.getKey();
 
-            QueryFactory queryFactory = Search.getQueryFactory( contentIndex );
+            removeAllIndexedAt( key );
 
-            // invalidate indexes for the store itself
-            QueryBuilder<Query> queryBuilder = queryFactory.from( IndexedStorePath.class )
-                                                           .having( "storeType" )
-                                                           .eq( key.getType() )
-                                                           .and()
-                                                           .having( "storeName" )
-                                                           .eq( key.getName() )
-                                                           .toBuilder();
-
-            queryBuilder.build().list().forEach( ( idx ) -> contentIndex.remove( idx ) );
-
-            // invalidate indexes for groups containing the store
-            queryBuilder = queryFactory.from( IndexedStorePath.class )
-                                       .having( "originStoreType" )
-                                       .eq( key.getType() )
-                                       .and()
-                                       .having( "originStoreName" )
-                                       .eq( key.getName() )
-                                       .toBuilder();
-
-            queryBuilder.build().list().forEach( ( idx ) -> contentIndex.remove( idx ) );
-        });
+            removeAllOfOrigin( key );
+        }
     }
 
     public void onStoreUpdate( @Observes ArtifactStorePreUpdateEvent event )
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Got event: {}", event );
+
         // we're only interested in existing stores, since new stores cannot have indexed keys
         if ( ArtifactStoreUpdateType.UPDATE == event.getType() )
         {
-            event.forEach( ( store ) -> {
-                StoreKey key = store.getKey();
-                // we're only interested in groups, since only adjustments to group memberships can invalidate indexed content.
-                if ( StoreType.group == key.getType() )
-                {
-                    List<StoreKey> newMembers = ( (Group) store ).getConstituents();
-                    try
-                    {
-                        Group group = storeDataManager.getGroup( key.getName() );
-                        List<StoreKey> oldMembers = group.getConstituents();
-
-                        int commonSize = Math.min( newMembers.size(), oldMembers.size() );
-                        int divergencePoint = -1;
-
-                        // look in the members that overlap in new/old groups and see if there are changes that would
-                        // indicate member reordering. If so, it might lead previously suppressed results to be prioritized,
-                        // which would invalidate part of the content index for the group.
-                        for ( int i = 0; i < commonSize; i++ )
-                        {
-                            if ( !oldMembers.get( i ).equals( newMembers.get( i ) ) )
-                            {
-                                divergencePoint = i;
-                                break;
-                            }
-                        }
-
-                        // if we haven't found a reordering of membership, let's look to see if membership has shrunk
-                        // if it has just grown, we don't care.
-                        if ( divergencePoint < 0 && newMembers.size() < oldMembers.size() )
-                        {
-                            divergencePoint = commonSize;
-                        }
-
-                        // if we can iterate some old members that have been removed or reordered, invalidate the
-                        // group content index entries for those.
-                        if ( divergencePoint < oldMembers.size() - 1 )
-                        {
-                            for ( int i = divergencePoint; i < oldMembers.size(); i++ )
-                            {
-                                StoreKey memberKey = oldMembers.get( i );
-                                QueryFactory queryFactory = Search.getQueryFactory( contentIndex );
-                                QueryBuilder<Query> queryBuilder = queryFactory.from( IndexedStorePath.class )
-                                                                               .having( "originStoreType" )
-                                                                               .eq( memberKey.getType() )
-                                                                               .and()
-                                                                               .having( "originStoreName" )
-                                                                               .eq( memberKey.getName() )
-                                                                               .toBuilder();
-
-                                queryBuilder.build().list().forEach( ( idx ) -> contentIndex.remove( idx ) );
-                            }
-                        }
-                    }
-                    catch ( IndyDataException e )
-                    {
-                        Logger logger = LoggerFactory.getLogger( getClass() );
-                        logger.error( String.format(
-                                "Failed to retrieve ordered concrete stores for group: %s in order to adjust content indexes. Reason: %s",
-                                key, e.getMessage() ), e );
-                    }
-                }
-            } );
+            for ( ArtifactStore store : event )
+            {
+                removeAllSupercededMemberContent( store, event.getChangeMap() );
+            }
         }
     }
 
@@ -210,9 +136,133 @@ public class ContentIndexObserver
         final StoreKey key = expiration.getKey();
         final String path = expiration.getPath();
 
+        // invalidate indexes for the store itself
+        removePathIndexedAt( path, key );
+
+        // invalidate indexes for groups containing the store
+        removePathOriginatingAt( path, key );
+    }
+
+    private void removeAllSupercededMemberContent( ArtifactStore store, Map<ArtifactStore, ArtifactStore> changeMap )
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+
+        StoreKey key = store.getKey();
+        // we're only interested in groups, since only adjustments to group memberships can invalidate indexed content.
+        if ( StoreType.group == key.getType() )
+        {
+            List<StoreKey> newMembers = ( (Group) store ).getConstituents();
+            logger.debug( "New members of: {} are: {}", store, newMembers );
+
+            Group group = (Group) changeMap.get( store );
+            List<StoreKey> oldMembers = group.getConstituents();
+            logger.debug( "Old members of: {} are: {}", group, oldMembers );
+
+            int commonSize = Math.min( newMembers.size(), oldMembers.size() );
+            int divergencePoint = -1;
+
+            // look in the members that overlap in new/old groups and see if there are changes that would
+            // indicate member reordering. If so, it might lead previously suppressed results to be prioritized,
+            // which would invalidate part of the content index for the group.
+            for ( divergencePoint = 0; divergencePoint < commonSize; divergencePoint++ )
+            {
+                logger.debug( "Checking for common member at index: {}", divergencePoint );
+                if ( !oldMembers.get( divergencePoint ).equals( newMembers.get( divergencePoint ) ) )
+                {
+                    break;
+                }
+            }
+
+            // if we haven't found a reordering of membership, let's look to see if membership has shrunk
+            // if it has just grown, we don't care.
+            if ( divergencePoint < 0 && newMembers.size() < oldMembers.size() )
+            {
+                divergencePoint = commonSize;
+            }
+
+            logger.debug( "group membership divergence point: {}", divergencePoint );
+
+            // if we can iterate some old members that have been removed or reordered, invalidate the
+            // group content index entries for those.
+            if ( divergencePoint < oldMembers.size() )
+            {
+                for ( int i = divergencePoint; i < oldMembers.size(); i++ )
+                {
+                    StoreKey memberKey = oldMembers.get( i );
+                    removeAllOfOrigin( memberKey );
+                }
+            }
+        }
+    }
+
+    private void removeAllOfOrigin( StoreKey memberKey )
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+
         QueryFactory queryFactory = Search.getQueryFactory( contentIndex );
+        QueryBuilder<Query> queryBuilder = queryFactory.from( IndexedStorePath.class )
+                                                       .having( "originStoreType" )
+                                                       .eq( memberKey.getType() )
+                                                       .and()
+                                                       .having( "originStoreName" )
+                                                       .eq( memberKey.getName() )
+                                                       .toBuilder();
+
+        queryBuilder.build().list().forEach( ( idx ) -> {
+            logger.debug( "Removing {}", idx );
+            contentIndex.remove( idx );
+        } );
+    }
+
+    private void removeAllIndexedAt( StoreKey key )
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
 
         // invalidate indexes for the store itself
+        QueryFactory queryFactory = Search.getQueryFactory( contentIndex );
+        QueryBuilder<Query> queryBuilder = queryFactory.from( IndexedStorePath.class )
+                                                       .having( "storeType" )
+                                                       .eq( key.getType() )
+                                                       .and()
+                                                       .having( "storeName" )
+                                                       .eq( key.getName() )
+                                                       .toBuilder();
+
+        queryBuilder.build().list().forEach( ( idx ) -> {
+            logger.debug( "Removing: {}", idx );
+            contentIndex.remove( idx );
+        } );
+    }
+
+    private void removePathOriginatingAt( String path, StoreKey key )
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+
+        QueryFactory queryFactory = Search.getQueryFactory( contentIndex );
+
+        QueryBuilder<Query> queryBuilder = queryFactory.from( IndexedStorePath.class )
+                                                       .having( "originStoreType" )
+                                                       .eq( key.getType() )
+                                                       .and()
+                                                       .having( "originStoreName" )
+                                                       .eq( key.getName() )
+                                                       .and()
+                                                       .having( "path" )
+                                                       .eq( path )
+                                                       .toBuilder();
+
+        queryBuilder.build().list().forEach( ( idx ) -> {
+            logger.debug( "Removing: {}", idx );
+            contentIndex.remove( idx );
+        } );
+    }
+
+    private void removePathIndexedAt( String path, StoreKey key )
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+
+        QueryFactory queryFactory = Search.getQueryFactory( contentIndex );
+
         QueryBuilder<Query> queryBuilder = queryFactory.from( IndexedStorePath.class )
                                                        .having( "storeType" )
                                                        .eq( key.getType() )
@@ -224,22 +274,10 @@ public class ContentIndexObserver
                                                        .eq( path )
                                                        .toBuilder();
 
-        queryBuilder.build().list().forEach( ( idx ) -> contentIndex.remove( idx ) );
-
-        // invalidate indexes for groups containing the store
-        queryBuilder = queryFactory.from( IndexedStorePath.class )
-                                   .having( "originStoreType" )
-                                   .eq( key.getType() )
-                                   .and()
-                                   .having( "originStoreName" )
-                                   .eq( key.getName() )
-                                   .and()
-                                   .having( "path" )
-                                   .eq( path )
-                                   .toBuilder();
-
-        queryBuilder.build().list().forEach( ( idx ) -> contentIndex.remove( idx ) );
+        queryBuilder.build().list().forEach( ( idx ) -> {
+            logger.debug( "Removing: {}", idx );
+            contentIndex.remove( idx );
+        } );
     }
-
 
 }

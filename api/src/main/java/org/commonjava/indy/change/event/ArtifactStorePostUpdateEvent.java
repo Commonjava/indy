@@ -16,6 +16,7 @@
 package org.commonjava.indy.change.event;
 
 import java.util.Collection;
+import java.util.Map;
 
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -31,14 +32,8 @@ public class ArtifactStorePostUpdateEvent
 {
 
     public ArtifactStorePostUpdateEvent( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata,
-                                         final Collection<ArtifactStore> changes )
+                                         final Map<ArtifactStore, ArtifactStore> changeMap )
     {
-        super( type, eventMetadata, changes );
-    }
-
-    public ArtifactStorePostUpdateEvent( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata,
-                                         final ArtifactStore... changes )
-    {
-        super( type, eventMetadata, changes );
+        super( type, eventMetadata, changeMap );
     }
 }

@@ -15,6 +15,9 @@
  */
 package org.commonjava.indy.ftest.core.fixture;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -32,6 +35,8 @@ public class ReluctantInputStream
     
     public boolean hasNext()
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "{} remaining", data.length - idx );
         return idx < data.length;
     }
 
@@ -46,6 +51,9 @@ public class ReluctantInputStream
     {
         if ( idx >= data.length )
         {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.debug( "out of data" );
+
             return -1;
         }
 
@@ -56,16 +64,29 @@ public class ReluctantInputStream
         }
         catch ( final InterruptedException e )
         {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.debug( "interrupted" );
+
+            idx = data.length;
             return -1;
         }
 
-        return data.length > idx+1 ? data[idx++] : -1;
+        int result = data[idx];
+
+        idx++;
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Returning: {}", (Integer.toHexString( result )) );
+
+        return result;
     }
 
     @Override
     public void close()
         throws IOException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "closed" );
+
         idx = data.length;
         super.close();
     }

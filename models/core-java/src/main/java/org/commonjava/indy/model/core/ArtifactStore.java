@@ -89,6 +89,8 @@ public abstract class ArtifactStore
 
     protected abstract StoreKey initKey( String name );
 
+    public abstract ArtifactStore copyOf();
+
     @Override
     public int hashCode()
     {
@@ -182,6 +184,24 @@ public abstract class ArtifactStore
     public String getTransientMetadata( final String key )
     {
         return transientMetadata == null ? null : transientMetadata.get( key );
+    }
+
+    protected void copyBase( ArtifactStore store )
+    {
+        store.setDescription( getDescription() );
+        store.setDisabled( isDisabled() );
+        store.setMetadata( getMetadata() );
+        store.setTransientMetadata( getTransientMetadata() );
+    }
+
+    protected void setTransientMetadata( Map<String, String> transientMetadata )
+    {
+        this.transientMetadata = transientMetadata;
+    }
+
+    protected Map<String, String> getTransientMetadata()
+    {
+        return transientMetadata;
     }
 
     @Override

@@ -60,8 +60,12 @@ public class GroupPromoteAndRollbackTest
 
         assertThat( result.getError(), nullValue() );
 
+        // wait for events to propagate and remove indexed values.
+        Thread.sleep( 2000 );
+
         assertThat( client.content()
                           .exists( target.getKey().getType(), target.getName(), first ), equalTo( false ) );
+
         assertThat( client.content().exists( target.getKey().getType(), target.getName(), second ), equalTo( false ) );
 
         g = client.stores().load( StoreType.group, target.getName(), Group.class );
