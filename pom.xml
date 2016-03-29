@@ -50,9 +50,9 @@
     <infinispanVersion>8.2.0.Final</infinispanVersion>
     <luceneVersion>5.3.1</luceneVersion>
     <hibernateVersion>5.5.2.Final</hibernateVersion>
-    <atlasVersion>0.16.1-SNAPSHOT</atlasVersion>
-    <galleyVersion>0.11.4-SNAPSHOT</galleyVersion>
-    <bomVersion>20-SNAPSHOT</bomVersion>
+    <atlasVersion>0.16.0</atlasVersion>
+    <galleyVersion>0.12.0</galleyVersion>
+    <bomVersion>21</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <resteasyVersion>3.0.9.Final</resteasyVersion>
     <undertowVersion>1.1.2.Final</undertowVersion>
@@ -594,6 +594,11 @@
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-embedded-query</artifactId>
         <version>${infinispanVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.logging</groupId>
+        <artifactId>jboss-logging</artifactId>
+        <version>3.3.0.Final</version>
       </dependency>
 <!--       <dependency>
         <groupId>org.jboss.logging</groupId>

@@ -30,7 +30,7 @@
   <name>Indy :: Embedders :: Savant</name>
   <description>REST + Cartographer + DotMaven + Autoprox + Folo + Revisions + SetBack + Infinispan infrastructure</description>
 
-  <dependencyManagement>
+<!--   <dependencyManagement>
     <dependencies>
       <dependency>
         <groupId>org.jboss.logging</groupId>
@@ -39,7 +39,7 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-  
+ -->  
   <dependencies>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
