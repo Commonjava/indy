@@ -16,6 +16,7 @@
 package org.commonjava.indy.model.core;
 
 import java.io.Serializable;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class StoreKey
     implements Serializable, Comparable<StoreKey>
@@ -132,5 +133,19 @@ public final class StoreKey
             comp = name.compareTo( o.name );
         }
         return comp;
+    }
+
+    private static ConcurrentHashMap<StoreKey, StoreKey> deduplications = new ConcurrentHashMap<>();
+
+    public static StoreKey dedupe( StoreKey key )
+    {
+        StoreKey result = deduplications.get( key );
+        if ( result == null )
+        {
+            deduplications.put( key, key );
+            result = key;
+        }
+
+        return result;
     }
 }
