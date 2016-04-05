@@ -34,6 +34,8 @@ public class PathsPromoteResult
 
     private Set<String> completedPaths;
 
+    private Set<String> skippedPaths;
+
     private ValidationResult validations;
 
     private String error;
@@ -43,20 +45,22 @@ public class PathsPromoteResult
     }
 
     public PathsPromoteResult( final PathsPromoteRequest request, final Set<String> pending, final Set<String> complete,
-                               final String error )
+                               final Set<String> skipped, final String error )
     {
         this.request = request;
         this.pendingPaths = pending;
         this.completedPaths = complete;
+        this.skippedPaths = skipped;
         this.error = error;
     }
 
     public PathsPromoteResult( final PathsPromoteRequest request, final Set<String> pending, final Set<String> complete,
-                               final ValidationResult validations )
+                               final Set<String> skipped, final ValidationResult validations )
     {
         this.request = request;
         this.pendingPaths = pending;
         this.completedPaths = complete;
+        this.skippedPaths = skipped;
         this.validations = validations;
         this.error = null;
     }
@@ -91,6 +95,16 @@ public class PathsPromoteResult
         this.completedPaths = completedPaths;
     }
 
+    public Set<String> getSkippedPaths()
+    {
+        return skippedPaths;
+    }
+
+    public void setSkippedPaths( Set<String> skippedPaths )
+    {
+        this.skippedPaths = skippedPaths;
+    }
+
     public String getError()
     {
         return error;
@@ -114,8 +128,8 @@ public class PathsPromoteResult
     @Override
     public String toString()
     {
-        return String.format( "PathsPromoteResult [\n  request=%s\n  pendingPaths=%s\n  completedPaths=%s\n  error=%s\n  validations:\n  %s\n]",
-                              request, pendingPaths, completedPaths, error, validations );
+        return String.format( "PathsPromoteResult [\n  request=%s\n  pendingPaths=%s\n  completedPaths=%s\n  skippedPaths=%s\n  error=%s\n  validations:\n  %s\n]",
+                              request, pendingPaths, completedPaths, skippedPaths, error, validations );
     }
 
 }

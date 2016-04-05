@@ -39,7 +39,7 @@ public class PathsPromoteResultTest
         final PathsPromoteResult in =
             new PathsPromoteResult( new PathsPromoteRequest( new StoreKey( StoreType.hosted, "source" ),
                                                    new StoreKey( StoreType.hosted, "target" ) ),
-                               Collections.<String> emptySet(), new HashSet<String>( Arrays.asList( "/path/one",
+                               Collections.emptySet(), Collections.emptySet(), new HashSet<String>( Arrays.asList( "/path/one",
                                                                                                     "/path/two" ) ),
                                new ValidationResult() );
 
@@ -64,8 +64,8 @@ public class PathsPromoteResultTest
         final PathsPromoteResult in =
             new PathsPromoteResult( new PathsPromoteRequest( new StoreKey( StoreType.hosted, "source" ),
                                                    new StoreKey( StoreType.hosted, "target" ) ),
-                               new HashSet<String>( Arrays.asList( "/path/one", "/path/two" ) ),
-                               Collections.<String> emptySet(), "Something stupid happened" );
+                               new HashSet<>( Arrays.asList( "/path/one", "/path/two" ) ),
+                               Collections.emptySet(), Collections.emptySet(), "Something stupid happened" );
 
         final String json = mapper.writeValueAsString( in );
 
@@ -88,8 +88,8 @@ public class PathsPromoteResultTest
         final PathsPromoteResult in =
             new PathsPromoteResult( new PathsPromoteRequest( new StoreKey( StoreType.hosted, "source" ),
                                                    new StoreKey( StoreType.hosted, "target" ) ),
-                               new HashSet<String>( Arrays.asList( "/path/one", "/path/two" ) ),
-                               new HashSet<String>( Collections.singletonList( "/path/three" ) ), "Something stupid happened" );
+                               new HashSet<>( Arrays.asList( "/path/one", "/path/two" ) ),
+                               new HashSet<>( Collections.singletonList( "/path/three" ) ), Collections.emptySet(), "Something stupid happened" );
 
         final String json = mapper.writeValueAsString( in );
 
