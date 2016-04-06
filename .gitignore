@@ -1,4 +1,16 @@
+# build
 *.tar.gz
-*.iml
 dependency-reduced-pom.xml
 scratch
+target
+
+# eclipse
+.classpath
+.project
+.settings
+
+# idea
+.idea
+*.iml
+*.iws
+*.ipr
