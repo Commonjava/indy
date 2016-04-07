@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-depgraph</artifactId>
-    <version>0.99.1.2-SNAPSHOT</version>
+    <version>0.99.1.1-SNAPSHOT</version>
   </parent>
   <artifactId>indy-depgraph-model-java</artifactId>
   <name>Indy :: Add-Ons :: DepGraph :: Java Domain Model</name>
