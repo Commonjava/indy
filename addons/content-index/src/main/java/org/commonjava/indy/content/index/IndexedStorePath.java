@@ -15,13 +15,11 @@
  */
 package org.commonjava.indy.content.index;
 
-import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 
-import javax.annotation.Nonnull;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -50,7 +48,7 @@ public class IndexedStorePath
     @Field
     private String path;
 
-    public IndexedStorePath( @Nonnull StoreKey storeKey, @Nonnull StoreKey origin, @Nonnull String path )
+    public IndexedStorePath( StoreKey storeKey, StoreKey origin, String path )
     {
         this.storeType = storeKey.getType();
         this.storeName = storeKey.getName();

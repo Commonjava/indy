@@ -15,19 +15,7 @@
  */
 package org.commonjava.indy.promote.data;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
+import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.ContentManager;
@@ -41,18 +29,30 @@ import org.commonjava.indy.promote.model.GroupPromoteRequest;
 import org.commonjava.indy.promote.model.GroupPromoteResult;
 import org.commonjava.indy.promote.model.PathsPromoteRequest;
 import org.commonjava.indy.promote.model.PathsPromoteResult;
-import org.commonjava.indy.promote.validate.PromotionValidator;
 import org.commonjava.indy.promote.model.ValidationResult;
+import org.commonjava.indy.promote.validate.PromotionValidator;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.apache.commons.io.IOUtils.closeQuietly;
+
 /**
  * Component responsible for orchestrating the transfer of artifacts from one store to another, according to the given {@link PathsPromoteRequest} or
  * {@link PathsPromoteResult}. Currently provides promotePaths, resumePathsPromote, and rollbackPathsPromote (the latter two for dealing with failed promotePaths calls).
- * 
+ *
  * @author jdcasey
  */
 @ApplicationScoped
@@ -77,8 +77,8 @@ public class PromotionManager
     {
     }
 
-    public PromotionManager( PromotionValidator validator, final ContentManager contentManager, final DownloadManager downloadManager,
-                             final StoreDataManager storeManager )
+    public PromotionManager( PromotionValidator validator, final ContentManager contentManager,
+                             final DownloadManager downloadManager, final StoreDataManager storeManager )
     {
         this.validator = validator;
         this.contentManager = contentManager;
@@ -136,8 +136,8 @@ public class PromotionManager
                 }
                 catch ( IndyDataException e )
                 {
-                    throw new PromotionException( "Failed to store group: %s with additional member: %s. Reason: %s",
-                                                  e, target.getKey(), request.getSource(), e.getMessage() );
+                    throw new PromotionException( "Failed to store group: %s with additional member: %s. Reason: %s", e,
+                                                  target.getKey(), request.getSource(), e.getMessage() );
                 }
             }
         }
@@ -190,14 +190,14 @@ public class PromotionManager
             }
             catch ( IndyDataException e )
             {
-                throw new PromotionException( "Failed to store group: %s with additional member: %s. Reason: %s",
-                                              e, target.getKey(), request.getSource(), e.getMessage() );
+                throw new PromotionException( "Failed to store group: %s with additional member: %s. Reason: %s", e,
+                                              target.getKey(), request.getSource(), e.getMessage() );
             }
         }
         else
         {
-            return new GroupPromoteResult( request,
-                                           "Group: " + target.getKey() + " does not contain member: " + request.getSource() );
+            return new GroupPromoteResult( request, "Group: " + target.getKey() + " does not contain member: " + request
+                    .getSource() );
         }
 
         return new GroupPromoteResult( request );
@@ -206,17 +206,17 @@ public class PromotionManager
     /**
      * Promote artifacts from the source to the target given in the {@link PathsPromoteRequest}. If a set of paths are given, only try to promotePaths those.
      * Otherwise, build a recursive list of available artifacts in the source store, and try to promotePaths them all.
-     * 
+     *
      * @param request The request containing source and target store keys, and an optional list of paths to promotePaths
-     * 
+     *
      * @return The result, including the source and target store keys used, the paths completed (promoted successfully), the pending paths (those that 
      * weren't processed due to some error...or null), and a nullable error explaining what (if anything) went wrong with the promotion.
-     * 
+     *
      * @throws PromotionException
      * @throws IndyWorkflowException
      */
     public PathsPromoteResult promotePaths( final PathsPromoteRequest request )
-        throws PromotionException, IndyWorkflowException
+            throws PromotionException, IndyWorkflowException
     {
         final Set<String> paths = request.getPaths();
         final StoreKey source = request.getSource();
@@ -242,15 +242,17 @@ public class PromotionManager
         validator.validate( request, validation );
         if ( request.isDryRun() )
         {
-            return new PathsPromoteResult( request, pending, Collections.emptySet(), validation );
+            return new PathsPromoteResult( request, pending, Collections.emptySet(), Collections.emptySet(),
+                                           validation );
         }
         else if ( validation.isValid() )
         {
-            return runPathPromotions( request, pending, Collections.emptySet(), contents );
+            return runPathPromotions( request, pending, Collections.emptySet(), Collections.emptySet(), contents );
         }
         else
         {
-            return new PathsPromoteResult( request, pending, Collections.emptySet(), validation );
+            return new PathsPromoteResult( request, pending, Collections.emptySet(), Collections.emptySet(),
+                                           validation );
         }
     }
 
@@ -259,22 +261,23 @@ public class PromotionManager
      * occurs on the server side, and promotion can proceed afterward. It works much like the {@link #promotePaths(PathsPromoteRequest)} call, using the pending
      * paths list from the input result as the list of paths to process. The output {@link PathsPromoteResult} contains all previous completed paths PLUS
      * any additional completed transfers when it is returned, thus providing a cumulative result to the user.
-     * 
+     *
      * @param result The result to resumePathsPromote
-     * 
+     *
      * @return The same result, with any successful path promotions moved from the pending to completed paths list, and the error cleared (or set to a 
      * new error)
-     * 
+     *
      * @throws PromotionException
      * @throws IndyWorkflowException
      */
     public PathsPromoteResult resumePathsPromote( final PathsPromoteResult result )
-        throws PromotionException, IndyWorkflowException
+            throws PromotionException, IndyWorkflowException
     {
-        final List<Transfer> contents = getTransfersForPaths( result.getRequest()
-                                                                    .getSource(), result.getPendingPaths() );
+        final List<Transfer> contents =
+                getTransfersForPaths( result.getRequest().getSource(), result.getPendingPaths() );
 
-        return runPathPromotions( result.getRequest(), result.getPendingPaths(), result.getCompletedPaths(), contents );
+        return runPathPromotions( result.getRequest(), result.getPendingPaths(), result.getCompletedPaths(),
+                                  result.getSkippedPaths(), contents );
     }
 
     /**
@@ -282,163 +285,195 @@ public class PromotionManager
      * occurs on the server side, and promotion can NOT proceed afterward. All paths in the completed paths set are deleted from the target, if 
      * possible. The output {@link PathsPromoteResult} contains the previous content, with any successfully removed target paths moved back from the
      * completed-paths list to the pending-paths list. If an error occurs during rollbackPathsPromote, the error field will be set...otherwise, it will be null.
-     * 
+     *
      * @param result The result to rollbackPathsPromote
-     * 
+     *
      * @return The same result, with any successful deletions moved from the completed to pending paths list, and the error cleared (or set to a 
      * new error)
-     * 
+     *
      * @throws PromotionException
      * @throws IndyWorkflowException
      */
     public PathsPromoteResult rollbackPathsPromote( final PathsPromoteResult result )
-        throws PromotionException, IndyWorkflowException
+            throws PromotionException, IndyWorkflowException
     {
-        final List<Transfer> contents = getTransfersForPaths( result.getRequest()
-                                                                    .getTarget(), result.getCompletedPaths() );
-        final Set<String> completed = result.getCompletedPaths();
-        if ( completed == null || completed.isEmpty() )
+        StoreKey targetKey = StoreKey.dedupe( result.getRequest().getTarget() );
+        synchronized ( targetKey )
         {
-            result.setError( null );
-            return result;
-        }
+            final List<Transfer> contents = getTransfersForPaths( targetKey, result.getCompletedPaths() );
+            final Set<String> completed = result.getCompletedPaths();
+            final Set<String> skipped = result.getSkippedPaths();
 
-        Set<String> pending = result.getPendingPaths();
-        pending = pending == null ? new HashSet<String>() : new HashSet<String>( pending );
-
-        String error = null;
-        final boolean copyToSource = result.getRequest()
-                                           .isPurgeSource();
-
-        ArtifactStore source = null;
-        try
-        {
-            source = storeManager.getArtifactStore( result.getRequest()
-                                                          .getSource() );
-        }
-        catch ( final IndyDataException e )
-        {
-            error =
-                String.format( "Failed to retrieve artifact store: %s. Reason: %s", result.getRequest()
-                                                                                          .getSource(), e.getMessage() );
-            logger.error( error, e );
-        }
-
-        if ( error == null )
-        {
-            for ( final Transfer transfer : contents )
+            if ( completed == null || completed.isEmpty() )
             {
-                if ( transfer.exists() )
-                {
-                    InputStream stream = null;
-                    try
-                    {
-                        if ( copyToSource )
-                        {
-                            stream = transfer.openInputStream( true );
-                            final String path = transfer.getPath();
-                            contentManager.store( source, path, stream, TransferOperation.UPLOAD, new EventMetadata() );
-                            stream.close();
-                        }
+                result.setError( null );
+                return result;
+            }
 
-                        transfer.delete( true );
-                        completed.remove( transfer.getPath() );
-                        pending.add( transfer.getPath() );
-                    }
-                    catch ( final IOException e )
+            Set<String> pending = result.getPendingPaths();
+            pending = pending == null ? new HashSet<String>() : new HashSet<String>( pending );
+
+            String error = null;
+            final boolean copyToSource = result.getRequest().isPurgeSource();
+
+            ArtifactStore source = null;
+            try
+            {
+                source = storeManager.getArtifactStore( result.getRequest().getSource() );
+            }
+            catch ( final IndyDataException e )
+            {
+                error = String.format( "Failed to retrieve artifact store: %s. Reason: %s",
+                                       result.getRequest().getSource(), e.getMessage() );
+                logger.error( error, e );
+            }
+
+            if ( error == null )
+            {
+                for ( final Transfer transfer : contents )
+                {
+                    if ( transfer.exists() )
                     {
-                        error =
-                            String.format( "Failed to rollbackPathsPromote promotion of: %s from: %s. Reason: %s", transfer,
-                                           result.getRequest()
-                                                 .getSource(), e.getMessage() );
-                        logger.error( error, e );
-                    }
-                    finally
-                    {
-                        closeQuietly( stream );
+                        InputStream stream = null;
+                        try
+                        {
+                            if ( copyToSource )
+                            {
+                                stream = transfer.openInputStream( true );
+                                final String path = transfer.getPath();
+                                contentManager.store( source, path, stream, TransferOperation.UPLOAD,
+                                                      new EventMetadata() );
+                                stream.close();
+                            }
+
+                            transfer.delete( true );
+                            completed.remove( transfer.getPath() );
+                            pending.add( transfer.getPath() );
+                        }
+                        catch ( final IOException e )
+                        {
+                            error = String.format( "Failed to rollback path promotion of: %s from: %s. Reason: %s",
+                                                   transfer, result.getRequest().getSource(), e.getMessage() );
+                            logger.error( error, e );
+                        }
+                        finally
+                        {
+                            closeQuietly( stream );
+                        }
                     }
                 }
             }
-        }
 
-        return new PathsPromoteResult( result.getRequest(), pending, completed, error );
+            return new PathsPromoteResult( result.getRequest(), pending, completed, skipped, error );
+        }
     }
 
     private PathsPromoteResult runPathPromotions( final PathsPromoteRequest request, final Set<String> pending,
-                                                  final Set<String> prevComplete, final List<Transfer> contents )
+                                                  final Set<String> prevComplete, final Set<String> prevSkipped,
+                                                  final List<Transfer> contents )
     {
         if ( pending == null || pending.isEmpty() )
         {
-            return new PathsPromoteResult( request, pending, prevComplete, new ValidationResult() );
+            return new PathsPromoteResult( request, pending, prevComplete, prevSkipped, new ValidationResult() );
         }
 
-        final Set<String> complete = prevComplete == null ? new HashSet<String>() : new HashSet<>( prevComplete );
-
-        String error = null;
-        ArtifactStore sourceStore = null;
-        ArtifactStore targetStore = null;
-        try
+        StoreKey targetKey = StoreKey.dedupe( request.getTarget() );
+        synchronized ( targetKey )
         {
-            sourceStore = storeManager.getArtifactStore( request.getSource() );
-            targetStore = storeManager.getArtifactStore( request.getTarget() );
-        }
-        catch ( final IndyDataException e )
-        {
-            error =
-                String.format( "Failed to retrieve artifact store: %s. Reason: %s", request.getSource(), e.getMessage() );
-            logger.error( error, e );
-        }
+            final Set<String> complete = prevComplete == null ? new HashSet<>() : new HashSet<>( prevComplete );
+            final Set<String> skipped = prevSkipped == null ? new HashSet<>() : new HashSet<>( prevSkipped );
 
-        logger.info( "Running promotions from: {} (key: {})\n  to: {} (key: {})", sourceStore, request.getSource(),
-                     targetStore, request.getTarget() );
-
-        if ( error == null )
-        {
-            final boolean purgeSource = request.isPurgeSource();
-            for ( final Transfer transfer : contents )
+            List<String> errors = new ArrayList<>();
+            ArtifactStore sourceStore = null;
+            ArtifactStore targetStore = null;
+            try
             {
-                InputStream stream = null;
-                try
+                sourceStore = storeManager.getArtifactStore( request.getSource() );
+                targetStore = storeManager.getArtifactStore( request.getTarget() );
+            }
+            catch ( final IndyDataException e )
+            {
+                String msg = String.format( "Failed to retrieve artifact store: %s. Reason: %s", request.getSource(),
+                                            e.getMessage() );
+                errors.add( msg );
+                logger.error( msg, e );
+            }
+
+            logger.info( "Running promotions from: {} (key: {})\n  to: {} (key: {})", sourceStore, request.getSource(),
+                         targetStore, request.getTarget() );
+
+            if ( errors.isEmpty() )
+            {
+                final boolean purgeSource = request.isPurgeSource();
+                for ( final Transfer transfer : contents )
                 {
-                    stream = transfer.openInputStream( true );
-                    final String path = transfer.getPath();
-                    contentManager.store( targetStore, path, stream, TransferOperation.UPLOAD, new EventMetadata() );
-                    pending.remove( path );
-                    complete.add( path );
-
-                    stream.close();
-
-                    if ( purgeSource )
+                    try
                     {
-                        contentManager.delete( sourceStore, path, new EventMetadata() );
+                        final String path = transfer.getPath();
+
+                        Transfer target = contentManager.getTransfer( targetStore, path, TransferOperation.UPLOAD );
+//                        synchronized ( target )
+//                        {
+                            // TODO: Should the request object have an overwrite attribute? Is that something the user is qualified to decide?
+                            if ( target.exists() )
+                            {
+                                logger.warn( "NOT promoting: {} from: {} to: {}. Target file already exists.", path,
+                                             request.getSource(), request.getTarget() );
+
+                                // TODO: There's no guarantee that the pre-existing content is the same!
+                                pending.remove( path );
+                                skipped.add( path );
+
+                                continue;
+                            }
+
+                            try (InputStream stream = transfer.openInputStream( true ))
+                            {
+                                contentManager.store( targetStore, path, stream, TransferOperation.UPLOAD,
+                                                      new EventMetadata() );
+
+                                pending.remove( path );
+                                complete.add( path );
+
+                                stream.close();
+
+                                if ( purgeSource )
+                                {
+                                    contentManager.delete( sourceStore, path, new EventMetadata() );
+                                }
+                            }
+                            catch ( final IOException e )
+                            {
+                                String msg = String.format( "Failed to open input stream for: %s. Reason: %s", transfer,
+                                                            e.getMessage() );
+                                errors.add( msg );
+                                logger.error( msg, e );
+                            }
+//                        }
+                    }
+                    catch ( final IndyWorkflowException e )
+                    {
+                        String msg =
+                                String.format( "Failed to promote path: %s to: %s. Reason: %s", transfer, targetStore,
+                                               e.getMessage() );
+                        errors.add( msg );
+                        logger.error( msg, e );
                     }
                 }
-                catch ( final IOException e )
-                {
-                    error = String.format( "Failed to open input stream for: %s. Reason: %s", transfer, e.getMessage() );
-                    logger.error( error, e );
-                    break;
-                }
-                catch ( final IndyWorkflowException e )
-                {
-                    error =
-                        String.format( "Failed to promotePaths: %s to: %s. Reason: %s", transfer, targetStore,
-                                       e.getMessage() );
-                    logger.error( error, e );
-                    break;
-                }
-                finally
-                {
-                    closeQuietly( stream );
-                }
             }
-        }
 
-        return new PathsPromoteResult( request, pending, complete, error );
+            String error = null;
+            if ( !errors.isEmpty() )
+            {
+                error = StringUtils.join( errors, "\n" );
+            }
+
+            return new PathsPromoteResult( request, pending, complete, skipped, error );
+        }
     }
 
     private List<Transfer> getTransfersForPaths( final StoreKey source, final Set<String> paths )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
         final List<Transfer> contents = new ArrayList<Transfer>();
         for ( final String path : paths )
@@ -446,7 +481,7 @@ public class PromotionManager
             final Transfer txfr = downloadManager.getStorageReference( source, path );
             if ( !txfr.exists() )
             {
-                logger.warn( "Cannot promotePaths path: '{}' from source: '{}'. It does not exist!", path, source );
+                logger.warn( "Cannot promote path: '{}' from source: '{}'. It does not exist!", path, source );
                 // TODO: Fail??
                 continue;
             }
