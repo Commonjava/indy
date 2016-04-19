@@ -26,6 +26,7 @@ import java.io.InputStream;
 import org.commonjava.indy.client.core.helper.PathInfo;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.test.http.TestHttpServer;
+import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -34,7 +35,7 @@ public class ProxyRemoteContentTest
 {
 
     @Rule
-    public TestHttpServer server = new TestHttpServer( "repos" );
+    public ExpectationServer server = new ExpectationServer( "repos" );
 
     @Override
     protected boolean createStandardTestStructures()
