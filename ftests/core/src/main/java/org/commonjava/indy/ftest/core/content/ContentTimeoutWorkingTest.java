@@ -70,7 +70,7 @@ public class ContentTimeoutWorkingTest
         // set up remote repository pointing to the test http server, and timeout little later
         final String changelog = "Timeout Testing: " + name.getMethodName();
         final RemoteRepository repository = new RemoteRepository( repoId, server.formatUrl( repoId ) );
-        repository.setTimeoutSeconds( TIMEOUT_SECONDS );
+        repository.setCacheTimeoutSeconds( TIMEOUT_SECONDS );
 
         client.stores().create( repository, changelog, RemoteRepository.class );
 
@@ -85,7 +85,6 @@ public class ContentTimeoutWorkingTest
 
     }
 
-    @Ignore
     @Test
     public void quartzBasedTimeoutArtifact()
             throws Exception
@@ -98,25 +97,10 @@ public class ContentTimeoutWorkingTest
         assertThat( "artifact should be removed when timeout", pomFile.exists(), equalTo( false ) );
     }
 
-    @Ignore
-    @Test
-    public void cacheProviderBasedTimeoutArtifact()
-            throws Exception
+    @Override
+    protected boolean isSchedulerEnabled()
     {
-        final File pomFile = new File( pomFilePath );
-        final long pomLastModified = pomFile.lastModified();
-
-        // make sure the repo timout
-        Thread.sleep( TIMEOUT_WAITING_MILLISECONDS );
-        logger.debug( "Timeout time {}s passed!", TIMEOUT_SECONDS );
-
-        final Boolean contentExists = client.content().exists( remote, repoId, pomPath );
-        final File pomFileAgain = new File( pomFilePath );
-        if ( contentExists && pomFileAgain.exists() )
-        {
-            assertThat( "cache timout not working, artifact not removed and not changed", pomFileAgain.lastModified(),
-                        is( not( pomLastModified ) ) );
-        }
+        return true;
     }
 
 }
