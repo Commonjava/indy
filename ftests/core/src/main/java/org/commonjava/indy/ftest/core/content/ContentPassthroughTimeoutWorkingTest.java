@@ -17,23 +17,22 @@ package org.commonjava.indy.ftest.core.content;
 
 import org.commonjava.indy.client.core.helper.PathInfo;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-public class ContentTimeoutWorkingTest
+public class ContentPassthroughTimeoutWorkingTest
         extends AbstractContentManagementTest
 {
     @Rule
@@ -70,7 +69,7 @@ public class ContentTimeoutWorkingTest
         // set up remote repository pointing to the test http server, and timeout little later
         final String changelog = "Timeout Testing: " + name.getMethodName();
         final RemoteRepository repository = new RemoteRepository( repoId, server.formatUrl( repoId ) );
-        repository.setCacheTimeoutSeconds( TIMEOUT_SECONDS );
+        repository.setPassthrough( true );
 
         client.stores().create( repository, changelog, RemoteRepository.class );
 
@@ -95,6 +94,14 @@ public class ContentTimeoutWorkingTest
 
         final File pomFile = new File( pomFilePath );
         assertThat( "artifact should be removed when timeout", pomFile.exists(), equalTo( false ) );
+    }
+
+    @Override
+    protected void initTestConfig( CoreServerFixture fixture )
+            throws IOException
+    {
+        writeConfigFile( "main.conf", "passthrough.timeout=" + TIMEOUT_SECONDS + "\n" + readTestResource(
+                "default-test-main.conf" ) );
     }
 
 }
