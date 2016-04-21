@@ -189,7 +189,7 @@ public abstract class AbstractIndyFunctionalTest
 
     protected boolean isSchedulerEnabled()
     {
-        return false;
+        return true;
     }
 
     protected String readTestResource( String resource )

@@ -97,10 +97,4 @@ public class ContentTimeoutWorkingTest
         assertThat( "artifact should be removed when timeout", pomFile.exists(), equalTo( false ) );
     }
 
-    @Override
-    protected boolean isSchedulerEnabled()
-    {
-        return true;
-    }
-
 }

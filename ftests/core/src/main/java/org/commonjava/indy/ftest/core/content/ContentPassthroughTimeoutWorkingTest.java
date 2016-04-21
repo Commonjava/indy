@@ -97,12 +97,6 @@ public class ContentPassthroughTimeoutWorkingTest
     }
 
     @Override
-    protected boolean isSchedulerEnabled()
-    {
-        return true;
-    }
-
-    @Override
     protected void initTestConfig( CoreServerFixture fixture )
             throws IOException
     {
