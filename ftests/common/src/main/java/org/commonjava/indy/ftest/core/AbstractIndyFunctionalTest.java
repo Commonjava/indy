@@ -177,8 +177,19 @@ public abstract class AbstractIndyFunctionalTest
     protected void initBaseTestConfig( CoreServerFixture fixture )
             throws IOException
     {
-        writeConfigFile( "conf.d/scheduler.conf", "[scheduler]\nenabled=false" );
-        writeConfigFile( "conf.d/indexer.conf", "[indexer]\nenabled=false" );
+        if ( isSchedulerEnabled() )
+        {
+            writeConfigFile( "conf.d/scheduler.conf", readTestResource( "default-test-scheduler.conf" ) );
+        }
+        else
+        {
+            writeConfigFile( "conf.d/scheduler.conf", "[scheduler]\nenabled=false" );
+        }
+    }
+
+    protected boolean isSchedulerEnabled()
+    {
+        return false;
     }
 
     protected String readTestResource( String resource )
