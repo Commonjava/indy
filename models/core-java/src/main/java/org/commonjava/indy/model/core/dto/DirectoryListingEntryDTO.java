@@ -20,9 +20,11 @@ import org.commonjava.indy.model.core.StoreKey;
 public class DirectoryListingEntryDTO
 {
 
-    private final StoreKey key;
+    private StoreKey key;
 
-    private final String path;
+    private String path;
+
+    public DirectoryListingEntryDTO(){}
 
     public DirectoryListingEntryDTO( final StoreKey key, final String path )
     {
@@ -38,6 +40,16 @@ public class DirectoryListingEntryDTO
     public String getPath()
     {
         return path;
+    }
+
+    public void setKey( StoreKey key )
+    {
+        this.key = key;
+    }
+
+    public void setPath( String path )
+    {
+        this.path = path;
     }
 
     @Override

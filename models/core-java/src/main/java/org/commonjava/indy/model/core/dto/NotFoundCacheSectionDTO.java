@@ -29,10 +29,12 @@ public class NotFoundCacheSectionDTO
 {
 
     @ApiModelProperty( required = true, dataType = "string", value = "Serialized store key, of the form: '[hosted|group|remote]:name'" )
-    private final StoreKey key;
+    private StoreKey key;
 
     @ApiModelProperty( required = true, value = "paths that failed retrieval within this store (may be empty)" )
-    private final Set<String> paths;
+    private Set<String> paths;
+
+    public NotFoundCacheSectionDTO(){}
 
     public NotFoundCacheSectionDTO( final StoreKey key, final Collection<String> paths )
     {
@@ -48,6 +50,16 @@ public class NotFoundCacheSectionDTO
     public Set<String> getPaths()
     {
         return paths;
+    }
+
+    public void setKey( StoreKey key )
+    {
+        this.key = key;
+    }
+
+    public void setPaths( Set<String> paths )
+    {
+        this.paths = paths;
     }
 
     @Override

@@ -20,7 +20,9 @@ import java.util.List;
 public class DirectoryListingDTO
 {
 
-    private final List<DirectoryListingEntryDTO> items;
+    private List<DirectoryListingEntryDTO> items;
+
+    public DirectoryListingDTO(){}
 
     public DirectoryListingDTO( final List<DirectoryListingEntryDTO> items )
     {
@@ -32,4 +34,8 @@ public class DirectoryListingDTO
         return items;
     }
 
+    public void setItems( List<DirectoryListingEntryDTO> items )
+    {
+        this.items = items;
+    }
 }
