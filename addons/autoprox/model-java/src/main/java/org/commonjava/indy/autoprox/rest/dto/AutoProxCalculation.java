@@ -88,4 +88,40 @@ public class AutoProxCalculation
         this.ruleName = ruleName;
     }
 
+    @Override
+    public boolean equals( Object o )
+    {
+        if ( this == o )
+        {
+            return true;
+        }
+        if ( !( o instanceof AutoProxCalculation ) )
+        {
+            return false;
+        }
+
+        AutoProxCalculation that = (AutoProxCalculation) o;
+
+        if ( getStore() != null ? !getStore().equals( that.getStore() ) : that.getStore() != null )
+        {
+            return false;
+        }
+        if ( getSupplementalStores() != null ?
+                !getSupplementalStores().equals( that.getSupplementalStores() ) :
+                that.getSupplementalStores() != null )
+        {
+            return false;
+        }
+        return getRuleName() != null ? getRuleName().equals( that.getRuleName() ) : that.getRuleName() == null;
+
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = getStore() != null ? getStore().hashCode() : 0;
+        result = 31 * result + ( getSupplementalStores() != null ? getSupplementalStores().hashCode() : 0 );
+        result = 31 * result + ( getRuleName() != null ? getRuleName().hashCode() : 0 );
+        return result;
+    }
 }

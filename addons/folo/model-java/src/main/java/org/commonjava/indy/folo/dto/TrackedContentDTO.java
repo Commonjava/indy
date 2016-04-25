@@ -70,4 +70,27 @@ public class TrackedContentDTO
         this.downloads = downloads;
     }
 
+    @Override
+    public boolean equals( Object o )
+    {
+        if ( this == o )
+        {
+            return true;
+        }
+        if ( !( o instanceof TrackedContentDTO ) )
+        {
+            return false;
+        }
+
+        TrackedContentDTO that = (TrackedContentDTO) o;
+
+        return getKey() != null ? getKey().equals( that.getKey() ) : that.getKey() == null;
+
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return getKey() != null ? getKey().hashCode() : 0;
+    }
 }
