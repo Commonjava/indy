@@ -19,6 +19,8 @@ import java.net.URI;
 
 /** DTO encapsulating the result of a POST operation somewhere in the system. These should all have similar features, in the sense of having a 
  * <code>Location</code> HTTP header pointing to the new resource, and a JSON response that contains the serialized form of new resource itself.
+ * <br>
+ * <b>These are NOT meant to be deserialized by the client API, but baked into the HTTP response headers/status, with the payload JSON in the body.</b>
  */
 public class CreationDTO
 {

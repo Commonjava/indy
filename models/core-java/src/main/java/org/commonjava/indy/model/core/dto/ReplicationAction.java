@@ -42,6 +42,14 @@ public class ReplicationAction
 
     private String exclude;
 
+    private String proxyHost;
+
+    private int proxyPort;
+
+    private String proxyUser;
+
+    private String proxyPass;
+
     public ReplicationAction()
     {
         this.type = ActionType.PROXY;
@@ -71,14 +79,6 @@ public class ReplicationAction
     {
         this.exclude = exclude;
     }
-
-    private String proxyHost;
-
-    private int proxyPort;
-
-    private String proxyUser;
-
-    private String proxyPass;
 
     public String getProxyHost()
     {
