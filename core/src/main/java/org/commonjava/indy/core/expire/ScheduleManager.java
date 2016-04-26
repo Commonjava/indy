@@ -45,7 +45,11 @@ import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
+import org.commonjava.maven.galley.model.ConcreteResource;
+import org.commonjava.maven.galley.model.SpecialPathInfo;
+import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.quartz.JobBuilder;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -97,6 +101,9 @@ public class ScheduleManager
 
     @Inject
     private Event<SchedulerEvent> eventDispatcher;
+
+    @Inject
+    private SpecialPathManager specialPathManager;
 
     private Scheduler scheduler;
 
@@ -254,9 +261,18 @@ public class ScheduleManager
         }
 
         int timeout = config.getPassthroughTimeoutSeconds();
+        final ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( repo ), path );
+        final SpecialPathInfo info = specialPathManager.getSpecialPathInfo( resource );
         if ( !repo.isPassthrough() )
         {
-            timeout = repo.getCacheTimeoutSeconds();
+            if ( (info != null && info.isMetadata()) && repo.getMetadataTimeoutSeconds() > 0 )
+            {
+                timeout = repo.getMetadataTimeoutSeconds();
+            }
+            else
+            {
+                timeout = repo.getCacheTimeoutSeconds();
+            }
         }
 
         if ( timeout > 0 )
