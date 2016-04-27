@@ -59,6 +59,9 @@ public class RemoteRepository
     @JsonProperty( "cache_timeout_seconds" )
     private int cacheTimeoutSeconds;
 
+    @JsonProperty( "metadata_timeout_seconds" )
+    private int metadataTimeoutSeconds;
+
     @JsonProperty( "key_password" )
     private String keyPassword;
 
@@ -231,8 +234,9 @@ public class RemoteRepository
     public String toString()
     {
         return String.format(
-                "Repository [url=%s, allowSnapshots=%s, allowReleases=%s, timeoutSeconds=%s, host=%s, port=%s, user=%s, password=%s, getName()=%s, getKey()=%s]",
-                url, isAllowSnapshots(), isAllowReleases(), timeoutSeconds, host, port, user, password, getName(), getKey() );
+                "Repository [url=%s, allowSnapshots=%s, allowReleases=%s, timeoutSeconds=%s, cacheTimeoutSeconds=%s, metadataTimeoutSeconds=%s, host=%s, port=%s, user=%s, password=%s, getName()=%s, getKey()=%s]",
+                url, isAllowSnapshots(), isAllowReleases(), timeoutSeconds, cacheTimeoutSeconds, metadataTimeoutSeconds,
+                host, port, user, password, getName(), getKey() );
     }
 
     public boolean isPassthrough()
@@ -253,6 +257,16 @@ public class RemoteRepository
     public void setCacheTimeoutSeconds( final int cacheTimeoutSeconds )
     {
         this.cacheTimeoutSeconds = cacheTimeoutSeconds;
+    }
+
+    public int getMetadataTimeoutSeconds()
+    {
+        return metadataTimeoutSeconds;
+    }
+
+    public void setMetadataTimeoutSeconds( int metadataTimeoutSeconds )
+    {
+        this.metadataTimeoutSeconds = metadataTimeoutSeconds;
     }
 
     public void setKeyPassword( final String keyPassword )
@@ -363,6 +377,7 @@ public class RemoteRepository
         repo.setKeyCertPem( getKeyCertPem() );
         repo.setServerCertPem( getServerCertPem() );
         repo.setCacheTimeoutSeconds( getCacheTimeoutSeconds() );
+        repo.setMetadataTimeoutSeconds( getMetadataTimeoutSeconds() );
         repo.setNfcTimeoutSeconds( getNfcTimeoutSeconds() );
         repo.setPassthrough( isPassthrough() );
         repo.setProxyHost( getProxyHost() );

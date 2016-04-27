@@ -59,6 +59,11 @@ public class RepositoryLocation
         {
             attributes.put( Location.CACHE_TIMEOUT_SECONDS, repository.getCacheTimeoutSeconds() );
         }
+
+        if ( repository.getMetadataTimeoutSeconds() > 0 )
+        {
+            attributes.put( Location.METADATA_TIMEOUT_SECONDS, repository.getMetadataTimeoutSeconds() );
+        }
     }
 
     @Override

@@ -26,6 +26,11 @@ import org.commonjava.maven.galley.maven.internal.defaults.StandardMavenPluginIm
 import org.commonjava.maven.galley.maven.parse.XMLInfrastructure;
 import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginDefaults;
 import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginImplications;
+import org.commonjava.maven.galley.model.FilePatternMatcher;
+import org.commonjava.maven.galley.model.SpecialPathInfo;
+import org.commonjava.maven.galley.spi.io.SpecialPathManager;
+
+import java.util.Arrays;
 
 @ApplicationScoped
 public class GalleyProvider
@@ -40,6 +45,9 @@ public class GalleyProvider
 
     private TransportManagerConfig transportManagerConfig;
 
+    @Inject
+    private SpecialPathManager specialPathManager;
+
     @PostConstruct
     public void setup()
     {
@@ -48,6 +56,21 @@ public class GalleyProvider
 
         // TODO: Tie this into a config file!
         transportManagerConfig = new TransportManagerConfig();
+
+        // Register metadata file info for metadata timeout
+        for ( String extPattern : Arrays.asList( ".*maven-metadata\\.xml$", ".*archetype-catalog\\.xml$" ) )
+        {
+            final SpecialPathInfo pi = SpecialPathInfo.from( new FilePatternMatcher( extPattern ) )
+                                .setDecoratable( true )
+                                .setListable( true )
+                                .setPublishable( true )
+                                .setRetrievable( true )
+                                .setStorable( true )
+                                .setMetadata( true )
+                                .build();
+
+            specialPathManager.registerSpecialPathInfo( pi );
+        }
     }
 
     @Produces
