@@ -64,7 +64,14 @@ public class ResourceManagementFilter
             logger.debug( "Cleaning up resources for thread: {}", Thread.currentThread()
                                                                         .getName() );
             Thread.currentThread().setName( name );
-            cacheProvider.cleanupCurrentThread();
+            try
+            {
+                cacheProvider.cleanupCurrentThread();
+            }
+            catch ( Exception e )
+            {
+                logger.error( "Failed to cleanup resources", e );
+            }
         }
     }
 
