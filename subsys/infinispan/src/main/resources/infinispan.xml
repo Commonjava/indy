@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <infinispan
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="urn:infinispan:config:8.1 http://www.infinispan.org/schemas/infinispan-config-8.1.xsd"
-    xmlns="urn:infinispan:config:8.1">
+    xsi:schemaLocation="urn:infinispan:config:8.2 http://www.infinispan.org/schemas/infinispan-config-8.2.xsd"
+    xmlns="urn:infinispan:config:8.2">
 
   <cache-container default-cache="dont-use" name="IndyCacheManager" shutdown-hook="DEFAULT">
-    <local-cache name="folo-in-progress">
+    <local-cache name="folo-in-progress" >
       <eviction size="100000" type="COUNT"/>
       <persistence passivation="false">
         <file-store purge="false" read-only="false" fetch-state="true" path="${indy.work}/folo-in-progress">
           <write-behind/>
         </file-store>
       </persistence>
-      <indexing index="ALL"/>
     </local-cache>
 
     <local-cache name="folo-sealed">
@@ -20,7 +19,11 @@
       <persistence passivation="true">
         <file-store shared="false" preload="false" fetch-state="true" path="${indy.data}/folo"/>
       </persistence>
-      <indexing auto-config="true"/>
+      <indexing index="ALL">
+        <indexed-entities>
+          <indexed-entity>org.commonjava.indy.folo.data.idxmodel.AffectedStoreRecordKey</indexed-entity>
+        </indexed-entities>
+      </indexing>
     </local-cache>
     
     <local-cache name="content-index">
@@ -30,9 +33,42 @@
           <write-behind/>
         </file-store>
       </persistence>
-      <indexing index="ALL"/>
+      <indexing index="LOCAL">
+        <property name="default.directory_provider">infinispan</property>
+        <property name="default.indexmanager">org.infinispan.query.indexmanager.InfinispanIndexManager</property>
+        <property name="default.metadata_cachename">content-idx-lucene-metadata</property>
+        <property name="default.data_cachename">content-idx-lucene-data</property>
+        <property name="default.locking_cachename">content-idx-lucene-locks</property>
+        <indexed-entities>
+          <indexed-entity>org.commonjava.indy.content.index.IndexedStorePath</indexed-entity>
+        </indexed-entities>
+      </indexing>
     </local-cache>
-    
+
+    <local-cache name="content-index-lucene-metadata">
+      <eviction size="1000000" type="COUNT"/>
+      <persistence passivation="true">
+        <file-store shared="false" preload="false" fetch-state="true" path="${indy.data}/content-index-lucene/metadata">
+          <write-behind/>
+        </file-store>
+      </persistence>
+    </local-cache>
+    <local-cache name="content-index-lucene-data">
+      <eviction size="1000000" type="COUNT"/>
+      <persistence passivation="true">
+        <file-store shared="false" preload="false" fetch-state="true" path="${indy.data}/content-index-lucene/data">
+          <write-behind/>
+        </file-store>
+      </persistence>
+    </local-cache>
+    <local-cache name="content-index-lucene-locks">
+      <eviction size="1000000" type="COUNT"/>
+      <persistence passivation="true">
+        <file-store shared="false" preload="false" fetch-state="true" path="${indy.data}/content-index-lucene/locks">
+          <write-behind/>
+        </file-store>
+      </persistence>
+    </local-cache>
     <!-- <local-cache name="fs-storage-metadata">
       <locking isolation="READ_COMMITTED"/>
       <eviction max-entries="100000" type="COUNT"/>
