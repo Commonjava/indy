@@ -1,5 +1,5 @@
 <% 
-def dir=new java.io.File(path).parent
+def dir=new java.io.File(path + '/')
 %>
 <html>
   <head>
