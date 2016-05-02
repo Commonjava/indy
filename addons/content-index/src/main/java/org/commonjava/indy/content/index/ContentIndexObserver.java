@@ -15,8 +15,6 @@
  */
 package org.commonjava.indy.content.index;
 
-import org.commonjava.cdi.util.weft.ExecutorConfig;
-import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.change.event.ArtifactStoreDeletePreEvent;
 import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
@@ -30,12 +28,6 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
-import org.infinispan.Cache;
-import org.infinispan.cdi.ConfigureCache;
-import org.infinispan.query.Search;
-import org.infinispan.query.dsl.Query;
-import org.infinispan.query.dsl.QueryBuilder;
-import org.infinispan.query.dsl.QueryFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +37,6 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executor;
 
 /**
  * Created by jdcasey on 3/15/16.
@@ -56,29 +47,22 @@ public class ContentIndexObserver
     @Inject
     private StoreDataManager storeDataManager;
 
-    @ConfigureCache( "content-index" )
-    @Inject
-    private Cache<IndexedStorePath, IndexedStorePath> contentIndex;
-
-    @ExecutorConfig( named = "content-indexer", threads = 8, priority=2, daemon = true )
-    @WeftManaged
-    @Inject
-    private Executor executor;
-
     @Inject
     private IndyObjectMapper objectMapper;
+
+    @Inject
+    private ContentIndexManager indexManager;
 
     protected ContentIndexObserver()
     {
     }
 
     public ContentIndexObserver( StoreDataManager storeDataManager,
-                                 Cache<IndexedStorePath, IndexedStorePath> contentIndex, Executor executor,
+                                 ContentIndexManager indexManager,
                                  IndyObjectMapper objectMapper )
     {
         this.storeDataManager = storeDataManager;
-        this.contentIndex = contentIndex;
-        this.executor = executor;
+        this.indexManager = indexManager;
         this.objectMapper = objectMapper;
     }
 
@@ -88,9 +72,9 @@ public class ContentIndexObserver
         {
             final StoreKey key = store.getKey();
 
-            removeAllIndexedAt( key );
+            indexManager.removeAllIndexedPathsForStore( key );
 
-            removeAllOfOrigin( key );
+            indexManager.removeAllOriginIndexedPathsForStore( key );
         }
     }
 
@@ -137,10 +121,10 @@ public class ContentIndexObserver
         final String path = expiration.getPath();
 
         // invalidate indexes for the store itself
-        removePathIndexedAt( path, key );
+        indexManager.removeIndexedStorePath( path, key );
 
         // invalidate indexes for groups containing the store
-        removePathOriginatingAt( path, key );
+        indexManager.removeOriginIndexedStorePath( path, key );
     }
 
     private void removeAllSupercededMemberContent( ArtifactStore store, Map<ArtifactStore, ArtifactStore> changeMap )
@@ -189,95 +173,10 @@ public class ContentIndexObserver
                 for ( int i = divergencePoint; i < oldMembers.size(); i++ )
                 {
                     StoreKey memberKey = oldMembers.get( i );
-                    removeAllOfOrigin( memberKey );
+                    indexManager.removeAllOriginIndexedPathsForStore( memberKey );
                 }
             }
         }
-    }
-
-    private void removeAllOfOrigin( StoreKey memberKey )
-    {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-
-        QueryFactory queryFactory = Search.getQueryFactory( contentIndex );
-        QueryBuilder<Query> queryBuilder = queryFactory.from( IndexedStorePath.class )
-                                                       .having( "originStoreType" )
-                                                       .eq( memberKey.getType() )
-                                                       .and()
-                                                       .having( "originStoreName" )
-                                                       .eq( memberKey.getName() )
-                                                       .toBuilder();
-
-        queryBuilder.build().list().forEach( ( idx ) -> {
-            logger.debug( "Removing {}", idx );
-            contentIndex.remove( idx );
-        } );
-    }
-
-    private void removeAllIndexedAt( StoreKey key )
-    {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-
-        // invalidate indexes for the store itself
-        QueryFactory queryFactory = Search.getQueryFactory( contentIndex );
-        QueryBuilder<Query> queryBuilder = queryFactory.from( IndexedStorePath.class )
-                                                       .having( "storeType" )
-                                                       .eq( key.getType() )
-                                                       .and()
-                                                       .having( "storeName" )
-                                                       .eq( key.getName() )
-                                                       .toBuilder();
-
-        queryBuilder.build().list().forEach( ( idx ) -> {
-            logger.debug( "Removing: {}", idx );
-            contentIndex.remove( idx );
-        } );
-    }
-
-    private void removePathOriginatingAt( String path, StoreKey key )
-    {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-
-        QueryFactory queryFactory = Search.getQueryFactory( contentIndex );
-
-        QueryBuilder<Query> queryBuilder = queryFactory.from( IndexedStorePath.class )
-                                                       .having( "originStoreType" )
-                                                       .eq( key.getType() )
-                                                       .and()
-                                                       .having( "originStoreName" )
-                                                       .eq( key.getName() )
-                                                       .and()
-                                                       .having( "path" )
-                                                       .eq( path )
-                                                       .toBuilder();
-
-        queryBuilder.build().list().forEach( ( idx ) -> {
-            logger.debug( "Removing: {}", idx );
-            contentIndex.remove( idx );
-        } );
-    }
-
-    private void removePathIndexedAt( String path, StoreKey key )
-    {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-
-        QueryFactory queryFactory = Search.getQueryFactory( contentIndex );
-
-        QueryBuilder<Query> queryBuilder = queryFactory.from( IndexedStorePath.class )
-                                                       .having( "storeType" )
-                                                       .eq( key.getType() )
-                                                       .and()
-                                                       .having( "storeName" )
-                                                       .eq( key.getName() )
-                                                       .and()
-                                                       .having( "path" )
-                                                       .eq( path )
-                                                       .toBuilder();
-
-        queryBuilder.build().list().forEach( ( idx ) -> {
-            logger.debug( "Removing: {}", idx );
-            contentIndex.remove( idx );
-        } );
     }
 
 }

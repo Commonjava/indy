@@ -16,7 +16,7 @@
 package org.commonjava.indy.core.content;
 
 import org.commonjava.indy.IndyWorkflowException;
-import org.commonjava.indy.content.DownloadManager;
+import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.core.content.group.GroupMergeHelper;
 import org.commonjava.indy.core.content.group.MavenMetadataMerger;
@@ -47,7 +47,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
@@ -109,7 +115,7 @@ public class MavenMetadataGenerator
     {
     }
 
-    public MavenMetadataGenerator( final DownloadManager fileManager, final StoreDataManager storeManager,
+    public MavenMetadataGenerator( final DirectContentAccess fileManager, final StoreDataManager storeManager,
                                    final XMLInfrastructure xml, final TypeMapper typeMapper,
                                    final MavenMetadataMerger merger, final GroupMergeHelper mergeHelper )
     {
@@ -148,7 +154,7 @@ public class MavenMetadataGenerator
         List<StoreResource> firstLevel;
         try
         {
-            firstLevel = fileManager.list( store, parentPath );
+            firstLevel = fileManager.listRaw( store, parentPath );
         }
         catch ( final IndyWorkflowException e )
         {
@@ -196,7 +202,7 @@ public class MavenMetadataGenerator
             generated = writeVersionMetadata( firstLevel, store, toGenPath, eventMetadata );
         }
 
-        return generated ? fileManager.getStorageReference( store, path ) : null;
+        return generated ? fileManager.getTransfer( store, path ) : null;
     }
 
     @Override
@@ -215,7 +221,7 @@ public class MavenMetadataGenerator
         }
 
         // regardless, we will need this first level of listings. What we do with it will depend on the logic below...
-        final List<StoreResource> firstLevelFiles = fileManager.list( store, path );
+        final List<StoreResource> firstLevelFiles = fileManager.listRaw( store, path );
 
         ArtifactPathInfo samplePomInfo = null;
         nextTopResource: for ( final StoreResource topResource : firstLevelFiles )
@@ -228,7 +234,7 @@ public class MavenMetadataGenerator
             }
             else if ( topPath.endsWith( "/" ) )
             {
-                final List<StoreResource> secondLevelListing = fileManager.list( store, topPath );
+                final List<StoreResource> secondLevelListing = fileManager.listRaw( store, topPath );
                 for ( final StoreResource fileResource : secondLevelListing )
                 {
                     if ( fileResource.getPath()
@@ -275,7 +281,7 @@ public class MavenMetadataGenerator
             return null;
         }
 
-        final Transfer target = fileManager.getStorageReference( group, path );
+        final Transfer target = fileManager.getTransfer( group, path );
 
         if ( !target.exists() )
         {
@@ -285,7 +291,7 @@ public class MavenMetadataGenerator
                 toMergePath = normalize( normalize( parentPath( toMergePath ) ), MavenMetadataMerger.METADATA_NAME );
             }
 
-            final List<Transfer> sources = fileManager.retrieveAll( members, toMergePath, new EventMetadata() );
+            final List<Transfer> sources = fileManager.retrieveAllRaw( members, toMergePath, new EventMetadata() );
             final byte[] merged = merger.merge( sources, group, toMergePath );
             if ( merged != null )
             {
@@ -359,7 +365,7 @@ public class MavenMetadataGenerator
             final String topPath = topResource.getPath();
             if ( topPath.endsWith( "/" ) )
             {
-                final List<StoreResource> secondLevelListing = fileManager.list( store, topPath );
+                final List<StoreResource> secondLevelListing = fileManager.listRaw( store, topPath );
                 for ( final StoreResource fileResource : secondLevelListing )
                 {
                     if ( fileResource.getPath()
@@ -389,7 +395,7 @@ public class MavenMetadataGenerator
 
         Collections.sort( versions );
 
-        final Transfer metadataFile = fileManager.getStorageReference( store, path );
+        final Transfer metadataFile = fileManager.getTransfer( store, path );
         OutputStream stream = null;
         try
         {
@@ -493,7 +499,7 @@ public class MavenMetadataGenerator
         final List<SnapshotPart> snaps = new ArrayList<SnapshotPart>( infosBySnap.keySet() );
         Collections.sort( snaps );
 
-        final Transfer metadataFile = fileManager.getStorageReference( store, path );
+        final Transfer metadataFile = fileManager.getTransfer( store, path );
         OutputStream stream = null;
         try
         {
