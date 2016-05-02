@@ -38,6 +38,11 @@ public class StoreDataAproxMigrationAction
     public boolean migrate()
             throws IndyLifecycleException
     {
+        if ( !( this.data instanceof DataFileStoreDataManager ) )
+        {
+            return true;
+        }
+
         final DataFileStoreDataManager data = (DataFileStoreDataManager) this.data;
 
         final DataFile destdir = data.getFileManager()

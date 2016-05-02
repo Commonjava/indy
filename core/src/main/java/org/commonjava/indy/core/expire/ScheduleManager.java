@@ -271,6 +271,15 @@ public class ScheduleManager
             }
             else
             {
+                if ( info == null )
+                {
+                    logger.debug( "No special path info for: {}", resource );
+                }
+                else
+                {
+                    logger.debug( "{} is a special path, but not metadata.", resource );
+                }
+
                 timeout = repo.getCacheTimeoutSeconds();
             }
         }
@@ -361,7 +370,9 @@ public class ScheduleManager
             return;
         }
 
-        logger.info( "Scheduling timeout for: {} in: {} in: {} seconds.", path, key, timeoutSeconds );
+        logger.info( "Scheduling timeout for: {} in: {} in: {} seconds (at: {}).", path, key, timeoutSeconds,
+                     new Date( System.currentTimeMillis() + ( timeoutSeconds * 1000 ) ) );
+
         scheduleForStore( key, CONTENT_JOB_TYPE, path, new ContentExpiration( key, path ), timeoutSeconds, -1 );
     }
 

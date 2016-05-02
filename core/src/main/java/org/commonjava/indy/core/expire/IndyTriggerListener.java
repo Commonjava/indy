@@ -21,6 +21,8 @@ import org.quartz.JobExecutionContext;
 import org.quartz.Trigger;
 import org.quartz.Trigger.CompletedExecutionInstruction;
 import org.quartz.TriggerListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class IndyTriggerListener
     implements TriggerListener
@@ -42,6 +44,15 @@ class IndyTriggerListener
     @Override
     public void triggerFired( final Trigger trigger, final JobExecutionContext context )
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "EXPIRED: {}", new Object()
+        {
+            public String toString()
+            {
+                return context.getJobDetail().getKey().toString();
+            }
+        } );
+
         eventDispatcher.fire( ScheduleManager.createEvent( SchedulerEventType.TRIGGER, context.getJobDetail() ) );
     }
 
