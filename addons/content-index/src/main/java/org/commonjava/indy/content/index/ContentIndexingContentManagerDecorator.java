@@ -25,10 +25,13 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
+import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.infinispan.Cache;
 import org.infinispan.cdi.ConfigureCache;
 import org.infinispan.query.Search;
@@ -45,7 +48,6 @@ import javax.inject.Inject;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
@@ -61,6 +63,9 @@ public abstract class ContentIndexingContentManagerDecorator
 {
     @Inject
     private StoreDataManager storeDataManager;
+
+    @Inject
+    private SpecialPathManager specialPathManager;
 
     @Delegate
     @Any
@@ -80,25 +85,28 @@ public abstract class ContentIndexingContentManagerDecorator
     {
     }
 
-    protected ContentIndexingContentManagerDecorator( StoreDataManager storeDataManager, ContentManager delegate,
-                                                      Cache<IndexedStorePath, IndexedStorePath> contentIndex,
-                                                      Executor executor )
+    protected ContentIndexingContentManagerDecorator( final StoreDataManager storeDataManager,
+                                                      final SpecialPathManager specialPathManager,
+                                                      final ContentManager delegate,
+                                                      final Cache<IndexedStorePath, IndexedStorePath> contentIndex,
+                                                      final Executor executor )
     {
         this.storeDataManager = storeDataManager;
+        this.specialPathManager = specialPathManager;
         this.delegate = delegate;
         this.contentIndex = contentIndex;
         this.executor = executor;
     }
 
     @Override
-    public Transfer retrieveFirst( List<? extends ArtifactStore> stores, String path )
+    public Transfer retrieveFirst( final List<? extends ArtifactStore> stores, final String path )
             throws IndyWorkflowException
     {
         return retrieveFirst( stores, path, new EventMetadata() );
     }
 
     @Override
-    public Transfer retrieveFirst( List<? extends ArtifactStore> stores, String path, EventMetadata eventMetadata )
+    public Transfer retrieveFirst( final List<? extends ArtifactStore> stores, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         Transfer transfer = null;
@@ -115,14 +123,14 @@ public abstract class ContentIndexingContentManagerDecorator
     }
 
     @Override
-    public List<Transfer> retrieveAll( List<? extends ArtifactStore> stores, String path )
+    public List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path )
             throws IndyWorkflowException
     {
         return retrieveAll( stores, path, new EventMetadata() );
     }
 
     @Override
-    public List<Transfer> retrieveAll( List<? extends ArtifactStore> stores, String path, EventMetadata eventMetadata )
+    public List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         List<Transfer> results = new ArrayList<>();
@@ -151,14 +159,14 @@ public abstract class ContentIndexingContentManagerDecorator
     }
 
     @Override
-    public Transfer retrieve( ArtifactStore store, String path )
+    public Transfer retrieve( final ArtifactStore store, final String path )
             throws IndyWorkflowException
     {
         return retrieve( store, path );
     }
 
     @Override
-    public Transfer retrieve( ArtifactStore store, String path, EventMetadata eventMetadata )
+    public Transfer retrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -172,18 +180,29 @@ public abstract class ContentIndexingContentManagerDecorator
         if ( StoreType.group == store.getKey().getType() )
         {
             logger.debug( "No group index hits. Devolving to member store indexes." );
-            for ( StoreKey key : ( (Group) store ).getConstituents() )
+
+            KeyedLocation location = LocationUtils.toLocation( store );
+            SpecialPathInfo specialPathInfo = specialPathManager.getSpecialPathInfo( location, path );
+            if ( specialPathInfo == null || !specialPathInfo.isMergable() )
             {
-                transfer = getIndexedTransfer( key, path, TransferOperation.DOWNLOAD );
-                if ( transfer != null )
+                for ( StoreKey key : ( (Group) store ).getConstituents() )
                 {
-                    indexTransferIn( store.getKey(), transfer );
-                    return transfer;
+                    transfer = getIndexedTransfer( key, path, TransferOperation.DOWNLOAD );
+                    if ( transfer != null )
+                    {
+                        indexTransferIn( store.getKey(), transfer );
+                        return transfer;
+                    }
                 }
+                logger.debug( "No index hits. Delegating to main content manager for: {} in: {}", path, store );
+            }
+            else
+            {
+                logger.debug( "Merged content. Delegating to main content manager for: {} in: {}", path, store );
+                return delegate.retrieve( store, path, eventMetadata );
             }
         }
 
-        logger.debug( "No index hits. Delegating to main content manager for: {} in: {}", path, store );
         transfer = delegate.retrieve( store, path, eventMetadata );
 
         if ( transfer != null )
@@ -198,7 +217,7 @@ public abstract class ContentIndexingContentManagerDecorator
         return transfer;
     }
 
-    private List<IndexedStorePath> getByTopKey( StoreKey key, String path )
+    private List<IndexedStorePath> getByTopKey( final StoreKey key, final String path )
     {
         QueryFactory queryFactory = Search.getQueryFactory( contentIndex );
         QueryBuilder<Query> queryBuilder = queryFactory.from( IndexedStorePath.class )
@@ -216,7 +235,7 @@ public abstract class ContentIndexingContentManagerDecorator
     }
 
     @Override
-    public Transfer getTransfer( ArtifactStore store, String path, TransferOperation op )
+    public Transfer getTransfer( final ArtifactStore store, final String path, final TransferOperation op )
             throws IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -252,7 +271,7 @@ public abstract class ContentIndexingContentManagerDecorator
     }
 
     @Override
-    public Transfer getTransfer( StoreKey storeKey, String path, TransferOperation op )
+    public Transfer getTransfer( final StoreKey storeKey, final String path, final TransferOperation op )
             throws IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -299,7 +318,7 @@ public abstract class ContentIndexingContentManagerDecorator
     }
 
     @Override
-    public Transfer getTransfer( List<ArtifactStore> stores, String path, TransferOperation op )
+    public Transfer getTransfer( final List<ArtifactStore> stores, final String path, final TransferOperation op )
             throws IndyWorkflowException
     {
         Transfer transfer = null;
@@ -316,15 +335,15 @@ public abstract class ContentIndexingContentManagerDecorator
     }
 
     @Override
-    public Transfer store( ArtifactStore store, String path, InputStream stream, TransferOperation op )
+    public Transfer store( final ArtifactStore store, final String path, final InputStream stream, final TransferOperation op )
             throws IndyWorkflowException
     {
         return store( store, path, stream, op, new EventMetadata() );
     }
 
     @Override
-    public Transfer store( ArtifactStore store, String path, InputStream stream, TransferOperation op,
-                           EventMetadata eventMetadata )
+    public Transfer store( final ArtifactStore store, final String path, final InputStream stream, final TransferOperation op,
+                           final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         Transfer transfer = delegate.store( store, path, stream, op, eventMetadata );
@@ -338,15 +357,15 @@ public abstract class ContentIndexingContentManagerDecorator
     }
 
     @Override
-    public Transfer store( List<? extends ArtifactStore> stores, String path, InputStream stream, TransferOperation op )
+    public Transfer store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream, final TransferOperation op )
             throws IndyWorkflowException
     {
         return store( stores, path, stream, op, new EventMetadata() );
     }
 
     @Override
-    public Transfer store( List<? extends ArtifactStore> stores, String path, InputStream stream, TransferOperation op,
-                           EventMetadata eventMetadata )
+    public Transfer store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream, final TransferOperation op,
+                           final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         Transfer transfer = delegate.store( stores, path, stream, op, eventMetadata );
@@ -359,14 +378,14 @@ public abstract class ContentIndexingContentManagerDecorator
     }
 
     @Override
-    public boolean delete( ArtifactStore store, String path )
+    public boolean delete( final ArtifactStore store, final String path )
             throws IndyWorkflowException
     {
         return delete( store, path, new EventMetadata() );
     }
 
     @Override
-    public boolean delete( ArtifactStore store, String path, EventMetadata eventMetadata )
+    public boolean delete( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         boolean result = delegate.delete( store, path, eventMetadata );
@@ -379,14 +398,14 @@ public abstract class ContentIndexingContentManagerDecorator
     }
 
     @Override
-    public boolean deleteAll( List<? extends ArtifactStore> stores, String path )
+    public boolean deleteAll( final List<? extends ArtifactStore> stores, final String path )
             throws IndyWorkflowException
     {
         return deleteAll( stores, path, new EventMetadata() );
     }
 
     @Override
-    public boolean deleteAll( List<? extends ArtifactStore> stores, String path, EventMetadata eventMetadata )
+    public boolean deleteAll( final List<? extends ArtifactStore> stores, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         boolean result = false;
@@ -398,7 +417,7 @@ public abstract class ContentIndexingContentManagerDecorator
         return result;
     }
 
-    private void deIndex( ArtifactStore store, String path )
+    private void deIndex( final ArtifactStore store, final String path )
     {
         executor.execute( () -> {
             StoreKey key = store.getKey();
@@ -446,7 +465,7 @@ public abstract class ContentIndexingContentManagerDecorator
         } );
     }
 
-    private Transfer getIndexedTransfer( StoreKey key, String path, TransferOperation operation )
+    private Transfer getIndexedTransfer( final StoreKey key, final String path, final TransferOperation operation )
             throws IndyWorkflowException
     {
         List<IndexedStorePath> matches = getByTopKey( key, path );
@@ -470,7 +489,7 @@ public abstract class ContentIndexingContentManagerDecorator
     /**
      * When we store or retrieve content, index it for faster reference next time.
      */
-    private void indexTransferIn( StoreKey key, Transfer transfer )
+    private void indexTransferIn( final StoreKey key, final Transfer transfer )
     {
         if ( transfer != null && transfer.exists() )
         {
@@ -489,7 +508,7 @@ public abstract class ContentIndexingContentManagerDecorator
      * When we index content, also index it for groups containing its origin stores, to make indexes more efficient.
      * This will be called recursively for groups of groups.
      */
-    private void indexTransferInGroupsOf( StoreKey key, StoreKey originKey, String path )
+    private void indexTransferInGroupsOf( final StoreKey key, final StoreKey originKey, final String path )
     {
 //        try
 //        {
@@ -525,7 +544,7 @@ public abstract class ContentIndexingContentManagerDecorator
      * If all of that fails, and the matches list isn't empty, that means something somewhere matched...so let's return
      * the first of those. But that really should NEVER happen.
      */
-    private IndexedStorePath findFirstMatch( List<IndexedStorePath> matches, StoreKey key )
+    private IndexedStorePath findFirstMatch( final List<IndexedStorePath> matches, final StoreKey key )
     {
         if ( matches.isEmpty() )
         {
