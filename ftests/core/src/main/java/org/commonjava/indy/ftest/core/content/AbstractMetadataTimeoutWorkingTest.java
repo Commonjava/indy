@@ -36,6 +36,12 @@ public abstract class AbstractMetadataTimeoutWorkingTest
     @Rule
     public ExpectationServer server = new ExpectationServer( "repos" );
 
+    protected File pomFile;
+
+    protected File metadataFile;
+
+    protected File archetypeFile;
+
     @Override
     protected boolean createStandardTestStructures()
     {
@@ -49,12 +55,6 @@ public abstract class AbstractMetadataTimeoutWorkingTest
     protected final String metadataPath = "org/foo/bar/maven-metadata.xml";
 
     protected final String archetypePath = "archetype-catalog.xml";
-
-    protected String pomFilePath;
-
-    protected String metadataFilePath;
-
-    protected String archetypeFilePath;
 
     @Before
     public void setupRepo()
@@ -81,27 +81,27 @@ public abstract class AbstractMetadataTimeoutWorkingTest
         final PathInfo pomResult = client.content().getInfo( remote, repoId, pomPath );
         assertThat( "no pom result", pomResult, notNullValue() );
         assertThat( "pom doesn't exist", pomResult.exists(), equalTo( true ) );
-        pomFilePath = String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(),
+        String pomFilePath = String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(),
                                      remote.name(), repoId, pomPath );
-        final File pomFile = new File( pomFilePath );
+        pomFile = new File( pomFilePath );
         assertThat( "pom doesn't exist", pomFile.exists(), equalTo( true ) );
 
         // ensure the metadata exist before the timeout checking
         final PathInfo metadataResult = client.content().getInfo( remote, repoId, metadataPath );
         assertThat( "no metadata result", metadataResult, notNullValue() );
         assertThat( "metadata doesn't exist", metadataResult.exists(), equalTo( true ) );
-        metadataFilePath = String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(),
+        String metadataFilePath = String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(),
                                           remote.name(), repoId, metadataPath );
-        final File metadataFile = new File( metadataFilePath );
+        metadataFile = new File( metadataFilePath );
         assertThat( "metadata doesn't exist", metadataFile.exists(), equalTo( true ) );
 
         // ensure the archetype exist before the timeout checking
         final PathInfo archetypeResult = client.content().getInfo( remote, repoId, archetypePath );
         assertThat( "no archetype result", archetypeResult, notNullValue() );
         assertThat( "archetype doesn't exist", archetypeResult.exists(), equalTo( true ) );
-        archetypeFilePath = String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(),
+        String archetypeFilePath = String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(),
                                           remote.name(), repoId, archetypePath );
-        final File archetypeFile = new File( archetypeFilePath );
+        archetypeFile = new File( archetypeFilePath );
         assertThat( "archetype doesn't exist", archetypeFile.exists(), equalTo( true ) );
 
     }

@@ -56,21 +56,6 @@ public class GalleyProvider
 
         // TODO: Tie this into a config file!
         transportManagerConfig = new TransportManagerConfig();
-
-        // Register metadata file info for metadata timeout
-        for ( String extPattern : Arrays.asList( ".*maven-metadata\\.xml$", ".*archetype-catalog\\.xml$" ) )
-        {
-            final SpecialPathInfo pi = SpecialPathInfo.from( new FilePatternMatcher( extPattern ) )
-                                .setDecoratable( true )
-                                .setListable( true )
-                                .setPublishable( true )
-                                .setRetrievable( true )
-                                .setStorable( true )
-                                .setMetadata( true )
-                                .build();
-
-            specialPathManager.registerSpecialPathInfo( pi );
-        }
     }
 
     @Produces
