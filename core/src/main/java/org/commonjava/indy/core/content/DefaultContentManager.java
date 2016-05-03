@@ -15,24 +15,6 @@
  */
 package org.commonjava.indy.core.content;
 
-import static org.commonjava.indy.util.ContentUtils.dedupeListing;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.PostConstruct;
-import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.IndyWorkflowException;
@@ -57,6 +39,23 @@ import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.PostConstruct;
+import javax.enterprise.inject.Instance;
+import javax.inject.Inject;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static org.commonjava.indy.util.ContentUtils.dedupeListing;
 
 public class DefaultContentManager
         implements ContentManager
@@ -286,20 +285,10 @@ public class DefaultContentManager
         }
         catch ( IndyWorkflowException e )
         {
-            filterLocationErrors( e );
+            e.filterLocationErrors();
         }
 
         return item;
-    }
-
-    private void filterLocationErrors( IndyWorkflowException e )
-            throws IndyWorkflowException
-    {
-        Throwable cause = e.getCause();
-        if ( !( cause instanceof TransferLocationException ) )
-        {
-            throw e;
-        }
     }
 
     @Override
@@ -558,7 +547,7 @@ public class DefaultContentManager
                 }
                 catch ( IndyWorkflowException e )
                 {
-                    filterLocationErrors( e );
+                    e.filterLocationErrors();
                 }
 
                 if ( storeListing != null )
@@ -599,7 +588,7 @@ public class DefaultContentManager
             }
             catch ( IndyWorkflowException e )
             {
-                filterLocationErrors( e );
+                e.filterLocationErrors();
             }
 
             if ( storeListing != null )

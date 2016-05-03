@@ -87,7 +87,9 @@ public class MavenMetadataGeneratorTest
         final MavenMetadataMerger merger = new MavenMetadataMerger();
         final GroupMergeHelper helper = new GroupMergeHelper( downloads );
 
-        generator = new MavenMetadataGenerator( downloads, stores, xml, types, merger, helper );
+        DefaultDirectContentAccess contentAccess = new DefaultDirectContentAccess( downloads );
+
+        generator = new MavenMetadataGenerator( contentAccess, stores, xml, types, merger, helper );
 
         metadataReader =
             new MavenMetadataReader( xml, locations, fixture.getArtifactMetadataManager(), fixture.getXPathManager() );

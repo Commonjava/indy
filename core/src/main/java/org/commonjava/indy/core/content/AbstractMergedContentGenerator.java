@@ -22,6 +22,7 @@ import javax.inject.Inject;
 
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.AbstractContentGenerator;
+import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.core.content.group.GroupMergeHelper;
 import org.commonjava.indy.data.IndyDataException;
@@ -31,6 +32,7 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.model.TransferOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +42,7 @@ public abstract class AbstractMergedContentGenerator
     protected final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    protected DownloadManager fileManager;
+    protected DirectContentAccess fileManager;
 
     @Inject
     protected StoreDataManager storeManager;
@@ -52,7 +54,7 @@ public abstract class AbstractMergedContentGenerator
     {
     }
 
-    protected AbstractMergedContentGenerator( final DownloadManager fileManager, final StoreDataManager storeManager,
+    protected AbstractMergedContentGenerator( final DirectContentAccess fileManager, final StoreDataManager storeManager,
                                               final GroupMergeHelper helper )
     {
         this.fileManager = fileManager;
@@ -118,7 +120,7 @@ public abstract class AbstractMergedContentGenerator
         throws IndyWorkflowException
     {
         // delete so it'll be recomputed.
-        final Transfer target = fileManager.getStorageReference( group, path );
+        final Transfer target = fileManager.getTransfer( group, path );
         try
         {
             logger.debug( "Deleting merged file: {}", target );

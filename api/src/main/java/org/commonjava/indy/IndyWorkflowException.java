@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.text.MessageFormat;
 
 import org.commonjava.indy.content.DownloadManager;
+import org.commonjava.maven.galley.TransferLocationException;
 
 /**
  * Signals an error between the REST-resources layer and the next layer down (except for {@link DownloadManager}, which is normally two layers down thanks 
@@ -140,6 +141,16 @@ public class IndyWorkflowException
 
         this.params = newParams;
         return this;
+    }
+
+    public void filterLocationErrors()
+            throws IndyWorkflowException
+    {
+        Throwable cause = getCause();
+        if ( !( cause instanceof TransferLocationException ) )
+        {
+            throw this;
+        }
     }
 
 }

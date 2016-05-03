@@ -31,6 +31,7 @@ import java.util.Set;
 import javax.inject.Inject;
 
 import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.core.content.group.ArchetypeCatalogMerger;
@@ -67,7 +68,7 @@ public class ArchetypeCatalogGenerator
     {
     }
 
-    public ArchetypeCatalogGenerator( final DownloadManager downloadManager, final StoreDataManager storeManager,
+    public ArchetypeCatalogGenerator( final DirectContentAccess downloadManager, final StoreDataManager storeManager,
                                       final ArchetypeCatalogMerger merger,
                                       final GroupMergeHelper mergeHelper )
     {
@@ -99,7 +100,7 @@ public class ArchetypeCatalogGenerator
             return null;
         }
 
-        final Transfer target = fileManager.getStorageReference( group, path );
+        final Transfer target = fileManager.getTransfer( group, path );
 
         if ( !target.exists() )
         {
@@ -109,7 +110,7 @@ public class ArchetypeCatalogGenerator
                 toMergePath = normalize( normalize( parentPath( toMergePath ) ), ArchetypeCatalogMerger.CATALOG_NAME );
             }
 
-            final List<Transfer> sources = fileManager.retrieveAll( members, toMergePath, new EventMetadata() );
+            final List<Transfer> sources = fileManager.retrieveAllRaw( members, toMergePath, new EventMetadata() );
             final byte[] merged = merger.merge( sources, group, toMergePath );
             if ( merged != null )
             {

@@ -41,19 +41,15 @@ public class MetadataFirstTimeoutWorkingTest
         // make sure the metadata timout
         Thread.sleep( METADATA_TIMEOUT_WAITING_MILLISECONDS );
         logger.debug( "Timeout time {}s passed!", METADATA_TIMEOUT_SECONDS );
-        final File metadataFileAgain = new File( metadataFilePath );
-        assertThat( "metadata should be removed when metadata timeout", metadataFileAgain.exists(), equalTo( false ) );
-        final File archetypeFileAgain = new File( archetypeFilePath );
-        assertThat( "archetype should be removed when metadata timeout", archetypeFileAgain.exists(),
+        assertThat( "metadata should be removed when metadata timeout", metadataFile.exists(), equalTo( false ) );
+        assertThat( "archetype should be removed when metadata timeout", archetypeFile.exists(),
                     equalTo( false ) );
-        File pomFileAgain = new File( pomFilePath );
-        assertThat( "artifact should not be removed when metadata timeout", pomFileAgain.exists(), equalTo( true ) );
+        assertThat( "artifact should not be removed when metadata timeout", pomFile.exists(), equalTo( true ) );
 
         // make sure the repo timout
         Thread.sleep( CACHE_TIMEOUT_WAITING_MILLISECONDS );
         logger.debug( "Timeout time {}s passed!", CACHE_TIMEOUT_SECONDS );
-        pomFileAgain = new File( pomFilePath );
-        assertThat( "artifact should be removed when cache timeout", pomFileAgain.exists(), equalTo( false ) );
+        assertThat( "artifact should be removed when cache timeout", pomFile.exists(), equalTo( false ) );
     }
 
     @Override
