@@ -47,6 +47,10 @@
         <label>Content Cache Timeout:</label>
         <span>{{store.cache_timeout_seconds | duration}}</span>
       </div>
+      <div ng-if="!store.is_passthrough" class="detail-field">
+        <label>Metadata Cache Timeout:</label>
+        <span>{{store.metadata_timeout_seconds | duration}}</span>
+      </div>
     </div>
 </div>
 
