@@ -377,6 +377,18 @@ public class MemoryStoreDataManager
         {
             dispatcher.updating( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, eventMetadata,
                                  Collections.singletonMap( store, original ) );
+
+            if ( exists )
+            {
+                if ( store.isDisabled() && !original.isDisabled() )
+                {
+                    dispatcher.disabling( eventMetadata, store );
+                }
+                else if ( !store.isDisabled() && original.isDisabled() )
+                {
+                    dispatcher.enabling( eventMetadata, store );
+                }
+            }
         }
     }
 
@@ -388,6 +400,18 @@ public class MemoryStoreDataManager
         {
             dispatcher.updated( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, eventMetadata,
                                 Collections.singletonMap( store, original ) );
+
+            if ( exists )
+            {
+                if ( store.isDisabled() && !original.isDisabled() )
+                {
+                    dispatcher.disabled( eventMetadata, store );
+                }
+                else if ( !store.isDisabled() && original.isDisabled() )
+                {
+                    dispatcher.enabled( eventMetadata, store );
+                }
+            }
         }
     }
 

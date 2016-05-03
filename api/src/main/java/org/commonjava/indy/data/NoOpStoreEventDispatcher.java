@@ -52,4 +52,28 @@ public class NoOpStoreEventDispatcher
     {
     }
 
+    @Override
+    public void enabling( EventMetadata eventMetadata, ArtifactStore... stores )
+    {
+
+    }
+
+    @Override
+    public void enabled( EventMetadata eventMetadata, ArtifactStore... stores )
+    {
+
+    }
+
+    @Override
+    public void disabling( EventMetadata eventMetadata, ArtifactStore... stores )
+    {
+
+    }
+
+    @Override
+    public void disabled( EventMetadata eventMetadata, ArtifactStore... stores )
+    {
+
+    }
+
 }

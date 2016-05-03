@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 /**
  * Created by jdcasey on 5/2/16.
@@ -50,7 +51,7 @@ public class ContentIndexManager
     private Executor executor;
 
 
-    public void removeAllOriginIndexedPathsForStore( StoreKey memberKey )
+    public void removeAllOriginIndexedPathsForStore( StoreKey memberKey, Consumer<IndexedStorePath> pathConsumer )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -63,13 +64,18 @@ public class ContentIndexManager
                                                        .eq( memberKey.getName() )
                                                        .toBuilder();
 
-        queryBuilder.build().list().forEach( ( idx ) -> {
-            logger.debug( "Removing {}", idx );
-            contentIndex.remove( idx );
+        List<IndexedStorePath> paths = queryBuilder.build().list();
+        paths.forEach( ( indexedStorePath ) -> {
+            logger.debug( "Removing {}", indexedStorePath );
+            contentIndex.remove( indexedStorePath );
+            if ( pathConsumer != null )
+            {
+                pathConsumer.accept( indexedStorePath );
+            }
         } );
     }
 
-    public void removeAllIndexedPathsForStore( StoreKey key )
+    public List<IndexedStorePath> removeAllIndexedPathsForStore( StoreKey key, Consumer<IndexedStorePath> pathConsumer )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -83,13 +89,20 @@ public class ContentIndexManager
                                                        .eq( key.getName() )
                                                        .toBuilder();
 
-        queryBuilder.build().list().forEach( ( idx ) -> {
-            logger.debug( "Removing: {}", idx );
-            contentIndex.remove( idx );
+        List<IndexedStorePath> paths = queryBuilder.build().list();
+        paths.forEach( ( indexedStorePath ) -> {
+            logger.debug( "Removing: {}", indexedStorePath );
+            contentIndex.remove( indexedStorePath );
+            if ( pathConsumer != null )
+            {
+                pathConsumer.accept( indexedStorePath );
+            }
         } );
+
+        return paths;
     }
 
-    public void removeOriginIndexedStorePath( String path, StoreKey key )
+    public List<IndexedStorePath> removeOriginIndexedStorePath( String path, StoreKey key, Consumer<IndexedStorePath> pathConsumer )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -106,13 +119,20 @@ public class ContentIndexManager
                                                        .eq( path )
                                                        .toBuilder();
 
-        queryBuilder.build().list().forEach( ( idx ) -> {
-            logger.debug( "Removing: {}", idx );
-            contentIndex.remove( idx );
+        List<IndexedStorePath> paths = queryBuilder.build().list();
+        paths.forEach( ( indexedStorePath ) -> {
+            logger.debug( "Removing: {}", indexedStorePath );
+            contentIndex.remove( indexedStorePath );
+            if ( pathConsumer != null )
+            {
+                pathConsumer.accept( indexedStorePath );
+            }
         } );
+
+        return paths;
     }
 
-    public void removeIndexedStorePath( String path, StoreKey key )
+    public void removeIndexedStorePath( String path, StoreKey key, Consumer<IndexedStorePath> pathConsumer )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -129,9 +149,14 @@ public class ContentIndexManager
                                                        .eq( path )
                                                        .toBuilder();
 
-        queryBuilder.build().list().forEach( ( idx ) -> {
-            logger.debug( "Removing: {}", idx );
-            contentIndex.remove( idx );
+        List<IndexedStorePath> paths = queryBuilder.build().list();
+        paths.forEach( ( indexedStorePath ) -> {
+            logger.debug( "Removing: {}", indexedStorePath );
+            contentIndex.remove( indexedStorePath );
+            if ( pathConsumer != null )
+            {
+                pathConsumer.accept( indexedStorePath );
+            }
         } );
     }
 
@@ -225,7 +250,7 @@ public class ContentIndexManager
 
         if ( !matches.isEmpty() )
         {
-            return findFirstMatchingIndexedStorePath( matches, key );
+            return matches.get( 0 );
         }
 
         return null;
@@ -249,152 +274,33 @@ public class ContentIndexManager
             keySet.forEach( (key)->{
                 IndexedStorePath isp = new IndexedStorePath( key, key, path );
                 contentIndex.put( isp, isp );
-
-                indexPathInGroupsContainingStore( key, key, path );
             } );
         } );
     }
 
-    /**
-     * When we index content, also index it for groups containing its origin stores, to make indexes more efficient.
-     * This will be called recursively for groups of groups.
-     */
-    private void indexPathInGroupsContainingStore( final StoreKey key, final StoreKey originKey, final String path )
+    public void clearIndexedPathFrom( String path, Set<Group> groups, Consumer<IndexedStorePath> pathConsumer )
     {
-        //        try
-        //        {
-        //            Set<Group> groups = storeDataManager.getGroupsContaining( key );
-        //            if ( groups != null )
-        //            {
-        //                new HashSet<>( groups ).forEach( ( group ) -> {
-        //                    IndexedStorePath sp = new IndexedStorePath( group.getKey(), originKey, path );
-        //                    contentIndex.put( sp, sp );
-        //
-        //                    // denormalize to groups of groups
-        //                    indexTransferInGroupsOf( group.getKey(), originKey, path );
-        //                } );
-        //            }
-        //        }
-        //        catch ( IndyDataException e )
-        //        {
-        //            Logger logger = LoggerFactory.getLogger( getClass() );
-        //            logger.error( String.format( "Cannot lookup groups containing: %s for content indexing. Reason: %s", key,
-        //                                         e.getMessage() ), e );
-        //        }
-    }
-
-    /**
-     * This method is sort of stupid, but I'm trying not to retrieve any more store data than I need. I'm checking if
-     * there is an indexed store path that matches:
-     * <ol>
-     *     <li>The current store (the only option if it's not a group)</li>
-     *     <li>The direct membership of the group (the StoreKey instances already available in the Group constituents list)</li>
-     *     <li>The ordered concrete membership of the group, which includes ArtifactStores that are available by recursing down through groups.</li>
-     * </ol>
-     *
-     * If all of that fails, and the matches list isn't empty, that means something somewhere matched...so let's return
-     * the first of those. But that really should NEVER happen.
-     */
-    private IndexedStorePath findFirstMatchingIndexedStorePath( final List<IndexedStorePath> matches, final StoreKey key )
-    {
-        if ( matches.isEmpty() )
+        Set<Group> nextGroups = new HashSet<>();
+        if ( groups != null )
         {
-            return null;
+            groups.forEach( (group)->{
+                removeIndexedStorePath( path, group.getKey(), pathConsumer );
+                try
+                {
+                    nextGroups.addAll( storeDataManager.getGroupsContaining( group.getKey() ) );
+                }
+                catch ( IndyDataException e )
+                {
+                    Logger logger = LoggerFactory.getLogger( getClass() );
+                    logger.error( String.format( "Failed to lookup groups containing: %s. Reason: %s", group.getKey(), e.getMessage() ),
+                                  e );
+                }
+            } );
+
+            nextGroups.removeAll( groups );
         }
 
-        // we're managing the down-membership indexing for a group aggressively, so we should be able to pop the first
-        // result off the list.
-        return matches.get(0);
-
-        //        if ( StoreType.group != store.getKey().getType() )
-        //        {
-        //            return matches.get( 0 );
-        //        }
-        //
-        //        Group group = (Group) store;
-        //        Optional<IndexedStorePath> result = matches.stream().filter( ( match ) -> {
-        //            if ( match.getOriginStoreKey().equals( group.getKey() ) )
-        //            {
-        //                return true;
-        //            }
-        //
-        //            return false;
-        //        } ).findAny();
-        //
-        //        if ( result.isPresent() )
-        //        {
-        //            return result.get();
-        //        }
-        //
-        //        Optional<StoreKey> matchingKey = group.getConstituents().stream().filter( ( memberKey ) -> {
-        //            Optional<IndexedStorePath> found = matches.stream().filter( ( isp ) -> {
-        //                if ( isp.getOriginStoreKey().equals( memberKey ) )
-        //                {
-        //                    return true;
-        //                }
-        //
-        //                return false;
-        //            } ).findAny();
-        //
-        //            return found.isPresent();
-        //        } ).findAny();
-        //
-        //        StoreKey lookupKey = null;
-        //        if ( matchingKey.isPresent() )
-        //        {
-        //            lookupKey = matchingKey.get();
-        //        }
-        //        else
-        //        {
-        //            try
-        //            {
-        //                Optional<ArtifactStore> matchingStore =
-        //                        storeDataManager.getOrderedConcreteStoresInGroup( group.getName() )
-        //                                        .stream()
-        //                                        .filter( ( member ) -> {
-        //                                            return matches.stream().filter( ( isp ) -> {
-        //                                                if ( isp.getOriginStoreKey().equals( member.getKey() ) )
-        //                                                {
-        //                                                    return true;
-        //                                                }
-        //
-        //                                                return false;
-        //                                            } ).findAny().isPresent();
-        //                                        } )
-        //                                        .findAny();
-        //
-        //                if ( matchingStore.isPresent() )
-        //                {
-        //                    lookupKey = matchingStore.get().getKey();
-        //                }
-        //            }
-        //            catch ( IndyDataException e )
-        //            {
-        //                Logger logger = LoggerFactory.getLogger( getClass() );
-        //                logger.error( String.format( "Failed to find ordered concrete stores for group: %s. Reason: %s",
-        //                                             group.getKey(), e.getMessage() ), e );
-        //            }
-        //        }
-        //
-        //        if ( lookupKey != null )
-        //        {
-        //            StoreKey finalLookupKey = lookupKey;
-        //            result = matches.stream().filter( ( match ) -> {
-        //                if ( match.getOriginStoreKey().equals( finalLookupKey ) )
-        //                {
-        //                    return true;
-        //                }
-        //
-        //                return false;
-        //            } ).findAny();
-        //
-        //            if ( result.isPresent() )
-        //            {
-        //                return result.get();
-        //            }
-        //        }
-        //
-        //        return matches.get( 0 );
+        clearIndexedPathFrom( path, nextGroups, pathConsumer );
     }
 
 }

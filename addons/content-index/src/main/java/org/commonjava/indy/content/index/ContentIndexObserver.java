@@ -15,19 +15,31 @@
  */
 package org.commonjava.indy.content.index;
 
+import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.change.event.ArtifactStoreDeletePreEvent;
+import org.commonjava.indy.change.event.ArtifactStoreEnablementEvent;
 import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
+import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.core.expire.ContentExpiration;
 import org.commonjava.indy.core.expire.ScheduleManager;
 import org.commonjava.indy.core.expire.SchedulerEvent;
 import org.commonjava.indy.core.expire.SchedulerEventType;
+import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.indy.util.LocationUtils;
+import org.commonjava.maven.galley.event.FileAccessEvent;
+import org.commonjava.maven.galley.event.FileDeletionEvent;
+import org.commonjava.maven.galley.event.FileStorageEvent;
+import org.commonjava.maven.galley.model.Location;
+import org.commonjava.maven.galley.model.SpecialPathInfo;
+import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,10 +47,21 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 /**
+ * <p>Maintain the content index in response to events propagating through the system.</p>
+ * <p><b>TODO:</b> This observer breaks things subtly.</p>
+ * <p>When it removes a metadata file from the index, it also cleans up the Transfers (files) associated with merged
+ * content as it propagates index removals up the group inclusion chain. If we roll a distribution that doesn't include
+ * this, some merged-metadata problems may come back...</p>
+ * <br/>
  * Created by jdcasey on 3/15/16.
  */
 @ApplicationScoped
@@ -46,6 +69,12 @@ public class ContentIndexObserver
 {
     @Inject
     private StoreDataManager storeDataManager;
+
+    @Inject
+    private SpecialPathManager specialPathManager;
+
+    @Inject
+    private DirectContentAccess directContentAccess;
 
     @Inject
     private IndyObjectMapper objectMapper;
@@ -59,23 +88,62 @@ public class ContentIndexObserver
 
     public ContentIndexObserver( StoreDataManager storeDataManager,
                                  ContentIndexManager indexManager,
+                                 SpecialPathManager specialPathManager,
+                                 DirectContentAccess directContentAccess,
                                  IndyObjectMapper objectMapper )
     {
         this.storeDataManager = storeDataManager;
         this.indexManager = indexManager;
+        this.specialPathManager = specialPathManager;
+        this.directContentAccess = directContentAccess;
         this.objectMapper = objectMapper;
     }
 
+    public void onFileDeletion( @Observes FileDeletionEvent event )
+    {
+        StoreKey key = LocationUtils.getKey( event );
+        String path = event.getTransfer().getPath();
+
+        AtomicBoolean result = new AtomicBoolean( false );
+        indexManager.removeIndexedStorePath( path, key, indexedStorePath -> result.set( true ) );
+
+        // FIXME: Re-enable this and fix test failures.
+//        if ( result.get() )
+//        {
+//            propagateClear( event.getTransfer().getLocation(), key, path );
+//        }
+    }
+
+    public void onFileAccess( @Observes FileAccessEvent event )
+    {
+        StoreKey key = LocationUtils.getKey( event );
+        indexManager.indexPathInStores( event.getTransfer().getPath(), key );
+    }
+
+    public void onFileStorage( @Observes FileStorageEvent event )
+    {
+        StoreKey key = LocationUtils.getKey( event );
+        String path = event.getTransfer().getPath();
+        indexManager.indexPathInStores( path, key );
+
+        // FIXME: Re-enable this and fix test failures.
+//        propagateClear( event.getTransfer().getLocation(), key, path );
+    }
+
+    // FIXME: Re-enable this and fix test failures.
+//    public void onStoreDisable( @Observes ArtifactStoreEnablementEvent event )
+//    {
+//        if ( !event.isDisabling() || !event.isPreprocessing() )
+//        {
+//            return;
+//        }
+//
+//        propagatePathlessStoreEvent( event );
+//    }
+
     public void onStoreDeletion( @Observes ArtifactStoreDeletePreEvent event )
     {
-        for ( ArtifactStore store : event )
-        {
-            final StoreKey key = store.getKey();
-
-            indexManager.removeAllIndexedPathsForStore( key );
-
-            indexManager.removeAllOriginIndexedPathsForStore( key );
-        }
+        propagatePathlessStoreEvent( event );
     }
 
     public void onStoreUpdate( @Observes ArtifactStorePreUpdateEvent event )
@@ -120,11 +188,28 @@ public class ContentIndexObserver
         final StoreKey key = expiration.getKey();
         final String path = expiration.getPath();
 
+        AtomicBoolean result = new AtomicBoolean( false );
+
         // invalidate indexes for the store itself
-        indexManager.removeIndexedStorePath( path, key );
+        indexManager.removeIndexedStorePath( path, key, indexedStorePath -> result.set( true ) );
 
         // invalidate indexes for groups containing the store
-        indexManager.removeOriginIndexedStorePath( path, key );
+        indexManager.removeOriginIndexedStorePath( path, key, indexedStorePath -> result.set( true ) );
+
+        // FIXME: Re-enable this and fix test failures.
+//        if ( result.get() )
+//        {
+//            try
+//            {
+//                ArtifactStore store = storeDataManager.getArtifactStore( key );
+//                propagateClear( LocationUtils.toLocation( store ), key, path );
+//            }
+//            catch ( IndyDataException e )
+//            {
+//                Logger logger = LoggerFactory.getLogger( getClass() );
+//                logger.error( String.format( "Failed to lookup store for: %s. Reason: %s", key, e.getMessage() ), e );
+//            }
+//        }
     }
 
     private void removeAllSupercededMemberContent( ArtifactStore store, Map<ArtifactStore, ArtifactStore> changeMap )
@@ -170,13 +255,139 @@ public class ContentIndexObserver
             // group content index entries for those.
             if ( divergencePoint < oldMembers.size() )
             {
+                Set<IndexedStorePath> removed = new HashSet<>();
                 for ( int i = divergencePoint; i < oldMembers.size(); i++ )
                 {
                     StoreKey memberKey = oldMembers.get( i );
-                    indexManager.removeAllOriginIndexedPathsForStore( memberKey );
+                    indexManager.removeAllOriginIndexedPathsForStore( memberKey, indexedStorePath -> removed.add( indexedStorePath ) );
                 }
+
+                // FIXME: Re-enable this and fix test failures.
+//                propagatePathRemovals( removed );
             }
         }
+    }
+
+    private void propagatePathlessStoreEvent( Iterable<ArtifactStore> stores )
+    {
+        stores.forEach( (store)->{
+            final StoreKey key = store.getKey();
+
+            Set<String> paths = new HashSet<>();
+            indexManager.removeAllIndexedPathsForStore( key, indexedStorePath ->{paths.add(indexedStorePath.getPath());} );
+            indexManager.removeAllOriginIndexedPathsForStore( key, indexedStorePath ->{paths.add(indexedStorePath.getPath());} );
+
+            if ( !paths.isEmpty() )
+            {
+                try
+                {
+                    Set<Group> groups = storeDataManager.getGroupsContaining( key );
+                    Location location = LocationUtils.toLocation( store );
+                    paths.forEach( (path)->{
+                        // here we care if it's mergable or not, since this may be triggered by a new file being stored.
+                        SpecialPathInfo specialPathInfo = specialPathManager.getSpecialPathInfo( location, path );
+                        if ( specialPathInfo != null && specialPathInfo.isMergable() )
+                        {
+                            indexManager.clearIndexedPathFrom( path, groups, deleteTransfers() );
+                        }
+                    } );
+                }
+                catch ( IndyDataException e )
+                {
+                    Logger logger = LoggerFactory.getLogger( getClass() );
+                    logger.error( String.format( "Failed to lookup groups containing: %s. Reason: %s", key, e.getMessage() ),
+                                  e );
+                }
+            }
+        } );
+    }
+
+    private void propagatePathRemovals( Set<IndexedStorePath> removals )
+    {
+        Map<StoreKey, Set<Group>> containersForKey = new HashMap<>();
+        removals.forEach( indexedStorePath -> {
+            StoreKey storeKey = indexedStorePath.getStoreKey();
+            try
+            {
+                ArtifactStore store = storeDataManager.getArtifactStore( storeKey );
+
+                Set<Group> groups = containersForKey.get( storeKey );
+                if ( groups == null )
+                {
+                    groups = storeDataManager.getGroupsContaining( storeKey );
+                }
+
+                Location location = LocationUtils.toLocation( store );
+                String path = indexedStorePath.getPath();
+
+                // Not sure this matters, since removal of a file from a group may expose another...
+//                SpecialPathInfo specialPathInfo = specialPathManager.getSpecialPathInfo( location, path );
+//                if ( specialPathInfo != null && specialPathInfo.isMergable() )
+//                {
+
+                // If the file is stored local to the group, it's merged and must die.
+                indexManager.clearIndexedPathFrom( path, groups, deleteTransfers() );
+//                }
+            }
+            catch ( IndyDataException e )
+            {
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.error( String.format( "Failed to lookup store, or groups containing store: %s. Reason: %s", storeKey, e.getMessage() ),
+                              e );
+            }
+        } );
+    }
+
+    private void propagateClear( Location location, StoreKey key, String path )
+    {
+        // I don't think this matters, since new files can obscure previously indexed ones, and file deletions may expose others
+//        SpecialPathInfo specialPathInfo = specialPathManager.getSpecialPathInfo( location, path );
+//        if ( specialPathInfo != null && specialPathInfo.isMergable() )
+//        {
+            try
+            {
+                Set<Group> groups = storeDataManager.getGroupsContaining( key );
+
+                // the only time a group will have local storage of the path is when it has been merged
+                // ...in which case we should try to delete it.
+                indexManager.clearIndexedPathFrom( path, groups, deleteTransfers() );
+            }
+            catch ( IndyDataException e )
+            {
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.error( String.format( "Failed to lookup groups containing: %s. Reason: %s", key, e.getMessage() ),
+                              e );
+            }
+//        }
+    }
+
+    private Consumer<IndexedStorePath> deleteTransfers()
+    {
+        return isp ->{
+            StoreKey key = isp.getStoreKey();
+            String path = isp.getPath();
+
+            try
+            {
+                Transfer transfer = directContentAccess.getTransfer( key, path );
+                if ( transfer != null && transfer.exists() )
+                {
+                    transfer.delete();
+                }
+            }
+            catch ( IndyWorkflowException e )
+            {
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.error( String.format( "Failed to retrieve Transfer for: %s in store: %s. Reason: %s", path,
+                                             key, e.getMessage() ), e );
+            }
+            catch ( IOException e )
+            {
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.error( String.format( "Failed to delete Transfer for: %s in store: %s. Reason: %s", path,
+                                             path, e.getMessage() ), e );
+            }
+        };
     }
 
 }

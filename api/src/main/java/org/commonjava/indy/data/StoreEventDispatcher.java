@@ -36,4 +36,13 @@ public interface StoreEventDispatcher
     void updating( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata, final Map<ArtifactStore, ArtifactStore> stores );
 
     void updated( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata, final Map<ArtifactStore, ArtifactStore> stores );
+
+    void enabling( final EventMetadata eventMetadata, final ArtifactStore...stores );
+
+    void enabled( final EventMetadata eventMetadata, final ArtifactStore...stores );
+
+    void disabling( final EventMetadata eventMetadata, final ArtifactStore... stores );
+
+    void disabled( final EventMetadata eventMetadata, final ArtifactStore...stores );
+
 }

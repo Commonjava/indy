@@ -19,6 +19,7 @@ import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.change.event.ArtifactStoreDeletePostEvent;
 import org.commonjava.indy.change.event.ArtifactStoreDeletePreEvent;
+import org.commonjava.indy.change.event.ArtifactStoreEnablementEvent;
 import org.commonjava.indy.change.event.ArtifactStorePostUpdateEvent;
 import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
@@ -51,6 +52,9 @@ public class DefaultStoreEventDispatcher
 
     @Inject
     private Event<ArtifactStoreDeletePostEvent> postDelEvent;
+
+    @Inject
+    private Event<ArtifactStoreEnablementEvent> enablementEvent;
 
     @Inject
     @WeftManaged
@@ -142,6 +146,42 @@ public class DefaultStoreEventDispatcher
                         new ArtifactStorePostUpdateEvent( type, eventMetadata, changeMap );
                 updatePostEvent.fire( event );
             } );
+        }
+    }
+
+    @Override
+    public void enabling( EventMetadata eventMetadata, ArtifactStore... stores )
+    {
+        fireEnablement( true, eventMetadata, false, stores );
+    }
+
+    @Override
+    public void enabled( EventMetadata eventMetadata, ArtifactStore... stores )
+    {
+        fireEnablement( false, eventMetadata, false, stores );
+    }
+
+    @Override
+    public void disabling( EventMetadata eventMetadata, ArtifactStore... stores )
+    {
+        fireEnablement( true, eventMetadata, true, stores );
+    }
+
+    @Override
+    public void disabled( EventMetadata eventMetadata, ArtifactStore... stores )
+    {
+        fireEnablement( false, eventMetadata, true, stores );
+    }
+
+    private void fireEnablement( boolean preprocess, EventMetadata eventMetadata, boolean disabling,
+                                 ArtifactStore... stores )
+    {
+        if ( enablementEvent != null )
+        {
+            executor.execute( ()->{
+                final ArtifactStoreEnablementEvent event = new ArtifactStoreEnablementEvent( preprocess, eventMetadata, disabling, stores );
+                enablementEvent.fire( event );
+            });
         }
     }
 

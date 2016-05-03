@@ -3,6 +3,7 @@ package org.commonjava.indy.content;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
@@ -44,6 +45,19 @@ public interface DirectContentAccess
      * @return A suitable transfer object (not null; those cases result in an exception) NOTE: the returned transfer may not exist!
      */
     Transfer getTransfer( final ArtifactStore store, final String path )
+            throws IndyWorkflowException;
+
+    /**
+     * Retrieve a {@link Transfer} object suitable for use in the specified operation. This method handles the selection logic in the event the store
+     * is a {@link Group}, and doesn't fire any events (the returned {@link Transfer} object handles that in this case).<br/>
+     * <b>No content generators are called in this method.</b>
+     *
+     * @param storeKey The key to the store in which the Transfer should reside
+     * @param path The path of the Transfer inside the store
+     * @return A suitable transfer object (not null; those cases result in an exception) NOTE: the returned transfer may not exist!
+     * @throws IndyWorkflowException in case no suitable storage location can be found
+     */
+    Transfer getTransfer( StoreKey storeKey, String path )
             throws IndyWorkflowException;
 
     List<StoreResource> listRaw( ArtifactStore store, String parentPath )

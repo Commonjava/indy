@@ -41,7 +41,7 @@ import java.io.IOException;
 import static org.apache.commons.lang.StringUtils.isNotEmpty;
 
 @ApplicationScoped
-public class StoreEnablementListener
+public class StoreEnablementManager
 {
 
     public static final String DISABLE_TIMEOUT = "Disable-Timeout";
@@ -58,6 +58,7 @@ public class StoreEnablementListener
     @Inject
     private IndyConfiguration config;
 
+    //FIXME: Convert to using ArtifactStoreEnablementEvent.
     public void onStoreUpdate( @Observes ArtifactStorePostUpdateEvent event )
     {
         for ( ArtifactStore store : event )
@@ -111,6 +112,7 @@ public class StoreEnablementListener
             logger.warn( "{} has been disabled due to store-level error: {}\n Will re-enable in {} seconds.", key,
                          error, config.getStoreDisableTimeoutSeconds() );
 
+            // TODO: How is it this doesn't duplicate the event handler method onStoreUpdate()...we're updating the store just above here.
             setReEnablementTimeout( key, config.getStoreDisableTimeoutSeconds() );
         }
         catch ( IndyDataException e )
