@@ -15,6 +15,8 @@
  */
 package org.commonjava.indy.content.index;
 
+import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.change.event.ArtifactStoreDeletePreEvent;
 import org.commonjava.indy.change.event.ArtifactStoreEnablementEvent;
@@ -52,6 +54,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -82,6 +85,11 @@ public class ContentIndexObserver
     @Inject
     private ContentIndexManager indexManager;
 
+    @ExecutorConfig( named = "content-indexer", threads = 8, priority = 2, daemon = true )
+    @WeftManaged
+    @Inject
+    private Executor executor;
+
     protected ContentIndexObserver()
     {
     }
@@ -90,13 +98,14 @@ public class ContentIndexObserver
                                  ContentIndexManager indexManager,
                                  SpecialPathManager specialPathManager,
                                  DirectContentAccess directContentAccess,
-                                 IndyObjectMapper objectMapper )
+                                 IndyObjectMapper objectMapper, Executor executor )
     {
         this.storeDataManager = storeDataManager;
         this.indexManager = indexManager;
         this.specialPathManager = specialPathManager;
         this.directContentAccess = directContentAccess;
         this.objectMapper = objectMapper;
+        this.executor = executor;
     }
 
     public void onFileDeletion( @Observes FileDeletionEvent event )
@@ -107,11 +116,10 @@ public class ContentIndexObserver
         AtomicBoolean result = new AtomicBoolean( false );
         indexManager.removeIndexedStorePath( path, key, indexedStorePath -> result.set( true ) );
 
-        // FIXME: Re-enable this and fix test failures.
-//        if ( result.get() )
-//        {
-//            propagateClear( event.getTransfer().getLocation(), key, path );
-//        }
+        if ( result.get() )
+        {
+            propagateClear( key, path );
+        }
     }
 
     public void onFileAccess( @Observes FileAccessEvent event )
@@ -126,20 +134,19 @@ public class ContentIndexObserver
         String path = event.getTransfer().getPath();
         indexManager.indexPathInStores( path, key );
 
-        // FIXME: Re-enable this and fix test failures.
-//        propagateClear( event.getTransfer().getLocation(), key, path );
+        propagateClear( key, path );
     }
 
     // FIXME: Re-enable this and fix test failures.
-//    public void onStoreDisable( @Observes ArtifactStoreEnablementEvent event )
-//    {
-//        if ( !event.isDisabling() || !event.isPreprocessing() )
-//        {
-//            return;
-//        }
-//
-//        propagatePathlessStoreEvent( event );
-//    }
+    public void onStoreDisable( @Observes ArtifactStoreEnablementEvent event )
+    {
+        if ( !event.isDisabling() || !event.isPreprocessing() )
+        {
+            return;
+        }
+
+        propagatePathlessStoreEvent( event );
+    }
 
     public void onStoreDeletion( @Observes ArtifactStoreDeletePreEvent event )
     {
@@ -196,20 +203,10 @@ public class ContentIndexObserver
         // invalidate indexes for groups containing the store
         indexManager.removeOriginIndexedStorePath( path, key, indexedStorePath -> result.set( true ) );
 
-        // FIXME: Re-enable this and fix test failures.
-//        if ( result.get() )
-//        {
-//            try
-//            {
-//                ArtifactStore store = storeDataManager.getArtifactStore( key );
-//                propagateClear( LocationUtils.toLocation( store ), key, path );
-//            }
-//            catch ( IndyDataException e )
-//            {
-//                Logger logger = LoggerFactory.getLogger( getClass() );
-//                logger.error( String.format( "Failed to lookup store for: %s. Reason: %s", key, e.getMessage() ), e );
-//            }
-//        }
+        if ( result.get() )
+        {
+            propagateClear( key, path );
+        }
     }
 
     private void removeAllSupercededMemberContent( ArtifactStore store, Map<ArtifactStore, ArtifactStore> changeMap )
@@ -262,88 +259,82 @@ public class ContentIndexObserver
                     indexManager.removeAllOriginIndexedPathsForStore( memberKey, indexedStorePath -> removed.add( indexedStorePath ) );
                 }
 
-                // FIXME: Re-enable this and fix test failures.
-//                propagatePathRemovals( removed );
+                propagatePathRemovals( removed );
             }
         }
     }
 
     private void propagatePathlessStoreEvent( Iterable<ArtifactStore> stores )
     {
-        stores.forEach( (store)->{
-            final StoreKey key = store.getKey();
+        executor.execute(()->{
+            stores.forEach( (store)->{
+                final StoreKey key = store.getKey();
 
-            Set<String> paths = new HashSet<>();
-            indexManager.removeAllIndexedPathsForStore( key, indexedStorePath ->{paths.add(indexedStorePath.getPath());} );
-            indexManager.removeAllOriginIndexedPathsForStore( key, indexedStorePath ->{paths.add(indexedStorePath.getPath());} );
+                Set<String> paths = new HashSet<>();
+                indexManager.removeAllIndexedPathsForStore( key, indexedStorePath ->{paths.add(indexedStorePath.getPath());} );
+                indexManager.removeAllOriginIndexedPathsForStore( key, indexedStorePath ->{paths.add(indexedStorePath.getPath());} );
 
-            if ( !paths.isEmpty() )
-            {
-                try
+                if ( !paths.isEmpty() )
                 {
-                    Set<Group> groups = storeDataManager.getGroupsContaining( key );
-                    Location location = LocationUtils.toLocation( store );
-                    paths.forEach( (path)->{
-                        // here we care if it's mergable or not, since this may be triggered by a new file being stored.
-                        SpecialPathInfo specialPathInfo = specialPathManager.getSpecialPathInfo( location, path );
-                        if ( specialPathInfo != null && specialPathInfo.isMergable() )
-                        {
-                            indexManager.clearIndexedPathFrom( path, groups, deleteTransfers() );
-                        }
-                    } );
+                    try
+                    {
+                        Set<Group> groups = storeDataManager.getGroupsContaining( key );
+                        Location location = LocationUtils.toLocation( store );
+                        paths.forEach( (path)->{
+                            // here we care if it's mergable or not, since this may be triggered by a new file being stored.
+                            SpecialPathInfo specialPathInfo = specialPathManager.getSpecialPathInfo( location, path );
+                            if ( specialPathInfo != null && specialPathInfo.isMergable() )
+                            {
+                                indexManager.clearIndexedPathFrom( path, groups, deleteTransfers() );
+                            }
+                        } );
+                    }
+                    catch ( IndyDataException e )
+                    {
+                        Logger logger = LoggerFactory.getLogger( getClass() );
+                        logger.error( String.format( "Failed to lookup groups containing: %s. Reason: %s", key, e.getMessage() ),
+                                      e );
+                    }
                 }
-                catch ( IndyDataException e )
-                {
-                    Logger logger = LoggerFactory.getLogger( getClass() );
-                    logger.error( String.format( "Failed to lookup groups containing: %s. Reason: %s", key, e.getMessage() ),
-                                  e );
-                }
-            }
-        } );
+            } );
+        });
     }
 
     private void propagatePathRemovals( Set<IndexedStorePath> removals )
     {
-        Map<StoreKey, Set<Group>> containersForKey = new HashMap<>();
-        removals.forEach( indexedStorePath -> {
-            StoreKey storeKey = indexedStorePath.getStoreKey();
-            try
-            {
-                ArtifactStore store = storeDataManager.getArtifactStore( storeKey );
-
-                Set<Group> groups = containersForKey.get( storeKey );
-                if ( groups == null )
+        executor.execute( ()->{
+            Map<StoreKey, Set<Group>> containersForKey = new HashMap<>();
+            removals.forEach( indexedStorePath -> {
+                StoreKey storeKey = indexedStorePath.getStoreKey();
+                try
                 {
-                    groups = storeDataManager.getGroupsContaining( storeKey );
+                    ArtifactStore store = storeDataManager.getArtifactStore( storeKey );
+
+                    Set<Group> groups = containersForKey.get( storeKey );
+                    if ( groups == null )
+                    {
+                        groups = storeDataManager.getGroupsContaining( storeKey );
+                    }
+
+                    Location location = LocationUtils.toLocation( store );
+                    String path = indexedStorePath.getPath();
+
+                    // If the file is stored local to the group, it's merged and must die.
+                    indexManager.clearIndexedPathFrom( path, groups, deleteTransfers() );
                 }
-
-                Location location = LocationUtils.toLocation( store );
-                String path = indexedStorePath.getPath();
-
-                // Not sure this matters, since removal of a file from a group may expose another...
-//                SpecialPathInfo specialPathInfo = specialPathManager.getSpecialPathInfo( location, path );
-//                if ( specialPathInfo != null && specialPathInfo.isMergable() )
-//                {
-
-                // If the file is stored local to the group, it's merged and must die.
-                indexManager.clearIndexedPathFrom( path, groups, deleteTransfers() );
-//                }
-            }
-            catch ( IndyDataException e )
-            {
-                Logger logger = LoggerFactory.getLogger( getClass() );
-                logger.error( String.format( "Failed to lookup store, or groups containing store: %s. Reason: %s", storeKey, e.getMessage() ),
-                              e );
-            }
-        } );
+                catch ( IndyDataException e )
+                {
+                    Logger logger = LoggerFactory.getLogger( getClass() );
+                    logger.error( String.format( "Failed to lookup store, or groups containing store: %s. Reason: %s", storeKey, e.getMessage() ),
+                                  e );
+                }
+            } );
+        });
     }
 
-    private void propagateClear( Location location, StoreKey key, String path )
+    private void propagateClear( StoreKey key, String path )
     {
-        // I don't think this matters, since new files can obscure previously indexed ones, and file deletions may expose others
-//        SpecialPathInfo specialPathInfo = specialPathManager.getSpecialPathInfo( location, path );
-//        if ( specialPathInfo != null && specialPathInfo.isMergable() )
-//        {
+        executor.execute(()->{
             try
             {
                 Set<Group> groups = storeDataManager.getGroupsContaining( key );
@@ -358,7 +349,7 @@ public class ContentIndexObserver
                 logger.error( String.format( "Failed to lookup groups containing: %s. Reason: %s", key, e.getMessage() ),
                               e );
             }
-//        }
+        });
     }
 
     private Consumer<IndexedStorePath> deleteTransfers()

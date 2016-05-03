@@ -37,6 +37,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -223,7 +224,7 @@ public class MemoryStoreDataManager
             throws IndyDataException
     {
         Set<Group> groups = reverseGroupMemberships.get( repo );
-        return groups == null ? Collections.emptySet() : new HashSet<>( groups );
+        return groups == null ? Collections.emptySet() : Collections.unmodifiableSet( groups );
     }
 
     private boolean groupContains( final Group g, final StoreKey key )
@@ -341,15 +342,14 @@ public class MemoryStoreDataManager
                         Set<Group> memberIn = reverseGroupMemberships.get( memberKey );
                         if ( memberIn == null )
                         {
-                            memberIn = Collections.singleton( g );
+                            memberIn = new HashSet<>( Arrays.asList( g ) );
                         }
                         else
                         {
-                            memberIn = new HashSet<>( memberIn );
                             memberIn.add( g );
                         }
 
-                        reverseGroupMemberships.put( memberKey, Collections.unmodifiableSet( memberIn ) );
+                        reverseGroupMemberships.put( memberKey, memberIn );
                     }
                 });
             }

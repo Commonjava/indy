@@ -17,6 +17,7 @@ package org.commonjava.indy.core.change;
 
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.change.event.ArtifactStoreEnablementEvent;
 import org.commonjava.indy.change.event.ArtifactStorePostUpdateEvent;
 import org.commonjava.indy.change.event.IndyStoreErrorEvent;
 import org.commonjava.indy.conf.IndyConfiguration;
@@ -59,11 +60,16 @@ public class StoreEnablementManager
     private IndyConfiguration config;
 
     //FIXME: Convert to using ArtifactStoreEnablementEvent.
-    public void onStoreUpdate( @Observes ArtifactStorePostUpdateEvent event )
+    public void onStoreEnablementChange( @Observes ArtifactStoreEnablementEvent event )
     {
+        if ( event.isPreprocessing() )
+        {
+            return;
+        }
+
         for ( ArtifactStore store : event )
         {
-            if ( store.isDisabled() )
+            if ( event.isDisabling() )
             {
                 String toStr = store.getMetadata( DISABLE_TIMEOUT );
                 if ( isNotEmpty( toStr ) )
@@ -80,20 +86,56 @@ public class StoreEnablementManager
                     }
                 }
             }
-//            else
-//            {
-//                try
-//                {
-//                    cancelReEnablementTimeout( store.getKey() );
-//                }
-//                catch ( IndySchedulerException e )
-//                {
-//                    Logger logger = LoggerFactory.getLogger( getClass() );
-//                    logger.error( String.format( "Failed to delete re-enablement job for %s.", store.getKey() ), e );
-//                }
-//            }
+            else
+            {
+                try
+                {
+                    cancelReEnablementTimeout( store.getKey() );
+                }
+                catch ( IndySchedulerException e )
+                {
+                    Logger logger = LoggerFactory.getLogger( getClass() );
+                    logger.error( String.format( "Failed to delete re-enablement job for %s.", store.getKey() ), e );
+                }
+            }
         }
     }
+
+//    public void onStoreUpdate( @Observes ArtifactStorePostUpdateEvent event )
+//    {
+//        for ( ArtifactStore store : event )
+//        {
+//            if ( store.isDisabled() )
+//            {
+//                String toStr = store.getMetadata( DISABLE_TIMEOUT );
+//                if ( isNotEmpty( toStr ) )
+//                {
+//                    int timeout = Integer.parseInt( toStr );
+//                    try
+//                    {
+//                        setReEnablementTimeout( store.getKey(), timeout );
+//                    }
+//                    catch ( IndySchedulerException e )
+//                    {
+//                        Logger logger = LoggerFactory.getLogger( getClass() );
+//                        logger.error( String.format( "Failed to schedule re-enablement of %s.", store.getKey() ), e );
+//                    }
+//                }
+//            }
+////            else
+////            {
+////                try
+////                {
+////                    cancelReEnablementTimeout( store.getKey() );
+////                }
+////                catch ( IndySchedulerException e )
+////                {
+////                    Logger logger = LoggerFactory.getLogger( getClass() );
+////                    logger.error( String.format( "Failed to delete re-enablement job for %s.", store.getKey() ), e );
+////                }
+////            }
+//        }
+//    }
 
     public void onStoreError( @Observes IndyStoreErrorEvent evt )
     {
