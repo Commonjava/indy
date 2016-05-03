@@ -40,14 +40,19 @@
           </div>
 
           <div class="sub-fields">
-          <div class="detail-field">
+            <div class="detail-field">
              <input type="checkbox" ng-model="store.is_passthrough" />
              <label>Don't Cache Content</label>
              <ap-hint key="passthrough"></ap-hint>
-          </div>
+            </div>
             <div ng-if="!store.is_passthrough" class="detail-field">
-              <label>Content Cache Timeout:</label>
-              <input type="text" ng-model="raw.cache_timeout_seconds"/>
+             <label>Content Cache Timeout:</label>
+             <input type="text" ng-model="raw.cache_timeout_seconds"/>
+             <ap-duration-hint></ap-duration-hint>
+            </div>
+            <div ng-if="!store.is_passthrough" class="detail-field">
+              <label>Metadata Cache Timeout:</label>
+              <input type="text" ng-model="raw.metadata_timeout_seconds"/>
               <ap-duration-hint></ap-duration-hint>
             </div>
           </div>

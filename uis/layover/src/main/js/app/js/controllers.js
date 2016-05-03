@@ -90,6 +90,7 @@ indyControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 
         }
     
         scope.store.timeout_seconds = StoreUtilSvc.durationToSeconds(scope.raw.timeout_seconds);
+        scope.store.metadata_timeout_seconds = StoreUtilSvc.durationToSeconds(scope.raw.metadata_timeout_seconds);
       },
     });
   };
@@ -100,6 +101,7 @@ indyControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 
       $scope.raw.storeHref = StoreUtilSvc.storeHref(store.key);
       $scope.raw.cache_timeout_seconds = StoreUtilSvc.secondsToDuration(store.cache_timeout_seconds);
       $scope.raw.timeout_seconds = StoreUtilSvc.secondsToDuration(store.timeout_seconds);
+      $scope.raw.metadata_timeout_seconds = StoreUtilSvc.secondsToDuration(store.metadata_timeout_seconds);
 
       var useX509 = store.server_certificate_pem !== undefined;
       useX509 = store.key_certificate_pem !== undefined || useX509;
