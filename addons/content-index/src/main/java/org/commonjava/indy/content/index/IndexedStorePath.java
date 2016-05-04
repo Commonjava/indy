@@ -17,8 +17,10 @@ package org.commonjava.indy.content.index;
 
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Store;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -28,24 +30,24 @@ import java.io.ObjectOutput;
 /**
  * Created by jdcasey on 3/15/16.
  */
-@Indexed
+@Indexed(index = "indexedStorePath")
 public class IndexedStorePath
         implements Externalizable
 {
 
-    @Field
+    @Field( name = "storeType", store = Store.YES, analyze = Analyze.NO )
     private StoreType storeType;
 
-    @Field
+    @Field( name = "storeName", store = Store.YES, analyze = Analyze.NO )
     private String storeName;
 
-    @Field
+    @Field( name = "originStoreType", store = Store.YES, analyze = Analyze.NO )
     private StoreType originStoreType;
 
-    @Field
+    @Field( name = "originStoreName", store = Store.YES, analyze = Analyze.NO )
     private String originStoreName;
 
-    @Field
+    @Field( name = "path", store = Store.YES, analyze = Analyze.NO )
     private String path;
 
     public IndexedStorePath( StoreKey storeKey, StoreKey origin, String path )
