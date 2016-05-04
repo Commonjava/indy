@@ -100,7 +100,7 @@ public class ContentAccessResource
     public Response doHead(
             final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" )
             String type, final @ApiParam( required = true ) @PathParam( "name" ) String name,
-            final @PathParam( "path" ) String path, @QueryParam( CHECK_CACHE_ONLY ) Boolean cacheOnly,
+            final @PathParam( "path" ) String path, @QueryParam( CHECK_CACHE_ONLY ) final Boolean cacheOnly,
             @Context final UriInfo uriInfo, @Context final HttpServletRequest request )
     {
         final String baseUri = uriInfo.getBaseUriBuilder()
@@ -128,6 +128,25 @@ public class ContentAccessResource
                                       .toString();
 
         return handler.doGet( type, name, path, baseUri, request, new EventMetadata() );
+    }
+
+    @ApiOperation( "Retrieve root listing under the given artifact store (type/name)." )
+    @ApiResponses( { @ApiResponse( code = 200, response = String.class,
+                                   message = "Rendered root content listing" ),
+                           @ApiResponse( code = 200, response = StreamingOutput.class, message = "Content stream" ), } )
+    @GET
+    @Path( "/" )
+    public Response doGet(
+            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" )
+            String type, final @ApiParam( required = true ) @PathParam( "name" ) String name,
+            @Context final UriInfo uriInfo, @Context final HttpServletRequest request )
+    {
+        final String baseUri = uriInfo.getBaseUriBuilder()
+                                      .path( IndyDeployment.API_PREFIX )
+                                      .build()
+                                      .toString();
+
+        return handler.doGet( type, name, "", baseUri, request, new EventMetadata() );
     }
 
 }
