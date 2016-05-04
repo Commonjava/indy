@@ -5,6 +5,7 @@ import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.model.core.ArtifactStore;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
@@ -72,6 +73,13 @@ public class DefaultDirectContentAccess
             throws IndyWorkflowException
     {
         return downloadManager.getStorageReference( store, path );
+    }
+
+    @Override
+    public Transfer getTransfer( final StoreKey key, final String path )
+            throws IndyWorkflowException
+    {
+        return downloadManager.getStorageReference( key, path );
     }
 
     @Override

@@ -41,11 +41,11 @@ public abstract class AbstractContentTimeoutWorkingTest
         return false;
     }
 
-    private String pomFilePath;
+    private File pomFile;
 
-    protected static final int TIMEOUT_SECONDS = 2;
+    protected static final int TIMEOUT_SECONDS = 1;
 
-    protected static final int TIMEOUT_WAITING_MILLISECONDS = ( TIMEOUT_SECONDS + 2 ) * 1000;
+    protected static final int TIMEOUT_WAITING_MILLISECONDS = 2000;
 
     @Before
     public void setupRepo()
@@ -69,9 +69,11 @@ public abstract class AbstractContentTimeoutWorkingTest
         final PathInfo result = client.content().getInfo( remote, repoId, pomPath );
         assertThat( "no result", result, notNullValue() );
         assertThat( "doesn't exist", result.exists(), equalTo( true ) );
-        pomFilePath = String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(),
+
+        String pomFilePath = String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(),
                                      remote.name(), repoId, pomPath );
-        final File pomFile = new File( pomFilePath );
+
+        pomFile = new File( pomFilePath );
         assertThat( "pom doesn't exist", pomFile.exists(), equalTo( true ) );
 
     }
@@ -83,7 +85,6 @@ public abstract class AbstractContentTimeoutWorkingTest
         Thread.sleep( TIMEOUT_WAITING_MILLISECONDS );
         logger.debug( "Timeout time {}s passed!", TIMEOUT_SECONDS );
 
-        final File pomFile = new File( pomFilePath );
         assertThat( "artifact should be removed when timeout", pomFile.exists(), equalTo( false ) );
     }
 

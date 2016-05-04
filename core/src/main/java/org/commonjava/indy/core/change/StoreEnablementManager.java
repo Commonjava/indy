@@ -17,6 +17,7 @@ package org.commonjava.indy.core.change;
 
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.change.event.ArtifactStoreEnablementEvent;
 import org.commonjava.indy.change.event.ArtifactStorePostUpdateEvent;
 import org.commonjava.indy.change.event.IndyStoreErrorEvent;
 import org.commonjava.indy.conf.IndyConfiguration;
@@ -41,7 +42,7 @@ import java.io.IOException;
 import static org.apache.commons.lang.StringUtils.isNotEmpty;
 
 @ApplicationScoped
-public class StoreEnablementListener
+public class StoreEnablementManager
 {
 
     public static final String DISABLE_TIMEOUT = "Disable-Timeout";
@@ -58,11 +59,17 @@ public class StoreEnablementListener
     @Inject
     private IndyConfiguration config;
 
-    public void onStoreUpdate( @Observes ArtifactStorePostUpdateEvent event )
+    //FIXME: Convert to using ArtifactStoreEnablementEvent.
+    public void onStoreEnablementChange( @Observes ArtifactStoreEnablementEvent event )
     {
+        if ( event.isPreprocessing() )
+        {
+            return;
+        }
+
         for ( ArtifactStore store : event )
         {
-            if ( store.isDisabled() )
+            if ( event.isDisabling() )
             {
                 String toStr = store.getMetadata( DISABLE_TIMEOUT );
                 if ( isNotEmpty( toStr ) )
@@ -79,20 +86,56 @@ public class StoreEnablementListener
                     }
                 }
             }
-//            else
-//            {
-//                try
-//                {
-//                    cancelReEnablementTimeout( store.getKey() );
-//                }
-//                catch ( IndySchedulerException e )
-//                {
-//                    Logger logger = LoggerFactory.getLogger( getClass() );
-//                    logger.error( String.format( "Failed to delete re-enablement job for %s.", store.getKey() ), e );
-//                }
-//            }
+            else
+            {
+                try
+                {
+                    cancelReEnablementTimeout( store.getKey() );
+                }
+                catch ( IndySchedulerException e )
+                {
+                    Logger logger = LoggerFactory.getLogger( getClass() );
+                    logger.error( String.format( "Failed to delete re-enablement job for %s.", store.getKey() ), e );
+                }
+            }
         }
     }
+
+//    public void onStoreUpdate( @Observes ArtifactStorePostUpdateEvent event )
+//    {
+//        for ( ArtifactStore store : event )
+//        {
+//            if ( store.isDisabled() )
+//            {
+//                String toStr = store.getMetadata( DISABLE_TIMEOUT );
+//                if ( isNotEmpty( toStr ) )
+//                {
+//                    int timeout = Integer.parseInt( toStr );
+//                    try
+//                    {
+//                        setReEnablementTimeout( store.getKey(), timeout );
+//                    }
+//                    catch ( IndySchedulerException e )
+//                    {
+//                        Logger logger = LoggerFactory.getLogger( getClass() );
+//                        logger.error( String.format( "Failed to schedule re-enablement of %s.", store.getKey() ), e );
+//                    }
+//                }
+//            }
+////            else
+////            {
+////                try
+////                {
+////                    cancelReEnablementTimeout( store.getKey() );
+////                }
+////                catch ( IndySchedulerException e )
+////                {
+////                    Logger logger = LoggerFactory.getLogger( getClass() );
+////                    logger.error( String.format( "Failed to delete re-enablement job for %s.", store.getKey() ), e );
+////                }
+////            }
+//        }
+//    }
 
     public void onStoreError( @Observes IndyStoreErrorEvent evt )
     {
@@ -111,6 +154,7 @@ public class StoreEnablementListener
             logger.warn( "{} has been disabled due to store-level error: {}\n Will re-enable in {} seconds.", key,
                          error, config.getStoreDisableTimeoutSeconds() );
 
+            // TODO: How is it this doesn't duplicate the event handler method onStoreUpdate()...we're updating the store just above here.
             setReEnablementTimeout( key, config.getStoreDisableTimeoutSeconds() );
         }
         catch ( IndyDataException e )
