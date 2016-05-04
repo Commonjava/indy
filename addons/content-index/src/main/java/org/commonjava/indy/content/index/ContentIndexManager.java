@@ -280,25 +280,27 @@ public class ContentIndexManager
 
     public void clearIndexedPathFrom( String path, Set<Group> groups, Consumer<IndexedStorePath> pathConsumer )
     {
-        Set<Group> nextGroups = new HashSet<>();
-        if ( groups != null )
+        if ( groups == null || groups.isEmpty() )
         {
-            groups.forEach( (group)->{
-                removeIndexedStorePath( path, group.getKey(), pathConsumer );
-                try
-                {
-                    nextGroups.addAll( storeDataManager.getGroupsContaining( group.getKey() ) );
-                }
-                catch ( IndyDataException e )
-                {
-                    Logger logger = LoggerFactory.getLogger( getClass() );
-                    logger.error( String.format( "Failed to lookup groups containing: %s. Reason: %s", group.getKey(), e.getMessage() ),
-                                  e );
-                }
-            } );
-
-            nextGroups.removeAll( groups );
+            return;
         }
+
+        Set<Group> nextGroups = new HashSet<>();
+        groups.forEach( (group)->{
+            removeIndexedStorePath( path, group.getKey(), pathConsumer );
+            try
+            {
+                nextGroups.addAll( storeDataManager.getGroupsContaining( group.getKey() ) );
+            }
+            catch ( IndyDataException e )
+            {
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.error( String.format( "Failed to lookup groups containing: %s. Reason: %s", group.getKey(), e.getMessage() ),
+                              e );
+            }
+        } );
+
+        nextGroups.removeAll( groups );
 
         clearIndexedPathFrom( path, nextGroups, pathConsumer );
     }
