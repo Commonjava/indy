@@ -259,10 +259,11 @@ public class FoloAdminController
                     entry.setOriginUrl( remoteUrl );
 
                     final Map<ContentDigest, String> digests =
-                            contentManager.digest( key, path, ContentDigest.MD5, ContentDigest.SHA_256 );
+                            contentManager.digest( key, path, ContentDigest.MD5, ContentDigest.SHA_1, ContentDigest.SHA_256 );
 
                     entry.setMd5( digests.get( ContentDigest.MD5 ) );
                     entry.setSha256( digests.get( ContentDigest.SHA_256 ) );
+                    entry.setSha1( digests.get( ContentDigest.SHA_1 ) );
 
                     entries.add( entry );
                 }

@@ -22,7 +22,8 @@ package org.commonjava.indy.content;
 public enum ContentDigest
 {
 
-    MD5, SHA_256( "SHA-256" );
+    MD5, SHA_256( "SHA-256" ),
+    SHA_1 ( "SHA-1" );
 
     private String digestName;
 
