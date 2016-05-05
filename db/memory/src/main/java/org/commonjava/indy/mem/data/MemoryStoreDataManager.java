@@ -223,8 +223,11 @@ public class MemoryStoreDataManager
     public Set<Group> getGroupsContaining( final StoreKey repo )
             throws IndyDataException
     {
-        Set<Group> groups = reverseGroupMemberships.get( repo );
-        return groups == null ? Collections.emptySet() : Collections.unmodifiableSet( groups );
+        synchronized ( StoreKey.dedupe( repo ) )
+        {
+            Set<Group> groups = reverseGroupMemberships.get( repo );
+            return groups == null ? Collections.emptySet() : Collections.unmodifiableSet( new HashSet<>( groups ) );
+        }
     }
 
     private boolean groupContains( final Group g, final StoreKey key )

@@ -32,7 +32,6 @@ import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.util.ApplicationStatus;
-import org.commonjava.maven.galley.TransferLocationException;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
@@ -310,7 +309,7 @@ public class DefaultContentManager
             {
                 final List<ArtifactStore> allMembers = storeManager.getOrderedConcreteStoresInGroup( store.getName() );
 
-                final Transfer txfr = store( allMembers, path, stream, op, eventMetadata );
+                final Transfer txfr = store( allMembers, store.getKey(), path, stream, op, eventMetadata );
                 logger.info( "Stored: {} for group: {} in: {}", path, store.getKey(), txfr );
                 return txfr;
             }
@@ -354,16 +353,16 @@ public class DefaultContentManager
         return txfr;
     }
 
-    @Override
-    public Transfer store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream,
-                           final TransferOperation op )
-            throws IndyWorkflowException
-    {
-        return store( stores, path, stream, op, new EventMetadata() );
-    }
+//    @Override
+//    public Transfer store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream,
+//                           final TransferOperation op )
+//            throws IndyWorkflowException
+//    {
+//        return store( stores, path, stream, op, new EventMetadata() );
+//    }
 
     @Override
-    public Transfer store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream,
+    public Transfer store( final List<? extends ArtifactStore> stores, StoreKey topKey, final String path, final InputStream stream,
                            final TransferOperation op, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {

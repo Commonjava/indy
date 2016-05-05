@@ -68,6 +68,9 @@ public final class LocationUtils
                 AttributePasswordManager.bind( location, PasswordEntry.PROXY_PASSWORD, repository.getProxyPassword() );
                 AttributePasswordManager.bind( location, PasswordEntry.USER_PASSWORD, repository.getPassword() );
 
+                // for testing purposes only...
+                location.setAttribute( Location.MAX_CONNECTIONS, 30 );
+
                 return location;
             }
         }

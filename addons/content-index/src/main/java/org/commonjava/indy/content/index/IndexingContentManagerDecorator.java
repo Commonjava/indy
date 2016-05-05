@@ -26,10 +26,12 @@ import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
+import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,12 +67,14 @@ public abstract class IndexingContentManagerDecorator
     @Inject
     private ContentIndexManager indexManager;
 
+    @Inject
+    private NotFoundCache nfc;
+
     protected IndexingContentManagerDecorator()
     {
     }
 
-    protected IndexingContentManagerDecorator( final ContentManager delegate,
-                                               final StoreDataManager storeDataManager,
+    protected IndexingContentManagerDecorator( final ContentManager delegate, final StoreDataManager storeDataManager,
                                                final SpecialPathManager specialPathManager,
                                                final ContentIndexManager indexManager )
     {
@@ -88,7 +92,8 @@ public abstract class IndexingContentManagerDecorator
     }
 
     @Override
-    public Transfer retrieveFirst( final List<? extends ArtifactStore> stores, final String path, final EventMetadata eventMetadata )
+    public Transfer retrieveFirst( final List<? extends ArtifactStore> stores, final String path,
+                                   final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         Transfer transfer = null;
@@ -112,7 +117,8 @@ public abstract class IndexingContentManagerDecorator
     }
 
     @Override
-    public List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path, final EventMetadata eventMetadata )
+    public List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path,
+                                       final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         List<Transfer> results = new ArrayList<>();
@@ -125,12 +131,12 @@ public abstract class IndexingContentManagerDecorator
             {
                 Logger logger = LoggerFactory.getLogger( getClass() );
                 logger.error(
-                        String.format( "Failed to retrieve indexed content: %s:%s. Reason: %s", store.getKey(),
-                                       path, e.getMessage() ), e );
+                        String.format( "Failed to retrieve indexed content: %s:%s. Reason: %s", store.getKey(), path,
+                                       e.getMessage() ), e );
             }
 
             return null;
-        } ).filter((transfer)->transfer != null).forEachOrdered( ( transfer ) -> {
+        } ).filter( ( transfer ) -> transfer != null ).forEachOrdered( ( transfer ) -> {
             if ( transfer != null )
             {
                 results.add( transfer );
@@ -153,7 +159,7 @@ public abstract class IndexingContentManagerDecorator
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
 
-        Transfer transfer = getIndexedTransfer( store, path, TransferOperation.DOWNLOAD );
+        Transfer transfer = getIndexedTransfer( store.getKey(), null, path, TransferOperation.DOWNLOAD );
         if ( transfer != null )
         {
             return transfer;
@@ -161,6 +167,12 @@ public abstract class IndexingContentManagerDecorator
 
         if ( StoreType.group == store.getKey().getType() )
         {
+            ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
+            if ( nfc.isMissing( resource ) )
+            {
+                return null;
+            }
+
             logger.debug( "No group index hits. Devolving to member store indexes." );
 
             KeyedLocation location = LocationUtils.toLocation( store );
@@ -172,6 +184,7 @@ public abstract class IndexingContentManagerDecorator
                     transfer = getIndexedMemberTransfer( key, store.getKey(), path );
                     if ( transfer != null )
                     {
+                        nfc.clearMissing( resource );
                         return transfer;
                     }
                 }
@@ -180,7 +193,13 @@ public abstract class IndexingContentManagerDecorator
             else
             {
                 logger.debug( "Merged content. Delegating to main content manager for: {} in: {}", path, store );
-                return delegate.retrieve( store, path, eventMetadata );
+                transfer = delegate.retrieve( store, path, eventMetadata );
+                if ( transfer == null )
+                {
+                    nfc.addMissing( resource );
+                }
+
+                return transfer;
             }
         }
 
@@ -190,26 +209,29 @@ public abstract class IndexingContentManagerDecorator
         {
             logger.debug( "Got transfer from delegate: {} (will index)", transfer );
 
-            indexManager.indexTransferIn( transfer, store.getKey(), LocationUtils.getKey( transfer ) );
+            indexManager.indexTransferIn( transfer, store.getKey() );
         }
 
         logger.debug( "Returning transfer: {}", transfer );
         return transfer;
     }
 
-    private Transfer getIndexedTransfer( ArtifactStore store, String path, TransferOperation op )
+    private Transfer getIndexedTransfer( StoreKey storeKey, StoreKey topKey, String path, TransferOperation op )
             throws IndyWorkflowException
     {
-        IndexedStorePath storePath =
-                indexManager.getIndexedStorePath( store.getKey(), path );
+        IndexedStorePath storePath = indexManager.getIndexedStorePath( storeKey, path );
 
         if ( storePath != null )
         {
-            Transfer transfer = delegate.getTransfer( store, path, op );
+            Transfer transfer = delegate.getTransfer( storeKey, path, op );
             if ( transfer == null || !transfer.exists() )
             {
-                // something happened to the underlying Transfer...de-index it.
-                indexManager.deIndexStorePath( store.getKey(), path );
+                // something happened to the underlying Transfer...de-index it, and don't return it.
+                indexManager.deIndexStorePath( storeKey, path );
+                if ( topKey != null )
+                {
+                    indexManager.deIndexStorePath( topKey, path );
+                }
             }
             else
             {
@@ -226,14 +248,27 @@ public abstract class IndexingContentManagerDecorator
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
 
-        Transfer transfer = getIndexedTransfer( store, path, TransferOperation.DOWNLOAD );
+        Transfer transfer = getIndexedTransfer( store.getKey(), null, path, TransferOperation.DOWNLOAD );
         if ( transfer != null )
         {
             return transfer;
         }
 
-        if ( StoreType.group == store.getKey().getType() )
+        StoreType type = store.getKey().getType();
+        if ( StoreType.hosted == type )
         {
+            // hosted repos are completely indexed, since the store() method maintains the index
+            // So, if it wasn't found in the index (above), and we're looking at a hosted repo, it's not here.
+            return null;
+        }
+        else if ( StoreType.group == type )
+        {
+            ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
+            if ( nfc.isMissing( resource ) )
+            {
+                return null;
+            }
+
             logger.debug( "No group index hits. Devolving to member store indexes." );
             for ( StoreKey key : ( (Group) store ).getConstituents() )
             {
@@ -242,13 +277,17 @@ public abstract class IndexingContentManagerDecorator
                 {
                     return transfer;
                 }
+                else
+                {
+                    nfc.addMissing( resource );
+                }
             }
         }
 
         transfer = delegate.getTransfer( store, path, op );
         if ( transfer != null )
         {
-            indexManager.indexTransferIn( transfer, store.getKey(), LocationUtils.getKey( transfer ) );
+            indexManager.indexTransferIn( transfer, store.getKey() );
         }
 
         return transfer;
@@ -257,23 +296,35 @@ public abstract class IndexingContentManagerDecorator
     private Transfer getIndexedMemberTransfer( StoreKey key, StoreKey topKey, String path )
             throws IndyWorkflowException
     {
-        Transfer transfer = null;
-        try
+        Transfer transfer;
+        transfer = getIndexedTransfer( key, topKey, path, TransferOperation.DOWNLOAD );
+        if ( transfer != null )
         {
-            ArtifactStore memberStore = storeDataManager.getArtifactStore( key );
-
-            transfer = getIndexedTransfer( memberStore, path, TransferOperation.DOWNLOAD );
-            if ( transfer != null )
-            {
-                indexManager.indexTransferIn( transfer, topKey );
-            }
+            indexManager.indexTransferIn( transfer, key, topKey );
         }
-        catch ( IndyDataException e )
+        else if ( StoreType.group == key.getType() )
         {
-            Logger logger = LoggerFactory.getLogger( getClass() );
-            logger.error(
-                    String.format( "Cannot lookup ArtifactStore for key: %s. Reason: %s", key, e.getMessage() ),
-                    e );
+            try
+            {
+                Group g = storeDataManager.getGroup( key.getName() );
+                for ( StoreKey memberKey : g.getConstituents() )
+                {
+                    transfer = getIndexedMemberTransfer( memberKey, topKey, path );
+                    if ( transfer != null )
+                    {
+                        // the other keys' index will be added in the recursive call...but we need to add the intermediary here.
+                        indexManager.indexTransferIn( transfer, key );
+                        return transfer;
+                    }
+                }
+            }
+            catch ( IndyDataException e )
+            {
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.error(
+                        String.format( "Failed to lookup group: %s (in membership closure of: %s). Reason: %s", key,
+                                       topKey, e.getMessage() ), e );
+            }
         }
 
         return transfer;
@@ -285,52 +336,57 @@ public abstract class IndexingContentManagerDecorator
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
 
-        ArtifactStore store;
-        try
-        {
-            store = storeDataManager.getArtifactStore( storeKey );
-        }
-        catch ( IndyDataException e )
-        {
-            throw new IndyWorkflowException(
-                    String.format( "Cannot lookup ArtifactStore for key: %s. Reason: %s", storeKey, e.getMessage() ),
-                    e );
-        }
-
-        Transfer transfer = getIndexedTransfer( store, path, TransferOperation.DOWNLOAD );
+        Transfer transfer = getIndexedTransfer( storeKey, null, path, TransferOperation.DOWNLOAD );
         if ( transfer != null )
         {
             return transfer;
         }
 
-        if ( StoreType.group == storeKey.getType() )
+        StoreType type = storeKey.getType();
+        if ( StoreType.hosted == type )
         {
-            logger.debug( "No group index hits. Devolving to member store indexes." );
+            // hosted repos are completely indexed, since the store() method maintains the index
+            // So, if it wasn't found in the index (above), and we're looking at a hosted repo, it's not here.
+            return null;
+        }
+        else if ( StoreType.group == type )
+        {
+            Group g;
             try
             {
-                Group g = storeDataManager.getGroup( storeKey.getName() );
-
-                for ( StoreKey key : g.getConstituents() )
-                {
-                    transfer = getIndexedMemberTransfer( key, store.getKey(), path );
-                    if ( transfer != null )
-                    {
-                        return transfer;
-                    }
-                }
+                g= storeDataManager.getGroup( storeKey.getName() );
             }
             catch ( IndyDataException e )
             {
-                logger.error(
-                        String.format( "Cannot lookup ArtifactStore for key: %s. Reason: %s", storeKey, e.getMessage() ),
-                        e );
+                throw new IndyWorkflowException( "Failed to lookup ArtifactStore: %s for NFC handling. Reason: %s", e,
+                                                 storeKey, e.getMessage() );
+            }
+
+            ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( g ), path );
+            if ( nfc.isMissing( resource ) )
+            {
+                return null;
+            }
+
+            logger.debug( "No group index hits. Devolving to member store indexes." );
+            for ( StoreKey key : g.getConstituents() )
+            {
+                transfer = getIndexedMemberTransfer( key, storeKey, path );
+                if ( transfer != null )
+                {
+                    return transfer;
+                }
+                else
+                {
+                    nfc.addMissing( resource );
+                }
             }
         }
 
         transfer = delegate.getTransfer( storeKey, path, op );
         if ( transfer != null )
         {
-            indexManager.indexTransferIn( transfer, storeKey, LocationUtils.getKey( transfer ) );
+            indexManager.indexTransferIn( transfer, storeKey );
         }
 
         return transfer;
@@ -354,42 +410,60 @@ public abstract class IndexingContentManagerDecorator
     }
 
     @Override
-    public Transfer store( final ArtifactStore store, final String path, final InputStream stream, final TransferOperation op )
+    public Transfer store( final ArtifactStore store, final String path, final InputStream stream,
+                           final TransferOperation op )
             throws IndyWorkflowException
     {
         return store( store, path, stream, op, new EventMetadata() );
     }
 
     @Override
-    public Transfer store( final ArtifactStore store, final String path, final InputStream stream, final TransferOperation op,
-                           final EventMetadata eventMetadata )
+    public Transfer store( final ArtifactStore store, final String path, final InputStream stream,
+                           final TransferOperation op, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         Transfer transfer = delegate.store( store, path, stream, op, eventMetadata );
         if ( transfer != null )
         {
-            indexManager.indexTransferIn( transfer, store.getKey(), LocationUtils.getKey( transfer ) );
+            indexManager.indexTransferIn( transfer, store.getKey() );
+
+            if ( store instanceof Group )
+            {
+                nfc.clearMissing( new ConcreteResource( LocationUtils.toLocation( store ), path ) );
+            }
         }
 
         return transfer;
     }
 
-    @Override
-    public Transfer store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream, final TransferOperation op )
-            throws IndyWorkflowException
-    {
-        return store( stores, path, stream, op, new EventMetadata() );
-    }
+    //    @Override
+    //    public Transfer store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream, final TransferOperation op )
+    //            throws IndyWorkflowException
+    //    {
+    //        return store( stores, path, stream, op, new EventMetadata() );
+    //    }
 
     @Override
-    public Transfer store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream, final TransferOperation op,
-                           final EventMetadata eventMetadata )
+    public Transfer store( final List<? extends ArtifactStore> stores, StoreKey topKey, final String path,
+                           final InputStream stream, final TransferOperation op, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
-        Transfer transfer = delegate.store( stores, path, stream, op, eventMetadata );
+        Transfer transfer = delegate.store( stores, topKey, path, stream, op, eventMetadata );
         if ( transfer != null )
         {
-            indexManager.indexTransferIn( transfer, LocationUtils.getKey( transfer ) );
+            indexManager.indexTransferIn( transfer, topKey );
+
+            try
+            {
+                ArtifactStore topStore = storeDataManager.getArtifactStore( topKey );
+                nfc.clearMissing( new ConcreteResource( LocationUtils.toLocation( topStore ), path ) );
+            }
+            catch ( IndyDataException e )
+            {
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.error( String.format( "Failed to retrieve top store: %s for NFC management. Reason: %s",
+                                             topKey, e.getMessage()), e );
+            }
         }
 
         return transfer;
@@ -423,13 +497,14 @@ public abstract class IndexingContentManagerDecorator
     }
 
     @Override
-    public boolean deleteAll( final List<? extends ArtifactStore> stores, final String path, final EventMetadata eventMetadata )
+    public boolean deleteAll( final List<? extends ArtifactStore> stores, final String path,
+                              final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         boolean result = false;
         for ( ArtifactStore store : stores )
         {
-            result = delete( store, path, eventMetadata ) || result;
+            result = delete( store, path, eventMetadata ) | result;
         }
 
         return result;

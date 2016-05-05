@@ -64,7 +64,7 @@ public abstract class IndexingDirectContentAccessDecorator
         {
             logger.debug( "Got transfer from delegate: {} (will index)", transfer );
 
-            indexManager.indexTransferIn( transfer, store.getKey(), LocationUtils.getKey( transfer ) );
+            indexManager.indexTransferIn( transfer, store.getKey() );
         }
 
         logger.debug( "Returning transfer: {}", transfer );

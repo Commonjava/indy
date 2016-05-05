@@ -146,18 +146,18 @@ public interface ContentManager
     Transfer store( final ArtifactStore store , final String path , final InputStream stream , TransferOperation op , EventMetadata eventMetadata  )
         throws IndyWorkflowException;
 
-    /**
-     * Store the content contained in the {@link InputStream} under the given path within the storage directory for first appropriate instance among 
-     * the given {@link ArtifactStore}'s. Use the given {@link TransferOperation} to trigger the appropriate tangential maintenance, etc. actions. 
-     * Return the {@link Transfer} that references the stored content.
-     * <br/>
-     * If the given {@link ArtifactStore} isn't a {@link HostedRepository}, or is a {@link Group} that doesn't contain a {@link HostedRepository}, 
-     * fail. If the {@link HostedRepository} instances involved don't allow deployment/storage, or don't allow <b>appropriate</b> deployment 
-     * (releases-only for snapshot content, or vice versa), then fail.
-     */
-    Transfer store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream,
-                    TransferOperation op )
-        throws IndyWorkflowException;
+//    /**
+//     * Store the content contained in the {@link InputStream} under the given path within the storage directory for first appropriate instance among
+//     * the given {@link ArtifactStore}'s. Use the given {@link TransferOperation} to trigger the appropriate tangential maintenance, etc. actions.
+//     * Return the {@link Transfer} that references the stored content.
+//     * <br/>
+//     * If the given {@link ArtifactStore} isn't a {@link HostedRepository}, or is a {@link Group} that doesn't contain a {@link HostedRepository},
+//     * fail. If the {@link HostedRepository} instances involved don't allow deployment/storage, or don't allow <b>appropriate</b> deployment
+//     * (releases-only for snapshot content, or vice versa), then fail.
+//     */
+//    Transfer store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream,
+//                    TransferOperation op )
+//        throws IndyWorkflowException;
 
     /**
      * Store the content contained in the {@link InputStream} under the given path within the storage directory for first appropriate instance among 
@@ -167,10 +167,11 @@ public interface ContentManager
      * If the given {@link ArtifactStore} isn't a {@link HostedRepository}, or is a {@link Group} that doesn't contain a {@link HostedRepository}, 
      * fail. If the {@link HostedRepository} instances involved don't allow deployment/storage, or don't allow <b>appropriate</b> deployment 
      * (releases-only for snapshot content, or vice versa), then fail.
+     * @param topKey
      * @param eventMetadata TODO
      */
-    Transfer store( final List<? extends ArtifactStore> stores , final String path , final InputStream stream ,
-                    TransferOperation op , EventMetadata eventMetadata  )
+    Transfer store( final List<? extends ArtifactStore> stores, StoreKey topKey, final String path, final InputStream stream,
+                    TransferOperation op, EventMetadata eventMetadata )
         throws IndyWorkflowException;
 
     boolean delete( final ArtifactStore store, String path )

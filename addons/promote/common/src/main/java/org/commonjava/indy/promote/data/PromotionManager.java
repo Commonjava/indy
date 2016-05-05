@@ -332,7 +332,7 @@ public class PromotionManager
             {
                 for ( final Transfer transfer : contents )
                 {
-                    if ( transfer.exists() )
+                    if ( transfer != null && transfer.exists() )
                     {
                         InputStream stream = null;
                         try
@@ -415,7 +415,7 @@ public class PromotionManager
 //                        synchronized ( target )
 //                        {
                             // TODO: Should the request object have an overwrite attribute? Is that something the user is qualified to decide?
-                            if ( target.exists() )
+                            if ( target != null && target.exists() )
                             {
                                 logger.warn( "NOT promoting: {} from: {} to: {}. Target file already exists.", path,
                                              request.getSource(), request.getTarget() );
@@ -479,7 +479,7 @@ public class PromotionManager
         for ( final String path : paths )
         {
             final Transfer txfr = downloadManager.getStorageReference( source, path );
-            if ( !txfr.exists() )
+            if ( txfr == null || !txfr.exists() )
             {
                 logger.warn( "Cannot promote path: '{}' from source: '{}'. It does not exist!", path, source );
                 // TODO: Fail??

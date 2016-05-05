@@ -50,6 +50,14 @@ public class IndexedStorePath
     @Field( name = "path", store = Store.YES, analyze = Analyze.NO )
     private String path;
 
+    public IndexedStorePath( StoreKey storeKey, String path )
+    {
+        this.storeType = storeKey.getType();
+        this.storeName = storeKey.getName();
+
+        this.path = path;
+    }
+
     public IndexedStorePath( StoreKey storeKey, StoreKey origin, String path )
     {
         this.storeType = storeKey.getType();
@@ -119,14 +127,7 @@ public class IndexedStorePath
         {
             return false;
         }
-        if ( originStoreType != that.originStoreType )
-        {
-            return false;
-        }
-        if ( !originStoreName.equals( that.originStoreName ) )
-        {
-            return false;
-        }
+
         return getPath().equals( that.getPath() );
 
     }
@@ -136,8 +137,6 @@ public class IndexedStorePath
     {
         int result = getStoreType().hashCode();
         result = 31 * result + getStoreName().hashCode();
-        result = 31 * result + originStoreType.hashCode();
-        result = 31 * result + originStoreName.hashCode();
         result = 31 * result + getPath().hashCode();
         return result;
     }
