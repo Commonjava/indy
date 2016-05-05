@@ -54,11 +54,11 @@ class ArtifactRefAvailability implements ValidationRule {
                             def target = rel.getTarget()
                             def path = tools.toArtifactPath(target)
                             def txfr = tools.getTransfer(verifyStoreKey, path)
-                            logger.info("{} in {}: {}. Exists? {}", target, verifyStoreKey, txfr, txfr.exists())
-                            if (!txfr.exists()) {
+                            logger.info("{} in {}: {}. Exists? {}", target, verifyStoreKey, txfr, txfr == null ? false : txfr.exists())
+                            if (txfr == null || !txfr.exists()) {
                                 txfr = tools.getTransfer(request.getSource(), path)
-                                logger.info("{} in {}: {}. Exists? {}", target, request.getSource(), txfr, txfr.exists())
-                                if (!txfr.exists()) {
+                                logger.info("{} in {}: {}. Exists? {}", target, request.getSource(), txfr, txfr == null ? false : txfr.exists())
+                                if (txfr == null || !txfr.exists()) {
                                     if (builder.length() > 0) {
                                         builder.append("\n")
                                     }
@@ -69,11 +69,11 @@ class ArtifactRefAvailability implements ValidationRule {
                             if ((target instanceof ArtifactRef) && !pomTC.equals(((ArtifactRef) target).getTypeAndClassifier())) {
                                 path = tools.toArtifactPath(target.asPomArtifact())
                                 txfr = tools.getTransfer(verifyStoreKey, path)
-                                logger.info("POM {} in {}: {}. Exists? {}", target.asPomArtifact(), verifyStoreKey, txfr, txfr.exists())
-                                if (!txfr.exists()) {
+                                logger.info("POM {} in {}: {}. Exists? {}", target.asPomArtifact(), verifyStoreKey, txfr, txfr == null ? false : txfr.exists())
+                                if (txfr == null || !txfr.exists()) {
                                     txfr = tools.getTransfer(request.getSource(), path)
-                                    logger.info("{} in {}: {}. Exists? {}", target, request.getSource(), txfr, txfr.exists())
-                                    if (!txfr.exists()) {
+                                    logger.info("{} in {}: {}. Exists? {}", target, request.getSource(), txfr, txfr == null ? false : txfr.exists())
+                                    if (txfr == null || !txfr.exists()) {
                                         if (builder.length() > 0) {
                                             builder.append("\n")
                                         }

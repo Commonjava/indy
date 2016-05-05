@@ -33,6 +33,8 @@ public class TrackedContentEntryDTO
 
     private String sha256;
 
+    private String sha1;
+
     public TrackedContentEntryDTO()
     {
     }
@@ -83,6 +85,15 @@ public class TrackedContentEntryDTO
         this.sha256 = sha256;
     }
 
+    public void setSha1( String sha1 )
+    {
+        this.sha1 = sha1;
+    }
+
+    public String getSha1()
+    {
+        return sha1;
+    }
     public StoreKey getStoreKey()
     {
         return storeKey;

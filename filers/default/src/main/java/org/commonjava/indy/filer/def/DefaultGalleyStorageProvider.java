@@ -29,6 +29,7 @@ import org.commonjava.maven.galley.cache.partyline.PartyLineCacheProviderConfig;
 import org.commonjava.maven.galley.io.ChecksummingTransferDecorator;
 import org.commonjava.maven.galley.io.checksum.Md5GeneratorFactory;
 import org.commonjava.maven.galley.io.checksum.Sha1GeneratorFactory;
+import org.commonjava.maven.galley.io.checksum.Sha256GeneratorFactory;
 import org.commonjava.maven.galley.model.FilePatternMatcher;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.model.TransferOperation;
@@ -85,7 +86,8 @@ public class DefaultGalleyStorageProvider
         transferDecorator =
             new ChecksummingTransferDecorator( Collections.singleton( TransferOperation.GENERATE ), specialPathManager,
                                                new Md5GeneratorFactory(),
-                                               new Sha1GeneratorFactory() );
+                                               new Sha1GeneratorFactory(),
+                                               new Sha256GeneratorFactory() );
         transferDecorator = new ContentsFilteringTransferDecorator( transferDecorator );
 
         final PartyLineCacheProviderConfig cacheProviderConfig =

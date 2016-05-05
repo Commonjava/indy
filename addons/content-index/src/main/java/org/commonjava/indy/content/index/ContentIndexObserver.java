@@ -209,6 +209,7 @@ public class ContentIndexObserver
         }
     }
 
+    // TODO: If we find points where a new HostedRepository is added, we should be using its comprehensive index to minimize the index damage to the group.
     private void removeAllSupercededMemberContent( ArtifactStore store, Map<ArtifactStore, ArtifactStore> changeMap )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );

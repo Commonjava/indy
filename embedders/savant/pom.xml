@@ -200,11 +200,6 @@
     <profile>
       <id>run-its</id>
 
-<!--       <properties>
-        <skipTests>false</skipTests>
-        <test>org.commonjava.indy.promote.ftest.GroupPromoteAndRollbackTest</test>
-      </properties>
- -->      
       <build>
         <pluginManagement>
           <plugins>
@@ -217,6 +212,10 @@
                   <forkCount>${test-forkCount}</forkCount>
                   <reuseForks>false</reuseForks>
                   <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
+
+                  <!-- <test>org.commonjava.indy.ftest.core.content.StoreAndVerifyJarViaDirectDownloadTest</test> -->
+
+
                   <dependenciesToScan>
                     <dependency>org.commonjava.indy:indy-ftests-core</dependency>
                     <dependency>org.commonjava.indy:indy-ftests-autoprox</dependency>

@@ -17,8 +17,10 @@ package org.commonjava.indy.content.index;
 
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Store;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -28,25 +30,33 @@ import java.io.ObjectOutput;
 /**
  * Created by jdcasey on 3/15/16.
  */
-@Indexed
+@Indexed(index = "indexedStorePath")
 public class IndexedStorePath
         implements Externalizable
 {
 
-    @Field
+    @Field( name = "storeType", store = Store.YES, analyze = Analyze.NO )
     private StoreType storeType;
 
-    @Field
+    @Field( name = "storeName", store = Store.YES, analyze = Analyze.NO )
     private String storeName;
 
-    @Field
+    @Field( name = "originStoreType", store = Store.YES, analyze = Analyze.NO )
     private StoreType originStoreType;
 
-    @Field
+    @Field( name = "originStoreName", store = Store.YES, analyze = Analyze.NO )
     private String originStoreName;
 
-    @Field
+    @Field( name = "path", store = Store.YES, analyze = Analyze.NO )
     private String path;
+
+    public IndexedStorePath( StoreKey storeKey, String path )
+    {
+        this.storeType = storeKey.getType();
+        this.storeName = storeKey.getName();
+
+        this.path = path;
+    }
 
     public IndexedStorePath( StoreKey storeKey, StoreKey origin, String path )
     {
@@ -117,14 +127,7 @@ public class IndexedStorePath
         {
             return false;
         }
-        if ( originStoreType != that.originStoreType )
-        {
-            return false;
-        }
-        if ( !originStoreName.equals( that.originStoreName ) )
-        {
-            return false;
-        }
+
         return getPath().equals( that.getPath() );
 
     }
@@ -134,8 +137,6 @@ public class IndexedStorePath
     {
         int result = getStoreType().hashCode();
         result = 31 * result + getStoreName().hashCode();
-        result = 31 * result + originStoreType.hashCode();
-        result = 31 * result + originStoreName.hashCode();
         result = 31 * result + getPath().hashCode();
         return result;
     }
