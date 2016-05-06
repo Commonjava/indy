@@ -68,17 +68,23 @@ class IndyScheduleListener
     {
         try
         {
-            final Trigger trigger = scheduler.getTrigger( triggerKey );
-            if ( trigger == null )
+            EventTypeMatcher etm = new EventTypeMatcher( ScheduleManager.CONTENT_JOB_TYPE );
+            if ( etm.isMatch( triggerKey ) )
             {
-                logger.error( "Cannot find scheduler trigger for key: " + triggerKey );
-            }
-            else
+                // for CONTENT job type we use the same group and name for both job and trigger
+                JobKey jobKey = new JobKey( triggerKey.getName(), triggerKey.getGroup() );
+                final JobDetail detail = scheduler.getJobDetail( jobKey );
+                if ( detail == null )
+                {
+                    logger.error( "Cannot find scheduler job for key: " + jobKey );
+                }
+                else
+                {
+                    eventDispatcher.fire( ScheduleManager.createEvent( SchedulerEventType.CANCEL, detail ) );
+                }
+            } else
             {
-                final JobKey key = trigger.getJobKey();
-
-                final JobDetail detail = scheduler.getJobDetail( key );
-                eventDispatcher.fire( ScheduleManager.createEvent( SchedulerEventType.CANCEL, detail ) );
+                logger.error( "Cannot produce job key for trigger key: {}. Unknown job type." + triggerKey );
             }
         }
         catch ( final SchedulerException e )
