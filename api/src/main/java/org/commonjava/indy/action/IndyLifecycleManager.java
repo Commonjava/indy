@@ -230,19 +230,15 @@ public class IndyLifecycleManager
      */
     public Runnable createShutdownRunnable()
     {
-        return new Runnable()
+        return ()->
         {
-            @Override
-            public void run()
+            try
             {
-                try
-                {
-                    stop();
-                }
-                catch ( final IndyLifecycleException e )
-                {
-                    throw new RuntimeException( "\n\nFailed to stop Indy: " + e.getMessage(), e );
-                }
+                stop();
+            }
+            catch ( final IndyLifecycleException e )
+            {
+                throw new RuntimeException( "\n\nFailed to stop Indy: " + e.getMessage(), e );
             }
         };
     }

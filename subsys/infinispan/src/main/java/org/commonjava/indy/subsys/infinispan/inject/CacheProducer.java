@@ -20,6 +20,8 @@ import org.apache.commons.io.IOUtils;
 import org.codehaus.plexus.interpolation.InterpolationException;
 import org.codehaus.plexus.interpolation.PropertiesBasedValueSource;
 import org.codehaus.plexus.interpolation.StringSearchInterpolator;
+import org.commonjava.indy.action.IndyLifecycleException;
+import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.inject.Production;
 import org.commonjava.indy.subsys.infinispan.conf.InfinispanSubsystemConfig;
@@ -29,8 +31,11 @@ import org.infinispan.io.GridFile;
 import org.infinispan.io.GridFilesystem;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
@@ -51,6 +56,7 @@ import static org.commonjava.indy.subsys.infinispan.conf.InfinispanSubsystemConf
  */
 @ApplicationScoped
 public class CacheProducer
+        implements ShutdownAction
 {
     private EmbeddedCacheManager cacheManager;
 
@@ -112,6 +118,9 @@ public class CacheProducer
             throw new RuntimeException( "Cannot resolve expressions in infinispan configuration.", e );
         }
 
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.info( "Using Infinispan configuration:\n\n{}\n\n", configuration );
+
         try
         {
             cacheManager = new DefaultCacheManager(
@@ -149,5 +158,29 @@ public class CacheProducer
         }
 
         return gfs;
+    }
+
+    @Override
+    public void stop()
+            throws IndyLifecycleException
+    {
+        if ( cacheManager != null )
+        {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.info( "Stopping Infinispan caches." );
+            cacheManager.stop();
+        }
+    }
+
+    @Override
+    public int getShutdownPriority()
+    {
+        return 10;
+    }
+
+    @Override
+    public String getId()
+    {
+        return "infinispan-caches";
     }
 }
