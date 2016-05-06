@@ -15,11 +15,9 @@
  */
 package org.commonjava.indy.core.expire;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -328,17 +326,6 @@ public class ScheduleManager
                                    .setJobData( dataMap )
                                    .build();
             }
-            else
-            {
-                final List<? extends Trigger> triggers = scheduler.getTriggersOfJob( jk );
-                if ( triggers != null )
-                {
-                    for ( final Trigger trigger : triggers )
-                    {
-                        scheduler.unscheduleJob( trigger.getKey() );
-                    }
-                }
-            }
 
             final long startMillis = System.currentTimeMillis() + ( startSeconds * 1000 );
 
@@ -353,7 +340,7 @@ public class ScheduleManager
             }
 
             final Trigger trigger = tb.build();
-            scheduler.scheduleJob( detail, trigger );
+            scheduler.scheduleJob( detail, Collections.singleton( trigger ), true );
         }
         catch ( final SchedulerException e )
         {
@@ -517,7 +504,14 @@ public class ScheduleManager
                 Set<TriggerKey> unscheduled = null;
                 if ( name == ANY )
                 {
-                    scheduler.unscheduleJobs( new ArrayList<TriggerKey>( keys ) );
+                    for ( final TriggerKey tk : keys )
+                    {
+                        final Trigger trigger = scheduler.getTrigger( tk );
+                        if ( trigger != null )
+                        {
+                            scheduler.deleteJob( trigger.getJobKey() );
+                        }
+                    }
                     unscheduled = keys;
                 }
                 else
@@ -527,7 +521,11 @@ public class ScheduleManager
                         if ( key.getName()
                                 .equals( name ) )
                         {
-                            scheduler.unscheduleJob( key );
+                            final Trigger trigger = scheduler.getTrigger( key );
+                            if ( trigger != null )
+                            {
+                                scheduler.deleteJob( trigger.getJobKey() );
+                            }
                             unscheduled = Collections.singleton( key );
                             break;
                         }
@@ -536,17 +534,8 @@ public class ScheduleManager
 
                 if ( unscheduled != null )
                 {
-                    for ( final TriggerKey tk : unscheduled )
-                    {
-                        final Trigger trigger = scheduler.getTrigger( tk );
-                        if ( trigger != null )
-                        {
-                            scheduler.deleteJob( trigger.getJobKey() );
-                        }
-                    }
+                    canceled = unscheduled;
                 }
-
-                canceled = unscheduled;
             }
         }
         catch ( final SchedulerException e )
@@ -612,7 +601,7 @@ public class ScheduleManager
         }
     }
 
-    private Expiration toExpiration( TriggerKey key )
+    private Expiration toExpiration( final TriggerKey key )
             throws SchedulerException
     {
         Trigger trigger = scheduler.getTrigger( key );
@@ -649,7 +638,12 @@ public class ScheduleManager
 
     public static String groupName( final StoreKey key, final String jobType )
     {
-        return key.toString() + ":" + jobType;
+        return key.toString() + groupNameSuffix( jobType );
+    }
+
+    public static String groupNameSuffix( final String jobType )
+    {
+        return ":" + jobType;
     }
 
     public static StoreKey storeKeyFrom( final String group )
