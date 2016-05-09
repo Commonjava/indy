@@ -76,7 +76,7 @@ public class TemplatingEngine
         }
         catch ( final IOException e )
         {
-            throw new IndyGroovyException( "Failed to render template: %s for accept: %s. Reason: %s", e, templateKey,
+            throw new IndyGroovyException( "Failed to renderString template: %s for accept: %s. Reason: %s", e, templateKey,
                                             acceptHeader, e.getMessage() );
         }
 

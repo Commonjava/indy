@@ -15,14 +15,21 @@
  */
 package org.commonjava.indy.model.core;
 
+import org.apache.commons.codec.digest.DigestUtils;
+
 import java.io.Serializable;
-import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class StoreKey
     implements Serializable, Comparable<StoreKey>
 {
     private static final long serialVersionUID = 1L;
+
+    private static ConcurrentHashMap<StoreKey, StoreKey> deduplications = new ConcurrentHashMap<>();
+
+    private static ConcurrentHashMap<String, StoreKey> byHash = new ConcurrentHashMap<>();
+
+    private String hashed;
 
     // private static final Logger logger = new Logger( StoreKey.class );
 
@@ -54,6 +61,11 @@ public final class StoreKey
 
     @Override
     public String toString()
+    {
+        return renderString();
+    }
+
+    public String renderString()
     {
         return type.name() + ":" + name;
     }
@@ -136,8 +148,6 @@ public final class StoreKey
         return comp;
     }
 
-    private static ConcurrentHashMap<StoreKey, StoreKey> deduplications = new ConcurrentHashMap<>();
-
     public static StoreKey dedupe( StoreKey key )
     {
         StoreKey result = deduplications.get( key );
@@ -148,5 +158,21 @@ public final class StoreKey
         }
 
         return result;
+    }
+
+    public static StoreKey getByHash( String hash )
+    {
+        return byHash.get( hash );
+    }
+
+    public synchronized String getHashed()
+    {
+        if ( hashed == null )
+        {
+            hashed = DigestUtils.md5Hex( renderString() );
+            byHash.put( hashed, this );
+        }
+
+        return hashed;
     }
 }

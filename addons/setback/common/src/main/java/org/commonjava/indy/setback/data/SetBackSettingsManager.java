@@ -275,7 +275,7 @@ public class SetBackSettingsManager
         }
         catch ( final IndyGroovyException e )
         {
-            throw new SetBackDataException( "Failed to render template: %s for store: %s. Reason: %s", e, TEMPLATE,
+            throw new SetBackDataException( "Failed to renderString template: %s for store: %s. Reason: %s", e, TEMPLATE,
                                             key, e.getMessage() );
         }
 

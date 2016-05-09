@@ -127,14 +127,14 @@ public interface StoreDataManager
 
     /**
      * Store a modified or new {@link ArtifactStore} instance. This is equivalent to 
-     * {@link StoreDataManager#storeArtifactStore(ArtifactStore, boolean)} with skip flag <code>false</code>
+     * StoreDataManager.storeArtifactStore(ArtifactStore, boolean) with skip flag <code>false</code>
      */
     boolean storeArtifactStore( ArtifactStore key, final ChangeSummary summary )
         throws IndyDataException;
 
     /**
      * Store a modified or new {@link ArtifactStore} instance. This is equivalent to 
-     * {@link StoreDataManager#storeArtifactStore(ArtifactStore, boolean, EventMetadata)} with skip flag <code>false</code>
+     * StoreDataManager.storeArtifactStore(ArtifactStore, boolean, EventMetadata) with skip flag <code>false</code>
      * @param eventMetadata TODO
      */
     boolean storeArtifactStore( ArtifactStore key , final ChangeSummary summary , EventMetadata eventMetadata  )
