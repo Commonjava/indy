@@ -272,8 +272,8 @@ public class ContentIndexObserver
                 final StoreKey key = store.getKey();
 
                 Set<String> paths = new HashSet<>();
-                indexManager.removeAllIndexedPathsForStore( key, indexedStorePath ->{paths.add(indexedStorePath.getPath());} );
-                indexManager.removeAllOriginIndexedPathsForStore( key, indexedStorePath ->{paths.add(indexedStorePath.getPath());} );
+                indexManager.removeAllIndexedPathsForStore( key, indexedStorePath ->{paths.add(indexedStorePath.getPathHash());} );
+                indexManager.removeAllOriginIndexedPathsForStore( key, indexedStorePath ->{paths.add(indexedStorePath.getPathHash());} );
 
                 if ( !paths.isEmpty() )
                 {
@@ -306,7 +306,7 @@ public class ContentIndexObserver
         executor.execute( ()->{
             Map<StoreKey, Set<Group>> containersForKey = new HashMap<>();
             removals.forEach( indexedStorePath -> {
-                StoreKey storeKey = indexedStorePath.getStoreKey();
+                StoreKey storeKey = StoreKey.getByHash( indexedStorePath.getStoreHash() );
                 try
                 {
                     ArtifactStore store = storeDataManager.getArtifactStore( storeKey );
@@ -318,7 +318,7 @@ public class ContentIndexObserver
                     }
 
                     Location location = LocationUtils.toLocation( store );
-                    String path = indexedStorePath.getPath();
+                    String path = indexedStorePath.getPathHash();
 
                     // If the file is stored local to the group, it's merged and must die.
                     indexManager.clearIndexedPathFrom( path, groups, deleteTransfers() );
@@ -356,8 +356,8 @@ public class ContentIndexObserver
     private Consumer<IndexedStorePath> deleteTransfers()
     {
         return isp ->{
-            StoreKey key = isp.getStoreKey();
-            String path = isp.getPath();
+            StoreKey key = StoreKey.getByHash( isp.getStoreHash() );
+            String path = isp.getPathHash();
 
             try
             {

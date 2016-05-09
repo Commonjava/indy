@@ -292,7 +292,7 @@ public class ContentController
             }
             catch ( final JsonProcessingException e )
             {
-                throw new IndyWorkflowException( "Failed to render listing to JSON: %s. Reason: %s", e, dto,
+                throw new IndyWorkflowException( "Failed to renderString listing to JSON: %s. Reason: %s", e, dto,
                                                   e.getMessage() );
             }
         }
@@ -397,7 +397,7 @@ public class ContentController
         params.put( "baseUrl", serviceUrl );
         params.put( "sources", sources );
 
-        // render...
+        // renderString...
         try
         {
             return templates.render( acceptHeader, "directory-listing", params );
