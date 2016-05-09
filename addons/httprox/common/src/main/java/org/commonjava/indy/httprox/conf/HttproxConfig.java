@@ -35,7 +35,7 @@ public class HttproxConfig
 
     private static final String DEFAULT_PROXY_REALM = "httprox";
 
-    private static final boolean DEFAULT_SECURED = true;
+    private static final boolean DEFAULT_SECURED = false;
 
     private static final String DEFAULT_TRACKING_TYPE = TrackingType.SUFFIX.name();
 
