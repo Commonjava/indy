@@ -240,7 +240,7 @@ public class ContentAccessHandler
             }
             catch ( final IndyWorkflowException e )
             {
-                logger.error( String.format( "Failed to renderString content listing: %s from: %s. Reason: %s", path, name,
+                logger.error( String.format( "Failed to render content listing: %s from: %s. Reason: %s", path, name,
                                              e.getMessage() ), e );
                 response = formatResponse( e );
             }
@@ -271,7 +271,7 @@ public class ContentAccessHandler
                     catch ( final IndyWorkflowException | IOException e )
                     {
                         logger.error(
-                                String.format( "Failed to renderString content listing: %s from: %s. Reason: %s", path, name,
+                                String.format( "Failed to render content listing: %s from: %s. Reason: %s", path, name,
                                                e.getMessage() ), e );
                         response = formatResponse( e );
                     }

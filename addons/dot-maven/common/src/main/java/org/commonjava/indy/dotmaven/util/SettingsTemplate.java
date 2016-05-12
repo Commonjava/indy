@@ -123,7 +123,7 @@ public class SettingsTemplate
         }
         catch ( final IndyGroovyException e )
         {
-            throw new WebdavException( String.format( "Failed to renderString settings.xml template for: '%s'. Reason: %s",
+            throw new WebdavException( String.format( "Failed to render settings.xml template for: '%s'. Reason: %s",
                                                       key, e.getMessage() ), e );
         }
     }

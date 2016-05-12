@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.content.index;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.hibernate.search.annotations.Analyze;
@@ -36,47 +35,74 @@ public class IndexedStorePath
         implements Externalizable
 {
 
-    public static final String ORIGIN_STORE = "originStoreHash";
+    @Field( name = "storeType", store = Store.YES, analyze = Analyze.NO )
+    private StoreType storeType;
 
-    public static final String STORE = "storeHash";
+    @Field( name = "storeName", store = Store.YES, analyze = Analyze.NO )
+    private String storeName;
 
-    public static final String PATH = "pathHash";
+    @Field( name = "originStoreType", store = Store.YES, analyze = Analyze.NO )
+    private StoreType originStoreType;
 
-    @Field( name = STORE, store = Store.YES, analyze = Analyze.NO )
-    private String storeHash;
+    @Field( name = "originStoreName", store = Store.YES, analyze = Analyze.NO )
+    private String originStoreName;
 
-    @Field( name = ORIGIN_STORE, store = Store.YES, analyze = Analyze.NO )
-    private String originStoreHash;
-
-    @Field( name = PATH, store = Store.YES, analyze = Analyze.NO )
-    private String pathHash;
+    @Field( name = "path", store = Store.YES, analyze = Analyze.NO )
+    private String path;
 
     public IndexedStorePath( StoreKey storeKey, String path )
     {
-        this.storeHash = StoreKey.dedupe( storeKey ).getHashed();
-        this.pathHash = DigestUtils.md5Hex( path );
+        this.storeType = storeKey.getType();
+        this.storeName = storeKey.getName();
+
+        this.path = path;
     }
 
     public IndexedStorePath( StoreKey storeKey, StoreKey origin, String path )
     {
-        this.storeHash = StoreKey.dedupe( storeKey ).getHashed();
-        this.originStoreHash = StoreKey.dedupe( origin ).getHashed();
-        this.pathHash = DigestUtils.md5Hex( path );
+        this.storeType = storeKey.getType();
+        this.storeName = storeKey.getName();
+        this.originStoreType = origin.getType();
+        this.originStoreName = origin.getName();
+
+        this.path = path;
     }
 
-    public String getStoreHash()
+    public StoreKey getStoreKey()
     {
-        return storeHash;
+        return new StoreKey( storeType, storeName );
     }
 
-    public String getOriginStoreHash()
+    public StoreKey getOriginStoreKey()
     {
-        return originStoreHash;
+        return new StoreKey( originStoreType, originStoreName );
     }
 
-    public String getPathHash()
+    public StoreType getStoreType()
     {
-        return pathHash;
+        return storeType;
+    }
+
+    public String getStoreName()
+    {
+        return storeName;
+    }
+
+    public String getPath()
+    {
+        return path;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "IndexedStorePath{" +
+                "storeType=" + storeType +
+                ", storeName='" + storeName + '\'' +
+                ", originStoreType=" + originStoreType +
+                ", originStoreName='" + originStoreName + '\'' +
+                ", path='" + path + '\'' +
+                '}';
     }
 
     @Override
@@ -93,47 +119,47 @@ public class IndexedStorePath
 
         IndexedStorePath that = (IndexedStorePath) o;
 
-        if ( !getStoreHash().equals( that.getStoreHash() ) )
+        if ( getStoreType() != that.getStoreType() )
         {
             return false;
         }
-        return getPathHash().equals( that.getPathHash() );
+        if ( !getStoreName().equals( that.getStoreName() ) )
+        {
+            return false;
+        }
+
+        return getPath().equals( that.getPath() );
 
     }
 
     @Override
     public int hashCode()
     {
-        int result = getStoreHash().hashCode();
-        result = 31 * result + getPathHash().hashCode();
+        int result = getStoreType().hashCode();
+        result = 31 * result + getStoreName().hashCode();
+        result = 31 * result + getPath().hashCode();
         return result;
-    }
-
-    @Override
-    public String toString()
-    {
-        return "IndexedStorePath{" +
-                "storeHash='" + storeHash + '\'' +
-                ", originStoreHash='" + originStoreHash + '\'' +
-                ", pathHash='" + pathHash + '\'' +
-                '}';
     }
 
     @Override
     public void writeExternal( ObjectOutput out )
             throws IOException
     {
-        out.writeObject( storeHash );
-        out.writeObject( originStoreHash );
-        out.writeObject( pathHash );
+        out.writeObject( storeType.name() );
+        out.writeObject( storeName );
+        out.writeObject( originStoreType.name() );
+        out.writeObject( originStoreName );
+        out.writeObject( path );
     }
 
     @Override
     public void readExternal( ObjectInput in )
             throws IOException, ClassNotFoundException
     {
-        storeHash = (String) in.readObject();
-        originStoreHash = (String) in.readObject();
-        pathHash = (String) in.readObject();
+        storeType = StoreType.get( (String) in.readObject() );
+        storeName = (String) in.readObject();
+        originStoreType = StoreType.get( (String) in.readObject() );
+        originStoreName = (String) in.readObject();
+        path = (String) in.readObject();
     }
 }

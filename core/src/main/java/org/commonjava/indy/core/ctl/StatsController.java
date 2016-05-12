@@ -213,12 +213,12 @@ public class StatsController
         }
         catch ( final IndyGroovyException e )
         {
-            throw new IndyWorkflowException( "Failed to renderString javascript wrapper for active addons. Reason: %s", e,
+            throw new IndyWorkflowException( "Failed to render javascript wrapper for active addons. Reason: %s", e,
                                               e.getMessage() );
         }
         catch ( final JsonProcessingException e )
         {
-            throw new IndyWorkflowException( "Failed to renderString javascript wrapper for active addons. Reason: %s", e,
+            throw new IndyWorkflowException( "Failed to render javascript wrapper for active addons. Reason: %s", e,
                                               e.getMessage() );
         }
     }

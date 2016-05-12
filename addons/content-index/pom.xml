@@ -55,12 +55,7 @@
       <groupId>org.commonjava.util</groupId>
       <artifactId>configuration-api</artifactId>
     </dependency>
-
-    <dependency>
-      <groupId>commons-codec</groupId>
-      <artifactId>commons-codec</artifactId>
-    </dependency>
-
+    
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
