@@ -469,13 +469,13 @@ public class PromotionValidationTools
     public List<ArtifactStore> getOrderedConcreteStoresInGroup( String groupName )
             throws IndyDataException
     {
-        return storeDataManager.getOrderedConcreteStoresInGroup( groupName );
+        return storeDataManager.getOrderedConcreteStoresInGroup( groupName, false );
     }
 
     public List<ArtifactStore> getOrderedStoresInGroup( String groupName )
             throws IndyDataException
     {
-        return storeDataManager.getOrderedStoresInGroup( groupName );
+        return storeDataManager.getOrderedStoresInGroup( groupName, false );
     }
 
     public Set<Group> getGroupsContaining( StoreKey repo )

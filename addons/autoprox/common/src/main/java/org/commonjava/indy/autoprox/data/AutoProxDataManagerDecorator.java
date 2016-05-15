@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.autoprox.data;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.decorator.Decorator;
@@ -148,7 +147,7 @@ public abstract class AutoProxDataManagerDecorator
     }
 
     /**
-     * Validates the remote connection, produced from rule-set for given name, 
+     * Validates the remote connection, produced from rule-set for given name,
      * for a remote repo or group containing a remote. If:
      *
      * <ul>
@@ -350,19 +349,19 @@ public abstract class AutoProxDataManagerDecorator
     }
 
     @Override
-    public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
+    public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName, final boolean enabledOnly )
             throws IndyDataException
     {
         getGroup( groupName );
-        return dataManager.getOrderedConcreteStoresInGroup( groupName );
+        return dataManager.getOrderedConcreteStoresInGroup( groupName, enabledOnly );
     }
 
     @Override
-    public List<ArtifactStore> getOrderedStoresInGroup( final String groupName )
+    public List<ArtifactStore> getOrderedStoresInGroup( final String groupName, final boolean enabledOnly )
             throws IndyDataException
     {
         getGroup( groupName );
-        return dataManager.getOrderedStoresInGroup( groupName );
+        return dataManager.getOrderedStoresInGroup( groupName, enabledOnly );
     }
 
     @Override

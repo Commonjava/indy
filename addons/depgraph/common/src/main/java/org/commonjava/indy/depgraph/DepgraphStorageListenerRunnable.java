@@ -190,7 +190,7 @@ public class DepgraphStorageListenerRunnable
                 }
 
                 final List<? extends ArtifactStore> orderedStores =
-                    indy.getOrderedConcreteStoresInGroup( group.getName() );
+                    indy.getOrderedConcreteStoresInGroup( group.getName(), true );
 
                 if ( orderedStores != null )
                 {

@@ -194,7 +194,7 @@ public class IndyDiscoverySourceManager
                         try
                         {
                             final List<ArtifactStore> orderedStores =
-                                stores.getOrderedConcreteStoresInGroup( key.getName() );
+                                stores.getOrderedConcreteStoresInGroup( key.getName(), true );
 
                             for ( final ArtifactStore store : orderedStores )
                             {
