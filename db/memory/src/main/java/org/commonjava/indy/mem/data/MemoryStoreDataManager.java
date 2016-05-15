@@ -45,8 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
 import static org.commonjava.indy.model.core.StoreType.group;
 
 @ApplicationScoped
@@ -149,21 +147,21 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
+    public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName, final boolean enabledOnly )
             throws IndyDataException
     {
-        return getGroupOrdering( groupName, false, true );
+        return getGroupOrdering( groupName, false, true, enabledOnly );
     }
 
     @Override
-    public List<ArtifactStore> getOrderedStoresInGroup( final String groupName )
+    public List<ArtifactStore> getOrderedStoresInGroup( final String groupName, final boolean enabledOnly )
             throws IndyDataException
     {
-        return getGroupOrdering( groupName, true, false );
+        return getGroupOrdering( groupName, true, false, enabledOnly );
     }
 
     private List<ArtifactStore> getGroupOrdering( final String groupName, final boolean includeGroups,
-                                                  final boolean recurseGroups )
+                                                  final boolean recurseGroups, final boolean enabledOnly )
             throws IndyDataException
     {
         final Group master = (Group) stores.get( new StoreKey( StoreType.group, groupName ) );
@@ -173,14 +171,19 @@ public class MemoryStoreDataManager
         }
 
         final List<ArtifactStore> result = new ArrayList<ArtifactStore>();
-        recurseGroup( master, result, new HashSet<>(), includeGroups, recurseGroups );
+        recurseGroup( master, result, new HashSet<>(), includeGroups, recurseGroups, enabledOnly );
 
         return result;
     }
 
     private void recurseGroup( final Group master, final List<ArtifactStore> result, final Set<StoreKey> seen,
-                               final boolean includeGroups, final boolean recurseGroups )
+                               final boolean includeGroups, final boolean recurseGroups,
+                               final boolean enabledOnly )
     {
+        if ( master.isDisabled() && enabledOnly )
+        {
+            return;
+        }
         List<StoreKey> members = null;
         synchronized ( master )
         {
@@ -205,12 +208,12 @@ public class MemoryStoreDataManager
                 if ( recurseGroups && type == StoreType.group )
                 {
                     // if we're here, we're definitely recursing groups...
-                    recurseGroup( (Group) stores.get( key ), result, seen, includeGroups, true );
+                    recurseGroup( (Group) stores.get( key ), result, seen, includeGroups, true, enabledOnly );
                 }
                 else
                 {
                     final ArtifactStore store = stores.get( key );
-                    if ( store != null )
+                    if ( store != null && !( store.isDisabled() && enabledOnly ) )
                     {
                         result.add( store );
                     }
@@ -372,7 +375,7 @@ public class MemoryStoreDataManager
         return false;
     }
 
-    protected void preStore( final ArtifactStore store, ArtifactStore original, final ChangeSummary summary, final boolean exists,
+    protected void preStore( final ArtifactStore store, final ArtifactStore original, final ChangeSummary summary, final boolean exists,
                              final boolean fireEvents, final EventMetadata eventMetadata )
             throws IndyDataException
     {
@@ -395,7 +398,7 @@ public class MemoryStoreDataManager
         }
     }
 
-    protected void postStore( final ArtifactStore store, ArtifactStore original, final ChangeSummary summary, final boolean exists,
+    protected void postStore( final ArtifactStore store, final ArtifactStore original, final ChangeSummary summary, final boolean exists,
                               final boolean fireEvents, final EventMetadata eventMetadata )
             throws IndyDataException
     {

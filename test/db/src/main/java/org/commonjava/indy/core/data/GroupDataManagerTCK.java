@@ -158,7 +158,7 @@ public abstract class GroupDataManagerTCK
 
         store( grp );
 
-        final List<? extends ArtifactStore> repos = manager.getOrderedConcreteStoresInGroup( grp.getName() );
+        final List<? extends ArtifactStore> repos = manager.getOrderedConcreteStoresInGroup( grp.getName(), false );
 
         assertThat( repos, notNullValue() );
         assertThat( repos.size(), equalTo( 2 ) );
@@ -180,7 +180,7 @@ public abstract class GroupDataManagerTCK
 
         store( grp );
 
-        final List<? extends ArtifactStore> result = manager.getOrderedConcreteStoresInGroup( grp.getName() );
+        final List<? extends ArtifactStore> result = manager.getOrderedConcreteStoresInGroup( grp.getName(), false );
 
         assertThat( result, notNullValue() );
         assertThat( result.size(), equalTo( 2 ) );
