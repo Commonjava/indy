@@ -56,7 +56,7 @@ public interface StoreDataManager
         throws IndyDataException;
 
     /**
-     * Return the {@link ArtifactStore} instance corresponding to the given key, where key is a composite of {@link StoreType} 
+     * Return the {@link ArtifactStore} instance corresponding to the given key, where key is a composite of {@link StoreType}
      * (hosted, remote, or group) and name.
      */
     ArtifactStore getArtifactStore( StoreKey key )
@@ -105,8 +105,10 @@ public interface StoreDataManager
      * <b>NOTE:</b> If any of the group's members are themselves {@link Group}'s, the method
      * recurses and substitutes that group's place in the list with the ordered, concrete stores
      * it contains.
+     *
+     * @param enabledOnly include only enabled stores
      */
-    List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
+    List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName, boolean enabledOnly )
         throws IndyDataException;
 
     /**
@@ -115,8 +117,10 @@ public interface StoreDataManager
      * <br/>
      * <b>NOTE:</b> This method does <b>not</b> perform recursion to substitute concrete stores in place
      * of any groups in the list. Groups that are members are returned along with the rest of the membership.
+     *
+     * @param enabledOnly include only enabled stores
      */
-    List<ArtifactStore> getOrderedStoresInGroup( final String groupName )
+    List<ArtifactStore> getOrderedStoresInGroup( final String groupName, boolean enabledOnly )
         throws IndyDataException;
 
     /**
@@ -126,14 +130,14 @@ public interface StoreDataManager
         throws IndyDataException;
 
     /**
-     * Store a modified or new {@link ArtifactStore} instance. This is equivalent to 
+     * Store a modified or new {@link ArtifactStore} instance. This is equivalent to
      * {@link StoreDataManager#storeArtifactStore(ArtifactStore, boolean)} with skip flag <code>false</code>
      */
     boolean storeArtifactStore( ArtifactStore key, final ChangeSummary summary )
         throws IndyDataException;
 
     /**
-     * Store a modified or new {@link ArtifactStore} instance. This is equivalent to 
+     * Store a modified or new {@link ArtifactStore} instance. This is equivalent to
      * {@link StoreDataManager#storeArtifactStore(ArtifactStore, boolean, EventMetadata)} with skip flag <code>false</code>
      * @param eventMetadata TODO
      */

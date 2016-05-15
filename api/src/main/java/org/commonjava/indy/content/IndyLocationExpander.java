@@ -93,7 +93,7 @@ public class IndyLocationExpander
                 {
                     logger.debug( "Expanding group: {}", gl.getKey() );
                     final List<ArtifactStore> members = data.getOrderedConcreteStoresInGroup( gl.getKey()
-                                                                                                .getName() );
+                                                                                                .getName(), false );
                     if ( members != null )
                     {
                         for ( final ArtifactStore member : members )

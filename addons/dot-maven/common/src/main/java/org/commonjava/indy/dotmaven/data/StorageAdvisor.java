@@ -55,7 +55,7 @@ public class StorageAdvisor
                 List<ArtifactStore> constituents;
                 try
                 {
-                    constituents = dataManager.getOrderedConcreteStoresInGroup( store.getName() );
+                    constituents = dataManager.getOrderedConcreteStoresInGroup( store.getName(), false );
                 }
                 catch ( final IndyDataException e )
                 {
