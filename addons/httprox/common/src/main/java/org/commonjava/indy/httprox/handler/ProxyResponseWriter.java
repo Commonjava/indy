@@ -37,6 +37,7 @@ import org.commonjava.indy.util.UrlInfo;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xnio.ChannelListener;
@@ -70,24 +71,27 @@ public final class ProxyResponseWriter
 
     private KeycloakProxyAuthenticator proxyAuthenticator;
 
+    private CacheProvider cacheProvider;
+
     private boolean transferred;
 
     private HttpRequest httpRequest;
 
     public ProxyResponseWriter( final HttproxConfig config, final StoreDataManager storeManager,
                                 final ContentController contentController,
-                                KeycloakProxyAuthenticator proxyAuthenticator )
+                                KeycloakProxyAuthenticator proxyAuthenticator, CacheProvider cacheProvider )
     {
         this.config = config;
         this.contentController = contentController;
         this.storeManager = storeManager;
         this.proxyAuthenticator = proxyAuthenticator;
+        this.cacheProvider = cacheProvider;
     }
 
     @Override
     public void handleEvent( final ConduitStreamSinkChannel channel )
     {
-        HttpConduitWrapper http = new HttpConduitWrapper( channel, httpRequest, contentController );
+        HttpConduitWrapper http = new HttpConduitWrapper( channel, httpRequest, contentController, cacheProvider );
         if ( httpRequest == null )
         {
             if ( error != null )
@@ -127,9 +131,12 @@ public final class ProxyResponseWriter
             {
                 final UserPass proxyUserPass =
                                 UserPass.parse( ApplicationHeader.proxy_authorization, httpRequest, null );
-                if ( ( config.isSecured() || TrackingType.ALWAYS == config.getTrackingType() )
-                                && proxyUserPass == null )
+
+                logger.debug( "Proxy UserPass: {}\nConfig secured? {}\nConfig tracking type: {}", proxyUserPass, config.isSecured(), config.getTrackingType() );
+                if ( proxyUserPass == null && ( config.isSecured()
+                        || TrackingType.ALWAYS == config.getTrackingType() ) )
                 {
+
                     http.writeStatus( ApplicationStatus.PROXY_AUTHENTICATION_REQUIRED );
                     http.writeHeader( ApplicationHeader.proxy_authenticate,
                                       String.format( PROXY_AUTHENTICATE_FORMAT, config.getProxyRealm() ) );
@@ -145,8 +152,9 @@ public final class ProxyResponseWriter
                         {
                             if ( proxyUserPass != null )
                             {
-                                logger.debug( "Passing BASIC authentication credentials to Keycloak bearer-token translation authenticator" );
-                                if (!proxyAuthenticator.authenticate( proxyUserPass, http ))
+                                logger.debug(
+                                        "Passing BASIC authentication credentials to Keycloak bearer-token translation authenticator" );
+                                if ( !proxyAuthenticator.authenticate( proxyUserPass, http ) )
                                 {
                                     break;
                                 }

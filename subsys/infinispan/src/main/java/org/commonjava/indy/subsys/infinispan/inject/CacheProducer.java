@@ -134,7 +134,7 @@ public class CacheProducer
 
     @Produces
     @ApplicationScoped
-    @Production
+//    @Production
     @Default
     public EmbeddedCacheManager getCacheManager()
     {

@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.httprox.util;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
@@ -26,6 +27,7 @@ import org.commonjava.indy.util.ApplicationHeader;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,11 +56,14 @@ public class HttpConduitWrapper
 
     private final ContentController contentController;
 
-    public HttpConduitWrapper( ConduitStreamSinkChannel channel, HttpRequest httpRequest, ContentController contentController )
+    private CacheProvider cacheProvider;
+
+    public HttpConduitWrapper( ConduitStreamSinkChannel channel, HttpRequest httpRequest, ContentController contentController, CacheProvider cacheProvider )
     {
         this.sinkChannel = channel;
         this.httpRequest = httpRequest;
         this.contentController = contentController;
+        this.cacheProvider = cacheProvider;
     }
 
     @Override
@@ -151,7 +156,7 @@ public class HttpConduitWrapper
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "Valid transfer found." );
-        try (InputStream in = txfr.openInputStream())
+        try(InputStream in = txfr.openInputStream( true, eventMetadata ))
         {
             writeStatus( ApplicationStatus.OK );
             writeHeader( ApplicationHeader.content_length, Long.toString( txfr.length() ) );
@@ -174,8 +179,11 @@ public class HttpConduitWrapper
                     sinkChannel.write( bbuf );
                 }
 
-                txfr.touch( eventMetadata );
             }
+        }
+        finally
+        {
+            cacheProvider.cleanupCurrentThread();
         }
     }
 

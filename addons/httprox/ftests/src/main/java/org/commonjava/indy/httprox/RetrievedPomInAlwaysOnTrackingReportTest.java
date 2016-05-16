@@ -39,7 +39,7 @@ import org.commonjava.indy.model.core.StoreType;
 import org.junit.Test;
 
 public class RetrievedPomInAlwaysOnTrackingReportTest
-    extends AbstractHttproxFunctionalTest
+    extends AbstractHttproxTrackingFunctionalTest
 {
 
     private static final String USER = "user";
@@ -110,7 +110,7 @@ public class RetrievedPomInAlwaysOnTrackingReportTest
     @Override
     protected String getAdditionalHttproxConfig()
     {
-        return "tracking.type=always";
+        return super.getAdditionalHttproxConfig() + "\ntracking.type=always";
     }
 
 }

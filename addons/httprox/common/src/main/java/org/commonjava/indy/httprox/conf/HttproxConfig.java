@@ -18,6 +18,8 @@ package org.commonjava.indy.httprox.conf;
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
@@ -51,6 +53,8 @@ public class HttproxConfig
 
     public TrackingType getTrackingType()
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Using configured tracking type: '{}'", trackingType );
         return TrackingType.valueOf( trackingType == null ? DEFAULT_TRACKING_TYPE : trackingType.toUpperCase() );
     }
 

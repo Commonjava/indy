@@ -19,6 +19,7 @@ import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.httprox.conf.HttproxConfig;
 import org.commonjava.indy.httprox.keycloak.KeycloakProxyAuthenticator;
+import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xnio.ChannelListener;
@@ -47,15 +48,19 @@ public class ProxyAcceptHandler implements ChannelListener<AcceptingChannel<Stre
     @Inject
     private KeycloakProxyAuthenticator proxyAuthenticator;
 
+    @Inject
+    private CacheProvider cacheProvider;
+
     protected ProxyAcceptHandler(){}
 
     public ProxyAcceptHandler( HttproxConfig config, StoreDataManager storeManager,
-                               ContentController contentController, KeycloakProxyAuthenticator proxyAuthenticator )
+                               ContentController contentController, KeycloakProxyAuthenticator proxyAuthenticator, CacheProvider cacheProvider )
     {
         this.config = config;
         this.storeManager = storeManager;
         this.contentController = contentController;
         this.proxyAuthenticator = proxyAuthenticator;
+        this.cacheProvider = cacheProvider;
     }
 
     @Override
@@ -85,7 +90,7 @@ public class ProxyAcceptHandler implements ChannelListener<AcceptingChannel<Stre
         final ConduitStreamSinkChannel sink = accepted.getSinkChannel();
 
         final ProxyResponseWriter writer =
-                        new ProxyResponseWriter( config, storeManager, contentController, proxyAuthenticator );
+                        new ProxyResponseWriter( config, storeManager, contentController, proxyAuthenticator, cacheProvider );
 
         logger.debug( "Setting writer: {}", writer );
         sink.getWriteSetter()
