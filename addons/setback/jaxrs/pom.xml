@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-setback</artifactId>
-    <version>0.99.3</version>
+    <version>0.99.4-SNAPSHOT</version>
   </parent>
   
   <artifactId>indy-setback-jaxrs</artifactId>
