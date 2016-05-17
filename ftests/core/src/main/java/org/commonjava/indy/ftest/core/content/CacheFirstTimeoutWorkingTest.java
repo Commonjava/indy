@@ -24,6 +24,10 @@ import java.util.Date;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+/**
+ * Test metadata timeout working when cache time interval is shorter than metadata timeout interval.
+ * In this case normal content should be removed firstly before the metadata content.
+ */
 public class CacheFirstTimeoutWorkingTest
         extends AbstractMetadataTimeoutWorkingTest
 {

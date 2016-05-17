@@ -19,13 +19,17 @@ import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
-
+/**
+ * Test metadata timeout working passthrough is set to true.
+ * In this the passthrough timeout(default config timeout) will work, so all contents should be removed
+ * only when passthrough timeout arrives, even the metadata timeout and normal timeout is set.
+ * 
+ */
 public class MetadataPassthroughTimeoutWorkingTest
         extends AbstractMetadataTimeoutWorkingTest
 {
@@ -68,9 +72,9 @@ public class MetadataPassthroughTimeoutWorkingTest
         Thread.sleep( PASSTHROUGH_TIMEOUT_WAITING_MILLISECONDS );
         logger.debug( "Verifying passthrough timeouts at: {} (timeout: {}s)", new Date(), PASSTHROUGH_TIMEOUT_SECONDS );
         assertThat( "artifact should be removed because of passthrough timeout", pomFile.exists(), equalTo( false ) );
-        assertThat( "metadata should not be removed because of passthrough timeout", metadataFile.exists(),
+        assertThat( "metadata should be removed because of passthrough timeout", metadataFile.exists(),
                     equalTo( false ) );
-        assertThat( "archetype should not be removed because of passthrough timeout", archetypeFile.exists(),
+        assertThat( "archetype should be removed because of passthrough timeout", archetypeFile.exists(),
                     equalTo( false ) );
     }
 

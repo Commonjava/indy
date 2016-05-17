@@ -1,0 +1,164 @@
+package org.commonjava.indy.ftest.core.content;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.commonjava.indy.client.core.helper.PathInfo;
+import org.commonjava.indy.model.core.Group;
+import org.commonjava.indy.model.core.HostedRepository;
+import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.test.http.expect.ExpectationServer;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.InputStream;
+
+import static org.commonjava.indy.model.core.StoreType.group;
+import static org.commonjava.indy.model.core.StoreType.hosted;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
+
+/**
+ * This test assure the group level metadata merging when added new hosted repo  to a existed group which have more repos
+ * and the repos have same metadata file. The hosted repo does not have the same meta file. Cases as below: <br>
+ * WHEN:
+ * <ul>
+ *     <li>group contains two or more repos with maven-metadata.xml (eg. org/foo/bar/maven-metadata.xml)</li>
+ *     <li>group-level merged metadata has been created by requesting this path via the group itself</li>
+ *     <li>hosted repository is added to the group that does not contain this path</li>
+ * </ul>
+ * THEN:
+ * <ul>
+ *     <li>Group merged metadata file for specified path is NOT removed / expired after new hosted repo is added.</li>
+ * </ul>
+ *
+ */
+public class GroupMetadataOverlappingWithoutMetadataOfHostedReposTest
+        extends AbstractContentManagementTest
+{
+    @Rule
+    public ExpectationServer server = new ExpectationServer();
+
+    @Test
+    @Ignore
+    public void run()
+            throws Exception
+    {
+        final String repo1 = "repo1";
+        final String repo2 = "repo2";
+        final String path = "org/foo/bar/maven-metadata.xml";
+
+        /* @formatter:off */
+        final String repo1Content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<metadata>\n" +
+            "  <groupId>org.foo</groupId>\n" +
+            "  <artifactId>bar</artifactId>\n" +
+            "  <versioning>\n" +
+            "    <latest>1.0</latest>\n" +
+            "    <release>1.0</release>\n" +
+            "    <versions>\n" +
+            "      <version>1.0</version>\n" +
+            "    </versions>\n" +
+            "    <lastUpdated>20150722164334</lastUpdated>\n" +
+            "  </versioning>\n" +
+            "</metadata>\n";
+        /* @formatter:on */
+
+        /* @formatter:off */
+        final String repo2Content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<metadata>\n" +
+            "  <groupId>org.foo</groupId>\n" +
+            "  <artifactId>bar</artifactId>\n" +
+            "  <versioning>\n" +
+            "    <latest>1.1</latest>\n" +
+            "    <release>1.1</release>\n" +
+            "    <versions>\n" +
+            "      <version>1.1</version>\n" +
+            "    </versions>\n" +
+            "    <lastUpdated>20150822164334</lastUpdated>\n" +
+            "  </versioning>\n" +
+            "</metadata>\n";
+        /* @formatter:on */
+
+        server.expect( server.formatUrl( repo1, path ), 200, repo1Content );
+        server.expect( server.formatUrl( repo2, path ), 200, repo2Content );
+
+        RemoteRepository remote1 = new RemoteRepository( repo1, server.formatUrl( repo1 ) );
+        remote1 = client.stores().create( remote1, "adding remote", RemoteRepository.class );
+
+        RemoteRepository remote2 = new RemoteRepository( repo2, server.formatUrl( repo2 ) );
+        remote2 = client.stores().create( remote2, "adding remote", RemoteRepository.class );
+
+        Group g = new Group( "test", remote1.getKey(), remote2.getKey() );
+        g = client.stores().create( g, "adding group", Group.class );
+
+        System.out.printf( "\n\nGroup constituents are:\n  %s\n\n", StringUtils.join( g.getConstituents(), "\n  " ) );
+
+        InputStream stream = client.content().get( group, g.getName(), path );
+
+        assertThat( stream, notNullValue() );
+
+        String metadata = IOUtils.toString( stream );
+
+        /* @formatter:off */
+        final String groupContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<metadata>\n" +
+            "  <groupId>org.foo</groupId>\n" +
+            "  <artifactId>bar</artifactId>\n" +
+            "  <versioning>\n" +
+            "    <latest>1.1</latest>\n" +
+            "    <release>1.1</release>\n" +
+            "    <versions>\n" +
+            "      <version>1.0</version>\n" +
+            "      <version>1.1</version>\n" +
+            "    </versions>\n" +
+            "    <lastUpdated>20150822164334</lastUpdated>\n" +
+            "  </versioning>\n" +
+            "</metadata>\n";
+        /* @formatter:on */
+        assertThat( metadata, equalTo( groupContent ) );
+
+        final String hostedRepo = "hostedRepo";
+        HostedRepository hostedRepository = new HostedRepository( hostedRepo );
+        hostedRepository = client.stores().create( hostedRepository, "adding hosted", HostedRepository.class );
+
+        final String normalPath = "org/foo/bar/1.0/bar-1.0.pom";
+        client.content()
+              .store( hostedRepository.getKey(), normalPath,
+                      new ByteArrayInputStream( "<version>1.0</version>".getBytes( "UTF-8" ) ) );
+
+        final PathInfo p = client.content().getInfo( hosted, hostedRepo, normalPath );
+        assertThat( "hosted content should exist", p.exists(), equalTo( true ) );
+
+        g.addConstituent( hostedRepository );
+
+        client.stores().update( g, "add new hosted" );
+
+        System.out.printf( "\n\nUpdated group constituents are:\n  %s\n\n",
+                           StringUtils.join( g.getConstituents(), "\n  " ) );
+
+        final String gpLevelMetaFilePath =
+                String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(), group.name(),
+                               g.getName(), path );
+        assertThat( "group metadata should not be removed after merging", new File( gpLevelMetaFilePath ).exists(),
+                    equalTo( true ) );
+
+        stream = client.content().get( group, g.getName(), path );
+
+        assertThat( stream, notNullValue() );
+
+        metadata = IOUtils.toString( stream );
+
+        assertThat( metadata, equalTo( groupContent ) );
+
+    }
+
+    @Override
+    protected boolean createStandardTestStructures()
+    {
+        return false;
+    }
+}
