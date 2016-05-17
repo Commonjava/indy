@@ -46,7 +46,9 @@ public class AbstractHttproxFunctionalTest
     extends AbstractIndyFunctionalTest
 {
 
-    private static final String HOST = "127.0.0.1";
+    protected static final String HOST = "127.0.0.1";
+
+    protected static final String DEFAULT_BASE_HTTPROX_CONFIG = "[httprox]\nenabled=true\nport=${proxyPort}" ;
 
     protected final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -80,18 +82,31 @@ public class AbstractHttproxFunctionalTest
     {
         proxyPort = PortFinder.findOpenPort( 16 );
 
+        String baseHttproxConfig = getBaseHttproxConfig();
+        if ( isEmpty( baseHttproxConfig ) )
+        {
+            baseHttproxConfig = DEFAULT_BASE_HTTPROX_CONFIG;
+        }
+
+        baseHttproxConfig = baseHttproxConfig.replaceAll( "\\$\\{proxyPort\\}", Integer.toString( proxyPort ) );
+
         String additionalConfig = getAdditionalHttproxConfig();
         if ( additionalConfig == null )
         {
             additionalConfig = "";
         }
 
-        writeConfigFile( "conf.d/httprox.conf", "[httprox]\nenabled=true\nport=" + proxyPort + "\n" + additionalConfig );
+        writeConfigFile( "conf.d/httprox.conf", baseHttproxConfig + "\n" + additionalConfig );
+    }
+
+    protected String getBaseHttproxConfig()
+    {
+        return "";
     }
 
     protected String getAdditionalHttproxConfig()
     {
-        return null;
+        return "";
     }
 
     protected PomRef loadPom( final String name, final Map<String, String> substitutions )

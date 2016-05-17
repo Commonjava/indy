@@ -39,7 +39,7 @@ import org.commonjava.indy.model.core.StoreType;
 import org.junit.Test;
 
 public class RetrievedPomInSuffixTrackingReportTest
-    extends AbstractHttproxFunctionalTest
+    extends AbstractHttproxTrackingFunctionalTest
 {
 
     private static final String USER = "user+tracking";
@@ -110,7 +110,7 @@ public class RetrievedPomInSuffixTrackingReportTest
     @Override
     protected String getAdditionalHttproxConfig()
     {
-        return "tracking.type=suffix";
+        return super.getAdditionalHttproxConfig() + "\ntracking.type=suffix";
     }
 
 }

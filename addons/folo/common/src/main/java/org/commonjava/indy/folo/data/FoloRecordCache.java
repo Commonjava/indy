@@ -133,24 +133,30 @@ public class FoloRecordCache
     {
         TrackedContentRecord record = sealedRecordCache.get( key );
 
+        Logger logger = LoggerFactory.getLogger( getClass() );
         if ( record != null )
         {
+            logger.debug( "Tracking record: {} already sealed! Returning sealed record.", key );
             return record;
         }
 
         TrackedContentRecord created = new TrackedContentRecord( key );
 
+        logger.debug( "Listing unsealed tracking record entries for: {}...", key );
         Query query = inProgressByTrackingKey( key ).build();
         List<AffectedStoreRecordKey> results = query.list();
         if ( results != null )
         {
+            logger.debug( "Adding {} entries to record: {}", results.size(), key );
             results.forEach( (result)->{
                 AffectedStoreRecord store = created.getAffectedStore( result.getStoreKey(), true );
                 store.add( result.getPath(), result.getEffect() );
+                logger.debug( "Removing in-progress entry: {}", result );
                 inProgressRecordCache.remove( result );
             });
         }
 
+        logger.debug( "Sealing record for: {}", key );
         sealedRecordCache.put( key, created );
         return created;
     }

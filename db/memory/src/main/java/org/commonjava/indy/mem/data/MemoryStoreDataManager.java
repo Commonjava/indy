@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import static org.commonjava.indy.model.core.StoreType.group;
 
@@ -226,7 +225,7 @@ public class MemoryStoreDataManager
         synchronized ( StoreKey.dedupe( repo ) )
         {
             Set<Group> groups = reverseGroupMemberships.get( repo );
-            return groups == null ? Collections.emptySet() : Collections.unmodifiableSet( new HashSet<>( groups ) );
+            return groups == null ? Collections.emptySet() : Collections.unmodifiableSet( groups );
         }
     }
 
@@ -339,22 +338,20 @@ public class MemoryStoreDataManager
             if ( StoreType.group == store.getKey().getType() )
             {
                 Group g = (Group) store;
-                g.getConstituents().forEach( (memberKey)->{
-                    synchronized ( StoreKey.dedupe( memberKey ) )
+                new ArrayList<>( g.getConstituents() ).forEach( ( memberKey ) -> {
+                    Set<Group> memberIn = reverseGroupMemberships.get( memberKey );
+                    if ( memberIn == null )
                     {
-                        Set<Group> memberIn = reverseGroupMemberships.get( memberKey );
-                        if ( memberIn == null )
-                        {
-                            memberIn = new HashSet<>( Arrays.asList( g ) );
-                        }
-                        else
-                        {
-                            memberIn.add( g );
-                        }
-
-                        reverseGroupMemberships.put( memberKey, memberIn );
+                        memberIn = new HashSet<>();
                     }
-                });
+                    else
+                    {
+                        memberIn = new HashSet<>( memberIn );
+                    }
+
+                    memberIn.add( g );
+                    reverseGroupMemberships.put( memberKey, memberIn );
+                } );
             }
 
             try
@@ -372,8 +369,8 @@ public class MemoryStoreDataManager
         return false;
     }
 
-    protected void preStore( final ArtifactStore store, ArtifactStore original, final ChangeSummary summary, final boolean exists,
-                             final boolean fireEvents, final EventMetadata eventMetadata )
+    protected void preStore( final ArtifactStore store, ArtifactStore original, final ChangeSummary summary,
+                             final boolean exists, final boolean fireEvents, final EventMetadata eventMetadata )
             throws IndyDataException
     {
         if ( isStarted() && fireEvents )
@@ -395,8 +392,8 @@ public class MemoryStoreDataManager
         }
     }
 
-    protected void postStore( final ArtifactStore store, ArtifactStore original, final ChangeSummary summary, final boolean exists,
-                              final boolean fireEvents, final EventMetadata eventMetadata )
+    protected void postStore( final ArtifactStore store, ArtifactStore original, final ChangeSummary summary,
+                              final boolean exists, final boolean fireEvents, final EventMetadata eventMetadata )
             throws IndyDataException
     {
         if ( isStarted() && fireEvents )

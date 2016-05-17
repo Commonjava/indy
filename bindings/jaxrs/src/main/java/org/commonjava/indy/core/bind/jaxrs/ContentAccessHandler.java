@@ -278,9 +278,6 @@ public class ContentAccessHandler
                 }
                 else
                 {
-                    // TODO: Do we need this if the TransferStreamingOutput is triggering an access event??
-                    item.touch( eventMetadata );
-
                     final ResponseBuilder builder = Response.ok( new TransferStreamingOutput( item, eventMetadata ) );
                     setInfoHeaders( builder, item, sk, path, false, contentController.getContentType( path ),
                                     contentController.getHttpMetadata( sk, path ) );

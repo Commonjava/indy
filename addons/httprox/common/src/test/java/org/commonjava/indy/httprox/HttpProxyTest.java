@@ -148,7 +148,7 @@ public class HttpProxyTest
         final KeycloakProxyAuthenticator auth = new KeycloakProxyAuthenticator( kcConfig, config );
 
         proxy = new HttpProxy( config, bootOpts,
-                               new ProxyAcceptHandler( config, storeManager, contentController, auth ) );
+                               new ProxyAcceptHandler( config, storeManager, contentController, auth, core.getCache() ) );
         proxy.start();
     }
 

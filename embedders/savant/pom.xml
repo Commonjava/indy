@@ -30,6 +30,10 @@
   <name>Indy :: Embedders :: Savant</name>
   <description>REST + Cartographer + DotMaven + Autoprox + Folo + Revisions + SetBack + Infinispan infrastructure</description>
 
+  <properties>
+    <oneTest></oneTest>
+  </properties>
+
 <!--   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -213,7 +217,7 @@
                   <reuseForks>false</reuseForks>
                   <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
 
-                  <!-- <test>org.commonjava.indy.ftest.core.content.StoreAndVerifyJarViaDirectDownloadTest</test> -->
+                  <test>${oneTest}</test>
 
 
                   <dependenciesToScan>

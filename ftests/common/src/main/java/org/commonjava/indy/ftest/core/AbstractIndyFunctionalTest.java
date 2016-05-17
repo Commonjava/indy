@@ -252,4 +252,9 @@ public abstract class AbstractIndyFunctionalTest
         return fixture.getTempFolder();
     }
 
+    protected boolean isEmpty( String val )
+    {
+        return val == null || val.length() < 1;
+    }
+
 }

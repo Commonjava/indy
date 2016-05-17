@@ -15,7 +15,9 @@
  */
 package org.commonjava.indy.bind.jaxrs;
 
-import java.io.IOException;
+import org.commonjava.maven.galley.spi.cache.CacheProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -26,14 +28,11 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-
-import org.commonjava.maven.galley.spi.cache.CacheProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.IOException;
 
 @ApplicationScoped
 public class ResourceManagementFilter
-    implements Filter
+        implements Filter
 {
 
     @Inject
@@ -43,26 +42,29 @@ public class ResourceManagementFilter
 
     @Override
     public void init( final FilterConfig filterConfig )
-        throws ServletException
+            throws ServletException
     {
     }
 
     @Override
     public void doFilter( final ServletRequest request, final ServletResponse response, final FilterChain chain )
-        throws IOException, ServletException
+            throws IOException, ServletException
     {
         final HttpServletRequest hsr = (HttpServletRequest) request;
         String name = Thread.currentThread().getName();
+
+        String tn = hsr.getMethod() + " " + hsr.getPathInfo() + " (" + System.currentTimeMillis() + "." + System.nanoTime() + ")";
+        String clientAddr = request.getRemoteAddr();
         try
         {
-            Thread.currentThread()
-                  .setName( hsr.getMethod() + " " + hsr.getPathInfo() );
+            logger.info( "START request: {} (from: {})", tn, clientAddr );
+
+            Thread.currentThread().setName( tn );
             chain.doFilter( request, response );
         }
         finally
         {
-            logger.debug( "Cleaning up resources for thread: {}", Thread.currentThread()
-                                                                        .getName() );
+            logger.debug( "Cleaning up resources for thread: {}", Thread.currentThread().getName() );
             Thread.currentThread().setName( name );
             try
             {
@@ -72,6 +74,8 @@ public class ResourceManagementFilter
             {
                 logger.error( "Failed to cleanup resources", e );
             }
+
+            logger.info( "END request: {} (from: {})", tn, clientAddr );
         }
     }
 
