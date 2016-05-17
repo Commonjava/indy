@@ -89,17 +89,17 @@ public class TestAutoProxyDataManager
     }
 
     @Override
-    public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
+    public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName, final boolean enabledOnly )
         throws IndyDataException
     {
-        return delegate.getOrderedConcreteStoresInGroup( groupName );
+        return delegate.getOrderedConcreteStoresInGroup( groupName, enabledOnly );
     }
 
     @Override
-    public List<ArtifactStore> getOrderedStoresInGroup( final String groupName )
+    public List<ArtifactStore> getOrderedStoresInGroup( final String groupName, final boolean enabledOnly )
         throws IndyDataException
     {
-        return delegate.getOrderedStoresInGroup( groupName );
+        return delegate.getOrderedStoresInGroup( groupName, enabledOnly );
     }
 
     @Override
