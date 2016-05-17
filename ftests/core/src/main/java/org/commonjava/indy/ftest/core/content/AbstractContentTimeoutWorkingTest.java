@@ -29,6 +29,11 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+/**
+ * This abstract class will do some preparation work for testing of the content timeout function,
+ * like prepare mock remote with a http server, set up test repo.
+ *
+ */
 public abstract class AbstractContentTimeoutWorkingTest
         extends AbstractContentManagementTest
 {

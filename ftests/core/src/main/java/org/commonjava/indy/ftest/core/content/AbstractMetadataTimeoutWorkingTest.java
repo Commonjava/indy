@@ -29,6 +29,11 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+/**
+ * This abstract class will do some preparation work for testing of the metadata content timeout function,
+ * like prepare mock remote with a http server, set up test repo, prepare normal content and metadata content.
+ *
+ */
 public abstract class AbstractMetadataTimeoutWorkingTest
         extends AbstractContentManagementTest
 {
