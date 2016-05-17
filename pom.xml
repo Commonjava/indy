@@ -51,13 +51,13 @@
     <luceneVersion>5.3.1</luceneVersion>
     <hibernateVersion>5.5.2.Final</hibernateVersion>
     <atlasVersion>0.16.0</atlasVersion>
-    <galleyVersion>0.12.1-SNAPSHOT</galleyVersion>
+    <galleyVersion>0.13.0</galleyVersion>
     <bomVersion>21</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <resteasyVersion>3.0.9.Final</resteasyVersion>
     <undertowVersion>1.1.2.Final</undertowVersion>
     <xnioVersion>3.3.0.Final</xnioVersion>
-    <partylineVersion>1.7-SNAPSHOT</partylineVersion>
+    <partylineVersion>1.7</partylineVersion>
     <keycloakVersion>1.2.0.Final</keycloakVersion>
     <jhttpcVersion>1.1</jhttpcVersion>
     
