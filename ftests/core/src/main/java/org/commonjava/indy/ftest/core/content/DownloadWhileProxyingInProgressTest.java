@@ -29,8 +29,6 @@ import org.commonjava.indy.ftest.core.fixture.InputTimer;
 import org.commonjava.indy.ftest.core.fixture.ReluctantInputStream;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.test.http.TestHttpServer;
-import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
 import org.junit.Test;
 

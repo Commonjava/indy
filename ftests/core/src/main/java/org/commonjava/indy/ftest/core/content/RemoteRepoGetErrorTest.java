@@ -23,7 +23,6 @@ import org.apache.http.HttpStatus;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.maven.galley.model.Location;
-import org.commonjava.test.http.TestHttpServer;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
 import org.junit.Test;

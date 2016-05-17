@@ -24,11 +24,9 @@ import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
-import org.commonjava.test.http.TestHttpServer;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.rules.TestName;
 
 public class AbstractContentManagementTest
     extends AbstractIndyFunctionalTest
