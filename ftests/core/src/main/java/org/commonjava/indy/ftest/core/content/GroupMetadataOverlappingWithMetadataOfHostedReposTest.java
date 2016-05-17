@@ -7,9 +7,11 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.test.http.expect.ExpectationServer;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStream;
@@ -20,13 +22,30 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-public class GroupMetadataOverlappingWithMetadataOfHostedRepos
+/**
+ * This test assure the group level metadata merging when added new hosted repo to a existed group which have more repos
+ * and the repos have same metadata file. The hosted repo also has the same meta file. cases as below: <br>
+ * WHEN:
+ * <ul>
+ *     <li>group contains two or more repos with maven-metadata.xml (eg. org/foo/bar/maven-metadata.xml)</li>
+ *     <li>group-level merged metadata has been created by requesting this path via the group itself</li>
+ *     <li>hosted repository is added to the group that also contains this metadata path</li>
+ * </ul>
+ * THEN:
+ * <ul>
+ *     <li>group's merged metadata file should be deleted / de-indexed</li>
+       <li>re-requesting this metadata path via the group should reflect versions in the new hosted repo</li>
+ * </ul>
+ *
+ */
+public class GroupMetadataOverlappingWithMetadataOfHostedReposTest
         extends AbstractContentManagementTest
 {
     @Rule
     public ExpectationServer server = new ExpectationServer();
 
     @Test
+    @Ignore
     public void run()
             throws Exception
     {
@@ -59,9 +78,9 @@ public class GroupMetadataOverlappingWithMetadataOfHostedRepos
             "    <latest>1.1</latest>\n" +
             "    <release>1.1</release>\n" +
             "    <versions>\n" +
-            "      <version>1.0</version>\n" +
+            "      <version>1.1</version>\n" +
             "    </versions>\n" +
-            "    <lastUpdated>20150722164334</lastUpdated>\n" +
+            "    <lastUpdated>20150822164334</lastUpdated>\n" +
             "  </versioning>\n" +
             "</metadata>\n";
         /* @formatter:on */
@@ -84,23 +103,30 @@ public class GroupMetadataOverlappingWithMetadataOfHostedRepos
 
         assertThat( stream, notNullValue() );
 
+        //        Thread.sleep( 60000l );
         String metadata = IOUtils.toString( stream );
-        assertThat( metadata, equalTo( repo1Content ) );
+
+        /* @formatter:off */
+        final String groupContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<metadata>\n" +
+            "  <groupId>org.foo</groupId>\n" +
+            "  <artifactId>bar</artifactId>\n" +
+            "  <versioning>\n" +
+            "    <latest>1.1</latest>\n" +
+            "    <release>1.1</release>\n" +
+            "    <versions>\n" +
+            "      <version>1.0</version>\n" +
+            "      <version>1.1</version>\n" +
+            "    </versions>\n" +
+            "    <lastUpdated>20150822164334</lastUpdated>\n" +
+            "  </versioning>\n" +
+            "</metadata>\n";
+        /* @formatter:on */
+        assertThat( metadata, equalTo( groupContent ) );
 
         final String hostedRepo = "hostedRepo";
         HostedRepository hostedRepository = new HostedRepository( hostedRepo );
-
         hostedRepository = client.stores().create( hostedRepository, "adding hosted", HostedRepository.class );
-
-        final String metadataFilePath =
-                String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(),
-                               hosted.name(), hostedRepo, path );
-
-        final File metadataFile = new File( metadataFilePath );
-        if ( !metadataFile.exists() )
-        {
-            createFileWithDirs(metadataFilePath);
-        }
 
         /* @formatter:off */
         final String hostedMetaContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -111,32 +137,57 @@ public class GroupMetadataOverlappingWithMetadataOfHostedRepos
             "    <latest>1.2</latest>\n" +
             "    <release>1.2</release>\n" +
             "    <versions>\n" +
-            "      <version>1.0</version>\n" +
+            "      <version>1.2</version>\n" +
             "    </versions>\n" +
-            "    <lastUpdated>20150722164334</lastUpdated>\n" +
+            "    <lastUpdated>20150922164334</lastUpdated>\n" +
             "  </versioning>\n" +
             "</metadata>\n";
         /* @formatter:on */
 
-        FileWriter writer = new FileWriter( metadataFile );
-        writer.write( hostedMetaContent );
-        writer.close();
+        client.content()
+              .store( hostedRepository.getKey(), path,
+                      new ByteArrayInputStream( hostedMetaContent.getBytes( "UTF-8" ) ) );
 
-        PathInfo p = client.content().getInfo( hosted, hostedRepo, path );
+        final PathInfo p = client.content().getInfo( hosted, hostedRepo, path );
         assertThat( "hosted metadata should exist", p.exists(), equalTo( true ) );
 
         g.addConstituent( hostedRepository );
 
         client.stores().update( g, "add new hosted" );
 
-        System.out.printf( "\n\nUpdated group constituents are:\n  %s\n\n", StringUtils.join( g.getConstituents(), "\n  " ) );
+        System.out.printf( "\n\nUpdated group constituents are:\n  %s\n\n",
+                           StringUtils.join( g.getConstituents(), "\n  " ) );
+
+        final String gpLevelMetaFilePath =
+                String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(), group.name(),
+                               g.getName(), path );
+        assertThat( "group metadata should be removed after merging", new File( gpLevelMetaFilePath ).exists(),
+                    equalTo( false ) );
 
         stream = client.content().get( group, g.getName(), path );
 
         assertThat( stream, notNullValue() );
 
         metadata = IOUtils.toString( stream );
-        assertThat( metadata, equalTo( hostedMetaContent ) );
+
+        /* @formatter:off */
+        final String updGroupContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<metadata>\n" +
+            "  <groupId>org.foo</groupId>\n" +
+            "  <artifactId>bar</artifactId>\n" +
+            "  <versioning>\n" +
+            "    <latest>1.2</latest>\n" +
+            "    <release>1.2</release>\n" +
+            "    <versions>\n" +
+            "      <version>1.0</version>\n" +
+            "      <version>1.1</version>\n" +
+            "      <version>1.2</version>\n" +
+            "    </versions>\n" +
+            "    <lastUpdated>20150922164334</lastUpdated>\n" +
+            "  </versioning>\n" +
+            "</metadata>\n";
+        /* @formatter:on */
+        assertThat( metadata, equalTo( updGroupContent ) );
 
     }
 
@@ -144,20 +195,5 @@ public class GroupMetadataOverlappingWithMetadataOfHostedRepos
     protected boolean createStandardTestStructures()
     {
         return false;
-    }
-
-    private boolean createFileWithDirs( String path )
-            throws Exception
-    {
-        final File file = new File( path );
-        if ( file.exists() )
-        {
-            return false;
-        }
-        else if ( !file.getParentFile().exists() )
-        {
-            file.getParentFile().mkdirs();
-        }
-        return file.createNewFile();
     }
 }
