@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy.embed</groupId>
     <artifactId>indy-embedders</artifactId>
-    <version>0.99.3-SNAPSHOT</version>
+    <version>0.99.3</version>
   </parent>
   
   <artifactId>indy-embedder-savant</artifactId>
@@ -31,7 +31,7 @@
   <description>REST + Cartographer + DotMaven + Autoprox + Folo + Revisions + SetBack + Infinispan infrastructure</description>
 
   <properties>
-    <oneTest></oneTest>
+    <oneTest />
   </properties>
 
 <!--   <dependencyManagement>
