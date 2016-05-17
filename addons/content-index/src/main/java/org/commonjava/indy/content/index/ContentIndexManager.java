@@ -96,6 +96,21 @@ public class ContentIndexManager
         Logger logger = LoggerFactory.getLogger( getClass() );
 
         // invalidate indexes for the store itself
+        List<IndexedStorePath> paths = getAllIndexedPathsForStore( key );
+        paths.forEach( ( indexedStorePath ) -> {
+            logger.debug( "Removing: {}", indexedStorePath );
+            contentIndex.remove( indexedStorePath );
+            if ( pathConsumer != null )
+            {
+                pathConsumer.accept( indexedStorePath );
+            }
+        } );
+
+        return paths;
+    }
+
+    public List<IndexedStorePath> getAllIndexedPathsForStore( StoreKey key )
+    {
         QueryFactory queryFactory = Search.getQueryFactory( contentIndex );
         QueryBuilder<Query> queryBuilder = queryFactory.from( IndexedStorePath.class )
                                                        .having( "storeType" )
@@ -106,15 +121,6 @@ public class ContentIndexManager
                                                        .toBuilder();
 
         List<IndexedStorePath> paths = queryBuilder.build().list();
-        paths.forEach( ( indexedStorePath ) -> {
-            logger.debug( "Removing: {}", indexedStorePath );
-            contentIndex.remove( indexedStorePath );
-            if ( pathConsumer != null )
-            {
-                pathConsumer.accept( indexedStorePath );
-            }
-        } );
-
         return paths;
     }
 

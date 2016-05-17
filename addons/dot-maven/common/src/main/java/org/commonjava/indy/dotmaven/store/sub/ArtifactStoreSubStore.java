@@ -182,7 +182,7 @@ public class ArtifactStoreSubStore
         {
             if ( StoreType.group == key.getType() )
             {
-                final List<ArtifactStore> stores = indy.getOrderedStoresInGroup( key.getName() );
+                final List<ArtifactStore> stores = indy.getOrderedStoresInGroup( key.getName(), false );
                 for ( final ArtifactStore store : stores )
                 {
                     //                    logger.info( "Getting Transfer for: {} from: {}", path, store );
@@ -284,7 +284,7 @@ public class ArtifactStoreSubStore
             {
                 if ( StoreType.group == key.getType() )
                 {
-                    final List<ArtifactStore> stores = indy.getOrderedStoresInGroup( key.getName() );
+                    final List<ArtifactStore> stores = indy.getOrderedStoresInGroup( key.getName(), false );
                     final Set<String> noms = new TreeSet<String>();
                     for ( final ArtifactStore store : stores )
                     {
