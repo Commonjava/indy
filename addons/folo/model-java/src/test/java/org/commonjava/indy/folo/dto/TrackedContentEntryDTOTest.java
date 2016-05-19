@@ -1,7 +1,5 @@
 package org.commonjava.indy.folo.dto;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.sun.media.jfxmedia.track.Track;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;

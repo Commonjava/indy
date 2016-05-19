@@ -34,6 +34,7 @@ import org.xnio.conduits.ConduitStreamSinkChannel;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
@@ -150,7 +151,7 @@ public class HttpConduitWrapper
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "Valid transfer found." );
-        try (FileChannel sourceChannel = new FileInputStream( txfr.getDetachedFile() ).getChannel())
+        try (InputStream in = txfr.openInputStream( true, eventMetadata ))
         {
             writeStatus( ApplicationStatus.OK );
             writeHeader( ApplicationHeader.content_length, Long.toString( txfr.length() ) );
