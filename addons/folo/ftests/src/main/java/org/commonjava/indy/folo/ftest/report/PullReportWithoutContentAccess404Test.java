@@ -15,12 +15,17 @@
  */
 package org.commonjava.indy.folo.ftest.report;
 
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.equalTo;
 
 import org.commonjava.indy.folo.client.IndyFoloAdminClientModule;
 import org.commonjava.indy.folo.dto.TrackedContentDTO;
+import org.commonjava.indy.folo.dto.TrackedContentEntryDTO;
 import org.junit.Test;
+
+import java.util.Set;
 
 public class PullReportWithoutContentAccess404Test
     extends AbstractTrackingReportTest
@@ -32,8 +37,18 @@ public class PullReportWithoutContentAccess404Test
     {
         final String trackingId = newName();
 
+        boolean success = client.module( IndyFoloAdminClientModule.class ).sealTrackingRecord( trackingId );
+
+        assertThat( success, equalTo( true ) );
+
         final TrackedContentDTO report = client.module( IndyFoloAdminClientModule.class )
                                                .getTrackingReport( trackingId );
-        assertThat( report, nullValue() );
+        assertThat( report, notNullValue() );
+
+        Set<TrackedContentEntryDTO> downloads = report.getDownloads();
+        assertThat( downloads == null || downloads.isEmpty(), equalTo( true ) );
+
+        Set<TrackedContentEntryDTO> uploads = report.getUploads();
+        assertThat( uploads == null || uploads.isEmpty(), equalTo( true ) );
     }
 }

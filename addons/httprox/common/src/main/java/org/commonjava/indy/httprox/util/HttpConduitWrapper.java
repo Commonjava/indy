@@ -176,9 +176,13 @@ public class HttpConduitWrapper
                     bbuf.clear();
                     bbuf.put( buf, 0, read );
                     bbuf.flip();
-                    sinkChannel.write( bbuf );
+                    int written = 0;
+                    do
+                    {
+                        written += sinkChannel.write( bbuf );
+                    }
+                    while ( written < read );
                 }
-
             }
         }
         finally
@@ -209,7 +213,26 @@ public class HttpConduitWrapper
     public void close()
             throws IOException
     {
-        sinkChannel.flush();
+        Logger logger = LoggerFactory.getLogger( getClass() );
+
+        boolean flushed = false;
+        while ( !flushed )
+        {
+            flushed = sinkChannel.flush();
+            if ( !flushed )
+            {
+                try
+                {
+                    logger.debug( "Waiting for sink channel to flush..." );
+                    wait( 100 );
+                }
+                catch ( InterruptedException e )
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+
         sinkChannel.shutdownWrites();
     }
 }

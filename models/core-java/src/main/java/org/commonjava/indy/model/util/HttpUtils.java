@@ -19,9 +19,11 @@ import static org.apache.commons.lang.StringUtils.isEmpty;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -36,16 +38,26 @@ public final class HttpUtils
     {
     }
 
-    private static final String DATE_HEADER_FMT = "EEE, dd MMM yyyy HH:mm:ss zzz";
+    private static final String DATE_HEADER_FMT = "EEE, dd MMM yyyy HH:mm:ss";
+
+    private static final String GMT_SUFFIX = " GMT";
 
     public static String formatDateHeader( final long date )
     {
-        return new SimpleDateFormat( DATE_HEADER_FMT ).format( new Date( date ) );
+        Calendar cal = Calendar.getInstance();
+        cal.setTime( new Date( date ) );
+        cal.setTimeZone( TimeZone.getTimeZone( "GMT" ) );
+
+        return new SimpleDateFormat( DATE_HEADER_FMT ).format( cal.getTime() ) + GMT_SUFFIX;
     }
 
     public static String formatDateHeader( final Date date )
     {
-        return new SimpleDateFormat( DATE_HEADER_FMT ).format( date );
+        Calendar cal = Calendar.getInstance();
+        cal.setTime( date );
+        cal.setTimeZone( TimeZone.getTimeZone( "GMT" ) );
+
+        return new SimpleDateFormat( DATE_HEADER_FMT ).format( date ) + GMT_SUFFIX;
     }
 
     public static Date parseDateHeader( final String date )
