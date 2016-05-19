@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy.embed.test</groupId>
     <artifactId>indy-embedder-tests</artifactId>
-    <version>0.99.1.2-SNAPSHOT</version>
+    <version>0.99.1.2</version>
   </parent>
   
   <artifactId>indy-embedder-test-easyprox</artifactId>
