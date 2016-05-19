@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-addons</artifactId>
-    <version>0.99.1.2</version>
+    <version>0.99.1.3-SNAPSHOT</version>
   </parent>
   <artifactId>indy-promote</artifactId>
   <name>Indy :: Add-Ons :: Artifact Promotion :: Parent</name>
