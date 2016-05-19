@@ -38,7 +38,7 @@ public final class HttpUtils
     {
     }
 
-    private static final String DATE_HEADER_FMT = "EEE, dd MMM yyyy HH:mm:ss zzz";
+    private static final String DATE_HEADER_FMT = "EEE, dd MMM yyyy HH:mm:ss GMT";
 
     public static String formatDateHeader( final long date )
     {
