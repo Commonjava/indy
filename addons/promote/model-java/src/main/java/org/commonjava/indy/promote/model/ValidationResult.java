@@ -64,4 +64,41 @@ public class ValidationResult
     {
         return ruleSet;
     }
+
+    @Override
+    public boolean equals( Object o )
+    {
+        if ( this == o )
+        {
+            return true;
+        }
+        if ( !( o instanceof ValidationResult ) )
+        {
+            return false;
+        }
+
+        ValidationResult that = (ValidationResult) o;
+
+        if ( isValid() != that.isValid() )
+        {
+            return false;
+        }
+        if ( getValidatorErrors() != null ?
+                !getValidatorErrors().equals( that.getValidatorErrors() ) :
+                that.getValidatorErrors() != null )
+        {
+            return false;
+        }
+        return getRuleSet() != null ? getRuleSet().equals( that.getRuleSet() ) : that.getRuleSet() == null;
+
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = ( isValid() ? 1 : 0 );
+        result = 31 * result + ( getValidatorErrors() != null ? getValidatorErrors().hashCode() : 0 );
+        result = 31 * result + ( getRuleSet() != null ? getRuleSet().hashCode() : 0 );
+        return result;
+    }
 }

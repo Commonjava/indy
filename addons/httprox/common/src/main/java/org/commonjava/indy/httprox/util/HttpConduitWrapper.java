@@ -34,6 +34,7 @@ import org.xnio.conduits.ConduitStreamSinkChannel;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
@@ -150,7 +151,7 @@ public class HttpConduitWrapper
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "Valid transfer found." );
-        try (FileChannel sourceChannel = new FileInputStream( txfr.getDetachedFile() ).getChannel())
+        try (InputStream in = txfr.openInputStream( true, eventMetadata ))
         {
             writeStatus( ApplicationStatus.OK );
             writeHeader( ApplicationHeader.content_length, Long.toString( txfr.length() ) );
@@ -161,8 +162,22 @@ public class HttpConduitWrapper
             {
                 sinkChannel.write( ByteBuffer.wrap( "\r\n".getBytes() ) );
 
-                Channels.transferBlocking( sinkChannel, sourceChannel, 0, txfr.length() );
-                txfr.touch( eventMetadata );
+                int capacity = 16384;
+                ByteBuffer bbuf = ByteBuffer.allocate( capacity );
+                byte[] buf = new byte[capacity];
+                int read = -1;
+                while ( ( read = in.read( buf ) ) > -1 )
+                {
+                    bbuf.clear();
+                    bbuf.put( buf, 0, read );
+                    bbuf.flip();
+                    int written = 0;
+                    do
+                    {
+                        written += sinkChannel.write( bbuf );
+                    }
+                    while ( written < read );
+                }
             }
         }
     }
@@ -189,7 +204,26 @@ public class HttpConduitWrapper
     public void close()
             throws IOException
     {
-        sinkChannel.flush();
+        Logger logger = LoggerFactory.getLogger( getClass() );
+
+        boolean flushed = false;
+        while ( !flushed )
+        {
+            flushed = sinkChannel.flush();
+            if ( !flushed )
+            {
+                try
+                {
+                    logger.debug( "Waiting for sink channel to flush..." );
+                    wait( 100 );
+                }
+                catch ( InterruptedException e )
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+
         sinkChannel.shutdownWrites();
     }
 }

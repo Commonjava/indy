@@ -29,7 +29,7 @@ public class NotFoundCacheDTO
 {
 
     @ApiModelProperty( required = true, value = "Set of sections each corresponding an artifact store" )
-    private final Set<NotFoundCacheSectionDTO> sections = new HashSet<NotFoundCacheSectionDTO>();
+    private Set<NotFoundCacheSectionDTO> sections = new HashSet<NotFoundCacheSectionDTO>();
 
     public void addSection( final StoreKey key, final List<String> paths )
     {
@@ -44,5 +44,10 @@ public class NotFoundCacheDTO
     public Set<NotFoundCacheSectionDTO> getSections()
     {
         return sections;
+    }
+
+    public void setSections( Set<NotFoundCacheSectionDTO> sections )
+    {
+        this.sections = sections;
     }
 }
