@@ -176,7 +176,12 @@ public class HttpConduitWrapper
                     bbuf.clear();
                     bbuf.put( buf, 0, read );
                     bbuf.flip();
-                    sinkChannel.write( bbuf );
+                    int written = 0;
+                    do
+                    {
+                        written += sinkChannel.write( bbuf );
+                    }
+                    while ( written < read );
                 }
             }
         }
