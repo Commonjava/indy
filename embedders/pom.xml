@@ -87,6 +87,10 @@
       <groupId>javax.cache</groupId>
       <artifactId>cache-api</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-core</artifactId>
+    </dependency>
   </dependencies>
   
   <build>
@@ -155,6 +159,21 @@
             </execution>
           </executions>
         </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <skip>${skipITs}</skip>
+            <systemPropertyVariables>
+              <testTimeout>${testTimeout}</testTimeout>
+            </systemPropertyVariables>
+            <forkCount>${test-forkCount}</forkCount>
+            <reuseForks>false</reuseForks>
+            <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
+            <dependenciesToScan>
+              <dependency>org.commonjava.indy:indy-ftests-core</dependency>
+            </dependenciesToScan> 
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
@@ -163,37 +182,9 @@
     <profile>
       <id>run-its</id>
 
-      <dependencies>
-        <dependency>
-          <groupId>org.commonjava.indy</groupId>
-          <artifactId>indy-ftests-core</artifactId>
-        </dependency>
-<!--         <dependency>
-          <groupId>org.commonjava.indy</groupId>
-          <artifactId>indy-test-providers-core</artifactId>
-        </dependency> -->
-      </dependencies>
-      
-      <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <artifactId>maven-surefire-plugin</artifactId>
-              <configuration>
-                <systemPropertyVariables>
-                  <testTimeout>${testTimeout}</testTimeout>
-                </systemPropertyVariables>
-                <forkCount>${test-forkCount}</forkCount>
-                <reuseForks>false</reuseForks>
-                <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
-                <dependenciesToScan>
-                  <dependency>org.commonjava.indy:indy-ftests-core</dependency>
-                </dependenciesToScan> 
-              </configuration>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-      </build>
+      <properties>
+        <skipITs>${quickITs}</skipITs>
+      </properties>
     </profile>
   </profiles>
 </project>

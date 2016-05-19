@@ -51,7 +51,7 @@
     <luceneVersion>5.3.1</luceneVersion>
     <hibernateVersion>5.5.2.Final</hibernateVersion>
     <atlasVersion>0.16.0</atlasVersion>
-    <galleyVersion>0.13.0</galleyVersion>
+    <galleyVersion>0.13.1-SNAPSHOT</galleyVersion>
     <bomVersion>21</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <resteasyVersion>3.0.9.Final</resteasyVersion>
@@ -63,6 +63,8 @@
     
     <test-forkCount>4</test-forkCount>
     <test-redirectOutput>true</test-redirectOutput>
+    <skipITs>true</skipITs>
+    <quickITs>true</quickITs>
   </properties>
   
   <modules>
@@ -1090,17 +1092,13 @@
     <profile>
       <id>run-its</id>
       <properties>
-        <!-- <skipTests>true</skipTests> -->
+        <skipTests>false</skipTests>
       </properties>
-      <modules>
-        <!--
-        <module>embedder-tests</module>
-        -->
-      </modules>
     </profile>
     <profile>
       <id>ci</id>
       <properties>
+        <skipTests>false</skipTests>
         <test-forkCount>2</test-forkCount>
         <testTimeout>300</testTimeout>
       </properties>
