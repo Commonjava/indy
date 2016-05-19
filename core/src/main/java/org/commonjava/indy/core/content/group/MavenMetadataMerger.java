@@ -66,6 +66,8 @@ public class MavenMetadataMerger
 
     public static final String METADATA_SHA_NAME = METADATA_NAME + ".sha1";
 
+    public static final String METADATA_SHA256_NAME = METADATA_NAME + ".sha256";
+
     public static final String METADATA_MD5_NAME = METADATA_NAME + ".md5";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
