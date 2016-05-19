@@ -38,7 +38,9 @@ public final class HttpUtils
     {
     }
 
-    private static final String DATE_HEADER_FMT = "EEE, dd MMM yyyy HH:mm:ss GMT";
+    private static final String DATE_HEADER_FMT = "EEE, dd MMM yyyy HH:mm:ss";
+
+    private static final String GMT_SUFFIX = " GMT";
 
     public static String formatDateHeader( final long date )
     {
@@ -46,7 +48,7 @@ public final class HttpUtils
         cal.setTime( new Date( date ) );
         cal.setTimeZone( TimeZone.getTimeZone( "GMT" ) );
 
-        return new SimpleDateFormat( DATE_HEADER_FMT ).format( cal.getTime() );
+        return new SimpleDateFormat( DATE_HEADER_FMT ).format( cal.getTime() ) + GMT_SUFFIX;
     }
 
     public static String formatDateHeader( final Date date )
@@ -55,7 +57,7 @@ public final class HttpUtils
         cal.setTime( date );
         cal.setTimeZone( TimeZone.getTimeZone( "GMT" ) );
 
-        return new SimpleDateFormat( DATE_HEADER_FMT ).format( date );
+        return new SimpleDateFormat( DATE_HEADER_FMT ).format( date ) + GMT_SUFFIX;
     }
 
     public static Date parseDateHeader( final String date )
