@@ -36,10 +36,6 @@
     <module>easyprox</module>
   </modules>
 
-  <properties>
-    <skipITs>true</skipITs>
-  </properties>
-  
   <dependencies>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
@@ -86,7 +82,7 @@
       <id>run-its</id>
 
       <properties>
-        <skipITs>false</skipITs>
+        <skipITs>${quickITs}</skipITs>
       </properties>
     </profile>
   </profiles>

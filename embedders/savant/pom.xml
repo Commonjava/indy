@@ -166,6 +166,37 @@
   
   <build>
     <!-- <finalName>indy</finalName> -->
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <skip>${skipITs}</skip>
+              <systemPropertyVariables>
+                <testTimeout>${testTimeout}</testTimeout>
+              </systemPropertyVariables>
+              <forkCount>${test-forkCount}</forkCount>
+              <reuseForks>false</reuseForks>
+              <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
+
+              <test>${oneTest}</test>
+
+
+              <dependenciesToScan>
+                <dependency>org.commonjava.indy:indy-ftests-core</dependency>
+                <dependency>org.commonjava.indy:indy-ftests-autoprox</dependency>
+                <dependency>org.commonjava.indy:indy-ftests-depgraph</dependency>
+                <dependency>org.commonjava.indy:indy-ftests-dot-maven</dependency>
+                <dependency>org.commonjava.indy:indy-ftests-folo</dependency>
+                <dependency>org.commonjava.indy:indy-ftests-httprox</dependency>
+                <dependency>org.commonjava.indy:indy-ftests-implied-repos</dependency>
+                <dependency>org.commonjava.indy:indy-ftests-promote</dependency>
+                <dependency>org.commonjava.maven.cartographer:cartographer-tck</dependency>
+              </dependenciesToScan> 
+            </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
     
     <plugins>
       <plugin>
@@ -177,39 +208,9 @@
   <profiles>
     <profile>
       <id>run-its</id>
-      
-      <build>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                  <systemPropertyVariables>
-                    <testTimeout>${testTimeout}</testTimeout>
-                  </systemPropertyVariables>
-                  <forkCount>${test-forkCount}</forkCount>
-                  <reuseForks>false</reuseForks>
-                  <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
-<!--                   <includes>
-                    <include>**/rule/*Test*</include>
-                  </includes>
- -->
-                  <dependenciesToScan>
-                    <dependency>org.commonjava.indy:indy-ftests-core</dependency>
-                    <dependency>org.commonjava.indy:indy-ftests-autoprox</dependency>
-                    <dependency>org.commonjava.indy:indy-ftests-depgraph</dependency>
-                    <dependency>org.commonjava.indy:indy-ftests-dot-maven</dependency>
-                    <dependency>org.commonjava.indy:indy-ftests-folo</dependency>
-                    <dependency>org.commonjava.indy:indy-ftests-httprox</dependency>
-                    <dependency>org.commonjava.indy:indy-ftests-implied-repos</dependency>
-                    <dependency>org.commonjava.indy:indy-ftests-promote</dependency>
-                    <dependency>org.commonjava.maven.cartographer:cartographer-tck</dependency>
-                  </dependenciesToScan> 
-                </configuration>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-      </build>
+      <properties>
+        <skipITs>false</skipITs>
+      </properties>
     </profile>
   </profiles>
 </project>
