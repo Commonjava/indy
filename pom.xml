@@ -59,7 +59,7 @@
     <keycloakVersion>1.2.0.Final</keycloakVersion>
     <jhttpcVersion>1.1</jhttpcVersion>
     
-    <test-forkCount>1C</test-forkCount>
+    <test-forkCount>4</test-forkCount>
     <test-redirectOutput>true</test-redirectOutput>
   </properties>
   
