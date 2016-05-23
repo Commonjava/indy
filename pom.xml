@@ -60,6 +60,8 @@
     <partylineVersion>1.7</partylineVersion>
     <keycloakVersion>1.2.0.Final</keycloakVersion>
     <jhttpcVersion>1.1</jhttpcVersion>
+    <kojijiVersion>1.0-SNAPSHOT</kojijiVersion>
+    <rwxVersion>0.4-SNAPSHOT</rwxVersion>
     
     <test-forkCount>4</test-forkCount>
     <test-redirectOutput>true</test-redirectOutput>
@@ -574,6 +576,40 @@
         <classifier>confset</classifier>
         <scope>provided</scope>
       </dependency>
+      
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-koji-common</artifactId>
+        <version>0.99.4-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>confset</classifier>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-koji-common</artifactId>
+        <version>0.99.4-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-koji-model-java</artifactId>
+        <version>0.99.4-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-koji-client-java</artifactId>
+        <version>0.99.4-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-koji-jaxrs</artifactId>
+        <version>0.99.4-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-ftests-koji</artifactId>
+        <version>0.99.4-SNAPSHOT</version>
+      </dependency>
 
 
       <dependency>
@@ -705,7 +741,29 @@
         <artifactId>jhttpc</artifactId>
         <version>${jhttpcVersion}</version>
       </dependency>
+
+      <dependency>
+        <groupId>org.commonjava.rwx</groupId>
+        <artifactId>rwx-core</artifactId>
+        <version>0.4-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.rwx</groupId>
+        <artifactId>rwx-http</artifactId>
+        <version>0.4-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.rwx</groupId>
+        <artifactId>rwx-bindings</artifactId>
+        <version>0.4-SNAPSHOT</version>
+      </dependency>
       
+      <dependency>
+        <groupId>com.redhat.red.build</groupId>
+        <artifactId>kojiji</artifactId>
+        <version>1.0-SNAPSHOT</version>
+      </dependency>
+
       <dependency>
         <groupId>org.commonjava.maven.atlas</groupId>
         <artifactId>atlas-identities</artifactId>
