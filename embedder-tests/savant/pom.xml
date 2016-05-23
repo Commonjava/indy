@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy.embed.test</groupId>
     <artifactId>indy-embedder-tests</artifactId>
-    <version>0.99.1.3</version>
+    <version>0.99.1.4-SNAPSHOT</version>
   </parent>
   
   <artifactId>indy-embedder-test-savant</artifactId>

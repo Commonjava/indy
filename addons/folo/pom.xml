@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-addons</artifactId>
-    <version>0.99.1.3</version>
+    <version>0.99.1.4-SNAPSHOT</version>
   </parent>
   <artifactId>indy-folo</artifactId>
   <name>Indy :: Add-Ons :: Folo Usage Tracker :: Parent</name>
