@@ -30,6 +30,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -149,6 +150,13 @@ public class FoloAdminHandler
         }
 
         return response;
+    }
+
+    @Path( "/{id}/record" )
+    @POST
+    public Response sealRecord( final @PathParam( "id" ) String id, @Context final UriInfo uriInfo )
+    {
+        return Response.ok().build();
     }
 
     @Path( "/{id}/record" )
