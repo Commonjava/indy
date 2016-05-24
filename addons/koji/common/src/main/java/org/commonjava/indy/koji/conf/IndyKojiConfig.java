@@ -1,15 +1,38 @@
+/**
+ * Copyright (C) 2011 Red Hat, Inc. (jdcasey@commonjava.org)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.commonjava.indy.koji.conf;
 
 import com.redhat.red.build.koji.config.KojiConfig;
-import org.commonjava.rwx.binding.anno.Contains;
+import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.util.jhttpc.model.SiteConfig;
 import org.commonjava.util.jhttpc.model.SiteConfigBuilder;
 import org.commonjava.util.jhttpc.model.SiteTrustType;
-import org.commonjava.web.config.annotation.ConfigName;
+import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.SectionName;
+import org.commonjava.web.config.section.MapSectionListener;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.commonjava.util.jhttpc.model.SiteConfig.DEFAULT_MAX_CONNECTIONS;
 import static org.commonjava.util.jhttpc.model.SiteConfig.DEFAULT_PROXY_PORT;
@@ -18,12 +41,23 @@ import static org.commonjava.util.jhttpc.model.SiteConfig.DEFAULT_REQUEST_TIMEOU
 /**
  * Created by jdcasey on 5/20/16.
  */
-@SectionName( "koji" )
+@SectionName( IndyKojiConfig.SECTION_NAME )
 @ApplicationScoped
 public class IndyKojiConfig
-        implements KojiConfig
+        extends MapSectionListener
+        implements IndyConfigInfo, KojiConfig
 {
     private static final String KOJI_SITE_ID = "koji";
+
+    private static final String DEFAULT_CONFIG_FILE_NAME = "default-koji.conf";
+
+    public static final String SECTION_NAME = "koji";
+
+    private static final String TARGET_KEY_PREFIX = "target.";
+
+    private static final boolean DEFAULT_ENABLED = false;
+
+    private Boolean enabled;
 
     private String url;
 
@@ -46,6 +80,12 @@ public class IndyKojiConfig
     private String siteTrustType;
 
     private String proxyPassword;
+
+    private String storageRootUrl;
+
+    private List<String> tagPatterns;
+
+    private Map<String, String> targetGroups;
 
     @Override
     public SiteConfig getKojiSiteConfig()
@@ -87,21 +127,9 @@ public class IndyKojiConfig
         return maxConnections == null ? DEFAULT_MAX_CONNECTIONS : maxConnections;
     }
 
-    @ConfigName( "max.connections" )
-    public void setMaxConnections( Integer maxConnections )
-    {
-        this.maxConnections = maxConnections;
-    }
-
     public String getServerPemPath()
     {
         return serverPemPath;
-    }
-
-    @ConfigName( "server.pem" )
-    public void setServerPemPath( String serverPemPath )
-    {
-        this.serverPemPath = serverPemPath;
     }
 
     public String getClientPemPath()
@@ -109,21 +137,9 @@ public class IndyKojiConfig
         return clientPemPath;
     }
 
-    @ConfigName( "client.pem" )
-    public void setClientPemPath( String clientPemPath )
-    {
-        this.clientPemPath = clientPemPath;
-    }
-
     public String getProxyHost()
     {
         return proxyHost;
-    }
-
-    @ConfigName( "proxy.host" )
-    public void setProxyHost( String proxyHost )
-    {
-        this.proxyHost = proxyHost;
     }
 
     public Integer getProxyPort()
@@ -131,21 +147,9 @@ public class IndyKojiConfig
         return proxyPort == null ? DEFAULT_PROXY_PORT : proxyPort;
     }
 
-    @ConfigName( "proxy.port" )
-    public void setProxyPort( Integer proxyPort )
-    {
-        this.proxyPort = proxyPort;
-    }
-
     public String getProxyUser()
     {
         return proxyUser;
-    }
-
-    @ConfigName( "proxy.user" )
-    public void setProxyUser( String proxyUser )
-    {
-        this.proxyUser = proxyUser;
     }
 
     public Integer getRequestTimeoutSeconds()
@@ -153,21 +157,9 @@ public class IndyKojiConfig
         return requestTimeoutSeconds == null ? DEFAULT_REQUEST_TIMEOUT_SECONDS : requestTimeoutSeconds;
     }
 
-    @ConfigName( "request.timeout.seconds" )
-    public void setRequestTimeoutSeconds( Integer requestTimeoutSeconds )
-    {
-        this.requestTimeoutSeconds = requestTimeoutSeconds;
-    }
-
     public String getSiteTrustType()
     {
         return siteTrustType;
-    }
-
-    @ConfigName( "ssl.trust.type" )
-    public void setSiteTrustType( String siteTrustType )
-    {
-        this.siteTrustType = siteTrustType;
     }
 
     public String getUrl()
@@ -175,21 +167,9 @@ public class IndyKojiConfig
         return url;
     }
 
-    @ConfigName( "url" )
-    public void setUrl( String url )
-    {
-        this.url = url;
-    }
-
     public String getKeyPassword()
     {
         return keyPassword;
-    }
-
-    @ConfigName( "client.pem.password" )
-    public void setKeyPassword( String keyPassword )
-    {
-        this.keyPassword = keyPassword;
     }
 
     public String getProxyPassword()
@@ -197,9 +177,225 @@ public class IndyKojiConfig
         return proxyPassword;
     }
 
-    @ConfigName( "proxy.password" )
+    public String getStorageRootUrl()
+    {
+        return storageRootUrl;
+    }
+
+    public void setUrl( String url )
+    {
+        this.url = url;
+    }
+
+    public void setClientPemPath( String clientPemPath )
+    {
+        this.clientPemPath = clientPemPath;
+    }
+
+    public void setServerPemPath( String serverPemPath )
+    {
+        this.serverPemPath = serverPemPath;
+    }
+
+    public void setKeyPassword( String keyPassword )
+    {
+        this.keyPassword = keyPassword;
+    }
+
+    public void setMaxConnections( Integer maxConnections )
+    {
+        this.maxConnections = maxConnections;
+    }
+
+    public void setProxyHost( String proxyHost )
+    {
+        this.proxyHost = proxyHost;
+    }
+
+    public void setProxyPort( Integer proxyPort )
+    {
+        this.proxyPort = proxyPort;
+    }
+
+    public void setProxyUser( String proxyUser )
+    {
+        this.proxyUser = proxyUser;
+    }
+
+    public void setRequestTimeoutSeconds( Integer requestTimeoutSeconds )
+    {
+        this.requestTimeoutSeconds = requestTimeoutSeconds;
+    }
+
+    public void setSiteTrustType( String siteTrustType )
+    {
+        this.siteTrustType = siteTrustType;
+    }
+
     public void setProxyPassword( String proxyPassword )
     {
         this.proxyPassword = proxyPassword;
+    }
+
+    public void setStorageRootUrl( String storageRootUrl )
+    {
+        this.storageRootUrl = storageRootUrl;
+    }
+
+    public List<String> getTagPatterns()
+    {
+        return tagPatterns;
+    }
+
+    public void setTagPatterns( List<String> tagPatterns )
+    {
+        this.tagPatterns = tagPatterns;
+    }
+
+    public Map<String, String> getTargetGroups()
+    {
+        return targetGroups;
+    }
+
+    public void setTargetGroups( Map<String, String> targetGroups )
+    {
+        this.targetGroups = targetGroups;
+    }
+
+    public Boolean getEnabled()
+    {
+        return enabled == null ? DEFAULT_ENABLED : enabled;
+    }
+
+    public void setEnabled( Boolean enabled )
+    {
+        this.enabled = enabled;
+    }
+
+    public boolean isTagAllowed( String name )
+    {
+        Optional<String> result = tagPatterns.stream().filter( ( pattern ) -> name.matches( pattern ) ).findFirst();
+
+        return result.isPresent();
+    }
+
+    @Override
+    public void parameter( final String name, final String value )
+            throws ConfigurationException
+    {
+        switch ( name )
+        {
+            case "enabled":
+            {
+                this.enabled = Boolean.valueOf( value );
+                break;
+            }
+            case "tag.pattern":
+            {
+                if ( tagPatterns == null )
+                {
+                    tagPatterns = new ArrayList<>();
+                }
+
+                this.tagPatterns.add( value );
+                break;
+            }
+            case "storage.root.url":
+            {
+                this.storageRootUrl = value;
+                break;
+            }
+            case "proxy.password":
+            {
+                this.proxyPassword = value;
+                break;
+            }
+            case "proxy.user":
+            {
+                this.proxyUser = value;
+                break;
+            }
+            case "proxy.host":
+            {
+                this.proxyHost = value;
+                break;
+            }
+            case "proxy.port":
+            {
+                this.proxyPort = Integer.valueOf( value );
+                break;
+            }
+            case "client.pem.password":
+            {
+                this.keyPassword = value;
+                break;
+            }
+            case "url":
+            {
+                this.url = url;
+                break;
+            }
+            case "ssl.trust.type":
+            {
+                this.siteTrustType = value;
+                break;
+            }
+            case "request.timeout.seconds":
+            {
+                this.requestTimeoutSeconds = Integer.valueOf( value );
+                break;
+            }
+            case "client.pem":
+            {
+                this.clientPemPath = value;
+                break;
+            }
+            case "server.pem":
+            {
+                this.serverPemPath = value;
+                break;
+            }
+            case "max.connections":
+            {
+                this.maxConnections = Integer.valueOf( value );
+                break;
+            }
+            default:
+            {
+                if ( name.startsWith( TARGET_KEY_PREFIX ) && name.length() > TARGET_KEY_PREFIX.length() )
+                {
+                    if ( targetGroups == null )
+                    {
+                        targetGroups = new HashMap<>();
+                    }
+
+                    String source = name.split("\\.")[1];
+                    targetGroups.put( source, value );
+                }
+                else
+                {
+                    throw new ConfigurationException(
+                            "Invalid value: '%s' for parameter: '%s'. Only numeric values are accepted for section: '%s'.",
+                            value, name, SECTION_NAME );
+                }
+            }
+        }
+    }
+
+    @Override
+    public String getDefaultConfigFileName()
+    {
+        return new File( IndyConfigInfo.CONF_INCLUDES_DIR, DEFAULT_CONFIG_FILE_NAME ).getPath();
+    }
+
+    @Override
+    public InputStream getDefaultConfig()
+    {
+        return Thread.currentThread().getContextClassLoader().getResourceAsStream( DEFAULT_CONFIG_FILE_NAME );
+    }
+
+    public String getTargetGroup( String name )
+    {
+        return targetGroups.get( name );
     }
 }

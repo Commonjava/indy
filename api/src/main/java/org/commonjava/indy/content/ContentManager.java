@@ -38,6 +38,8 @@ import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 public interface ContentManager
 {
 
+    String ENTRY_POINT_STORE = "entry-point-store";
+
     /**
      * Retrieve the content at the given path from the first store possible, then return then return the transfer that references the content without 
      * iterating any farther.
