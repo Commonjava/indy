@@ -52,7 +52,7 @@ public class ProxyReleasesFileLockOnCompletionTest
         final String url = server.formatUrl( testRepo, pom.path );
         server.expect( url, 200, pom.pom );
 
-        Stream.of( 1, 2).forEach( (currentTry)->{
+        Stream.of( 1, 2 ).forEach( (currentTry)->{
             CloseableHttpResponse response = null;
             InputStream stream = null;
             final HttpGet get = new HttpGet( url );
