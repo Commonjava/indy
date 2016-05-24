@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -366,10 +367,10 @@ public class IndyKojiConfig
                 {
                     if ( targetGroups == null )
                     {
-                        targetGroups = new HashMap<>();
+                        targetGroups = new LinkedHashMap<>();
                     }
 
-                    String source = name.split("\\.")[1];
+                    String source = name.substring( "target.".length(), name.length() - 1 );
                     targetGroups.put( source, value );
                 }
                 else
@@ -396,6 +397,19 @@ public class IndyKojiConfig
 
     public String getTargetGroup( String name )
     {
-        return targetGroups.get( name );
+        if ( targetGroups == null )
+        {
+            return null;
+        }
+
+        for ( String key : targetGroups.keySet() )
+        {
+            if ( name.matches( key ) )
+            {
+                return targetGroups.get( key );
+            }
+        }
+
+        return null;
     }
 }
