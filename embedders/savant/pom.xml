@@ -105,6 +105,31 @@
       <artifactId>cartographer</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-koji-common</artifactId>
+    </dependency>
+
+
+    <dependency>
+      <groupId>org.commonjava.maven.atlas</groupId>
+      <artifactId>atlas-identities</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.maven.atlas</groupId>
+      <artifactId>atlas-relationships-api</artifactId>
+    </dependency>
+
+
+    <dependency>
+      <groupId>org.infinispan</groupId>
+      <artifactId>infinispan-cdi-embedded</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.infinispan</groupId>
+      <artifactId>infinispan-embedded</artifactId>
+>>>>>>> da54d84... Fixing koji init.
+    </dependency>
+    <dependency>
       <groupId>org.commonjava.maven.cartographer</groupId>
       <artifactId>cartographer-model-java</artifactId>
     </dependency>

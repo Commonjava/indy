@@ -18,6 +18,8 @@ package org.commonjava.indy.koji.inject;
 import com.redhat.red.build.koji.KojiClient;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
+import org.commonjava.indy.action.IndyLifecycleException;
+import org.commonjava.indy.action.StartupAction;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
 import org.commonjava.rwx.binding.error.BindException;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
@@ -37,6 +39,7 @@ import java.util.concurrent.ExecutorService;
  */
 @ApplicationScoped
 public class KojijiProvider
+        implements StartupAction
 {
     @Inject
     private IndyKojiConfig config;
@@ -50,13 +53,25 @@ public class KojijiProvider
     @ExecutorConfig( named = "koji-queries", threads = 4 )
     private ExecutorService kojiExecutor;
 
-    @PostConstruct
-    public void setup()
+    @Produces
+    public KojiClient getKojiClient()
+    {
+        return kojiClient;
+    }
+
+    @Override
+    public void start()
+            throws IndyLifecycleException
     {
         kojiPasswordManager = new MemoryPasswordManager();
         if ( config.getProxyPassword() != null )
         {
             kojiPasswordManager.bind( config.getProxyPassword(), config.getKojiSiteId(), PasswordType.PROXY );
+        }
+
+        if ( config.getKeyPassword() != null )
+        {
+            kojiPasswordManager.bind( config.getKeyPassword(), config.getKojiSiteId(), PasswordType.KEY );
         }
 
         try
@@ -65,13 +80,19 @@ public class KojijiProvider
         }
         catch ( BindException e )
         {
-            throw new RuntimeException( e );
+            throw new IndyLifecycleException( "Failed to start koji client: %s", e, e.getMessage() );
         }
     }
 
-    @Produces
-    public KojiClient getKojiClient()
+    @Override
+    public int getStartupPriority()
     {
-        return kojiClient;
+        return 90;
+    }
+
+    @Override
+    public String getId()
+    {
+        return "koji-client";
     }
 }

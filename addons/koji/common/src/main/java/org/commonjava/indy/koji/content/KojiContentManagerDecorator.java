@@ -74,7 +74,7 @@ import java.util.Map;
  * Created by jdcasey on 5/20/16.
  */
 @Decorator
-@ApplicationScoped
+//@ApplicationScoped
 public abstract class KojiContentManagerDecorator
         implements ContentManager
 {

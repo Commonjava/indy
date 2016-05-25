@@ -23,6 +23,8 @@ import org.commonjava.util.jhttpc.model.SiteTrustType;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.SectionName;
 import org.commonjava.web.config.section.MapSectionListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
@@ -35,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.commonjava.util.jhttpc.model.SiteConfig.DEFAULT_MAX_CONNECTIONS;
 import static org.commonjava.util.jhttpc.model.SiteConfig.DEFAULT_PROXY_PORT;
 import static org.commonjava.util.jhttpc.model.SiteConfig.DEFAULT_REQUEST_TIMEOUT_SECONDS;
@@ -93,8 +96,8 @@ public class IndyKojiConfig
             throws IOException
     {
         return new SiteConfigBuilder().withId( getKojiSiteId() )
-                                      .withKeyCertPem( getClientPemPath() )
-                                      .withServerCertPem( getServerPemPath() )
+                                      .withKeyCertPem( getClientPemContent() )
+                                      .withServerCertPem( getServerPemContent() )
                                       .withUri( getKojiURL() )
                                       .withMaxConnections( getMaxConnections() )
                                       .withProxyHost( getProxyHost() )
@@ -105,10 +108,39 @@ public class IndyKojiConfig
                                       .build();
     }
 
+    private String getServerPemContent()
+            throws IOException
+    {
+        return readPemContent( getServerPemPath() );
+    }
+
+    private String getClientPemContent()
+            throws IOException
+    {
+        return readPemContent( getClientPemPath() );
+    }
+
+    private String readPemContent( String pemPath )
+            throws IOException
+    {
+        if ( pemPath == null )
+        {
+            return null;
+        }
+
+        File f = new File( pemPath );
+        if ( !f.exists() || f.isDirectory() )
+        {
+            return null;
+        }
+
+        return readFileToString( f );
+    }
+
     @Override
     public String getKojiURL()
     {
-        return url;
+        return getUrl();
     }
 
     @Override
@@ -284,6 +316,8 @@ public class IndyKojiConfig
     public void parameter( final String name, final String value )
             throws ConfigurationException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Got koji config parameter: '{}' with value: '{}'", name, value );
         switch ( name )
         {
             case "enabled":
@@ -333,7 +367,7 @@ public class IndyKojiConfig
             }
             case "url":
             {
-                this.url = url;
+                this.url = value;
                 break;
             }
             case "ssl.trust.type":
@@ -346,12 +380,12 @@ public class IndyKojiConfig
                 this.requestTimeoutSeconds = Integer.valueOf( value );
                 break;
             }
-            case "client.pem":
+            case "client.pem.path":
             {
                 this.clientPemPath = value;
                 break;
             }
-            case "server.pem":
+            case "server.pem.path":
             {
                 this.serverPemPath = value;
                 break;
@@ -376,7 +410,7 @@ public class IndyKojiConfig
                 else
                 {
                     throw new ConfigurationException(
-                            "Invalid value: '%s' for parameter: '%s'. Only numeric values are accepted for section: '%s'.",
+                            "Invalid parameter: '%s'.",
                             value, name, SECTION_NAME );
                 }
             }
