@@ -44,7 +44,7 @@
     <apiVersion>1</apiVersion>
     <projectOwner>Red Hat, Inc.</projectOwner>
     
-    <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
+    <!-- <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation> -->
     <javaVersion>1.8</javaVersion>
     <slf4j-version>1.6.1</slf4j-version>
     <infinispanVersion>8.2.0.Final</infinispanVersion>
@@ -59,9 +59,10 @@
     <xnioVersion>3.3.0.Final</xnioVersion>
     <partylineVersion>1.7</partylineVersion>
     <keycloakVersion>1.2.0.Final</keycloakVersion>
-    <jhttpcVersion>1.1</jhttpcVersion>
+    <jhttpcVersion>1.2-SNAPSHOT</jhttpcVersion>
     <kojijiVersion>1.0-SNAPSHOT</kojijiVersion>
     <rwxVersion>0.4-SNAPSHOT</rwxVersion>
+    <bouncycastleVersion>1.53</bouncycastleVersion>
     
     <test-forkCount>4</test-forkCount>
     <test-redirectOutput>true</test-redirectOutput>
@@ -762,6 +763,17 @@
         <groupId>com.redhat.red.build</groupId>
         <artifactId>kojiji</artifactId>
         <version>1.0-SNAPSHOT</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcprov-jdk15on</artifactId>
+        <version>${bouncycastleVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcpkix-jdk15on</artifactId>
+        <version>${bouncycastleVersion}</version>
       </dependency>
 
       <dependency>

@@ -115,6 +115,12 @@
       <artifactId>indy-httprox-common</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-koji-common</artifactId>
+    </dependency>
+
+
+    <dependency>
       <groupId>org.commonjava.maven.atlas</groupId>
       <artifactId>atlas-identities</artifactId>
     </dependency>
