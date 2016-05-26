@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -55,9 +56,9 @@ public class MemoryStoreDataManager
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private final Map<StoreKey, ArtifactStore> stores = new HashMap<StoreKey, ArtifactStore>();
+    private final Map<StoreKey, ArtifactStore> stores = new ConcurrentHashMap<>();
 
-    private final Map<String, RemoteRepository> byRemoteUrl = new HashMap<String, RemoteRepository>();
+    private final Map<String, RemoteRepository> byRemoteUrl = new ConcurrentHashMap<>();
 
     //    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -392,7 +393,11 @@ public class MemoryStoreDataManager
 
         preDelete( store, summary, true, eventMetadata );
 
-        stores.remove( key );
+        ArtifactStore removed = stores.remove( key );
+        if ( removed instanceof RemoteRepository )
+        {
+            byRemoteUrl.remove( ( (RemoteRepository) removed ).getUrl() );
+        }
 
         postDelete( store, summary, true, eventMetadata );
     }
