@@ -42,6 +42,7 @@ import javax.decorator.Decorator;
 import javax.decorator.Delegate;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Collections;
 import java.util.List;
@@ -169,6 +170,8 @@ public abstract class KojiContentManagerDecorator
                                 RemoteRepository remote = new RemoteRepository( "koji-" + build.getNvr(),
                                                                                 formatStorageUrl( build ) );
 
+                                remote.setServerCertPem( config.getServerPemContent() );
+
                                 // TODO: name repo creation more flexible, including timeouts, etc.
                                 remote.setMetadata( CREATION_TRIGGER_GAV, gav.toString() );
                                 remote.setMetadata( NVR, build.getNvr() );
@@ -183,6 +186,12 @@ public abstract class KojiContentManagerDecorator
                                         "Koji add-on seems misconifigured. Could not generate URL to repo for "
                                                 + "build: %s\nBase URL: %s\nError: %s", e, build.getNvr(),
                                         config.getStorageRootUrl(), e.getMessage() );
+                            }
+                            catch ( IOException e )
+                            {
+                                throw new KojiClientException(
+                                        "Failed to read server SSL PEM information from Koji configuration for new remote repo: %s",
+                                        e, e.getMessage() );
                             }
                         }
                     }
@@ -265,7 +274,7 @@ public abstract class KojiContentManagerDecorator
     private String formatStorageUrl( KojiBuildInfo buildInfo )
             throws MalformedURLException
     {
-        String url = UrlUtils.buildUrl( config.getStorageRootUrl(), buildInfo.getName(), buildInfo.getVersion(),
+        String url = UrlUtils.buildUrl( config.getStorageRootUrl(), "packages", buildInfo.getName(), buildInfo.getVersion(),
                                   buildInfo.getRelease(), "maven" );
 
         Logger logger = LoggerFactory.getLogger( getClass() );

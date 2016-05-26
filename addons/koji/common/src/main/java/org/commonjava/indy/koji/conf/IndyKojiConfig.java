@@ -108,13 +108,13 @@ public class IndyKojiConfig
                                       .build();
     }
 
-    private String getServerPemContent()
+    public String getServerPemContent()
             throws IOException
     {
         return readPemContent( getServerPemPath() );
     }
 
-    private String getClientPemContent()
+    public String getClientPemContent()
             throws IOException
     {
         return readPemContent( getClientPemPath() );
@@ -123,6 +123,9 @@ public class IndyKojiConfig
     private String readPemContent( String pemPath )
             throws IOException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Reading PEM content from path: '{}'", pemPath );
+
         if ( pemPath == null )
         {
             return null;
@@ -134,7 +137,11 @@ public class IndyKojiConfig
             return null;
         }
 
-        return readFileToString( f );
+        String pem =  readFileToString( f );
+
+        logger.trace( "Got PEM content:\n\n{}\n\n", pem );
+
+        return pem;
     }
 
     @Override

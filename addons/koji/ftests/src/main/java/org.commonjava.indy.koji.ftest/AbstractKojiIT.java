@@ -102,7 +102,7 @@ public abstract class AbstractKojiIT
     protected File downloadDir;
 
     @Before
-    public void setupKoji()
+    public void setupKojiBase()
     {
         System.out.println( "\n\n #### SETUP: " + name.getMethodName() + " #### \n\n" );
         passwordManager = new MemoryPasswordManager();
@@ -168,7 +168,7 @@ public abstract class AbstractKojiIT
     }
 
     @After
-    public void teardownKoji()
+    public void teardownKojiBase()
             throws Exception
     {
         if ( downloadContainerConfigs() )
