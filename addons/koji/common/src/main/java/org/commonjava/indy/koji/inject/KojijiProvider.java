@@ -19,6 +19,7 @@ import com.redhat.red.build.koji.KojiClient;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.action.IndyLifecycleException;
+import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.action.StartupAction;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
 import org.commonjava.rwx.binding.error.BindException;
@@ -39,7 +40,7 @@ import java.util.concurrent.ExecutorService;
  */
 @ApplicationScoped
 public class KojijiProvider
-        implements StartupAction
+        implements StartupAction, ShutdownAction
 {
     @Inject
     private IndyKojiConfig config;
@@ -94,5 +95,21 @@ public class KojijiProvider
     public String getId()
     {
         return "koji-client";
+    }
+
+    @Override
+    public void stop()
+            throws IndyLifecycleException
+    {
+        if ( kojiClient != null )
+        {
+            kojiClient.close();
+        }
+    }
+
+    @Override
+    public int getShutdownPriority()
+    {
+        return 1;
     }
 }

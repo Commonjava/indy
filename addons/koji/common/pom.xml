@@ -26,6 +26,16 @@
   <artifactId>indy-koji-common</artifactId>
   <name>Indy :: Add-Ons :: Koji Integration :: Common</name>
 
+  <properties>
+    <dbImage>postgres:9.4</dbImage>
+    <hubImage>docker.io/buildchimp/koji-dojo-hub</hubImage>
+
+    <dbWaitFor>database system is ready to accept connections</dbWaitFor>
+    <hubWaitFor>Starting HTTPd</hubWaitFor>
+
+    <dockerProvider>local</dockerProvider>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
@@ -101,6 +111,111 @@
   </dependencies>
   
   <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <!-- See: https://github.com/wouterd/docker-maven-plugin -->
+          <groupId>net.wouterdanes.docker</groupId>
+          <artifactId>docker-maven-plugin</artifactId>
+          <version>4.1.0</version>
+          <executions>
+            <execution>
+              <id>start-IT-containers</id>
+              <goals>
+                <goal>start-containers</goal>
+              </goals>
+              <phase>pre-integration-test</phase>
+              <configuration>
+                <!-- <forceCleanup>false</forceCleanup> -->
+                <providerName>${dockerProvider}</providerName>
+                <containers>
+                  <container>
+                    <id>koji-db</id>
+                    <image>${dbImage}</image>
+                    <env>
+                      <POSTGRES_DB>koji</POSTGRES_DB>
+                      <POSTGRES_USER>koji</POSTGRES_USER>
+                      <POSTGRES_PASSWORD>mypassword</POSTGRES_PASSWORD>
+                    </env>
+                    <waitForStartup>${dbWaitFor}</waitForStartup>
+                  </container>
+                  <container>
+                    <id>koji-hub</id>
+                    <image>${hubImage}</image>
+                    <waitForStartup>${hubWaitFor}</waitForStartup>
+                    <links>
+                      <link>
+                        <containerId>koji-db</containerId>
+                        <containerAlias>koji-db</containerAlias>
+                      </link>
+                    </links>
+                  </container>
+                </containers>
+              </configuration>
+            </execution>
+            <execution>
+              <id>stop-IT-containers</id>
+              <goals>
+                <goal>stop-containers</goal>
+              </goals>
+              <phase>post-integration-test</phase>
+              <configuration>
+                <logs>${project.build.directory}/docker-logs</logs>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>1.8</version>
+          <executions>
+            <execution>
+              <id>record-docker-properties</id>
+              <goals>
+                <goal>run</goal>
+              </goals>
+              <phase>pre-integration-test</phase>
+              <configuration>
+                <target>
+                  <!--suppress MavenModelInspection -->
+                  <echo file="${project.build.directory}/docker.properties">
+                    <![CDATA[
+docker.containers.koji-hub.ports.80/tcp.host=${docker.containers.koji-hub.ports.80/tcp.host}
+docker.containers.koji-hub.ports.443/tcp.host=${docker.containers.koji-hub.ports.443/tcp.host}
+docker.containers.koji-hub.ports.80/tcp.port=${docker.containers.koji-hub.ports.80/tcp.port}
+docker.containers.koji-hub.ports.443/tcp.port=${docker.containers.koji-hub.ports.443/tcp.port}
+
+#javax.net.debug=ssl:handshake:verbose
+]]>
+                  </echo>
+                </target>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>2.19</version>
+          <executions>
+            <execution>
+              <id>functional-tests</id>
+              <goals>
+                <goal>integration-test</goal>
+                <goal>verify</goal>
+              </goals>
+              <configuration>
+                <includes>
+                  <include>**/*IT.java</include>
+                </includes>
+                <forkCount>1C</forkCount>
+                <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                <systemPropertiesFile>${project.build.directory}/docker.properties</systemPropertiesFile>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
     <plugins>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
@@ -122,4 +237,26 @@
       </plugin>
     </plugins>
   </build>
+  
+  <profiles>
+    <profile>
+      <id>local-its</id>
+
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>net.wouterdanes.docker</groupId>
+            <artifactId>docker-maven-plugin</artifactId>
+          </plugin>
+          <plugin>
+            <artifactId>maven-antrun-plugin</artifactId>
+          </plugin>
+          <plugin>
+            <artifactId>maven-failsafe-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
 </project>
