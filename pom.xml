@@ -746,17 +746,17 @@
       <dependency>
         <groupId>org.commonjava.rwx</groupId>
         <artifactId>rwx-core</artifactId>
-        <version>0.4-SNAPSHOT</version>
+        <version>${rwxVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.rwx</groupId>
         <artifactId>rwx-http</artifactId>
-        <version>0.4-SNAPSHOT</version>
+        <version>${rwxVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.rwx</groupId>
         <artifactId>rwx-bindings</artifactId>
-        <version>0.4-SNAPSHOT</version>
+        <version>${rwxVersion}</version>
       </dependency>
       
       <dependency>
