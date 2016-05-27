@@ -89,7 +89,7 @@ public class ContentAccessResource
             String type, final @ApiParam( required = true ) @PathParam( "name" ) String name,
             final @PathParam( "path" ) String path )
     {
-        return handler.doDelete( type, name, path );
+        return handler.doDelete( type, name, path, new EventMetadata() );
     }
 
     @ApiOperation( "Store file/artifact content under the given artifact store (type/name) and path." )

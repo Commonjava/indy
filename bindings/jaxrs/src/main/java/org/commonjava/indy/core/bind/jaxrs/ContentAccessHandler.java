@@ -18,6 +18,7 @@ package org.commonjava.indy.core.bind.jaxrs;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.JaxRsRequestHelper;
+import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.core.bind.jaxrs.util.TransferStreamingOutput;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.model.core.StoreKey;
@@ -80,9 +81,12 @@ public class ContentAccessHandler
     }
 
     public Response doCreate( final String type, final String name, final String path, final HttpServletRequest request,
-                              final EventMetadata eventMetadata, Supplier<URI> uriBuilder )
+                              EventMetadata eventMetadata, Supplier<URI> uriBuilder )
     {
         final StoreType st = StoreType.get( type );
+        StoreKey sk = new StoreKey( st, name );
+
+        eventMetadata = eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
 
         Response response = null;
         final Transfer transfer;
@@ -108,14 +112,17 @@ public class ContentAccessHandler
         return response;
     }
 
-    public Response doDelete( String type, String name, String path )
+    public Response doDelete( String type, String name, String path, EventMetadata eventMetadata )
     {
         final StoreType st = StoreType.get( type );
+        StoreKey sk = new StoreKey( st, name );
+
+        eventMetadata = eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
 
         Response response;
         try
         {
-            final ApplicationStatus result = contentController.delete( st, name, path );
+            final ApplicationStatus result = contentController.delete( st, name, path, eventMetadata );
             response = Response.status( result.code() ).build();
         }
         catch ( final IndyWorkflowException e )
@@ -133,6 +140,8 @@ public class ContentAccessHandler
     {
         final StoreType st = StoreType.get( type );
         final StoreKey sk = new StoreKey( st, name );
+
+        eventMetadata = eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
 
         final AcceptInfo acceptInfo = jaxRsRequestHelper.findAccept( request, ApplicationContent.text_html );
 
@@ -217,6 +226,8 @@ public class ContentAccessHandler
     {
         final StoreType st = StoreType.get( type );
         final StoreKey sk = new StoreKey( st, name );
+
+        eventMetadata = eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
 
         final AcceptInfo acceptInfo = jaxRsRequestHelper.findAccept( request, ApplicationContent.text_html );
         final String standardAccept = ApplicationContent.getStandardAccept( acceptInfo.getBaseAccept() );

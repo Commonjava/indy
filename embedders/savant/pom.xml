@@ -115,6 +115,12 @@
       <artifactId>indy-httprox-common</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-koji-common</artifactId>
+    </dependency>
+
+
+    <dependency>
       <groupId>org.commonjava.maven.atlas</groupId>
       <artifactId>atlas-identities</artifactId>
     </dependency>
@@ -122,7 +128,6 @@
       <groupId>org.commonjava.maven.atlas</groupId>
       <artifactId>atlas-relationships-api</artifactId>
     </dependency>
-
 
     <dependency>
       <groupId>org.infinispan</groupId>
@@ -188,6 +193,11 @@
       <artifactId>indy-ftests-promote</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-koji</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   
   <build>
@@ -216,6 +226,7 @@
                 <dependency>org.commonjava.indy:indy-ftests-httprox</dependency>
                 <dependency>org.commonjava.indy:indy-ftests-implied-repos</dependency>
                 <dependency>org.commonjava.indy:indy-ftests-promote</dependency>
+                <dependency>org.commonjava.indy:indy-ftests-koji</dependency>
               </dependenciesToScan> 
             </configuration>
         </plugin>
