@@ -368,16 +368,19 @@ public class JaxRsBooter
         Runtime.getRuntime()
                .addShutdownHook( new Thread( lifecycleManager.createShutdownRunnable() ) );
 
-        synchronized ( server )
+        if ( server != null )
         {
-            try
+            synchronized ( server )
             {
-                server.wait();
-            }
-            catch ( final InterruptedException e )
-            {
-                e.printStackTrace();
-                logger.info( "Indy exiting" );
+                try
+                {
+                    server.wait();
+                }
+                catch ( final InterruptedException e )
+                {
+                    e.printStackTrace();
+                    logger.info( "Indy exiting" );
+                }
             }
         }
 

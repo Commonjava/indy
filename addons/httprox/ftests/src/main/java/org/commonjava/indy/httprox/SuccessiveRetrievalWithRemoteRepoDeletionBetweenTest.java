@@ -16,32 +16,34 @@
 package org.commonjava.indy.httprox;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.commonjava.indy.client.core.IndyClientException;
+import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.client.core.helper.HttpResources;
+import org.commonjava.indy.folo.client.IndyFoloAdminClientModule;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreType;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
-public class ProxyReleasesFileLockOnCompletionTest
+public class SuccessiveRetrievalWithRemoteRepoDeletionBetweenTest
     extends AbstractHttproxFunctionalTest
 {
 
-    private static final String USER = "user";
-
-    private static final String PASS = "password";
+    private static final String REMOTE_NAME = "httprox_127-0-0-1";
 
     @Test
     public void run()
@@ -52,16 +54,16 @@ public class ProxyReleasesFileLockOnCompletionTest
         final String url = server.formatUrl( testRepo, pom.path );
         server.expect( url, 200, pom.pom );
 
-        Stream.of( 1, 2 ).forEach( (currentTry)->{
+        Stream.of( 1, 2 ).forEach( ( currentTry)->{
             CloseableHttpResponse response = null;
             InputStream stream = null;
             final HttpGet get = new HttpGet( url );
-            CloseableHttpClient client = null;
+            CloseableHttpClient httpClient = null;
             try
             {
-                client = proxiedHttp();
+                httpClient = proxiedHttp();
 
-                response = client.execute( get, proxyContext( USER, PASS ) );
+                response = httpClient.execute( get );
                 stream = response.getEntity()
                                  .getContent();
                 final String resultingPom = IOUtils.toString( stream );
@@ -72,20 +74,40 @@ public class ProxyReleasesFileLockOnCompletionTest
             catch ( Exception e )
             {
                 e.printStackTrace();
-                Assert.fail( currentTry + ": Failed to retrieve file: " + url );
+                fail( currentTry + ": Failed to retrieve file: " + url );
             }
             finally
             {
                 IOUtils.closeQuietly( stream );
-                HttpResources.cleanupResources( get, response, client );
+                HttpResources.cleanupResources( get, response, httpClient );
+            }
+
+            try
+            {
+                client.stores().delete( StoreType.remote, REMOTE_NAME, "Deleting for pass: " + currentTry );
+            }
+            catch ( IndyClientException e )
+            {
+                fail( "Failed to delete remote repo: " + REMOTE_NAME );
             }
         } );
 
         final RemoteRepository remoteRepo = this.client.stores()
-                       .load( StoreType.remote, "httprox_127-0-0-1", RemoteRepository.class );
+                                                       .load( StoreType.remote, REMOTE_NAME, RemoteRepository.class );
 
-        assertThat( remoteRepo, notNullValue() );
-        assertThat( remoteRepo.getUrl(), equalTo( server.getBaseUri() ) );
+        assertThat( remoteRepo, nullValue() );
+    }
+
+    @Override
+    protected Collection<IndyClientModule> getAdditionalClientModules()
+    {
+        return Collections.<IndyClientModule> singleton( new IndyFoloAdminClientModule() );
+    }
+
+    @Override
+    protected String getAdditionalHttproxConfig()
+    {
+        return "secured=false";
     }
 
 }
