@@ -22,6 +22,7 @@ import javax.inject.Inject;
 
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreDeletePostEvent;
+import org.commonjava.indy.change.event.ArtifactStoreDeletePreEvent;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -53,6 +54,8 @@ public class GroupConsistencyListener
             final Set<Group> groups = proxyDataManager.getGroupsContaining( key );
             for ( final Group group : groups )
             {
+                logger.debug( "Removing {} from membership of group: {}", key, group.getKey() );
+
                 group.removeConstituent( key );
                 proxyDataManager.storeArtifactStore( group, new ChangeSummary( ChangeSummary.SYSTEM_USER,
                                                                        "Auto-update groups containing: " + key
@@ -88,7 +91,7 @@ public class GroupConsistencyListener
     // }
     // }
 
-    public void storeDeleted( @Observes final ArtifactStoreDeletePostEvent event )
+    public void storeDeleted( @Observes final ArtifactStoreDeletePreEvent event )
     {
         //        logger.info( "Processing proxy-manager store deletion: {}", event );
         for ( final ArtifactStore store : event )

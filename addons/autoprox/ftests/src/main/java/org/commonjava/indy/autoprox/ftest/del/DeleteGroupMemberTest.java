@@ -30,7 +30,7 @@ public class DeleteGroupMemberTest
 {
 
     @Test
-    public void deleteGroupConstituentRepo_RepoNotReCreatedWhenGroupMembershipAdjusted()
+    public void run()
         throws Exception
     {
         final String named = "test";

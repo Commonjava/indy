@@ -71,7 +71,7 @@ public class DefaultStoreEventDispatcher
     {
         if ( preDelEvent != null )
         {
-            executor.execute( () -> {
+//            executor.execute( () -> {
                 final Map<ArtifactStore, Transfer> storeRoots = new HashMap<>();
                 for ( final ArtifactStore store : stores )
                 {
@@ -87,7 +87,7 @@ public class DefaultStoreEventDispatcher
                 final ArtifactStoreDeletePreEvent event = new ArtifactStoreDeletePreEvent( eventMetadata, storeRoots );
 
                 preDelEvent.fire( event );
-            } );
+//            } );
         }
     }
 
@@ -124,14 +124,14 @@ public class DefaultStoreEventDispatcher
         //        logger.debug( "Trying to fire pre-update event for: {}", new JoinString( ", ", stores ) );
         if ( updatePreEvent != null )
         {
-            executor.execute( () -> {
+//            executor.execute( () -> {
                 final ArtifactStorePreUpdateEvent event =
                         new ArtifactStorePreUpdateEvent( type, eventMetadata, changeMap );
                 //            logger.debug( "Firing pre-update event: {} (for: {}) via:\n  {}", event, new JoinString( ", ", stores ),
                 //                          new JoinString( "\n  ", Thread.currentThread()
                 //                                                        .getStackTrace() ) );
                 updatePreEvent.fire( event );
-            } );
+//            } );
         }
     }
 
@@ -178,10 +178,17 @@ public class DefaultStoreEventDispatcher
     {
         if ( enablementEvent != null )
         {
-            executor.execute( ()->{
-                final ArtifactStoreEnablementEvent event = new ArtifactStoreEnablementEvent( preprocess, eventMetadata, disabling, stores );
+            final ArtifactStoreEnablementEvent event = new ArtifactStoreEnablementEvent( preprocess, eventMetadata, disabling, stores );
+            if ( preprocess )
+            {
                 enablementEvent.fire( event );
-            });
+            }
+            else
+            {
+                executor.execute( ()->{
+                    enablementEvent.fire( event );
+                });
+            }
         }
     }
 
