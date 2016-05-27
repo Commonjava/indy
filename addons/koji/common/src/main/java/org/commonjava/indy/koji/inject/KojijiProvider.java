@@ -64,6 +64,11 @@ public class KojijiProvider
     public void start()
             throws IndyLifecycleException
     {
+        if ( !config.isEnabled() )
+        {
+            return;
+        }
+
         kojiPasswordManager = new MemoryPasswordManager();
         if ( config.getProxyPassword() != null )
         {
