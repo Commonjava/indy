@@ -361,4 +361,18 @@ public class ContentAccessHandler
         return response;
     }
 
+    @ApiOperation( "Retrieve root listing under the given artifact store (type/name)." )
+    @ApiResponses( { @ApiResponse( code = 200, response = String.class,
+                                   message = "Rendered root content listing" ),
+                           @ApiResponse( code = 200, response = StreamingOutput.class, message = "Content stream" ), } )
+    @GET
+    @Path( "/" )
+    public Response doGet(
+            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" )
+            String type, final @ApiParam( required = true ) @PathParam( "name" ) String name,
+            @Context final UriInfo uriInfo, @Context final HttpServletRequest request )
+    {
+        return doGet( type, name, "", uriInfo, request );
+    }
+
 }

@@ -51,9 +51,12 @@ import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.maven.galley.TransferLocationException;
+import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
+import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,6 +77,9 @@ public class DefaultContentManager
 
     @Inject
     private DownloadManager downloadManager;
+
+    @Inject
+    private SpecialPathManager specialPathManager;
 
     @Inject
     private IndyObjectMapper mapper;
@@ -154,7 +160,7 @@ public class DefaultContentManager
                 List<ArtifactStore> members;
                 try
                 {
-                    members = storeManager.getOrderedConcreteStoresInGroup( store.getName() );
+                    members = storeManager.getOrderedConcreteStoresInGroup( store.getName(), false );
                 }
                 catch ( final IndyDataException e )
                 {
@@ -226,7 +232,7 @@ public class DefaultContentManager
             List<ArtifactStore> members;
             try
             {
-                members = storeManager.getOrderedConcreteStoresInGroup( store.getName() );
+                members = storeManager.getOrderedConcreteStoresInGroup( store.getName(), true );
             }
             catch ( final IndyDataException e )
             {
@@ -307,7 +313,7 @@ public class DefaultContentManager
         return item;
     }
 
-    private void filterLocationErrors( IndyWorkflowException e )
+    private void filterLocationErrors( final IndyWorkflowException e )
             throws IndyWorkflowException
     {
         Throwable cause = e.getCause();
@@ -339,7 +345,7 @@ public class DefaultContentManager
         {
             try
             {
-                final List<ArtifactStore> allMembers = storeManager.getOrderedConcreteStoresInGroup( store.getName() );
+                final List<ArtifactStore> allMembers = storeManager.getOrderedConcreteStoresInGroup( store.getName(), false );
 
                 final Transfer txfr = store( allMembers, path, stream, op, eventMetadata );
                 logger.info( "Stored: {} for group: {} in: {}", path, store.getKey(), txfr );
@@ -446,7 +452,7 @@ public class DefaultContentManager
             List<ArtifactStore> members;
             try
             {
-                members = storeManager.getOrderedConcreteStoresInGroup( store.getName() );
+                members = storeManager.getOrderedConcreteStoresInGroup( store.getName(), false );
             }
             catch ( final IndyDataException e )
             {
@@ -560,7 +566,7 @@ public class DefaultContentManager
             List<ArtifactStore> members;
             try
             {
-                members = storeManager.getOrderedConcreteStoresInGroup( store.getName() );
+                members = storeManager.getOrderedConcreteStoresInGroup( store.getName(), true );
             }
             catch ( final IndyDataException e )
             {
@@ -731,16 +737,23 @@ public class DefaultContentManager
 
         if ( StoreType.group == store.getKey().getType() )
         {
-            try
+            KeyedLocation location = LocationUtils.toLocation( store );
+            SpecialPathInfo spInfo = specialPathManager.getSpecialPathInfo( location, path );
+            if ( spInfo == null || !spInfo.isMergable() )
             {
-                final List<ArtifactStore> allMembers = storeManager.getOrderedConcreteStoresInGroup( store.getName() );
+                try
+                {
+                    final List<ArtifactStore> allMembers = storeManager.getOrderedConcreteStoresInGroup( store.getName(), true );
 
-                return getTransfer( allMembers, path, op );
-            }
-            catch ( final IndyDataException e )
-            {
-                throw new IndyWorkflowException( "Failed to lookup concrete members of: %s. Reason: %s", e, store,
-                                                  e.getMessage() );
+                    logger.debug( "Trying to retrieve suitable transfer for: {} in group: {} members:\n{}", path, allMembers, store.getName() );
+
+                    return getTransfer( allMembers, path, op );
+                }
+                catch ( final IndyDataException e )
+                {
+                    throw new IndyWorkflowException( "Failed to lookup concrete members of: %s. Reason: %s", e, store,
+                                                      e.getMessage() );
+                }
             }
         }
 

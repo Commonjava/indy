@@ -228,7 +228,7 @@ public class SetBackSettingsManager
         List<ArtifactStore> concreteStores;
         try
         {
-            concreteStores = storeManager.getOrderedConcreteStoresInGroup( group.getName() );
+            concreteStores = storeManager.getOrderedConcreteStoresInGroup( group.getName(), false );
         }
         catch ( final IndyDataException e )
         {

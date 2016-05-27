@@ -87,7 +87,7 @@ public class NfcController
             List<ArtifactStore> stores;
             try
             {
-                stores = storeManager.getOrderedConcreteStoresInGroup( key.getName() );
+                stores = storeManager.getOrderedConcreteStoresInGroup( key.getName(), false );
             }
             catch ( final IndyDataException e )
             {
@@ -153,7 +153,7 @@ public class NfcController
             {
                 case group:
                 {
-                    final List<ArtifactStore> stores = storeManager.getOrderedConcreteStoresInGroup( key.getName() );
+                    final List<ArtifactStore> stores = storeManager.getOrderedConcreteStoresInGroup( key.getName(), false );
                     for ( final ArtifactStore store : stores )
                     {
                         clear( store, path );

@@ -53,6 +53,8 @@ import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
 
+import org.apache.commons.lang.StringUtils;
+
 public class MavenMetadataGenerator
     extends AbstractMergedContentGenerator
 {
@@ -215,52 +217,57 @@ public class MavenMetadataGenerator
             return null;
         }
 
-        // regardless, we will need this first level of listings. What we do with it will depend on the logic below...
-        final List<StoreResource> firstLevelFiles = fileManager.list( store, path );
-
-        ArtifactPathInfo samplePomInfo = null;
-        nextTopResource: for ( final StoreResource topResource : firstLevelFiles )
+        int pathElementsCount = StringUtils.strip( path, "/" ).split( "/" ).length;
+        // if there is a possibility we are listing an artifactId
+        if ( pathElementsCount >= 2 )
         {
-            final String topPath = topResource.getPath();
-            if ( topPath.endsWith( ".pom" ) )
-            {
-                samplePomInfo = ArtifactPathInfo.parse( topPath );
-                break;
-            }
-            else if ( topPath.endsWith( "/" ) )
-            {
-                final List<StoreResource> secondLevelListing = fileManager.list( store, topPath );
-                for ( final StoreResource fileResource : secondLevelListing )
-                {
-                    if ( fileResource.getPath()
-                                     .endsWith( ".pom" ) )
-                    {
-                        if ( samplePomInfo == null )
-                        {
-                            samplePomInfo = ArtifactPathInfo.parse( fileResource.getPath() );
-                            break nextTopResource;
-                        }
+            // regardless, we will need this first level of listings. What we do with it will depend on the logic below...
+            final List<StoreResource> firstLevelFiles = fileManager.list( store, path );
 
-                        continue nextTopResource;
+            ArtifactPathInfo samplePomInfo = null;
+            nextTopResource: for ( final StoreResource topResource : firstLevelFiles )
+            {
+                final String topPath = topResource.getPath();
+                if ( topPath.endsWith( ".pom" ) )
+                {
+                    samplePomInfo = ArtifactPathInfo.parse( topPath );
+                    break;
+                }
+                else if ( topPath.endsWith( "/" ) )
+                {
+                    final List<StoreResource> secondLevelListing = fileManager.list( store, topPath );
+                    for ( final StoreResource fileResource : secondLevelListing )
+                    {
+                        if ( fileResource.getPath()
+                                         .endsWith( ".pom" ) )
+                        {
+                            if ( samplePomInfo == null )
+                            {
+                                samplePomInfo = ArtifactPathInfo.parse( fileResource.getPath() );
+                                break nextTopResource;
+                            }
+
+                            continue nextTopResource;
+                        }
                     }
                 }
             }
-        }
 
-        // TODO: Generation of plugin metadata files (groupId-level) is harder, and requires cracking open the jar file
-        // This is because that's the only place the plugin prefix can be reliably retrieved from.
-        // We won't worry about this for now.
-        if ( samplePomInfo != null )
-        {
-            final List<StoreResource> result = new ArrayList<StoreResource>();
-            result.add( mdResource );
-            result.add( new StoreResource( LocationUtils.toLocation( store ),
-                                           Paths.get( path, MavenMetadataMerger.METADATA_MD5_NAME )
-                                                .toString() ) );
-            result.add( new StoreResource( LocationUtils.toLocation( store ),
-                                           Paths.get( path, MavenMetadataMerger.METADATA_SHA_NAME )
-                                                .toString() ) );
-            return result;
+            // TODO: Generation of plugin metadata files (groupId-level) is harder, and requires cracking open the jar file
+            // This is because that's the only place the plugin prefix can be reliably retrieved from.
+            // We won't worry about this for now.
+            if ( samplePomInfo != null )
+            {
+                final List<StoreResource> result = new ArrayList<StoreResource>();
+                result.add( mdResource );
+                result.add( new StoreResource( LocationUtils.toLocation( store ),
+                                               Paths.get( path, MavenMetadataMerger.METADATA_MD5_NAME )
+                                               .toString() ) );
+                result.add( new StoreResource( LocationUtils.toLocation( store ),
+                                               Paths.get( path, MavenMetadataMerger.METADATA_SHA_NAME )
+                                               .toString() ) );
+                return result;
+            }
         }
 
         return null;
@@ -352,7 +359,7 @@ public class MavenMetadataGenerator
     {
         ArtifactPathInfo samplePomInfo = null;
 
-        // first level will contain version directories...for each directory, we need to verify the presence of a .pom file before including 
+        // first level will contain version directories...for each directory, we need to verify the presence of a .pom file before including
         // as a valid version
         final List<SingleVersion> versions = new ArrayList<SingleVersion>();
         nextTopResource: for ( final StoreResource topResource : firstLevelFiles )
@@ -366,13 +373,18 @@ public class MavenMetadataGenerator
                     if ( fileResource.getPath()
                                      .endsWith( ".pom" ) )
                     {
-                        versions.add( VersionUtils.createSingleVersion( new File( topPath ).getName() ) );
-                        if ( samplePomInfo == null )
+                        ArtifactPathInfo filePomInfo = ArtifactPathInfo.parse( fileResource.getPath() );
+                        // check if the pom is valid for the path
+                        if ( filePomInfo != null )
                         {
-                            samplePomInfo = ArtifactPathInfo.parse( fileResource.getPath() );
-                        }
+                            versions.add( VersionUtils.createSingleVersion( new File( topPath ).getName() ) );
+                            if ( samplePomInfo == null )
+                            {
+                                samplePomInfo = filePomInfo;
+                            }
 
-                        continue nextTopResource;
+                            continue nextTopResource;
+                        }
                     }
                 }
             }

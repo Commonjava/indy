@@ -380,7 +380,7 @@ public class IndexHandler
 
             try
             {
-                final List<ArtifactStore> stores = storeDataManager.getOrderedConcreteStoresInGroup( group.getName() );
+                final List<ArtifactStore> stores = storeDataManager.getOrderedConcreteStoresInGroup( group.getName(), true );
                 for ( final ArtifactStore store : stores )
                 {
                     if ( updated.contains( store ) )
@@ -579,11 +579,11 @@ public class IndexHandler
         {
             /* TODO:
             15:19:27,359 ERROR [org.commonjava.indy.indexer.IndexHandler] (indy-indexer-0)
-            Failed to create indexing context for: repository:central. 
-                Reason: Cannot forcefully unlock a NativeFSLock which is held by 
+            Failed to create indexing context for: repository:central.
+                Reason: Cannot forcefully unlock a NativeFSLock which is held by
                 another indexer component: /var/lib/indy/storage/repository-central/.index/write.lock:
-            org.apache.lucene.store.LockReleaseFailedException: 
-                Cannot forcefully unlock a NativeFSLock which is held by another 
+            org.apache.lucene.store.LockReleaseFailedException:
+                Cannot forcefully unlock a NativeFSLock which is held by another
                 indexer component: /var/lib/indy/storage/repository-central/.index/write.lock
             at org.apache.lucene.store.NativeFSLock.release(NativeFSLockFactory.java:295) [lucene-core-3.6.1.jar:3.6.1 1362471 - thetaphi - 2012-07-17 12:40:12]
             at org.apache.lucene.index.IndexWriter.unlock(IndexWriter.java:4624) [lucene-core-3.6.1.jar:3.6.1 1362471 - thetaphi - 2012-07-17 12:40:12]
