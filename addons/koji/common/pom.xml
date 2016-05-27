@@ -229,7 +229,7 @@ docker.containers.koji-hub.ports.443/tcp.port=${docker.containers.koji-hub.ports
             <configuration>
               <descriptorRefs>
                 <descriptorRef>confset</descriptorRef>
-                <descriptorRef>uiset</descriptorRef>
+                <!-- <descriptorRef>uiset</descriptorRef> -->
               </descriptorRefs>
             </configuration>
           </execution>
