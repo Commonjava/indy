@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-folo</artifactId>
-    <version>0.99.1.4-SNAPSHOT</version>
+    <version>0.99.1.4</version>
   </parent>
   
   <artifactId>indy-ftests-folo</artifactId>
