@@ -312,6 +312,11 @@ public class IndyKojiConfig
         this.enabled = enabled;
     }
 
+    public boolean isEnabled()
+    {
+        return getEnabled();
+    }
+
     public boolean isTagAllowed( String name )
     {
         Optional<String> result = tagPatterns.stream().filter( ( pattern ) -> name.matches( pattern ) ).findFirst();
@@ -453,4 +458,5 @@ public class IndyKojiConfig
 
         return null;
     }
+
 }
