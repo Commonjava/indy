@@ -402,7 +402,7 @@ public class DefaultDownloadManager
         }
     }
 
-    private List<ArtifactStore> findEnabled( List<? extends ArtifactStore> stores )
+    private List<ArtifactStore> findEnabled( final List<? extends ArtifactStore> stores )
     {
         List<ArtifactStore> enabled = new ArrayList<>( stores.size() );
         for ( ArtifactStore store: stores )
@@ -803,7 +803,14 @@ public class DefaultDownloadManager
     @Override
     public Transfer getStorageReference( final ArtifactStore store, final String... path )
     {
-        if ( store.isDisabled() )
+        return getStorageReference( store, false, path );
+    }
+
+    @Override
+    public Transfer getStorageReference( final ArtifactStore store, final boolean allowDisabled,
+                                         final String... path )
+    {
+        if ( store.isDisabled() && !allowDisabled )
         {
             return null;
         }

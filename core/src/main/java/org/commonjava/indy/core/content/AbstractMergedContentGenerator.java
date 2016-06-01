@@ -118,7 +118,7 @@ public abstract class AbstractMergedContentGenerator
         throws IndyWorkflowException
     {
         // delete so it'll be recomputed.
-        final Transfer target = fileManager.getStorageReference( group, path );
+        final Transfer target = fileManager.getStorageReference( group, true, path );
         try
         {
             logger.debug( "Deleting merged file: {}", target );

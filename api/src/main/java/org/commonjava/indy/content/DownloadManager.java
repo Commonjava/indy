@@ -48,14 +48,14 @@ public interface DownloadManager
     String ROOT_PATH = "/";
 
     /**
-     * Retrieve the content at the given path from the first store possible, then return then return the transfer that references the content without 
+     * Retrieve the content at the given path from the first store possible, then return then return the transfer that references the content without
      * iterating any farther.
      */
     Transfer retrieveFirst( final List<? extends ArtifactStore> stores, final String path )
         throws IndyWorkflowException;
 
     /**
-     * Retrieve the content at the given path from the first store possible, then return then return the transfer that references the content without 
+     * Retrieve the content at the given path from the first store possible, then return then return the transfer that references the content without
      * iterating any farther.
      * @param eventMetadata TODO
      */
@@ -90,11 +90,11 @@ public interface DownloadManager
 
     /**
      * Store the content contained in the {@link InputStream} under the given path within the storage directory for the given {@link ArtifactStore}.
-     * Use the given {@link TransferOperation} to trigger the appropriate tangential maintenance, etc. actions. Return the {@link Transfer} that 
+     * Use the given {@link TransferOperation} to trigger the appropriate tangential maintenance, etc. actions. Return the {@link Transfer} that
      * references the stored content.
      * <br/>
-     * If the given {@link ArtifactStore} isn't a {@link HostedRepository}, or is a {@link Group} that doesn't contain a {@link HostedRepository}, 
-     * fail. If the {@link HostedRepository} instances involved don't allow deployment/storage, or don't allow <b>appropriate</b> deployment 
+     * If the given {@link ArtifactStore} isn't a {@link HostedRepository}, or is a {@link Group} that doesn't contain a {@link HostedRepository},
+     * fail. If the {@link HostedRepository} instances involved don't allow deployment/storage, or don't allow <b>appropriate</b> deployment
      * (releases-only for snapshot content, or vice versa), then fail.
      */
     Transfer store( final ArtifactStore store, final String path, final InputStream stream, TransferOperation op )
@@ -102,11 +102,11 @@ public interface DownloadManager
 
     /**
      * Store the content contained in the {@link InputStream} under the given path within the storage directory for the given {@link ArtifactStore}.
-     * Use the given {@link TransferOperation} to trigger the appropriate tangential maintenance, etc. actions. Return the {@link Transfer} that 
+     * Use the given {@link TransferOperation} to trigger the appropriate tangential maintenance, etc. actions. Return the {@link Transfer} that
      * references the stored content.
      * <br/>
-     * If the given {@link ArtifactStore} isn't a {@link HostedRepository}, or is a {@link Group} that doesn't contain a {@link HostedRepository}, 
-     * fail. If the {@link HostedRepository} instances involved don't allow deployment/storage, or don't allow <b>appropriate</b> deployment 
+     * If the given {@link ArtifactStore} isn't a {@link HostedRepository}, or is a {@link Group} that doesn't contain a {@link HostedRepository},
+     * fail. If the {@link HostedRepository} instances involved don't allow deployment/storage, or don't allow <b>appropriate</b> deployment
      * (releases-only for snapshot content, or vice versa), then fail.
      * @param eventMetadata TODO
      */
@@ -114,12 +114,12 @@ public interface DownloadManager
         throws IndyWorkflowException;
 
     /**
-     * Store the content contained in the {@link InputStream} under the given path within the storage directory for first appropriate instance among 
-     * the given {@link ArtifactStore}'s. Use the given {@link TransferOperation} to trigger the appropriate tangential maintenance, etc. actions. 
+     * Store the content contained in the {@link InputStream} under the given path within the storage directory for first appropriate instance among
+     * the given {@link ArtifactStore}'s. Use the given {@link TransferOperation} to trigger the appropriate tangential maintenance, etc. actions.
      * Return the {@link Transfer} that references the stored content.
      * <br/>
-     * If the given {@link ArtifactStore} isn't a {@link HostedRepository}, or is a {@link Group} that doesn't contain a {@link HostedRepository}, 
-     * fail. If the {@link HostedRepository} instances involved don't allow deployment/storage, or don't allow <b>appropriate</b> deployment 
+     * If the given {@link ArtifactStore} isn't a {@link HostedRepository}, or is a {@link Group} that doesn't contain a {@link HostedRepository},
+     * fail. If the {@link HostedRepository} instances involved don't allow deployment/storage, or don't allow <b>appropriate</b> deployment
      * (releases-only for snapshot content, or vice versa), then fail.
      */
     Transfer store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream,
@@ -127,12 +127,12 @@ public interface DownloadManager
         throws IndyWorkflowException;
 
     /**
-     * Store the content contained in the {@link InputStream} under the given path within the storage directory for first appropriate instance among 
-     * the given {@link ArtifactStore}'s. Use the given {@link TransferOperation} to trigger the appropriate tangential maintenance, etc. actions. 
+     * Store the content contained in the {@link InputStream} under the given path within the storage directory for first appropriate instance among
+     * the given {@link ArtifactStore}'s. Use the given {@link TransferOperation} to trigger the appropriate tangential maintenance, etc. actions.
      * Return the {@link Transfer} that references the stored content.
      * <br/>
-     * If the given {@link ArtifactStore} isn't a {@link HostedRepository}, or is a {@link Group} that doesn't contain a {@link HostedRepository}, 
-     * fail. If the {@link HostedRepository} instances involved don't allow deployment/storage, or don't allow <b>appropriate</b> deployment 
+     * If the given {@link ArtifactStore} isn't a {@link HostedRepository}, or is a {@link Group} that doesn't contain a {@link HostedRepository},
+     * fail. If the {@link HostedRepository} instances involved don't allow deployment/storage, or don't allow <b>appropriate</b> deployment
      * (releases-only for snapshot content, or vice versa), then fail.
      * @param eventMetadata TODO
      */
@@ -177,13 +177,15 @@ public interface DownloadManager
 
     Transfer getStorageReference( final ArtifactStore store, final String... path );
 
+    Transfer getStorageReference( final ArtifactStore store, final boolean allowDisabled, final String... path );
+
     List<Transfer> listRecursively( StoreKey src, String startPath )
         throws IndyWorkflowException;
 
     /**
-     * Retrieve a {@link Transfer} object suitable for use in the specified operation. This method handles the selection logic, and doesn't fire any 
+     * Retrieve a {@link Transfer} object suitable for use in the specified operation. This method handles the selection logic, and doesn't fire any
      * events (the returned {@link Transfer} object handles that in this case). The first suitable store is used to hold the Transfer.
-     * 
+     *
      * @param stores The stores in which the Transfer should reside
      * @param path The path of the Transfer inside the store
      * @param op The operation we want to execute on the returned Transfer
@@ -194,9 +196,9 @@ public interface DownloadManager
         throws IndyWorkflowException;
 
     /**
-     * Retrieve a {@link Transfer} object suitable for use in the specified operation. This method handles the selection logic in the event the store 
+     * Retrieve a {@link Transfer} object suitable for use in the specified operation. This method handles the selection logic in the event the store
      * is a {@link Group}, and doesn't fire any events (the returned {@link Transfer} object handles that in this case).
-     * 
+     *
      * @param store The store in which the Transfer should reside
      * @param path The path of the Transfer inside the store
      * @param op The operation we want to execute on the returned Transfer
