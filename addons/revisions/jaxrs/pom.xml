@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-revisions</artifactId>
-    <version>0.99.1.4</version>
+    <version>0.99.1.5-SNAPSHOT</version>
   </parent>
   
   <artifactId>indy-revisions-jaxrs</artifactId>
