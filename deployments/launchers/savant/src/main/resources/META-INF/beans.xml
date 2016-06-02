@@ -23,8 +23,6 @@
   
   <decorators>
     <class>org.commonjava.indy.autoprox.data.AutoProxDataManagerDecorator</class>
-    <class>org.commonjava.indy.content.index.IndexingContentManagerDecorator</class>
-    <class>org.commonjava.indy.content.index.IndexingDirectContentAccessDecorator</class>
     <class>org.commonjava.indy.koji.content.KojiContentManagerDecorator</class>
   </decorators>
       

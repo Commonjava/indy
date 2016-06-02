@@ -16,22 +16,22 @@
 package org.commonjava.indy.koji.conf;
 
 import com.redhat.red.build.koji.config.KojiConfig;
+import org.commonjava.indy.conf.AbstractIndyMapConfig;
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.util.jhttpc.model.SiteConfig;
 import org.commonjava.util.jhttpc.model.SiteConfigBuilder;
 import org.commonjava.util.jhttpc.model.SiteTrustType;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.SectionName;
-import org.commonjava.web.config.section.MapSectionListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,11 +45,11 @@ import static org.commonjava.util.jhttpc.model.SiteConfig.DEFAULT_REQUEST_TIMEOU
 /**
  * Created by jdcasey on 5/20/16.
  */
-@SectionName( IndyKojiConfig.SECTION_NAME )
+//@SectionName( IndyKojiConfig.SECTION_NAME )
 @ApplicationScoped
 public class IndyKojiConfig
-        extends MapSectionListener
-        implements IndyConfigInfo, KojiConfig
+        extends AbstractIndyMapConfig
+//        implements KojiConfig
 {
     private static final String KOJI_SITE_ID = "koji";
 
@@ -91,22 +91,63 @@ public class IndyKojiConfig
 
     private Map<String, String> targetGroups;
 
-    @Override
-    public SiteConfig getKojiSiteConfig()
-            throws IOException
+    public IndyKojiConfig()
     {
-        return new SiteConfigBuilder().withId( getKojiSiteId() )
-                                      .withKeyCertPem( getClientPemContent() )
-                                      .withServerCertPem( getServerPemContent() )
-                                      .withUri( getKojiURL() )
-                                      .withMaxConnections( getMaxConnections() )
-                                      .withProxyHost( getProxyHost() )
-                                      .withProxyPort( getProxyPort() )
-                                      .withProxyUser( getProxyUser() )
-                                      .withRequestTimeoutSeconds( getRequestTimeoutSeconds() )
-                                      .withTrustType( SiteTrustType.getType( getSiteTrustType() ) )
-                                      .build();
+        super( SECTION_NAME );
+
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.info( "Starting Indy Koji configuration instance..." );
     }
+
+    @PostConstruct
+    public void running()
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.info( "PostConstruct" );
+    }
+
+    public KojiConfig getKojiConfig()
+    {
+        return new KojiConfig(){
+
+            @Override
+            public SiteConfig getKojiSiteConfig()
+                    throws IOException
+            {
+                return new SiteConfigBuilder().withId( getKojiSiteId() )
+                                              .withKeyCertPem( getClientPemContent() )
+                                              .withServerCertPem( getServerPemContent() )
+                                              .withUri( getKojiURL() )
+                                              .withMaxConnections( getMaxConnections() )
+                                              .withProxyHost( getProxyHost() )
+                                              .withProxyPort( getProxyPort() )
+                                              .withProxyUser( getProxyUser() )
+                                              .withRequestTimeoutSeconds( getRequestTimeoutSeconds() )
+                                              .withTrustType( SiteTrustType.getType( getSiteTrustType() ) )
+                                              .build();
+            }
+
+            @Override
+            public String getKojiURL()
+            {
+                return getUrl();
+            }
+
+            @Override
+            public String getKojiClientCertificatePassword()
+            {
+                return keyPassword;
+            }
+
+            @Override
+            public String getKojiSiteId()
+            {
+                return KOJI_SITE_ID;
+            }
+
+        };
+    }
+
 
     public String getServerPemContent()
             throws IOException
@@ -142,24 +183,6 @@ public class IndyKojiConfig
         logger.trace( "Got PEM content:\n\n{}\n\n", pem );
 
         return pem;
-    }
-
-    @Override
-    public String getKojiURL()
-    {
-        return getUrl();
-    }
-
-    @Override
-    public String getKojiClientCertificatePassword()
-    {
-        return keyPassword;
-    }
-
-    @Override
-    public String getKojiSiteId()
-    {
-        return KOJI_SITE_ID;
     }
 
     public Integer getMaxConnections()
@@ -324,7 +347,6 @@ public class IndyKojiConfig
         return result.isPresent();
     }
 
-    @Override
     public void parameter( final String name, final String value )
             throws ConfigurationException
     {
@@ -429,13 +451,11 @@ public class IndyKojiConfig
         }
     }
 
-    @Override
     public String getDefaultConfigFileName()
     {
         return new File( IndyConfigInfo.CONF_INCLUDES_DIR, DEFAULT_CONFIG_FILE_NAME ).getPath();
     }
 
-    @Override
     public InputStream getDefaultConfig()
     {
         return Thread.currentThread().getContextClassLoader().getResourceAsStream( DEFAULT_CONFIG_FILE_NAME );

@@ -16,8 +16,8 @@
 package org.commonjava.indy.koji.inject;
 
 import com.redhat.red.build.koji.KojiClient;
+import com.redhat.red.build.koji.config.KojiConfig;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
-import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.action.StartupAction;
@@ -27,7 +27,6 @@ import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordType;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
@@ -50,7 +49,6 @@ public class KojijiProvider
     private PasswordManager kojiPasswordManager;
 
     @Inject
-    @WeftManaged
     @ExecutorConfig( named = "koji-queries", threads = 4 )
     private ExecutorService kojiExecutor;
 
@@ -69,20 +67,22 @@ public class KojijiProvider
             return;
         }
 
+        KojiConfig kojiConfig = config.getKojiConfig();
+
         kojiPasswordManager = new MemoryPasswordManager();
         if ( config.getProxyPassword() != null )
         {
-            kojiPasswordManager.bind( config.getProxyPassword(), config.getKojiSiteId(), PasswordType.PROXY );
+            kojiPasswordManager.bind( config.getProxyPassword(), kojiConfig.getKojiSiteId(), PasswordType.PROXY );
         }
 
         if ( config.getKeyPassword() != null )
         {
-            kojiPasswordManager.bind( config.getKeyPassword(), config.getKojiSiteId(), PasswordType.KEY );
+            kojiPasswordManager.bind( config.getKeyPassword(), kojiConfig.getKojiSiteId(), PasswordType.KEY );
         }
 
         try
         {
-            kojiClient = new KojiClient( config, kojiPasswordManager, kojiExecutor );
+            kojiClient = new KojiClient( kojiConfig, kojiPasswordManager, kojiExecutor );
         }
         catch ( BindException e )
         {
