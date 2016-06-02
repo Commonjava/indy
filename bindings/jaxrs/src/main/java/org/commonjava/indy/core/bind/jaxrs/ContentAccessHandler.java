@@ -109,13 +109,13 @@ public class ContentAccessHandler
         final StoreType st = StoreType.get( type );
         StoreKey sk = new StoreKey( st, name );
 
-        eventMetadata = eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
+        EventMetadata eventMetadata = new EventMetadata().set( ContentManager.ENTRY_POINT_STORE, sk );
 
         Response response = null;
         final Transfer transfer;
         try
         {
-            transfer = contentController.store( new StoreKey( st, name ), path, request.getInputStream() );
+            transfer = contentController.store( new StoreKey( st, name ), path, request.getInputStream(), eventMetadata );
 
             final StoreKey storageKey = LocationUtils.getKey( transfer );
             logger.info( "Key for storage location: {}", storageKey );
@@ -138,7 +138,6 @@ public class ContentAccessHandler
         return response;
     }
 
-<<<<<<< HEAD
     @ApiOperation( "Delete file/artifact content under the given artifact store (type/name) and path." )
     @ApiResponses( { @ApiResponse( code = 204, message = "Content was deleted successfully" ) } )
     @DELETE
@@ -146,26 +145,17 @@ public class ContentAccessHandler
     public Response doDelete( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
                               final @ApiParam( required = true ) @PathParam( "name" ) String name,
                               final @PathParam( "path" ) String path )
-=======
-    public Response doDelete( String type, String name, String path, EventMetadata eventMetadata )
->>>>>>> 27acee0... Implementing Koji build finder content-manager decorator.
     {
         final StoreType st = StoreType.get( type );
         StoreKey sk = new StoreKey( st, name );
 
-        eventMetadata = eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
+        EventMetadata eventMetadata = new EventMetadata().set( ContentManager.ENTRY_POINT_STORE, sk );
 
         Response response;
         try
         {
-<<<<<<< HEAD
-            final ApplicationStatus result = contentController.delete( st, name, path );
-            response = Response.status( result.code() )
-                               .build();
-=======
             final ApplicationStatus result = contentController.delete( st, name, path, eventMetadata );
             response = Response.status( result.code() ).build();
->>>>>>> 27acee0... Implementing Koji build finder content-manager decorator.
         }
         catch ( final IndyWorkflowException e )
         {
@@ -188,7 +178,7 @@ public class ContentAccessHandler
         final StoreType st = StoreType.get( type );
         final StoreKey sk = new StoreKey( st, name );
 
-        eventMetadata = eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
+        EventMetadata eventMetadata = new EventMetadata().set( ContentManager.ENTRY_POINT_STORE, sk );
 
         final AcceptInfo acceptInfo = jaxRsRequestHelper.findAccept( request, ApplicationContent.text_html );
 
@@ -224,7 +214,7 @@ public class ContentAccessHandler
         {
             try
             {
-                final Transfer item = contentController.get( sk, path );
+                final Transfer item = contentController.get( sk, path, eventMetadata );
                 if ( item == null )
                 {
                     if ( StoreType.remote == st )
@@ -275,7 +265,7 @@ public class ContentAccessHandler
         final StoreType st = StoreType.get( type );
         final StoreKey sk = new StoreKey( st, name );
 
-        eventMetadata = eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
+        EventMetadata eventMetadata = new EventMetadata().set( ContentManager.ENTRY_POINT_STORE, sk );
 
         final AcceptInfo acceptInfo = jaxRsRequestHelper.findAccept( request, ApplicationContent.text_html );
         final String standardAccept = ApplicationContent.getStandardAccept( acceptInfo.getBaseAccept() );
