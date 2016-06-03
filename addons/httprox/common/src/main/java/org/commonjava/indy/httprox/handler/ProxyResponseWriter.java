@@ -52,6 +52,7 @@ import static org.commonjava.indy.httprox.util.HttpProxyConstants.HEAD_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.OPTIONS_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.PROXY_AUTHENTICATE_FORMAT;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.PROXY_REPO_PREFIX;
+import static org.commonjava.indy.model.core.PathStyle.hashed;
 
 public final class ProxyResponseWriter
                 implements ChannelListener<ConduitStreamSinkChannel>
@@ -364,6 +365,8 @@ public final class ProxyResponseWriter
                 remote.setUser( up.getUser() );
                 remote.setPassword( up.getPassword() );
             }
+
+            remote.setPathStyle( hashed );
 
             storeManager.storeArtifactStore( remote, new ChangeSummary( ChangeSummary.SYSTEM_USER,
                                                                         "Creating HTTProx proxy for: "

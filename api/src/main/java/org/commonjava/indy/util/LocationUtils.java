@@ -18,6 +18,7 @@ package org.commonjava.indy.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -36,6 +37,8 @@ import org.commonjava.maven.galley.model.Transfer;
 
 public final class LocationUtils
 {
+    public static final String PATH_STYLE = "pathStyle";
+
     private LocationUtils()
     {
     }
@@ -49,31 +52,52 @@ public final class LocationUtils
 
         final StoreType type = store.getKey()
                                     .getType();
+
+        KeyedLocation location = null;
         switch ( type )
         {
             case group:
             {
-                return new GroupLocation( store.getName() );
+                location = new GroupLocation( store.getName() );
+                break;
             }
             case hosted:
             {
-                return new CacheOnlyLocation( (HostedRepository) store );
+                location = new CacheOnlyLocation( (HostedRepository) store );
+                break;
             }
             case remote:
             default:
             {
                 final RemoteRepository repository = (RemoteRepository) store;
-                final RepositoryLocation location = new RepositoryLocation( repository );
+                location = new RepositoryLocation( repository );
                 AttributePasswordManager.bind( location, PasswordEntry.KEY_PASSWORD, repository.getKeyPassword() );
                 AttributePasswordManager.bind( location, PasswordEntry.PROXY_PASSWORD, repository.getProxyPassword() );
                 AttributePasswordManager.bind( location, PasswordEntry.USER_PASSWORD, repository.getPassword() );
 
-                // for testing purposes only...
+                // FIXME: Make this configurable on the RemoteRepository!
                 location.setAttribute( Location.MAX_CONNECTIONS, 30 );
-
-                return location;
             }
         }
+
+        if ( location != null )
+        {
+            location.setAttribute( PATH_STYLE, store.getPathStyle() );
+
+            Map<String, String> metadata = store.getMetadata();
+            if ( metadata != null )
+            {
+                Location loc = location;
+                metadata.forEach( ( k, v ) -> {
+                    if ( !loc.getAttributes().containsKey( k ) )
+                    {
+                        loc.setAttribute( k, v );
+                    }
+                } );
+            }
+        }
+
+        return location;
     }
 
     //    public static CacheOnlyLocation toCacheLocation( final StoreKey key )
