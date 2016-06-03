@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.commonjava.indy.change.event.IndyFileEventManager;
-import org.commonjava.indy.content.KeyBasedPathGenerator;
+import org.commonjava.indy.content.IndyPathGenerator;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.auth.MemoryPasswordManager;
 import org.commonjava.maven.galley.cache.FileCacheProvider;
@@ -69,7 +69,7 @@ public class GalleyFixture
 
         events = new IndyFileEventManager();
         decorator = new NoOpTransferDecorator();
-        cache = new FileCacheProvider( repoRoot, new KeyBasedPathGenerator(), events, decorator );
+        cache = new FileCacheProvider( repoRoot, new IndyPathGenerator(), events, decorator );
         executor = Executors.newFixedThreadPool( 2 );
         batchExecutor = Executors.newFixedThreadPool( 2 );
         nfc = new MemoryNotFoundCache();

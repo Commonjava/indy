@@ -61,6 +61,8 @@
     
     <test-forkCount>4</test-forkCount>
     <test-redirectOutput>true</test-redirectOutput>
+    <skipITs>true</skipITs>
+    <quickITs>true</quickITs>
   </properties>
   
   <modules>
@@ -1080,15 +1082,14 @@
   <profiles>
     <profile>
       <id>run-its</id>
-      <modules>
-        <!--
-        <module>embedder-tests</module>
-        -->
-      </modules>
+      <properties>
+        <skipTests>false</skipTests>
+      </properties>
     </profile>
     <profile>
       <id>ci</id>
       <properties>
+        <skipTests>false</skipTests>
         <test-forkCount>2</test-forkCount>
         <testTimeout>300</testTimeout>
       </properties>
