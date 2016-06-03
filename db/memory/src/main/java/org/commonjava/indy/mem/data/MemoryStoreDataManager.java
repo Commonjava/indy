@@ -312,14 +312,7 @@ public class MemoryStoreDataManager
                                        final EventMetadata eventMetadata )
             throws IndyDataException
     {
-        final boolean result = store( store, summary, skipIfExists, fireEvents, eventMetadata );
-        if ( result && ( store instanceof RemoteRepository ) )
-        {
-            final RemoteRepository repository = (RemoteRepository) store;
-            byRemoteUrl.put( repository.getUrl(), repository );
-        }
-
-        return result;
+        return store( store, summary, skipIfExists, fireEvents, eventMetadata );
     }
 
     private synchronized boolean store( final ArtifactStore store, final ChangeSummary summary,
@@ -358,6 +351,11 @@ public class MemoryStoreDataManager
                     reverseGroupMemberships.put( memberKey, memberIn );
                 } );
             }
+            else if ( store instanceof RemoteRepository )
+            {
+                final RemoteRepository repository = (RemoteRepository) store;
+                byRemoteUrl.put( repository.getUrl(), repository );
+            }
 
             try
             {
@@ -380,6 +378,7 @@ public class MemoryStoreDataManager
     {
         if ( isStarted() && fireEvents )
         {
+            logger.debug( "Firing store pre-update event for: {} (originally: {})", store, original );
             dispatcher.updating( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, eventMetadata,
                                  Collections.singletonMap( store, original ) );
 
@@ -403,6 +402,7 @@ public class MemoryStoreDataManager
     {
         if ( isStarted() && fireEvents )
         {
+            logger.debug( "Firing store post-update event for: {} (originally: {})", store, original );
             dispatcher.updated( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, eventMetadata,
                                 Collections.singletonMap( store, original ) );
 

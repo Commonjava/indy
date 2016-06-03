@@ -85,4 +85,15 @@ public class ArtifactStoreEnablementEvent
     {
         return stores.spliterator();
     }
+
+    @Override
+    public String toString()
+    {
+        return "ArtifactStoreEnablementEvent{" +
+                "eventMetadata=" + eventMetadata +
+                ", disabling=" + disabling +
+                ", stores=" + stores +
+                ", preprocessing=" + preprocessing +
+                '}';
+    }
 }

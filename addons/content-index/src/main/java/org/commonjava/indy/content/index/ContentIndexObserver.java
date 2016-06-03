@@ -111,6 +111,9 @@ public class ContentIndexObserver
 
     public void onFileDeletion( @Observes final FileDeletionEvent event )
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Got file-deletion event: {}", event );
+
         StoreKey key = LocationUtils.getKey( event );
         String path = event.getTransfer().getPath();
 
@@ -125,12 +128,18 @@ public class ContentIndexObserver
 
     public void onFileAccess( @Observes final FileAccessEvent event )
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Got file-access event: {}", event );
+
         StoreKey key = LocationUtils.getKey( event );
         indexManager.indexPathInStores( event.getTransfer().getPath(), key );
     }
 
     public void onFileStorage( @Observes final FileStorageEvent event )
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Got file-storage event: {}", event );
+
         StoreKey key = LocationUtils.getKey( event );
         String path = event.getTransfer().getPath();
         indexManager.indexPathInStores( path, key );
@@ -140,6 +149,9 @@ public class ContentIndexObserver
 
     public void onStoreDisable( @Observes final ArtifactStoreEnablementEvent event )
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Got store-enablement event: {}", event );
+
         if ( event.isPreprocessing() )
         {
             if ( event.isDisabling() )
@@ -156,13 +168,16 @@ public class ContentIndexObserver
 
     public void onStoreDeletion( @Observes final ArtifactStoreDeletePreEvent event )
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Got store-delete event: {}", event );
+
         propagatePathlessStoreEvent( event );
     }
 
     public void onStoreUpdate( @Observes final ArtifactStorePreUpdateEvent event )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.debug( "Got event: {}", event );
+        logger.trace( "Got store-update event: {}", event );
 
         // we're only interested in existing stores, since new stores cannot have indexed keys
         if ( ArtifactStoreUpdateType.UPDATE == event.getType() )
@@ -182,6 +197,9 @@ public class ContentIndexObserver
             return;
         }
 
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Got content-expiration event: {}", event );
+
         ContentExpiration expiration = null;
         try
         {
@@ -189,7 +207,6 @@ public class ContentIndexObserver
         }
         catch ( final IOException e )
         {
-            Logger logger = LoggerFactory.getLogger( getClass() );
             logger.error( "Failed to read ContentExpiration from event payload.", e );
         }
 
@@ -248,6 +265,17 @@ public class ContentIndexObserver
 
             // if we haven't found a reordering of membership, let's look to see if membership has shrunk
             // if it has just grown, we don't care.
+            //
+            // [NOS-128] TODO: This is not right. It should be:
+            // 1. If membership has shrunk, we can remove origin-indexed paths, which will remove merged group content
+            //      based on the removed member's content.
+            // 2. If membership has grown, we should iterate new members' indexed content looking for mergable paths.
+            //      For each of these, we need to removeIndexedStorePaths using the group and the mergable path.
+            //
+            // NOTE: In either case, we need to handle matches in two ways:
+            // 1. deleteTransfers()
+            // 2. add the indexedStorePath to the removed Set so we can propagage their removal through any groups
+            //      that include the one we're affecting directly here...using clearIndexedPathFrom() to do this.
             if ( divergencePoint < 0 && newMembers.size() < oldMembers.size() )
             {
                 divergencePoint = commonSize;
