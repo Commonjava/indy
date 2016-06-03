@@ -15,14 +15,20 @@
  */
 package org.commonjava.indy.content;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Default;
-
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.commonjava.indy.model.core.PathStyle;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
+import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.indy.util.PathUtils;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.spi.io.PathGenerator;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Default;
+
+import static org.commonjava.indy.model.core.PathStyle.hashed;
 
 /**
  * {@link PathGenerator} implementation that assumes the locations it sees will be {@link KeyedLocation}, and translates them into storage locations
@@ -30,7 +36,7 @@ import org.commonjava.maven.galley.spi.io.PathGenerator;
  */
 @Default
 @ApplicationScoped
-public class KeyBasedPathGenerator
+public class IndyPathGenerator
     implements PathGenerator
 {
 
@@ -43,7 +49,16 @@ public class KeyBasedPathGenerator
         final String name = key.getType()
                                .name() + "-" + key.getName();
 
-        return PathUtils.join( name, resource.getPath() );
+        String path = resource.getPath();
+        if ( hashed == kl.getAttribute( LocationUtils.PATH_STYLE, PathStyle.class ) )
+        {
+            String digest = DigestUtils.sha256Hex( path );
+            String ext = FilenameUtils.getExtension( path );
+            path = String.format( "%s/%s/%s.%s", digest.substring( 0, 2 ), digest.substring( 2, 4 ), digest, ext );
+        }
+        // else it's plain and we leave it alone.
+
+        return PathUtils.join( name, path );
     }
 
 }
