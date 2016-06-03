@@ -1,0 +1,49 @@
+{
+  "name": "test-me",
+  "versions": {
+    "1.0.0": {
+      "name": "test-me",
+      "version": "1.0.0",
+      "description": "Test",
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/commonjava/test-me"
+      },
+      "author": {
+        "name": "Commonjava",
+        "email": "nobody@nowhere.com",
+        "url": "http://commonjava.github.io"
+      },
+      "engines": {
+        "node": ">=0.10.0"
+      },
+      "_id": "test-me@1.0.0",
+      "_shasum": "8923a07b4ac131a01825d5b482de31737b5f9c90",
+      "_from": ".",
+      "_npmVersion": "2.11.2",
+      "_nodeVersion": "0.12.5",
+      "_npmUser": {
+        "name": "nobody",
+        "email": "nobody@nowhere.com"
+      },
+      "dist": {
+        "shasum": "8923a07b4ac131a01825d5b482de31737b5f9c90",
+        "tarball": "http://localhost:49152/test-me/-/test-me-1.3.0.tgz"
+      },
+      "maintainers": [
+        {
+          "name": "sindresorhus",
+          "email": "sindresorhus@gmail.com"
+        }
+      ],
+      "directories": {}
+    },
+  },
+  "dist-tags": {
+    "latest": "1.0.0"
+  },
+  "_rev": "10-1eb0c9e08aaeb85c",
+  "readme": "This is a test",
+  "_attachments": {}
+}

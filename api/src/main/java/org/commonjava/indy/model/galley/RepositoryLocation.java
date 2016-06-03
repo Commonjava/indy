@@ -112,7 +112,18 @@ public class RepositoryLocation
     public <T> T getAttribute( final String key, final Class<T> type, final T defaultValue )
     {
         final Object value = attributes.get( key );
-        return value == null ? defaultValue : type.cast( value );
+        if ( value == null )
+        {
+            return defaultValue;
+        }
+        else if ( type.isAssignableFrom( value.getClass() ) )
+        {
+            return type.cast( value );
+        }
+        else
+        {
+            return defaultValue;
+        }
     }
 
     @Override
