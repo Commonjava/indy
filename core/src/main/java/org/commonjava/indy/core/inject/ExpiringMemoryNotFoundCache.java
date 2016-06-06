@@ -103,18 +103,14 @@ public class ExpiringMemoryNotFoundCache
     public boolean isMissing( final ConcreteResource resource )
     {
         final Long timeout = missingWithTimeout.get( resource );
-        if ( timeout != null )
+        boolean result = false;
+        if ( timeout != null && System.currentTimeMillis() < timeout )
         {
-            if ( System.currentTimeMillis() >= timeout )
-            {
-                missingWithTimeout.remove( resource );
-                return false;
-            }
-
-            return true;
+            result = true;
         }
 
-        return false;
+        logger.debug( "NFC check: {} result is: {}", resource, result );
+        return result;
     }
 
     @Override

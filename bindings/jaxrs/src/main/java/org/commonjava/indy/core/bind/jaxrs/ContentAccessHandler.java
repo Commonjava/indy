@@ -179,11 +179,13 @@ public class ContentAccessHandler
                 {
                     logger.info( "[CACHE-ONLY] Checking existence of: {}:{}", sk, path );
                     item = contentController.getTransfer( sk, path, TransferOperation.DOWNLOAD );
+                    logger.debug( "Got cache-only transfer reference: {}", item );
                 }
                 else
                 {
                     logger.info( "Retrieving: {}:{} for existence test", sk, path );
                     item = contentController.get( sk, path, eventMetadata );
+                    logger.debug( "Got retrieved transfer reference: {}", item );
                 }
 
                 if ( item == null || !item.exists() )
