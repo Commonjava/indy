@@ -207,7 +207,7 @@ public class ContentAccessHandler
             try
             {
                 final Transfer item = contentController.get( sk, path );
-                if ( item == null )
+                if ( item == null || !item.exists() )
                 {
                     if ( StoreType.remote == st )
                     {
