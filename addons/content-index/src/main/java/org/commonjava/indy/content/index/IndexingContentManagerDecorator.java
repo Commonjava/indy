@@ -307,14 +307,17 @@ public abstract class IndexingContentManagerDecorator
             try
             {
                 Group g = storeDataManager.getGroup( key.getName() );
-                for ( StoreKey memberKey : g.getConstituents() )
+                if ( g != null )
                 {
-                    transfer = getIndexedMemberTransfer( memberKey, topKey, path );
-                    if ( transfer != null )
+                    for ( StoreKey memberKey : g.getConstituents() )
                     {
-                        // the other keys' index will be added in the recursive call...but we need to add the intermediary here.
-                        indexManager.indexTransferIn( transfer, key );
-                        return transfer;
+                        transfer = getIndexedMemberTransfer( memberKey, topKey, path );
+                        if ( transfer != null )
+                        {
+                            // the other keys' index will be added in the recursive call...but we need to add the intermediary here.
+                            indexManager.indexTransferIn( transfer, key );
+                            return transfer;
+                        }
                     }
                 }
             }

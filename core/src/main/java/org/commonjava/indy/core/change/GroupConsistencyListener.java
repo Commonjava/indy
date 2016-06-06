@@ -56,8 +56,9 @@ public class GroupConsistencyListener
             {
                 logger.debug( "Removing {} from membership of group: {}", key, group.getKey() );
 
-                group.removeConstituent( key );
-                proxyDataManager.storeArtifactStore( group, new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                Group g = group.copyOf();
+                g.removeConstituent( key );
+                proxyDataManager.storeArtifactStore( g, new ChangeSummary( ChangeSummary.SYSTEM_USER,
                                                                        "Auto-update groups containing: " + key
                                                                                    + " (to maintain consistency)" ),
                                                      false, false,
