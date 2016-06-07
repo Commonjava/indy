@@ -22,16 +22,19 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.SnapshotVersion;
 import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
+import org.codehaus.plexus.util.IOUtil;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
@@ -75,20 +78,26 @@ public class MavenMetadataMerger
     @Override
     public byte[] merge( final Collection<Transfer> sources, final Group group, final String path )
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Generating merged metadata in: {}:{}", group.getKey(), path );
+
         final Metadata master = new Metadata();
         final MetadataXpp3Reader reader = new MetadataXpp3Reader();
         final FileReader fr = null;
         InputStream stream = null;
 
         boolean merged = false;
+        Transfer snapshotProvider = null;
         for ( final Transfer src : sources )
         {
             try
             {
                 stream = src.openInputStream();
+                String content = IOUtils.toString( stream );
+                logger.debug( "Adding in metadata content from: {}\n\n{}\n\n", src, content );
 
                 // there is a lot of junk in here to make up for Metadata's anemic merge() method.
-                final Metadata md = reader.read( stream, false );
+                final Metadata md = reader.read( new StringReader( content ), false );
 
                 if ( md.getGroupId() != null )
                 {
@@ -107,29 +116,44 @@ public class MavenMetadataMerger
 
                 master.merge( md );
 
-                if ( master.getVersioning() == null )
+                Versioning versioning = master.getVersioning();
+                if ( versioning == null )
                 {
                     master.setVersioning( new Versioning() );
                 }
-
-                if ( md.getVersioning() != null )
+                else
                 {
-                    final List<SnapshotVersion> snapshotVersions = master.getVersioning()
-                                                                         .getSnapshotVersions();
-                    boolean added = false;
-                    for ( final SnapshotVersion snap : md.getVersioning()
-                                                         .getSnapshotVersions() )
+                    Versioning mdVersioning = md.getVersioning();
+
+                    // FIXME: Should we try to merge snapshot lists instead of using the first one we encounter??
+                    if ( versioning.getSnapshot() == null )
                     {
-                        if ( !snapshotVersions.contains( snap ) )
+                        logger.info( "INCLUDING snapshot information from: {} in: {}:{}", src, group.getKey(), path );
+                        snapshotProvider = src;
+
+                        versioning.setSnapshot( mdVersioning.getSnapshot() );
+
+                        final List<SnapshotVersion> snapshotVersions = versioning
+                                .getSnapshotVersions();
+                        boolean added = false;
+                        for ( final SnapshotVersion snap : mdVersioning
+                                .getSnapshotVersions() )
                         {
-                            snapshotVersions.add( snap );
-                            added = true;
+                            if ( !snapshotVersions.contains( snap ) )
+                            {
+                                snapshotVersions.add( snap );
+                                added = true;
+                            }
+                        }
+
+                        if ( added )
+                        {
+                            Collections.sort( snapshotVersions, new SnapshotVersionComparator() );
                         }
                     }
-
-                    if ( added )
+                    else
                     {
-                        Collections.sort( snapshotVersions, new SnapshotVersionComparator() );
+                        logger.warn( "SKIPPING snapshot information from: {} in: {}:{} (obscured by: {})", src, group.getKey(), path, snapshotProvider );
                     }
                 }
 

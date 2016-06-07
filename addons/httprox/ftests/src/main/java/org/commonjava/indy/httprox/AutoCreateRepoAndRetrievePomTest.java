@@ -21,11 +21,16 @@ import static org.junit.Assert.assertThat;
 
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import org.commonjava.indy.client.core.helper.HttpResources;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreType;
@@ -49,7 +54,7 @@ public class AutoCreateRepoAndRetrievePomTest
         server.expect( url, 200, pom.pom );
 
         final HttpGet get = new HttpGet( url );
-        final CloseableHttpClient client = proxiedHttp();
+        CloseableHttpClient client = proxiedHttp();
         CloseableHttpResponse response = null;
 
         InputStream stream = null;
@@ -74,6 +79,23 @@ public class AutoCreateRepoAndRetrievePomTest
 
         assertThat( remoteRepo, notNullValue() );
         assertThat( remoteRepo.getUrl(), equalTo( server.getBaseUri() ) );
+
+        String pomUrl = this.client.content().contentUrl( remoteRepo.getKey(), testRepo, pom.path ) + "?cache-only=true";
+        HttpHead head = new HttpHead( pomUrl );
+        client = HttpClients.createDefault();
+
+
+        try
+        {
+            response = client.execute( head );
+
+            assertThat( response.getStatusLine().getStatusCode(), equalTo( 200 ) );
+        }
+        finally
+        {
+            HttpResources.cleanupResources( head, response, client );
+        }
+
     }
 
 }

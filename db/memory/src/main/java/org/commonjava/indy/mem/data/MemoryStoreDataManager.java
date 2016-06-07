@@ -181,14 +181,15 @@ public class MemoryStoreDataManager
                                final boolean includeGroups, final boolean recurseGroups,
                                final boolean enabledOnly )
     {
-        if ( master.isDisabled() && enabledOnly )
+        if ( master == null )
         {
             return;
         }
+
         List<StoreKey> members = null;
         synchronized ( master )
         {
-            if ( master == null || master.getConstituents() == null )
+            if ( master.getConstituents() == null || ( master.isDisabled() && enabledOnly ) )
             {
                 return;
             }

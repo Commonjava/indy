@@ -16,7 +16,6 @@
 package org.commonjava.indy.content;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.commonjava.indy.model.core.PathStyle;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
@@ -24,9 +23,12 @@ import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.indy.util.PathUtils;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.spi.io.PathGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
+import java.io.File;
 
 import static org.commonjava.indy.model.core.PathStyle.hashed;
 
@@ -52,9 +54,28 @@ public class IndyPathGenerator
         String path = resource.getPath();
         if ( hashed == kl.getAttribute( LocationUtils.PATH_STYLE, PathStyle.class ) )
         {
-            String digest = DigestUtils.sha256Hex( path );
-            String ext = FilenameUtils.getExtension( path );
-            path = String.format( "%s/%s/%s.%s", digest.substring( 0, 2 ), digest.substring( 2, 4 ), digest, ext );
+            File f = new File( path );
+            String dir = f.getParent();
+            if ( dir == null )
+            {
+                dir = "";
+            }
+
+            if ( dir.length() > 1 && dir.startsWith( "/" ) )
+            {
+                dir = dir.substring( 1, dir.length() );
+            }
+
+            String digest = DigestUtils.sha256Hex( dir );
+
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.trace( "Using SHA-256 digest: '{}' for dir: '{}' of path: '{}'", digest, dir, path );
+
+            // Format examples:
+            // - aa/bb/aabbccddeeff001122/simple-1.0.pom
+            // - aa/bb/aabbccddeeff001122/gulp-size
+            // - 00/11/001122334455667788/gulp-size-1.3.0.tgz
+            path = String.format( "%s/%s/%s/%s", digest.substring( 0, 2 ), digest.substring( 2, 4 ), digest, f.getName() );
         }
         // else it's plain and we leave it alone.
 

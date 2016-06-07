@@ -363,6 +363,10 @@ indyServices.factory('StoreUtilSvc', function(){
     },
     
     sortByEmbeddedKey: function(items){
+      if ( items == undefined ){
+        return items;
+      }
+
       var typeOrder = ['group', 'remote', 'hosted'];
       return items.sort(function(a, b){
         var ap = a.key.split(':');

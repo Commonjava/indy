@@ -108,15 +108,15 @@ public abstract class KojiContentManagerDecorator
             throws IndyWorkflowException
     {
         Transfer result = delegate.retrieve( store, path, eventMetadata );
-        if ( !config.getEnabled() )
-        {
-            Logger logger = LoggerFactory.getLogger( getClass() );
-            logger.info( "Koji content-manager decorator is disabled." );
-            return result;
-        }
-
         if ( result == null && StoreType.group == store.getKey().getType() )
         {
+            if ( !config.getEnabled() )
+            {
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.info( "Koji content-manager decorator is disabled." );
+                return result;
+            }
+
             Group group = (Group) store;
 
             Logger logger = LoggerFactory.getLogger( getClass() );

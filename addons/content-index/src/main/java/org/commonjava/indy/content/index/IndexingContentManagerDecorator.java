@@ -307,14 +307,17 @@ public abstract class IndexingContentManagerDecorator
             try
             {
                 Group g = storeDataManager.getGroup( key.getName() );
-                for ( StoreKey memberKey : g.getConstituents() )
+                if ( g != null )
                 {
-                    transfer = getIndexedMemberTransfer( memberKey, topKey, path );
-                    if ( transfer != null )
+                    for ( StoreKey memberKey : g.getConstituents() )
                     {
-                        // the other keys' index will be added in the recursive call...but we need to add the intermediary here.
-                        indexManager.indexTransferIn( transfer, key );
-                        return transfer;
+                        transfer = getIndexedMemberTransfer( memberKey, topKey, path );
+                        if ( transfer != null )
+                        {
+                            // the other keys' index will be added in the recursive call...but we need to add the intermediary here.
+                            indexManager.indexTransferIn( transfer, key );
+                            return transfer;
+                        }
                     }
                 }
             }
@@ -347,6 +350,7 @@ public abstract class IndexingContentManagerDecorator
         {
             // hosted repos are completely indexed, since the store() method maintains the index
             // So, if it wasn't found in the index (above), and we're looking at a hosted repo, it's not here.
+            logger.debug( "HOSTED / Not-Indexed: {}/{}", storeKey, path );
             return null;
         }
         else if ( StoreType.group == type )
@@ -365,6 +369,7 @@ public abstract class IndexingContentManagerDecorator
             ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( g ), path );
             if ( nfc.isMissing( resource ) )
             {
+                logger.debug( "NFC / MISSING: {}", resource );
                 return null;
             }
 

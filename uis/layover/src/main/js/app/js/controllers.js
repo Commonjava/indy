@@ -464,11 +464,13 @@ indyControllers.controller('NfcController', ['$scope', '$routeParams', '$locatio
     delete $scope.currentKey;
     
     NfcSvc.resource.query({}, function(nfc){
-      nfc.sections.each(function(section){
-        section.label = StoreUtilSvc.keyLabel(section.key);
-        section.paths.sort();
-      });
-      
+      if ( nfc.sections !== undefined ){
+        nfc.sections.each(function(section){
+          section.label = StoreUtilSvc.keyLabel(section.key);
+          section.paths.sort();
+        });
+      }
+
       $scope.sections = StoreUtilSvc.sortByEmbeddedKey(nfc.sections);
     });
   }
@@ -482,11 +484,13 @@ indyControllers.controller('NfcController', ['$scope', '$routeParams', '$locatio
 // alert( "showing NFC entries for: " + $scope.currentKey);
       
       NfcSvc.resource.get({type:routeType, name:routeName}, function(nfc){
-        nfc.sections.each(function(section){
-          section.label = StoreUtilSvc.keyLabel(section.key);
-          section.paths.sort();
-        });
-        
+        if ( nfc.sections !== undefined ){
+          nfc.sections.each(function(section){
+            section.label = StoreUtilSvc.keyLabel(section.key);
+            section.paths.sort();
+          });
+        }
+
         $scope.sections = StoreUtilSvc.sortByEmbeddedKey(nfc.sections);
       });
     }
