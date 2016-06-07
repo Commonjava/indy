@@ -60,7 +60,6 @@ public class GroupMetadataOverlappingWithMetadataOfHostedReposTest
     public ExpectationServer server = new ExpectationServer();
 
     @Test
-    @Ignore
     public void run()
             throws Exception
     {
