@@ -73,11 +73,15 @@ public class DefaultIndyConfigFactory
 
         for ( final IndyConfigClassInfo section : configSections )
         {
+            logger.debug( "Adding class-oriented configuration listener: {}", section );
+
             with( section.getSectionName(), section.getConfigurationClass() );
         }
 
         for ( final AbstractIndyMapConfig section : mapConfigs )
         {
+            logger.debug( "Adding map-oriented configuration listener: {}", section );
+
             with( section.getSectionName(), section );
         }
 

@@ -121,8 +121,8 @@ public class HttpProxyTest
 
         final HttproxConfig config = new HttproxConfig();
         config.setEnabled( true );
-
-        proxyPort = config.getPort();
+        proxyPort = PortFinder.findOpenPort( 16 );
+        config.setPort( proxyPort );
 
         final BootOptions bootOpts = new BootOptions();
         bootOpts.setBind( HOST );

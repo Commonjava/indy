@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <!--
 
     Copyright (C) 2011 Red Hat, Inc. (jdcasey@commonjava.org)
@@ -18,29 +18,32 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
   <parent>
     <groupId>org.commonjava.indy</groupId>
-    <artifactId>indy-parent</artifactId>
+    <artifactId>indy-koji</artifactId>
     <version>0.99.1.5-SNAPSHOT</version>
   </parent>
-  
-  <artifactId>indy-addons</artifactId>
-  <packaging>pom</packaging>
+  <artifactId>indy-koji-model-java</artifactId>
+  <name>Indy :: Add-Ons :: Koji Integration :: Java Domain Model</name>
 
-  <name>Indy :: Add-Ons :: Parent</name>
-  
-  <modules>
-    <module>autoprox</module>
-    <module>depgraph</module>
-    <module>dot-maven</module>
-    <module>folo</module>
-    <module>httprox</module>
-    <module>implied-repos</module>
-    <module>indexer</module>
-    <module>koji</module>
-    <module>promote</module>
-    <module>revisions</module>
-    <module>setback</module>
-  </modules>
+  <dependencies>
+    <dependency>
+    	<groupId>org.commonjava.indy</groupId>
+    	<artifactId>indy-model-core-java</artifactId>
+    </dependency>
+    <dependency>
+    	<groupId>junit</groupId>
+    	<artifactId>junit</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.wordnik</groupId>
+      <artifactId>swagger-jaxrs_2.10</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 </project>

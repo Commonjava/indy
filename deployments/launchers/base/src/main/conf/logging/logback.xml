@@ -42,14 +42,13 @@
       </encoder>
     </appender>
 
-  <logger name="org.jboss" level="ERROR"/>
+  <logger name="org.jboss.weld" level="DEBUG"/>
   <!--
   <logger name="org.jboss.resteasy" level="DEBUG"/>
-  
-  <logger name="org.commonjava" level="DEBUG" />
   -->
-  
-  <logger name="org.commonjava.indy.implrepo" level="DEBUG" />
+
+  <logger name="org.commonjava" level="DEBUG" />
+  <logger name="org.commonjava.indy.koji" level="DEBUG" />
   <logger name="org.commonjava.maven.galley.transport" level="DEBUG" />
   <logger name="org.commonjava.util.partyline" level="DEBUG" />
 
