@@ -33,12 +33,14 @@ import javax.ws.rs.HEAD;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.commonjava.indy.IndyContentConstants;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyDeployment;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
@@ -58,6 +60,7 @@ import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.indy.util.UriFormatter;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,7 +153,7 @@ public class FoloContentAccessHandler
     @HEAD
     @Path( "/{path: (.*)}" )
     public Response doHead( @PathParam( "id" ) final String id, @PathParam( "type" ) final String type,
-                            @PathParam( "name" ) final String name, @PathParam( "path" ) final String path,
+                            @PathParam( "name" ) final String name, @PathParam( "path" ) final String path, @QueryParam( IndyContentConstants.CHECK_CACHE_ONLY ) final Boolean cacheOnly,
                             @Context final HttpServletRequest request, @Context final UriInfo uriInfo )
     {
         final StoreType st = StoreType.get( type );
@@ -186,10 +189,23 @@ public class FoloContentAccessHandler
             }
             else
             {
-                final Transfer item =
-                    contentController.get( sk, path, new EventMetadata().set( FoloConstants.TRACKING_KEY, tk ) );
+                final Transfer item;
+                EventMetadata em = new EventMetadata().set( FoloConstants.TRACKING_KEY, tk );
 
-                if ( item == null )
+                if ( Boolean.TRUE.equals( cacheOnly ) )
+                {
+                    logger.info( "[CACHE-ONLY] Checking existence of: {}:{}", sk, path );
+                    item = contentController.getTransfer( sk, path, TransferOperation.DOWNLOAD );
+                    logger.debug( "Got cache-only transfer reference: {}", item );
+                }
+                else
+                {
+                    logger.info( "Retrieving: {}:{} for existence test", sk, path );
+                    item = contentController.get( sk, path, em );
+                    logger.debug( "Got retrieved transfer reference: {}", item );
+                }
+
+                if ( item == null || !item.exists() )
                 {
                     if ( StoreType.remote == st )
                     {

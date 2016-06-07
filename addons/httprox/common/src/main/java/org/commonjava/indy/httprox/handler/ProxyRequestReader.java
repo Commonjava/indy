@@ -25,11 +25,13 @@ import org.apache.http.impl.io.HttpTransportMetricsImpl;
 import org.apache.http.impl.io.SessionInputBufferImpl;
 import org.apache.http.message.BasicLineParser;
 import org.apache.http.message.LineParser;
+import org.commonjava.indy.util.ApplicationHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xnio.ChannelListener;
 import org.xnio.conduits.ConduitStreamSinkChannel;
 import org.xnio.conduits.ConduitStreamSourceChannel;
+import scala.App;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -87,6 +89,9 @@ public final class ProxyRequestReader
                 {
                     logger.debug( "Passing parsed http request off to response writer." );
                     HttpRequest request = requestParser.parse();
+                    logger.debug( "Request contains {} header: '{}'", ApplicationHeader.authorization.key(),
+                                  request.getHeaders( ApplicationHeader.authorization.key() ) );
+
                     writer.setHttpRequest( request );
                     sendResponse = true;
                 }

@@ -19,11 +19,14 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.wordnik.swagger.annotations.ApiModel;
 import com.wordnik.swagger.annotations.ApiModelProperty;
+
+import static org.commonjava.indy.model.core.PathStyle.plain;
 
 @JsonTypeInfo( use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = ArtifactStore.TYPE_ATTR )
 @JsonSubTypes( { @Type( name = "remote", value = RemoteRepository.class ),
@@ -52,6 +55,9 @@ public abstract class ArtifactStore
     private Map<String, String> metadata;
 
     private boolean disabled;
+
+    @JsonProperty( "path_style" )
+    private PathStyle pathStyle;
 
     protected ArtifactStore()
     {
@@ -200,4 +206,13 @@ public abstract class ArtifactStore
         this.description = description;
     }
 
+    public PathStyle getPathStyle()
+    {
+        return pathStyle == null ? plain : pathStyle;
+    }
+
+    public void setPathStyle( PathStyle pathStyle )
+    {
+        this.pathStyle = pathStyle;
+    }
 }
