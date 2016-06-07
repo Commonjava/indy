@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.content.index;
 
+import infinispan.com.google.common.collect.Sets;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
@@ -49,6 +50,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -266,7 +268,7 @@ public class ContentIndexObserver
             // if we haven't found a reordering of membership, let's look to see if membership has shrunk
             // if it has just grown, we don't care.
             //
-            // [NOS-128] TODO: This is not right. It should be:
+            // [NOS-128]
             // 1. If membership has shrunk, we can remove origin-indexed paths, which will remove merged group content
             //      based on the removed member's content.
             // 2. If membership has grown, we should iterate new members' indexed content looking for mergable paths.
@@ -276,9 +278,13 @@ public class ContentIndexObserver
             // 1. deleteTransfers()
             // 2. add the indexedStorePath to the removed Set so we can propagage their removal through any groups
             //      that include the one we're affecting directly here...using clearIndexedPathFrom() to do this.
-            if ( divergencePoint < 0 && newMembers.size() < oldMembers.size() )
+            if ( newMembers.size() < oldMembers.size() )
             {
                 divergencePoint = commonSize;
+            }
+            else
+            {
+                divergencePoint = newMembers.size();
             }
 
             logger.debug( "group membership divergence point: {}", divergencePoint );
@@ -295,6 +301,18 @@ public class ContentIndexObserver
                 }
 
                 propagatePathRemovals( removed );
+            } else {
+                // for new added members, need to clear the indexed path with this group store for repo metadata merging
+                // See [NOS-128]
+                for ( int i = divergencePoint - 1; i >= commonSize; i-- )
+                {
+                    StoreKey memberKey = newMembers.get( i );
+                    indexManager.getAllIndexedPathsForStore( memberKey )
+                                .forEach( isp -> indexManager.clearIndexedPathFrom( isp.getPath(),
+                                                                                    Sets.newHashSet( group ),
+                                                                                    deleteTransfers() ) );
+                }
+
             }
         }
     }
