@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Named;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,6 +48,7 @@ import static org.commonjava.util.jhttpc.model.SiteConfig.DEFAULT_REQUEST_TIMEOU
  */
 //@SectionName( IndyKojiConfig.SECTION_NAME )
 @ApplicationScoped
+@Named( IndyKojiConfig.SECTION_NAME)
 public class IndyKojiConfig
         extends AbstractIndyMapConfig
 //        implements KojiConfig
@@ -351,7 +353,7 @@ public class IndyKojiConfig
             throws ConfigurationException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.trace( "Got koji config parameter: '{}' with value: '{}'", name, value );
+        logger.trace( "\n\nGot koji config parameter: '{}' with value: '{}'\n\n", name, value );
         switch ( name )
         {
             case "enabled":
@@ -449,6 +451,13 @@ public class IndyKojiConfig
                 }
             }
         }
+    }
+
+    @Override
+    public void sectionStarted( final String name )
+            throws ConfigurationException
+    {
+        // NOP; just block map init in the underlying implementation.
     }
 
     public String getDefaultConfigFileName()

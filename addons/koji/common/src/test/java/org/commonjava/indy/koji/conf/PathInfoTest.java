@@ -13,22 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.koji.ftest;
+package org.commonjava.indy.koji.conf;
 
+import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 import org.junit.Test;
 
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
+
 /**
- * This IT tests that Indy can boot normally with Koji support enabled. There are no assertions, because failure to
- * boot will cause a failure of this test in the setup phase.
- *
- * Created by jdcasey on 5/26/16.
+ * Created by jdcasey on 6/7/16.
  */
-public class IK_LoginIT
-    extends AbstractKojiIT
+public class PathInfoTest
 {
     @Test
-    public void run()
+    public void parseRedhatBuildPath()
     {
-        // nop
+        String path = "commons-io/commons-io/2.4.0.redhat-1/commons-io-2.4.0.redhat-1.pom";
+        ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
+
+        assertThat( pathInfo, notNullValue() );
     }
 }

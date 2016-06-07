@@ -603,7 +603,7 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-koji-common</artifactId>
-        <version>0.99.4-SNAPSHOT</version>
+        <version>0.99.1.5-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -611,27 +611,27 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-koji-common</artifactId>
-        <version>0.99.4-SNAPSHOT</version>
+        <version>0.99.1.5-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-koji-model-java</artifactId>
-        <version>0.99.4-SNAPSHOT</version>
+        <version>0.99.1.5-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-koji-client-java</artifactId>
-        <version>0.99.4-SNAPSHOT</version>
+        <version>0.99.1.5-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-koji-jaxrs</artifactId>
-        <version>0.99.4-SNAPSHOT</version>
+        <version>0.99.1.5-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-koji</artifactId>
-        <version>0.99.4-SNAPSHOT</version>
+        <version>0.99.1.5-SNAPSHOT</version>
       </dependency>
 
 

@@ -26,6 +26,8 @@ import org.commonjava.rwx.binding.error.BindException;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
@@ -64,6 +66,8 @@ public class KojijiProvider
     {
         if ( !config.isEnabled() )
         {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.info( "\n\nNOT starting Koji adapter. It is disabled.\n\n" );
             return;
         }
 

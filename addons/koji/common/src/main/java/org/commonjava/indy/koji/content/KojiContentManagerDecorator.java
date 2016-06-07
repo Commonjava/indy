@@ -107,10 +107,14 @@ public abstract class KojiContentManagerDecorator
     public Transfer retrieve( ArtifactStore store, String path, EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Delegating content retrieval to: {}", delegate );
+
         Transfer result = delegate.retrieve( store, path, eventMetadata );
+        logger.debug( "Result from delegate: {}", result );
+
         if ( !config.getEnabled() )
         {
-            Logger logger = LoggerFactory.getLogger( getClass() );
             logger.info( "Koji content-manager decorator is disabled." );
             return result;
         }
@@ -119,7 +123,7 @@ public abstract class KojiContentManagerDecorator
         {
             Group group = (Group) store;
 
-            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.debug( "Retrieval failed in group context. Parsing: '{}' for GAV info to make Koji build query..." );
 
             // TODO: This won't work for maven-metadata.xml files! We need to hit a POM or jar or something first.
             ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
@@ -138,6 +142,11 @@ public abstract class KojiContentManagerDecorator
             {
                 logger.info( "Path is not a maven artifact reference: {}", path );
             }
+        }
+        else
+        {
+            logger.debug(
+                    "Delegate response not null or retrieval didn't happen in context of a group. Skipping Koji build lookup." );
         }
 
         // Finally, pass the Transfer back.
