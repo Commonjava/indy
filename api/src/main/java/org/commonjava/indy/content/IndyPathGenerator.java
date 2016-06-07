@@ -16,7 +16,6 @@
 package org.commonjava.indy.content;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.commonjava.indy.model.core.PathStyle;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
@@ -29,7 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
-
 import java.io.File;
 
 import static org.commonjava.indy.model.core.PathStyle.hashed;
