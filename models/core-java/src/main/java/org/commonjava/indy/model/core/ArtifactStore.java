@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -55,6 +56,7 @@ public abstract class ArtifactStore
 
     private boolean disabled;
 
+    @JsonProperty( "path_style" )
     private PathStyle pathStyle;
 
     protected ArtifactStore()

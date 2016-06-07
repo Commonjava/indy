@@ -66,7 +66,11 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-filer-default</artifactId>
     </dependency>
-    
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-model-core-java</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>com.wordnik</groupId>
       <artifactId>swagger-jaxrs_2.10</artifactId>
