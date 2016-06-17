@@ -20,10 +20,9 @@ import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.subsys.infinispan.inject.qualifer.ContentIndexCache;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
@@ -58,6 +57,7 @@ public class ContentIndexManager
     private SpecialPathManager specialPathManager;
 
     @ConfigureCache( "content-index" )
+    @ContentIndexCache
     @Inject
     private Cache<IndexedStorePath, IndexedStorePath> contentIndex;
 

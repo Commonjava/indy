@@ -15,12 +15,14 @@
  */
 package org.commonjava.indy.content.index;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
+import org.infinispan.query.Transformable;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -30,7 +32,8 @@ import java.io.ObjectOutput;
 /**
  * Created by jdcasey on 3/15/16.
  */
-@Indexed(index = "indexedStorePath")
+@Indexed( index = "indexedStorePath" )
+@Transformable( transformer = IndexedStorePathTransformer.class )
 public class IndexedStorePath
         implements Externalizable
 {
@@ -50,6 +53,8 @@ public class IndexedStorePath
     @Field( name = "path", store = Store.YES, analyze = Analyze.NO )
     private String path;
 
+    private IndexedStorePath(){}
+
     public IndexedStorePath( StoreKey storeKey, String path )
     {
         this.storeType = storeKey.getType();
@@ -68,11 +73,13 @@ public class IndexedStorePath
         this.path = path;
     }
 
+    @JsonIgnore
     public StoreKey getStoreKey()
     {
         return new StoreKey( storeType, storeName );
     }
 
+    @JsonIgnore
     public StoreKey getOriginStoreKey()
     {
         return new StoreKey( originStoreType, originStoreName );
@@ -147,8 +154,23 @@ public class IndexedStorePath
     {
         out.writeObject( storeType.name() );
         out.writeObject( storeName );
-        out.writeObject( originStoreType.name() );
-        out.writeObject( originStoreName );
+
+        if ( originStoreType != null )
+        {
+            out.writeObject( originStoreType.name() );
+        }
+        else
+        {
+            out.writeObject( "" );
+        }
+        if ( originStoreName != null )
+        {
+            out.writeObject( originStoreName );
+        }
+        else
+        {
+            out.writeObject( "" );
+        }
         out.writeObject( path );
     }
 
@@ -158,8 +180,10 @@ public class IndexedStorePath
     {
         storeType = StoreType.get( (String) in.readObject() );
         storeName = (String) in.readObject();
-        originStoreType = StoreType.get( (String) in.readObject() );
-        originStoreName = (String) in.readObject();
+        final String osTypeString = (String) in.readObject();
+        originStoreType = "".equals( osTypeString ) ? null : StoreType.get( osTypeString );
+        final String osNameString = (String) in.readObject();
+        originStoreName = "".equals( osNameString ) ? null : osNameString;
         path = (String) in.readObject();
     }
 }
