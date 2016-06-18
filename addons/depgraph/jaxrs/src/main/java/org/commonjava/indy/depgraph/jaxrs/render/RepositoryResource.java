@@ -59,7 +59,7 @@ public class RepositoryResource
     {
         try
         {
-            final String baseUri = uriInfo.getAbsolutePathBuilder().path( "api" ).build().toString();
+            final String baseUri = uriInfo.getBaseUriBuilder().path( "api" ).build().toString();
 
             return controller.getRepoContent( request, baseUri, new JaxRsUriFormatter() );
         }
@@ -79,7 +79,7 @@ public class RepositoryResource
     {
         try
         {
-            final String baseUri = uriInfo.getAbsolutePathBuilder().path( "api" ).build().toString();
+            final String baseUri = uriInfo.getBaseUriBuilder().path( "api" ).build().toString();
 
             return controller.getUrlMap( request, baseUri, new JaxRsUriFormatter() );
         }
@@ -99,7 +99,7 @@ public class RepositoryResource
     {
         try
         {
-            final String baseUri = uriInfo.getAbsolutePathBuilder().path( "api" ).build().toString();
+            final String baseUri = uriInfo.getBaseUriBuilder().path( "api" ).build().toString();
 
             return controller.getDownloadLog( request, baseUri, new JaxRsUriFormatter() );
         }
