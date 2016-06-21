@@ -60,6 +60,7 @@
     <jhttpcVersion>1.2</jhttpcVersion>
     <kojijiVersion>1.0</kojijiVersion>
     <rwxVersion>1.0</rwxVersion>
+    <kojijiVersion>1.0</kojijiVersion>
     <bouncycastleVersion>1.53</bouncycastleVersion>
     
     <test-forkCount>4</test-forkCount>
@@ -759,7 +760,7 @@
       <dependency>
         <groupId>com.redhat.red.build</groupId>
         <artifactId>kojiji</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>${kojijiVersion}</version>
       </dependency>
 
       <dependency>
