@@ -57,9 +57,9 @@
     <xnioVersion>3.3.0.Final</xnioVersion>
     <partylineVersion>1.5</partylineVersion>
     <keycloakVersion>1.2.0.Final</keycloakVersion>
-    <jhttpcVersion>1.2-SNAPSHOT</jhttpcVersion>
-    <kojijiVersion>1.0-SNAPSHOT</kojijiVersion>
-    <rwxVersion>0.4-SNAPSHOT</rwxVersion>
+    <jhttpcVersion>1.2</jhttpcVersion>
+    <kojijiVersion>1.0</kojijiVersion>
+    <rwxVersion>1.0</rwxVersion>
     <bouncycastleVersion>1.53</bouncycastleVersion>
     
     <test-forkCount>4</test-forkCount>
