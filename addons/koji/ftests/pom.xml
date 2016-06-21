@@ -26,6 +26,10 @@
   
   <artifactId>indy-ftests-koji</artifactId>
   <name>Indy :: Koji Integration :: Functional Tests</name>
+
+  <properties>
+    <maven.javadoc.skip>true</maven.javadoc.skip>
+  </properties>
   
   <dependencies>
     <dependency>
