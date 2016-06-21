@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-subsystems</artifactId>
-    <version>0.99.1.5</version>
+    <version>0.99.1.6-SNAPSHOT</version>
   </parent>
   
   <artifactId>indy-subsys-flatfile</artifactId>
