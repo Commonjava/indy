@@ -57,17 +57,16 @@ public class RepositoryResource
     @POST
     public RepoContentResult getRepoContent( final RepositoryContentRequest request, final @Context UriInfo uriInfo )
     {
-        Response response = null;
         try
         {
-            final String baseUri = uriInfo.getAbsolutePathBuilder().path( "api" ).build().toString();
+            final String baseUri = uriInfo.getBaseUriBuilder().path( "api" ).build().toString();
 
             return controller.getRepoContent( request, baseUri, new JaxRsUriFormatter() );
         }
         catch ( final IndyWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e );
+            throwError( e );
         }
 
         return null;
@@ -78,17 +77,16 @@ public class RepositoryResource
     @POST
     public UrlMapResult getUrlMap( final RepositoryContentRequest request, final @Context UriInfo uriInfo )
     {
-        Response response = null;
         try
         {
-            final String baseUri = uriInfo.getAbsolutePathBuilder().path( "api" ).build().toString();
+            final String baseUri = uriInfo.getBaseUriBuilder().path( "api" ).build().toString();
 
             return controller.getUrlMap( request, baseUri, new JaxRsUriFormatter() );
         }
         catch ( final IndyWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e );
+            throwError( e );
         }
 
         return null;
@@ -99,10 +97,9 @@ public class RepositoryResource
     @Produces( text_plain )
     public DownlogResult getDownloadLog( final DownlogRequest request, final @Context UriInfo uriInfo )
     {
-        Response response = null;
         try
         {
-            final String baseUri = uriInfo.getAbsolutePathBuilder().path( "api" ).build().toString();
+            final String baseUri = uriInfo.getBaseUriBuilder().path( "api" ).build().toString();
 
             return controller.getDownloadLog( request, baseUri, new JaxRsUriFormatter() );
         }
@@ -118,7 +115,7 @@ public class RepositoryResource
     @Path( "/zip" )
     @POST
     @Produces( application_zip )
-    public StreamingOutput getZipRepository( RepositoryContentRequest request )
+    public StreamingOutput getZipRepository( final RepositoryContentRequest request )
     {
         return ( output ) -> {
             try

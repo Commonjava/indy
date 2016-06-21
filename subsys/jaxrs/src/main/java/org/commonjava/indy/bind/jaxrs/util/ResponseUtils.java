@@ -326,10 +326,10 @@ public final class ResponseUtils
     public static CharSequence formatEntity( final String id, final Throwable error, final String message )
     {
         final StringWriter sw = new StringWriter();
-        sw.append( "Id: " ).append( id );
+        sw.append( "Id: " ).append( id ).append( '\n' );
         if ( message != null )
         {
-            sw.append( "\nMessage: " ).append( message );
+            sw.append( "Message: " ).append( message ).append( '\n' );
         }
 
         sw.append( error.getMessage() );
