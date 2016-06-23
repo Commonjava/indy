@@ -157,6 +157,12 @@ public abstract class KojiContentManagerDecorator
 
                 for ( KojiBuildInfo build : builds )
                 {
+                    if ( build.getTaskId() == null )
+                    {
+                        // This is not a real build, it's a binary import.
+                        continue;
+                    }
+                    
                     logger.info( "Trying build: {}", build.getNvr() );
                     List<KojiTagInfo> tags = kojiClient.listTags( build.getId(), session );
                     for ( KojiTagInfo tag : tags )
