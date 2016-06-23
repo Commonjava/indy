@@ -76,12 +76,13 @@ public abstract class IndexingContentManagerDecorator
 
     protected IndexingContentManagerDecorator( final ContentManager delegate, final StoreDataManager storeDataManager,
                                                final SpecialPathManager specialPathManager,
-                                               final ContentIndexManager indexManager )
+                                               final ContentIndexManager indexManager, NotFoundCache nfc )
     {
         this.delegate = delegate;
         this.storeDataManager = storeDataManager;
         this.specialPathManager = specialPathManager;
         this.indexManager = indexManager;
+        this.nfc = nfc;
     }
 
     @Override
