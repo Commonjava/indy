@@ -41,8 +41,10 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileStorageEvent;
+import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
+import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,6 +64,9 @@ public class TimeoutEventListener
 
     @Inject
     private IndyObjectMapper objectMapper;
+
+    @Inject
+    private SpecialPathManager specialPathManager;
 
     //    @Inject
     //    @ExecutorConfig( daemon = true, priority = 7, named = "indy-events" )
@@ -187,13 +192,17 @@ public class TimeoutEventListener
             }
             else if ( type == StoreType.remote )
             {
-                try
+                SpecialPathInfo info = specialPathManager.getSpecialPathInfo( transfer );
+                if ( info == null || !info.isMetadata() )
                 {
-                    scheduleManager.setProxyTimeouts( key, transfer.getPath() );
-                }
-                catch ( final IndySchedulerException e )
-                {
-                    logger.error( "Failed to set proxy-cache timeouts related to: " + transfer, e );
+                    try
+                    {
+                        scheduleManager.setProxyTimeouts( key, transfer.getPath() );
+                    }
+                    catch ( final IndySchedulerException e )
+                    {
+                        logger.error( "Failed to set proxy-cache timeouts related to: " + transfer, e );
+                    }
                 }
             }
         }
