@@ -15,9 +15,9 @@
  */
 package org.commonjava.indy.folo.data;
 
-import org.commonjava.indy.folo.data.idxmodel.AffectedStoreRecordKey;
 import org.commonjava.indy.folo.model.StoreEffect;
-import org.commonjava.indy.folo.model.TrackedContentRecord;
+import org.commonjava.indy.folo.model.TrackedContent;
+import org.commonjava.indy.folo.model.TrackedContentEntry;
 import org.commonjava.indy.folo.model.TrackingKey;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
@@ -40,11 +40,11 @@ public class FoloRecordCacheTest
 
     private FoloRecordCache cache;
 
-    private static Cache<TrackingKey,TrackedContentRecord> sealed;
+    private static Cache<TrackingKey, TrackedContent> sealed;
 
     private static EmbeddedCacheManager cacheManager;
 
-    private static Cache<AffectedStoreRecordKey, AffectedStoreRecordKey> inProgress;
+    private static Cache<TrackedContentEntry, TrackedContentEntry> inProgress;
 
     //    @Rule
     //    public TemporaryFolder temp = new TemporaryFolder();
@@ -80,13 +80,14 @@ public class FoloRecordCacheTest
         final TrackingKey key = newKey();
         assertThat( cache.hasRecord( key ), equalTo( false ) );
 
-        cache.recordArtifact( key, new StoreKey( StoreType.remote, "foo" ), "/path", StoreEffect.DOWNLOAD );
+        cache.recordArtifact( new TrackedContentEntry( key, new StoreKey( StoreType.remote, "foo" ), "", "/path",
+                                                       StoreEffect.DOWNLOAD, "", "", "" ) );
 
         assertThat( cache.hasRecord( key ), equalTo( true ) );
         assertThat( cache.hasInProgressRecord( key ), equalTo( true ) );
         assertThat( cache.hasSealedRecord( key ), equalTo( false ) );
 
-        TrackedContentRecord record = cache.seal( key );
+        TrackedContent record = cache.seal( key );
         assertThat( record, notNullValue() );
         assertThat( cache.hasRecord( key ), equalTo( true ) );
         assertThat( cache.hasInProgressRecord( key ), equalTo( false ) );
@@ -100,13 +101,14 @@ public class FoloRecordCacheTest
         final TrackingKey key = newKey();
         assertThat( cache.hasRecord( key ), equalTo( false ) );
 
-        cache.recordArtifact( key, new StoreKey( StoreType.remote, "foo" ), "/path", StoreEffect.DOWNLOAD );
+        cache.recordArtifact( new TrackedContentEntry( key, new StoreKey( StoreType.remote, "foo" ), "", "/path",
+                                                       StoreEffect.DOWNLOAD, "", "", "" ) );
 
         assertThat( cache.hasRecord( key ), equalTo( true ) );
         assertThat( cache.hasInProgressRecord( key ), equalTo( true ) );
         assertThat( cache.hasSealedRecord( key ), equalTo( false ) );
 
-        TrackedContentRecord record = cache.seal( key );
+        TrackedContent record = cache.seal( key );
         assertThat( record, notNullValue() );
         assertThat( cache.hasRecord( key ), equalTo( true ) );
         assertThat( cache.hasInProgressRecord( key ), equalTo( false ) );
@@ -120,8 +122,10 @@ public class FoloRecordCacheTest
         final TrackingKey key = newKey();
         assertThat( cache.hasRecord( key ), equalTo( false ) );
 
-        cache.recordArtifact( key, new StoreKey( StoreType.remote, "foo" ), "/path", StoreEffect.DOWNLOAD );
-        TrackedContentRecord record = cache.seal( key );
+        cache.recordArtifact( new TrackedContentEntry( key, new StoreKey( StoreType.remote, "foo" ), "", "/path",
+                                                       StoreEffect.DOWNLOAD, "", "", "" ) );
+
+        TrackedContent record = cache.seal( key );
 
         assertThat( record, notNullValue() );
         assertThat( cache.hasRecord( key ), equalTo( true ) );

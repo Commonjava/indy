@@ -65,10 +65,17 @@ public class IndyFoloAdminClientModule
         return http.get( UrlUtils.buildUrl( "/folo/admin", trackingId, "report" ), TrackedContentDTO.class );
     }
 
+    @Deprecated
     public TrackedContentRecord getRawTrackingRecord( final String trackingId )
         throws IndyClientException
     {
         return http.get( UrlUtils.buildUrl( "/folo/admin", trackingId, "record" ), TrackedContentRecord.class );
+    }
+
+    public TrackedContentDTO getRawTrackingContent( final String trackingId )
+            throws IndyClientException
+    {
+        return http.get( UrlUtils.buildUrl( "/folo/admin", trackingId, "record" ), TrackedContentDTO.class );
     }
 
     public void clearTrackingRecord( final String trackingId )
