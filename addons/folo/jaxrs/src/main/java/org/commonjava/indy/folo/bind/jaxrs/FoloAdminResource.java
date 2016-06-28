@@ -22,8 +22,6 @@ import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.folo.ctl.FoloAdminController;
 import org.commonjava.indy.folo.data.FoloContentException;
 import org.commonjava.indy.folo.dto.TrackedContentDTO;
-import org.commonjava.indy.folo.model.TrackedContentRecord;
-import org.commonjava.indy.folo.model.TrackingKey;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +43,6 @@ import java.io.File;
 
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.setInfoHeaders;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
 import static org.commonjava.indy.util.ApplicationContent.application_zip;
 
@@ -140,7 +137,7 @@ public class FoloAdminResource
     @POST
     public Response sealRecord( final @PathParam( "id" ) String id, @Context final UriInfo uriInfo )
     {
-        TrackedContentRecord record = controller.seal( id );
+        TrackedContentDTO record = controller.seal( id );
         if ( record == null )
         {
             return Response.status( Status.NOT_FOUND )
@@ -159,7 +156,7 @@ public class FoloAdminResource
         Response response;
         try
         {
-            final TrackedContentRecord record = controller.getRecord( id );
+            final TrackedContentDTO record = controller.getRecord( id );
             if ( record == null )
             {
                 response = Response.status( Status.NOT_FOUND )

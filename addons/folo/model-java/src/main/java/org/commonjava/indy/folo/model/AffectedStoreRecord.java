@@ -20,6 +20,7 @@ import java.util.TreeSet;
 
 import org.commonjava.indy.model.core.StoreKey;
 
+@Deprecated
 public class AffectedStoreRecord
 {
 
