@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-addons</artifactId>
-    <version>0.99.1.6</version>
+    <version>0.99.1.7-SNAPSHOT</version>
   </parent>
   <artifactId>indy-autoprox</artifactId>
   <name>Indy :: Add-Ons :: Auto-Proxy :: Parent</name>
