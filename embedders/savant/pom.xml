@@ -175,12 +175,12 @@
       <groupId>org.commonjava.maven.cartographer</groupId>
       <artifactId>cartographer-tck</artifactId>
     </dependency>
-    <dependency>
+<!--     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-koji</artifactId>
       <scope>test</scope>
     </dependency>
-  </dependencies>
+ -->  </dependencies>
   
   <build>
     <!-- <finalName>indy</finalName> -->
@@ -209,7 +209,7 @@
                 <dependency>org.commonjava.indy:indy-ftests-httprox</dependency>
                 <dependency>org.commonjava.indy:indy-ftests-implied-repos</dependency>
                 <dependency>org.commonjava.indy:indy-ftests-promote</dependency>
-                <dependency>org.commonjava.indy:indy-ftests-koji</dependency>
+                <!-- <dependency>org.commonjava.indy:indy-ftests-koji</dependency> -->
                 <dependency>org.commonjava.maven.cartographer:cartographer-tck</dependency>
               </dependenciesToScan> 
             </configuration>
