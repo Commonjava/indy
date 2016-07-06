@@ -27,6 +27,7 @@ import javax.annotation.Nonnull;
 /**
  * Created by jdcasey on 3/8/16.
  */
+@Deprecated
 @Indexed
 public class AffectedStoreRecordKey
 {
