@@ -32,6 +32,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.client.core.helper.HttpResources;
 import org.commonjava.indy.folo.client.IndyFoloAdminClientModule;
+import org.commonjava.indy.folo.dto.TrackedContentDTO;
+import org.commonjava.indy.folo.dto.TrackedContentEntryDTO;
 import org.commonjava.indy.folo.model.AffectedStoreRecord;
 import org.commonjava.indy.folo.model.TrackedContentRecord;
 import org.commonjava.indy.model.core.StoreKey;
@@ -82,23 +84,38 @@ public class RetrievedPomInAlwaysOnTrackingReportTest
         assertThat( this.client.module( IndyFoloAdminClientModule.class ).sealTrackingRecord( USER ),
                     equalTo( true ) );
 
-        final String repoName = "httprox_127-0-0-1";
-        final TrackedContentRecord record = this.client.module( IndyFoloAdminClientModule.class )
-                                                       .getRawTrackingRecord( USER );
-        assertThat( record, notNullValue() );
+        final TrackedContentDTO content = this.client.module( IndyFoloAdminClientModule.class )
+                                                       .getRawTrackingContent( USER );
+        assertThat( content, notNullValue() );
 
-        final Map<StoreKey, AffectedStoreRecord> affectedStores = record.getAffectedStores();
-        assertThat( affectedStores, notNullValue() );
-        assertThat( affectedStores.size(), equalTo( 1 ) );
-
-        final AffectedStoreRecord storeRecord = affectedStores.get( new StoreKey( StoreType.remote, repoName ) );
-        assertThat( storeRecord, notNullValue() );
-
-        final Set<String> downloads = storeRecord.getDownloadedPaths();
+        final Set<TrackedContentEntryDTO> downloads = content.getDownloads();
         assertThat( downloads, notNullValue() );
         assertThat( downloads.size(), equalTo( 1 ) );
-        assertThat( downloads.iterator()
-                             .next(), equalTo( "/test/" + pom.path ) );
+
+        final TrackedContentEntryDTO entry = downloads.iterator().next();
+        assertThat( entry, notNullValue() );
+
+        final String downloadPath = entry.getPath();
+        assertThat( downloadPath, notNullValue() );
+        assertThat( downloadPath, equalTo( "/test/" + pom.path ) );
+
+//        final String repoName = "httprox_127-0-0-1";
+
+//        final TrackedContentRecord record = this.client.module( IndyFoloAdminClientModule.class )
+//                                                       .getRawTrackingRecord( USER );
+
+//        final Map<StoreKey, AffectedStoreRecord> affectedStores = record.getAffectedStores();
+//        assertThat( affectedStores, notNullValue() );
+//        assertThat( affectedStores.size(), equalTo( 1 ) );
+
+//        final AffectedStoreRecord storeRecord = affectedStores.get( new StoreKey( StoreType.remote, repoName ) );
+//        assertThat( storeRecord, notNullValue() );
+//
+//        final Set<String> downloads = storeRecord.getDownloadedPaths();
+//        assertThat( downloads, notNullValue() );
+//        assertThat( downloads.size(), equalTo( 1 ) );
+//        assertThat( downloads.iterator()
+//                             .next(), equalTo( "/test/" + pom.path ) );
     }
 
     @Override

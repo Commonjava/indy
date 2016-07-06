@@ -26,8 +26,8 @@ import org.commonjava.indy.folo.data.FoloFiler;
 import org.commonjava.indy.folo.data.FoloRecordCache;
 import org.commonjava.indy.folo.dto.TrackedContentDTO;
 import org.commonjava.indy.folo.dto.TrackedContentEntryDTO;
-import org.commonjava.indy.folo.model.AffectedStoreRecord;
-import org.commonjava.indy.folo.model.TrackedContentRecord;
+import org.commonjava.indy.folo.model.TrackedContent;
+import org.commonjava.indy.folo.model.TrackedContentEntry;
 import org.commonjava.indy.folo.model.TrackingKey;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
@@ -95,10 +95,10 @@ public class FoloAdminController
         this.storeManager = storeManager;
     }
 
-    public TrackedContentRecord seal( final String id )
+    public TrackedContentDTO seal( final String id )
     {
         TrackingKey tk = new TrackingKey( id );
-        return recordManager.seal( tk );
+        return constructContentDTO( recordManager.seal( tk ) );
     }
 
     public File renderRepositoryZip( final String id )
@@ -109,7 +109,7 @@ public class FoloAdminController
         File file = filer.getRepositoryZipFile( tk ).getDetachedFile();
         file.getParentFile().mkdirs();
         logger.debug( "Retrieving tracking record for: {}", tk );
-        final TrackedContentRecord record = recordManager.get( tk );
+        final TrackedContent record = recordManager.get( tk );
         logger.debug( "Got: {}", record );
 
         if ( record == null )
@@ -120,23 +120,20 @@ public class FoloAdminController
 
         final Set<String> seenPaths = new HashSet<>();
         final List<Transfer> items = new ArrayList<>();
-        for ( final AffectedStoreRecord asr : record )
-        {
-            final StoreKey sk = asr.getKey();
 
-            addTransfers( asr.getUploadedPaths(), sk, items, id, seenPaths );
-            addTransfers( asr.getDownloadedPaths(), sk, items, id, seenPaths );
-        }
+        addTransfers(record.getUploads(), items, id, seenPaths);
+        addTransfers(record.getDownloads(), items, id, seenPaths);
 
         logger.debug( "Retrieved {} files. Creating zip.", items.size() );
 
         Collections.sort( items, ( f, s ) -> f.getPath().compareTo( s.getPath() ) );
 
+
         try (ZipOutputStream stream = new ZipOutputStream( new FileOutputStream( file ) ))
         {
             for ( final Transfer item : items )
             {
-                //                    logger.info( "Adding: {}", item );
+                // logger.info( "Adding: {}", item );
                 if ( item != null )
                 {
                     final String path = item.getPath();
@@ -165,6 +162,7 @@ public class FoloAdminController
         return file;
     }
 
+    @Deprecated
     private void addTransfers( Set<String> paths, StoreKey sk, List<Transfer> items, String trackingId,
                                Set<String> seenPaths )
             throws IndyWorkflowException
@@ -193,12 +191,39 @@ public class FoloAdminController
         }
     }
 
+    private void addTransfers( Set<TrackedContentEntry> entries, List<Transfer> items, String trackingId,
+                               Set<String> seenPaths )
+            throws IndyWorkflowException
+    {
+        if(entries!=null && !entries.isEmpty()){
+            for(final TrackedContentEntry entry: entries){
+                final String path = entry.getPath();
+                if ( path == null || seenPaths.contains( path ) )
+                {
+                    continue;
+                }
+                final StoreKey sk = entry.getStoreKey();
+                Transfer transfer = contentManager.getTransfer( sk, path, TransferOperation.DOWNLOAD );
+                if ( transfer == null )
+                {
+                    Logger logger = LoggerFactory.getLogger( getClass() );
+                    logger.warn( "While creating Folo repo zip for: {}, cannot find: {} in: {}", trackingId, path, sk );
+                }
+                else
+                {
+                    seenPaths.add( path );
+                    items.add( transfer );
+                }
+            }
+        }
+    }
+
     public TrackedContentDTO renderReport( final String id, final String apiBaseUrl )
             throws IndyWorkflowException
     {
         final TrackingKey tk = new TrackingKey( id );
         logger.debug( "Retrieving tracking record for: {}", tk );
-        final TrackedContentRecord record = recordManager.get( tk );
+        final TrackedContentDTO record = constructContentDTO( recordManager.get( tk ) );
         logger.debug( "Got: {}", record );
 
         if ( record == null )
@@ -207,28 +232,32 @@ public class FoloAdminController
                                               "No tracking record available for: %s. Maybe you forgot to seal it?", tk );
         }
 
-        final Set<TrackedContentEntryDTO> uploads = new TreeSet<>();
-        final Set<TrackedContentEntryDTO> downloads = new TreeSet<>();
-        for ( final AffectedStoreRecord asr : record )
+        final Set<TrackedContentEntryDTO> uploads = record.getUploads();
+        final Set<TrackedContentEntryDTO> downloads = record.getDownloads();
+        try
         {
-            final StoreKey sk = asr.getKey();
-
-            Set<String> paths = asr.getUploadedPaths();
-            if ( paths != null )
+            for ( TrackedContentEntryDTO upload : uploads )
             {
-                addEntries( uploads, sk, paths, apiBaseUrl );
+                upload.setLocalUrl(
+                        UrlUtils.buildUrl( apiBaseUrl, upload.getStoreKey().getType().singularEndpointName(),
+                                           upload.getStoreKey().getName(), upload.getPath() ) );
             }
-
-            paths = asr.getDownloadedPaths();
-            if ( paths != null )
+            for ( TrackedContentEntryDTO download : downloads )
             {
-                addEntries( downloads, sk, paths, apiBaseUrl );
+                download.setLocalUrl(
+                        UrlUtils.buildUrl( apiBaseUrl, download.getStoreKey().getType().singularEndpointName(),
+                                           download.getStoreKey().getName(), download.getPath() ) );
             }
+        }
+        catch ( MalformedURLException e )
+        {
+            throw new IndyWorkflowException( "Cannot format URL. Reason: %s", e, e.getMessage() );
         }
 
         return new TrackedContentDTO( tk, uploads, downloads );
     }
 
+    @Deprecated
     private void addEntries( final Set<TrackedContentEntryDTO> entries, final StoreKey key, final Set<String> paths,
                              final String apiBaseUrl )
             throws IndyWorkflowException
@@ -259,7 +288,8 @@ public class FoloAdminController
                     entry.setOriginUrl( remoteUrl );
 
                     final Map<ContentDigest, String> digests =
-                            contentManager.digest( key, path, ContentDigest.MD5, ContentDigest.SHA_1, ContentDigest.SHA_256 );
+                            contentManager.digest( key, path, ContentDigest.MD5, ContentDigest.SHA_1,
+                                                   ContentDigest.SHA_256 );
 
                     entry.setMd5( digests.get( ContentDigest.MD5 ) );
                     entry.setSha256( digests.get( ContentDigest.SHA_256 ) );
@@ -281,11 +311,11 @@ public class FoloAdminController
         }
     }
 
-    public TrackedContentRecord getRecord( final String id )
+    public TrackedContentDTO getRecord( final String id )
             throws IndyWorkflowException
     {
         final TrackingKey tk = new TrackingKey( id );
-        return recordManager.get( tk );
+        return constructContentDTO( recordManager.get( tk ) );
     }
 
     public void clearRecord( final String id )
@@ -293,6 +323,33 @@ public class FoloAdminController
     {
         final TrackingKey tk = new TrackingKey( id );
         recordManager.delete( tk );
+    }
+
+    private TrackedContentDTO constructContentDTO( final TrackedContent content )
+    {
+        if ( content == null )
+        {
+            return null;
+        }
+        final Set<TrackedContentEntryDTO> uploads = new TreeSet<>();
+        final Set<TrackedContentEntryDTO> downloads = new TreeSet<>();
+        content.getUploads().forEach( entry -> uploads.add( constructContentEntryDTO( entry ) ) );
+        content.getDownloads().forEach( entry -> downloads.add( constructContentEntryDTO( entry ) ) );
+        return new TrackedContentDTO( content.getKey(), uploads, downloads );
+    }
+
+    private TrackedContentEntryDTO constructContentEntryDTO( final TrackedContentEntry entry )
+    {
+        if ( entry == null )
+        {
+            return null;
+        }
+        TrackedContentEntryDTO entryDTO = new TrackedContentEntryDTO( entry.getStoreKey(), entry.getPath() );
+        entryDTO.setOriginUrl( entry.getOriginUrl() );
+        entryDTO.setMd5( entry.getMd5() );
+        entryDTO.setSha1( entry.getSha1() );
+        entryDTO.setSha256( entry.getSha256() );
+        return entryDTO;
     }
 
     public boolean hasRecord( final String id )
