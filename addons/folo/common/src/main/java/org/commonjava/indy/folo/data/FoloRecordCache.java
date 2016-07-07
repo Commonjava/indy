@@ -16,9 +16,6 @@
 package org.commonjava.indy.folo.data;
 
 import org.commonjava.indy.IndyWorkflowException;
-import org.commonjava.indy.content.ContentManager;
-import org.commonjava.indy.content.DownloadManager;
-import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.folo.model.StoreEffect;
 import org.commonjava.indy.folo.model.TrackedContent;
 import org.commonjava.indy.folo.model.TrackedContentEntry;
@@ -51,15 +48,6 @@ public class FoloRecordCache
     @ConfigureCache("folo-sealed")
     @Inject
     private Cache<TrackingKey, TrackedContent> sealedRecordCache;
-
-    @Inject
-    private StoreDataManager storeManager;
-
-    @Inject
-    private DownloadManager downloadManager;
-
-    @Inject
-    private ContentManager contentManager;
 
     protected FoloRecordCache()
     {
