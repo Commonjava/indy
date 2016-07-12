@@ -18,8 +18,6 @@ FROM centos
 
 MAINTAINER John Casey <jdcasey@commonjava.org>
 
-ENV INDY_DEV true
-
 RUN yum -y update
 RUN yum -y install wget git tar which curl tree java-1.8.0-openjdk-devel
 
