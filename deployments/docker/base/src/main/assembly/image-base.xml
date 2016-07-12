@@ -1,0 +1,24 @@
+<assembly>
+	<id>image-base</id>
+	<formats>
+		<format>tar.gz</format>
+	</formats>
+
+  <includeBaseDirectory>true</includeBaseDirectory>
+  <baseDirectory>image-base</baseDirectory>
+
+  <files>
+    <file>
+      <source>src/main/docker/Dockerfile</source>
+      <outputDirectory>/</outputDirectory>
+      <destName>Dockerfile</destName>
+    </file>
+  </files>
+  <fileSets>
+    <fileSet>
+      <directory>src/main/scripts</directory>
+      <outputDirectory>scripts</outputDirectory>
+    </fileSet>
+  </fileSets>
+
+</assembly>
