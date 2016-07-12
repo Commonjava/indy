@@ -15,41 +15,25 @@
  */
 package org.commonjava.indy.folo.data;
 
-import org.commonjava.cdi.util.weft.ExecutorConfig;
-import org.commonjava.indy.folo.conf.FoloConfig;
-import org.commonjava.indy.folo.data.idxmodel.AffectedStoreRecordKey;
-import org.commonjava.indy.folo.model.AffectedStoreRecord;
+import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.folo.model.StoreEffect;
-import org.commonjava.indy.folo.model.TrackedContentRecord;
+import org.commonjava.indy.folo.model.TrackedContent;
+import org.commonjava.indy.folo.model.TrackedContentEntry;
 import org.commonjava.indy.folo.model.TrackingKey;
-import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.model.core.io.IndyObjectMapper;
-import org.commonjava.indy.subsys.datafile.DataFile;
-import org.hibernate.search.query.dsl.EntityContext;
 import org.infinispan.Cache;
 import org.infinispan.cdi.ConfigureCache;
 import org.infinispan.query.Search;
-import org.infinispan.query.SearchManager;
 import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryBuilder;
 import org.infinispan.query.dsl.QueryFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.Set;
+import java.util.TreeSet;
 
 @ApplicationScoped
 public class FoloRecordCache
@@ -59,17 +43,18 @@ public class FoloRecordCache
 
     @ConfigureCache("folo-in-progress")
     @Inject
-    private Cache<AffectedStoreRecordKey, AffectedStoreRecordKey> inProgressRecordCache;
+    private Cache<TrackedContentEntry, TrackedContentEntry> inProgressRecordCache;
 
     @ConfigureCache("folo-sealed")
     @Inject
-    private Cache<TrackingKey, TrackedContentRecord> sealedRecordCache;
+    private Cache<TrackingKey, TrackedContent> sealedRecordCache;
 
     protected FoloRecordCache()
     {
     }
 
-    public FoloRecordCache( Cache<AffectedStoreRecordKey, AffectedStoreRecordKey> inProgressRecordCache, Cache<TrackingKey, TrackedContentRecord> sealedRecordCache )
+    public FoloRecordCache( Cache<TrackedContentEntry, TrackedContentEntry> inProgressRecordCache,
+                            Cache<TrackingKey, TrackedContent> sealedRecordCache )
     {
         this.inProgressRecordCache = inProgressRecordCache;
         this.sealedRecordCache = sealedRecordCache;
@@ -78,28 +63,22 @@ public class FoloRecordCache
     /**
      * Add a new artifact upload/download item to given affected store within a tracked-content record. If the tracked-content record doesn't exist,
      * or doesn't contain the specified affected store, values will be created on-demand.
-     * @param key The key to the tracking record
-     * @param affectedStore The store where the artifact was downloaded via / uploaded to
-     * @param path The artifact's file path in the repo
-     * @param effect Whether this is an upload or download event
+     * @param entry The TrackedContentEntry which will be cached
      * @return True if a new record was stored, otherwise false
      */
-    public synchronized boolean recordArtifact( final TrackingKey key, final StoreKey affectedStore, final String path,
-                                                final StoreEffect effect )
-        throws FoloContentException
+    public synchronized boolean recordArtifact( TrackedContentEntry entry )
+            throws FoloContentException,IndyWorkflowException
     {
-        if ( sealedRecordCache.containsKey( key ) )
+        if ( sealedRecordCache.containsKey( entry.getTrackingKey() ) )
         {
             throw new FoloContentException( "Tracking record: {} is already sealed!" );
         }
 
-        AffectedStoreRecordKey ark = new AffectedStoreRecordKey( key, affectedStore, path, effect );
-        if ( !inProgressRecordCache.containsKey( ark ) )
+        if ( !inProgressRecordCache.containsKey( entry ) )
         {
-            inProgressRecordCache.put( ark, ark );
+            inProgressRecordCache.put( entry, entry );
             return true;
         }
-
         return false;
     }
 
@@ -124,48 +103,57 @@ public class FoloRecordCache
         return !sealedRecordCache.containsKey( key ) && inProgressByTrackingKey( key ).build().getResultSize() > 0;
     }
 
-    public synchronized TrackedContentRecord get( final TrackingKey key )
+    public synchronized TrackedContent get( final TrackingKey key )
     {
         return sealedRecordCache.get( key );
     }
 
-    public TrackedContentRecord seal( TrackingKey key )
+    public TrackedContent seal( TrackingKey trackingKey )
     {
-        TrackedContentRecord record = sealedRecordCache.get( key );
+        TrackedContent record = sealedRecordCache.get( trackingKey );
 
         Logger logger = LoggerFactory.getLogger( getClass() );
         if ( record != null )
         {
-            logger.debug( "Tracking record: {} already sealed! Returning sealed record.", key );
+            logger.debug( "Tracking record: {} already sealed! Returning sealed record.", trackingKey );
             return record;
         }
 
-        TrackedContentRecord created = new TrackedContentRecord( key );
+        TrackedContent created = null;
 
-        logger.debug( "Listing unsealed tracking record entries for: {}...", key );
-        Query query = inProgressByTrackingKey( key ).build();
-        List<AffectedStoreRecordKey> results = query.list();
+        logger.debug( "Listing unsealed tracking record entries for: {}...", trackingKey );
+        Query query = inProgressByTrackingKey( trackingKey ).build();
+        List<TrackedContentEntry> results = query.list();
         if ( results != null )
         {
-            logger.debug( "Adding {} entries to record: {}", results.size(), key );
-            results.forEach( (result)->{
-                AffectedStoreRecord store = created.getAffectedStore( result.getStoreKey(), true );
-                store.add( result.getPath(), result.getEffect() );
+            logger.debug( "Adding {} entries to record: {}", results.size(), trackingKey );
+            Set<TrackedContentEntry> uploads = new TreeSet<>(  );
+            Set<TrackedContentEntry> downloads = new TreeSet<>(  );
+            results.forEach( ( result ) -> {
+                if ( StoreEffect.DOWNLOAD == result.getEffect() )
+                {
+                    downloads.add( result );
+                }
+                else if ( StoreEffect.UPLOAD == result.getEffect() )
+                {
+                    uploads.add( result );
+                }
                 logger.debug( "Removing in-progress entry: {}", result );
                 inProgressRecordCache.remove( result );
-            });
+            } );
+            created = new TrackedContent( trackingKey, uploads, downloads );
         }
 
-        logger.debug( "Sealing record for: {}", key );
-        sealedRecordCache.put( key, created );
+        logger.debug( "Sealing record for: {}", trackingKey );
+        sealedRecordCache.put( trackingKey, created );
         return created;
     }
 
     private QueryBuilder inProgressByTrackingKey( TrackingKey key )
     {
         QueryFactory queryFactory = Search.getQueryFactory( inProgressRecordCache );
-        return queryFactory.from( AffectedStoreRecordKey.class )
-                           .having( "key.id" )
+        return queryFactory.from( TrackedContentEntry.class )
+                           .having( "trackingKey.id" )
                            .eq( key.getId() )
                            .toBuilder()
                            .orderBy( "index" );

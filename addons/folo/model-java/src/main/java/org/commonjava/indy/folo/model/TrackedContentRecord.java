@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.commonjava.indy.model.core.StoreKey;
 
+@Deprecated
 public class TrackedContentRecord
     implements Iterable<AffectedStoreRecord>
 {
