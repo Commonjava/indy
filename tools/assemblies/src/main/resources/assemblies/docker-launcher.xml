@@ -1,0 +1,18 @@
+<assembly>
+  <id>docker-launcher</id>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  
+  <fileSets>
+    <fileSet>
+      <directory>${project.build.directory}/dependency/image-base</directory>
+      <outputDirectory>/</outputDirectory>
+    </fileSet>
+  </fileSets>
+  <files>
+    <file>
+      <source>${project.build.directory}/dependency/indy-launcher-${flavor}-${project.version}-launcher.tar.gz</source>
+      <outputDirectory>/</outputDirectory>
+      <destName>indy.tar.gz</destName>
+    </file>
+  </files>
+</assembly>

@@ -134,10 +134,6 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-test-utils</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.commonjava.cdi.util</groupId>
-      <artifactId>weft</artifactId>
-    </dependency>
   </dependencies>
   
   <build>

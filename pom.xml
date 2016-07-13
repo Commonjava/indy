@@ -169,6 +169,23 @@
         <scope>provided</scope>
       </dependency>
       <dependency>
+        <groupId>org.commonjava.indy.launch</groupId>
+        <artifactId>indy-launcher-savant</artifactId>
+        <version>0.99.4-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>launcher</classifier>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.commonjava.indy.docker</groupId>
+        <artifactId>indy-docker-base</artifactId>
+        <type>tar.gz</type>
+        <version>0.99.4-SNAPSHOT</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-autoprox-jaxrs</artifactId>
         <version>0.99.4-SNAPSHOT</version>
