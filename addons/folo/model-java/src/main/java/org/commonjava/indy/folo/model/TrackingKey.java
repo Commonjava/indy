@@ -18,8 +18,13 @@ package org.commonjava.indy.folo.model;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
 @Indexed
-public class TrackingKey
+public class TrackingKey implements Externalizable
 {
 
     @Field
@@ -94,4 +99,17 @@ public class TrackingKey
         return String.format( "TrackingKey [%s]", id );
     }
 
+    @Override
+    public void writeExternal( ObjectOutput out )
+            throws IOException
+    {
+        out.writeObject( id );
+    }
+
+    @Override
+    public void readExternal( ObjectInput in )
+            throws IOException, ClassNotFoundException
+    {
+        id = (String) in.readObject();
+    }
 }
