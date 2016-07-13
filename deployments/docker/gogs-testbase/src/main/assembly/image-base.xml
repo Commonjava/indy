@@ -1,0 +1,17 @@
+<assembly>
+	<id>image-base</id>
+	<formats>
+		<format>tar.gz</format>
+	</formats>
+
+  <includeBaseDirectory>true</includeBaseDirectory>
+  <baseDirectory>image-base</baseDirectory>
+
+  <fileSets>
+    <fileSet>
+      <directory>src/main/data</directory>
+      <outputDirectory>data</outputDirectory>
+      <useDefaultExcludes>false</useDefaultExcludes>
+    </fileSet>
+  </fileSets>
+</assembly>

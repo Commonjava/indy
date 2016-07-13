@@ -127,7 +127,7 @@ LOGS = '/var/log/indy'
 
 # Git location supplying /opt/indy/etc/indy
 indyEtcUrl = os.environ.get(INDY_ETC_URL_ENVAR)
-indyEtcBranch = os.environ.get(INDY_ETC_BRANCH_ENVAR)
+indyEtcBranch = os.environ.get(INDY_ETC_BRANCH_ENVAR) or 'master'
 indyEtcSubpath = os.environ.get(INDY_ETC_SUBPATH_ENVAR)
 
 # command-line options for indy

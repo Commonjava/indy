@@ -1,6 +1,17 @@
 <assembly>
   <id>docker-launcher</id>
   <includeBaseDirectory>false</includeBaseDirectory>
+
+  <dependencySets>
+    <dependencySet>
+      <scope>provided</scope>
+      <includes>
+        <include>org.commonjava.indy.launch:*</include>
+      </includes>
+      <outputDirectory>/</outputDirectory>
+      <outputFileNameMapping>indy.tar.gz</outputFileNameMapping>
+    </dependencySet>
+  </dependencySets>
   
   <fileSets>
     <fileSet>
@@ -8,11 +19,4 @@
       <outputDirectory>/</outputDirectory>
     </fileSet>
   </fileSets>
-  <files>
-    <file>
-      <source>${project.build.directory}/dependency/indy-launcher-${flavor}-${project.version}-launcher.tar.gz</source>
-      <outputDirectory>/</outputDirectory>
-      <destName>indy.tar.gz</destName>
-    </file>
-  </files>
 </assembly>
