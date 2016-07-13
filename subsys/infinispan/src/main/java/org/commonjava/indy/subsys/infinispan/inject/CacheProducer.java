@@ -24,7 +24,6 @@ import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.subsys.infinispan.conf.InfinispanSubsystemConfig;
-import org.commonjava.indy.subsys.infinispan.inject.qualifer.ContentIndexCache;
 import org.commonjava.indy.subsys.infinispan.inject.qualifer.IndyCacheManager;
 import org.infinispan.Cache;
 import org.infinispan.cdi.ConfigureCache;
@@ -141,15 +140,6 @@ public class CacheProducer
     public EmbeddedCacheManager getCacheManager()
     {
         return cacheManager;
-    }
-
-    @ConfigureCache( "content-index" )
-    @ContentIndexCache
-    @Produces
-    @ApplicationScoped
-    public Configuration contentIndexCacheCfg()
-    {
-        return cacheManager.getCacheConfiguration( "content-index" );
     }
 
     @Produces
