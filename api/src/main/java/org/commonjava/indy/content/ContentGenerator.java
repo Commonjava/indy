@@ -24,14 +24,14 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 
 /**
- * Interface to support dynamic content generation. This was originally intended for generating metadata files when they aren't present on 
+ * Interface to support dynamic content generation. This was originally intended for generating metadata files when they aren't present on
  * remote repositories. However, it's designed to accommodate all sorts of dynamic content.
  */
 public interface ContentGenerator
 {
 
     /**
-     * Generate dynamic content in the event it's not found in the ArtifactStore. This is secondary to the main content retrieval logic, as a 
+     * Generate dynamic content in the event it's not found in the ArtifactStore. This is secondary to the main content retrieval logic, as a
      * last effort to avoid returning a missing result.
      */
     Transfer generateFileContent( ArtifactStore store, String path, EventMetadata eventMetadata )
@@ -71,5 +71,10 @@ public interface ContentGenerator
      */
     void handleContentDeletion( ArtifactStore store, String path, EventMetadata eventMetadata )
         throws IndyWorkflowException;
+
+    /**
+     * Checks if this content generator processes the provided path.
+     */
+    boolean canProcess( String path );
 
 }
