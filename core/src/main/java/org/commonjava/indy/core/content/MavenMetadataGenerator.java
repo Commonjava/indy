@@ -332,7 +332,8 @@ public class MavenMetadataGenerator
         return null;
     }
 
-    private boolean canProcess( final String path )
+    @Override
+    public boolean canProcess( final String path )
     {
         for ( final String filename : HANDLED_FILENAMES )
         {

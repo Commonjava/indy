@@ -32,7 +32,6 @@ import javax.inject.Inject;
 
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.DirectContentAccess;
-import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.core.content.group.ArchetypeCatalogMerger;
 import org.commonjava.indy.core.content.group.GroupMergeHelper;
@@ -77,7 +76,8 @@ public class ArchetypeCatalogGenerator
         this.helper = mergeHelper;
     }
 
-    private boolean canProcess( final String path )
+    @Override
+    public boolean canProcess( final String path )
     {
         for ( final String filename : HANDLED_FILENAMES )
         {

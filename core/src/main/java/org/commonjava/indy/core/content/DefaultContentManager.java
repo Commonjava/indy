@@ -234,16 +234,18 @@ public class DefaultContentManager
             }
 
             item = null;
+            boolean generated = false;
             for ( final ContentGenerator generator : contentGenerators )
             {
-                item = generator.generateGroupFileContent( (Group) store, members, path, eventMetadata );
-                if ( item != null )
+                if ( generator.canProcess( path ) )
                 {
+                    item = generator.generateGroupFileContent( (Group) store, members, path, eventMetadata );
+                    generated = true;
                     break;
                 }
             }
 
-            if ( item == null )
+            if ( !generated )
             {
                 for ( final ArtifactStore member : members )
                 {

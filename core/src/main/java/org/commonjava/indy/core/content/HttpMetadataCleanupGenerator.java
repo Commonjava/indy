@@ -109,4 +109,10 @@ public class HttpMetadataCleanupGenerator
         }
     }
 
+    @Override
+    public boolean canProcess( final String path )
+    {
+        return false;
+    }
+
 }
