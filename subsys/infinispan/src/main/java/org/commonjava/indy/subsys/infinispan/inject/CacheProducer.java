@@ -23,9 +23,9 @@ import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.conf.IndyConfiguration;
-import org.commonjava.indy.inject.Production;
 import org.commonjava.indy.subsys.infinispan.conf.InfinispanSubsystemConfig;
 import org.commonjava.indy.subsys.infinispan.inject.qualifer.ContentIndexCache;
+import org.commonjava.indy.subsys.infinispan.inject.qualifer.IndyCacheManager;
 import org.infinispan.Cache;
 import org.infinispan.cdi.ConfigureCache;
 import org.infinispan.configuration.cache.Configuration;
@@ -37,7 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
@@ -138,6 +137,7 @@ public class CacheProducer
     @ApplicationScoped
 //    @Production
     @Default
+    @IndyCacheManager
     public EmbeddedCacheManager getCacheManager()
     {
         return cacheManager;

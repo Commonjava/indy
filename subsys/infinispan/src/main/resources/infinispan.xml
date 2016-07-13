@@ -21,7 +21,7 @@
       </persistence>
       <indexing index="ALL">
         <indexed-entities>
-          <indexed-entity>org.commonjava.indy.folo.data.idxmodel.AffectedStoreRecordKey</indexed-entity>
+          <indexed-entity>org.commonjava.indy.folo.model.TrackedContentEntry</indexed-entity>
         </indexed-entities>
       </indexing>
     </local-cache>
