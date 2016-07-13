@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.subsys.infinispan.inject.qualifer;
+package org.commonjava.indy.content.index;
 
 import javax.inject.Qualifier;
 import java.lang.annotation.Documented;

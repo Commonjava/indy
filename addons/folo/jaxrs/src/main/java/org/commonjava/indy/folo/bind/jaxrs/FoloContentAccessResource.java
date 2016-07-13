@@ -18,18 +18,10 @@ package org.commonjava.indy.folo.bind.jaxrs;
 import static org.commonjava.indy.folo.ctl.FoloConstants.TRACKING_KEY;
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithEntity;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponseFromMetadata;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.setInfoHeaders;
-import static org.commonjava.indy.core.ctl.ContentController.LISTING_HTML_FILE;
-
-import java.io.IOException;
-import java.net.URI;
-import java.util.Date;
 
 import javax.inject.Inject;
-import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
@@ -39,31 +31,15 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
-import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyDeployment;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
-import org.commonjava.indy.bind.jaxrs.util.JaxRsRequestHelper;
 import org.commonjava.indy.core.bind.jaxrs.ContentAccessHandler;
 import org.commonjava.indy.core.bind.jaxrs.ContentAccessResource;
-import org.commonjava.indy.core.bind.jaxrs.util.TransferStreamingOutput;
 import org.commonjava.indy.core.ctl.ContentController;
-import org.commonjava.indy.folo.ctl.FoloConstants;
 import org.commonjava.indy.folo.model.TrackingKey;
-import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.model.util.HttpUtils;
-import org.commonjava.indy.util.AcceptInfo;
-import org.commonjava.indy.util.ApplicationContent;
-import org.commonjava.indy.util.ApplicationHeader;
-import org.commonjava.indy.util.LocationUtils;
-import org.commonjava.indy.util.UriFormatter;
 import org.commonjava.maven.galley.event.EventMetadata;
-import org.commonjava.maven.galley.model.Transfer;
-import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

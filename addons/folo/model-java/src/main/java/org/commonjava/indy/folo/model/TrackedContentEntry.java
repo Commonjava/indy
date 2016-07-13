@@ -16,19 +16,28 @@
 package org.commonjava.indy.folo.model;
 
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.StoreType;
 import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
+import org.infinispan.query.Transformable;
+
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 @Indexed
+@Transformable( transformer = TrackedContentEntryTransformer.class )
 public class TrackedContentEntry
-        implements Comparable<TrackedContentEntry>
+        implements Comparable<TrackedContentEntry>,Externalizable
 {
-
     @IndexedEmbedded
     private TrackingKey trackingKey;
 
     @Field
+    @FieldBridge(impl = StoreKeyFieldBridge.class)
     private StoreKey storeKey;
 
     @Field
@@ -184,6 +193,53 @@ public class TrackedContentEntry
         return String.format(
                 "TrackedContentEntry [\n  trackingKey=%s\n  storeKey=%s\n  path=%s\n  originUrl=%s\n effect=%s\n  md5=%s\n  sha1=%s\n  sha256=%s\n]",
                 trackingKey, storeKey, path, originUrl, effect, md5, sha1, sha256 );
+    }
+
+    @Override
+    public void writeExternal( ObjectOutput out )
+            throws IOException
+    {
+        out.writeObject( trackingKey );
+        out.writeObject( storeKey.getName() );
+        out.writeObject( storeKey.getType().name() );
+        out.writeObject( path == null ? "" : path );
+        out.writeObject( originUrl == null ? "" : originUrl );
+        out.writeObject( effect == null ? "" : effect.name() );
+        out.writeObject( md5 == null ? "" : md5 );
+        out.writeObject( sha1 == null ? "" : sha1 );
+        out.writeObject( sha256 == null ? "" : sha256 );
+        out.writeLong( index );
+    }
+
+    @Override
+    public void readExternal( ObjectInput in )
+            throws IOException, ClassNotFoundException
+    {
+        trackingKey = (TrackingKey) in.readObject();
+
+        final String storeKeyName = (String) in.readObject();
+        final StoreType storeType = StoreType.get( (String) in.readObject() );
+        storeKey = new StoreKey( storeType, storeKeyName );
+
+        final String pathStr = (String) in.readObject();
+        path = "".equals( pathStr ) ? null : pathStr;
+
+        final String originUrlStr = (String) in.readObject();
+        originUrl = "".equals( originUrlStr ) ? null : originUrlStr;
+
+        final String effectStr = (String) in.readObject();
+        effect = "".equals( effectStr ) ? null : StoreEffect.valueOf( effectStr );
+
+        final String md5Str = (String) in.readObject();
+        md5 = "".equals( md5Str ) ? null : md5Str;
+
+        final String sha1Str = (String) in.readObject();
+        sha1 = "".equals( sha1Str ) ? null : sha1Str;
+
+        final String sha256Str = (String) in.readObject();
+        sha256 = "".equals( sha256Str ) ? null : sha256Str;
+
+        index = in.readLong();
     }
 
 }

@@ -42,10 +42,12 @@ public class FoloRecordCache
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @ConfigureCache("folo-in-progress")
+    @FoloInprogressCache
     @Inject
     private Cache<TrackedContentEntry, TrackedContentEntry> inProgressRecordCache;
 
     @ConfigureCache("folo-sealed")
+    @FoloSealedCache
     @Inject
     private Cache<TrackingKey, TrackedContent> sealedRecordCache;
 

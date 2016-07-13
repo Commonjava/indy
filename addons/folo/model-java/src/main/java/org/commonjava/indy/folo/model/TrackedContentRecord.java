@@ -18,7 +18,6 @@ package org.commonjava.indy.folo.model;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.commonjava.indy.model.core.StoreKey;
