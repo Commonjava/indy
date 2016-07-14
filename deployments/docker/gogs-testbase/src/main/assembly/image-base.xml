@@ -4,13 +4,12 @@
 		<format>tar.gz</format>
 	</formats>
 
-  <includeBaseDirectory>true</includeBaseDirectory>
-  <baseDirectory>image-base</baseDirectory>
+  <includeBaseDirectory>false</includeBaseDirectory>
 
   <fileSets>
     <fileSet>
       <directory>src/main/data</directory>
-      <outputDirectory>data</outputDirectory>
+      <outputDirectory>/</outputDirectory>
       <useDefaultExcludes>false</useDefaultExcludes>
     </fileSet>
   </fileSets>

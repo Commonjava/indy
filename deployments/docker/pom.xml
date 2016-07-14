@@ -106,13 +106,34 @@
                   <ports>
                     <port>gogs.port:3000</port>
                   </ports>
-<!--                   <wait>
-                    <http>
-                      <url>http://localhost:${gogs.port}/</url>
-                    </http>
-                  </wait> -->
+                  <wait>
+                    <tcp>
+                      <ports>
+                        <port>3000</port>
+                      </ports>
+                    </tcp>
+                    <time>5000</time>
+                  </wait>
                   <log>
                     <file>${project.build.directory}/gogs.log</file>
+                  </log>
+                </run>
+              </image>
+              <image>
+                <name>git-clone-test</name>
+                <build>
+                  <from>centos</from>
+                  <runCmds>
+                    <run>yum -y install git</run>
+                  </runCmds>
+                  <cmd>git clone http://gogs-test-appliance:3000/commonjava/indy-config.git</cmd>
+                </build>
+                <run>
+                  <links>
+                    <link>gogs-test-appliance:gogs-test-appliance</link>
+                  </links>
+                  <log>
+                    <file>${project.build.directory}/git-test.log</file>
                   </log>
                 </run>
               </image>
@@ -135,6 +156,7 @@
                     <http>
                       <url>http://localhost:${indy-vanilla.port}/</url>
                     </http>
+                    <time>20000</time>
                   </wait>
                   <log>
                     <file>${project.build.directory}/indy-vanilla.log</file>
@@ -157,6 +179,7 @@
                     <http>
                       <url>http://localhost:${indy-git-root.port}/</url>
                     </http>
+                    <time>20000</time>
                   </wait>
                   <log>
                     <file>${project.build.directory}/indy-git-root.log</file>
@@ -180,6 +203,7 @@
                     <http>
                       <url>http://localhost:${indy-git-branch.port}/</url>
                     </http>
+                    <time>20000</time>
                   </wait>
                   <log>
                     <file>${project.build.directory}/indy-git-branch.log</file>
@@ -203,6 +227,7 @@
                     <http>
                       <url>http://localhost:${indy-git-subpath.port}/</url>
                     </http>
+                    <time>20000</time>
                   </wait>
                   <log>
                     <file>${project.build.directory}/indy-git-subpath.log</file>
