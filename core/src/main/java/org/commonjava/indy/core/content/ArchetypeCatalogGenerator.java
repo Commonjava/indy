@@ -76,7 +76,8 @@ public class ArchetypeCatalogGenerator
         this.helper = mergeHelper;
     }
 
-    private boolean canProcess( final String path )
+    @Override
+    public boolean canProcess( final String path )
     {
         for ( final String filename : HANDLED_FILENAMES )
         {
