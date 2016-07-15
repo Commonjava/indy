@@ -82,11 +82,13 @@
             <authConfig>
               <push>
                 <username>${dockerUser}</username>
+                <password>${docker.password}</password>
               </push>
             </authConfig>
             <images>
               <image>
-                <name>gogs-test-appliance</name>
+                <name>${dockerRegistry}/${dockerUser}/gogs-test-appliance</name>
+                <alias>gogs-test-appliance</alias>
                 <build>
                   <from>gogs/gogs</from>
                   <assembly>
@@ -142,6 +144,7 @@
               </image> -->
               <image>
                 <name>${dockerRegistry}/${dockerUser}/${imageName}</name>
+                <alias>indy-vanilla</alias>
                 <build>
                   <dockerFile>${project.build.directory}/dependency/image-base/Dockerfile</dockerFile>
                   <assembly>
@@ -167,6 +170,7 @@
               </image>
               <image>
                 <name>${dockerRegistry}/${dockerUser}/${imageName}</name>
+                <alias>indy-git-root</alias>
                 <run>
                   <env>
                     <INDY_ETC_URL>http://gogs:3000/commonjava/indy-config.git</INDY_ETC_URL>
@@ -189,6 +193,7 @@
               </image>
               <image>
                 <name>${dockerRegistry}/${dockerUser}/${imageName}</name>
+                <alias>indy-git-branch</alias>
                 <run>
                   <env>
                     <INDY_ETC_URL>http://gogs:3000/commonjava/indy-config.git</INDY_ETC_URL>
@@ -212,6 +217,7 @@
               </image>
               <image>
                 <name>${dockerRegistry}/${dockerUser}/${imageName}</name>
+                <alias>indy-git-subpath</alias>
                 <run>
                   <env>
                     <INDY_ETC_URL>http://gogs:3000/commonjava/indy-config.git</INDY_ETC_URL>
