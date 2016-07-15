@@ -79,7 +79,11 @@
 
           <configuration>
             <skip>${disableLauncher}</skip>
-            <verbose>true</verbose>
+            <authConfig>
+              <push>
+                <username>${dockerUser}</username>
+              </push>
+            </authConfig>
             <images>
               <image>
                 <name>gogs-test-appliance</name>
@@ -112,14 +116,13 @@
                         <port>3000</port>
                       </ports>
                     </tcp>
-                    <time>5000</time>
                   </wait>
                   <log>
                     <file>${project.build.directory}/gogs.log</file>
                   </log>
                 </run>
               </image>
-              <image>
+<!--               <image>
                 <name>git-clone-test</name>
                 <build>
                   <from>centos</from>
@@ -136,7 +139,7 @@
                     <file>${project.build.directory}/git-test.log</file>
                   </log>
                 </run>
-              </image>
+              </image> -->
               <image>
                 <name>${dockerRegistry}/${dockerUser}/${imageName}</name>
                 <build>
@@ -156,7 +159,6 @@
                     <http>
                       <url>http://localhost:${indy-vanilla.port}/</url>
                     </http>
-                    <time>20000</time>
                   </wait>
                   <log>
                     <file>${project.build.directory}/indy-vanilla.log</file>
@@ -179,7 +181,6 @@
                     <http>
                       <url>http://localhost:${indy-git-root.port}/</url>
                     </http>
-                    <time>20000</time>
                   </wait>
                   <log>
                     <file>${project.build.directory}/indy-git-root.log</file>
@@ -203,7 +204,6 @@
                     <http>
                       <url>http://localhost:${indy-git-branch.port}/</url>
                     </http>
-                    <time>20000</time>
                   </wait>
                   <log>
                     <file>${project.build.directory}/indy-git-branch.log</file>
@@ -227,7 +227,6 @@
                     <http>
                       <url>http://localhost:${indy-git-subpath.port}/</url>
                     </http>
-                    <time>20000</time>
                   </wait>
                   <log>
                     <file>${project.build.directory}/indy-git-subpath.log</file>
