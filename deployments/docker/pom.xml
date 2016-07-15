@@ -32,6 +32,7 @@
   
   <modules>
     <module>base</module>
+    <module>gogs-testbase</module>
     <module>savant</module>
   </modules>
 
@@ -60,17 +61,6 @@
                 <includeArtifactIds>indy-docker-base</includeArtifactIds>
               </configuration>
             </execution>
-            <execution>
-              <id>copy-launcher</id>
-              <goals>
-                <goal>copy-dependencies</goal>
-              </goals>
-              <phase>prepare-package</phase>
-              <configuration>
-                <includeArtifactIds>indy-launcher-${flavor}</includeArtifactIds>
-                <outputDirectory>${project.build.directory}/dependency</outputDirectory>
-              </configuration>
-            </execution>
           </executions>
         </plugin>
         <plugin>
@@ -87,29 +77,165 @@
             </dependency>
           </dependencies>
 
-          <executions>
-            <execution>
-              <id>default-build</id>
-              <configuration>
-                <skip>${disableLauncher}</skip>
-                <verbose>true</verbose>
-                <images>
-                  <image>
-                    <name>${imageName}</name>
-                    <build>
-                      <dockerFile>${project.build.directory}/dependency/image-base/Dockerfile</dockerFile>
-                      <assembly>
-                        <descriptorRef>docker-launcher</descriptorRef>
-                      </assembly>
-                      <tags>
-                        <tag>${tagVer}</tag>
-                      </tags>
-                    </build>
-                  </image>
-                </images>
-              </configuration>
-            </execution>
-          </executions>
+          <configuration>
+            <skip>${disableLauncher}</skip>
+            <verbose>true</verbose>
+            <images>
+              <image>
+                <name>gogs-test-appliance</name>
+                <build>
+                  <from>gogs/gogs</from>
+                  <assembly>
+                    <mode>dir</mode>
+                    <basedir>/data</basedir>
+                    <inline>
+                      <dependencySets>
+                        <dependencySet>
+                          <scope>provided</scope>
+                          <includes>
+                            <include>org.commonjava.indy.docker:indy-docker-gogs-testbase*</include>
+                          </includes>
+                          <unpack>true</unpack>
+                          <outputDirectory>/</outputDirectory>
+                        </dependencySet>
+                      </dependencySets>
+                    </inline>
+                  </assembly>
+                </build>
+                <run>
+                  <ports>
+                    <port>gogs.port:3000</port>
+                  </ports>
+                  <wait>
+                    <tcp>
+                      <ports>
+                        <port>3000</port>
+                      </ports>
+                    </tcp>
+                    <time>5000</time>
+                  </wait>
+                  <log>
+                    <file>${project.build.directory}/gogs.log</file>
+                  </log>
+                </run>
+              </image>
+              <image>
+                <name>git-clone-test</name>
+                <build>
+                  <from>centos</from>
+                  <runCmds>
+                    <run>yum -y install git</run>
+                  </runCmds>
+                  <cmd>git clone http://gogs-test-appliance:3000/commonjava/indy-config.git</cmd>
+                </build>
+                <run>
+                  <links>
+                    <link>gogs-test-appliance:gogs-test-appliance</link>
+                  </links>
+                  <log>
+                    <file>${project.build.directory}/git-test.log</file>
+                  </log>
+                </run>
+              </image>
+              <image>
+                <name>${dockerRegistry}/${dockerUser}/${imageName}</name>
+                <build>
+                  <dockerFile>${project.build.directory}/dependency/image-base/Dockerfile</dockerFile>
+                  <assembly>
+                    <descriptorRef>docker-launcher</descriptorRef>
+                  </assembly>
+                  <tags>
+                    <tag>${tagVer}</tag>
+                  </tags>
+                </build>
+                <run>
+                  <ports>
+                    <port>indy-vanilla.port:8080</port>
+                  </ports>
+                  <wait>
+                    <http>
+                      <url>http://localhost:${indy-vanilla.port}/</url>
+                    </http>
+                    <time>20000</time>
+                  </wait>
+                  <log>
+                    <file>${project.build.directory}/indy-vanilla.log</file>
+                  </log>
+                </run>
+              </image>
+              <image>
+                <name>${dockerRegistry}/${dockerUser}/${imageName}</name>
+                <run>
+                  <env>
+                    <INDY_ETC_URL>http://gogs:3000/commonjava/indy-config.git</INDY_ETC_URL>
+                  </env>
+                  <ports>
+                    <port>indy-git-root.port:8080</port>
+                  </ports>
+                  <links>
+                    <link>gogs-test-appliance:gogs</link>
+                  </links>
+                  <wait>
+                    <http>
+                      <url>http://localhost:${indy-git-root.port}/</url>
+                    </http>
+                    <time>20000</time>
+                  </wait>
+                  <log>
+                    <file>${project.build.directory}/indy-git-root.log</file>
+                  </log>
+                </run>
+              </image>
+              <image>
+                <name>${dockerRegistry}/${dockerUser}/${imageName}</name>
+                <run>
+                  <env>
+                    <INDY_ETC_URL>http://gogs:3000/commonjava/indy-config.git</INDY_ETC_URL>
+                    <INDY_ETC_BRANCH>test-branch</INDY_ETC_BRANCH>
+                  </env>
+                  <ports>
+                    <port>indy-git-branch.port:8080</port>
+                  </ports>
+                  <links>
+                    <link>gogs-test-appliance:gogs</link>
+                  </links>
+                  <wait>
+                    <http>
+                      <url>http://localhost:${indy-git-branch.port}/</url>
+                    </http>
+                    <time>20000</time>
+                  </wait>
+                  <log>
+                    <file>${project.build.directory}/indy-git-branch.log</file>
+                  </log>
+                </run>
+              </image>
+              <image>
+                <name>${dockerRegistry}/${dockerUser}/${imageName}</name>
+                <run>
+                  <env>
+                    <INDY_ETC_URL>http://gogs:3000/commonjava/indy-config.git</INDY_ETC_URL>
+                    <INDY_ETC_SUBPATH>subpath</INDY_ETC_SUBPATH>
+                  </env>
+                  <ports>
+                    <port>indy-git-subpath.port:8080</port>
+                  </ports>
+                  <links>
+                    <link>gogs-test-appliance:gogs</link>
+                  </links>
+                  <wait>
+                    <http>
+                      <url>http://localhost:${indy-git-subpath.port}/</url>
+                    </http>
+                    <time>20000</time>
+                  </wait>
+                  <log>
+                    <file>${project.build.directory}/indy-git-subpath.log</file>
+                  </log>
+                </run>
+              </image>
+            </images>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>

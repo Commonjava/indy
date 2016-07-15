@@ -25,42 +25,30 @@
   </parent>
   
   <groupId>org.commonjava.indy.docker</groupId>
-  <artifactId>indy-docker-savant</artifactId>
-  <packaging>docker</packaging>
+  <artifactId>indy-docker-gogs-testbase</artifactId>
+  <packaging>pom</packaging>
 
-  <name>Indy :: Docker Images :: Savant</name>
-
-  <properties>
-    <flavor>savant</flavor>
-  </properties>
-
-  <dependencies>
-    <dependency>
-      <groupId>org.commonjava.indy.docker</groupId>
-      <artifactId>indy-docker-base</artifactId>
-      <type>tar.gz</type>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy.docker</groupId>
-      <artifactId>indy-docker-gogs-testbase</artifactId>
-      <type>tar.gz</type>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy.launch</groupId>
-      <artifactId>indy-launcher-savant</artifactId>
-      <type>tar.gz</type>
-      <classifier>launcher</classifier>
-    </dependency>
-  </dependencies>
+  <name>Indy :: Docker Images :: Gogs Test Appliance Base Image</name>
 
   <build>
     <plugins>
       <plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>io.fabric8</groupId>
-        <artifactId>docker-maven-plugin</artifactId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>assemblies</id>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <descriptors>
+                <descriptor>src/main/assembly/image-base.xml</descriptor>
+              </descriptors>
+              <appendAssemblyId>false</appendAssemblyId>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
