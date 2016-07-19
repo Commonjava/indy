@@ -42,6 +42,7 @@
     <dockerRegistry>docker.io</dockerRegistry>
     <dockerUser>commonjava</dockerUser>
     <imageName>indy-${flavor}</imageName>
+    <dockerHost>tcp://localhost:2375</dockerHost>
   </properties>
 
   <build>
@@ -79,6 +80,7 @@
 
           <configuration>
             <skip>${disableLauncher}</skip>
+            <dockerHost>${dockerHost}</dockerHost>
             <authConfig>
               <push>
                 <username>${dockerUser}</username>
