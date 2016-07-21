@@ -69,7 +69,7 @@
       </build>
     </profile>
     <profile>
-      <id>wdocker</id>
+      <id>docker</id>
       <build>
         <plugins>
           <plugin>
