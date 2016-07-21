@@ -6,10 +6,17 @@
 
   <includeBaseDirectory>false</includeBaseDirectory>
 
+  <files>
+    <file>
+      <source>src/main/docker/Dockerfile</source>
+      <outputDirectory>/</outputDirectory>
+      <destName>Dockerfile</destName>
+    </file>
+  </files>
   <fileSets>
     <fileSet>
       <directory>src/main/data</directory>
-      <outputDirectory>/</outputDirectory>
+      <outputDirectory>/data</outputDirectory>
       <useDefaultExcludes>false</useDefaultExcludes>
     </fileSet>
   </fileSets>

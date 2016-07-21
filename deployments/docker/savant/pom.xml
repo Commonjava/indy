@@ -26,7 +26,7 @@
   
   <groupId>org.commonjava.indy.docker</groupId>
   <artifactId>indy-docker-savant</artifactId>
-  <packaging>docker</packaging>
+  <packaging>pom</packaging>
 
   <name>Indy :: Docker Images :: Savant</name>
 
@@ -53,16 +53,35 @@
     </dependency>
   </dependencies>
 
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>io.fabric8</groupId>
-        <artifactId>docker-maven-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </build>
-  
+  <profiles>
+    <profile>
+      <id>f8-docker</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-dependency-plugin</artifactId>
+          </plugin>
+          <plugin>
+            <groupId>io.fabric8</groupId>
+            <artifactId>docker-maven-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>wdocker</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-dependency-plugin</artifactId>
+          </plugin>
+          <plugin>
+            <groupId>net.wouterdanes.docker</groupId>
+            <artifactId>docker-maven-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
 </project>
