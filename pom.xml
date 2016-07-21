@@ -58,7 +58,7 @@
     <undertowVersion>1.1.2.Final</undertowVersion>
     <xnioVersion>3.3.0.Final</xnioVersion>
     <partylineVersion>1.7</partylineVersion>
-    <keycloakVersion>1.2.0.Final</keycloakVersion>
+    <keycloakVersion>1.9.8.Final</keycloakVersion>
     <jhttpcVersion>1.2</jhttpcVersion>
     <kojijiVersion>1.0</kojijiVersion>
     <rwxVersion>1.0</rwxVersion>
