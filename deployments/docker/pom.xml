@@ -99,6 +99,7 @@
                     <goal>push-images</goal>
                   </goals>
                   <configuration>
+                    <serverId>registry.hub.docker.com</serverId>
                     <images>
                       <!-- TODO: Move this into the gogs-testbase module instead of building it here. -->
                       <image>
