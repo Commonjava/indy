@@ -1142,6 +1142,12 @@
             </execution>
           </executions>
         </plugin>
+        <plugin>
+          <!-- See: https://github.com/wouterd/docker-maven-plugin -->
+          <groupId>net.wouterdanes.docker</groupId>
+          <artifactId>docker-maven-plugin</artifactId>
+          <version>5.0.0</version>
+        </plugin>
         <!-- <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
           <executions>

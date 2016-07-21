@@ -117,7 +117,6 @@
           <!-- See: https://github.com/wouterd/docker-maven-plugin -->
           <groupId>net.wouterdanes.docker</groupId>
           <artifactId>docker-maven-plugin</artifactId>
-          <version>4.1.0</version>
           <executions>
             <execution>
               <id>start-IT-containers</id>
