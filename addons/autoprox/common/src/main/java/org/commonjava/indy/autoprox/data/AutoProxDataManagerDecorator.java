@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.autoprox.data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.decorator.Decorator;
@@ -118,7 +119,7 @@ public abstract class AutoProxDataManagerDecorator
             if ( g != null )
             {
                 logger.info( "Validating group: {}", g );
-                for ( final StoreKey key : g.getConstituents() )
+                for ( final StoreKey key : new ArrayList<>( g.getConstituents() ) )
                 {
                     final ArtifactStore store = getArtifactStore( key, impliedBy == null ? g.getKey() : impliedBy );
                     if ( store == null )
