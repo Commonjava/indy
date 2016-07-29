@@ -18,7 +18,6 @@ package org.commonjava.indy.ftest.core;
 import com.fasterxml.jackson.databind.Module;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.boot.BootStatus;
 import org.commonjava.indy.boot.IndyBootException;
 import org.commonjava.indy.client.core.Indy;
@@ -55,9 +54,9 @@ public abstract class AbstractIndyFunctionalTest
 
     private static final String NAME_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_";
 
-    protected static final String TEST_TIMEOUT_SYSPROP = "testTimeout";
+    public static final long DEFAULT_TEST_TIMEOUT = 120;
 
-    protected static final String DEFAULT_TEST_TIMEOUT = "120";
+    public static final String TIMEOUT_ENV_FACTOR_SYSPROP = "testEnvTimeoutMultiplier";
 
     protected Indy client;
 
@@ -112,6 +111,11 @@ public abstract class AbstractIndyFunctionalTest
                             getAdditionalClientModules() ).connect();
     }
 
+    protected float getTestEnvironmentTimeoutMultiplier()
+    {
+        return Float.parseFloat( System.getProperty( TIMEOUT_ENV_FACTOR_SYSPROP, "1" ) );
+    }
+
     protected void waitForEventPropagation()
     {
         // give events time to propagate
@@ -128,13 +132,7 @@ public abstract class AbstractIndyFunctionalTest
 
     protected final long getTestTimeoutSeconds()
     {
-        String timeout = System.getProperty( TEST_TIMEOUT_SYSPROP );
-        if ( StringUtils.isEmpty( timeout ) )
-        {
-            timeout = DEFAULT_TEST_TIMEOUT;
-        }
-
-        return getTestTimeoutMultiplier() * Long.parseLong( timeout );
+        return (long) ( getTestTimeoutMultiplier() * getTestEnvironmentTimeoutMultiplier() * DEFAULT_TEST_TIMEOUT );
     }
 
     protected int getTestTimeoutMultiplier()

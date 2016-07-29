@@ -87,7 +87,7 @@ public abstract class AbstractContentTimeoutWorkingTest
             throws Exception
     {
         // make sure the repo timout
-        Thread.sleep( TIMEOUT_WAITING_MILLISECONDS );
+        Thread.sleep( getTestTimeoutMultiplier() * TIMEOUT_WAITING_MILLISECONDS );
         logger.debug( "Timeout time {}s passed!", TIMEOUT_SECONDS );
 
         assertThat( "artifact should be removed when timeout", pomFile.exists(), equalTo( false ) );
