@@ -28,9 +28,6 @@ ENV GIT_SSL_NO_VERIFY true
 ADD https://github.com/Yelp/dumb-init/releases/download/v1.1.1/dumb-init_1.1.1_amd64 /usr/local/bin/dumb-init
 ADD maven/scripts/start-indy.py /usr/local/bin/start-indy.py
 
-# Unpack the distro that was created elsewhere in this Indy build.
-ADD maven/indy.tar.gz /opt/
-
 # TODO: root needed to run yum...?
 #USER root
 
@@ -40,3 +37,7 @@ RUN chmod +x /usr/local/bin/* && \
 	yum clean all
 
 ENTRYPOINT ["/usr/local/bin/dumb-init", "/usr/local/bin/start-indy.py"]
+
+# Unpack the distro that was created elsewhere in this Indy build.
+ADD maven/indy.tar.gz /opt/
+

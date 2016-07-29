@@ -1202,7 +1202,7 @@
       <properties>
         <skipTests>false</skipTests>
         <test-forkCount>2</test-forkCount>
-        <testTimeout>300</testTimeout>
+        <testEnvTimeoutMultiplier>3</testEnvTimeoutMultiplier>
       </properties>
     </profile>
     <profile>
