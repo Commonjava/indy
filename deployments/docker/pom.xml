@@ -90,16 +90,16 @@
             <plugin>
               <groupId>net.wouterdanes.docker</groupId>
               <artifactId>docker-maven-plugin</artifactId>
+              <configuration>
+                <serverId>registry.hub.docker.com</serverId>
+              </configuration>
               <executions>
                 <execution>
-                  <id>build-tag-push</id>
+                  <id>build</id>
                   <goals>
                     <goal>build-images</goal>
-                    <!-- <goal>tag-images</goal> -->
-                    <goal>push-images</goal>
                   </goals>
                   <configuration>
-                    <serverId>registry.hub.docker.com</serverId>
                     <images>
                       <!-- TODO: Move this into the gogs-testbase module instead of building it here. -->
                       <image>
@@ -129,7 +129,6 @@
                         </mavenArtifacts>
                         <keep>true</keep>
                         <nameAndTag>${dockerRegistry}/${dockerUser}/${imageName}</nameAndTag>
-                        <push>true</push>
                       </image>
                     </images>
                   </configuration>
@@ -196,6 +195,24 @@
                         </links>
                       </container>
                     </containers>
+                  </configuration>
+                </execution>
+                <execution>
+                  <id>tag-and-push</id>
+                  <goals>
+                    <goal>tag-images</goal>
+                    <goal>push-images</goal>
+                  </goals>
+                  <configuration>
+                    <images>
+                      <image>
+                        <id>${dockerRegistry}/${dockerUser}/${imageName}</id>
+                        <push>true</push>
+                        <tags>
+                          <tag>${dockerRegistry}/${dockerUser}/${imageName}</tag>
+                        </tags>
+                      </image>
+                    </images>
                   </configuration>
                 </execution>
               </executions>

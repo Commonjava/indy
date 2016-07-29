@@ -39,5 +39,10 @@ RUN chmod +x /usr/local/bin/* && \
 ENTRYPOINT ["/usr/local/bin/dumb-init", "/usr/local/bin/start-indy.py"]
 
 # Unpack the distro that was created elsewhere in this Indy build.
-ADD maven/indy.tar.gz /opt/
+
+# For some reason, ADDing the tarball directly so it's unpacked using Docker
+# doesn't work correctly. It results in some sort of classpath issue, so
+# let's emulate what any user might do when installing the tarball.
+COPY maven/indy.tar.gz /tmp/indy.tar.gz
+RUN tar -zxvf /tmp/indy.tar.gz -C /opt
 
