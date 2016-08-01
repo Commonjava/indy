@@ -69,6 +69,16 @@
     <test-redirectOutput>true</test-redirectOutput>
     <skipITs>true</skipITs>
     <quickITs>true</quickITs>
+
+    <dockerHost>tcp://localhost:2375</dockerHost>
+
+    <dockerRegistry>docker.io</dockerRegistry>
+    <dockerUser>commonjava</dockerUser>
+    <docker-appliance-gogs>${dockerRegistry}/${dockerUser}/gogs-test-appliance</docker-appliance-gogs>
+    <dockerStartTimeout>60000</dockerStartTimeout>
+
+    <dockerNetworkMode>bridge</dockerNetworkMode>
+    <dockerNetwork>default</dockerNetwork>
   </properties>
   
   <modules>
@@ -1088,6 +1098,23 @@
     <pluginManagement>
       <plugins>
         <plugin>
+          <groupId>io.fabric8</groupId>
+          <artifactId>docker-maven-plugin</artifactId>
+          <version>0.15.14</version>
+          <extensions>true</extensions>
+
+          <configuration>
+            <skip>${disableLauncher}</skip>
+            <dockerHost>${dockerHost}</dockerHost>
+            <authConfig>
+              <push>
+                <username>${dockerUser}</username>
+                <password>${docker.password}</password>
+              </push>
+            </authConfig>
+          </configuration>
+        </plugin>
+        <plugin>
           <artifactId>maven-release-plugin</artifactId>
           <configuration>
             <autoVersionSubmodules>true</autoVersionSubmodules>
@@ -1203,6 +1230,9 @@
         <skipTests>false</skipTests>
         <test-forkCount>2</test-forkCount>
         <testEnvTimeoutMultiplier>3</testEnvTimeoutMultiplier>
+
+        <dockerNetworkMode>custom</dockerNetworkMode>
+        <dockerNetwork>ci-network</dockerNetwork>
       </properties>
     </profile>
     <profile>

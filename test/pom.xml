@@ -31,6 +31,7 @@
   
   <modules>
     <module>db</module>
+    <module>docker</module>
     <module>providers-core</module>
     <module>fixtures-core</module>
     <module>utils</module>
