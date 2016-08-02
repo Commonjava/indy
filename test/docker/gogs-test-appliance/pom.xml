@@ -56,13 +56,12 @@
                 </assembly>
               </build>
               <run>
+                <ports>
+                  <port>gogs.port:3000</port>
+                </ports>
                 <wait>
-                  <tcp>
-                    <mode>direct</mode>
-                    <ports>
-                      <port>3000</port>
-                    </ports>
-                  </tcp>
+                  <log>${gogs-waitFor}</log>
+                  <time>${dockerStartTimeout}</time>
                 </wait>
                 <log>
                   <file>${project.build.directory}/gogs.log</file>
@@ -70,6 +69,7 @@
                 <network>
                   <mode>${dockerNetworkMode}</mode>
                   <name>${dockerNetwork}</name>
+                  <alias>gogs-test-appliance</alias>
                 </network>
               </run>
             </image>
@@ -80,12 +80,13 @@
                 <runCmds>
                   <run>yum -y install git</run>
                 </runCmds>
-                <cmd>git clone http://gogs-test-appliance:3000/commonjava/indy-config.git</cmd>
+                <workdir>/checkout</workdir>
+                <cmd><![CDATA[git clone http://gogs-test-appliance:3000/commonjava/indy-config.git && (cd indy-config && pwd)]]></cmd>
               </build>
               <run>
-                <links>
+<!--                 <links>
                   <link>gogs-test-appliance:gogs-test-appliance</link>
-                </links>
+                </links> -->
                 <log>
                   <file>${project.build.directory}/git-test.log</file>
                 </log>
@@ -93,6 +94,10 @@
                   <mode>${dockerNetworkMode}</mode>
                   <name>${dockerNetwork}</name>
                 </network>
+                <wait>
+                  <log>/checkout/indy-config</log>
+                  <time>${dockerStartTimeout}</time>
+                </wait>
               </run>
             </image>
           </images>

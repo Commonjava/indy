@@ -39,6 +39,7 @@
     <flavor>unknown</flavor>
     <tagVer>dev</tagVer>
     <imageName>indy-${flavor}</imageName>
+    <indy-waitFor>Indy listening on 0.0.0.0:8080</indy-waitFor>
   </properties>
 
   <build>
@@ -84,12 +85,7 @@
                     <port>gogs.port:3000</port>
                   </ports>
                   <wait>
-                    <tcp>
-                      <ports>
-                        <port>3000</port>
-                      </ports>
-                    </tcp>
-                    <time>${dockerStartTimeout}</time>
+                    <log>${gogs-waitFor}</log>
                   </wait>
                   <log>
                     <file>${project.build.directory}/gogs.log</file>
@@ -97,6 +93,7 @@
                   <network>
                     <mode>${dockerNetworkMode}</mode>
                     <name>${dockerNetwork}</name>
+                    <alias>gogs</alias>
                   </network>
                 </run>
               </image>
@@ -138,11 +135,7 @@
                     <port>indy-vanilla.port:8080</port>
                   </ports>
                   <wait>
-                    <tcp>
-                      <ports>
-                        <port>8080</port>
-                      </ports>
-                    </tcp>
+                    <log>${indy-waitFor}</log>
                     <time>${dockerStartTimeout}</time>
                   </wait>
                   <log>
@@ -168,11 +161,7 @@
                     <link>gogs-test-appliance:gogs</link>
                   </links>
                   <wait>
-                    <tcp>
-                      <ports>
-                        <port>8080</port>
-                      </ports>
-                    </tcp>
+                    <log>${indy-waitFor}</log>
                     <time>${dockerStartTimeout}</time>
                   </wait>
                   <log>
@@ -199,11 +188,7 @@
                     <link>gogs-test-appliance:gogs</link>
                   </links>
                   <wait>
-                    <tcp>
-                      <ports>
-                        <port>8080</port>
-                      </ports>
-                    </tcp>
+                    <log>${indy-waitFor}</log>
                     <time>${dockerStartTimeout}</time>
                   </wait>
                   <log>
@@ -230,11 +215,7 @@
                     <link>gogs-test-appliance:gogs</link>
                   </links>
                   <wait>
-                    <tcp>
-                      <ports>
-                        <port>8080</port>
-                      </ports>
-                    </tcp>
+                    <log>${indy-waitFor}</log>
                     <time>${dockerStartTimeout}</time>
                   </wait>
                   <log>

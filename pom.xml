@@ -79,6 +79,8 @@
 
     <dockerNetworkMode>bridge</dockerNetworkMode>
     <dockerNetwork>default</dockerNetwork>
+
+    <gogs-waitFor>Listen: http://0.0.0.0:3000</gogs-waitFor>
   </properties>
   
   <modules>
