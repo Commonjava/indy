@@ -70,8 +70,6 @@
     <skipITs>true</skipITs>
     <quickITs>true</quickITs>
 
-    <dockerHost>tcp://localhost:2375</dockerHost>
-
     <dockerRegistry>docker.io</dockerRegistry>
     <dockerUser>commonjava</dockerUser>
     <docker-appliance-gogs>${dockerRegistry}/${dockerUser}/gogs-test-appliance</docker-appliance-gogs>
@@ -1107,7 +1105,6 @@
 
           <configuration>
             <skip>${disableLauncher}</skip>
-            <dockerHost>${dockerHost}</dockerHost>
             <authConfig>
               <push>
                 <username>${dockerUser}</username>
