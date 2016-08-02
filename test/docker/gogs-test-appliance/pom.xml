@@ -54,6 +54,10 @@
                     </fileSets>
                   </inline>
                 </assembly>
+                
+                <tags>
+                  <tag>latest</tag>
+                </tags>
               </build>
               <run>
                 <ports>

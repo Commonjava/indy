@@ -72,12 +72,12 @@
 
     <dockerRegistry>docker.io</dockerRegistry>
     <dockerUser>commonjava</dockerUser>
-    <docker-appliance-gogs>${dockerRegistry}/${dockerUser}/gogs-test-appliance</docker-appliance-gogs>
     <dockerStartTimeout>60000</dockerStartTimeout>
 
     <dockerNetworkMode>bridge</dockerNetworkMode>
     <dockerNetwork>default</dockerNetwork>
 
+    <docker-appliance-gogs>${dockerRegistry}/${dockerUser}/gogs-test-appliance</docker-appliance-gogs>
     <gogs-waitFor>Listen: http://0.0.0.0:3000</gogs-waitFor>
   </properties>
   
