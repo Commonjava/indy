@@ -69,7 +69,6 @@
 
           <configuration>
             <skip>${disableLauncher}</skip>
-            <dockerHost>${dockerHost}</dockerHost>
             <authConfig>
               <push>
                 <username>${dockerUser}</username>
