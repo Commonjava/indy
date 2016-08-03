@@ -16,7 +16,7 @@
 package org.commonjava.indy.subsys.keycloak.util;
 
 import org.apache.commons.codec.binary.Hex;
-import org.keycloak.util.Base64Url;
+import org.keycloak.common.util.Base64Url;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
