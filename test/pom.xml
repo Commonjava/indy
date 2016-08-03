@@ -31,7 +31,6 @@
   
   <modules>
     <module>db</module>
-    <module>docker</module>
     <module>providers-core</module>
     <module>fixtures-core</module>
     <module>utils</module>
@@ -49,4 +48,14 @@
       <scope>compile</scope>
     </dependency>
   </dependencies>
+
+
+  <profiles>
+    <profile>
+      <id>docker</id>
+      <modules>
+        <module>docker</module>
+      </modules>
+    </profile>
+  </profiles>
 </project>
