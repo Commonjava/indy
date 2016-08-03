@@ -32,7 +32,6 @@
   
   <modules>
     <module>launchers</module>
-    <module>docker</module>
   </modules>
 
   <profiles>
