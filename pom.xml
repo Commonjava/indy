@@ -59,7 +59,7 @@
     <xnioVersion>3.3.0.Final</xnioVersion>
     <partylineVersion>1.7</partylineVersion>
     <keycloakVersion>1.9.8.Final</keycloakVersion>
-    <jhttpcVersion>1.2</jhttpcVersion>
+    <jhttpcVersion>1.3-SNAPSHOT</jhttpcVersion>
     <kojijiVersion>1.0</kojijiVersion>
     <rwxVersion>1.0</rwxVersion>
     <kojijiVersion>1.0</kojijiVersion>
@@ -1228,7 +1228,7 @@
       <properties>
         <skipTests>false</skipTests>
         <test-forkCount>2</test-forkCount>
-        <testEnvTimeoutMultiplier>3</testEnvTimeoutMultiplier>
+        <testEnvTimeoutMultiplier>6</testEnvTimeoutMultiplier>
 
         <dockerNetworkMode>custom</dockerNetworkMode>
         <dockerNetwork>ci-network</dockerNetwork>
