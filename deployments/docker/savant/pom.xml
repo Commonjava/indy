@@ -26,7 +26,8 @@
   
   <groupId>org.commonjava.indy.docker</groupId>
   <artifactId>indy-docker-savant</artifactId>
-  <packaging>pom</packaging>
+  <!-- <packaging>pom</packaging> -->
+  <packaging>docker</packaging>
 
   <name>Indy :: Docker Images :: Savant</name>
 
@@ -41,11 +42,6 @@
       <type>tar.gz</type>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.indy.docker</groupId>
-      <artifactId>indy-docker-gogs-testbase</artifactId>
-      <type>tar.gz</type>
-    </dependency>
-    <dependency>
       <groupId>org.commonjava.indy.launch</groupId>
       <artifactId>indy-launcher-savant</artifactId>
       <type>tar.gz</type>
@@ -53,35 +49,16 @@
     </dependency>
   </dependencies>
 
-  <profiles>
-    <profile>
-      <id>f8-docker</id>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-dependency-plugin</artifactId>
-          </plugin>
-          <plugin>
-            <groupId>io.fabric8</groupId>
-            <artifactId>docker-maven-plugin</artifactId>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>docker</id>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-dependency-plugin</artifactId>
-          </plugin>
-          <plugin>
-            <groupId>net.wouterdanes.docker</groupId>
-            <artifactId>docker-maven-plugin</artifactId>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>io.fabric8</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

@@ -1,0 +1,113 @@
+<!--
+
+    Copyright (C) 2011 Red Hat, Inc. (jdcasey@commonjava.org)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.commonjava.indy.docker</groupId>
+    <artifactId>indy-test-docker-appliances</artifactId>
+    <version>0.99.4-SNAPSHOT</version>
+  </parent>
+  
+  <artifactId>indy-docker-gogs-test-appliance</artifactId>
+  <packaging>docker</packaging>
+
+  <name>Indy :: Docker Images :: Gogs Test Appliance Image</name>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>io.fabric8</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <configuration>
+          <images>
+            <image>
+              <name>${docker-appliance-gogs}</name>
+              <alias>gogs-test-appliance</alias>
+              <build>
+                <from>gogs/gogs</from>
+                <assembly>
+                  <mode>dir</mode>
+                  <basedir>/data</basedir>
+                  <inline>
+                    <fileSets>
+                      <fileSet>
+                        <directory>src/main/data</directory>
+                        <outputDirectory>/</outputDirectory>
+                        <useDefaultExcludes>false</useDefaultExcludes>
+                      </fileSet>
+                    </fileSets>
+                  </inline>
+                </assembly>
+                
+                <tags>
+                  <tag>latest</tag>
+                </tags>
+              </build>
+              <run>
+                <ports>
+                  <port>gogs.port:3000</port>
+                </ports>
+                <wait>
+                  <log>${gogs-waitFor}</log>
+                  <time>${dockerStartTimeout}</time>
+                </wait>
+                <log>
+                  <file>${project.build.directory}/gogs.log</file>
+                </log>
+                <network>
+                  <mode>${dockerNetworkMode}</mode>
+                  <name>${dockerNetwork}</name>
+                  <alias>gogs-test-appliance</alias>
+                </network>
+              </run>
+            </image>
+            <image>
+              <name>git-clone-test</name>
+              <build>
+                <from>centos</from>
+                <runCmds>
+                  <run>yum -y install git</run>
+                </runCmds>
+                <workdir>/checkout</workdir>
+                <cmd><![CDATA[git clone http://gogs-test-appliance:3000/commonjava/indy-config.git && (cd indy-config && pwd)]]></cmd>
+              </build>
+              <run>
+<!--                 <links>
+                  <link>gogs-test-appliance:gogs-test-appliance</link>
+                </links> -->
+                <log>
+                  <file>${project.build.directory}/git-test.log</file>
+                </log>
+                <network>
+                  <mode>${dockerNetworkMode}</mode>
+                  <name>${dockerNetwork}</name>
+                </network>
+                <wait>
+                  <log>/checkout/indy-config</log>
+                  <time>${dockerStartTimeout}</time>
+                </wait>
+              </run>
+            </image>
+          </images>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  
+</project>

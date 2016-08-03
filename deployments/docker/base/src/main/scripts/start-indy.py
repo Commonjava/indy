@@ -179,7 +179,7 @@ if indyEtcUrl is not None:
   print "Cloning: %s" % indyEtcUrl
   run("git clone --branch %s --verbose --progress %s %s 2>&1" % (indyEtcBranch, indyEtcUrl, INDY_ETC), "Failed to checkout %s branch of indy/etc from: %s" % (indyEtcBranch, indyEtcUrl))
   if indyEtcSubpath is not None and indyEtcSubpath != '.':
-    run("git read-tree -um --aggressive `git write-tree`: HEAD:%s" % indyEtcSubpath, "Failed to relocate %s subpath to %s", (indyEtcSubpath, INDY_ETC))
+    runIn("git read-tree -um --aggressive `git write-tree`: HEAD:%s" % indyEtcSubpath, INDY_ETC, "Failed to relocate %s subpath to %s", (indyEtcSubpath, INDY_ETC))
   
 move_and_link(INDY_ETC, ETC_INDY, replaceIfExists=True)
 move_and_link(INDY_STORAGE, VAR_STORAGE)
