@@ -92,7 +92,7 @@ public class DefaultIndyConfiguration
 
     public static final int DEFAULT_NOT_FOUND_CACHE_TIMEOUT_SECONDS = 300;
 
-    public static final int DEFAULT_REQUEST_TIMEOUT_SECONDS = 30;
+    public static final int DEFAULT_REQUEST_TIMEOUT_SECONDS = 5;
 
     public static final int DEFAULT_STORE_DISABLE_TIMEOUT_SECONDS = 1800; // 30 minutes
 
@@ -132,24 +132,26 @@ public class DefaultIndyConfiguration
         return notFoundCacheTimeoutSeconds == null ? DEFAULT_NOT_FOUND_CACHE_TIMEOUT_SECONDS : notFoundCacheTimeoutSeconds;
     }
 
+    @Override
     public int getRequestTimeoutSeconds()
     {
         return requestTimeoutSeconds == null ? DEFAULT_REQUEST_TIMEOUT_SECONDS : requestTimeoutSeconds;
     }
 
     @ConfigName( "request.timeout" )
-    public void setRequestTimeoutSeconds( Integer requestTimeoutSeconds )
+    public void setRequestTimeoutSeconds( final Integer requestTimeoutSeconds )
     {
         this.requestTimeoutSeconds = requestTimeoutSeconds;
     }
 
+    @Override
     public int getStoreDisableTimeoutSeconds()
     {
         return storeDisableTimeoutSeconds == null ? DEFAULT_STORE_DISABLE_TIMEOUT_SECONDS : storeDisableTimeoutSeconds;
     }
 
     @ConfigName( "store.disable.timeout" )
-    public void setStoreDisableTimeoutSeconds( Integer storeDisableTimeoutSeconds )
+    public void setStoreDisableTimeoutSeconds( final Integer storeDisableTimeoutSeconds )
     {
         this.storeDisableTimeoutSeconds = storeDisableTimeoutSeconds;
     }
