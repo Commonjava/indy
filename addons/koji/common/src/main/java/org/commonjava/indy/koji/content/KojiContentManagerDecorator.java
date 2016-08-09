@@ -151,7 +151,7 @@ public abstract class KojiContentManagerDecorator
         try
         {
             return kojiClient.withKojiSession( ( session ) -> {
-                List<KojiBuildInfo> builds = kojiClient.listBuilds( gav, session );
+                List<KojiBuildInfo> builds = kojiClient.listBuildsContaining( gav, session );
 
                 Collections.sort( builds, ( build1, build2 ) -> build1.getCreationTime().compareTo( build2.getCreationTime() ) );
 

@@ -60,9 +60,8 @@
     <partylineVersion>1.7</partylineVersion>
     <keycloakVersion>1.9.8.Final</keycloakVersion>
     <jhttpcVersion>1.3-SNAPSHOT</jhttpcVersion>
-    <kojijiVersion>1.0</kojijiVersion>
+    <kojijiVersion>1.1-SNAPSHOT</kojijiVersion>
     <rwxVersion>1.0</rwxVersion>
-    <kojijiVersion>1.0</kojijiVersion>
     <bouncycastleVersion>1.53</bouncycastleVersion>
     
     <test-forkCount>4</test-forkCount>
