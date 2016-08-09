@@ -30,6 +30,7 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -125,10 +126,10 @@ public abstract class KojiContentManagerDecorator
             ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
             if ( pathInfo != null )
             {
-                ProjectVersionRef gav = pathInfo.getProjectId();
-                logger.info( "Searching for Koji build: {}", gav );
+                ArtifactRef artifactRef = pathInfo.getArtifact();
+                logger.info( "Searching for Koji build: {}", artifactRef );
 
-                RemoteRepository buildRepo = proxyKojiBuild( gav );
+                RemoteRepository buildRepo = proxyKojiBuild( artifactRef );
                 if ( buildRepo != null )
                 {
                     result = adjustTargetGroupAndRetrieve( buildRepo, group, path, eventMetadata );
@@ -144,27 +145,31 @@ public abstract class KojiContentManagerDecorator
         return result;
     }
 
-    private RemoteRepository proxyKojiBuild( ProjectVersionRef gav )
+    private RemoteRepository proxyKojiBuild( ArtifactRef artifactRef )
             throws IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         try
         {
             return kojiClient.withKojiSession( ( session ) -> {
-                List<KojiBuildInfo> builds = kojiClient.listBuildsContaining( gav, session );
+                List<KojiBuildInfo> builds = kojiClient.listBuildsContaining( artifactRef, session );
 
                 Collections.sort( builds, ( build1, build2 ) -> build1.getCreationTime().compareTo( build2.getCreationTime() ) );
+
+                logger.debug( "Got {} builds from koji. Looking for best match.", builds.size() );
 
                 for ( KojiBuildInfo build : builds )
                 {
                     if ( build.getTaskId() == null )
                     {
+                        logger.debug( "Build: {} is not a real build. It looks like a binary import. Skipping.", build.getNvr() );
                         // This is not a real build, it's a binary import.
                         continue;
                     }
                     
-                    logger.info( "Trying build: {}", build.getNvr() );
+                    logger.info( "Trying build: {} with id: {}", build.getNvr(), build.getId() );
                     List<KojiTagInfo> tags = kojiClient.listTags( build.getId(), session );
+                    logger.debug( "Build is in {} tags...", tags.size() );
                     for ( KojiTagInfo tag : tags )
                     {
                         // If the tags match patterns configured in whitelist, construct a new remote repo.
@@ -179,10 +184,10 @@ public abstract class KojiContentManagerDecorator
                                 remote.setServerCertPem( config.getServerPemContent() );
 
                                 // TODO: name repo creation more flexible, including timeouts, etc.
-                                remote.setMetadata( CREATION_TRIGGER_GAV, gav.toString() );
+                                remote.setMetadata( CREATION_TRIGGER_GAV, artifactRef.toString() );
                                 remote.setMetadata( NVR, build.getNvr() );
                                 remote.setDescription(
-                                        String.format( "Koji build: %s (for GAV: %s)", build.getNvr(), gav ) );
+                                        String.format( "Koji build: %s (for GAV: %s)", build.getNvr(), artifactRef ) );
 
                                 return remote;
                             }
@@ -200,15 +205,23 @@ public abstract class KojiContentManagerDecorator
                                         e, e.getMessage() );
                             }
                         }
+                        else
+                        {
+                            logger.debug( "Tag: {} is not in the whitelist.", tag.getName() );
+                        }
                     }
+
+                    logger.debug( "No whitelisted tags found for: {}", build.getNvr() );
                 }
+
+                logger.debug( "No builds were found that matched the restrictions." );
 
                 return null;
             } );
         }
         catch ( KojiClientException e )
         {
-            throw new IndyWorkflowException( "Cannot retrieve builds for: %s. Error: %s", e, gav, e.getMessage() );
+            throw new IndyWorkflowException( "Cannot retrieve builds for: %s. Error: %s", e, artifactRef, e.getMessage() );
         }
     }
 
