@@ -426,7 +426,8 @@ public class IndyKojiConfig
                         targetGroups = new LinkedHashMap<>();
                     }
 
-                    String source = name.substring( "target.".length(), name.length() - 1 );
+                    String source = name.substring( "target.".length(), name.length() );
+                    logger.debug( "KOJI: Group {} targets group {}", source, value );
                     targetGroups.put( source, value );
                 }
                 else
@@ -471,19 +472,24 @@ public class IndyKojiConfig
 
     public boolean isEnabledFor( String name )
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
         if ( targetGroups == null )
         {
+            logger.warn( "No target groups defined for Koji access!" );
             return false;
         }
 
         for ( String key : targetGroups.keySet() )
         {
-            if ( name.matches( key ) )
+            logger.debug( "Checking target pattern '{}' against group name: '{}'", key, name );
+            if ( name.equals(key) || name.matches( key ) )
             {
+                logger.info( "Target group for {} is {}", name, key );
                 return true;
             }
         }
 
+        logger.warn( "No target group found for: {}", name );
         return false;
     }
 }

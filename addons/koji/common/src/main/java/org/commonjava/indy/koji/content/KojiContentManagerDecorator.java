@@ -23,6 +23,7 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiBuildArchiveCollection;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
@@ -53,6 +54,7 @@ import javax.decorator.Delegate;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.util.Collections;
 import java.util.List;
@@ -250,6 +252,8 @@ public abstract class KojiContentManagerDecorator
             KojiBuildArchiveCollection archiveCollection = kojiClient.listArchivesForBuild( build.getId(), session );
 
             String name = "koji-" + build.getNvr();
+
+            // Using a RemoteRepository allows us to use the higher-level APIs in Indy, as opposed to TransferManager
             RemoteRepository remote = new RemoteRepository( name, formatStorageUrl( build ) );
 
             remote.setServerCertPem( config.getServerPemContent() );
@@ -276,12 +280,13 @@ public abstract class KojiContentManagerDecorator
                 RepoAndTransfer result = new RepoAndTransfer();
                 result.repo = hosted;
 
+                AtomicInteger counter = new AtomicInteger( 0 );
                 ValueHolder<Throwable> requestedTransferError = new ValueHolder<>();
                 archiveCollection.stream()
                                  .filter( ( archive ) -> artifactRef.equals( archive.asArtifact() ) )
                                  .findFirst()
                                  .ifPresent( ( archive ) -> result.transfer =
-                                         transferBuildArtifact( archive, remote, hosted, build, eventMetadata,
+                                         transferBuildArtifact( archive, remote, hosted, build, eventMetadata, counter, true,
                                                                 (path, error, e)-> requestedTransferError.setValue( e ) ) );
 
                 Throwable error = requestedTransferError.getValue();
@@ -294,17 +299,11 @@ public abstract class KojiContentManagerDecorator
                 executorService.execute(()->{
                     try
                     {
-                        AtomicInteger counter = new AtomicInteger( 0 );
                         archiveCollection.stream()
                                          .filter( ( archive ) -> !artifactRef.equals( archive.asArtifact() ) )
-                                         .forEach( ( archive ) -> executor.submit(
-                                                 () -> {
-                                                     counter.incrementAndGet();
-                                                     return transferBuildArtifact( archive, remote, hosted, build,
-                                                                            eventMetadata,
+                                         .forEach( ( archive ) -> transferBuildArtifact( archive, remote, hosted, build, eventMetadata, counter, false,
                                                                             ( path, message, e ) -> logger.error(
-                                                                                    message.toString(), e ) );
-                                                 } ) );
+                                                                                    message.toString(), e ) ) );
 
                         for( int i=0; i<counter.get(); i++)
                         {
@@ -363,8 +362,8 @@ public abstract class KojiContentManagerDecorator
     }
 
     private Transfer transferBuildArtifact( KojiArchiveInfo archive, RemoteRepository remote, HostedRepository hosted,
-                                            KojiBuildInfo build, EventMetadata eventMetadata,
-                                            ErrorHandler errorHandler )
+                                            KojiBuildInfo build, EventMetadata eventMetadata, AtomicInteger counter,
+                                            boolean wait, ErrorHandler errorHandler )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         String path = String.format( "%s/%s/%s/%s", archive.getGroupId().replace( '.', '/' ), archive.getArtifactId(),
@@ -388,21 +387,55 @@ public abstract class KojiContentManagerDecorator
         // copy download to hosted
         if ( transfer != null )
         {
-            try (InputStream in = transfer.openInputStream())
+            try
             {
-                delegate.store( hosted, path, in, TransferOperation.UPLOAD, eventMetadata );
+                Transfer target = delegate.getTransfer( hosted, path, TransferOperation.DOWNLOAD );
+                Transfer source = transfer;
+
+                counter.incrementAndGet();
+
+                // We thread this off so we can make maximum use of partyline to read while the transfer is still in
+                // progress, and so we can execute multiple downloads in parallel.
+                //
+                // If we're not waiting on this transfer, then don't worry about synchronizing to watch for the start of
+                // the transfer.
+                executor.submit( ()-> {
+                    try (InputStream in = source.openInputStream( true, eventMetadata );
+                         OutputStream out = target.openOutputStream( TransferOperation.UPLOAD, true, eventMetadata ))
+                    {
+                        if ( wait )
+                        {
+                            synchronized ( target )
+                            {
+                                target.notifyAll();
+                            }
+                        }
+
+                        IOUtils.copy( in, out );
+                    }
+                    return target;
+                } );
+
+                if ( wait )
+                {
+                    synchronized ( target )
+                    {
+                        logger.debug( "Waiting for {} download to start for Koji build: {}", path, build.getNvr() );
+                        target.wait();
+                    }
+                }
+
+                return target;
             }
             catch ( IndyWorkflowException e )
             {
                 errorHandler.error( path,
-                                    new StringFormatter( "Failed to store: %s from Koji build: %s in: %s.", e,
-                                                 path, build.getNvr(), hosted.getKey(), e.getMessage()), e );
+                                    new StringFormatter( "Failed to store: %s from Koji build: %s in: %s.", e, path,
+                                                         build.getNvr(), hosted.getKey(), e.getMessage() ), e );
             }
-            catch ( IOException e )
+            catch ( InterruptedException e )
             {
-                errorHandler.error( path,
-                                    new StringFormatter( "Failed to transfer: %s from Koji build: %s in: %s.",
-                                                 e, path, build.getNvr(), hosted.getKey(), e.getMessage() ), e );
+                logger.info( "Interrupted while waiting for transfer: {} of Koji build: {} to start", path, build.getNvr() );
             }
         }
 
