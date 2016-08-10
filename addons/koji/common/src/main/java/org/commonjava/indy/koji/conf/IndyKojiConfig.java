@@ -17,6 +17,7 @@ package org.commonjava.indy.koji.conf;
 
 import com.redhat.red.build.koji.config.KojiConfig;
 import org.commonjava.indy.conf.IndyConfigInfo;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.util.jhttpc.model.SiteConfig;
 import org.commonjava.util.jhttpc.model.SiteConfigBuilder;
 import org.commonjava.util.jhttpc.model.SiteTrustType;
@@ -61,6 +62,8 @@ public class IndyKojiConfig
 
     private static final boolean DEFAULT_ENABLED = false;
 
+    private static final Integer DEFAULT_DOWNLOAD_TIMEOUT_SECONDS = 600;
+
     private Boolean enabled;
 
     private String url;
@@ -90,6 +93,8 @@ public class IndyKojiConfig
     private List<String> tagPatterns;
 
     private Map<String, String> targetGroups;
+
+    private Integer downloadTimeoutSeconds;
 
     @Override
     public SiteConfig getKojiSiteConfig()
@@ -195,6 +200,11 @@ public class IndyKojiConfig
     public Integer getRequestTimeoutSeconds()
     {
         return requestTimeoutSeconds == null ? DEFAULT_REQUEST_TIMEOUT_SECONDS : requestTimeoutSeconds;
+    }
+
+    public Integer getDownloadTimeoutSeconds()
+    {
+        return downloadTimeoutSeconds == null ? DEFAULT_DOWNLOAD_TIMEOUT_SECONDS : downloadTimeoutSeconds;
     }
 
     public String getSiteTrustType()
@@ -459,4 +469,21 @@ public class IndyKojiConfig
         return null;
     }
 
+    public boolean isEnabledFor( String name )
+    {
+        if ( targetGroups == null )
+        {
+            return false;
+        }
+
+        for ( String key : targetGroups.keySet() )
+        {
+            if ( name.matches( key ) )
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
