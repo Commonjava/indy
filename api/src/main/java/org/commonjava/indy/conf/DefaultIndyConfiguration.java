@@ -20,7 +20,6 @@ import org.commonjava.web.config.annotation.SectionName;
 import org.commonjava.web.config.section.ConfigurationSectionListener;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import java.io.File;
 import java.io.InputStream;
 
@@ -36,7 +35,7 @@ public class DefaultIndyConfiguration
 
     public static final int DEFAULT_NOT_FOUND_CACHE_TIMEOUT_SECONDS = 300;
 
-    public static final int DEFAULT_REQUEST_TIMEOUT_SECONDS = 30;
+    public static final int DEFAULT_REQUEST_TIMEOUT_SECONDS = 5;
 
     public static final int DEFAULT_STORE_DISABLE_TIMEOUT_SECONDS = 1800; // 30 minutes
 
@@ -76,17 +75,19 @@ public class DefaultIndyConfiguration
         return notFoundCacheTimeoutSeconds == null ? DEFAULT_NOT_FOUND_CACHE_TIMEOUT_SECONDS : notFoundCacheTimeoutSeconds;
     }
 
+    @Override
     public int getRequestTimeoutSeconds()
     {
         return requestTimeoutSeconds == null ? DEFAULT_REQUEST_TIMEOUT_SECONDS : requestTimeoutSeconds;
     }
 
     @ConfigName( "request.timeout" )
-    public void setRequestTimeoutSeconds( Integer requestTimeoutSeconds )
+    public void setRequestTimeoutSeconds( final Integer requestTimeoutSeconds )
     {
         this.requestTimeoutSeconds = requestTimeoutSeconds;
     }
 
+    @Override
     public int getStoreDisableTimeoutSeconds()
     {
         return storeDisableTimeoutSeconds == null ? DEFAULT_STORE_DISABLE_TIMEOUT_SECONDS : storeDisableTimeoutSeconds;
@@ -104,14 +105,14 @@ public class DefaultIndyConfiguration
         return getSyspropDir( IndyConfigFactory.CONFIG_DIR_PROP );
     }
 
-    private File getSyspropDir( String property )
+    private File getSyspropDir( final String property )
     {
         String dir = System.getProperty( property );
         return isEmpty(dir) ? null : new File( dir );
     }
 
     @ConfigName( "store.disable.timeout" )
-    public void setStoreDisableTimeoutSeconds( Integer storeDisableTimeoutSeconds )
+    public void setStoreDisableTimeoutSeconds( final Integer storeDisableTimeoutSeconds )
     {
         this.storeDisableTimeoutSeconds = storeDisableTimeoutSeconds;
     }
