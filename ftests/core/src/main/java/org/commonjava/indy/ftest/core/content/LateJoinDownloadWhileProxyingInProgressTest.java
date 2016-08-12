@@ -50,8 +50,11 @@ public class LateJoinDownloadWhileProxyingInProgressTest
     public void downloadTwiceWhileSlowProxyCompletes()
         throws Exception
     {
+        RemoteRepository rmt = new RemoteRepository( STORE, server.formatUrl( STORE ) );
+        rmt.setTimeoutSeconds( 30 );
+
         client.stores()
-              .create( new RemoteRepository( STORE, server.formatUrl( STORE ) ), "adding test proxy",
+              .create( rmt, "adding test proxy",
                        RemoteRepository.class );
 
         final String path = "org/foo/foo-project/1/foo-1.txt";
@@ -75,18 +78,14 @@ public class LateJoinDownloadWhileProxyingInProgressTest
         System.out.println( "Waiting for content transfers to complete." );
         latch.await();
 
-        final PathInfo result = client.content()
-                                      .getInfo( remote, STORE, path );
-
-        assertThat( "no result", result, notNullValue() );
-        assertThat( "doesn't exist", result.exists(), equalTo( true ) );
+        waitForEventPropagation();
 
         System.out.printf( "Timing results:\n  Input started: {}\n  Input ended: {}\n  Download1 started: {}\n  Download1 ended: {}\\n  Download2 started: {}\\n  Download2 ended: {}",
                            input.getStartTime(), input.getEndTime(), download.getStartTime(), download.getEndTime(),
                            download2.getStartTime(), download2.getEndTime() );
 
         assertThat( "First download retrieved wrong content", Arrays.equals( download.getContent()
-                                           .toByteArray(), data ), equalTo( true ) );
+                                                                                     .toByteArray(), data ), equalTo( true ) );
 
         assertThat( "Second download retrieved wrong content", Arrays.equals( download2.getContent()
                                                                                        .toByteArray(), data ),
@@ -97,6 +96,12 @@ public class LateJoinDownloadWhileProxyingInProgressTest
 
         assertThat( "Second download started after input ended.", input.getEndTime() > download2.getStartTime(),
                     equalTo( true ) );
+
+        final PathInfo result = client.content()
+                                      .getInfo( remote, STORE, path );
+
+        assertThat( "no result", result, notNullValue() );
+        assertThat( "doesn't exist", result.exists(), equalTo( true ) );
     }
 
 }

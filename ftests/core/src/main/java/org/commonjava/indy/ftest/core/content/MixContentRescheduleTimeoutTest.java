@@ -50,7 +50,7 @@ public class MixContentRescheduleTimeoutTest
         final String pomUrl = server.formatUrl( repoId, pomPath );
         final String metadataUrl = server.formatUrl( repoId, metadataPath );
         final int CACHE_TIMEOUT_SECONDS = 8;
-        final int CACHE_TIMEOUT_WAITING_MILLISECONDS = 4000;
+        final int CACHE_TIMEOUT_WAITING_MILLISECONDS = getTestTimeoutMultiplier() * 4000;
         final int METADATA_TIMEOUT_SECONDS = 4;
 
         // mocking up a http server that expects access to a .pom

@@ -167,6 +167,8 @@ public class GroupMetaOverlapWithNestedGroupOfHostRepoNoMetaTest
         System.out.printf( "\n\nUpdated group constituents are:\n  %s\n\n",
                            StringUtils.join( bottomGroup.getConstituents(), "\n  " ) );
 
+        waitForEventPropagation();
+
         // the top group should not reflect the meta file deprecation and expiration
         final String gpLevelMetaFilePath =
                 String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(), group.name(),

@@ -33,17 +33,17 @@ import static org.junit.Assert.assertThat;
 public class MetadataPassthroughTimeoutWorkingTest
         extends AbstractMetadataTimeoutWorkingTest
 {
-    private static final int CACHE_TIMEOUT_SECONDS = 2;
+    private final int CACHE_TIMEOUT_SECONDS = 2;
 
-    private static final int CACHE_TIMEOUT_WAITING_MILLISECONDS = 3000;
+    private final int CACHE_TIMEOUT_WAITING_MILLISECONDS = getTestTimeoutMultiplier() * 3000;
 
-    private static final int METADATA_TIMEOUT_SECONDS = 7;
+    private final int METADATA_TIMEOUT_SECONDS = 7;
 
-    private static final int METADATA_TIMEOUT_WAITING_MILLISECONDS = 5000;
+    private final int METADATA_TIMEOUT_WAITING_MILLISECONDS = getTestTimeoutMultiplier() * 5000;
 
-    private static final int PASSTHROUGH_TIMEOUT_SECONDS = 9;
+    private final int PASSTHROUGH_TIMEOUT_SECONDS = 9;
 
-    private static final int PASSTHROUGH_TIMEOUT_WAITING_MILLISECONDS = 2000;
+    private final int PASSTHROUGH_TIMEOUT_WAITING_MILLISECONDS = getTestTimeoutMultiplier() * 2000;
 
     @Override
     protected void initTestConfig( CoreServerFixture fixture )

@@ -171,6 +171,8 @@ public class GroupMetadataOverlappingWithMetadataOfHostedReposTest
         System.out.printf( "\n\nUpdated group constituents are:\n  %s\n\n",
                            StringUtils.join( g.getConstituents(), "\n  " ) );
 
+        waitForEventPropagation();
+
         final String gpLevelMetaFilePath =
                 String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(), group.name(),
                                g.getName(), path );
