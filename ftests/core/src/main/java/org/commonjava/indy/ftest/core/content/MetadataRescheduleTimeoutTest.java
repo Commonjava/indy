@@ -46,7 +46,7 @@ public class MetadataRescheduleTimeoutTest
             throws Exception
     {
         final int METADATA_TIMEOUT_SECONDS = 4;
-        final int METADATA_TIMEOUT_WAITING_MILLISECONDS = 2500;
+        final int METADATA_TIMEOUT_WAITING_MILLISECONDS = getTestTimeoutMultiplier() * 2500;
 
         final String repoId = "test-repo";
         final String metadataPath = "org/foo/bar/maven-metadata.xml";

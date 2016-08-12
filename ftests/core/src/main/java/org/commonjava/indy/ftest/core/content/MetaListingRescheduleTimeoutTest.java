@@ -53,7 +53,7 @@ public class MetaListingRescheduleTimeoutTest
             throws Exception
     {
         final int METADATA_TIMEOUT_SECONDS = 4;
-        final int METADATA_TIMEOUT_WAITING_MILLISECONDS = 2500;
+        final int METADATA_TIMEOUT_WAITING_MILLISECONDS = 3000;
 
         final String repoId = "test-repo";
         // path without trailing slash for ExpectationServer...
@@ -109,6 +109,8 @@ public class MetaListingRescheduleTimeoutTest
 
         // will wait another 2.5s
         Thread.sleep( METADATA_TIMEOUT_WAITING_MILLISECONDS );
+
+//        logger.info( "Checking whether metadata file {} has been deleted...", listingMetaFile );
         // as rescheduled, the artifact should not be deleted
         assertThat( "artifact should be removed as the rescheduled of metadata should not succeed",
                     listingMetaFile.exists(), equalTo( false ) );

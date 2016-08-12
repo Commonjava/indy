@@ -88,9 +88,9 @@
                 <cmd><![CDATA[git clone http://gogs-test-appliance:3000/commonjava/indy-config.git && (cd indy-config && pwd)]]></cmd>
               </build>
               <run>
-<!--                 <links>
+                <links>
                   <link>gogs-test-appliance:gogs-test-appliance</link>
-                </links> -->
+                </links>
                 <log>
                   <file>${project.build.directory}/git-test.log</file>
                 </log>

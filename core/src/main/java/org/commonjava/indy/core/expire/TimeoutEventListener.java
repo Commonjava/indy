@@ -195,6 +195,7 @@ public class TimeoutEventListener
                 SpecialPathInfo info = specialPathManager.getSpecialPathInfo( transfer );
                 if ( info == null || !info.isMetadata() )
                 {
+                    logger.debug( "Accessed resource {} timeout will be reset.", transfer );
                     try
                     {
                         scheduleManager.setProxyTimeouts( key, transfer.getPath() );
@@ -203,6 +204,10 @@ public class TimeoutEventListener
                     {
                         logger.error( "Failed to set proxy-cache timeouts related to: " + transfer, e );
                     }
+                }
+                else
+                {
+                    logger.debug( "Accessed resource {} is metadata. NOT rescheduling timeout!", transfer );
                 }
             }
         }

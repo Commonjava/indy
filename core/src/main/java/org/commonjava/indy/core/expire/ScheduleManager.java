@@ -265,6 +265,7 @@ public class ScheduleManager
         {
             if ( (info != null && info.isMetadata()) && repo.getMetadataTimeoutSeconds() > 0 )
             {
+                logger.debug( "Using metadata timeout for: {}", resource );
                 timeout = repo.getMetadataTimeoutSeconds();
             }
             else

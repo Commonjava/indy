@@ -57,15 +57,14 @@
     <resteasyVersion>3.0.9.Final</resteasyVersion>
     <undertowVersion>1.1.2.Final</undertowVersion>
     <xnioVersion>3.3.0.Final</xnioVersion>
-    <partylineVersion>1.7</partylineVersion>
+    <partylineVersion>1.8-SNAPSHOT</partylineVersion>
     <keycloakVersion>1.9.8.Final</keycloakVersion>
     <jhttpcVersion>1.3-SNAPSHOT</jhttpcVersion>
-    <kojijiVersion>1.0</kojijiVersion>
+    <kojijiVersion>1.1-SNAPSHOT</kojijiVersion>
     <rwxVersion>1.0</rwxVersion>
-    <kojijiVersion>1.0</kojijiVersion>
     <bouncycastleVersion>1.53</bouncycastleVersion>
     
-    <test-forkCount>4</test-forkCount>
+    <test-forkCount>3</test-forkCount>
     <test-redirectOutput>true</test-redirectOutput>
     <skipITs>true</skipITs>
     <quickITs>true</quickITs>
@@ -1227,7 +1226,7 @@
       <id>ci</id>
       <properties>
         <skipTests>false</skipTests>
-        <test-forkCount>2</test-forkCount>
+        <test-forkCount>1</test-forkCount>
         <testEnvTimeoutMultiplier>6</testEnvTimeoutMultiplier>
 
         <dockerNetworkMode>custom</dockerNetworkMode>

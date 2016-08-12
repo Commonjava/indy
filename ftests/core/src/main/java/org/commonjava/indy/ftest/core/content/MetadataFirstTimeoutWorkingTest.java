@@ -29,13 +29,13 @@ import static org.junit.Assert.assertThat;
 public class MetadataFirstTimeoutWorkingTest
         extends AbstractMetadataTimeoutWorkingTest
 {
-    private static final int METADATA_TIMEOUT_SECONDS = 2;
+    private final int METADATA_TIMEOUT_SECONDS = 2;
 
-    private static final int METADATA_TIMEOUT_WAITING_MILLISECONDS = 3000;
+    private final int METADATA_TIMEOUT_WAITING_MILLISECONDS = getTestTimeoutMultiplier() * 3000;
 
-    private static final int CACHE_TIMEOUT_SECONDS = 7;
+    private final int CACHE_TIMEOUT_SECONDS = 7;
 
-    private static final int CACHE_TIMEOUT_WAITING_MILLISECONDS = 5000;
+    private final int CACHE_TIMEOUT_WAITING_MILLISECONDS = getTestTimeoutMultiplier() * 5000;
 
     @Test
     public void timeout()
