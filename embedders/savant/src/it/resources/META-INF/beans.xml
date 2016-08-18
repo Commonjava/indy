@@ -15,17 +15,13 @@
        version="1.1" bean-discovery-mode="all">
       
   <alternatives>
-    <stereotype>org.commonjava.indy.inject.Production</stereotype>
-
+    <stereotype>org.commonjava.indy.inject.TestData</stereotype>
+    
     <class>org.commonjava.indy.flat.data.DataFileStoreDataManager</class>
   </alternatives>
   
   <decorators>
     <class>org.commonjava.indy.autoprox.data.AutoProxDataManagerDecorator</class>
-    <class>org.commonjava.indy.content.index.IndexingContentManagerDecorator</class>
-    <class>org.commonjava.indy.content.index.IndexingDirectContentAccessDecorator</class>
-    <class>org.commonjava.indy.koji.content.KojiContentManagerDecorator</class>
-    <class>org.commonjava.indy.implrepo.data.ImpliedReposStoreDataManagerDecorator</class>
   </decorators>
       
 </beans>

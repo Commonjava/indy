@@ -16,6 +16,7 @@
 package org.commonjava.indy.ftest.core.content;
 
 import org.commonjava.indy.client.core.helper.PathInfo;
+import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
@@ -43,6 +44,7 @@ public class MetadataRescheduleTimeoutTest
     public ExpectationServer server = new ExpectationServer( "repos" );
 
     @Test
+    @Category( EventDependent.class )
     public void timeout()
             throws Exception
     {

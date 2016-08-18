@@ -18,12 +18,14 @@ package org.commonjava.indy.ftest.core.content;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.client.core.helper.PathInfo;
+import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -59,6 +61,7 @@ public class GroupMetaOverlapWithNestedGroupOfHostRepoMetaTest
     public ExpectationServer server = new ExpectationServer();
 
     @Test
+    @Category( EventDependent.class )
     public void run()
             throws Exception
     {

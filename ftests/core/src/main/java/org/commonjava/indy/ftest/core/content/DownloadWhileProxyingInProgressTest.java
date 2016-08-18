@@ -70,7 +70,7 @@ public class DownloadWhileProxyingInProgressTest
         System.out.println( "Waiting for content transfers to complete." );
         latch.await();
 
-        waitForEventPropagation();
+//        waitForEventPropagation();
 
         System.out.printf( "Timing results:\n  Input started: {}\n  Input ended: {}\n  Download started: {}\n  Download ended: {}",
                            input.getStartTime(), input.getEndTime(), download.getStartTime(), download.getEndTime() );

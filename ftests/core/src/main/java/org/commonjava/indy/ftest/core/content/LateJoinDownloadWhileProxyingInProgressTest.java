@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 
 import org.commonjava.indy.client.core.helper.PathInfo;
+import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.ftest.core.fixture.DelayedDownload;
 import org.commonjava.indy.ftest.core.fixture.InputTimer;
 import org.commonjava.indy.ftest.core.fixture.ReluctantInputStream;
@@ -32,6 +33,7 @@ import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class LateJoinDownloadWhileProxyingInProgressTest
     extends AbstractContentManagementTest
@@ -47,6 +49,7 @@ public class LateJoinDownloadWhileProxyingInProgressTest
     }
 
     @Test
+    @Category( TimingDependent.class )
     public void downloadTwiceWhileSlowProxyCompletes()
         throws Exception
     {
@@ -78,7 +81,7 @@ public class LateJoinDownloadWhileProxyingInProgressTest
         System.out.println( "Waiting for content transfers to complete." );
         latch.await();
 
-        waitForEventPropagation();
+//        waitForEventPropagation();
 
         System.out.printf( "Timing results:\n  Input started: {}\n  Input ended: {}\n  Download1 started: {}\n  Download1 ended: {}\\n  Download2 started: {}\\n  Download2 ended: {}",
                            input.getStartTime(), input.getEndTime(), download.getStartTime(), download.getEndTime(),

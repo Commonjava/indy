@@ -1,10 +1,12 @@
+package org.commonjava.indy.koji;
+
 import org.commonjava.indy.koji.content.KojiContentManagerDecorator
 import org.commonjava.indy.koji.content.KojiRepositoryCreator
 import org.commonjava.indy.model.core.HostedRepository
 import org.commonjava.indy.model.core.RemoteRepository
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef
 
-class Creator implements KojiRepositoryCreator
+class RepoCreator implements KojiRepositoryCreator
 {
     @Override
     RemoteRepository createRemoteRepository(String name, String url, Integer downloadTimeoutSeconds) {

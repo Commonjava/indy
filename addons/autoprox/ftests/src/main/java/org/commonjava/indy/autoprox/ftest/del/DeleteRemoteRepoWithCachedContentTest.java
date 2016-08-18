@@ -21,16 +21,19 @@ import static org.junit.Assert.assertThat;
 import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.dto.StoreListingDTO;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class DeleteRemoteRepoWithCachedContentTest
     extends AbstractAutoproxDeletionTest
 {
 
     @Test
+    @Category( EventDependent.class )
     public void deleteRepoWithContent_RepoNotReCreatedWhenContentIsDeleted()
         throws Exception
     {

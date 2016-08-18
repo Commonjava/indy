@@ -1,10 +1,12 @@
+package org.commonjava.indy.implrepo;
+
 import org.commonjava.indy.implrepo.change.ImpliedRepositoryCreator
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.galley.maven.model.view.RepositoryView;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.slf4j.Logger;
 
-class DefaultImpliedRepoCreator implements ImpliedRepositoryCreator
+class RepoCreator implements ImpliedRepositoryCreator
 {
     @Override
     RemoteRepository createFrom(ProjectVersionRef implyingGAV, RepositoryView repo, Logger logger) {
