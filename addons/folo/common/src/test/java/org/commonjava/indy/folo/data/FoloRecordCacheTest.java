@@ -19,6 +19,7 @@ import org.commonjava.indy.folo.model.StoreEffect;
 import org.commonjava.indy.folo.model.TrackedContent;
 import org.commonjava.indy.folo.model.TrackedContentEntry;
 import org.commonjava.indy.folo.model.TrackingKey;
+import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.infinispan.Cache;
@@ -80,8 +81,9 @@ public class FoloRecordCacheTest
         final TrackingKey key = newKey();
         assertThat( cache.hasRecord( key ), equalTo( false ) );
 
-        cache.recordArtifact( new TrackedContentEntry( key, new StoreKey( StoreType.remote, "foo" ), "", "/path",
-                                                       StoreEffect.DOWNLOAD, "", "", "" ) );
+        cache.recordArtifact( new TrackedContentEntry( key, new StoreKey( StoreType.remote, "foo" ),
+                                                       AccessChannel.MAVEN_REPO, "", "/path", StoreEffect.DOWNLOAD, "", "",
+                                                       "" ) );
 
         assertThat( cache.hasRecord( key ), equalTo( true ) );
         assertThat( cache.hasInProgressRecord( key ), equalTo( true ) );
@@ -101,8 +103,9 @@ public class FoloRecordCacheTest
         final TrackingKey key = newKey();
         assertThat( cache.hasRecord( key ), equalTo( false ) );
 
-        cache.recordArtifact( new TrackedContentEntry( key, new StoreKey( StoreType.remote, "foo" ), "", "/path",
-                                                       StoreEffect.DOWNLOAD, "", "", "" ) );
+        cache.recordArtifact( new TrackedContentEntry( key, new StoreKey( StoreType.remote, "foo" ),
+                                                       AccessChannel.MAVEN_REPO, "", "/path", StoreEffect.DOWNLOAD, "",
+                                                       "", "" ) );
 
         assertThat( cache.hasRecord( key ), equalTo( true ) );
         assertThat( cache.hasInProgressRecord( key ), equalTo( true ) );
@@ -122,8 +125,9 @@ public class FoloRecordCacheTest
         final TrackingKey key = newKey();
         assertThat( cache.hasRecord( key ), equalTo( false ) );
 
-        cache.recordArtifact( new TrackedContentEntry( key, new StoreKey( StoreType.remote, "foo" ), "", "/path",
-                                                       StoreEffect.DOWNLOAD, "", "", "" ) );
+        cache.recordArtifact( new TrackedContentEntry( key, new StoreKey( StoreType.remote, "foo" ),
+                                                       AccessChannel.MAVEN_REPO, "", "/path", StoreEffect.DOWNLOAD, "",
+                                                       "", "" ) );
 
         TrackedContent record = cache.seal( key );
 

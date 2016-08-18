@@ -28,6 +28,7 @@ import org.commonjava.indy.httprox.conf.HttproxConfig;
 import org.commonjava.indy.httprox.conf.TrackingType;
 import org.commonjava.indy.httprox.keycloak.KeycloakProxyAuthenticator;
 import org.commonjava.indy.httprox.util.HttpConduitWrapper;
+import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.subsys.http.HttpWrapper;
 import org.commonjava.indy.subsys.http.util.UserPass;
@@ -80,7 +81,7 @@ public final class ProxyResponseWriter
 
     public ProxyResponseWriter( final HttproxConfig config, final StoreDataManager storeManager,
                                 final ContentController contentController,
-                                KeycloakProxyAuthenticator proxyAuthenticator, CacheProvider cacheProvider )
+                                final KeycloakProxyAuthenticator proxyAuthenticator, final CacheProvider cacheProvider )
     {
         this.config = config;
         this.contentController = contentController;
@@ -203,7 +204,7 @@ public final class ProxyResponseWriter
         }
     }
 
-    private void handleError( Throwable error, HttpWrapper http )
+    private void handleError( final Throwable error, final HttpWrapper http )
     {
         logger.error( "HTTProx request failed: " + error.getMessage(), error );
         try
@@ -275,8 +276,8 @@ public final class ProxyResponseWriter
         }
     }
 
-    private EventMetadata createEventMetadata( boolean writeBody, UserPass proxyUserPass, String path,
-                                               RemoteRepository repo )
+    private EventMetadata createEventMetadata( final boolean writeBody, final UserPass proxyUserPass, final String path,
+                                               final RemoteRepository repo )
                     throws IndyWorkflowException
     {
         final EventMetadata eventMetadata = new EventMetadata();
@@ -321,6 +322,8 @@ public final class ProxyResponseWriter
             {
                 logger.debug( "TRACKING {} in {} (KEY: {})", path, repo, tk );
                 eventMetadata.set( FoloConstants.TRACKING_KEY, tk );
+
+                eventMetadata.set( FoloConstants.ACCESS_CHANNEL, AccessChannel.GENERIC_PROXY );
             }
             else
             {
@@ -381,7 +384,7 @@ public final class ProxyResponseWriter
         this.error = error;
     }
 
-    public void setHttpRequest( HttpRequest request )
+    public void setHttpRequest( final HttpRequest request )
     {
         this.httpRequest = request;
     }

@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.folo.dto;
 
+import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.indy.model.core.StoreKey;
 
 public class TrackedContentEntryDTO
@@ -22,6 +23,8 @@ public class TrackedContentEntryDTO
 {
 
     private StoreKey storeKey;
+
+    private AccessChannel accessChannel;
 
     private String path;
 
@@ -39,9 +42,10 @@ public class TrackedContentEntryDTO
     {
     }
 
-    public TrackedContentEntryDTO( final StoreKey storeKey, final String path )
+    public TrackedContentEntryDTO( final StoreKey storeKey, final AccessChannel accessChannel, final String path )
     {
         this.storeKey = storeKey;
+        this.accessChannel = accessChannel;
         this.path = path.startsWith( "/" ) ? path : "/" + path;
     }
 
@@ -85,7 +89,7 @@ public class TrackedContentEntryDTO
         this.sha256 = sha256;
     }
 
-    public void setSha1( String sha1 )
+    public void setSha1( final String sha1 )
     {
         this.sha1 = sha1;
     }
@@ -104,6 +108,16 @@ public class TrackedContentEntryDTO
         this.storeKey = storeKey;
     }
 
+    public AccessChannel getAccessChannel()
+    {
+        return accessChannel;
+    }
+
+    public void setAccessChannel( final AccessChannel accessChannel )
+    {
+        this.accessChannel = accessChannel;
+    }
+
     public String getPath()
     {
         return path;
@@ -120,6 +134,10 @@ public class TrackedContentEntryDTO
         int comp = storeKey.compareTo( other.getStoreKey() );
         if ( comp == 0 )
         {
+            comp = accessChannel.compareTo( other.getAccessChannel() );
+        }
+        if ( comp == 0 )
+        {
             comp = path.compareTo( other.getPath() );
         }
 
@@ -133,6 +151,7 @@ public class TrackedContentEntryDTO
         int result = 1;
         result = prime * result + ( ( path == null ) ? 0 : path.hashCode() );
         result = prime * result + ( ( storeKey == null ) ? 0 : storeKey.hashCode() );
+        result = prime * result + ( ( accessChannel == null ) ? 0 : accessChannel.hashCode() );
         return result;
     }
 
@@ -174,14 +193,25 @@ public class TrackedContentEntryDTO
         {
             return false;
         }
+        if ( accessChannel == null )
+        {
+            if ( other.accessChannel != null )
+            {
+                return false;
+            }
+        }
+        else if ( !accessChannel.equals( other.accessChannel ) )
+        {
+            return false;
+        }
         return true;
     }
 
     @Override
     public String toString()
     {
-        return String.format( "TrackedContentEntryDTO [\n  storeKey=%s\n  path=%s\n  originUrl=%s\n  localUrl=%s\n  md5=%s\n  sha256=%s\n]",
-                              storeKey, path, originUrl, localUrl, md5, sha256 );
+        return String.format( "TrackedContentEntryDTO [\n  storeKey=%s\n  accessChannel=%s\n  path=%s\n  originUrl=%s\n  localUrl=%s\n  md5=%s\n  sha256=%s\n]",
+                              storeKey, accessChannel, path, originUrl, localUrl, md5, sha256 );
     }
 
 }

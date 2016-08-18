@@ -16,11 +16,7 @@
 package org.commonjava.indy.folo.ctl;
 
 import org.commonjava.indy.IndyWorkflowException;
-import org.commonjava.indy.content.ContentDigest;
 import org.commonjava.indy.content.ContentManager;
-import org.commonjava.indy.content.DownloadManager;
-import org.commonjava.indy.data.IndyDataException;
-import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.folo.data.FoloContentException;
 import org.commonjava.indy.folo.data.FoloFiler;
 import org.commonjava.indy.folo.data.FoloRecordCache;
@@ -29,9 +25,7 @@ import org.commonjava.indy.folo.dto.TrackedContentEntryDTO;
 import org.commonjava.indy.folo.model.TrackedContent;
 import org.commonjava.indy.folo.model.TrackedContentEntry;
 import org.commonjava.indy.folo.model.TrackingKey;
-import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
@@ -50,7 +44,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.zip.ZipEntry;
@@ -72,27 +65,19 @@ public class FoloAdminController
     private FoloFiler filer;
 
     @Inject
-    private DownloadManager downloadManager;
-
-    @Inject
     private ContentManager contentManager;
 
-    @Inject
-    private StoreDataManager storeManager;
 
     protected FoloAdminController()
     {
     }
 
     public FoloAdminController( final FoloRecordCache recordManager, final FoloFiler filer,
-                                final DownloadManager downloadManager, ContentManager contentManager,
-                                StoreDataManager storeManager )
+                                final ContentManager contentManager )
     {
         this.recordManager = recordManager;
         this.filer = filer;
-        this.downloadManager = downloadManager;
         this.contentManager = contentManager;
-        this.storeManager = storeManager;
     }
 
     public TrackedContentDTO seal( final String id )
@@ -162,37 +147,8 @@ public class FoloAdminController
         return file;
     }
 
-    @Deprecated
-    private void addTransfers( Set<String> paths, StoreKey sk, List<Transfer> items, String trackingId,
-                               Set<String> seenPaths )
-            throws IndyWorkflowException
-    {
-        if ( paths != null )
-        {
-            for ( String path : paths )
-            {
-                if ( path == null || seenPaths.contains( path ) )
-                {
-                    continue;
-                }
-
-                Transfer transfer = contentManager.getTransfer( sk, path, TransferOperation.DOWNLOAD );
-                if ( transfer == null )
-                {
-                    Logger logger = LoggerFactory.getLogger( getClass() );
-                    logger.warn( "While creating Folo repo zip for: {}, cannot find: {} in: {}", trackingId, path, sk );
-                }
-                else
-                {
-                    seenPaths.add( path );
-                    items.add( transfer );
-                }
-            }
-        }
-    }
-
-    private void addTransfers( Set<TrackedContentEntry> entries, List<Transfer> items, String trackingId,
-                               Set<String> seenPaths )
+    private void addTransfers( final Set<TrackedContentEntry> entries, final List<Transfer> items, final String trackingId,
+                               final Set<String> seenPaths )
             throws IndyWorkflowException
     {
         if(entries!=null && !entries.isEmpty()){
@@ -257,60 +213,6 @@ public class FoloAdminController
         return new TrackedContentDTO( tk, uploads, downloads );
     }
 
-    @Deprecated
-    private void addEntries( final Set<TrackedContentEntryDTO> entries, final StoreKey key, final Set<String> paths,
-                             final String apiBaseUrl )
-            throws IndyWorkflowException
-    {
-        for ( final String path : paths )
-        {
-            final Transfer txfr = downloadManager.getStorageReference( key, path );
-            if ( txfr != null )
-            {
-                final TrackedContentEntryDTO entry = new TrackedContentEntryDTO( key, path );
-
-                try
-                {
-                    final String localUrl =
-                            UrlUtils.buildUrl( apiBaseUrl, key.getType().singularEndpointName(), key.getName(), path );
-
-                    String remoteUrl = null;
-                    if ( StoreType.remote == key.getType() )
-                    {
-                        final RemoteRepository repo = storeManager.getRemoteRepository( key.getName() );
-                        if ( repo != null )
-                        {
-                            remoteUrl = UrlUtils.buildUrl( repo.getUrl(), path );
-                        }
-                    }
-
-                    entry.setLocalUrl( localUrl );
-                    entry.setOriginUrl( remoteUrl );
-
-                    final Map<ContentDigest, String> digests =
-                            contentManager.digest( key, path, ContentDigest.MD5, ContentDigest.SHA_1,
-                                                   ContentDigest.SHA_256 );
-
-                    entry.setMd5( digests.get( ContentDigest.MD5 ) );
-                    entry.setSha256( digests.get( ContentDigest.SHA_256 ) );
-                    entry.setSha1( digests.get( ContentDigest.SHA_1 ) );
-
-                    entries.add( entry );
-                }
-                catch ( final IndyDataException e )
-                {
-                    throw new IndyWorkflowException(
-                            "Cannot retrieve RemoteRepository: %s to calculate remote URL for: %s. Reason: %s", e, key,
-                            path, e.getMessage() );
-                }
-                catch ( final MalformedURLException e )
-                {
-                    throw new IndyWorkflowException( "Cannot format URL. Reason: %s", e, e.getMessage() );
-                }
-            }
-        }
-    }
-
     public TrackedContentDTO getRecord( final String id )
             throws IndyWorkflowException
     {
@@ -344,7 +246,8 @@ public class FoloAdminController
         {
             return null;
         }
-        TrackedContentEntryDTO entryDTO = new TrackedContentEntryDTO( entry.getStoreKey(), entry.getPath() );
+        TrackedContentEntryDTO entryDTO = new TrackedContentEntryDTO( entry.getStoreKey(), entry.getAccessChannel(),
+                                                                      entry.getPath() );
         entryDTO.setOriginUrl( entry.getOriginUrl() );
         entryDTO.setMd5( entry.getMd5() );
         entryDTO.setSha1( entry.getSha1() );
