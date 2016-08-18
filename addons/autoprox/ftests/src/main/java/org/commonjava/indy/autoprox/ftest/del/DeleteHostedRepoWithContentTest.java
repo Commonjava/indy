@@ -53,10 +53,7 @@ public class DeleteHostedRepoWithContentTest
               .delete( StoreType.hosted, named, "Removing test repo" );
 
         System.out.println( "Waiting for server events to clear..." );
-        synchronized ( this )
-        {
-            wait( 3000 );
-        }
+        waitForEventPropagation();
 
         final StoreListingDTO<HostedRepository> repos = client.stores()
                                                               .listHostedRepositories();

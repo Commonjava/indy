@@ -28,6 +28,8 @@ import org.commonjava.indy.httprox.conf.HttproxConfig;
 import org.commonjava.indy.httprox.conf.TrackingType;
 import org.commonjava.indy.httprox.keycloak.KeycloakProxyAuthenticator;
 import org.commonjava.indy.httprox.util.HttpConduitWrapper;
+import org.commonjava.indy.inject.IndyData;
+import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.subsys.http.HttpWrapper;
 import org.commonjava.indy.subsys.http.util.UserPass;
@@ -74,19 +76,23 @@ public final class ProxyResponseWriter
 
     private CacheProvider cacheProvider;
 
+    private ProxyRepositoryCreator repoCreator;
+
     private boolean transferred;
 
     private HttpRequest httpRequest;
 
     public ProxyResponseWriter( final HttproxConfig config, final StoreDataManager storeManager,
                                 final ContentController contentController,
-                                KeycloakProxyAuthenticator proxyAuthenticator, CacheProvider cacheProvider )
+                                KeycloakProxyAuthenticator proxyAuthenticator, CacheProvider cacheProvider,
+                                ProxyRepositoryCreator repoCreator )
     {
         this.config = config;
         this.contentController = contentController;
         this.storeManager = storeManager;
         this.proxyAuthenticator = proxyAuthenticator;
         this.cacheProvider = cacheProvider;
+        this.repoCreator = repoCreator;
     }
 
     @Override
@@ -356,17 +362,17 @@ public final class ProxyResponseWriter
 
             final UrlInfo info = new UrlInfo( url.toExternalForm() );
 
-            remote = new RemoteRepository( name, baseUrl );
-            remote.setDescription( "HTTProx proxy based on: " + info.getUrl() );
-
-            final UserPass up = UserPass.parse( ApplicationHeader.authorization, httpRequest, url.getAuthority() );
-            if ( up != null )
+            if ( repoCreator == null )
             {
-                remote.setUser( up.getUser() );
-                remote.setPassword( up.getPassword() );
+                throw new IndyDataException(
+                        "No valid instance of ProxyRepositoryCreator. Cannot auto-create remote proxy to: '{}'",
+                        baseUrl );
             }
 
-            remote.setPathStyle( hashed );
+            final UserPass up = UserPass.parse( ApplicationHeader.authorization, httpRequest, url.getAuthority() );
+
+            remote = repoCreator.create( name, baseUrl, info, up, LoggerFactory.getLogger( repoCreator.getClass() ) );
+            remote.setMetadata( ArtifactStore.METADATA_ORIGIN, ProxyAcceptHandler.HTTPROX_ORIGIN );
 
             storeManager.storeArtifactStore( remote, new ChangeSummary( ChangeSummary.SYSTEM_USER,
                                                                         "Creating HTTProx proxy for: "

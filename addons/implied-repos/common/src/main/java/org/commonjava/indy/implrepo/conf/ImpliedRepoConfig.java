@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.implrepo.conf;
 
+import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.annotation.SectionName;
@@ -29,6 +30,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.PatternSyntaxException;
 
 @ApplicationScoped
@@ -42,19 +44,23 @@ public class ImpliedRepoConfig
 
     public static final String ENABLED_KEY = "enabled";
 
+    public static final String ENABLE_GROUP_KEY = "enabled.group";
+
     public static final String INCLUDE_SNAPSHOTS_KEY = "include.snapshots";
 
     public static final String DISABLED_HOST_KEY = "disable";
 
-    public static final boolean DEFAULT_ENABLED = false;
-
     public static final boolean DEFAULT_INCLUDE_SNAPSHOT_REPOS = false;
+
+    public static final boolean DEFAULT_ENABLED = false;
 
     private Boolean enabled;
 
+    private List<String> enabledGroupNamePatterns;
+
     private Boolean includeSnapshotRepos;
 
-    private List<String> blacklist = new ArrayList<>();
+    private List<String> blacklistedHosts = new ArrayList<>();
 
     public ImpliedRepoConfig()
     {
@@ -65,9 +71,19 @@ public class ImpliedRepoConfig
         return enabled == null ? DEFAULT_ENABLED : enabled;
     }
 
-    public void setEnabled( final Boolean enabled )
+    public void setEnabled( boolean enabled )
     {
         this.enabled = enabled;
+    }
+
+    public List<String> getEnabledGroupNamePatterns()
+    {
+        return enabledGroupNamePatterns;
+    }
+
+    public void setEnabledGroupNamePatterns( List<String> enabledGroupNamePatterns )
+    {
+        this.enabledGroupNamePatterns = enabledGroupNamePatterns;
     }
 
     public boolean isIncludeSnapshotRepos()
@@ -80,9 +96,32 @@ public class ImpliedRepoConfig
         this.includeSnapshotRepos = includeSnapshotRepos;
     }
     
-    public void addBlacklist( final String host )
+    public void addBlacklistedHost( final String host )
     {
-        this.blacklist.add( host );
+        this.blacklistedHosts.add( host );
+    }
+
+    public synchronized void addEnabledGroupNamePattern( String groupName )
+    {
+        if ( this.enabledGroupNamePatterns == null )
+        {
+            this.enabledGroupNamePatterns = new ArrayList<>();
+        }
+
+        this.enabledGroupNamePatterns.add( groupName );
+    }
+
+    public boolean isEnabledForGroup( String name )
+    {
+        if ( enabledGroupNamePatterns == null || StringUtils.isEmpty( name ) )
+        {
+            return false;
+        }
+
+        Optional<String> found =
+                enabledGroupNamePatterns.stream().filter( ( pattern ) -> name.matches( pattern ) ).findFirst();
+
+        return found.isPresent();
     }
 
     public boolean isBlacklisted( final URL url )
@@ -100,13 +139,13 @@ public class ImpliedRepoConfig
         String hostAndProto = proto + "://" + host;
         String u = url.toString();
 
-        if ( blacklist.contains( host ) || blacklist.contains( hostAndPort ) || blacklist.contains(
-                hostAndPortAndProto ) || blacklist.contains( hostAndProto ) || blacklist.contains( u ) )
+        if ( blacklistedHosts.contains( host ) || blacklistedHosts.contains( hostAndPort ) || blacklistedHosts.contains(
+                hostAndPortAndProto ) || blacklistedHosts.contains( hostAndProto ) || blacklistedHosts.contains( u ) )
         {
             return true;
         }
 
-        for ( String bl : blacklist )
+        for ( String bl : blacklistedHosts )
         {
             try
             {
@@ -125,18 +164,18 @@ public class ImpliedRepoConfig
         return false;
     }
 
-    public List<String> getBlacklist()
+    public List<String> getBlacklistedHosts()
     {
-        return blacklist;
+        return blacklistedHosts;
     }
 
-    public void setBlacklist( final List<String> blacklist )
+    public void setBlacklistedHosts( final List<String> blacklistedHosts )
     {
-        this.blacklist = blacklist;
+        this.blacklistedHosts = blacklistedHosts;
     }
 
     @Override
-    public void parameter( final String name, final String value )
+    public synchronized void parameter( final String name, final String value )
         throws ConfigurationException
     {
         switch ( name )
@@ -146,6 +185,16 @@ public class ImpliedRepoConfig
                 this.enabled = Boolean.parseBoolean( value );
                 break;
             }
+            case ENABLE_GROUP_KEY:
+            {
+                if ( enabledGroupNamePatterns == null )
+                {
+                    enabledGroupNamePatterns = new ArrayList<>();
+                }
+
+                this.enabledGroupNamePatterns.add( value );
+                break;
+            }
             case INCLUDE_SNAPSHOTS_KEY:
             {
                 this.includeSnapshotRepos = Boolean.parseBoolean( value );
@@ -153,7 +202,7 @@ public class ImpliedRepoConfig
             }
             case DISABLED_HOST_KEY:
             {
-                this.blacklist.add( value );
+                this.blacklistedHosts.add( value );
                 break;
             }
             default:
@@ -216,5 +265,4 @@ public class ImpliedRepoConfig
         final URL u = new URL( url );
         return isBlacklisted( u );
     }
-
 }

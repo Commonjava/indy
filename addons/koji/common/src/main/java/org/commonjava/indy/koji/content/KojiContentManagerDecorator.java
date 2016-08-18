@@ -24,7 +24,6 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
@@ -39,6 +38,8 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.subsys.template.IndyGroovyException;
+import org.commonjava.indy.subsys.template.ScriptEngine;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -58,8 +59,6 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
@@ -97,9 +96,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class KojiContentManagerDecorator
         implements ContentManager
 {
-    private static final String CREATION_TRIGGER_GAV = "creation-trigger-GAV";
+    public static final String CREATION_TRIGGER_GAV = "creation-trigger-GAV";
 
-    private static final String NVR = "koji-NVR";
+    public static final String NVR = "koji-NVR";
+
+    public static final String KOJI_ORIGIN = "koji";
+
+    private static final String KOJI_REPO_CREATOR_SCRIPT = "koji-repo-creator.groovy";
 
     @Delegate
     @Inject
@@ -122,12 +125,29 @@ public abstract class KojiContentManagerDecorator
     @ExecutorConfig( named = "koji-downloads", threads = 4, daemon = false )
     private ExecutorService executorService;
 
+    @Inject
+    private ScriptEngine scriptEngine;
+
     private ExecutorCompletionService<Transfer> executor;
+
+    private KojiRepositoryCreator creator;
 
     @PostConstruct
     public void init()
     {
         executor = new ExecutorCompletionService<Transfer>( executorService );
+        try
+        {
+            creator = scriptEngine.parseStandardScriptInstance( ScriptEngine.StandardScriptType.store_creators,
+                                                                KOJI_REPO_CREATOR_SCRIPT, KojiRepositoryCreator.class );
+        }
+        catch ( IndyGroovyException e )
+        {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.error( String.format( "Cannot create KojiRepositoryCreator instance: %s. Disabling Koji support.",
+                                         e.getMessage() ), e );
+            config.setEnabled( false );
+        }
     }
 
     @Override
@@ -254,23 +274,18 @@ public abstract class KojiContentManagerDecorator
             String name = "koji-" + build.getNvr();
 
             // Using a RemoteRepository allows us to use the higher-level APIs in Indy, as opposed to TransferManager
-            RemoteRepository remote = new RemoteRepository( name, formatStorageUrl( build ) );
+            RemoteRepository remote = creator.createRemoteRepository( name, formatStorageUrl( build ),
+                                                                      config.getDownloadTimeoutSeconds() );
 
             remote.setServerCertPem( config.getServerPemContent() );
-            remote.setTimeoutSeconds( config.getDownloadTimeoutSeconds() );
+            remote.setMetadata( ArtifactStore.METADATA_ORIGIN, KOJI_ORIGIN );
             storeDataManager.storeArtifactStore( remote, new ChangeSummary( ChangeSummary.SYSTEM_USER,
                                                                             "Creating TEMPORARY remote repository for Koji build: "
                                                                                     + build.getNvr() ) );
 
-            HostedRepository hosted = new HostedRepository( name );
-            hosted.setAllowReleases( true );
-            hosted.setAllowSnapshots( false );
-            hosted.setMetadata( CREATION_TRIGGER_GAV, artifactRef.toString() );
-            hosted.setMetadata( NVR, build.getNvr() );
-            hosted.setDescription(
-                    String.format( "Koji build: %s (triggered by: %s via: %s)", build.getNvr(), originatingPath,
-                                   eventMetadata.get( ENTRY_POINT_STORE ) ) );
+            HostedRepository hosted = creator.createHostedRepository( name, artifactRef, build.getNvr() );
 
+            hosted.setMetadata( ArtifactStore.METADATA_ORIGIN, KOJI_ORIGIN );
             storeDataManager.storeArtifactStore( hosted, new ChangeSummary( ChangeSummary.SYSTEM_USER,
                                                                             "Creating hosted repository for Koji build: "
                                                                                     + build.getNvr() ) );
@@ -286,8 +301,10 @@ public abstract class KojiContentManagerDecorator
                                  .filter( ( archive ) -> artifactRef.equals( archive.asArtifact() ) )
                                  .findFirst()
                                  .ifPresent( ( archive ) -> result.transfer =
-                                         transferBuildArtifact( archive, remote, hosted, build, eventMetadata, counter, true,
-                                                                (path, error, e)-> requestedTransferError.setValue( e ) ) );
+                                         transferBuildArtifact( archive, remote, hosted, build, eventMetadata, counter,
+                                                                true,
+                                                                ( path, error, e ) -> requestedTransferError.setValue(
+                                                                        e ) ) );
 
                 Throwable error = requestedTransferError.getValue();
                 if ( error != null )
@@ -296,16 +313,18 @@ public abstract class KojiContentManagerDecorator
                                                    error, originatingPath, build.getNvr(), error.getMessage() );
                 }
 
-                executorService.execute(()->{
+                executorService.execute( () -> {
                     try
                     {
                         archiveCollection.stream()
                                          .filter( ( archive ) -> !artifactRef.equals( archive.asArtifact() ) )
-                                         .forEach( ( archive ) -> transferBuildArtifact( archive, remote, hosted, build, eventMetadata, counter, false,
-                                                                            ( path, message, e ) -> logger.error(
-                                                                                    message.toString(), e ) ) );
+                                         .forEach( ( archive ) -> transferBuildArtifact( archive, remote, hosted, build,
+                                                                                         eventMetadata, counter, false,
+                                                                                         ( path, message, e ) -> logger.error(
+                                                                                                 message.toString(),
+                                                                                                 e ) ) );
 
-                        for( int i=0; i<counter.get(); i++)
+                        for ( int i = 0; i < counter.get(); i++ )
                         {
                             Future<Transfer> future = executor.take();
                             future.get();
@@ -313,7 +332,9 @@ public abstract class KojiContentManagerDecorator
                     }
                     catch ( InterruptedException e )
                     {
-                        logger.warn( "WARNING! Local copy of build may be INCOMPLETE: {}\n  The thread was interrupted while awaiting transfers from Koji build.", build.getNvr() );
+                        logger.warn(
+                                "WARNING! Local copy of build may be INCOMPLETE: {}\n  The thread was interrupted while awaiting transfers from Koji build.",
+                                build.getNvr() );
                     }
                     catch ( ExecutionException e )
                     {
@@ -323,9 +344,10 @@ public abstract class KojiContentManagerDecorator
                     {
                         try
                         {
-                            storeDataManager.deleteArtifactStore( remote.getKey(), new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                                                      "Removing temporary remote repository for: "
-                                                                                                              + build.getNvr() ) );
+                            storeDataManager.deleteArtifactStore( remote.getKey(),
+                                                                  new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                                     "Removing temporary remote repository for: "
+                                                                                             + build.getNvr() ) );
                         }
                         catch ( IndyDataException e )
                         {
@@ -336,7 +358,7 @@ public abstract class KojiContentManagerDecorator
                     }
 
                     logger.info( "Transfer of Koji build: {} is finished.", build.getNvr() );
-                });
+                } );
 
                 return result;
             }
@@ -379,9 +401,8 @@ public abstract class KojiContentManagerDecorator
         }
         catch ( IndyWorkflowException e )
         {
-            errorHandler.error( path,
-                              new StringFormatter( "Failed to retrieve: %s from Koji build: %s.", e, path,
-                                             build.getNvr(), e.getMessage() ), e );
+            errorHandler.error( path, new StringFormatter( "Failed to retrieve: %s from Koji build: %s.", e, path,
+                                                           build.getNvr(), e.getMessage() ), e );
         }
 
         // copy download to hosted
@@ -399,7 +420,7 @@ public abstract class KojiContentManagerDecorator
                 //
                 // If we're not waiting on this transfer, then don't worry about synchronizing to watch for the start of
                 // the transfer.
-                executor.submit( ()-> {
+                executor.submit( () -> {
                     try (InputStream in = source.openInputStream( true, eventMetadata );
                          OutputStream out = target.openOutputStream( TransferOperation.UPLOAD, true, eventMetadata ))
                     {
@@ -435,7 +456,8 @@ public abstract class KojiContentManagerDecorator
             }
             catch ( InterruptedException e )
             {
-                logger.info( "Interrupted while waiting for transfer: {} of Koji build: {} to start", path, build.getNvr() );
+                logger.info( "Interrupted while waiting for transfer: {} of Koji build: {} to start", path,
+                             build.getNvr() );
             }
         }
 
@@ -508,7 +530,7 @@ public abstract class KojiContentManagerDecorator
 
     interface ErrorHandler
     {
-        void error(String path, Object error, Throwable e);
+        void error( String path, Object error, Throwable e );
     }
 
     private static final class StringFormatter

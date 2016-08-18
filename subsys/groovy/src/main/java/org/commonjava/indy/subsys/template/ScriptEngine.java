@@ -16,22 +16,141 @@
 package org.commonjava.indy.subsys.template;
 
 import groovy.lang.GroovyClassLoader;
-
-import java.io.File;
-import java.io.IOException;
+import org.apache.commons.io.IOUtils;
+import org.codehaus.groovy.control.CompilationFailedException;
+import org.commonjava.indy.subsys.datafile.DataFile;
+import org.commonjava.indy.subsys.datafile.DataFileManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
-
-import org.codehaus.groovy.control.CompilationFailedException;
+import javax.inject.Inject;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Paths;
 
 @ApplicationScoped
 public class ScriptEngine
 {
 
+    public static final String SCRIPTS_SUBDIR = "scripts";
+
+    public enum StandardScriptType
+    {
+        store_creators( "stores" );
+
+        private String subdir;
+
+        StandardScriptType( String subdir )
+        {
+            this.subdir = subdir;
+        }
+
+        public String subdir()
+        {
+            return subdir;
+        }
+    }
+
+    ;
+
     private final GroovyClassLoader groovyClassloader = new GroovyClassLoader();
 
+    @Inject
+    private DataFileManager dataFileManager;
+
+    protected ScriptEngine()
+    {
+    }
+
+    public ScriptEngine( DataFileManager dataFileManager )
+    {
+        this.dataFileManager = dataFileManager;
+    }
+
+    /**
+     * Provide a standard set of places to store common types of scripts used throughout Indy, such as
+     * {@link org.commonjava.indy.model.core.ArtifactStore} creators. This is better from a config maintenance
+     * perspective than having these spread out across the whole data/ subdirectory structure, particularly since it's
+     * likely if one script needs to be revised, they all will.
+     *
+     * If the script doesn't exist in the data/scripts directory structure, this method will search the classpath
+     * for the same path (scripts/[type]/[name]).
+     */
+    public <T> T parseStandardScriptInstance( final StandardScriptType scriptType, final String name,
+                                              final Class<T> type )
+            throws IndyGroovyException
+    {
+        DataFile dataFile = dataFileManager.getDataFile( SCRIPTS_SUBDIR, scriptType.subdir(), name );
+        String script = null;
+        if ( dataFile == null || !dataFile.exists() || dataFile.isDirectory() )
+        {
+            URL resource = Thread.currentThread()
+                                 .getContextClassLoader()
+                                 .getResource( Paths.get( SCRIPTS_SUBDIR, scriptType.subdir(), name ).toString() );
+            if ( resource == null )
+            {
+                throw new IndyGroovyException( "Cannot read standard script from: %s/%s/%s", SCRIPTS_SUBDIR,
+                                               scriptType.subdir(), name );
+            }
+            else
+            {
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.debug( "Loading script: {}/{}/{} for class: {} from classpath resource: {}", SCRIPTS_SUBDIR,
+                              scriptType, name, type.getName(), resource );
+                try (InputStream in = resource.openStream())
+                {
+                    script = IOUtils.toString( in );
+                }
+                catch ( IOException e )
+                {
+                    throw new IndyGroovyException( "Cannot read standard script from classpath: %s/%s/%s. Reason: %s",
+                                                   e, SCRIPTS_SUBDIR, scriptType.subdir(), name, e.getMessage() );
+                }
+            }
+        }
+        else
+        {
+            try
+            {
+                script = dataFile.readString();
+            }
+            catch ( IOException e )
+            {
+                throw new IndyGroovyException( "Failed to read standard script from: %s/%s. Reason: %s", e,
+                                               scriptType.subdir(), name, e.getMessage() );
+            }
+        }
+
+        Object instance = null;
+        try
+        {
+            final Class<?> clazz = groovyClassloader.parseClass( script );
+            instance = clazz.newInstance();
+
+            return type.cast( instance );
+        }
+        catch ( final CompilationFailedException e )
+        {
+            throw new IndyGroovyException( "Failed to compile groovy script: '%s'. Reason: %s", e, script,
+                                           e.getMessage() );
+        }
+        catch ( final InstantiationException | IllegalAccessException e )
+        {
+            throw new IndyGroovyException( "Cannot instantiate class parsed from script: '%s'. Reason: %s", e, script,
+                                           e.getMessage() );
+        }
+        catch ( final ClassCastException e )
+        {
+            throw new IndyGroovyException( "Script: '%s' instance: %s cannot be cast as: %s", e, script, instance,
+                                           type.getName() );
+        }
+    }
+
     public <T> T parseScriptInstance( final File script, final Class<T> type )
-        throws IndyGroovyException
+            throws IndyGroovyException
     {
         Object instance = null;
         try
@@ -44,31 +163,32 @@ public class ScriptEngine
         catch ( final CompilationFailedException e )
         {
             throw new IndyGroovyException( "Failed to compile groovy script: '%s'. Reason: %s", e, script,
-                                            e.getMessage() );
+                                           e.getMessage() );
         }
         catch ( final IOException e )
         {
-            throw new IndyGroovyException( "Failed to read groovy script: '%s'. Reason: %s", e, script, e.getMessage() );
+            throw new IndyGroovyException( "Failed to read groovy script: '%s'. Reason: %s", e, script,
+                                           e.getMessage() );
         }
         catch ( final InstantiationException e )
         {
             throw new IndyGroovyException( "Cannot instantiate class parsed from script: '%s'. Reason: %s", e, script,
-                                            e.getMessage() );
+                                           e.getMessage() );
         }
         catch ( final IllegalAccessException e )
         {
             throw new IndyGroovyException( "Cannot instantiate class parsed from script: '%s'. Reason: %s", e, script,
-                                            e.getMessage() );
+                                           e.getMessage() );
         }
         catch ( final ClassCastException e )
         {
             throw new IndyGroovyException( "Script: '%s' instance: %s cannot be cast as: %s", e, script, instance,
-                                            type.getName() );
+                                           type.getName() );
         }
     }
 
     public <T> T parseScriptInstance( final String script, final Class<T> type )
-        throws IndyGroovyException
+            throws IndyGroovyException
     {
         Object instance = null;
         try
@@ -81,22 +201,22 @@ public class ScriptEngine
         catch ( final CompilationFailedException e )
         {
             throw new IndyGroovyException( "Failed to compile groovy script: '%s'. Reason: %s", e, script,
-                                            e.getMessage() );
+                                           e.getMessage() );
         }
         catch ( final InstantiationException e )
         {
             throw new IndyGroovyException( "Cannot instantiate class parsed from script: '%s'. Reason: %s", e, script,
-                                            e.getMessage() );
+                                           e.getMessage() );
         }
         catch ( final IllegalAccessException e )
         {
             throw new IndyGroovyException( "Cannot instantiate class parsed from script: '%s'. Reason: %s", e, script,
-                                            e.getMessage() );
+                                           e.getMessage() );
         }
         catch ( final ClassCastException e )
         {
             throw new IndyGroovyException( "Script: '%s' instance: %s cannot be cast as: %s", e, script, instance,
-                                            type.getName() );
+                                           type.getName() );
         }
     }
 

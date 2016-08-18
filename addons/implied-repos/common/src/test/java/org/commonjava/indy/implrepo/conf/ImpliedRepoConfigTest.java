@@ -32,7 +32,7 @@ public class ImpliedRepoConfigTest
             throws MalformedURLException
     {
         ImpliedRepoConfig config = new ImpliedRepoConfig();
-        config.addBlacklist( ".+service.local.staging.*" );
+        config.addBlacklistedHost( ".+service.local.staging.*" );
 
         String url = "http://localhost:8081/service/local/staging/deploy";
         boolean blacklisted = config.isBlacklisted( url );

@@ -64,7 +64,7 @@
     <rwxVersion>1.0</rwxVersion>
     <bouncycastleVersion>1.53</bouncycastleVersion>
     
-    <test-forkCount>3</test-forkCount>
+    <test-forkCount>2</test-forkCount>
     <test-redirectOutput>true</test-redirectOutput>
     <skipITs>true</skipITs>
     <quickITs>true</quickITs>

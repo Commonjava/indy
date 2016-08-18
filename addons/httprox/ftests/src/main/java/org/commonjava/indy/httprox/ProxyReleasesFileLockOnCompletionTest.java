@@ -62,6 +62,7 @@ public class ProxyReleasesFileLockOnCompletionTest
                 client = proxiedHttp();
 
                 response = client.execute( get, proxyContext( USER, PASS ) );
+                logger.info( "{} Response status: {}", currentTry, response.getStatusLine() );
                 stream = response.getEntity()
                                  .getContent();
                 final String resultingPom = IOUtils.toString( stream );

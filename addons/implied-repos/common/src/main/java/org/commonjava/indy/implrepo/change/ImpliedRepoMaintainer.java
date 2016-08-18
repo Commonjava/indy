@@ -274,6 +274,12 @@ public class ImpliedRepoMaintainer
             return false;
         }
 
+        if ( !config.isEnabledForGroup( job.store.getName() ) )
+        {
+            logger.debug( "ImpliedRepoMaint: Implied repositories not enabled for group: {}", job.store.getKey() );
+            return false;
+        }
+
         logger.debug( "Processing group: {} for stores implied by membership which are not yet in the membership",
                       job.store.getName() );
         job.group = (Group) job.store;

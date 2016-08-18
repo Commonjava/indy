@@ -15,12 +15,16 @@
  */
 package org.commonjava.indy.implrepo.change;
 
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
@@ -31,11 +35,17 @@ import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.implrepo.ImpliedReposException;
 import org.commonjava.indy.implrepo.conf.ImpliedRepoConfig;
 import org.commonjava.indy.implrepo.data.ImpliedRepoMetadataManager;
+import org.commonjava.indy.implrepo.data.ImpliedReposStoreDataManagerDecorator;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
+import org.commonjava.indy.subsys.datafile.DataFile;
+import org.commonjava.indy.subsys.datafile.DataFileManager;
+import org.commonjava.indy.subsys.template.IndyGroovyException;
+import org.commonjava.indy.subsys.template.ScriptEngine;
+import org.commonjava.indy.subsys.template.TemplatingEngine;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 import org.commonjava.maven.atlas.ident.util.JoinString;
@@ -50,6 +60,9 @@ import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.commonjava.indy.implrepo.data.ImpliedReposStoreDataManagerDecorator.IMPLIED_REPO_ORIGIN;
+import static org.commonjava.indy.model.core.ArtifactStore.METADATA_ORIGIN;
+
 public class ImpliedRepositoryDetector
 {
     public static final String IMPLIED_REPOS_DETECTION = "implied-repos-detector";
@@ -57,6 +70,8 @@ public class ImpliedRepositoryDetector
     public static final String IMPLIED_BY_POM_TRANSFER = "pom-transfer";
 
     public static final String IMPLIED_REPOS = "implied-repositories";
+
+    private static final String IMPLIED_REPO_CREATOR_SCRIPT = "implied-repo-creator.groovy";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -70,19 +85,43 @@ public class ImpliedRepositoryDetector
     private ImpliedRepoMetadataManager metadataManager;
 
     @Inject
+    private ScriptEngine scriptEngine;
+
+    @Inject
     private ImpliedRepoConfig config;
+
+    private ImpliedRepositoryCreator creator;
 
     protected ImpliedRepositoryDetector()
     {
     }
 
     public ImpliedRepositoryDetector( final MavenPomReader pomReader, final StoreDataManager storeManager,
-                                      final ImpliedRepoMetadataManager metadataManager, final ImpliedRepoConfig config )
+                                      final ImpliedRepoMetadataManager metadataManager,
+                                      final ScriptEngine scriptEngine, final ImpliedRepoConfig config )
     {
         this.pomReader = pomReader;
         this.storeManager = storeManager;
         this.metadataManager = metadataManager;
+        this.scriptEngine = scriptEngine;
         this.config = config;
+        init();
+    }
+
+    @PostConstruct
+    public void init()
+    {
+        try
+        {
+            creator = scriptEngine.parseStandardScriptInstance( ScriptEngine.StandardScriptType.store_creators, IMPLIED_REPO_CREATOR_SCRIPT, ImpliedRepositoryCreator.class );
+        }
+        catch ( IndyGroovyException e )
+        {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.error( String.format( "Cannot create ImpliedRepositoryCreator instance: %s. Disabling implied-repos support.",
+                                         e.getMessage() ), e );
+            config.setEnabled( false );
+        }
     }
 
     public void detectRepos( @Observes final FileStorageEvent event )
@@ -272,6 +311,12 @@ public class ImpliedRepositoryDetector
         final List<List<RepositoryView>> repoLists =
             Arrays.asList( job.pomView.getAllRepositories(), job.pomView.getAllPluginRepositories() );
 
+        if ( creator == null )
+        {
+            logger.error( "Cannot proceed without a valid ImpliedRepositoryCreator instance. Aborting detection." );
+            return;
+        }
+
         for ( final List<RepositoryView> repos : repoLists )
         {
             if ( repos == null || repos.isEmpty() )
@@ -307,13 +352,15 @@ public class ImpliedRepositoryDetector
                 {
                     logger.debug( "Creating new RemoteRepository for: {}", repo );
 
-                    rr = new RemoteRepository( formatId( repo.getId() ), repo.getUrl() );
+                    rr = creator.createFrom( gav, repo, LoggerFactory.getLogger( creator.getClass() ) );
+                    if ( rr == null )
+                    {
+                        logger.warn( "ImpliedRepositoryCreator didn't create anything for repo: {}, specified in: {}. Skipping.",
+                                     repo.getId(), gav );
+                        continue;
+                    }
 
-                    rr.setAllowSnapshots( repo.isSnapshotsEnabled() );
-                    rr.setAllowReleases( repo.isReleasesEnabled() );
-
-                    rr.setDescription( "Implicitly created repo for: " + repo.getName() + " (" + repo.getId()
-                        + ") from repository declaration in POM: " + gav );
+                    rr.setMetadata( METADATA_ORIGIN, IMPLIED_REPO_ORIGIN );
 
                     final String changelog =
                         String.format( "Adding remote repository: %s (url: %s, name: %s), which is implied by the POM: %s (at: %s/%s)",
@@ -350,17 +397,6 @@ public class ImpliedRepositoryDetector
             }
         }
     }
-
-    protected String formatId( final String id )
-    {
-        //        return "implied-" + repo.getId() + "-" + formatNow();
-        return "i-" + id.replaceAll( "[^\\p{Alnum}]", "-" );
-    }
-
-    //    private String formatNow()
-    //    {
-    //        return new SimpleDateFormat( "yyyyMMdd_HHmm" ).format( new Date() );
-    //    }
 
     public class ImplicationsJob
     {

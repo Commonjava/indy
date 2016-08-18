@@ -37,7 +37,7 @@ import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.galley.maven.parse.PomPeek;
-import org.commonjava.test.http.TestHttpServer;
+import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +53,7 @@ public class AbstractHttproxFunctionalTest
     protected final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Rule
-    public TestHttpServer server = new TestHttpServer();
+    public ExpectationServer server = new ExpectationServer();
 
     protected int proxyPort;
 
