@@ -30,7 +30,7 @@ public class TrackingKey implements Externalizable
     @Field
     private String id;
 
-    protected TrackingKey()
+    public TrackingKey()
     {
     }
 
@@ -100,14 +100,14 @@ public class TrackingKey implements Externalizable
     }
 
     @Override
-    public void writeExternal( ObjectOutput out )
+    public void writeExternal( final ObjectOutput out )
             throws IOException
     {
         out.writeObject( id );
     }
 
     @Override
-    public void readExternal( ObjectInput in )
+    public void readExternal( final ObjectInput in )
             throws IOException, ClassNotFoundException
     {
         id = (String) in.readObject();

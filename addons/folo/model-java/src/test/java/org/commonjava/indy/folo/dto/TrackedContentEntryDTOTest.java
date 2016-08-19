@@ -16,6 +16,7 @@
 package org.commonjava.indy.folo.dto;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
@@ -38,7 +39,8 @@ public class TrackedContentEntryDTOTest
             throws IOException
     {
         TrackedContentEntryDTO in =
-                new TrackedContentEntryDTO( new StoreKey( StoreType.remote, "foo" ), "/path/to/my.pom" );
+                new TrackedContentEntryDTO( new StoreKey( StoreType.remote, "foo" ), AccessChannel.MAVEN_REPO,
+                                            "/path/to/my.pom" );
 
         assertRoundTrip( in, (out)->{} );
     }
@@ -48,7 +50,8 @@ public class TrackedContentEntryDTOTest
             throws IOException
     {
         TrackedContentEntryDTO in =
-                new TrackedContentEntryDTO( new StoreKey( StoreType.remote, "foo" ), "/path/to/my.pom" );
+                new TrackedContentEntryDTO( new StoreKey( StoreType.remote, "foo" ), AccessChannel.MAVEN_REPO,
+                                            "/path/to/my.pom" );
 
         String content = "This is a test string";
         in.setMd5( DigestUtils.md5Hex( content ) );
@@ -67,7 +70,8 @@ public class TrackedContentEntryDTOTest
             throws IOException
     {
         TrackedContentEntryDTO in =
-                new TrackedContentEntryDTO( new StoreKey( StoreType.remote, "foo" ), "/path/to/my.pom" );
+                new TrackedContentEntryDTO( new StoreKey( StoreType.remote, "foo" ), AccessChannel.MAVEN_REPO,
+                                            "/path/to/my.pom" );
 
         in.setLocalUrl( "http://localhost:8080/api/remote/foo/path/to/my.pom" );
         in.setOriginUrl( "http://foo.com/repo/path/to/my.pom" );
@@ -78,7 +82,7 @@ public class TrackedContentEntryDTOTest
         } );
     }
 
-    private void assertRoundTrip( TrackedContentEntryDTO in, Consumer<TrackedContentEntryDTO> extraAssertions )
+    private void assertRoundTrip( final TrackedContentEntryDTO in, final Consumer<TrackedContentEntryDTO> extraAssertions )
             throws IOException
     {
         IndyObjectMapper mapper = new IndyObjectMapper( true );

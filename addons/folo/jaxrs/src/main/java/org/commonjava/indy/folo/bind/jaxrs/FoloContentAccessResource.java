@@ -15,11 +15,9 @@
  */
 package org.commonjava.indy.folo.bind.jaxrs;
 
+import static org.commonjava.indy.folo.ctl.FoloConstants.ACCESS_CHANNEL;
 import static org.commonjava.indy.folo.ctl.FoloConstants.TRACKING_KEY;
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
-
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.setInfoHeaders;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -39,6 +37,7 @@ import org.commonjava.indy.core.bind.jaxrs.ContentAccessHandler;
 import org.commonjava.indy.core.bind.jaxrs.ContentAccessResource;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.folo.model.TrackingKey;
+import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,9 +45,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Modified copy of {@link ContentAccessResource} that collects a tracking ID in addition to store type and name, then hands this off to
  * {@link ContentController} (with {@link EventMetadata} containing the tracking ID), which records artifact accesses.
- * 
+ *
  * NOTE: This is a result of copy/paste programming, so changes to {@link ContentAccessResource} will have to be ported over.
- * 
+ *
  * @author jdcasey
  */
 @Path( "/api/folo/track/{id}/{type: (hosted|group|remote)}/{name}" )
@@ -80,17 +79,19 @@ public class FoloContentAccessResource
     {
         final TrackingKey tk = new TrackingKey( id );
 
-        return handler.doCreate( type, name, path, request, new EventMetadata().set( TRACKING_KEY, tk ), ()->uriInfo.getBaseUriBuilder()
-                                                                                                                                    .path( getClass() )
-                                                                                                                                    .path( path )
-                                                                                                                                    .build( id, type, name ) );
+        EventMetadata metadata = new EventMetadata().set( TRACKING_KEY, tk )
+                                                    .set( ACCESS_CHANNEL, AccessChannel.MAVEN_REPO );
+        return handler.doCreate( type, name, path, request, metadata, ()->uriInfo.getBaseUriBuilder()
+                                                                                 .path( getClass() )
+                                                                                 .path( path )
+                                                                                 .build( id, type, name ) );
     }
 
     @HEAD
     @Path( "/{path: (.*)}" )
     public Response doHead( @PathParam( "id" ) final String id, @PathParam( "type" ) final String type,
                             @PathParam( "name" ) final String name, @PathParam( "path" ) final String path,
-                            @QueryParam( CHECK_CACHE_ONLY ) Boolean cacheOnly, @Context final HttpServletRequest request, @Context final UriInfo uriInfo )
+                            @QueryParam( CHECK_CACHE_ONLY ) final Boolean cacheOnly, @Context final HttpServletRequest request, @Context final UriInfo uriInfo )
     {
         final TrackingKey tk = new TrackingKey( id );
 
@@ -100,8 +101,9 @@ public class FoloContentAccessResource
                                       .build()
                                       .toString();
 
-        return handler.doHead( type, name, path, cacheOnly, baseUri, request,
-                               new EventMetadata().set( TRACKING_KEY, tk ) );
+        EventMetadata metadata = new EventMetadata().set( TRACKING_KEY, tk )
+                                                    .set( ACCESS_CHANNEL, AccessChannel.MAVEN_REPO );
+        return handler.doHead( type, name, path, cacheOnly, baseUri, request, metadata );
     }
 
     @GET
@@ -117,7 +119,9 @@ public class FoloContentAccessResource
                                       .build()
                                       .toString();
 
-        return handler.doGet( type, name, path, baseUri, request, new EventMetadata().set( TRACKING_KEY, tk ) );
+        EventMetadata metadata = new EventMetadata().set( TRACKING_KEY, tk )
+                                                    .set( ACCESS_CHANNEL, AccessChannel.MAVEN_REPO );
+        return handler.doGet( type, name, path, baseUri, request, metadata );
     }
 
 }
