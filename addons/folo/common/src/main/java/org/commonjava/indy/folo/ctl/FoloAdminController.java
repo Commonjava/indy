@@ -252,6 +252,7 @@ public class FoloAdminController
         entryDTO.setMd5( entry.getMd5() );
         entryDTO.setSha1( entry.getSha1() );
         entryDTO.setSha256( entry.getSha256() );
+        entryDTO.setSize( entry.getSize() );
         return entryDTO;
     }
 

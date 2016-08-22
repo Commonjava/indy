@@ -16,6 +16,7 @@
 package org.commonjava.indy.folo.change;
 
 import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.content.ArtifactData;
 import org.commonjava.indy.content.ContentDigest;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DownloadManager;
@@ -187,14 +188,15 @@ public class FoloTrackingListener
                 }
 
 
-                Map<ContentDigest, String> digests =
+                ArtifactData artifactData =
                         contentManager.digest( affectedStore, path, ContentDigest.MD5, ContentDigest.SHA_1,
                                                ContentDigest.SHA_256 );
+                Map<ContentDigest, String> digests = artifactData.getDigests();
                 //TODO: As localUrl needs a apiBaseUrl which is from REST service context, to avoid deep propagate
                 //      of it, this step will be done in REST layer. Will think better way in the future.
                 entry = new TrackedContentEntry( trackingKey, affectedStore, accessChannel, remoteUrl, path, effect,
-                                                 digests.get( ContentDigest.MD5 ), digests.get( ContentDigest.SHA_1 ),
-                                                 digests.get( ContentDigest.SHA_256 ) );
+                                                 artifactData.getSize(), digests.get( ContentDigest.MD5 ),
+                                                 digests.get( ContentDigest.SHA_1 ), digests.get( ContentDigest.SHA_256 ) );
             }
             catch ( final IndyDataException e )
             {

@@ -64,6 +64,17 @@ public class TrackedContentEntryDTOTest
             assertThat( out.getSha1(), equalTo( in.getSha1() ) );
         } );
     }
+    @Test
+    public void jsonRoundTrip_size()
+            throws IOException
+    {
+        TrackedContentEntryDTO in =
+                new TrackedContentEntryDTO( new StoreKey( StoreType.remote, "foo" ), AccessChannel.MAVEN_REPO, "/path/to/my.pom" );
+
+        in.setSize(1234123L);
+
+        assertRoundTrip( in, (out)-> assertThat( out.getSize(), equalTo( in.getSize() ) ) );
+    }
 
     @Test
     public void jsonRoundTrip_Urls()

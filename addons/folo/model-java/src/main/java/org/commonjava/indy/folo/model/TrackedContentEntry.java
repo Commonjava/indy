@@ -63,6 +63,9 @@ public class TrackedContentEntry
     private String sha1;
 
     @Field
+    private Long size;
+
+    @Field
     private long index = System.currentTimeMillis();
 
     public TrackedContentEntry()
@@ -71,7 +74,8 @@ public class TrackedContentEntry
 
     public TrackedContentEntry( final TrackingKey trackingKey, final StoreKey storeKey,
                                 final AccessChannel accessChannel, final String originUrl, final String path,
-                                final StoreEffect effect, final String md5, final String sha1, final String sha256 )
+                                final StoreEffect effect, final Long size,
+                                final String md5, final String sha1, final String sha256 )
     {
         this.trackingKey = trackingKey;
         this.storeKey = storeKey;
@@ -82,6 +86,7 @@ public class TrackedContentEntry
         this.md5=md5;
         this.sha1=sha1;
         this.sha256=sha256;
+        this.size = size;
     }
 
     public String getOriginUrl()
@@ -127,6 +132,11 @@ public class TrackedContentEntry
     public StoreEffect getEffect()
     {
         return effect;
+    }
+
+    public Long getSize()
+    {
+        return size;
     }
 
     public long getIndex()
@@ -235,6 +245,7 @@ public class TrackedContentEntry
         out.writeObject( md5 == null ? "" : md5 );
         out.writeObject( sha1 == null ? "" : sha1 );
         out.writeObject( sha256 == null ? "" : sha256 );
+        out.writeObject( size );
         out.writeLong( index );
     }
 
@@ -268,6 +279,8 @@ public class TrackedContentEntry
 
         final String sha256Str = (String) in.readObject();
         sha256 = "".equals( sha256Str ) ? null : sha256Str;
+
+        size = (Long) in.readObject();
 
         index = in.readLong();
     }

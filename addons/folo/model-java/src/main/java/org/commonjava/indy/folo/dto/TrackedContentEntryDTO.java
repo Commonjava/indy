@@ -38,6 +38,8 @@ public class TrackedContentEntryDTO
 
     private String sha1;
 
+    private Long size;
+
     public TrackedContentEntryDTO()
     {
     }
@@ -128,6 +130,16 @@ public class TrackedContentEntryDTO
         this.path = path.startsWith( "/" ) ? path : "/" + path;
     }
 
+    public Long getSize()
+    {
+        return size;
+    }
+
+    public void setSize( final Long size )
+    {
+        this.size = size;
+    }
+
     @Override
     public int compareTo( final TrackedContentEntryDTO other )
     {
@@ -210,8 +222,8 @@ public class TrackedContentEntryDTO
     @Override
     public String toString()
     {
-        return String.format( "TrackedContentEntryDTO [\n  storeKey=%s\n  accessChannel=%s\n  path=%s\n  originUrl=%s\n  localUrl=%s\n  md5=%s\n  sha256=%s\n]",
-                              storeKey, accessChannel, path, originUrl, localUrl, md5, sha256 );
+        return String.format( "TrackedContentEntryDTO [\n  storeKey=%s\n  accessChannel=%s\n  path=%s\n  originUrl=%s\n  localUrl=%s\n  size=%d\n md5=%s\n  sha256=%s\n]",
+                              storeKey, accessChannel, path, originUrl, localUrl, size, md5, sha256 );
     }
 
 }
