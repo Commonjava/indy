@@ -15,10 +15,6 @@
  */
 package org.commonjava.indy.content;
 
-import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
-
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
@@ -28,6 +24,9 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
+
+import java.io.InputStream;
+import java.util.List;
 
 /**
  * High-level interface for retrieving, storing, etc. content which includes both produced (i.e. generated) content as well as downloaded and stored
@@ -209,7 +208,7 @@ public interface ContentManager
     List<StoreResource> list( List<? extends ArtifactStore> stores, String path )
         throws IndyWorkflowException;
 
-    Map<ContentDigest, String> digest( StoreKey key, String path, ContentDigest... types )
+    ArtifactData digest( StoreKey key, String path, ContentDigest... types )
         throws IndyWorkflowException;
 
     HttpExchangeMetadata getHttpMetadata( Transfer txfr )
