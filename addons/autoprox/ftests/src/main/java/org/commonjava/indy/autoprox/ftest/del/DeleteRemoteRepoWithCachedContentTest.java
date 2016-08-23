@@ -51,6 +51,9 @@ public class DeleteRemoteRepoWithCachedContentTest
 
         assertThat( retrieved, equalTo( content ) );
 
+        System.out.println( "Waiting for server events to clear..." );
+        waitForEventPropagation();
+
         client.stores()
               .delete( StoreType.remote, named, "Removing test repo" );
 

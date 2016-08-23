@@ -121,7 +121,7 @@ public abstract class AbstractIndyFunctionalTest
         // give events time to propagate
         try
         {
-            Thread.sleep( 200 * getTestTimeoutMultiplier() );
+            Thread.sleep( 1000 * getTestTimeoutMultiplier() );
         }
         catch ( InterruptedException e )
         {

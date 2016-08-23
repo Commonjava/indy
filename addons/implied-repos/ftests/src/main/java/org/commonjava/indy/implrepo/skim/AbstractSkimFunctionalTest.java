@@ -84,7 +84,7 @@ public class AbstractSkimFunctionalTest
     protected void initTestConfig( CoreServerFixture fixture )
         throws IOException
     {
-        writeConfigFile( "conf.d/implied-repos.conf", "[implied-repos]\nenabled=true" );
+        writeConfigFile( "conf.d/implied-repos.conf", "[implied-repos]\nenabled=true\nenabled.group=" + PUBLIC );
     }
 
     protected PomRef loadPom( final String name, final Map<String, String> substitutions )

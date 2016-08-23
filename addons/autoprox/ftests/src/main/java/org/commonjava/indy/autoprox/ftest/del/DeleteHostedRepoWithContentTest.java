@@ -52,6 +52,9 @@ public class DeleteHostedRepoWithContentTest
 
         assertThat( retrieved, equalTo( content ) );
 
+        System.out.println( "Waiting for server events to clear..." );
+        waitForEventPropagation();
+
         client.stores()
               .delete( StoreType.hosted, named, "Removing test repo" );
 

@@ -1,11 +1,14 @@
 package org.commonjava.indy.implrepo.data;
 
+import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.implrepo.conf.ImpliedRepoConfig;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.decorator.Decorator;
 import javax.decorator.Delegate;
@@ -42,9 +45,22 @@ public abstract class ImpliedReposStoreDataManagerDecorator
     public List<ArtifactStore> getOrderedConcreteStoresInGroup( String groupName, boolean enabledOnly )
             throws IndyDataException
     {
-        List<ArtifactStore> delegateResult = delegate.getOrderedConcreteStoresInGroup( groupName, enabledOnly );
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Retrieving ordered concrete (recursive) members for group: {}", groupName );
 
-        return maybeFilter( groupName, delegateResult );
+        List<ArtifactStore> result = delegate.getOrderedConcreteStoresInGroup( groupName, enabledOnly );
+        if ( logger.isTraceEnabled() )
+        {
+            logger.trace( "Raw ordered concrete membership for group: {} is:\n  {}", groupName, StringUtils.join(result, "\n  ") );
+        }
+
+        result = maybeFilter( groupName, result );
+        if ( logger.isTraceEnabled() )
+        {
+            logger.trace( "Filtered for implied-repos: ordered concrete membership for group: {} is now:\n  {}", groupName, StringUtils.join(result, "\n  ") );
+        }
+
+        return result;
     }
 
     @Override
@@ -58,11 +74,14 @@ public abstract class ImpliedReposStoreDataManagerDecorator
 
     private List<ArtifactStore> maybeFilter( String groupName, List<ArtifactStore> delegateResult )
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
         if ( delegateResult == null || delegateResult.isEmpty() || config.isEnabledForGroup( groupName ) )
         {
+            logger.trace( "Implied repositories are enabled for group: '{}'. Returning all membership from delegate result.", groupName );
             return delegateResult;
         }
 
+        logger.trace( "Filtering stores with metadata: '{}' value of '{}' from membership results", METADATA_ORIGIN, IMPLIED_REPO_ORIGIN );
         List<ArtifactStore> result = new ArrayList<>();
         delegateResult.stream()
                       .filter( ( store ) -> !IMPLIED_REPO_ORIGIN.equals( store.getMetadata( METADATA_ORIGIN ) ) )

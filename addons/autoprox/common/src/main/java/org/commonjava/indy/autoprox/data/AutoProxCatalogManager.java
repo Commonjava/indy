@@ -15,19 +15,7 @@
  */
 package org.commonjava.indy.autoprox.data;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
+import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.autoprox.conf.AutoProxConfig;
 import org.commonjava.indy.autoprox.rest.dto.CatalogDTO;
@@ -40,6 +28,18 @@ import org.commonjava.indy.subsys.datafile.DataFile;
 import org.commonjava.indy.subsys.datafile.DataFileManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 @ApplicationScoped
 public class AutoProxCatalogManager
@@ -66,7 +66,7 @@ public class AutoProxCatalogManager
 
     public AutoProxCatalogManager( final DataFileManager ffManager, final AutoProxConfig apConfig,
                                    final ScriptRuleParser ruleParser )
-        throws AutoProxRuleException
+            throws AutoProxRuleException
     {
         this.ffManager = ffManager;
         this.apConfig = apConfig;
@@ -88,7 +88,7 @@ public class AutoProxCatalogManager
     }
 
     public synchronized void parseRules()
-        throws AutoProxRuleException
+            throws AutoProxRuleException
     {
         if ( !checkEnabled() )
         {
@@ -212,7 +212,7 @@ public class AutoProxCatalogManager
     }
 
     public RemoteRepository createRemoteRepository( final String name )
-        throws AutoProxRuleException
+            throws AutoProxRuleException
     {
         if ( !checkEnabled() )
         {
@@ -236,7 +236,7 @@ public class AutoProxCatalogManager
     }
 
     public HostedRepository createHostedRepository( final String name )
-        throws AutoProxRuleException
+            throws AutoProxRuleException
     {
         if ( !checkEnabled() )
         {
@@ -256,7 +256,7 @@ public class AutoProxCatalogManager
     }
 
     public Group createGroup( final String name )
-        throws AutoProxRuleException
+            throws AutoProxRuleException
     {
         if ( !checkEnabled() )
         {
@@ -276,7 +276,7 @@ public class AutoProxCatalogManager
     }
 
     public String getRemoteValidationPath( final String name )
-        throws AutoProxRuleException
+            throws AutoProxRuleException
     {
         if ( !checkEnabled() )
         {
@@ -296,7 +296,7 @@ public class AutoProxCatalogManager
     }
 
     public RemoteRepository createValidationRemote( final String name )
-        throws AutoProxRuleException
+            throws AutoProxRuleException
     {
         if ( !checkEnabled() )
         {
@@ -331,7 +331,7 @@ public class AutoProxCatalogManager
     }
 
     public synchronized RuleMapping removeRuleNamed( final String name, final ChangeSummary changelog )
-        throws AutoProxRuleException
+            throws AutoProxRuleException
     {
         if ( !checkEnabled() )
         {
@@ -342,8 +342,7 @@ public class AutoProxCatalogManager
         for ( final Iterator<RuleMapping> mappingIt = ruleMappings.iterator(); mappingIt.hasNext(); )
         {
             final RuleMapping m = mappingIt.next();
-            if ( m.getScriptName()
-                  .equals( name ) )
+            if ( m.getScriptName().equals( name ) )
             {
                 mappingIt.remove();
                 mapping = m;
@@ -382,7 +381,7 @@ public class AutoProxCatalogManager
     }
 
     public synchronized RuleMapping storeRule( final String name, final String spec, final ChangeSummary changelog )
-        throws AutoProxRuleException
+            throws AutoProxRuleException
     {
         if ( !checkEnabled() )
         {
@@ -390,7 +389,7 @@ public class AutoProxCatalogManager
         }
 
         final RuleMapping mapping = ruleParser.parseRule( spec, name );
-        if( mapping == null )
+        if ( mapping == null )
         {
             throw new AutoProxRuleException( "Cannot construct RuleMapping for: {} with spec:\n\n{}\n\n", name, spec );
         }
@@ -399,8 +398,7 @@ public class AutoProxCatalogManager
         if ( idx > -1 )
         {
             final RuleMapping existing = ruleMappings.get( idx );
-            if ( mapping.getSpecification()
-                        .equals( existing.getSpecification() ) )
+            if ( mapping.getSpecification().equals( existing.getSpecification() ) )
             {
                 return existing;
             }
@@ -446,8 +444,7 @@ public class AutoProxCatalogManager
 
         for ( final RuleMapping mapping : ruleMappings )
         {
-            if ( mapping.getScriptName()
-                        .equals( name ) )
+            if ( mapping.getScriptName().equals( name ) )
             {
                 return mapping;
             }

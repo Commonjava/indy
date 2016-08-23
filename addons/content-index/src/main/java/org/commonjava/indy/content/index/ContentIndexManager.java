@@ -157,6 +157,7 @@ public class ContentIndexManager
     {
 //        Logger logger = LoggerFactory.getLogger( getClass() );
         IndexedStorePath topPath = new IndexedStorePath( key, path );
+//        logger.trace( "Attempting to remove indexed path: {}", topPath );
         if ( contentIndex.remove( topPath ) != null && pathConsumer != null )
         {
             pathConsumer.accept( topPath );

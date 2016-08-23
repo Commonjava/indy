@@ -97,7 +97,7 @@ public class NPMStyleSuccessiveRetrievalTest
             catch ( Exception e )
             {
                 e.printStackTrace();
-                fail( url + ": Failed to retrieve file." );
+                fail( url + ": Failed to retrieve file. Reason: " + e.getMessage() );
             }
             finally
             {

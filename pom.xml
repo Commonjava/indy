@@ -57,15 +57,18 @@
     <resteasyVersion>3.0.9.Final</resteasyVersion>
     <undertowVersion>1.1.2.Final</undertowVersion>
     <xnioVersion>3.3.0.Final</xnioVersion>
-    <partylineVersion>1.8-SNAPSHOT</partylineVersion>
+    <partylineVersion>1.7</partylineVersion>
     <keycloakVersion>1.9.8.Final</keycloakVersion>
     <jhttpcVersion>1.3-SNAPSHOT</jhttpcVersion>
     <kojijiVersion>1.1-SNAPSHOT</kojijiVersion>
     <rwxVersion>1.0</rwxVersion>
     <bouncycastleVersion>1.53</bouncycastleVersion>
     
-    <test-forkCount>2</test-forkCount>
+    <test-forkCount>1C</test-forkCount>
+    <it-forkCount>4</it-forkCount>
     <test-redirectOutput>true</test-redirectOutput>
+    <testEnvTimeoutMultiplier>2</testEnvTimeoutMultiplier>
+
     <skipITs>true</skipITs>
     <quickITs>true</quickITs>
 
@@ -1149,6 +1152,10 @@
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.19.1</version>
+          <configuration>
+            <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
+            <forkCount>${test-forkCount}</forkCount>
+          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-failsafe-plugin</artifactId>
@@ -1160,8 +1167,8 @@
             </systemPropertyVariables>
             <reuseForks>false</reuseForks>
             <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
-            <forkCount>${test-forkCount}</forkCount>
-            <rerunFailingTestsCount>1</rerunFailingTestsCount>
+            <forkCount>${it-forkCount}</forkCount>
+<!--             <rerunFailingTestsCount>1</rerunFailingTestsCount> -->
             <includes>
               <include>**/*Test.java</include>
             </includes>
@@ -1237,7 +1244,8 @@
       <id>ci</id>
       <properties>
         <skipTests>false</skipTests>
-        <test-forkCount>1</test-forkCount>
+        <test-forkCount>8</test-forkCount>
+        <it-forkCount>2</it-forkCount>
         <testEnvTimeoutMultiplier>6</testEnvTimeoutMultiplier>
 
         <dockerNetworkMode>custom</dockerNetworkMode>

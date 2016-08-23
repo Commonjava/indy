@@ -29,6 +29,11 @@
   <packaging>pom</packaging>
 
   <name>Indy :: Embedders :: Parent</name>
+
+  <properties>
+    <skipMainFTests>${skipITs}</skipMainFTests>
+    <skipTimingFTests>${skipITs}</skipTimingFTests>
+  </properties>
   
   <modules>
     <module>savant</module>
@@ -175,6 +180,7 @@
                 <goal>verify</goal>
               </goals>
               <configuration>
+                <skip>${skipMainFTests}</skip>
                 <excludedGroups>org.commonjava.indy.ftest.core.category.EventDependent, org.commonjava.indy.ftest.core.category.TimingDependent</excludedGroups>
               </configuration>
             </execution>
@@ -185,6 +191,7 @@
                 <goal>verify</goal>
               </goals>
               <configuration>
+                <skip>${skipTimingFTests}</skip>
                 <forkCount>1</forkCount>
                 <groups>org.commonjava.indy.ftest.core.category.EventDependent, org.commonjava.indy.ftest.core.category.TimingDependent</groups>
               </configuration>
