@@ -13,13 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.folo.ctl;
+package org.commonjava.indy.content;
 
-public class FoloConstants
-{
+import java.util.Map;
 
-    public static final String TRACKING_KEY = "tracking-id";
+/**
+ * Author: Michal Szynkiewicz, michal.l.szynkiewicz@gmail.com
+ * Date: 8/19/16
+ * Time: 1:15 PM
+ */
+public class ArtifactData {
+    private final Map<ContentDigest, String> digests;
+    private final Long size;
 
-    public static final String ACCESS_CHANNEL = "access-channel";
+    public ArtifactData( Map<ContentDigest, String> digests, Long size )
+    {
+        this.digests = digests;
+        this.size = size;
+    }
 
+    public Map<ContentDigest, String> getDigests()
+    {
+        return digests;
+    }
+
+    public Long getSize()
+    {
+        return size;
+    }
 }

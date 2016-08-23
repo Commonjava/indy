@@ -16,6 +16,7 @@
 package org.commonjava.indy.folo.dto;
 
 import org.commonjava.indy.folo.model.TrackingKey;
+import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
@@ -53,15 +54,16 @@ public class TrackedContentDTOTest
             throws IOException
     {
         Set<TrackedContentEntryDTO> downloads =
-                setOf( new TrackedContentEntryDTO( new StoreKey( StoreType.remote, "foo" ), "/path/to/my.pom" ),
+                setOf( new TrackedContentEntryDTO( new StoreKey( StoreType.remote, "foo" ), AccessChannel.MAVEN_REPO,
+                                                   "/path/to/my.pom" ),
                        new TrackedContentEntryDTO( new StoreKey( StoreType.remote, "foo2" ),
-                                                   "/path/to/another/file.pom" ) );
+                                                   AccessChannel.MAVEN_REPO, "/path/to/another/file.pom" ) );
 
         Set<TrackedContentEntryDTO> uploads =
                 setOf( new TrackedContentEntryDTO( new StoreKey( StoreType.remote, "foo3" ),
-                                                   "/path/to/third/artifact.pom" ),
+                                                   AccessChannel.MAVEN_REPO, "/path/to/third/artifact.pom" ),
                        new TrackedContentEntryDTO( new StoreKey( StoreType.remote, "foo3" ),
-                                                   "/path/to/fourth/project.pom" ) );
+                                                   AccessChannel.MAVEN_REPO, "/path/to/fourth/project.pom" ) );
 
         TrackedContentDTO in = new TrackedContentDTO( new TrackingKey( "key" ), uploads, downloads );
 
@@ -76,9 +78,10 @@ public class TrackedContentDTOTest
             throws IOException
     {
         Set<TrackedContentEntryDTO> downloads =
-                setOf( new TrackedContentEntryDTO( new StoreKey( StoreType.remote, "foo" ), "/path/to/my.pom" ),
+                setOf( new TrackedContentEntryDTO( new StoreKey( StoreType.remote, "foo" ), AccessChannel.MAVEN_REPO,
+                                                   "/path/to/my.pom" ),
                        new TrackedContentEntryDTO( new StoreKey( StoreType.remote, "foo2" ),
-                                                   "/path/to/another/file.pom" ) );
+                                                   AccessChannel.MAVEN_REPO, "/path/to/another/file.pom" ) );
 
         TrackedContentDTO in = new TrackedContentDTO( new TrackingKey( "key" ), Collections.emptySet(), downloads );
 
@@ -93,9 +96,10 @@ public class TrackedContentDTOTest
             throws IOException
     {
         Set<TrackedContentEntryDTO> uploads =
-                setOf( new TrackedContentEntryDTO( new StoreKey( StoreType.remote, "foo" ), "/path/to/my.pom" ),
+                setOf( new TrackedContentEntryDTO( new StoreKey( StoreType.remote, "foo" ), AccessChannel.MAVEN_REPO,
+                                                   "/path/to/my.pom" ),
                        new TrackedContentEntryDTO( new StoreKey( StoreType.remote, "foo2" ),
-                                                   "/path/to/another/file.pom" ) );
+                                                   AccessChannel.MAVEN_REPO, "/path/to/another/file.pom" ) );
 
         TrackedContentDTO in = new TrackedContentDTO( new TrackingKey( "key" ), uploads, Collections.emptySet() );
 
@@ -105,7 +109,7 @@ public class TrackedContentDTOTest
         } );
     }
 
-    private void assertContents( Set<TrackedContentEntryDTO> result, Set<TrackedContentEntryDTO> test )
+    private void assertContents( final Set<TrackedContentEntryDTO> result, final Set<TrackedContentEntryDTO> test )
     {
         assertThat( result, notNullValue() );
         assertThat( result.size(), equalTo( test.size() ) );
@@ -115,17 +119,17 @@ public class TrackedContentDTOTest
                                          equalTo( true ) ) );
     }
 
-    private Set<TrackedContentEntryDTO> setOf( TrackedContentEntryDTO... entries )
+    private Set<TrackedContentEntryDTO> setOf( final TrackedContentEntryDTO... entries )
     {
         return Stream.of( entries ).collect( Collectors.toSet() );
     }
 
-    private void assertNullOrEmpty( Set<TrackedContentEntryDTO> values )
+    private void assertNullOrEmpty( final Set<TrackedContentEntryDTO> values )
     {
         assertThat( values == null || values.isEmpty(), equalTo( true ) );
     }
 
-    private void assertRoundTrip( TrackedContentDTO in, Consumer<TrackedContentDTO> extraAssertions )
+    private void assertRoundTrip( final TrackedContentDTO in, final Consumer<TrackedContentDTO> extraAssertions )
             throws IOException
     {
         IndyObjectMapper mapper = new IndyObjectMapper( true );

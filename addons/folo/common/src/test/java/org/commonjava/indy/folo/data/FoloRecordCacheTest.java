@@ -19,6 +19,7 @@ import org.commonjava.indy.folo.model.StoreEffect;
 import org.commonjava.indy.folo.model.TrackedContent;
 import org.commonjava.indy.folo.model.TrackedContentEntry;
 import org.commonjava.indy.folo.model.TrackingKey;
+import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.infinispan.Cache;
@@ -29,6 +30,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -78,10 +81,12 @@ public class FoloRecordCacheTest
             throws Exception
     {
         final TrackingKey key = newKey();
+        final long size = 123L;
         assertThat( cache.hasRecord( key ), equalTo( false ) );
 
-        cache.recordArtifact( new TrackedContentEntry( key, new StoreKey( StoreType.remote, "foo" ), "", "/path",
-                                                       StoreEffect.DOWNLOAD, "", "", "" ) );
+        cache.recordArtifact( new TrackedContentEntry( key, new StoreKey( StoreType.remote, "foo" ),
+                                                       AccessChannel.MAVEN_REPO, "", "/path",
+                                                       StoreEffect.DOWNLOAD, size, "", "", "" ) );
 
         assertThat( cache.hasRecord( key ), equalTo( true ) );
         assertThat( cache.hasInProgressRecord( key ), equalTo( true ) );
@@ -92,6 +97,11 @@ public class FoloRecordCacheTest
         assertThat( cache.hasRecord( key ), equalTo( true ) );
         assertThat( cache.hasInProgressRecord( key ), equalTo( false ) );
         assertThat( cache.hasSealedRecord( key ), equalTo( true ) );
+        Set<TrackedContentEntry> downloads = cache.get(key).getDownloads();
+        assertThat( downloads, notNullValue() );
+        assertThat( downloads.size(), equalTo( 1 ) );
+        TrackedContentEntry entry = downloads.iterator().next();
+        assertThat( entry.getSize(), equalTo( size ) );
     }
 
     @Test
@@ -101,8 +111,9 @@ public class FoloRecordCacheTest
         final TrackingKey key = newKey();
         assertThat( cache.hasRecord( key ), equalTo( false ) );
 
-        cache.recordArtifact( new TrackedContentEntry( key, new StoreKey( StoreType.remote, "foo" ), "", "/path",
-                                                       StoreEffect.DOWNLOAD, "", "", "" ) );
+        cache.recordArtifact( new TrackedContentEntry( key, new StoreKey( StoreType.remote, "foo" ),
+                                                       AccessChannel.MAVEN_REPO, "", "/path",
+                                                       StoreEffect.DOWNLOAD, 124L, "", "", "" ) );
 
         assertThat( cache.hasRecord( key ), equalTo( true ) );
         assertThat( cache.hasInProgressRecord( key ), equalTo( true ) );
@@ -122,8 +133,9 @@ public class FoloRecordCacheTest
         final TrackingKey key = newKey();
         assertThat( cache.hasRecord( key ), equalTo( false ) );
 
-        cache.recordArtifact( new TrackedContentEntry( key, new StoreKey( StoreType.remote, "foo" ), "", "/path",
-                                                       StoreEffect.DOWNLOAD, "", "", "" ) );
+        cache.recordArtifact( new TrackedContentEntry( key, new StoreKey( StoreType.remote, "foo" ),
+                                                       AccessChannel.MAVEN_REPO, "", "/path",
+                                                       StoreEffect.DOWNLOAD, 127L, "", "", "" ) );
 
         TrackedContent record = cache.seal( key );
 

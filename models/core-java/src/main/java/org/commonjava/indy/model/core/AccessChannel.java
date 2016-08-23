@@ -13,13 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.folo.ctl;
+package org.commonjava.indy.model.core;
 
-public class FoloConstants
+/**
+ * Enumeration to distinguish between different access channels to stores.
+ *
+ * @author pkocandr
+ */
+public enum AccessChannel
 {
 
-    public static final String TRACKING_KEY = "tracking-id";
-
-    public static final String ACCESS_CHANNEL = "access-channel";
+    /** Used when the store is accessed via httprox addon. */
+    GENERIC_PROXY,
+    /** Used when the store is accessed via regular Maven repo. */
+    MAVEN_REPO
 
 }

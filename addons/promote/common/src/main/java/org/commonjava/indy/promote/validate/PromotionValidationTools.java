@@ -382,7 +382,7 @@ public class PromotionValidationTools
     public Map<ContentDigest, String> digest( StoreKey key, String path, ContentDigest... types )
             throws IndyWorkflowException
     {
-        return contentManager.digest( key, path, types );
+        return contentManager.digest( key, path, types ).getDigests();
     }
 
     public HttpExchangeMetadata getHttpMetadata( Transfer txfr )

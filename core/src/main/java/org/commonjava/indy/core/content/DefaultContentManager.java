@@ -18,6 +18,7 @@ package org.commonjava.indy.core.content;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.content.ArtifactData;
 import org.commonjava.indy.content.ContentDigest;
 import org.commonjava.indy.content.ContentGenerator;
 import org.commonjava.indy.content.ContentManager;
@@ -608,18 +609,19 @@ public class DefaultContentManager
     }
 
     @Override
-    public Map<ContentDigest, String> digest( final StoreKey key, final String path, final ContentDigest... types )
+    public ArtifactData digest( final StoreKey key, final String path, final ContentDigest... types )
             throws IndyWorkflowException
     {
         final Transfer txfr = downloadManager.getStorageReference( key, path );
         if ( txfr == null || !txfr.exists() )
         {
-            return Collections.emptyMap();
+            return new ArtifactData(Collections.emptyMap(), 0L);
         }
 
         InputStream stream = null;
         try
         {
+            long artifactSize = 0L;
             // TODO: Compute it as the file is uploaded/downloaded into cache.
             stream = txfr.openInputStream( false );
 
@@ -637,9 +639,10 @@ public class DefaultContentManager
                 {
                     digest.update( buf, 0, read );
                 }
+                artifactSize += read;
             }
 
-            final Map<ContentDigest, String> result = new HashMap<>();
+            final Map<ContentDigest, String> digestResultMap = new HashMap<>();
             for ( final Map.Entry<ContentDigest, MessageDigest> entry : digests.entrySet() )
             {
                 final StringBuilder sb = new StringBuilder();
@@ -653,10 +656,10 @@ public class DefaultContentManager
                     sb.append( hex );
                 }
 
-                result.put( entry.getKey(), sb.toString() );
+                digestResultMap.put( entry.getKey(), sb.toString() );
             }
 
-            return result;
+            return new ArtifactData( digestResultMap, artifactSize );
         }
         catch ( IOException | NoSuchAlgorithmException e )
         {

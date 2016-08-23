@@ -16,6 +16,7 @@
 package org.commonjava.indy.folo.change;
 
 import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.content.ArtifactData;
 import org.commonjava.indy.content.ContentDigest;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DownloadManager;
@@ -27,10 +28,12 @@ import org.commonjava.indy.folo.data.FoloRecordCache;
 import org.commonjava.indy.folo.model.StoreEffect;
 import org.commonjava.indy.folo.model.TrackedContentEntry;
 import org.commonjava.indy.folo.model.TrackingKey;
+import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.galley.KeyedLocation;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.event.FileStorageEvent;
 import org.commonjava.maven.galley.model.Location;
@@ -64,13 +67,14 @@ public class FoloTrackingListener
 
     public void onFileAccess( @Observes final FileAccessEvent event )
     {
-        final TrackingKey trackingKey = (TrackingKey) event.getEventMetadata()
-                                                           .get( FoloConstants.TRACKING_KEY );
+        EventMetadata metadata = event.getEventMetadata();
+        final TrackingKey trackingKey = (TrackingKey) metadata.get( FoloConstants.TRACKING_KEY );
         if ( trackingKey == null )
         {
             logger.info( "No tracking key for access to: {}", event.getTransfer() );
             return;
         }
+        final AccessChannel accessChannel = (AccessChannel) metadata.get( FoloConstants.ACCESS_CHANNEL );
 
         final Transfer transfer = event.getTransfer();
         if ( transfer == null )
@@ -93,7 +97,8 @@ public class FoloTrackingListener
                           keyedLocation.getKey() );
 
             recordManager.recordArtifact(
-                    createEntry( trackingKey, keyedLocation.getKey(), transfer.getPath(), StoreEffect.DOWNLOAD ));
+                    createEntry( trackingKey, keyedLocation.getKey(), accessChannel, transfer.getPath(),
+                                 StoreEffect.DOWNLOAD ));
         }
         catch ( final FoloContentException | IndyWorkflowException e )
         {
@@ -103,13 +108,14 @@ public class FoloTrackingListener
 
     public void onFileUpload( @Observes final FileStorageEvent event )
     {
-        final TrackingKey trackingKey = (TrackingKey) event.getEventMetadata()
-                                                           .get( FoloConstants.TRACKING_KEY );
+        EventMetadata metadata = event.getEventMetadata();
+        final TrackingKey trackingKey = (TrackingKey) metadata.get( FoloConstants.TRACKING_KEY );
         if ( trackingKey == null )
         {
             logger.info( "No tracking key. Not recording." );
             return;
         }
+        final AccessChannel accessChannel = (AccessChannel) metadata.get( FoloConstants.ACCESS_CHANNEL );
 
         final Transfer transfer = event.getTransfer();
         if ( transfer == null )
@@ -152,7 +158,8 @@ public class FoloTrackingListener
             logger.debug( "Tracking report: {} += {} in {} ({})", trackingKey, transfer.getPath(),
                           keyedLocation.getKey(), effect );
 
-            recordManager.recordArtifact( createEntry( trackingKey, keyedLocation.getKey(), transfer.getPath(), effect ));
+            recordManager.recordArtifact( createEntry( trackingKey, keyedLocation.getKey(), accessChannel,
+                                                       transfer.getPath(), effect ));
         }
         catch ( final FoloContentException | IndyWorkflowException e )
         {
@@ -161,7 +168,8 @@ public class FoloTrackingListener
     }
 
     private TrackedContentEntry createEntry( final TrackingKey trackingKey, final StoreKey affectedStore,
-                                                final String path, final StoreEffect effect ) throws IndyWorkflowException
+                                             final AccessChannel accessChannel, final String path,
+                                             final StoreEffect effect ) throws IndyWorkflowException
     {
         TrackedContentEntry entry = null;
         final Transfer txfr = downloadManager.getStorageReference( affectedStore, path );
@@ -180,14 +188,15 @@ public class FoloTrackingListener
                 }
 
 
-                Map<ContentDigest, String> digests =
+                ArtifactData artifactData =
                         contentManager.digest( affectedStore, path, ContentDigest.MD5, ContentDigest.SHA_1,
                                                ContentDigest.SHA_256 );
+                Map<ContentDigest, String> digests = artifactData.getDigests();
                 //TODO: As localUrl needs a apiBaseUrl which is from REST service context, to avoid deep propagate
                 //      of it, this step will be done in REST layer. Will think better way in the future.
-                entry = new TrackedContentEntry( trackingKey, affectedStore, remoteUrl, path, effect,
-                                                 digests.get( ContentDigest.MD5 ), digests.get( ContentDigest.SHA_1 ),
-                                                 digests.get( ContentDigest.SHA_256 ) );
+                entry = new TrackedContentEntry( trackingKey, affectedStore, accessChannel, remoteUrl, path, effect,
+                                                 artifactData.getSize(), digests.get( ContentDigest.MD5 ),
+                                                 digests.get( ContentDigest.SHA_1 ), digests.get( ContentDigest.SHA_256 ) );
             }
             catch ( final IndyDataException e )
             {

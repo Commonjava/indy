@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.folo.model;
 
+import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.hibernate.search.annotations.Field;
@@ -41,6 +42,9 @@ public class TrackedContentEntry
     private StoreKey storeKey;
 
     @Field
+    private AccessChannel accessChannel;
+
+    @Field
     private String path;
 
     @Field
@@ -59,24 +63,30 @@ public class TrackedContentEntry
     private String sha1;
 
     @Field
+    private Long size;
+
+    @Field
     private long index = System.currentTimeMillis();
 
     public TrackedContentEntry()
     {
     }
 
-    public TrackedContentEntry( final TrackingKey trackingKey, final StoreKey storeKey, final String originUrl,
-                                final String path, final StoreEffect effect, final String md5, final String sha1,
-                                final String sha256 )
+    public TrackedContentEntry( final TrackingKey trackingKey, final StoreKey storeKey,
+                                final AccessChannel accessChannel, final String originUrl, final String path,
+                                final StoreEffect effect, final Long size,
+                                final String md5, final String sha1, final String sha256 )
     {
         this.trackingKey = trackingKey;
         this.storeKey = storeKey;
+        this.accessChannel = accessChannel;
         this.path = path;
         this.originUrl = originUrl;
         this.effect = effect;
         this.md5=md5;
         this.sha1=sha1;
         this.sha256=sha256;
+        this.size = size;
     }
 
     public String getOriginUrl()
@@ -104,6 +114,11 @@ public class TrackedContentEntry
         return storeKey;
     }
 
+    public AccessChannel getAccessChannel()
+    {
+        return accessChannel;
+    }
+
     public String getPath()
     {
         return path;
@@ -119,6 +134,11 @@ public class TrackedContentEntry
         return effect;
     }
 
+    public Long getSize()
+    {
+        return size;
+    }
+
     public long getIndex()
     {
         return index;
@@ -128,6 +148,10 @@ public class TrackedContentEntry
     public int compareTo( final TrackedContentEntry other )
     {
         int comp = storeKey.compareTo( other.getStoreKey() );
+        if ( comp == 0 )
+        {
+            comp = accessChannel.compareTo( other.getAccessChannel() );
+        }
         if ( comp == 0 )
         {
             comp = path.compareTo( other.getPath() );
@@ -143,6 +167,7 @@ public class TrackedContentEntry
         int result = 1;
         result = prime * result + ( ( path == null ) ? 0 : path.hashCode() );
         result = prime * result + ( ( storeKey == null ) ? 0 : storeKey.hashCode() );
+        result = prime * result + ( ( accessChannel == null ) ? 0 : accessChannel.hashCode() );
         return result;
     }
 
@@ -184,6 +209,17 @@ public class TrackedContentEntry
         {
             return false;
         }
+        if ( accessChannel == null )
+        {
+            if ( other.accessChannel != null )
+            {
+                return false;
+            }
+        }
+        else if ( !accessChannel.equals( other.accessChannel ) )
+        {
+            return false;
+        }
         return true;
     }
 
@@ -191,28 +227,30 @@ public class TrackedContentEntry
     public String toString()
     {
         return String.format(
-                "TrackedContentEntry [\n  trackingKey=%s\n  storeKey=%s\n  path=%s\n  originUrl=%s\n effect=%s\n  md5=%s\n  sha1=%s\n  sha256=%s\n]",
-                trackingKey, storeKey, path, originUrl, effect, md5, sha1, sha256 );
+                "TrackedContentEntry [\n  trackingKey=%s\n  storeKey=%s\n  accessChannel=%s\n  path=%s\n  originUrl=%s\n effect=%s\n  md5=%s\n  sha1=%s\n  sha256=%s\n]",
+                trackingKey, storeKey, accessChannel, path, originUrl, effect, md5, sha1, sha256 );
     }
 
     @Override
-    public void writeExternal( ObjectOutput out )
+    public void writeExternal( final ObjectOutput out )
             throws IOException
     {
         out.writeObject( trackingKey );
         out.writeObject( storeKey.getName() );
         out.writeObject( storeKey.getType().name() );
+        out.writeObject( accessChannel.name() );
         out.writeObject( path == null ? "" : path );
         out.writeObject( originUrl == null ? "" : originUrl );
         out.writeObject( effect == null ? "" : effect.name() );
         out.writeObject( md5 == null ? "" : md5 );
         out.writeObject( sha1 == null ? "" : sha1 );
         out.writeObject( sha256 == null ? "" : sha256 );
+        out.writeObject( size );
         out.writeLong( index );
     }
 
     @Override
-    public void readExternal( ObjectInput in )
+    public void readExternal( final ObjectInput in )
             throws IOException, ClassNotFoundException
     {
         trackingKey = (TrackingKey) in.readObject();
@@ -220,6 +258,9 @@ public class TrackedContentEntry
         final String storeKeyName = (String) in.readObject();
         final StoreType storeType = StoreType.get( (String) in.readObject() );
         storeKey = new StoreKey( storeType, storeKeyName );
+
+        final String accessChannelStr = (String) in.readObject();
+        accessChannel = "".equals( accessChannelStr ) ? null : AccessChannel.valueOf( accessChannelStr );
 
         final String pathStr = (String) in.readObject();
         path = "".equals( pathStr ) ? null : pathStr;
@@ -238,6 +279,8 @@ public class TrackedContentEntry
 
         final String sha256Str = (String) in.readObject();
         sha256 = "".equals( sha256Str ) ? null : sha256Str;
+
+        size = (Long) in.readObject();
 
         index = in.readLong();
     }
