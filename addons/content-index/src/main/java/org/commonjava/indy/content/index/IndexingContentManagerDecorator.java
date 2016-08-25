@@ -343,6 +343,7 @@ public abstract class IndexingContentManagerDecorator
         Transfer transfer = getIndexedTransfer( storeKey, null, path, TransferOperation.DOWNLOAD );
         if ( transfer != null )
         {
+            logger.debug( "Returning indexed transfer: {}", transfer );
             return transfer;
         }
 
@@ -380,6 +381,7 @@ public abstract class IndexingContentManagerDecorator
                 transfer = getIndexedMemberTransfer( key, storeKey, path );
                 if ( transfer != null )
                 {
+                    logger.debug( "Returning indexed transfer: {} from member: {}", transfer, key );
                     return transfer;
                 }
                 else
@@ -392,6 +394,7 @@ public abstract class IndexingContentManagerDecorator
         transfer = delegate.getTransfer( storeKey, path, op );
         if ( transfer != null )
         {
+            logger.debug( "Indexing transfer: {}", transfer );
             indexManager.indexTransferIn( transfer, storeKey );
         }
 
@@ -428,9 +431,12 @@ public abstract class IndexingContentManagerDecorator
                            final TransferOperation op, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Storing: {} in: {}", path, store.getKey() );
         Transfer transfer = delegate.store( store, path, stream, op, eventMetadata );
         if ( transfer != null )
         {
+            logger.trace( "Indexing: {} in: {}", transfer, store.getKey() );
             indexManager.indexTransferIn( transfer, store.getKey() );
 
             if ( store instanceof Group )

@@ -47,9 +47,9 @@
     <!-- <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation> -->
     <javaVersion>1.8</javaVersion>
     <slf4j-version>1.6.1</slf4j-version>
-    <infinispanVersion>8.2.0.Final</infinispanVersion>
+    <infinispanVersion>8.2.4.Final</infinispanVersion>
     <luceneVersion>5.3.1</luceneVersion>
-    <hibernateVersion>5.5.2.Final</hibernateVersion>
+    <hibernateVersion>5.6.0.Beta1</hibernateVersion>
     <atlasVersion>0.16.0</atlasVersion>
     <galleyVersion>0.13.1-SNAPSHOT</galleyVersion>
     <bomVersion>21</bomVersion>
@@ -65,7 +65,7 @@
     <bouncycastleVersion>1.53</bouncycastleVersion>
     
     <test-forkCount>1C</test-forkCount>
-    <it-forkCount>4</it-forkCount>
+    <it-forkCount>3</it-forkCount>
     <test-redirectOutput>true</test-redirectOutput>
     <testEnvTimeoutMultiplier>2</testEnvTimeoutMultiplier>
 

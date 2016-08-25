@@ -15,11 +15,13 @@
  */
 package org.commonjava.indy.promote.ftest.rule;
 
+import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.promote.model.GroupPromoteRequest;
 import org.commonjava.indy.promote.model.GroupPromoteResult;
 import org.commonjava.indy.promote.model.ValidationResult;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 import java.util.Map;
@@ -38,6 +40,7 @@ public class NoSnapshots_PluginVersion_RuleTest
     private static final String RULE = "no-snapshots.groovy";
 
     @Test
+    @Category( EventDependent.class )
     public void run()
             throws Exception
     {
@@ -53,6 +56,8 @@ public class NoSnapshots_PluginVersion_RuleTest
                 + "                + \"<plugin><groupId>org.bar</groupId><artifactId>plugin</artifactId>\"\n"
                 + "                + \"<version>1.0</version></plugin></plugins></build></project>" );
 
+        waitForEventPropagation();
+
         GroupPromoteRequest request = new GroupPromoteRequest( source.getKey(), target.getName() );
         GroupPromoteResult result = module.promoteToGroup( request );
         assertThat( result, notNullValue() );
@@ -66,11 +71,11 @@ public class NoSnapshots_PluginVersion_RuleTest
         System.out.println(validatorErrors);
 
         String errors = validatorErrors.get( RULE );
-        assertThat( errors, notNullValue() );
+        assertThat( "There should have been some validation errors!", errors, notNullValue() );
 
         System.out.println(validatorErrors);
-        assertThat( errors.contains( valid ), equalTo( false ) );
-        assertThat( errors.contains( invalid ), equalTo( true ) );
+        assertThat( "Validation errors should not originate from: " + valid, errors.contains( valid ), equalTo( false ) );
+        assertThat( "Validation errors should originate from: " + invalid, errors.contains( invalid ), equalTo( true ) );
     }
 
     public NoSnapshots_PluginVersion_RuleTest()

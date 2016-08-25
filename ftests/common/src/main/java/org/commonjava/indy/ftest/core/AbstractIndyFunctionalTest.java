@@ -147,8 +147,7 @@ public abstract class AbstractIndyFunctionalTest
     @After
     public void stop()
     {
-        waitForEventPropagation();
-        waitForEventPropagation();
+//        waitForEventPropagation();
         closeQuietly( fixture );
         closeQuietly( client );
     }

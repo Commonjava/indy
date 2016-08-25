@@ -56,7 +56,9 @@ import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -768,6 +770,8 @@ public class DefaultDownloadManager
     @Override
     public Transfer getStorageReference( final ArtifactStore store, final String... path )
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Retrieving cache reference (Transfer) to: {} in: {}", Arrays.asList( path ), store.getKey() );
         return transfers.getCacheReference( new ConcreteResource( LocationUtils.toLocation( store ), path ) );
     }
 

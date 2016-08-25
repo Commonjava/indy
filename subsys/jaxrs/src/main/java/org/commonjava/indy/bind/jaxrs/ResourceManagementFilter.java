@@ -44,6 +44,10 @@ public class ResourceManagementFilter
     public void init( final FilterConfig filterConfig )
             throws ServletException
     {
+        if ( logger.isTraceEnabled() )
+        {
+            cacheProvider.startReporting();
+        }
     }
 
     @Override
