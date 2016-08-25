@@ -183,6 +183,7 @@ public abstract class AbstractIndyFunctionalTest
         if ( isSchedulerEnabled() )
         {
             writeConfigFile( "conf.d/scheduler.conf", readTestResource( "default-test-scheduler.conf" ) );
+            writeConfigFile( "conf.d/threadpools.conf", "[threadpools]\nenabled=false" );
         }
         else
         {

@@ -40,9 +40,13 @@ public class IndyWeftConfig
 
     public static final String DEFAULT_PRIORITY = "defaultPriority";
 
+    public static final String ENABLED = "enabled";
+
     public static final String THREADS_SUFFIX = ".threads";
 
     public static final String PRIORITY_SUFFIX = ".priority";
+
+    public static final String ENABLED_SUFFIX = ".enabled";
 
     private final DefaultWeftConfig weftConfig = new DefaultWeftConfig();
 
@@ -57,39 +61,56 @@ public class IndyWeftConfig
         throws ConfigurationException
     {
 
-        if ( !value.matches( numericPattern ) )
-        {
-            throw new ConfigurationException( "Invalid value: '{}' for parameter: '{}'. Only numeric values are accepted for section: '{}'.", value,
-                                              name, SECTION_NAME );
-        }
+//        if ( !value.matches( numericPattern ) )
+//        {
+//            throw new ConfigurationException( "Invalid value: '{}' for parameter: '{}'. Only numeric values are accepted for section: '{}'.", value,
+//                                              name, SECTION_NAME );
+//        }
 
-        final int v = Integer.parseInt( value );
-
-        if ( DEFAULT_THREADS.equals( name ) )
+        try
         {
-            weftConfig.configureDefaultThreads( v );
-        }
-        else if ( DEFAULT_PRIORITY.equals( name ) )
-        {
-            weftConfig.configureDefaultPriority( v );
-        }
-        else
-        {
-            final int lastIdx = name.lastIndexOf( '.' );
-            if ( lastIdx > -1 && name.length() > lastIdx )
+            if ( DEFAULT_THREADS.equals( name ) )
             {
-                final String pool = name.substring( 0, lastIdx );
-                final String suffix = name.substring( lastIdx );
+                final int v = Integer.parseInt( value );
+                weftConfig.configureDefaultThreads( v );
+            }
+            else if ( DEFAULT_PRIORITY.equals( name ) )
+            {
+                final int v = Integer.parseInt( value );
+                weftConfig.configureDefaultPriority( v );
+            }
+            else if ( ENABLED.equals( name ) )
+            {
+                weftConfig.configureEnabled( Boolean.parseBoolean( value ) );
+            }
+            else
+            {
+                final int lastIdx = name.lastIndexOf( '.' );
+                if ( lastIdx > -1 && name.length() > lastIdx )
+                {
+                    final String pool = name.substring( 0, lastIdx );
+                    final String suffix = name.substring( lastIdx );
 
-                if ( THREADS_SUFFIX.equals( suffix ) )
-                {
-                    weftConfig.configureThreads( pool, v );
-                }
-                else if ( PRIORITY_SUFFIX.equals( suffix ) )
-                {
-                    weftConfig.configurePriority( pool, v );
+                    if ( THREADS_SUFFIX.equals( suffix ) )
+                    {
+                        final int v = Integer.parseInt( value );
+                        weftConfig.configureThreads( pool, v );
+                    }
+                    else if ( PRIORITY_SUFFIX.equals( suffix ) )
+                    {
+                        final int v = Integer.parseInt( value );
+                        weftConfig.configurePriority( pool, v );
+                    }
+                    else if ( ENABLED_SUFFIX.equals( suffix ) )
+                    {
+                        weftConfig.configureEnabled( pool, Boolean.parseBoolean( value ) );
+                    }
                 }
             }
+        }
+        catch ( NumberFormatException e )
+        {
+            throw new ConfigurationException( "Non-numeric value for 'threadpools' parameter: '{}' (value was: '{}')", name, value );
         }
     }
 
