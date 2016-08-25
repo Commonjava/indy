@@ -1,6 +1,11 @@
 package org.commonjava.indy.folo.data;
 
-import org.commonjava.indy.subsys.infinispan.inject.qualifer.IndyCacheManager;
+import org.commonjava.indy.folo.model.TrackedContent;
+import org.commonjava.indy.folo.model.TrackedContentEntry;
+import org.commonjava.indy.folo.model.TrackingKey;
+import org.commonjava.indy.subsys.infinispan.CacheHandle;
+import org.commonjava.indy.subsys.infinispan.CacheProducer;
+import org.commonjava.indy.subsys.infinispan.inject.qualifer.IndyCache;
 import org.infinispan.cdi.ConfigureCache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -14,24 +19,21 @@ import javax.inject.Inject;
 public class FoloCacheProducer
 {
     @Inject
-    @IndyCacheManager
-    private EmbeddedCacheManager cacheManager;
+    private CacheProducer cacheProducer;
 
-    @ConfigureCache( "folo-in-progress" )
     @FoloInprogressCache
     @Produces
     @ApplicationScoped
-    public Configuration inProgressFoloRecordCacheCfg()
+    public CacheHandle<TrackedContentEntry, TrackedContentEntry> inProgressFoloRecordCacheCfg()
     {
-        return cacheManager.getCacheConfiguration( "folo-in-progress" );
+        return cacheProducer.getCache( "folo-in-progress", TrackedContentEntry.class, TrackedContentEntry.class );
     }
 
-    @ConfigureCache( "folo-sealed" )
     @FoloSealedCache
     @Produces
     @ApplicationScoped
-    public Configuration sealedFoloRecordCacheCfg()
+    public CacheHandle<TrackingKey, TrackedContent> sealedFoloRecordCacheCfg()
     {
-        return cacheManager.getCacheConfiguration( "folo-sealed" );
+        return cacheProducer.getCache( "folo-sealed", TrackingKey.class, TrackedContent.class );
     }
 }

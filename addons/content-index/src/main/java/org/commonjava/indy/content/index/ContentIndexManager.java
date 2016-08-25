@@ -18,10 +18,13 @@ package org.commonjava.indy.content.index;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.action.IndyLifecycleException;
+import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
@@ -41,6 +44,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 /**
@@ -58,35 +62,37 @@ public class ContentIndexManager
     @ConfigureCache( "content-index" )
     @ContentIndexCache
     @Inject
-    private Cache<IndexedStorePath, IndexedStorePath> contentIndex;
+    private CacheHandle<IndexedStorePath, IndexedStorePath> contentIndex;
 
     @ExecutorConfig( named = "content-indexer", threads = 8, priority = 2, daemon = true )
     @WeftManaged
     @Inject
     private Executor executor;
 
-
     public void removeAllOriginIndexedPathsForStore( StoreKey memberKey, Consumer<IndexedStorePath> pathConsumer )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
 
-        QueryFactory queryFactory = Search.getQueryFactory( contentIndex );
-        QueryBuilder<Query> queryBuilder = queryFactory.from( IndexedStorePath.class )
-                                                       .having( "originStoreType" )
-                                                       .eq( memberKey.getType() )
-                                                       .and()
-                                                       .having( "originStoreName" )
-                                                       .eq( memberKey.getName() )
-                                                       .toBuilder();
+        contentIndex.execute( (cache)->{
+            QueryFactory queryFactory = Search.getQueryFactory( cache );
+            QueryBuilder<Query> queryBuilder = queryFactory.from( IndexedStorePath.class )
+                                                           .having( "originStoreType" )
+                                                           .eq( memberKey.getType() )
+                                                           .and()
+                                                           .having( "originStoreName" )
+                                                           .eq( memberKey.getName() )
+                                                           .toBuilder();
 
-        List<IndexedStorePath> paths = queryBuilder.build().list();
-        paths.forEach( ( indexedStorePath ) -> {
-            logger.debug( "Removing {}", indexedStorePath );
-            contentIndex.remove( indexedStorePath );
-            if ( pathConsumer != null )
-            {
-                pathConsumer.accept( indexedStorePath );
-            }
+            List<IndexedStorePath> paths = queryBuilder.build().list();
+            paths.forEach( ( indexedStorePath ) -> {
+                logger.debug( "Removing {}", indexedStorePath );
+                contentIndex.remove( indexedStorePath );
+                if ( pathConsumer != null )
+                {
+                    pathConsumer.accept( indexedStorePath );
+                }
+            } );
+            return true;
         } );
     }
 
@@ -110,47 +116,51 @@ public class ContentIndexManager
 
     public List<IndexedStorePath> getAllIndexedPathsForStore( StoreKey key )
     {
-        QueryFactory queryFactory = Search.getQueryFactory( contentIndex );
-        QueryBuilder<Query> queryBuilder = queryFactory.from( IndexedStorePath.class )
-                                                       .having( "storeType" )
-                                                       .eq( key.getType() )
-                                                       .and()
-                                                       .having( "storeName" )
-                                                       .eq( key.getName() )
-                                                       .toBuilder();
+        return contentIndex.execute( cache->{
+            QueryFactory queryFactory = Search.getQueryFactory( cache );
+            QueryBuilder<Query> queryBuilder = queryFactory.from( IndexedStorePath.class )
+                                                           .having( "storeType" )
+                                                           .eq( key.getType() )
+                                                           .and()
+                                                           .having( "storeName" )
+                                                           .eq( key.getName() )
+                                                           .toBuilder();
 
-        List<IndexedStorePath> paths = queryBuilder.build().list();
-        return paths;
+            List<IndexedStorePath> paths = queryBuilder.build().list();
+            return paths;
+        } );
     }
 
     public List<IndexedStorePath> removeOriginIndexedStorePath( String path, StoreKey key, Consumer<IndexedStorePath> pathConsumer )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
 
-        QueryFactory queryFactory = Search.getQueryFactory( contentIndex );
+        return contentIndex.execute( cache->{
+            QueryFactory queryFactory = Search.getQueryFactory( cache );
 
-        QueryBuilder<Query> queryBuilder = queryFactory.from( IndexedStorePath.class )
-                                                       .having( "originStoreType" )
-                                                       .eq( key.getType() )
-                                                       .and()
-                                                       .having( "originStoreName" )
-                                                       .eq( key.getName() )
-                                                       .and()
-                                                       .having( "path" )
-                                                       .eq( path )
-                                                       .toBuilder();
+            QueryBuilder<Query> queryBuilder = queryFactory.from( IndexedStorePath.class )
+                                                           .having( "originStoreType" )
+                                                           .eq( key.getType() )
+                                                           .and()
+                                                           .having( "originStoreName" )
+                                                           .eq( key.getName() )
+                                                           .and()
+                                                           .having( "path" )
+                                                           .eq( path )
+                                                           .toBuilder();
 
-        List<IndexedStorePath> paths = queryBuilder.build().list();
-        paths.forEach( ( indexedStorePath ) -> {
-            logger.debug( "Removing: {}", indexedStorePath );
-            contentIndex.remove( indexedStorePath );
-            if ( pathConsumer != null )
-            {
-                pathConsumer.accept( indexedStorePath );
-            }
+            List<IndexedStorePath> paths = queryBuilder.build().list();
+            paths.forEach( ( indexedStorePath ) -> {
+                logger.debug( "Removing: {}", indexedStorePath );
+                contentIndex.remove( indexedStorePath );
+                if ( pathConsumer != null )
+                {
+                    pathConsumer.accept( indexedStorePath );
+                }
+            } );
+
+            return paths;
         } );
-
-        return paths;
     }
 
     public void removeIndexedStorePath( String path, StoreKey key, Consumer<IndexedStorePath> pathConsumer )

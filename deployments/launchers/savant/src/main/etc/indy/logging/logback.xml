@@ -51,7 +51,7 @@
   
   <logger name="org.commonjava" level="WARN" />
   <logger name="org.commonjava.indy.action.IndyLifecycleManager" level="INFO" />
-  <logger name="org.commonjava.indy.subsys.infinispan.inject.CacheProducer" level="INFO" />
+  <logger name="org.commonjava.indy.subsys.infinispan.CacheProducer" level="INFO" />
 
   <!-- <logger name="org.commonjava.maven.galley.transport" level="DEBUG" /> -->
 

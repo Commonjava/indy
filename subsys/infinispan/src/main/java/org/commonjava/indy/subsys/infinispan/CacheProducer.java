@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.subsys.infinispan.inject;
+package org.commonjava.indy.subsys.infinispan;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -23,11 +23,10 @@ import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.conf.IndyConfiguration;
+import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.conf.InfinispanSubsystemConfig;
-import org.commonjava.indy.subsys.infinispan.inject.qualifer.IndyCacheManager;
+import org.commonjava.indy.subsys.infinispan.inject.qualifer.IndyCache;
 import org.infinispan.Cache;
-import org.infinispan.cdi.ConfigureCache;
-import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.io.GridFile;
 import org.infinispan.io.GridFilesystem;
 import org.infinispan.manager.DefaultCacheManager;
@@ -48,7 +47,9 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.commons.lang.StringUtils.isEmpty;
 import static org.commonjava.indy.subsys.infinispan.conf.InfinispanSubsystemConfig.ISPN_XML;
 
 /**
@@ -66,9 +67,9 @@ public class CacheProducer
     @Inject
     private InfinispanSubsystemConfig ispnConfig;
 
-    private Map<String, GridFilesystem> filesystems = new HashMap<>();
+    private Map<String, CacheHandle> caches = new ConcurrentHashMap<>();
 
-    private CacheProducer()
+    protected CacheProducer()
     {
     }
 
@@ -132,44 +133,31 @@ public class CacheProducer
         }
     }
 
-    @Produces
-    @ApplicationScoped
-//    @Production
-    @Default
-    @IndyCacheManager
-    public EmbeddedCacheManager getCacheManager()
+    public synchronized <K,V> CacheHandle<K,V> getCache(String named, Class<K> keyClass, Class<V> valueClass )
     {
-        return cacheManager;
-    }
-
-    @Produces
-    public synchronized GridFilesystem getGridFilesystem( InjectionPoint ip )
-    {
-        IndyGridFS annotation = ip.getAnnotated().getAnnotation( IndyGridFS.class );
-        String basename = annotation.value();
-
-        GridFilesystem gfs = filesystems.get( basename );
-        if ( gfs == null )
+        if ( cacheManager == null )
         {
-            Cache<String, byte[]> data = getCacheManager().getCache( "fs-" + basename + "-data" );
-            Cache<String, GridFile.Metadata> metadata = getCacheManager().getCache( "fs-" + basename + "-metadata" );
-
-            gfs = new GridFilesystem( data, metadata );
-            filesystems.put( basename, gfs );
+            throw new IllegalStateException( "Cannot access CacheManager. Indy seems to be in a state of shutdown." );
         }
 
-        return gfs;
+        Cache<K,V> cache = cacheManager.getCache( named );
+        CacheHandle<K, V> handle = new CacheHandle( named, cache );
+        caches.put( named, handle );
+        return handle;
     }
 
     @Override
-    public void stop()
+    public synchronized void stop()
             throws IndyLifecycleException
     {
+        caches.forEach( ( name, cacheHandle ) -> cacheHandle.stop() );
+
         if ( cacheManager != null )
         {
             Logger logger = LoggerFactory.getLogger( getClass() );
             logger.info( "Stopping Infinispan caches." );
             cacheManager.stop();
+            cacheManager = null;
         }
     }
 
