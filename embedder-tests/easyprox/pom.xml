@@ -52,15 +52,8 @@
   <build>
     <plugins>
       <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
+        <artifactId>maven-failsafe-plugin</artifactId>
           <configuration>
-            <skip>${skipITs}</skip>
-            <systemPropertyVariables>
-              <testTimeout>${testTimeout}</testTimeout>
-            </systemPropertyVariables>
-            <forkCount>${test-forkCount}</forkCount>
-            <reuseForks>false</reuseForks>
-            <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
             <dependenciesToScan>
               <dependency>org.commonjava.indy:indy-ftests-autoprox</dependency>
               <dependency>org.commonjava.indy:indy-ftests-core</dependency>

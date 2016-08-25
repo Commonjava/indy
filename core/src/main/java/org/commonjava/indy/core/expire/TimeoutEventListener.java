@@ -15,15 +15,6 @@
  */
 package org.commonjava.indy.core.expire;
 
-import static org.commonjava.indy.util.LocationUtils.getKey;
-
-import java.io.IOException;
-import java.util.Map;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
-import javax.inject.Inject;
-
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.change.event.AbstractStoreDeleteEvent;
 import org.commonjava.indy.change.event.ArtifactStorePostUpdateEvent;
@@ -47,6 +38,15 @@ import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Observes;
+import javax.inject.Inject;
+import java.io.IOException;
+import java.util.Map;
+
+import static org.commonjava.indy.util.LocationUtils.getKey;
 
 @ApplicationScoped
 public class TimeoutEventListener
@@ -104,8 +104,9 @@ public class TimeoutEventListener
         }
         catch ( final IndyWorkflowException | IndyDataException e )
         {
-            logger.error( String.format( "Failed to delete expired file for: %s, %s. Reason: %s", key, path,
-                                         e.getMessage() ), e );
+            logger.error(
+                    String.format( "Failed to delete expired file for: %s, %s. Reason: %s", key, path, e.getMessage() ),
+                    e );
 
             return;
         }
@@ -118,8 +119,9 @@ public class TimeoutEventListener
             }
             catch ( final IndySchedulerException e )
             {
-                logger.error( String.format( "Failed to clean metadata related to expired: %s in: %s. Reason: %s",
-                                             path, key, e.getMessage() ), e );
+                logger.error(
+                        String.format( "Failed to clean metadata related to expired: %s in: %s. Reason: %s", path, key,
+                                       e.getMessage() ), e );
             }
 
         }
@@ -173,43 +175,55 @@ public class TimeoutEventListener
 
     public void onFileAccessEvent( @Observes final FileAccessEvent event )
     {
-        final StoreKey key = getKey( event );
-        if ( key != null )
+        // TODO: handle this stuff in Weft somehow...
+        Map original = MDC.getCopyOfContextMap();
+        try
         {
-            final Transfer transfer = event.getTransfer();
-            final StoreType type = key.getType();
+            MDC.setContextMap( event.getMDCMap() );
 
-            if ( type == StoreType.hosted )
+            final StoreKey key = getKey( event );
+            if ( key != null )
             {
-                try
+                final Transfer transfer = event.getTransfer();
+                final StoreType type = key.getType();
+
+                if ( type == StoreType.hosted )
                 {
-                    scheduleManager.setSnapshotTimeouts( key, transfer.getPath() );
-                }
-                catch ( final IndySchedulerException e )
-                {
-                    logger.error( "Failed to set snapshot timeouts related to: " + transfer, e );
-                }
-            }
-            else if ( type == StoreType.remote )
-            {
-                SpecialPathInfo info = specialPathManager.getSpecialPathInfo( transfer );
-                if ( info == null || !info.isMetadata() )
-                {
-                    logger.debug( "Accessed resource {} timeout will be reset.", transfer );
                     try
                     {
-                        scheduleManager.setProxyTimeouts( key, transfer.getPath() );
+                        scheduleManager.setSnapshotTimeouts( key, transfer.getPath() );
                     }
                     catch ( final IndySchedulerException e )
                     {
-                        logger.error( "Failed to set proxy-cache timeouts related to: " + transfer, e );
+                        logger.error( "Failed to set snapshot timeouts related to: " + transfer, e );
                     }
                 }
-                else
+                else if ( type == StoreType.remote )
                 {
-                    logger.debug( "Accessed resource {} is metadata. NOT rescheduling timeout!", transfer );
+                    SpecialPathInfo info = specialPathManager.getSpecialPathInfo( transfer );
+                    if ( info == null || !info.isMetadata() )
+                    {
+                        logger.debug( "Accessed resource {} timeout will be reset.", transfer );
+                        try
+                        {
+                            scheduleManager.setProxyTimeouts( key, transfer.getPath() );
+                        }
+                        catch ( final IndySchedulerException e )
+                        {
+                            logger.error( "Failed to set proxy-cache timeouts related to: " + transfer, e );
+                        }
+                    }
+                    else
+                    {
+                        logger.debug( "Accessed resource {} is metadata. NOT rescheduling timeout!", transfer );
+                    }
                 }
             }
+
+        }
+        finally
+        {
+            MDC.setContextMap( original );
         }
     }
 
@@ -221,8 +235,7 @@ public class TimeoutEventListener
             try
             {
                 scheduleManager.cancel( new StoreKeyMatcher( key, ScheduleManager.CONTENT_JOB_TYPE ),
-                                        event.getTransfer()
-                                             .getPath() );
+                                        event.getTransfer().getPath() );
             }
             catch ( final IndySchedulerException e )
             {
@@ -270,11 +283,9 @@ public class TimeoutEventListener
 
     public void onStoreDeletion( @Observes final AbstractStoreDeleteEvent event )
     {
-        for ( final Map.Entry<ArtifactStore, Transfer> storeRoot : event.getStoreRoots()
-                                                                        .entrySet() )
+        for ( final Map.Entry<ArtifactStore, Transfer> storeRoot : event.getStoreRoots().entrySet() )
         {
-            final StoreKey key = storeRoot.getKey()
-                                          .getKey();
+            final StoreKey key = storeRoot.getKey().getKey();
 
             final Transfer dir = storeRoot.getValue();
 
@@ -288,13 +299,15 @@ public class TimeoutEventListener
                 }
                 catch ( final IOException e )
                 {
-                    logger.error( String.format( "Failed to delete storage for deleted artifact store: %s (dir: %s). Error: %s",
-                                                 key, dir, e.getMessage() ), e );
+                    logger.error( String.format(
+                            "Failed to delete storage for deleted artifact store: %s (dir: %s). Error: %s", key, dir,
+                            e.getMessage() ), e );
                 }
                 catch ( final IndySchedulerException e )
                 {
-                    logger.error( String.format( "Failed to cancel file expirations for deleted artifact store: {} (dir: {}). Error: {}",
-                                                 key, dir, e.getMessage() ), e );
+                    logger.error( String.format(
+                            "Failed to cancel file expirations for deleted artifact store: {} (dir: {}). Error: {}",
+                            key, dir, e.getMessage() ), e );
                 }
             }
         }

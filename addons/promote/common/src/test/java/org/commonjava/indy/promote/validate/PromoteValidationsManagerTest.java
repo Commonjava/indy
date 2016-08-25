@@ -54,8 +54,8 @@ public class PromoteValidationsManagerTest
     public void setUp()
             throws Exception
     {
-        parser = new ValidationRuleParser( new ScriptEngine(), new ObjectMapper() );
         fileManager = new DataFileManager( temp.newFolder( "data" ), new DataFileEventManager() );
+        parser = new ValidationRuleParser( new ScriptEngine( fileManager ), new ObjectMapper() );
         config = new PromoteConfig();
         config.setEnabled( true );
     }

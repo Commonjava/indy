@@ -118,10 +118,14 @@ public abstract class AbstractIndyFunctionalTest
 
     protected void waitForEventPropagation()
     {
+        long ms = 1000 * getTestTimeoutMultiplier();
+
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.info( "Waiting {}ms for Indy server events to clear.", ms );
         // give events time to propagate
         try
         {
-            Thread.sleep( 200 * getTestTimeoutMultiplier() );
+            Thread.sleep( ms );
         }
         catch ( InterruptedException e )
         {
@@ -143,6 +147,8 @@ public abstract class AbstractIndyFunctionalTest
     @After
     public void stop()
     {
+        waitForEventPropagation();
+        waitForEventPropagation();
         closeQuietly( fixture );
         closeQuietly( client );
     }

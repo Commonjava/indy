@@ -19,6 +19,8 @@ import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.httprox.conf.HttproxConfig;
 import org.commonjava.indy.httprox.keycloak.KeycloakProxyAuthenticator;
+import org.commonjava.indy.subsys.template.IndyGroovyException;
+import org.commonjava.indy.subsys.template.ScriptEngine;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,14 +30,20 @@ import org.xnio.channels.AcceptingChannel;
 import org.xnio.conduits.ConduitStreamSinkChannel;
 import org.xnio.conduits.ConduitStreamSourceChannel;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import java.io.IOException;
 
 /**
  * Created by jdcasey on 8/13/15.
  */
-public class ProxyAcceptHandler implements ChannelListener<AcceptingChannel<StreamConnection>>
+public class ProxyAcceptHandler
+        implements ChannelListener<AcceptingChannel<StreamConnection>>
 {
+    private static final String HTTPROX_REPO_CREATOR_SCRIPT = "httprox-repo-creator.groovy";
+
+    public static final String HTTPROX_ORIGIN = "httprox";
+
     @Inject
     private HttproxConfig config;
 
@@ -51,16 +59,43 @@ public class ProxyAcceptHandler implements ChannelListener<AcceptingChannel<Stre
     @Inject
     private CacheProvider cacheProvider;
 
-    protected ProxyAcceptHandler(){}
+    @Inject
+    private ScriptEngine scriptEngine;
 
-    public ProxyAcceptHandler( HttproxConfig config, StoreDataManager storeManager,
-                               ContentController contentController, KeycloakProxyAuthenticator proxyAuthenticator, CacheProvider cacheProvider )
+    private ProxyRepositoryCreator creator;
+
+    protected ProxyAcceptHandler()
+    {
+    }
+
+    public ProxyAcceptHandler( HttproxConfig config, StoreDataManager storeManager, ContentController contentController,
+                               KeycloakProxyAuthenticator proxyAuthenticator, CacheProvider cacheProvider,
+                               ScriptEngine scriptEngine )
     {
         this.config = config;
         this.storeManager = storeManager;
         this.contentController = contentController;
         this.proxyAuthenticator = proxyAuthenticator;
         this.cacheProvider = cacheProvider;
+        this.scriptEngine = scriptEngine;
+        init();
+    }
+
+    @PostConstruct
+    public void init()
+    {
+        try
+        {
+            creator = scriptEngine.parseStandardScriptInstance( ScriptEngine.StandardScriptType.store_creators,
+                                                                HTTPROX_REPO_CREATOR_SCRIPT, ProxyRepositoryCreator.class );
+        }
+        catch ( IndyGroovyException e )
+        {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.error( String.format( "Cannot create ProxyRepositoryCreator instance: %s. Disabling httprox support.",
+                                         e.getMessage() ), e );
+            config.setEnabled( false );
+        }
     }
 
     @Override
@@ -75,7 +110,7 @@ public class ProxyAcceptHandler implements ChannelListener<AcceptingChannel<Stre
         }
         catch ( IOException e )
         {
-            logger.error("Failed to accept httprox connection: " + e.getMessage(), e );
+            logger.error( "Failed to accept httprox connection: " + e.getMessage(), e );
             return;
         }
 
@@ -90,19 +125,19 @@ public class ProxyAcceptHandler implements ChannelListener<AcceptingChannel<Stre
         final ConduitStreamSinkChannel sink = accepted.getSinkChannel();
 
         final ProxyResponseWriter writer =
-                        new ProxyResponseWriter( config, storeManager, contentController, proxyAuthenticator, cacheProvider );
+                new ProxyResponseWriter( config, storeManager, contentController, proxyAuthenticator, cacheProvider,
+                                         creator );
 
         logger.debug( "Setting writer: {}", writer );
-        sink.getWriteSetter()
-            .set( writer );
+        sink.getWriteSetter().set( writer );
 
         final ProxyRequestReader reader = new ProxyRequestReader( writer, sink );
 
         logger.debug( "Setting reader: {}", reader );
-        source.getReadSetter()
-              .set( reader );
+        source.getReadSetter().set( reader );
 
         source.resumeReads();
 
     }
+
 }

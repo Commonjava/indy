@@ -22,8 +22,10 @@ import java.io.InputStream;
 import java.util.Collections;
 
 import org.apache.commons.io.IOUtils;
+import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.model.core.StoreType;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class ResolveDepViaSkimmedRepoInGroupTest
     extends AbstractSkimFunctionalTest
@@ -32,29 +34,28 @@ public class ResolveDepViaSkimmedRepoInGroupTest
     private static final String REPO = "i-repo-one";
 
     @Test
+    @Category( EventDependent.class )
     public void downloadPomInImpliedRepoViaGroup()
-        throws Exception
+            throws Exception
     {
         final String repoUrl = server.formatUrl( REPO );
         final PomRef pomRef = loadPom( "one-repo", Collections.singletonMap( "one-repo.url", repoUrl ) );
-        final PomRef simplePomRef = loadPom( "simple", Collections.<String, String> emptyMap() );
+        final PomRef simplePomRef = loadPom( "simple", Collections.<String, String>emptyMap() );
 
         server.expect( server.formatUrl( TEST_REPO, pomRef.path ), 200, pomRef.pom );
         server.expect( server.formatUrl( REPO, simplePomRef.path ), 200, simplePomRef.pom );
 
-        InputStream stream = client.content()
-                                   .get( StoreType.group, PUBLIC, pomRef.path );
-        
+        InputStream stream = client.content().get( StoreType.group, PUBLIC, pomRef.path );
+
         String downloaded = IOUtils.toString( stream );
         IOUtils.closeQuietly( stream );
 
         assertThat( "SANITY: downloaded POM with repo declaration is wrong!", downloaded, equalTo( pomRef.pom ) );
 
         // give the events time to propagate
-        Thread.sleep( 3000 );
+        waitForEventPropagation();
 
-        stream = client.content()
-                       .get( StoreType.group, PUBLIC, simplePomRef.path );
+        stream = client.content().get( StoreType.group, PUBLIC, simplePomRef.path );
 
         downloaded = IOUtils.toString( stream );
         IOUtils.closeQuietly( stream );

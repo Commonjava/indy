@@ -31,7 +31,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.commonjava.indy.boot.BootOptions;
-import org.commonjava.indy.boot.PortFinder;
 import org.commonjava.indy.content.ContentGenerator;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DownloadManager;
@@ -49,6 +48,7 @@ import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.subsys.datafile.DataFileManager;
 import org.commonjava.indy.subsys.datafile.change.DataFileEventManager;
 import org.commonjava.indy.subsys.keycloak.conf.KeycloakConfig;
+import org.commonjava.indy.subsys.template.ScriptEngine;
 import org.commonjava.indy.subsys.template.TemplatingEngine;
 import org.commonjava.indy.util.MimeTyper;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
@@ -136,9 +136,8 @@ public class HttpProxyTest
         final ContentManager contentManager = new DefaultContentManager( storeManager, downloadManager, mapper,
                                                                          Collections.<ContentGenerator>emptySet() );
 
-        final TemplatingEngine templates = new TemplatingEngine( new GStringTemplateEngine(),
-                                                                 new DataFileManager( temp.newFolder(),
-                                                                                      new DataFileEventManager() ) );
+        DataFileManager dfm = new DataFileManager( temp.newFolder(), new DataFileEventManager() );
+        final TemplatingEngine templates = new TemplatingEngine( new GStringTemplateEngine(), dfm );
         final ContentController contentController =
                 new ContentController( storeManager, contentManager, templates, mapper, new MimeTyper() );
 
@@ -147,8 +146,11 @@ public class HttpProxyTest
 
         final KeycloakProxyAuthenticator auth = new KeycloakProxyAuthenticator( kcConfig, config );
 
+        ScriptEngine scriptEngine = new ScriptEngine( dfm );
+
         proxy = new HttpProxy( config, bootOpts,
-                               new ProxyAcceptHandler( config, storeManager, contentController, auth, core.getCache() ) );
+                               new ProxyAcceptHandler( config, storeManager, contentController, auth, core.getCache(),
+                                                       scriptEngine ) );
         proxy.start();
     }
 

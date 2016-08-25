@@ -109,7 +109,7 @@ public class PromotionManagerTest
 
         dataManager = new DataFileManager( temp.newFolder( "data" ), new DataFileEventManager() );
         validationsManager = new PromoteValidationsManager( dataManager, new PromoteConfig(),
-                                                            new ValidationRuleParser( new ScriptEngine(),
+                                                            new ValidationRuleParser( new ScriptEngine( dataManager ),
                                                                                       new IndyObjectMapper( true ) ) );
 
         MavenModelProcessor modelProcessor = new MavenModelProcessor();

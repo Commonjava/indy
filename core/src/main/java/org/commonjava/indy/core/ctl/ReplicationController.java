@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -55,6 +56,8 @@ import org.commonjava.indy.model.core.dto.StoreListingDTO;
 import org.commonjava.indy.subsys.http.IndyHttpException;
 import org.commonjava.indy.subsys.http.IndyHttpProvider;
 import org.commonjava.indy.subsys.http.util.HttpResources;
+import org.commonjava.indy.subsys.template.IndyGroovyException;
+import org.commonjava.indy.subsys.template.ScriptEngine;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +68,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class ReplicationController
 {
     private static final String REPLICATION_ORIGIN = "replication";
+
+    private static final String REPLICATION_REPO_CREATOR_SCRIPT = "replication-repo-creator.groovy";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -77,21 +82,50 @@ public class ReplicationController
     @Inject
     private IndyHttpProvider http;
 
+    @Inject
+    private ScriptEngine scriptEngine;
+
+    private ReplicationRepositoryCreator creator;
+
     protected ReplicationController()
     {
     }
 
-    public ReplicationController( final StoreDataManager data, final IndyHttpProvider http,
+    public ReplicationController( final StoreDataManager data, final IndyHttpProvider http, ScriptEngine scriptEngine,
                                   final ObjectMapper serializer )
     {
         this.data = data;
         this.http = http;
+        this.scriptEngine = scriptEngine;
         this.serializer = serializer;
+        init();
+    }
+
+    @PostConstruct
+    public void init()
+    {
+        try
+        {
+            creator = scriptEngine.parseStandardScriptInstance( ScriptEngine.StandardScriptType.store_creators,
+                                                                REPLICATION_REPO_CREATOR_SCRIPT,
+                                                                ReplicationRepositoryCreator.class );
+        }
+        catch ( IndyGroovyException e )
+        {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.error( String.format( "Cannot create ReplicationRepositoryCreator instance: %s. Disabling replication support.",
+                                         e.getMessage() ), e );
+        }
     }
 
     public Set<StoreKey> replicate( final ReplicationDTO dto, final String user )
         throws IndyWorkflowException
     {
+        if ( creator == null )
+        {
+            throw new IndyWorkflowException( 500, "Cannot replicate; ReplicationRepositoryCreator could not be instantiated." );
+        }
+
         try
         {
             dto.validate();
@@ -135,7 +169,7 @@ public class ReplicationController
                             final StoreKey sk = new StoreKey( StoreType.remote, key );
                             if ( overwrite || !data.hasArtifactStore( sk ) )
                             {
-                                final RemoteRepository repo = new RemoteRepository( key, view.getResourceUri() );
+                                RemoteRepository repo = creator.createRemoteRepository( key, view );
                                 setProxyAttributes( repo, action );
 
                                 data.storeArtifactStore( repo, new ChangeSummary( user,
@@ -263,11 +297,10 @@ public class ReplicationController
             {
                 final String json = HttpResources.entityToString( response );
 
-                final StoreListingDTO<T> listing =
-                    serializer.readValue( json,
-                                          serializer.getTypeFactory()
-                                                    .constructParametricType( StoreListingDTO.class,
- type ) );
+                final StoreListingDTO<T> listing = serializer.readValue( json, serializer.getTypeFactory()
+                                                                                         .constructParametricType(
+                                                                                                 StoreListingDTO.class,
+                                                                                                 type ) );
 
                 if ( listing != null )
                 {

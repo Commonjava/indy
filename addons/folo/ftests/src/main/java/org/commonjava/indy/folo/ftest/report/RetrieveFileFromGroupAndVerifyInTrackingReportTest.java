@@ -36,7 +36,7 @@ import org.commonjava.indy.folo.dto.TrackedContentEntryDTO;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.test.http.TestHttpServer;
+import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -45,7 +45,7 @@ public class RetrieveFileFromGroupAndVerifyInTrackingReportTest
 {
 
     @Rule
-    public TestHttpServer server = new TestHttpServer();
+    public ExpectationServer server = new ExpectationServer();
 
     @Test
     public void run()

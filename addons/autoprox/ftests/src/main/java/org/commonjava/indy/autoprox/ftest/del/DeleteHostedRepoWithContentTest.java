@@ -22,16 +22,19 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.dto.StoreListingDTO;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class DeleteHostedRepoWithContentTest
     extends AbstractAutoproxDeletionTest
 {
 
     @Test
+    @Category( EventDependent.class )
     public void deleteHostedRepoWithContent_RepoNotReCreatedWhenContentIsDeleted()
         throws Exception
     {
@@ -49,14 +52,14 @@ public class DeleteHostedRepoWithContentTest
 
         assertThat( retrieved, equalTo( content ) );
 
+        System.out.println( "Waiting for server events to clear..." );
+        waitForEventPropagation();
+
         client.stores()
               .delete( StoreType.hosted, named, "Removing test repo" );
 
         System.out.println( "Waiting for server events to clear..." );
-        synchronized ( this )
-        {
-            wait( 3000 );
-        }
+        waitForEventPropagation();
 
         final StoreListingDTO<HostedRepository> repos = client.stores()
                                                               .listHostedRepositories();

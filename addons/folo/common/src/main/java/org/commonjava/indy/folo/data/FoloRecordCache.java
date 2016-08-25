@@ -20,6 +20,7 @@ import org.commonjava.indy.folo.model.StoreEffect;
 import org.commonjava.indy.folo.model.TrackedContent;
 import org.commonjava.indy.folo.model.TrackedContentEntry;
 import org.commonjava.indy.folo.model.TrackingKey;
+import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.infinispan.Cache;
 import org.infinispan.cdi.ConfigureCache;
 import org.infinispan.query.Search;
@@ -34,6 +35,8 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 @ApplicationScoped
 public class FoloRecordCache
@@ -41,15 +44,14 @@ public class FoloRecordCache
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    @ConfigureCache("folo-in-progress")
     @FoloInprogressCache
     @Inject
-    private Cache<TrackedContentEntry, TrackedContentEntry> inProgressRecordCache;
+    private CacheHandle<TrackedContentEntry, TrackedContentEntry> inProgressRecordCache;
 
     @ConfigureCache("folo-sealed")
     @FoloSealedCache
     @Inject
-    private Cache<TrackingKey, TrackedContent> sealedRecordCache;
+    private CacheHandle<TrackingKey, TrackedContent> sealedRecordCache;
 
     protected FoloRecordCache()
     {
@@ -58,8 +60,8 @@ public class FoloRecordCache
     public FoloRecordCache( Cache<TrackedContentEntry, TrackedContentEntry> inProgressRecordCache,
                             Cache<TrackingKey, TrackedContent> sealedRecordCache )
     {
-        this.inProgressRecordCache = inProgressRecordCache;
-        this.sealedRecordCache = sealedRecordCache;
+        this.inProgressRecordCache = new CacheHandle("folo-in-progress", inProgressRecordCache);
+        this.sealedRecordCache = new CacheHandle( "folo-sealed", sealedRecordCache );
     }
 
     /**
@@ -87,7 +89,10 @@ public class FoloRecordCache
     public synchronized void delete( final TrackingKey key )
     {
         sealedRecordCache.remove( key );
-        inProgressByTrackingKey( key ).build().list().forEach( ( ark ) -> inProgressRecordCache.remove( ark ) );
+        inProgressByTrackingKey( key, (qb, ch)->{
+            qb.build().list().forEach( item -> ch.execute( cache -> cache.remove( item ) ) );
+            return false;
+        } );
     }
 
     public synchronized boolean hasRecord( final TrackingKey key )
@@ -102,7 +107,7 @@ public class FoloRecordCache
 
     public synchronized boolean hasInProgressRecord( final TrackingKey key )
     {
-        return !sealedRecordCache.containsKey( key ) && inProgressByTrackingKey( key ).build().getResultSize() > 0;
+        return !sealedRecordCache.containsKey( key ) && inProgressByTrackingKey( key, (qb, cacheHandle)->qb.build().getResultSize() > 0);
     }
 
     public synchronized TrackedContent get( final TrackingKey key )
@@ -121,44 +126,48 @@ public class FoloRecordCache
             return record;
         }
 
-        TrackedContent created = null;
-
         logger.debug( "Listing unsealed tracking record entries for: {}...", trackingKey );
-        Query query = inProgressByTrackingKey( trackingKey ).build();
-        List<TrackedContentEntry> results = query.list();
-        if ( results != null )
-        {
-            logger.debug( "Adding {} entries to record: {}", results.size(), trackingKey );
-            Set<TrackedContentEntry> uploads = new TreeSet<>(  );
-            Set<TrackedContentEntry> downloads = new TreeSet<>(  );
-            results.forEach( ( result ) -> {
-                if ( StoreEffect.DOWNLOAD == result.getEffect() )
-                {
-                    downloads.add( result );
-                }
-                else if ( StoreEffect.UPLOAD == result.getEffect() )
-                {
-                    uploads.add( result );
-                }
-                logger.debug( "Removing in-progress entry: {}", result );
-                inProgressRecordCache.remove( result );
-            } );
-            created = new TrackedContent( trackingKey, uploads, downloads );
-        }
+        return inProgressByTrackingKey( trackingKey, (qb, cacheHandle)-> {
+            Query query = qb.build();
+            List<TrackedContentEntry> results = query.list();
+            TrackedContent created = null;
+            if ( results != null )
+            {
+                logger.debug( "Adding {} entries to record: {}", results.size(), trackingKey );
+                Set<TrackedContentEntry> uploads = new TreeSet<>();
+                Set<TrackedContentEntry> downloads = new TreeSet<>();
+                results.forEach( ( result ) -> {
+                    if ( StoreEffect.DOWNLOAD == result.getEffect() )
+                    {
+                        downloads.add( result );
+                    }
+                    else if ( StoreEffect.UPLOAD == result.getEffect() )
+                    {
+                        uploads.add( result );
+                    }
+                    logger.debug( "Removing in-progress entry: {}", result );
+                    inProgressRecordCache.remove( result );
+                } );
+                created = new TrackedContent( trackingKey, uploads, downloads );
+            }
 
-        logger.debug( "Sealing record for: {}", trackingKey );
-        sealedRecordCache.put( trackingKey, created );
-        return created;
+            logger.debug( "Sealing record for: {}", trackingKey );
+            sealedRecordCache.put( trackingKey, created );
+            return created;
+        });
     }
 
-    private QueryBuilder inProgressByTrackingKey( TrackingKey key )
+    private <R> R inProgressByTrackingKey( TrackingKey key, BiFunction<QueryBuilder, CacheHandle<TrackedContentEntry, TrackedContentEntry>, R> operation )
     {
-        QueryFactory queryFactory = Search.getQueryFactory( inProgressRecordCache );
-        return queryFactory.from( TrackedContentEntry.class )
-                           .having( "trackingKey.id" )
-                           .eq( key.getId() )
-                           .toBuilder()
-                           .orderBy( "index" );
+        return inProgressRecordCache.execute( ( cache ) -> {
+            QueryFactory queryFactory = Search.getQueryFactory( cache );
+            QueryBuilder qb = queryFactory.from( TrackedContentEntry.class )
+                                             .having( "trackingKey.id" )
+                                             .eq( key.getId() )
+                                             .toBuilder()
+                                             .orderBy( "index" );
+            return operation.apply( qb, inProgressRecordCache );
+        } );
     }
 
 }

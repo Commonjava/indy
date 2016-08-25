@@ -19,15 +19,18 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class GroupAdjustmentToMemberDeletionTest
     extends AbstractStoreManagementTest
 {
 
     @Test
+    @Category( EventDependent.class )
     public void groupAdjustsToConstituentDeletion()
         throws Exception
     {

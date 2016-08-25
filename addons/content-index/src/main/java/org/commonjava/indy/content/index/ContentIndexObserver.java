@@ -487,9 +487,12 @@ public class ContentIndexObserver
 
             try
             {
+//                Logger logger = LoggerFactory.getLogger( getClass() );
                 Transfer transfer = directContentAccess.getTransfer( key, path );
+//                logger.trace( "retrieving transfer for deletion: {}", transfer );
                 if ( transfer != null && transfer.exists() )
                 {
+//                    logger.trace( "DELETE: {}", transfer );
                     transfer.delete();
                 }
             }

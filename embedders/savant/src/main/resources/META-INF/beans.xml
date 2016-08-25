@@ -25,6 +25,7 @@
     <class>org.commonjava.indy.content.index.IndexingContentManagerDecorator</class>
     <class>org.commonjava.indy.content.index.IndexingDirectContentAccessDecorator</class>
     <class>org.commonjava.indy.koji.content.KojiContentManagerDecorator</class>
+    <class>org.commonjava.indy.implrepo.data.ImpliedReposStoreDataManagerDecorator</class>
   </decorators>
       
 </beans>

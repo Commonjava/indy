@@ -17,6 +17,8 @@ package org.commonjava.indy.promote.validate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.commonjava.indy.promote.model.ValidationRuleSet;
+import org.commonjava.indy.subsys.datafile.DataFileManager;
+import org.commonjava.indy.subsys.datafile.change.DataFileEventManager;
 import org.commonjava.indy.subsys.template.ScriptEngine;
 import org.junit.Before;
 import org.junit.Rule;
@@ -41,7 +43,8 @@ public class ValidationRuleParserTest
     public void setUp()
             throws Exception
     {
-        parser = new ValidationRuleParser( new ScriptEngine(), new ObjectMapper() );
+        DataFileManager dfm = new DataFileManager( temp.newFolder( "indy.root" ), new DataFileEventManager() );
+        parser = new ValidationRuleParser( new ScriptEngine( dfm ), new ObjectMapper() );
     }
 
     @Test

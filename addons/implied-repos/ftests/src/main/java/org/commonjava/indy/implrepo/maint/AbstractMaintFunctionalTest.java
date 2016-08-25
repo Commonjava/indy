@@ -70,7 +70,7 @@ public class AbstractMaintFunctionalTest
     protected void initTestConfig( CoreServerFixture fixture )
             throws IOException
     {
-        writeConfigFile( "conf.d/implied-repos.conf", "[implied-repos]\nenabled=true" );
+        writeConfigFile( "conf.d/implied-repos.conf", "[implied-repos]\nenabled=true\nenabled.group=public" );
     }
 
     @Override

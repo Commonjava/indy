@@ -126,5 +126,4 @@ public class HttproxConfig
                      .getContextClassLoader()
                      .getResourceAsStream( "default-httprox.conf" );
     }
-
 }

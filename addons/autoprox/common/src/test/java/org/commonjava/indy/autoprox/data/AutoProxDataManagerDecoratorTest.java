@@ -78,7 +78,7 @@ public class AutoProxDataManagerDecoratorTest
 
     private StoreDataManager proxyManager;
 
-    private final ScriptRuleParser ruleParser = new ScriptRuleParser( new ScriptEngine() );
+    private ScriptRuleParser ruleParser;
 
     private final ChangeSummary summary = new ChangeSummary( "test-user", "test" );
 
@@ -103,6 +103,8 @@ public class AutoProxDataManagerDecoratorTest
                 new HttpClientTransport( new HttpImpl( new MemoryPasswordManager() ) ) ).build();
 
         final DataFileManager dataFiles = new DataFileManager( rootDir, new DataFileEventManager() );
+
+        ruleParser = new ScriptRuleParser( new ScriptEngine( dataFiles ) );
 
         final AutoProxConfig indyConfig = new AutoProxConfig( autoproxDataDir.getName(), true );
 
