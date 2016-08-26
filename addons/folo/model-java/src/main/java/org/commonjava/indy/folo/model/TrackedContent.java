@@ -15,9 +15,15 @@
  */
 package org.commonjava.indy.folo.model;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.HashSet;
 import java.util.Set;
 
 public class TrackedContent
+        implements Externalizable
 {
 
     private TrackingKey key;
@@ -71,5 +77,26 @@ public class TrackedContent
     public int hashCode()
     {
         return getKey() != null ? getKey().hashCode() : 0;
+    }
+
+    @Override
+    public void writeExternal( ObjectOutput objectOutput )
+            throws IOException
+    {
+        objectOutput.writeObject( key );
+        objectOutput.writeObject( uploads );
+        objectOutput.writeObject( downloads );
+    }
+
+    @Override
+    public void readExternal( ObjectInput objectInput )
+            throws IOException, ClassNotFoundException
+    {
+        key = (TrackingKey) objectInput.readObject();
+        Set<TrackedContentEntry> ups = (Set<TrackedContentEntry>) objectInput.readObject();
+        uploads = ups == null ? new HashSet<>() : new HashSet<>( ups );
+
+        Set<TrackedContentEntry> downs = (Set<TrackedContentEntry>) objectInput.readObject();
+        downloads = downs == null ? new HashSet<>() : new HashSet<>( downs );
     }
 }

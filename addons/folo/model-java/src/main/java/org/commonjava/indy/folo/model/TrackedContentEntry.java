@@ -18,6 +18,7 @@ package org.commonjava.indy.folo.model;
 import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Indexed;
@@ -65,7 +66,7 @@ public class TrackedContentEntry
     @Field
     private Long size;
 
-    @Field
+    @Field( analyze = Analyze.NO )
     private long index = System.currentTimeMillis();
 
     public TrackedContentEntry()
