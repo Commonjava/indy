@@ -27,6 +27,7 @@ import org.infinispan.query.Search;
 import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryBuilder;
 import org.infinispan.query.dsl.QueryFactory;
+import org.infinispan.query.dsl.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -164,8 +165,10 @@ public class FoloRecordCache
             QueryBuilder qb = queryFactory.from( TrackedContentEntry.class )
                                              .having( "trackingKey.id" )
                                              .eq( key.getId() )
-                                             .toBuilder()
-                                             .orderBy( "index" );
+                                             .toBuilder();
+            // FIXME: Ordering breaks the query parser (it expects a LPAREN for some reason, and adding it to the string below doesn't work)
+//                                             .orderBy( "index", SortOrder.ASC );
+
             return operation.apply( qb, inProgressRecordCache );
         } );
     }
