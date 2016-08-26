@@ -16,6 +16,7 @@
 package org.commonjava.indy.promote.ftest.rule;
 
 import org.apache.commons.io.IOUtils;
+import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.promote.model.GroupPromoteRequest;
@@ -23,6 +24,7 @@ import org.commonjava.indy.promote.model.GroupPromoteResult;
 import org.commonjava.indy.promote.model.ValidationResult;
 import org.commonjava.indy.promote.model.ValidationRuleSet;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +52,7 @@ public class ArtifactRefs_DependencyInAnotherRepoInGroup_RuleTest
     private Group other;
 
     @Test
+    @Category( EventDependent.class )
     public void run()
             throws Exception
     {
@@ -84,6 +87,8 @@ public class ArtifactRefs_DependencyInAnotherRepoInGroup_RuleTest
                         + "<artifactId>valid</artifactId><version>1.1</version><dependencies>\"\n"
                 + "                + \"<dependency><groupId>org.bar</groupId><artifactId>dep</artifactId>\"\n"
                 + "                + \"<version>1.0</version></dependency></dependencies></project>" );
+
+        waitForEventPropagation();
 
         GroupPromoteRequest request = new GroupPromoteRequest( source.getKey(), target.getName() );
         GroupPromoteResult result = module.promoteToGroup( request );

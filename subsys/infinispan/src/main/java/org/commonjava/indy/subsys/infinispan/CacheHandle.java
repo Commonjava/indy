@@ -1,6 +1,7 @@
 package org.commonjava.indy.subsys.infinispan;
 
 import org.infinispan.Cache;
+import org.infinispan.IllegalLifecycleStateException;
 import org.infinispan.query.Search;
 import org.infinispan.query.dsl.QueryFactory;
 import org.slf4j.Logger;
@@ -36,14 +37,24 @@ public class CacheHandle<K,V>
     {
         if ( !stopped )
         {
-            return operation.apply( cache );
+            try
+            {
+                return operation.apply( cache );
+            }
+            catch ( RuntimeException e )
+            {
+                // this may happen if the cache is in the process of shutting down
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.error( "Failed to complete operation: " + e.getMessage(), e );
+            }
         }
         else
         {
             Logger logger = LoggerFactory.getLogger( getClass() );
             logger.error( "Cannot complete operation. Cache {} is shutting down.", name );
-            return null;
         }
+
+        return null;
     }
 
     public void stop()

@@ -15,12 +15,14 @@
  */
 package org.commonjava.indy.promote.ftest.rule;
 
+import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.promote.model.GroupPromoteRequest;
 import org.commonjava.indy.promote.model.GroupPromoteResult;
 import org.commonjava.indy.promote.model.ValidationResult;
 import org.commonjava.indy.promote.model.ValidationRuleSet;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -40,6 +42,7 @@ public class ProjectVersionPatternRuleTest
     private static final String RULE = "project-version-pattern.groovy";
 
     @Test
+    @Category( EventDependent.class )
     public void run()
             throws Exception
     {
@@ -50,6 +53,8 @@ public class ProjectVersionPatternRuleTest
                 + "<artifactId>invalid</artifactId><version>1</version></project>" );
         deploy( valid, "<?xml version=\"1.0\"?>\n<project><modelVersion>4.0.0</modelVersion><groupId>org.foo</groupId>"
                         + "<artifactId>valid</artifactId><version>1.1</version></project>" );
+
+        waitForEventPropagation();
 
         GroupPromoteRequest request = new GroupPromoteRequest( source.getKey(), target.getName() );
         GroupPromoteResult result = module.promoteToGroup( request );

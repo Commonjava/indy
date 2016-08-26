@@ -15,12 +15,14 @@
  */
 package org.commonjava.indy.promote.ftest.rule;
 
+import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.promote.model.GroupPromoteRequest;
 import org.commonjava.indy.promote.model.GroupPromoteResult;
 import org.commonjava.indy.promote.model.ValidationResult;
 import org.commonjava.indy.promote.model.ValidationRuleSet;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -42,6 +44,7 @@ public class ProjectArtifactsRuleTest
     private static final String CONTENT = "this is some content";
 
     @Test
+    @Category( EventDependent.class )
     public void run()
             throws Exception
     {
@@ -61,6 +64,8 @@ public class ProjectArtifactsRuleTest
         deploy( validJar, CONTENT );
         deploy( validSources, CONTENT );
         deploy( validJavadocs, CONTENT );
+
+        waitForEventPropagation();
 
         GroupPromoteRequest request = new GroupPromoteRequest( source.getKey(), target.getName() );
         GroupPromoteResult result = module.promoteToGroup( request );

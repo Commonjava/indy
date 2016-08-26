@@ -15,11 +15,13 @@
  */
 package org.commonjava.indy.promote.ftest.rule;
 
+import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.promote.model.GroupPromoteRequest;
 import org.commonjava.indy.promote.model.GroupPromoteResult;
 import org.commonjava.indy.promote.model.ValidationResult;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 import java.util.Map;
@@ -38,6 +40,7 @@ public class NoSnapshots_ProjectVersion_RuleTest
     private static final String RULE = "no-snapshots.groovy";
 
     @Test
+    @Category( EventDependent.class )
     public void run()
             throws Exception
     {
@@ -48,6 +51,8 @@ public class NoSnapshots_ProjectVersion_RuleTest
                 + "<artifactId>invalid</artifactId><version>1-SNAPSHOT</version></project>" );
         deploy( valid, "<?xml version=\"1.0\"?>\n<project><modelVersion>4.0.0</modelVersion><groupId>org.foo</groupId>"
                         + "<artifactId>valid</artifactId><version>1.1</version></project>" );
+
+        waitForEventPropagation();
 
         GroupPromoteRequest request = new GroupPromoteRequest( source.getKey(), target.getName() );
         GroupPromoteResult result = module.promoteToGroup( request );

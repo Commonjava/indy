@@ -57,6 +57,8 @@ import javax.inject.Inject;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -131,14 +133,25 @@ public class PromotionValidationTools
                                                                   StoreKey... extraLocations )
             throws IndyWorkflowException, GalleyMavenException, IndyDataException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Retrieving relationships for POM: {} (using extra locations: {})", path,
+                      Arrays.asList( extraLocations ) );
+
         ArtifactRef artifactRef = getArtifact( path );
         if ( artifactRef == null )
         {
+            logger.trace( "{} is not a valid artifact reference. Skipping.", path );
             return null;
         }
 
         StoreKey key = request.getSource();
         Transfer transfer = getTransfer( key, path );
+        if ( transfer == null )
+        {
+            logger.trace( "Could not retrieve Transfer instance for: {} (path: {}, extra locations: {})", key, path,
+                          Arrays.asList( extraLocations ) );
+            return null;
+        }
 
         List<Location> locations = new ArrayList<>( extraLocations.length + 1 );
         locations.add( transfer.getLocation() );
