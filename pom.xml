@@ -1200,6 +1200,22 @@
             </execution>
           </executions>
         </plugin>
+        <plugin>
+          <groupId>com.mycila</groupId>
+          <artifactId>license-maven-plugin</artifactId>
+          <configuration>
+            <excludes>
+              <exclude>bin/**</exclude>
+              <exclude>scratch/**</exclude>
+              <exclude>**/README</exclude>
+              <exclude>**/LICENSE*</exclude>
+              <exclude>src/test/resources/**</exclude>
+              <exclude>src/main/resources/**</exclude>
+              <exclude>**/*.groovy</exclude>
+            </excludes>
+          </configuration>
+        </plugin>
+
         <!-- <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
           <executions>
