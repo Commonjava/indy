@@ -63,7 +63,7 @@
     <galleyVersion>0.13.3-SNAPSHOT</galleyVersion>
     <bomVersion>21</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
-    <partylineVersion>1.8.1</partylineVersion>
+    <partylineVersion>1.9-SNAPSHOT</partylineVersion>
     <jhttpcVersion>1.3</jhttpcVersion>
     <kojijiVersion>1.1</kojijiVersion>
     <rwxVersion>1.0</rwxVersion>
@@ -191,6 +191,14 @@
       <dependency>
         <groupId>org.commonjava.indy.launch</groupId>
         <artifactId>indy-launcher-savant</artifactId>
+        <version>1.1.0-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>launcher</classifier>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy.launch</groupId>
+        <artifactId>indy-launcher-min</artifactId>
         <version>1.1.0-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>launcher</classifier>

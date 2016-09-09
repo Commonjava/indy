@@ -33,6 +33,7 @@
   <modules>
     <module>base</module>
     <module>savant</module>
+    <module>rest-min</module>
   </modules>
 
   <properties>
