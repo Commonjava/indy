@@ -33,7 +33,6 @@
   <modules>
     <module>savant</module>
     <module>rest-min</module>
-    <module>easyprox</module>
   </modules>
 
   <dependencies>

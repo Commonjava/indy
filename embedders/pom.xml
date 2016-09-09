@@ -38,7 +38,6 @@
   <modules>
     <module>savant</module>
     <module>rest-min</module>
-    <module>easyprox</module>
   </modules>
   
   <dependencies>
@@ -66,7 +65,68 @@
       <groupId>org.commonjava.indy.boot</groupId>
       <artifactId>indy-booter-jaxrs</artifactId>
     </dependency>
-    
+
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-filer-default</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-infinispan</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-dot-maven-jaxrs</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-revisions-jaxrs</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-revisions-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-content-index</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-httprox-common</artifactId>
+    </dependency>
+
+
+    <dependency>
+      <groupId>org.commonjava.maven.atlas</groupId>
+      <artifactId>atlas-identities</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.maven.atlas</groupId>
+      <artifactId>atlas-relationships-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.infinispan</groupId>
+      <artifactId>infinispan-cdi-embedded</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.infinispan</groupId>
+      <artifactId>infinispan-embedded</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.infinispan</groupId>
+      <artifactId>infinispan-embedded-query</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-search-orm</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.cache</groupId>
+      <artifactId>cache-api</artifactId>
+    </dependency>
+
+
     <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-undertow-adapter</artifactId>
@@ -92,9 +152,20 @@
       <groupId>javax.cache</groupId>
       <artifactId>cache-api</artifactId>
     </dependency>
+    <!-- Tests -->
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-dot-maven</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-httprox</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
   
@@ -170,7 +241,9 @@
           <configuration>
             <dependenciesToScan>
               <dependency>org.commonjava.indy:indy-ftests-core</dependency>
-            </dependenciesToScan> 
+              <dependency>org.commonjava.indy:indy-ftests-dot-maven</dependency>
+              <dependency>org.commonjava.indy:indy-ftests-httprox</dependency>
+            </dependenciesToScan>
           </configuration>
           <executions>
             <execution>
