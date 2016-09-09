@@ -126,6 +126,7 @@
                     </inline>
                   </assembly>
 
+                  <optimise>true</optimise>
                   <tags>
                     <tag>${tagVer}</tag>
                   </tags>
