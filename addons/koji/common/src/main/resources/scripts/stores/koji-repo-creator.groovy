@@ -24,7 +24,7 @@ class RepoCreator implements KojiRepositoryCreator
         hosted.setMetadata( KojiContentManagerDecorator.CREATION_TRIGGER_GAV, artifactRef.toString() );
         hosted.setMetadata( KojiContentManagerDecorator.NVR, nvr );
         hosted.setDescription(
-                String.format( "Koji build: %s (triggered by: %s via: %s)", build.getNvr(), originatingPath,
+                String.format( "Koji build: %s (triggered by: %s via: %s)", nvr, originatingPath,
                         eventMetadata.get( ENTRY_POINT_STORE ) ) );
     }
 }
