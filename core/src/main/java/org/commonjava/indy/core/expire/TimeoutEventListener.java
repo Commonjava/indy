@@ -44,6 +44,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 
 import static org.commonjava.indy.util.LocationUtils.getKey;
@@ -219,11 +220,17 @@ public class TimeoutEventListener
                     }
                 }
             }
-
         }
         finally
         {
-            MDC.setContextMap( original );
+            if ( original != null && !original.isEmpty() )
+            {
+                MDC.setContextMap( original );
+            }
+            else
+            {
+                MDC.setContextMap( Collections.emptyMap() );
+            }
         }
     }
 
