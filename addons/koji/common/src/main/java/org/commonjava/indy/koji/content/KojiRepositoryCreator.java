@@ -19,6 +19,7 @@ import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.subsys.template.ScriptEngine;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
+import org.commonjava.maven.galley.event.EventMetadata;
 
 /**
  * Responsible for creating new {@link RemoteRepository} and {@link HostedRepository} instances used to download and
@@ -33,5 +34,6 @@ public interface KojiRepositoryCreator
 {
     RemoteRepository createRemoteRepository( String name, String url, Integer downloadTimeoutSeconds );
 
-    HostedRepository createHostedRepository( String name, ArtifactRef artifactRef, String nvr );
+    HostedRepository createHostedRepository( String name, ArtifactRef artifactRef, String nvr,
+                                             EventMetadata eventMetadata );
 }
