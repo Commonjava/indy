@@ -17,20 +17,48 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  
+
   <parent>
-    <groupId>org.commonjava.indy</groupId>
-    <artifactId>indy-test</artifactId>
+    <groupId>org.commonjava.indy.docker</groupId>
+    <artifactId>indy-docker-images</artifactId>
     <version>1.1.0-SNAPSHOT</version>
   </parent>
   
-  <artifactId>indy-test-db</artifactId>
-  <name>Indy :: TCK :: Database</name>
-  
+  <groupId>org.commonjava.indy.docker</groupId>
+  <artifactId>indy-docker-min</artifactId>
+  <!-- <packaging>pom</packaging> -->
+  <packaging>docker</packaging>
+
+  <name>Indy :: Docker Images :: REST Minimal</name>
+
+  <properties>
+    <flavor>min</flavor>
+  </properties>
+
   <dependencies>
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>indy-api</artifactId>
+      <groupId>org.commonjava.indy.docker</groupId>
+      <artifactId>indy-docker-base</artifactId>
+      <type>tar.gz</type>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy.launch</groupId>
+      <artifactId>indy-launcher-min</artifactId>
+      <type>tar.gz</type>
+      <classifier>launcher</classifier>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>io.fabric8</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+
 </project>

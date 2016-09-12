@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-parent</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.1.0-SNAPSHOT</version>
   </parent>
   
   <groupId>org.commonjava.indy.embed.test</groupId>
@@ -33,7 +33,6 @@
   <modules>
     <module>savant</module>
     <module>rest-min</module>
-    <module>easyprox</module>
   </modules>
 
   <dependencies>

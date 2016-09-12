@@ -72,7 +72,7 @@ import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
 @Api( description = "Resource for accessing and managing artifact store definitions", value = "/api/admin/<type>" )
-@Path( "/api/admin/{type}" )
+@Path( "/api/admin/{type: (hosted|group|remote)}" )
 public class StoreAdminHandler
     implements IndyResources
 {
