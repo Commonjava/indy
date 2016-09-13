@@ -5,6 +5,7 @@ import org.commonjava.indy.koji.content.KojiRepositoryCreator
 import org.commonjava.indy.model.core.HostedRepository
 import org.commonjava.indy.model.core.RemoteRepository
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef
+import org.commonjava.maven.galley.event.EventMetadata;
 
 class RepoCreator implements KojiRepositoryCreator
 {
@@ -17,7 +18,7 @@ class RepoCreator implements KojiRepositoryCreator
     }
 
     @Override
-    HostedRepository createHostedRepository(String name, ArtifactRef artifactRef, String nvr) {
+    HostedRepository createHostedRepository(String name, ArtifactRef artifactRef, String nvr, EventMetadata eventMetadata) {
         HostedRepository hosted = new HostedRepository( name );
         hosted.setAllowReleases( true );
         hosted.setAllowSnapshots( false );
