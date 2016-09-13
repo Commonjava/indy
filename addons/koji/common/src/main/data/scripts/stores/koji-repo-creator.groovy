@@ -1,5 +1,6 @@
 package org.commonjava.indy.koji;
 
+import org.commonjava.indy.content.ContentManager
 import org.commonjava.indy.koji.content.KojiContentManagerDecorator
 import org.commonjava.indy.koji.content.KojiRepositoryCreator
 import org.commonjava.indy.model.core.HostedRepository
@@ -26,6 +27,6 @@ class RepoCreator implements KojiRepositoryCreator
         hosted.setMetadata( KojiContentManagerDecorator.NVR, nvr );
         hosted.setDescription(
                 String.format( "Koji build: %s (triggered by: %s via: %s)", nvr, artifactRef.toString(),
-                        eventMetadata.get( ENTRY_POINT_STORE ) ) );
+                        eventMetadata.get( ContentManager.ENTRY_POINT_STORE ) ) );
     }
 }
