@@ -28,5 +28,7 @@ class RepoCreator implements KojiRepositoryCreator
         hosted.setDescription(
                 String.format( "Koji build: %s (triggered by: %s via: %s)", nvr, artifactRef.toString(),
                         eventMetadata.get( ContentManager.ENTRY_POINT_STORE ) ) );
+
+        hosted
     }
 }
