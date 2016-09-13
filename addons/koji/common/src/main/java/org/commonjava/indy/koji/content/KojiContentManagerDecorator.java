@@ -151,14 +151,14 @@ public abstract class KojiContentManagerDecorator
     }
 
     @Override
-    public Transfer retrieve( ArtifactStore store, String path )
+    public Transfer retrieve( final ArtifactStore store, final String path )
             throws IndyWorkflowException
     {
         return retrieve( store, path, new EventMetadata() );
     }
 
     @Override
-    public Transfer retrieve( ArtifactStore store, String path, EventMetadata eventMetadata )
+    public Transfer retrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         Transfer result = delegate.retrieve( store, path, eventMetadata );
@@ -205,8 +205,8 @@ public abstract class KojiContentManagerDecorator
         return result;
     }
 
-    private RepoAndTransfer proxyKojiBuild( ArtifactRef artifactRef, String originatingPath,
-                                            EventMetadata eventMetadata )
+    private RepoAndTransfer proxyKojiBuild( final ArtifactRef artifactRef, final String originatingPath,
+                                            final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -262,8 +262,8 @@ public abstract class KojiContentManagerDecorator
         }
     }
 
-    private RepoAndTransfer transferBuild( KojiBuildInfo build, String originatingPath, ArtifactRef artifactRef,
-                                           EventMetadata eventMetadata, KojiSessionInfo session )
+    private RepoAndTransfer transferBuild( final KojiBuildInfo build, final String originatingPath, final ArtifactRef artifactRef,
+                                           final EventMetadata eventMetadata, final KojiSessionInfo session )
             throws KojiClientException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -283,7 +283,7 @@ public abstract class KojiContentManagerDecorator
                                                                             "Creating TEMPORARY remote repository for Koji build: "
                                                                                     + build.getNvr() ) );
 
-            HostedRepository hosted = creator.createHostedRepository( name, artifactRef, build.getNvr() );
+            HostedRepository hosted = creator.createHostedRepository( name, artifactRef, build.getNvr(), eventMetadata );
 
             hosted.setMetadata( ArtifactStore.METADATA_ORIGIN, KOJI_ORIGIN );
             storeDataManager.storeArtifactStore( hosted, new ChangeSummary( ChangeSummary.SYSTEM_USER,
@@ -383,9 +383,9 @@ public abstract class KojiContentManagerDecorator
         return null;
     }
 
-    private Transfer transferBuildArtifact( KojiArchiveInfo archive, RemoteRepository remote, HostedRepository hosted,
-                                            KojiBuildInfo build, EventMetadata eventMetadata, AtomicInteger counter,
-                                            boolean wait, ErrorHandler errorHandler )
+    private Transfer transferBuildArtifact( final KojiArchiveInfo archive, final RemoteRepository remote, final HostedRepository hosted,
+                                            final KojiBuildInfo build, final EventMetadata eventMetadata, final AtomicInteger counter,
+                                            final boolean wait, final ErrorHandler errorHandler )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         String path = String.format( "%s/%s/%s/%s", archive.getGroupId().replace( '.', '/' ), archive.getArtifactId(),
@@ -464,8 +464,8 @@ public abstract class KojiContentManagerDecorator
         return transfer;
     }
 
-    private Transfer adjustTargetGroupAndRetrieve( RepoAndTransfer proxyResult, Group group, String path,
-                                                   EventMetadata eventMetadata )
+    private Transfer adjustTargetGroupAndRetrieve( final RepoAndTransfer proxyResult, final Group group, final String path,
+                                                   final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -515,7 +515,7 @@ public abstract class KojiContentManagerDecorator
         // TODO: how to index it for the group...?
     }
 
-    private String formatStorageUrl( KojiBuildInfo buildInfo )
+    private String formatStorageUrl( final KojiBuildInfo buildInfo )
             throws MalformedURLException
     {
         String url =
@@ -539,12 +539,13 @@ public abstract class KojiContentManagerDecorator
 
         private Object[] params;
 
-        public StringFormatter( String format, Object... params )
+        public StringFormatter( final String format, final Object... params )
         {
             this.format = format;
             this.params = params;
         }
 
+        @Override
         public String toString()
         {
             return String.format( format, params );
