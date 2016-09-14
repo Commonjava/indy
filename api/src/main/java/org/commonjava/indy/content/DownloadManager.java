@@ -206,4 +206,13 @@ public interface DownloadManager
     Transfer getStorageReference( ArtifactStore store, String path, TransferOperation op )
         throws IndyWorkflowException;
 
+    /**
+     * Artifact existence check for given store and path. This method doesn't fire any events.
+     *
+     * @param store The store in which the check is performed
+     * @param path The path of the Transfer inside the store
+     * @throws IndyWorkflowException in case no suitable storage location can be found
+     */
+    boolean exists( ArtifactStore store, String path )
+        throws IndyWorkflowException;
 }

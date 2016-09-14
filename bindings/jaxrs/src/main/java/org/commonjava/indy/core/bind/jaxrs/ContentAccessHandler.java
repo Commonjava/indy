@@ -174,18 +174,18 @@ public class ContentAccessHandler
         {
             try
             {
-                Transfer item;
-                if ( Boolean.TRUE.equals( cacheOnly ) )
-                {
-                    logger.info( "[CACHE-ONLY] Checking existence of: {}:{}", sk, path );
+                Transfer item = null;
+                logger.info( "Checking existence of: {}:{}", sk, path );
+
+                if (StoreType.remote == st && !Boolean.TRUE.equals(cacheOnly)) {
+                    // Use exists for remote repo to avoid downloading file. Use getTransfer for everything else (hosted, cache-only).
+                    // Response will be composed of metadata by getHttpMetadata which get metadata from .http-metadata.json (because HTTP transport always writes a .http-metadata.json
+                    // file when it makes a request). This file stores the HTTP response status code and headers regardless exist returning true or false.
+                    boolean exists = contentController.exists(sk, path);
+                    logger.debug("Got exists: {}", exists);
+                } else {
                     item = contentController.getTransfer( sk, path, TransferOperation.DOWNLOAD );
-                    logger.debug( "Got cache-only transfer reference: {}", item );
-                }
-                else
-                {
-                    logger.info( "Retrieving: {}:{} for existence test", sk, path );
-                    item = contentController.get( sk, path, eventMetadata );
-                    logger.debug( "Got retrieved transfer reference: {}", item );
+                    logger.debug( "Got transfer reference: {}", item );
                 }
 
                 if ( item == null || !item.exists() )

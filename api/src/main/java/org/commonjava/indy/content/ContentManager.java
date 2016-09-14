@@ -217,4 +217,6 @@ public interface ContentManager
     HttpExchangeMetadata getHttpMetadata( StoreKey storeKey, String path )
         throws IndyWorkflowException;
 
+    boolean exists(ArtifactStore store, String path)
+        throws IndyWorkflowException;
 }

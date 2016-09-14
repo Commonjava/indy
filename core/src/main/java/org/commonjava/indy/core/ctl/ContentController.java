@@ -478,4 +478,7 @@ public class ContentController
         return contentManager.getHttpMetadata( txfr );
     }
 
+    public boolean exists(StoreKey sk, String path) throws IndyWorkflowException {
+        return contentManager.exists( getStore( sk ), path );
+    }
 }

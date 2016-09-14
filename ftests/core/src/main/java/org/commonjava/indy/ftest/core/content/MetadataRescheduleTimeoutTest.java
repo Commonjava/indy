@@ -68,6 +68,8 @@ public class MetadataRescheduleTimeoutTest
 
         // first time trigger normal content storage with timeout, should be 4s
         PathInfo pomResult = client.content().getInfo( remote, repoId, metadataPath );
+        client.content().get( remote, repoId, metadataPath ); // force storage
+
         assertThat( "no metadata result", pomResult, notNullValue() );
         assertThat( "metadata doesn't exist", pomResult.exists(), equalTo( true ) );
         String metadataFilePath =

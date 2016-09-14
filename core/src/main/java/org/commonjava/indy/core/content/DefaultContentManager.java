@@ -742,6 +742,14 @@ public class DefaultContentManager
         return readExchangeMetadata( meta );
     }
 
+    @Override
+    public boolean exists(ArtifactStore store, String path)
+        throws IndyWorkflowException
+    {
+        // TODO: to add content generation handling here, for things like merged metadata, checksum files, etc.
+        return downloadManager.exists(store, path);
+    }
+
     private HttpExchangeMetadata readExchangeMetadata( final Transfer meta )
             throws IndyWorkflowException
     {
