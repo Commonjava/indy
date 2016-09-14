@@ -70,6 +70,7 @@ public class MixContentRescheduleTimeoutTest
 
         // first time trigger normal content storage with timeout, should be 8s
         PathInfo pomResult = client.content().getInfo( remote, repoId, pomPath );
+        client.content().get( remote, repoId, pomPath ); // force storage
         assertThat( "no pom result", pomResult, notNullValue() );
         assertThat( "pom doesn't exist", pomResult.exists(), equalTo( true ) );
         String pomFilePath = String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(),
@@ -79,6 +80,7 @@ public class MixContentRescheduleTimeoutTest
 
         // first time trigger metadata storage with timeout, should be 4s
         PathInfo metadataResult = client.content().getInfo( remote, repoId, metadataPath );
+        client.content().get( remote, repoId, metadataPath ); // force storage
         assertThat( "no metadata result", metadataResult, notNullValue() );
         assertThat( "metadata doesn't exist", metadataResult.exists(), equalTo( true ) );
         String metadataFilePath =

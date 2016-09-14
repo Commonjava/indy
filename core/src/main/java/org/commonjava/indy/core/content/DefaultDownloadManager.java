@@ -473,6 +473,31 @@ public class DefaultDownloadManager
         return target;
     }
 
+    @Override
+    public boolean exists(final ArtifactStore store, String path)
+            throws IndyWorkflowException
+    {
+        final ConcreteResource res = new ConcreteResource( LocationUtils.toLocation( store ), path );
+        if ( store instanceof RemoteRepository )
+        {
+            try {
+                return transfers.exists( res );
+            } catch (TransferException e) {
+                logger.warn( "Existence check: " + e.getMessage(), e );
+                return false;
+            }
+        }
+        else
+        {
+            Transfer target = transfers.getCacheReference(res);
+            if ( target != null )
+            {
+                return target.exists();
+            }
+        }
+        return false;
+    }
+
     /*
      * (non-Javadoc)
      * @see org.commonjava.indy.core.rest.util.FileManager#upload(org.commonjava.indy.core.model.DeployPoint,
