@@ -15,9 +15,7 @@
  */
 package org.commonjava.indy.filer.def.conf;
 
-import org.commonjava.indy.conf.IndyConfigFactory;
 import org.commonjava.indy.conf.IndyConfigInfo;
-import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.conf.SystemPropertyProvider;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
@@ -35,9 +33,16 @@ public class DefaultStorageProviderConfiguration
 
     public static final File DEFAULT_BASEDIR = new File( "/var/lib/indy/storage" );
 
+    //FIXME: need to discuss if this default is reasonable or needed
+    public static final File DEFAULT_NFS_BASEDIR = new File("/var/lib/mnt/indy/storage");
+
     public static final String STORAGE_DIR = "indy.storage.dir";
 
+    public static final String NFS_STORAGE_DIR = "indy.storage.nfs.dir";
+
     private File storageBasedir;
+
+    private File nfsStoreBasedir;
 
     public DefaultStorageProviderConfiguration()
     {
@@ -48,15 +53,31 @@ public class DefaultStorageProviderConfiguration
         this.storageBasedir = storageBasedir;
     }
 
+    public DefaultStorageProviderConfiguration( final File storageBasedir, final File nfsStoreBasedir )
+    {
+        this.storageBasedir = storageBasedir;
+        this.nfsStoreBasedir = nfsStoreBasedir;
+    }
+
     public File getStorageRootDirectory()
     {
         return storageBasedir == null ? DEFAULT_BASEDIR : storageBasedir;
+    }
+
+    public File getNFSStorageRootDirectory()
+    {
+        return nfsStoreBasedir == null ? DEFAULT_NFS_BASEDIR : nfsStoreBasedir;
     }
 
     @ConfigName( "storage.dir" )
     public void setStorageRootDirectory( final File storageBasedir )
     {
         this.storageBasedir = storageBasedir;
+    }
+
+    @ConfigName( "storage.nfs.dir" )
+    public void setNFSStorageRootDirectory(final File nfsStorageRootDirectory){
+        this.nfsStoreBasedir = nfsStorageRootDirectory;
     }
 
     @Override
@@ -78,6 +99,7 @@ public class DefaultStorageProviderConfiguration
     {
         Properties p = new Properties();
         p.setProperty( STORAGE_DIR, getStorageRootDirectory().getAbsolutePath() );
+        p.setProperty( NFS_STORAGE_DIR, getStorageRootDirectory().getAbsolutePath() );
         return p;
     }
 }
