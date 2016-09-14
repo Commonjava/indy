@@ -43,6 +43,13 @@ public class CacheHandle<K,V>
         this.cache = cache;
     }
 
+    //FIXME: as new CacheProvider construction mechanism used a original cache to construct FastLocalCacheProvider,
+    //       here we need to expose the wrapped cache out. Need to think some alternative way later to fix this.
+    @Deprecated
+    public Cache<K,V> getCache(){
+        return cache;
+    }
+
     public String getName()
     {
         return name;
