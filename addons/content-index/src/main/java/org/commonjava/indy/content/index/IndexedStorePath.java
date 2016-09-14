@@ -53,7 +53,8 @@ public class IndexedStorePath
     @Field( name = "path", store = Store.YES, analyze = Analyze.NO )
     private String path;
 
-    private IndexedStorePath(){}
+    // this needs to be public for Infinispan to not throw InvalidClassException with the first httprox request
+    public IndexedStorePath(){}
 
     public IndexedStorePath( StoreKey storeKey, String path )
     {
