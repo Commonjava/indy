@@ -21,14 +21,17 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import org.commonjava.indy.client.core.helper.PathInfo;
+import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.junit.Test;
 
 public class StoreAndConsistentlyVerifyPathInfoExistenceTest
     extends AbstractContentManagementTest
 {
+    private final int PASSTHROUGH_TIMEOUT_SECONDS = 9;
 
     @Test
     public void storeAndVerifyPathInfo_10Times()
@@ -44,7 +47,6 @@ public class StoreAndConsistentlyVerifyPathInfoExistenceTest
         {
             final PathInfo result = client.content()
                                           .getInfo( hosted, STORE, path );
-
             assertThat( "pass: " + i + "...no result", result, notNullValue() );
             assertThat( "pass: " + i + "...doesn't exist", result.exists(), equalTo( true ) );
         }
@@ -56,4 +58,11 @@ public class StoreAndConsistentlyVerifyPathInfoExistenceTest
         return 2;
     }
 
+    @Override
+    protected void initTestConfig( CoreServerFixture fixture )
+            throws IOException
+    {
+        writeConfigFile( "main.conf", "passthrough.timeout=" + PASSTHROUGH_TIMEOUT_SECONDS + "\n" + readTestResource(
+                "default-test-main.conf" ) );
+    }
 }
