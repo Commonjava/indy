@@ -779,7 +779,7 @@
 
       <!-- override galley-cache-partyline dep -->
       <dependency>
-        <groupId>org.commonjava.util.partyline</groupId>
+        <groupId>org.commonjava.util</groupId>
         <artifactId>partyline</artifactId>
         <version>${partylineVersion}</version>
       </dependency>
