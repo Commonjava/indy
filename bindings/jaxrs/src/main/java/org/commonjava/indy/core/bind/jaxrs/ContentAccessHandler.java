@@ -292,7 +292,7 @@ public class ContentAccessHandler
                 else
                 {
                     final ResponseBuilder builder = Response.ok( new TransferStreamingOutput( item, eventMetadata ) );
-                    setInfoHeaders( builder, item, sk, path, false, contentController.getContentType( path ),
+                    setInfoHeaders( builder, item, sk, path, true, contentController.getContentType( path ),
                                     contentController.getHttpMetadata( sk, path ) );
 
                     response = builder.build();
