@@ -170,6 +170,8 @@ public class ReplicationController
                             if ( overwrite || !data.hasArtifactStore( sk ) )
                             {
                                 RemoteRepository repo = creator.createRemoteRepository( key, view );
+                                repo.setMetadata( ArtifactStore.METADATA_ORIGIN, REPLICATION_ORIGIN );
+
                                 setProxyAttributes( repo, action );
 
                                 data.storeArtifactStore( repo, new ChangeSummary( user,
@@ -304,10 +306,7 @@ public class ReplicationController
 
                 if ( listing != null )
                 {
-                    for ( final T store : listing.getItems() )
-                    {
-                        result.add( store );
-                    }
+                    result.addAll( listing.getItems() );
                 }
             }
             else
