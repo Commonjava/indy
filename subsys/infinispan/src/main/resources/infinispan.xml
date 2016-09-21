@@ -85,5 +85,11 @@
         </store>
       </persistence>
     </local-cache> -->
+
+    <local-cache name="indy-nfs-owner-cache" deadlock-detection-spin="10000">
+      <eviction size="1000" type="COUNT" strategy="LRU"/>
+      <transaction transaction-manager-lookup="org.infinispan.transaction.lookup.DummyTransactionManagerLookup"
+                   locking="PESSIMISTIC"/>
+    </local-cache>
   </cache-container>
 </infinispan>
