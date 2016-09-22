@@ -43,6 +43,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.Date;
 import java.util.function.Supplier;
@@ -128,7 +129,7 @@ public class ContentAccessHandler
         catch ( final IndyWorkflowException e )
         {
             logger.error(
-                    String.format( "Failed to delete artifact: %s from: %s. Reason: %s", path, name, e.getMessage() ),
+                    String.format( "Failed to tryDelete artifact: %s from: %s. Reason: %s", path, name, e.getMessage() ),
                     e );
             response = formatResponse( e );
         }
@@ -262,43 +263,70 @@ public class ContentAccessHandler
         {
             try
             {
+                logger.info( "START: retrieval of content: {}:{}", sk, path );
                 final Transfer item = contentController.get( sk, path, eventMetadata );
 
-                if ( item == null || !item.exists() )
+                logger.info( "HANDLE: retrieval of content: {}:{}", sk, path );
+                if ( item == null )
                 {
-                    response = handleMissingContentQuery( sk, path );
+                    return handleMissingContentQuery( sk, path );
                 }
-                else if ( item.isDirectory() || ( path.endsWith( "index.html" ) ) )
+
+                boolean handleLocking = false;
+                if ( !item.isWriteLocked() )
                 {
-                    try
+                    item.lockWrite();
+                    handleLocking = true;
+                }
+
+                try
+                {
+                    if ( !item.exists() )
                     {
-                        item.delete( false );
-
-                        logger.info( "Getting listing at: {}", path + "/" );
-                        final String content =
-                                contentController.renderListing( standardAccept, st, name, path + "/", baseUri,
-                                                                 uriFormatter );
-
-                        response = formatOkResponseWithEntity( content, acceptInfo.getRawAccept() );
+                        return handleMissingContentQuery( sk, path );
                     }
-                    catch ( final IndyWorkflowException | IOException e )
+                    else if ( item.isDirectory() || ( path.endsWith( "index.html" ) ) )
                     {
-                        logger.error(
-                                String.format( "Failed to render content listing: %s from: %s. Reason: %s", path, name,
-                                               e.getMessage() ), e );
-                        response = formatResponse( e );
+                        try
+                        {
+                            item.delete( false );
+
+                            logger.info( "Getting listing at: {}", path + "/" );
+                            final String content =
+                                    contentController.renderListing( standardAccept, st, name, path + "/", baseUri,
+                                                                     uriFormatter );
+
+                            response = formatOkResponseWithEntity( content, acceptInfo.getRawAccept() );
+                        }
+                        catch ( final IndyWorkflowException | IOException e )
+                        {
+                            logger.error(
+                                    String.format( "Failed to render content listing: %s from: %s. Reason: %s", path,
+                                                   name, e.getMessage() ), e );
+                            response = formatResponse( e );
+                        }
+                    }
+                    else
+                    {
+                        logger.info( "RETURNING: retrieval of content: {}:{}", sk, path );
+                        // open the stream here to prevent deletion while waiting for the transfer back to the user to start...
+                        InputStream in = item.openInputStream( true, eventMetadata );
+                        final ResponseBuilder builder = Response.ok( new TransferStreamingOutput( in ) );
+                        setInfoHeaders( builder, item, sk, path, true, contentController.getContentType( path ),
+                                        contentController.getHttpMetadata( sk, path ) );
+
+                        response = builder.build();
                     }
                 }
-                else
+                finally
                 {
-                    final ResponseBuilder builder = Response.ok( new TransferStreamingOutput( item, eventMetadata ) );
-                    setInfoHeaders( builder, item, sk, path, true, contentController.getContentType( path ),
-                                    contentController.getHttpMetadata( sk, path ) );
-
-                    response = builder.build();
+                    if ( handleLocking )
+                    {
+                        item.unlock();
+                    }
                 }
             }
-            catch ( final IndyWorkflowException e )
+            catch ( final IOException | IndyWorkflowException e )
             {
                 logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name,
                                              e.getMessage() ), e );
@@ -306,6 +334,7 @@ public class ContentAccessHandler
             }
         }
 
+        logger.info( "RETURNING RESULT: {}:{}", sk, path );
         return response;
     }
 
