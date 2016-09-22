@@ -76,7 +76,7 @@ public abstract class IndexingContentManagerDecorator
 
     protected IndexingContentManagerDecorator( final ContentManager delegate, final StoreDataManager storeDataManager,
                                                final SpecialPathManager specialPathManager,
-                                               final ContentIndexManager indexManager, NotFoundCache nfc )
+                                               final ContentIndexManager indexManager, final NotFoundCache nfc )
     {
         this.delegate = delegate;
         this.storeDataManager = storeDataManager;
@@ -217,7 +217,7 @@ public abstract class IndexingContentManagerDecorator
         return transfer;
     }
 
-    private Transfer getIndexedTransfer( StoreKey storeKey, StoreKey topKey, String path, TransferOperation op )
+    private Transfer getIndexedTransfer( final StoreKey storeKey, final StoreKey topKey, final String path, final TransferOperation op )
             throws IndyWorkflowException
     {
         IndexedStorePath storePath = indexManager.getIndexedStorePath( storeKey, path );
@@ -256,37 +256,30 @@ public abstract class IndexingContentManagerDecorator
         }
 
         StoreType type = store.getKey().getType();
-        if ( StoreType.hosted == type )
-        {
-            // hosted repos are completely indexed, since the store() method maintains the index
-            // So, if it wasn't found in the index (above), and we're looking at a hosted repo, it's not here.
-            return null;
-        }
-        else if ( StoreType.group == type )
+        if ( StoreType.group == type )
         {
             ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
-            if ( nfc.isMissing( resource ) )
+            if ( !nfc.isMissing( resource ) )
             {
-                return null;
-            }
-
-            logger.debug( "No group index hits. Devolving to member store indexes." );
-            for ( StoreKey key : ( (Group) store ).getConstituents() )
-            {
-                transfer = getIndexedMemberTransfer( key, store.getKey(), path );
-                if ( transfer != null )
+                logger.debug( "No group index hits. Devolving to member store indexes." );
+                for ( StoreKey key : ( (Group) store ).getConstituents() )
                 {
-                    return transfer;
-                }
-                else
-                {
-                    nfc.addMissing( resource );
+                    transfer = getIndexedMemberTransfer( key, store.getKey(), path );
+                    if ( transfer != null )
+                    {
+                        return transfer;
+                    }
+                    else
+                    {
+                        nfc.addMissing( resource );
+                    }
                 }
             }
         }
 
         transfer = delegate.getTransfer( store, path, op );
-        if ( transfer != null )
+        // index the transfer only if it exists, it cannot be null at this point
+        if ( transfer.exists() )
         {
             indexManager.indexTransferIn( transfer, store.getKey() );
         }
@@ -294,7 +287,7 @@ public abstract class IndexingContentManagerDecorator
         return transfer;
     }
 
-    private Transfer getIndexedMemberTransfer( StoreKey key, StoreKey topKey, String path )
+    private Transfer getIndexedMemberTransfer( final StoreKey key, final StoreKey topKey, final String path )
             throws IndyWorkflowException
     {
         Transfer transfer;
@@ -456,7 +449,7 @@ public abstract class IndexingContentManagerDecorator
     //    }
 
     @Override
-    public Transfer store( final List<? extends ArtifactStore> stores, StoreKey topKey, final String path,
+    public Transfer store( final List<? extends ArtifactStore> stores, final StoreKey topKey, final String path,
                            final InputStream stream, final TransferOperation op, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
