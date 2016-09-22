@@ -21,6 +21,7 @@ import org.commonjava.indy.autoprox.conf.AutoProxConfig;
 import org.commonjava.indy.autoprox.rest.dto.CatalogDTO;
 import org.commonjava.indy.autoprox.rest.dto.RuleDTO;
 import org.commonjava.indy.autoprox.util.ScriptRuleParser;
+import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
@@ -44,6 +45,8 @@ import java.util.List;
 @ApplicationScoped
 public class AutoProxCatalogManager
 {
+
+    public static final String AUTOPROX_ORIGIN = "autoprox";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -222,7 +225,14 @@ public class AutoProxCatalogManager
         final AutoProxRule rule = getRuleMatching( name );
         try
         {
-            return rule == null ? null : rule.createRemoteRepository( name );
+            if ( rule != null )
+            {
+                RemoteRepository repo = rule.createRemoteRepository( name );
+                repo.setMetadata( ArtifactStore.METADATA_ORIGIN, AUTOPROX_ORIGIN );
+                return repo;
+            }
+
+            return null;
         }
         catch ( final MalformedURLException e )
         {
@@ -246,7 +256,14 @@ public class AutoProxCatalogManager
         final AutoProxRule rule = getRuleMatching( name );
         try
         {
-            return rule == null ? null : rule.createHostedRepository( name );
+            if ( rule != null )
+            {
+                HostedRepository repo = rule.createHostedRepository( name );
+                repo.setMetadata( ArtifactStore.METADATA_ORIGIN, AUTOPROX_ORIGIN );
+                return repo;
+            }
+
+            return null;
         }
         catch ( final Exception e )
         {
@@ -266,7 +283,14 @@ public class AutoProxCatalogManager
         final AutoProxRule rule = getRuleMatching( name );
         try
         {
-            return rule == null ? null : rule.createGroup( name );
+            if ( rule != null )
+            {
+                Group group = rule.createGroup( name );
+                group.setMetadata( ArtifactStore.METADATA_ORIGIN, AUTOPROX_ORIGIN );
+                return group;
+            }
+
+            return null;
         }
         catch ( final Exception e )
         {

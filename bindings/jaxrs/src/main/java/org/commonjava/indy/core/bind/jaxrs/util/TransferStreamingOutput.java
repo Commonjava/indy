@@ -33,35 +33,22 @@ public class TransferStreamingOutput
     implements StreamingOutput
 {
 
-    private final Transfer item;
+    private InputStream stream;
 
-    private EventMetadata eventMetadata;
-
-    public TransferStreamingOutput( final Transfer item, EventMetadata eventMetadata )
+    public TransferStreamingOutput( final InputStream stream )
     {
-        this.item = item;
-        this.eventMetadata = eventMetadata;
+        this.stream = stream;
     }
 
     @Override
     public void write( final OutputStream out )
         throws IOException, WebApplicationException
     {
-        InputStream in = null;
         CountingOutputStream cout = new CountingOutputStream( out );
-        try
-        {
-            in = item.openInputStream( true, eventMetadata );
-            IOUtils.copy( in, cout );
+        IOUtils.copy( stream, cout );
 
-            Logger logger = LoggerFactory.getLogger( getClass() );
-            logger.debug( "Wrote: {} bytes", cout.getByteCount() );
-        }
-        finally
-        {
-            IOUtils.closeQuietly( in );
-//            IOUtils.closeQuietly( cout );
-        }
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Wrote: {} bytes", cout.getByteCount() );
     }
 
 }
