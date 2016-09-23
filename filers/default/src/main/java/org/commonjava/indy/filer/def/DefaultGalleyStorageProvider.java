@@ -18,6 +18,7 @@ package org.commonjava.indy.filer.def;
 import java.io.File;
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
+import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
@@ -31,11 +32,13 @@ import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.maven.galley.GalleyInitException;
 import org.commonjava.maven.galley.cache.infinispan.FastLocalCacheProviderFactory;
 import org.commonjava.maven.galley.cache.partyline.PartyLineCacheProviderFactory;
+import org.commonjava.maven.galley.cache.routes.RouteSelector;
 import org.commonjava.maven.galley.cache.routes.RoutingCacheProviderFactory;
 import org.commonjava.maven.galley.io.ChecksummingTransferDecorator;
 import org.commonjava.maven.galley.io.checksum.Md5GeneratorFactory;
 import org.commonjava.maven.galley.io.checksum.Sha1GeneratorFactory;
 import org.commonjava.maven.galley.io.checksum.Sha256GeneratorFactory;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.FilePatternMatcher;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
@@ -153,18 +156,24 @@ public class DefaultGalleyStorageProvider
                 final FastLocalCacheProviderFactory fastLocalFac =
                         new FastLocalCacheProviderFactory( storeRoot, nfsBasedir, nfsOwnerCache.getCache(), fastLocalExecutors );
 
-                this.cacheProviderFactory = new RoutingCacheProviderFactory( ( resource ) -> {
-                    if ( resource != null )
+                this.cacheProviderFactory = new RoutingCacheProviderFactory( new RouteSelector()
+                {
+                    final Pattern localPattern = Pattern.compile( "^indy:hosted:.*$" );
+
+                    @Override
+                    public boolean isDisposable( ConcreteResource resource )
                     {
-                        String pattern = "^indy:hosted:.*$";
-                        final Location loc = resource.getLocation();
-                        if ( loc != null )
+                        if ( resource != null )
                         {
-                            final String uri = loc.getUri();
-                            return uri != null && uri.matches( pattern );
+                            final Location loc = resource.getLocation();
+                            if ( loc != null )
+                            {
+                                final String uri = loc.getUri();
+                                return uri != null && localPattern.matcher( uri ).matches();
+                            }
                         }
+                        return false;
                     }
-                    return false;
                 }, fastLocalFac, partylineFac );
             }
             else
