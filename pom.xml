@@ -60,7 +60,7 @@
     <partylineVersion>1.7.1</partylineVersion>
     <keycloakVersion>1.9.8.Final</keycloakVersion>
     <jhttpcVersion>1.3</jhttpcVersion>
-    <kojijiVersion>1.1</kojijiVersion>
+    <kojijiVersion>1.2-SNAPSHOT</kojijiVersion>
     <bouncycastleVersion>1.53</bouncycastleVersion>
     <rwxVersion>1.1-SNAPSHOT</rwxVersion>
     <weftVersion>1.1</weftVersion>
