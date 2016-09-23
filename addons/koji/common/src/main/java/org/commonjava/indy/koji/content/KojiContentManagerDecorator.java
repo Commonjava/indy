@@ -23,13 +23,14 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiBuildArchiveCollection;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
-import org.apache.commons.io.IOUtils;
+
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DirectContentAccess;
+import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
@@ -44,7 +45,6 @@ import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
-import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.util.UrlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +55,6 @@ import javax.decorator.Delegate;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.util.Collections;
 import java.util.List;
@@ -107,6 +106,9 @@ public abstract class KojiContentManagerDecorator
     @Delegate
     @Inject
     private ContentManager delegate;
+
+    @Inject
+    private ContentController contentController;
 
     @Inject
     private DirectContentAccess directContentAccess;
@@ -410,7 +412,7 @@ public abstract class KojiContentManagerDecorator
         {
             try
             {
-                Transfer target = delegate.getTransfer( hosted, path, TransferOperation.DOWNLOAD );
+                ValueHolder<Transfer> target = new ValueHolder<>();
                 Transfer source = transfer;
 
                 counter.incrementAndGet();
@@ -421,9 +423,9 @@ public abstract class KojiContentManagerDecorator
                 // If we're not waiting on this transfer, then don't worry about synchronizing to watch for the start of
                 // the transfer.
                 executor.submit( () -> {
-                    try (InputStream in = source.openInputStream( true, eventMetadata );
-                         OutputStream out = target.openOutputStream( TransferOperation.UPLOAD, true, eventMetadata ))
+                    try (InputStream in = source.openInputStream( true, eventMetadata ))
                     {
+                        target.setValue( contentController.store( hosted.getKey(), path, in, eventMetadata ) );
                         if ( wait )
                         {
                             synchronized ( target )
@@ -431,10 +433,8 @@ public abstract class KojiContentManagerDecorator
                                 target.notifyAll();
                             }
                         }
-
-                        IOUtils.copy( in, out );
                     }
-                    return target;
+                    return target.getValue();
                 } );
 
                 if ( wait )
@@ -446,13 +446,7 @@ public abstract class KojiContentManagerDecorator
                     }
                 }
 
-                return target;
-            }
-            catch ( IndyWorkflowException e )
-            {
-                errorHandler.error( path,
-                                    new StringFormatter( "Failed to store: %s from Koji build: %s in: %s.", e, path,
-                                                         build.getNvr(), hosted.getKey(), e.getMessage() ), e );
+                transfer = target.getValue();
             }
             catch ( InterruptedException e )
             {
