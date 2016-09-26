@@ -32,6 +32,8 @@ public class AbstractContentManagementTest
     extends AbstractIndyFunctionalTest
 {
 
+    protected static final String NFS_BASE = "/mnt/nfs/var/lib/indy/storage";
+
     protected static final String STORE = "test";
 
     protected static final String CENTRAL = "central";

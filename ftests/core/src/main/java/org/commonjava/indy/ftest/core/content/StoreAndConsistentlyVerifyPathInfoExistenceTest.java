@@ -62,7 +62,6 @@ public class StoreAndConsistentlyVerifyPathInfoExistenceTest
     protected void initTestConfig( CoreServerFixture fixture )
             throws IOException
     {
-        writeConfigFile( "main.conf", "passthrough.timeout=" + PASSTHROUGH_TIMEOUT_SECONDS + "\n" + readTestResource(
-                "default-test-main.conf" ) );
+        writeConfigFile( "main.conf", readTestResource( "default-test-main.conf" ) );
     }
 }
