@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.filer.def;
+package org.commonjava.indy.filer.def.perf;
 
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
@@ -75,12 +75,15 @@ public class RouteSelectorPerfTest
     @Before
     public void setUp()
     {
-        hostedResource = new ConcreteResource( new CacheOnlyLocation( new HostedRepository( "hosted" ) ), String.format( "/path/to/my/hosted/%s", "index.html" ) );
-        remoteResource = new ConcreteResource( new RepositoryLocation( new RemoteRepository( "remote", "http://foo.bar/" ) ), String.format( "/path/to/my/remote/%s", "index.html" ) );
+        hostedResource = new ConcreteResource( new CacheOnlyLocation( new HostedRepository( "hosted" ) ),
+                                               String.format( "/path/to/my/hosted/%s", "index.html" ) );
+        remoteResource =
+                new ConcreteResource( new RepositoryLocation( new RemoteRepository( "remote", "http://foo.bar/" ) ),
+                                      String.format( "/path/to/my/remote/%s", "index.html" ) );
     }
 
     @Test
-    public void testSingleThread()
+    public void testInSingleThread()
     {
         final int loopTime = 2000000;
         long current = System.currentTimeMillis();
@@ -96,7 +99,9 @@ public class RouteSelectorPerfTest
             }
         }
         long end = System.currentTimeMillis();
-        System.out.println( String.format( "non compiled one in single thread %s", ( end - current ) + "" ) );
+        System.out.println(
+                String.format( "non compiled regex selector matches %s in single thread costs %s ms", loopTime,
+                               ( end - current ) + "" ) );
 
         current = System.currentTimeMillis();
         for ( int i = 0; i < loopTime; i++ )
@@ -111,11 +116,12 @@ public class RouteSelectorPerfTest
             }
         }
         end = System.currentTimeMillis();
-        System.out.println( String.format( "compiled one in single thread %s", ( end - current ) + "" ) );
+        System.out.println( String.format( "compiled regex selector matches %s in single thread costs %s ms", loopTime,
+                                           ( end - current ) + "" ) );
     }
 
     @Test
-    public void testMultiThread()
+    public void testInMultiThreads()
             throws Exception
     {
         final int tasks = 20;
@@ -142,7 +148,9 @@ public class RouteSelectorPerfTest
         }
         latch.await();
         long end = System.currentTimeMillis();
-        System.out.println( String.format( "non compiled one in %s threads %s", tasks, ( end - current ) + "" ) );
+        System.out.println(
+                String.format( "non compiled regex selector matches %s in %s threads with each of %s matches costs %s",
+                               tasks * loopTime, tasks, loopTime, ( end - current ) + "" ) );
 
         final CountDownLatch latch2 = new CountDownLatch( tasks );
         current = System.currentTimeMillis();
@@ -165,6 +173,8 @@ public class RouteSelectorPerfTest
         }
         latch2.await();
         end = System.currentTimeMillis();
-        System.out.println( String.format( "compiled one in %s threads %s", tasks, ( end - current ) + "" ) );
+        System.out.println(
+                String.format( "compiled regex selector matches %s in %s threads with each of %s matches costs %s",
+                               tasks * loopTime, tasks, loopTime, ( end - current ) + "" ) );
     }
 }

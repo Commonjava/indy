@@ -19,6 +19,7 @@ import static org.apache.commons.lang.StringUtils.join;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -27,6 +28,7 @@ import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.dto.StoreListingDTO;
+import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 
 public class AbstractStoreManagementTest
     extends AbstractIndyFunctionalTest
@@ -64,6 +66,13 @@ public class AbstractStoreManagementTest
         }
 
         return keys;
+    }
+
+    @Override
+    protected void initTestConfig( CoreServerFixture fixture )
+            throws IOException
+    {
+        writeConfigFile( "main.conf", readTestResource( "default-test-main.conf" ) );
     }
 
 }

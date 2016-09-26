@@ -34,7 +34,7 @@ public class DefaultStorageProviderConfiguration
     public static final File DEFAULT_BASEDIR = new File( "/var/lib/indy/storage" );
 
     //FIXME: need to discuss if this default is reasonable or needed
-    public static final File DEFAULT_NFS_BASEDIR = new File("/var/lib/mnt/indy/storage");
+    public static final File DEFAULT_NFS_BASEDIR = new File("/mnt/nfs/var/lib/indy/storage");
 
     public static final String STORAGE_DIR = "indy.storage.dir";
 
