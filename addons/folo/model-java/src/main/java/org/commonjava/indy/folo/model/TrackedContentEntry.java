@@ -169,6 +169,7 @@ public class TrackedContentEntry
         result = prime * result + ( ( path == null ) ? 0 : path.hashCode() );
         result = prime * result + ( ( storeKey == null ) ? 0 : storeKey.hashCode() );
         result = prime * result + ( ( accessChannel == null ) ? 0 : accessChannel.hashCode() );
+        result = prime * result + ( ( effect == null ) ? 0 : effect.hashCode() );
         return result;
     }
 
@@ -218,6 +219,17 @@ public class TrackedContentEntry
             }
         }
         else if ( !accessChannel.equals( other.accessChannel ) )
+        {
+            return false;
+        }
+        if ( effect == null )
+        {
+            if ( other.effect != null )
+            {
+                return false;
+            }
+        }
+        else if ( !effect.equals( other.effect ) )
         {
             return false;
         }
