@@ -76,7 +76,7 @@ public class FoloRecordCache
     {
         if ( sealedRecordCache.containsKey( entry.getTrackingKey() ) )
         {
-            throw new FoloContentException( "Tracking record: {} is already sealed!" );
+            throw new FoloContentException( "Tracking record: {} is already sealed!", entry.getTrackingKey() );
         }
 
         if ( !inProgressRecordCache.containsKey( entry ) )
