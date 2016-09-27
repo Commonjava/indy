@@ -309,7 +309,7 @@ public class ImpliedRepositoryDetector
                       new JoinString( "\n  ", job.pomView.getDocRefStack() ) );
 
         final List<List<RepositoryView>> repoLists =
-            Arrays.asList( job.pomView.getAllRepositories(), job.pomView.getAllPluginRepositories() );
+            Arrays.asList( job.pomView.getNonProfileRepositories(), job.pomView.getAllPluginRepositories() );
 
         if ( creator == null )
         {
