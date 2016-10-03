@@ -23,6 +23,7 @@ import org.commonjava.indy.change.event.ArtifactStoreEnablementEvent;
 import org.commonjava.indy.change.event.ArtifactStorePostUpdateEvent;
 import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
+import org.commonjava.indy.change.event.CoreEventManagerConstants;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.model.core.ArtifactStore;

@@ -15,37 +15,23 @@
  */
 package org.commonjava.indy.implrepo.change;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.PostConstruct;
-import javax.enterprise.event.Observes;
-import javax.inject.Inject;
-
 import org.apache.commons.lang.StringUtils;
+import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.change.event.CoreEventManagerConstants;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.implrepo.ImpliedReposException;
 import org.commonjava.indy.implrepo.conf.ImpliedRepoConfig;
 import org.commonjava.indy.implrepo.data.ImpliedRepoMetadataManager;
-import org.commonjava.indy.implrepo.data.ImpliedReposStoreDataManagerDecorator;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
-import org.commonjava.indy.subsys.datafile.DataFile;
-import org.commonjava.indy.subsys.datafile.DataFileManager;
 import org.commonjava.indy.subsys.template.IndyGroovyException;
 import org.commonjava.indy.subsys.template.ScriptEngine;
-import org.commonjava.indy.subsys.template.TemplatingEngine;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 import org.commonjava.maven.atlas.ident.util.JoinString;
@@ -59,6 +45,17 @@ import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.PostConstruct;
+import javax.enterprise.event.Observes;
+import javax.inject.Inject;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 import static org.commonjava.indy.implrepo.data.ImpliedReposStoreDataManagerDecorator.IMPLIED_REPO_ORIGIN;
 import static org.commonjava.indy.model.core.ArtifactStore.METADATA_ORIGIN;
@@ -90,21 +87,25 @@ public class ImpliedRepositoryDetector
     @Inject
     private ImpliedRepoConfig config;
 
+    @ExecutorConfig( named = CoreEventManagerConstants.DISPATCH_EXECUTOR_NAME,
+                     threads = CoreEventManagerConstants.DISPATCH_EXECUTOR_THREADS,
+                     priority = CoreEventManagerConstants.DISPATCH_EXECUTOR_PRIORITY )
+    @WeftManaged
+    @Inject
+    private Executor executor;
+
     private ImpliedRepositoryCreator creator;
 
-    protected ImpliedRepositoryDetector()
-    {
-    }
-
     public ImpliedRepositoryDetector( final MavenPomReader pomReader, final StoreDataManager storeManager,
-                                      final ImpliedRepoMetadataManager metadataManager,
-                                      final ScriptEngine scriptEngine, final ImpliedRepoConfig config )
+                                      final ImpliedRepoMetadataManager metadataManager, final ScriptEngine scriptEngine,
+                                      final ExecutorService executor, final ImpliedRepoConfig config )
     {
         this.pomReader = pomReader;
         this.storeManager = storeManager;
         this.metadataManager = metadataManager;
         this.scriptEngine = scriptEngine;
         this.config = config;
+        this.executor = executor;
         init();
     }
 
@@ -113,60 +114,70 @@ public class ImpliedRepositoryDetector
     {
         try
         {
-            creator = scriptEngine.parseStandardScriptInstance( ScriptEngine.StandardScriptType.store_creators, IMPLIED_REPO_CREATOR_SCRIPT, ImpliedRepositoryCreator.class );
+            creator = scriptEngine.parseStandardScriptInstance( ScriptEngine.StandardScriptType.store_creators,
+                                                                IMPLIED_REPO_CREATOR_SCRIPT,
+                                                                ImpliedRepositoryCreator.class );
         }
         catch ( IndyGroovyException e )
         {
             Logger logger = LoggerFactory.getLogger( getClass() );
-            logger.error( String.format( "Cannot create ImpliedRepositoryCreator instance: %s. Disabling implied-repos support.",
-                                         e.getMessage() ), e );
+            logger.error( String.format(
+                    "Cannot create ImpliedRepositoryCreator instance: %s. Disabling implied-repos support.",
+                    e.getMessage() ), e );
             config.setEnabled( false );
         }
     }
 
     public void detectRepos( @Observes final FileStorageEvent event )
     {
-        if ( !config.isEnabled() )
-        {
-            logger.debug( "Implied-repository processing is not enabled." );
-            return;
-        }
-
-        try
-        {
-            logger.debug( "STARTED Processing: {}", event );
-            final ImplicationsJob job = new ImplicationsJob( event );
-            if ( !initJob( job ) )
+        executor.execute( () -> {
+            if ( !config.isEnabled() )
             {
+                logger.debug( "Implied-repository processing is not enabled." );
                 return;
             }
 
-            addImpliedRepositories( job );
-
-            if ( job.implied != null && !job.implied.isEmpty() )
+            try
             {
-                // Store in source remote repo metadata for future groups.
-                if ( !addImpliedMetadata( job ) )
+                logger.debug( "STARTED Processing: {}", event );
+                final ImplicationsJob job = new ImplicationsJob( event );
+                if ( !initJob( job ) )
                 {
                     return;
                 }
 
-                // Update existing groups
-                if ( !updateExistingGroups( job ) )
+                addImpliedRepositories( job );
+
+                if ( job.implied != null && !job.implied.isEmpty() )
                 {
-                    return;
+                    // Store in source remote repo metadata for future groups.
+                    if ( !addImpliedMetadata( job ) )
+                    {
+                        return;
+                    }
+
+                    // Update existing groups
+                    if ( !updateExistingGroups( job ) )
+                    {
+                        return;
+                    }
                 }
             }
-        }
-        catch ( Throwable error )
-        {
-            Logger logger = LoggerFactory.getLogger( getClass() );
-            logger.error( String.format( "Implied-repository maintenance failed: %s", error.getMessage() ), error );
-        }
-        finally
-        {
-            logger.debug( "FINISHED Processing: {}", event );
-        }
+            catch ( Throwable error )
+            {
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.error( String.format( "Implied-repository maintenance failed: %s", error.getMessage() ), error );
+            }
+            finally
+            {
+                logger.debug( "FINISHED Processing: {}", event );
+            }
+
+            synchronized ( ImpliedRepositoryDetector.this )
+            {
+                ImpliedRepositoryDetector.this.notifyAll();
+            }
+        } );
     }
 
     private boolean initJob( final ImplicationsJob job )
@@ -183,8 +194,7 @@ public class ImpliedRepositoryDetector
         }
 
         final Transfer transfer = job.transfer;
-        if ( !transfer.getPath()
-                      .endsWith( ".pom" ) )
+        if ( !transfer.getPath().endsWith( ".pom" ) )
         {
             return false;
         }
@@ -202,8 +212,9 @@ public class ImpliedRepositoryDetector
         }
         catch ( final IndyDataException e )
         {
-            logger.error( String.format( "Cannot retrieve artifact store for: %s. Failed to process implied repositories.",
-                                         key ), e );
+            logger.error(
+                    String.format( "Cannot retrieve artifact store for: %s. Failed to process implied repositories.",
+                                   key ), e );
         }
 
         if ( job.store == null )
@@ -244,9 +255,8 @@ public class ImpliedRepositoryDetector
             logger.debug( "{} groups contain: {}\n  {}", groups.size(), key, new JoinString( "\n  ", groups ) );
             if ( groups != null )
             {
-                final String message =
-                    String.format( "Adding repositories implied by: %s\n\n  %s", key,
-                                   StringUtils.join( job.implied, "\n  " ) );
+                final String message = String.format( "Adding repositories implied by: %s\n\n  %s", key,
+                                                      StringUtils.join( job.implied, "\n  " ) );
 
                 final ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, message );
                 for ( final Group g : groups )
@@ -259,15 +269,13 @@ public class ImpliedRepositoryDetector
                         boolean groupChanged = group.addConstituent( implied );
                         changed = groupChanged || changed;
 
-                        logger.debug( "After attempting to add: {} to group: {}, changed status is: {}", implied, group, changed );
+                        logger.debug( "After attempting to add: {} to group: {}, changed status is: {}", implied, group,
+                                      changed );
                     }
 
                     if ( changed )
                     {
-                        storeManager.storeArtifactStore( group,
-                                                         summary,
-                                                         false,
-                                                         false,
+                        storeManager.storeArtifactStore( group, summary, false, false,
                                                          new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
                                                                                   IMPLIED_REPOS_DETECTION )
                                                                             .set( IMPLIED_REPOS, job.implied ) );
@@ -289,7 +297,8 @@ public class ImpliedRepositoryDetector
     {
         try
         {
-            logger.debug( "Adding implied-repo metadata to: {} and {}", job.store, new JoinString( ", ", job.implied ) );
+            logger.debug( "Adding implied-repo metadata to: {} and {}", job.store,
+                          new JoinString( ", ", job.implied ) );
             metadataManager.addImpliedMetadata( job.store, job.implied );
             return true;
         }
@@ -309,7 +318,7 @@ public class ImpliedRepositoryDetector
                       new JoinString( "\n  ", job.pomView.getDocRefStack() ) );
 
         final List<List<RepositoryView>> repoLists =
-            Arrays.asList( job.pomView.getNonProfileRepositories(), job.pomView.getAllPluginRepositories() );
+                Arrays.asList( job.pomView.getNonProfileRepositories(), job.pomView.getAllPluginRepositories() );
 
         if ( creator == null )
         {
@@ -342,8 +351,9 @@ public class ImpliedRepositoryDetector
                 }
                 catch ( final MalformedURLException e )
                 {
-                    logger.error( String.format( "Cannot add implied remote repo: %s from: %s (transfer: %s). Failed to check if repository is blacklisted.",
-                                                 repo.getUrl(), gav, job.transfer ), e );
+                    logger.error( String.format(
+                            "Cannot add implied remote repo: %s from: %s (transfer: %s). Failed to check if repository is blacklisted.",
+                            repo.getUrl(), gav, job.transfer ), e );
                 }
 
                 logger.debug( "Detected POM-declared repository: {}", repo );
@@ -355,39 +365,37 @@ public class ImpliedRepositoryDetector
                     rr = creator.createFrom( gav, repo, LoggerFactory.getLogger( creator.getClass() ) );
                     if ( rr == null )
                     {
-                        logger.warn( "ImpliedRepositoryCreator didn't create anything for repo: {}, specified in: {}. Skipping.",
-                                     repo.getId(), gav );
+                        logger.warn(
+                                "ImpliedRepositoryCreator didn't create anything for repo: {}, specified in: {}. Skipping.",
+                                repo.getId(), gav );
                         continue;
                     }
 
                     rr.setMetadata( METADATA_ORIGIN, IMPLIED_REPO_ORIGIN );
 
-                    final String changelog =
-                        String.format( "Adding remote repository: %s (url: %s, name: %s), which is implied by the POM: %s (at: %s/%s)",
-                                       repo.getId(), repo.getUrl(), repo.getName(), gav, job.transfer.getLocation()
-                                                                                                     .getUri(),
-                                       job.transfer.getPath() );
+                    final String changelog = String.format(
+                            "Adding remote repository: %s (url: %s, name: %s), which is implied by the POM: %s (at: %s/%s)",
+                            repo.getId(), repo.getUrl(), repo.getName(), gav, job.transfer.getLocation().getUri(),
+                            job.transfer.getPath() );
 
                     final ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, changelog );
                     try
                     {
-                        final boolean result =
-                            storeManager.storeArtifactStore( rr,
-                                                             summary,
-                                                             true,
-                                                             false,
-                                                             new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
-                                                                                      IMPLIED_REPOS_DETECTION )
-                                                                                .set( IMPLIED_BY_POM_TRANSFER,
-                                                                                      job.transfer ) );
+                        final boolean result = storeManager.storeArtifactStore( rr, summary, true, false,
+                                                                                new EventMetadata().set(
+                                                                                        StoreDataManager.EVENT_ORIGIN,
+                                                                                        IMPLIED_REPOS_DETECTION )
+                                                                                                   .set( IMPLIED_BY_POM_TRANSFER,
+                                                                                                         job.transfer ) );
 
                         logger.debug( "Stored new RemoteRepository: {}. (successful? {})", rr, result );
                         job.implied.add( rr );
                     }
                     catch ( final IndyDataException e )
                     {
-                        logger.error( String.format( "Cannot add implied remote repo: %s from: %s (transfer: %s). Failed to store new remote repository.",
-                                                     repo.getUrl(), gav, job.transfer ), e );
+                        logger.error( String.format(
+                                "Cannot add implied remote repo: %s from: %s (transfer: %s). Failed to store new remote repository.",
+                                repo.getUrl(), gav, job.transfer ), e );
                     }
                 }
                 else

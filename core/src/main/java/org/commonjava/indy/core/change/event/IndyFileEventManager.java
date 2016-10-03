@@ -59,12 +59,12 @@ public class IndyFileEventManager
     @Inject
     private Event<IndyStoreErrorEvent> storeErrorEvent;
 
-    @ExecutorConfig( named = CoreEventManagerConstants.DISPATCH_EXECUTOR_NAME,
-                     threads = CoreEventManagerConstants.DISPATCH_EXECUTOR_THREADS,
-                     priority = CoreEventManagerConstants.DISPATCH_EXECUTOR_PRIORITY )
-    @WeftManaged
-    @Inject
-    private Executor executor;
+//    @ExecutorConfig( named = CoreEventManagerConstants.DISPATCH_EXECUTOR_NAME,
+//                     threads = CoreEventManagerConstants.DISPATCH_EXECUTOR_THREADS,
+//                     priority = CoreEventManagerConstants.DISPATCH_EXECUTOR_PRIORITY )
+//    @WeftManaged
+//    @Inject
+//    private Executor executor;
 
     @Override
     public void fire( final FileNotFoundEvent evt )
@@ -103,7 +103,7 @@ public class IndyFileEventManager
 
     private <T> void doFire( final Event<T> eventQ, final T evt )
     {
-        executor.execute( () -> {
+//        executor.execute( () -> {
             logger.info( "Firing {} event: {}", evt.getClass().getSimpleName(), evt );
             if ( eventQ != null )
             {
@@ -113,6 +113,6 @@ public class IndyFileEventManager
             {
                 logger.warn( "ERROR: No event queue available for firing: {}", evt );
             }
-        } );
+//        } );
     }
 }
