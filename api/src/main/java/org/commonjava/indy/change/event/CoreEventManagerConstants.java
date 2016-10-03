@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.core.change.event;
+package org.commonjava.indy.change.event;
 
 /**
  * Created by jdcasey on 3/8/16.

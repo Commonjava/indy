@@ -1,0 +1,62 @@
+title Indy Activity Tracking (Generated ID)
+
+#participantspacing equal
+
+actor User
+#supported participant types: participant, actor, boundary, control, entity, database
+
+participant REST
+participant ActivityManager
+participant Events
+participant EventsRunnable
+participant ExectorService
+participant ContextTransfer #lightgray
+participant ActivityContext
+participant ContextualRunnable
+
+User->REST:<<Request>>
+
+note over User,REST: User starts request \nwithout requestId header
+
+REST->ActivityManager:requestStarted()
+
+note over ActivityManager:Activity manager generates requestId \nand adds it to a ThreadLocal in a \nnew ActivityContext. 
+rbox over ActivityManager: generateRequestId()
+rbox over ActivityManager:ThreadLocal.set(ctx)
+
+note over REST,ActivityManager:New ActivityContext mapped\nto requestId in ActivityManager.\n\nUsers can reference later.
+
+rbox over ActivityManager: requests.put( requestId, ctx )
+
+note over REST,ActivityManager: requestId is passed back\nfor inclusion in response headers
+
+REST<-ActivityManager:<requestId>
+
+par Events fire while servicing request
+rbox over REST:Service Request
+REST->Events:Trigger Events
+
+Events->EventsRunnable:new()
+Events<-EventsRunnable:<runnable>
+Events->ActivityManager:eventsStarted()
+Events->ExecutorService:execute()
+
+ThreadFactory->ContextTransfer:new()
+ContextTransfer->ContextTransfer:storeContext()
+ThreadFactory<-ContextTransfer:<txfr>
+ThreadFactory->ContextualRunnable:new(txfr, runnable)
+ThreadFactory<-ContextualRunnable:<wrapped>
+REST<-Events:<void>
+end
+
+User<-REST:<<Response>>
+REST->ActivityManager:requestFinished()
+ThreadFactory->ContextualRunnable:run()
+ContextualRunnable->ContextTransfer:transferStoredContext()
+ContextualRunnable<-ContextTransfer:<void>
+ContextualRunnable<->EventsRunnable:run()
+EventsRunnable->EventsRunnable:trigger()
+EventsRunnable->ActivityManager:eventsDone()
+ContextualRunnable<-EventsRunnable:<void>
+ContextualRunnable->ContextTranfer:clearContext()
+ContextualRunnable<-ContextTranfer:<void>
