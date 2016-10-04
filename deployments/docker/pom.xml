@@ -127,6 +127,7 @@
 
                   <tags>
                     <tag>${tagVer}</tag>
+                    <tag>${project.version}</tag>
                   </tags>
                 </build>
                 <run>
