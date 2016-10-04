@@ -96,6 +96,8 @@ public class ImpliedRepositoryDetector
 
     private ImpliedRepositoryCreator creator;
 
+    protected ImpliedRepositoryDetector(){}
+
     public ImpliedRepositoryDetector( final MavenPomReader pomReader, final StoreDataManager storeManager,
                                       final ImpliedRepoMetadataManager metadataManager, final ScriptEngine scriptEngine,
                                       final ExecutorService executor, final ImpliedRepoConfig config )
@@ -130,13 +132,15 @@ public class ImpliedRepositoryDetector
 
     public void detectRepos( @Observes final FileStorageEvent event )
     {
-        executor.execute( () -> {
-            if ( !config.isEnabled() )
-            {
-                logger.debug( "Implied-repository processing is not enabled." );
-                return;
-            }
+        if ( !config.isEnabled() )
+        {
+            logger.debug( "Implied-repository processing is not enabled." );
+            return;
+        }
 
+        logger.debug( "Threading off implied-repository detection for: {}", event );
+
+        executor.execute( () -> {
             try
             {
                 logger.debug( "STARTED Processing: {}", event );
@@ -165,7 +169,6 @@ public class ImpliedRepositoryDetector
             }
             catch ( Throwable error )
             {
-                Logger logger = LoggerFactory.getLogger( getClass() );
                 logger.error( String.format( "Implied-repository maintenance failed: %s", error.getMessage() ), error );
             }
             finally

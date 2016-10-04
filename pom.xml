@@ -75,6 +75,7 @@
 
     <skipITs>true</skipITs>
     <quickITs>true</quickITs>
+    <skipTimingFTests>${skipITs}</skipTimingFTests>
 
     <dockerRegistry>docker.io</dockerRegistry>
     <dockerUser>commonjava</dockerUser>
