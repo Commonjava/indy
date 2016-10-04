@@ -15,17 +15,18 @@
  */
 package org.commonjava.indy.implrepo.skim;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import org.apache.commons.io.IOUtils;
+import org.commonjava.indy.ftest.core.category.EventDependent;
+import org.commonjava.indy.ftest.core.category.TimingDependent;
+import org.commonjava.indy.model.core.StoreType;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.InputStream;
 import java.util.Collections;
 
-import org.apache.commons.io.IOUtils;
-import org.commonjava.indy.ftest.core.category.EventDependent;
-import org.commonjava.indy.model.core.StoreType;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 public class ResolveDepViaSkimmedRepoInGroupTest
     extends AbstractSkimFunctionalTest
@@ -34,7 +35,6 @@ public class ResolveDepViaSkimmedRepoInGroupTest
     private static final String REPO = "i-repo-one";
 
     @Test
-    @Category( EventDependent.class )
     public void downloadPomInImpliedRepoViaGroup()
             throws Exception
     {

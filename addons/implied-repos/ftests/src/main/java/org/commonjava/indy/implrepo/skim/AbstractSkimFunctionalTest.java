@@ -25,6 +25,8 @@ import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
+import org.commonjava.indy.ftest.core.category.EventDependent;
+import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
@@ -33,9 +35,11 @@ import org.commonjava.maven.galley.maven.parse.PomPeek;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
 import org.junit.Rule;
+import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Category( { EventDependent.class, TimingDependent.class } )
 public class AbstractSkimFunctionalTest
     extends AbstractIndyFunctionalTest
 {

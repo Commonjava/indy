@@ -19,7 +19,9 @@ import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.folo.client.IndyFoloAdminClientModule;
 import org.commonjava.indy.folo.client.IndyFoloContentClientModule;
 import org.commonjava.indy.folo.ftest.content.AbstractFoloContentManagementTest;
+import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,6 +34,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+@Category( EventDependent.class )
 public class DownloadFromTrackedAndRetrieveInRepoZipTest
         extends AbstractFoloContentManagementTest
 {

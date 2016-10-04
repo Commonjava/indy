@@ -22,6 +22,7 @@ import org.commonjava.indy.folo.client.IndyFoloAdminClientModule;
 import org.commonjava.indy.folo.client.IndyFoloContentClientModule;
 import org.commonjava.indy.folo.dto.TrackedContentDTO;
 import org.commonjava.indy.folo.dto.TrackedContentEntryDTO;
+import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
@@ -29,6 +30,7 @@ import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -42,6 +44,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 @Ignore
+@Category( EventDependent.class )
 public class RetrieveTrackingReportAfterCacheExpirationTest
     extends AbstractTrackingReportTest
 {

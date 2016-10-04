@@ -16,10 +16,12 @@
 package org.commonjava.indy.ftest.core.content;
 
 import org.commonjava.indy.client.core.helper.PathInfo;
+import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.io.InputStream;
@@ -42,6 +44,7 @@ public class ContentRescheduleTimeoutTest
     public ExpectationServer server = new ExpectationServer( "repos" );
 
     @Test
+    @Category( TimingDependent.class )
     public void timeout()
             throws Exception
     {

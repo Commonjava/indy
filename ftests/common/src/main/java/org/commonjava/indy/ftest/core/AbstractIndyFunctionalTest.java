@@ -132,6 +132,8 @@ public abstract class AbstractIndyFunctionalTest
             e.printStackTrace();
             fail( "Thread interrupted while waiting for server events to propagate.");
         }
+
+        logger.info( "Resuming test" );
     }
 
     protected final long getTestTimeoutSeconds()

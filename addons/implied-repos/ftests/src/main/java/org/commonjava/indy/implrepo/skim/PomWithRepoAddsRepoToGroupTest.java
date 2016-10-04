@@ -15,19 +15,22 @@
  */
 package org.commonjava.indy.implrepo.skim;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
-
-import java.io.InputStream;
-import java.util.Collections;
-
 import org.apache.commons.io.IOUtils;
+import org.commonjava.indy.ftest.core.category.EventDependent;
+import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.implrepo.data.ImpliedRepoMetadataManager;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.InputStream;
+import java.util.Collections;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 public class PomWithRepoAddsRepoToGroupTest
     extends AbstractSkimFunctionalTest
