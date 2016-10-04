@@ -15,38 +15,28 @@
  */
 package org.commonjava.indy.folo.ftest.report;
 
-import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.client.core.module.IndyContentClientModule;
-import org.commonjava.indy.client.core.util.UrlUtils;
 import org.commonjava.indy.folo.client.IndyFoloAdminClientModule;
 import org.commonjava.indy.folo.client.IndyFoloContentClientModule;
 import org.commonjava.indy.folo.dto.TrackedContentDTO;
 import org.commonjava.indy.folo.dto.TrackedContentEntryDTO;
 import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.model.core.HostedRepository;
-import org.commonjava.indy.model.core.RemoteRepository;
-import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Set;
 
 import static org.commonjava.indy.model.core.StoreType.hosted;
-import static org.commonjava.indy.model.core.StoreType.remote;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 @Category( EventDependent.class )
-public class StoreFileThenDownloadAndUploadAndVerifyInTrackingReportTest
+public class StoreFileThenDownloadThenUploadAndVerifyInTrackingReportTest
     extends AbstractTrackingReportTest
 {
     final byte[] bytes = ( "This is a test: " + System.nanoTime() ).getBytes();
@@ -74,25 +64,6 @@ public class StoreFileThenDownloadAndUploadAndVerifyInTrackingReportTest
 
         // upload
         module.store( trackingId, hosted, STORE, path, new ByteArrayInputStream( bytes ) );
-
-        Thread.sleep(2000); // wait for event being fired
-
-        sealAndCheck(trackingId);
-    }
-
-    @Test
-    public void runUploadThenDownload()
-            throws Exception
-    {
-        final String trackingId = newName();
-
-        IndyFoloContentClientModule module = client.module(IndyFoloContentClientModule.class);
-
-        // upload
-        module.store( trackingId, hosted, STORE, path, new ByteArrayInputStream( bytes ) );
-
-        // download
-        module.get( trackingId, hosted, STORE, path );
 
         Thread.sleep(2000); // wait for event being fired
 

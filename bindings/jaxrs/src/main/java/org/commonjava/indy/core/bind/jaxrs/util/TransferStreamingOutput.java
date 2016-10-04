@@ -44,11 +44,18 @@ public class TransferStreamingOutput
     public void write( final OutputStream out )
         throws IOException, WebApplicationException
     {
-        CountingOutputStream cout = new CountingOutputStream( out );
-        IOUtils.copy( stream, cout );
+        try
+        {
+            CountingOutputStream cout = new CountingOutputStream( out );
+            IOUtils.copy( stream, cout );
 
-        Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.debug( "Wrote: {} bytes", cout.getByteCount() );
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.debug( "Wrote: {} bytes", cout.getByteCount() );
+        }
+        finally
+        {
+            IOUtils.closeQuietly( stream );
+        }
     }
 
 }
