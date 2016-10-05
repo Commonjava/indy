@@ -22,6 +22,8 @@ import static org.junit.Assert.assertThat;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.audit.ChangeSummary;
@@ -67,7 +69,7 @@ public class ImpliedRepositoryDetectorTest
         public TestImpliedRepositoryDetector( MavenPomReader pomReader, StoreDataManager storeManager,
                                               ImpliedRepoMetadataManager metadataManager, ScriptEngine scriptEngine, ImpliedRepoConfig config )
         {
-            super( pomReader, storeManager, metadataManager, scriptEngine, config );
+            super( pomReader, storeManager, metadataManager, scriptEngine, Executors.newSingleThreadExecutor(), config );
         }
     }
 
@@ -163,6 +165,10 @@ public class ImpliedRepositoryDetectorTest
 
         final FileStorageEvent event = new FileStorageEvent( TransferOperation.DOWNLOAD, txfr, new EventMetadata() );
         detector.detectRepos( event );
+        synchronized ( detector )
+        {
+            detector.wait();
+        }
 
         assertThat( storeManager.getRemoteRepository( "i-repo-one" ), notNullValue() );
 
@@ -188,6 +194,10 @@ public class ImpliedRepositoryDetectorTest
 
         final FileStorageEvent event = new FileStorageEvent( TransferOperation.DOWNLOAD, txfr, new EventMetadata() );
         detector.detectRepos( event );
+        synchronized ( detector )
+        {
+            detector.wait();
+        }
 
         assertThat( storeManager.getRemoteRepository( "i-repo-one" ), notNullValue() );
 

@@ -23,14 +23,18 @@ import java.util.Collections;
 
 import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
+import org.commonjava.indy.ftest.core.category.EventDependent;
+import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.implrepo.client.ImpliedRepoClientModule;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.junit.Before;
+import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Category( {EventDependent.class, TimingDependent.class} )
 public class AbstractMaintFunctionalTest
     extends AbstractIndyFunctionalTest
 {

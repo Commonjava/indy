@@ -15,17 +15,17 @@
  */
 package org.commonjava.indy.implrepo.maint;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
-
-import java.util.Collections;
-
 import org.commonjava.indy.implrepo.client.ImpliedRepoClientModule;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.junit.Test;
+
+import java.util.Collections;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 public class CreateGroupWithMemberImplicationsTest
     extends AbstractMaintFunctionalTest

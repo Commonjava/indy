@@ -129,6 +129,7 @@
                   <optimise>true</optimise>
                   <tags>
                     <tag>${tagVer}</tag>
+                    <tag>${project.version}</tag>
                   </tags>
                 </build>
                 <run>

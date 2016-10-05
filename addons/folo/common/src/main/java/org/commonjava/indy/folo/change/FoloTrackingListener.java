@@ -43,11 +43,13 @@ import org.commonjava.maven.galley.util.UrlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import java.net.MalformedURLException;
 import java.util.Map;
 
+@ApplicationScoped
 public class FoloTrackingListener
 {
 
@@ -67,6 +69,8 @@ public class FoloTrackingListener
 
     public void onFileAccess( @Observes final FileAccessEvent event )
     {
+        logger.debug( "FILE ACCESS: {}", event );
+
         EventMetadata metadata = event.getEventMetadata();
         final TrackingKey trackingKey = (TrackingKey) metadata.get( FoloConstants.TRACKING_KEY );
         if ( trackingKey == null )
@@ -108,6 +112,8 @@ public class FoloTrackingListener
 
     public void onFileUpload( @Observes final FileStorageEvent event )
     {
+        logger.debug( "FILE STORAGE: {}", event );
+
         EventMetadata metadata = event.getEventMetadata();
         final TrackingKey trackingKey = (TrackingKey) metadata.get( FoloConstants.TRACKING_KEY );
         if ( trackingKey == null )

@@ -25,11 +25,14 @@ import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.folo.client.IndyFoloAdminClientModule;
 import org.commonjava.indy.folo.client.IndyFoloContentClientModule;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
+import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.junit.Before;
+import org.junit.experimental.categories.Category;
 
+@Category( EventDependent.class )
 public class AbstractFoloContentManagementTest
     extends AbstractIndyFunctionalTest
 {

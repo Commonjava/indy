@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.folo.change;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
@@ -39,6 +40,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author pkocandr
  */
+@ApplicationScoped
 public class FoloPomDownloadListener
 {
 

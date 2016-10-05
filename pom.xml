@@ -79,6 +79,7 @@
 
     <skipITs>true</skipITs>
     <quickITs>true</quickITs>
+    <skipTimingFTests>${skipITs}</skipTimingFTests>
 
     <dockerRegistry>docker.io</dockerRegistry>
     <dockerUser>commonjava</dockerUser>
@@ -1126,6 +1127,49 @@
     <pluginManagement>
       <plugins>
         <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>0.7.4.201502262128</version>
+          <!-- Broken for sonarqube! -->
+          <!--<version>0.7.5.201505241946</version>-->
+          <executions>
+            <execution>
+              <id>prepare</id>
+              <goals>
+                <goal>prepare-agent</goal>
+                <goal>prepare-agent-integration</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>merge</id>
+              <goals>
+                <goal>merge</goal>
+              </goals>
+              <phase>post-integration-test</phase>
+              <configuration>
+                <fileSets>
+                  <fileSet implementation="org.apache.maven.shared.model.fileset.FileSet">
+                    <directory>${project.build.directory}</directory>
+                    <includes>
+                      <include>jacoco*.exec</include>
+                    </includes>
+                  </fileSet>
+                </fileSets>
+                <destFile>${project.build.directory}/jacoco-merged.exec</destFile>
+              </configuration>
+            </execution>
+            <execution>
+              <id>report</id>
+              <goals>
+                <goal>report</goal>
+              </goals>
+              <configuration>
+                <dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
           <groupId>io.fabric8</groupId>
           <artifactId>docker-maven-plugin</artifactId>
           <version>0.15.14</version>
@@ -1274,6 +1318,12 @@
         
       </plugins>
     </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
   </build>
   
   <profiles>
