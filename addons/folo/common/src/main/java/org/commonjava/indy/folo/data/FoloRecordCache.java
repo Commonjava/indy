@@ -27,7 +27,6 @@ import org.infinispan.query.Search;
 import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryBuilder;
 import org.infinispan.query.dsl.QueryFactory;
-import org.infinispan.query.dsl.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +36,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 @ApplicationScoped
 public class FoloRecordCache
@@ -58,8 +56,8 @@ public class FoloRecordCache
     {
     }
 
-    public FoloRecordCache( Cache<TrackedContentEntry, TrackedContentEntry> inProgressRecordCache,
-                            Cache<TrackingKey, TrackedContent> sealedRecordCache )
+    public FoloRecordCache( final Cache<TrackedContentEntry, TrackedContentEntry> inProgressRecordCache,
+                            final Cache<TrackingKey, TrackedContent> sealedRecordCache )
     {
         this.inProgressRecordCache = new CacheHandle("folo-in-progress", inProgressRecordCache);
         this.sealedRecordCache = new CacheHandle( "folo-sealed", sealedRecordCache );
@@ -71,12 +69,12 @@ public class FoloRecordCache
      * @param entry The TrackedContentEntry which will be cached
      * @return True if a new record was stored, otherwise false
      */
-    public synchronized boolean recordArtifact( TrackedContentEntry entry )
+    public synchronized boolean recordArtifact( final TrackedContentEntry entry )
             throws FoloContentException,IndyWorkflowException
     {
         if ( sealedRecordCache.containsKey( entry.getTrackingKey() ) )
         {
-            throw new FoloContentException( "Tracking record: {} is already sealed!" );
+            throw new FoloContentException( "Tracking record: {} is already sealed!", entry.getTrackingKey() );
         }
 
         if ( !inProgressRecordCache.containsKey( entry ) )
@@ -116,7 +114,7 @@ public class FoloRecordCache
         return sealedRecordCache.get( key );
     }
 
-    public TrackedContent seal( TrackingKey trackingKey )
+    public TrackedContent seal( final TrackingKey trackingKey )
     {
         TrackedContent record = sealedRecordCache.get( trackingKey );
 
@@ -158,7 +156,7 @@ public class FoloRecordCache
         });
     }
 
-    private <R> R inProgressByTrackingKey( TrackingKey key, BiFunction<QueryBuilder, CacheHandle<TrackedContentEntry, TrackedContentEntry>, R> operation )
+    private <R> R inProgressByTrackingKey( final TrackingKey key, final BiFunction<QueryBuilder, CacheHandle<TrackedContentEntry, TrackedContentEntry>, R> operation )
     {
         return inProgressRecordCache.execute( ( cache ) -> {
             QueryFactory queryFactory = Search.getQueryFactory( cache );

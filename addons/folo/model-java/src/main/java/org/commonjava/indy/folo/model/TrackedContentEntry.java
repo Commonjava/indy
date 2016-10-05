@@ -228,7 +228,7 @@ public class TrackedContentEntry
     public String toString()
     {
         return String.format(
-                "TrackedContentEntry [\n  trackingKey=%s\n  storeKey=%s\n  accessChannel=%s\n  path=%s\n  originUrl=%s\n effect=%s\n  md5=%s\n  sha1=%s\n  sha256=%s\n]",
+                "TrackedContentEntry [\n  trackingKey=%s\n  storeKey=%s\n  accessChannel=%s\n  path=%s\n  originUrl=%s\n  effect=%s\n  md5=%s\n  sha1=%s\n  sha256=%s\n]",
                 trackingKey, storeKey, accessChannel, path, originUrl, effect, md5, sha1, sha256 );
     }
 
