@@ -379,19 +379,6 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-indexer</artifactId>
-        <version>1.1.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-indexer</artifactId>
-        <version>1.1.0-SNAPSHOT</version>
-        <type>tar.gz</type>
-        <classifier>confset</classifier>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-db-memory</artifactId>
         <version>1.1.0-SNAPSHOT</version>
       </dependency>
@@ -442,11 +429,6 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-http</artifactId>
-        <version>1.1.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-subsys-maven</artifactId>
         <version>1.1.0-SNAPSHOT</version>
       </dependency>
       <dependency>

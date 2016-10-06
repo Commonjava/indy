@@ -36,7 +36,6 @@
     <module>http</module>
     <module>keycloak</module>
     <module>jaxrs</module>
-    <module>maven</module>
     <module>infinispan</module>
   </modules>
   
