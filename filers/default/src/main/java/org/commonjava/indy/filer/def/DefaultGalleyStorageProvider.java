@@ -129,7 +129,7 @@ public class DefaultGalleyStorageProvider
 
         final File storeRoot = config.getStorageRootDirectory();
 
-        final PartyLineCacheProviderFactory partylineFac = new PartyLineCacheProviderFactory( storeRoot );
+        cacheProviderFactory = new PartyLineCacheProviderFactory( storeRoot );
 
         final File nfsBasedir = config.getNFSStorageRootDirectory();
         if ( nfsBasedir != null )
@@ -147,7 +147,7 @@ public class DefaultGalleyStorageProvider
                                                            new CacheInstanceAdapter( nfsOwnerCache ),
                                                            fastLocalExecutors );
 
-                this.cacheProviderFactory = new RoutingCacheProviderFactory( ( resource ) -> {
+                cacheProviderFactory = new RoutingCacheProviderFactory( ( resource ) -> {
                     if ( resource != null )
                     {
                         final Location loc = resource.getLocation();
@@ -156,7 +156,7 @@ public class DefaultGalleyStorageProvider
                         return ( (loc instanceof KeyedLocation) && hosted == ((KeyedLocation)loc).getKey().getType());
                     }
                     return false;
-                }, fastLocalFac, partylineFac );
+                }, fastLocalFac, cacheProviderFactory );
             }
             else
             {
@@ -164,10 +164,6 @@ public class DefaultGalleyStorageProvider
                         "[Indy] nfs base dir {} can not be created correctly due to some unknown reasons, will use partyline cache provider as default",
                         nfsBasedir );
             }
-        }
-        else
-        {
-            this.cacheProviderFactory = partylineFac;
         }
     }
 

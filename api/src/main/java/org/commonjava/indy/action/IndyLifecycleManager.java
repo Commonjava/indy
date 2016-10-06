@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.action;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -90,33 +91,46 @@ public class IndyLifecycleManager
                              final Iterable<StartupAction> startupActionInstances,
                              final Iterable<ShutdownAction> shutdownActionInstances )
     {
-        bootupActions = new ArrayList<>();
-        for ( final BootupAction action : bootupActionInstances )
+        try
         {
-            bootupActions.add( action );
-        }
-        Collections.sort( bootupActions, BOOT_PRIORITY_COMPARATOR );
+            bootupActions = new ArrayList<>();
+            for ( final BootupAction action : bootupActionInstances )
+            {
+                bootupActions.add( action );
+            }
+            Collections.sort( bootupActions, BOOT_PRIORITY_COMPARATOR );
 
-        migrationActions = new ArrayList<>();
-        for ( final MigrationAction action : migrationActionInstances )
-        {
-            migrationActions.add( action );
-        }
-        Collections.sort( migrationActions, MIGRATION_PRIORITY_COMPARATOR );
+            migrationActions = new ArrayList<>();
+            for ( final MigrationAction action : migrationActionInstances )
+            {
+                migrationActions.add( action );
+            }
+            Collections.sort( migrationActions, MIGRATION_PRIORITY_COMPARATOR );
 
-        startupActions = new ArrayList<>();
-        for ( final StartupAction action : startupActionInstances )
-        {
-            startupActions.add( action );
-        }
-        Collections.sort( startupActions, START_PRIORITY_COMPARATOR );
+            startupActions = new ArrayList<>();
+            for ( final StartupAction action : startupActionInstances )
+            {
+                startupActions.add( action );
+            }
+            Collections.sort( startupActions, START_PRIORITY_COMPARATOR );
 
-        shutdownActions = new ArrayList<>();
-        for ( final ShutdownAction action : shutdownActionInstances )
-        {
-            shutdownActions.add( action );
+            shutdownActions = new ArrayList<>();
+            for ( final ShutdownAction action : shutdownActionInstances )
+            {
+                shutdownActions.add( action );
+            }
+            Collections.sort( shutdownActions, SHUTDOWN_PRIORITY_COMPARATOR );
         }
-        Collections.sort( shutdownActions, SHUTDOWN_PRIORITY_COMPARATOR );
+        catch ( Throwable e )
+        {
+            Throwable realError = ( e instanceof InvocationTargetException ?
+                    ( (InvocationTargetException) e ).getTargetException() :
+                    e );
+
+            logger.error( "Failed to initialize Indy lifecycle components.", realError );
+
+            throw new IllegalStateException( "Failed to initialize lifecycle components", realError );
+        }
     }
 
     /**
