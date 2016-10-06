@@ -22,6 +22,12 @@ import org.infinispan.query.dsl.QueryFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 /**
@@ -96,6 +102,11 @@ public class CacheHandle<K,V>
         return execute( cache -> cache.put( key, value ) );
     }
 
+    public V putIfAbsent( K key, V value )
+    {
+        return execute( ( c ) -> c.putIfAbsent( key, value ) );
+    }
+
     public V remove( K key )
     {
         return execute( cache -> cache.remove( key ) );
@@ -104,5 +115,156 @@ public class CacheHandle<K,V>
     public V get( K key )
     {
         return execute( cache -> cache.get( key ) );
+    }
+
+    public void beginTransaction()
+            throws NotSupportedException, SystemException
+    {
+        AtomicReference<NotSupportedException> suppEx = new AtomicReference<>();
+        AtomicReference<SystemException> sysEx = new AtomicReference<>();
+        execute( ( c ) -> {
+            try
+            {
+                c.getAdvancedCache().getTransactionManager().begin();
+            }
+            catch ( NotSupportedException e )
+            {
+                suppEx.set( e );
+            }
+            catch ( SystemException e )
+            {
+                sysEx.set( e );
+            }
+
+            return null;
+        } );
+
+        if ( suppEx.get() != null )
+        {
+            throw suppEx.get();
+        }
+
+        if ( sysEx.get() != null )
+        {
+            throw sysEx.get();
+        }
+    }
+
+    public void rollback()
+            throws SystemException
+    {
+        AtomicReference<SystemException> sysEx = new AtomicReference<>();
+        execute( ( c ) -> {
+            try
+            {
+                c.getAdvancedCache().getTransactionManager().rollback();
+            }
+            catch ( SystemException e )
+            {
+                sysEx.set( e );
+            }
+
+            return null;
+        } );
+
+
+        if ( sysEx.get() != null )
+        {
+            throw sysEx.get();
+        }
+    }
+
+    public void commit()
+            throws SystemException, HeuristicMixedException, HeuristicRollbackException, RollbackException
+    {
+        AtomicReference<SystemException> sysEx = new AtomicReference<>();
+        AtomicReference<HeuristicMixedException> hmEx = new AtomicReference<>();
+        AtomicReference<HeuristicRollbackException> hrEx = new AtomicReference<>();
+        AtomicReference<RollbackException> rEx = new AtomicReference<>();
+        execute( ( c ) -> {
+            try
+            {
+                c.getAdvancedCache().getTransactionManager().commit();
+            }
+            catch ( SystemException e )
+            {
+                sysEx.set( e );
+            }
+            catch ( HeuristicMixedException e )
+            {
+                hmEx.set( e );
+            }
+            catch ( HeuristicRollbackException e )
+            {
+                hrEx.set( e );
+            }
+            catch ( RollbackException e )
+            {
+                rEx.set( e );
+            }
+
+            return null;
+        } );
+
+        if ( sysEx.get() != null )
+        {
+            throw sysEx.get();
+        }
+
+        if ( hmEx.get() != null )
+        {
+            throw hmEx.get();
+        }
+
+        if ( hrEx.get() != null )
+        {
+            throw hrEx.get();
+        }
+
+        if ( rEx.get() != null )
+        {
+            throw rEx.get();
+        }
+    }
+
+    public int getTransactionStatus()
+            throws SystemException
+    {
+        AtomicReference<SystemException> sysEx = new AtomicReference<>();
+
+        Integer result = execute( ( c ) -> {
+            try
+            {
+                return c.getAdvancedCache().getTransactionManager().getStatus();
+            }
+            catch ( SystemException e )
+            {
+                sysEx.set( e );
+            }
+
+            return null;
+        } );
+
+        if ( sysEx.get() != null )
+        {
+            throw sysEx.get();
+        }
+
+        return result;
+    }
+
+    public Object getLockOwner( K key )
+    {
+        return execute( ( c ) -> c.getAdvancedCache().getLockManager().getOwner( key ) );
+    }
+
+    public boolean isLocked( K key )
+    {
+        return execute( ( c ) -> c.getAdvancedCache().getLockManager().isLocked( key ) );
+    }
+
+    public void lock( K... keys )
+    {
+        execute( ( c ) -> c.getAdvancedCache().lock( keys ) );
     }
 }
