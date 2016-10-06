@@ -30,9 +30,12 @@ import org.commonjava.indy.folo.client.IndyFoloAdminClientModule;
 import org.commonjava.indy.folo.client.IndyFoloContentClientModule;
 import org.commonjava.indy.folo.dto.TrackedContentDTO;
 import org.commonjava.indy.folo.dto.TrackedContentEntryDTO;
+import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.model.core.StoreKey;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+@Category( EventDependent.class )
 public class StoreFileAndVerifyInTrackingReportTest
     extends AbstractTrackingReportTest
 {

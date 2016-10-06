@@ -37,7 +37,7 @@ public class TransferStreamingOutput
 
     private EventMetadata eventMetadata;
 
-    public TransferStreamingOutput( final Transfer item, EventMetadata eventMetadata )
+    public TransferStreamingOutput( final Transfer item, final EventMetadata eventMetadata )
     {
         this.item = item;
         this.eventMetadata = eventMetadata;
