@@ -15,30 +15,20 @@
  */
 package org.commonjava.indy.filer.def;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.concurrent.ExecutorService;
-import java.util.regex.Pattern;
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
-
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.filer.def.conf.DefaultStorageProviderConfiguration;
+import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.maven.galley.GalleyInitException;
+import org.commonjava.maven.galley.cache.CacheProviderFactory;
 import org.commonjava.maven.galley.cache.infinispan.FastLocalCacheProviderFactory;
 import org.commonjava.maven.galley.cache.partyline.PartyLineCacheProviderFactory;
-import org.commonjava.maven.galley.cache.routes.RouteSelector;
 import org.commonjava.maven.galley.cache.routes.RoutingCacheProviderFactory;
 import org.commonjava.maven.galley.io.ChecksummingTransferDecorator;
 import org.commonjava.maven.galley.io.checksum.Md5GeneratorFactory;
 import org.commonjava.maven.galley.io.checksum.Sha1GeneratorFactory;
 import org.commonjava.maven.galley.io.checksum.Sha256GeneratorFactory;
-import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.FilePatternMatcher;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
@@ -51,6 +41,17 @@ import org.commonjava.maven.galley.spi.io.TransferDecorator;
 import org.commonjava.maven.galley.transport.htcli.ContentsFilteringTransferDecorator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Default;
+import javax.enterprise.inject.Produces;
+import javax.inject.Inject;
+import java.io.File;
+import java.util.Collections;
+import java.util.concurrent.ExecutorService;
+
+import static org.commonjava.indy.model.core.StoreType.hosted;
 
 @ApplicationScoped
 public class DefaultGalleyStorageProvider
@@ -80,9 +81,9 @@ public class DefaultGalleyStorageProvider
 
     private TransferDecorator transferDecorator;
 
-    private CacheProvider partyline;
+    private CacheProvider cacheProvider;
 
-    private RoutingCacheProviderFactory cacheProviderFactory;
+    private CacheProviderFactory cacheProviderFactory;
 
     public DefaultGalleyStorageProvider()
     {
@@ -126,22 +127,9 @@ public class DefaultGalleyStorageProvider
                                                                new Sha256GeneratorFactory() );
         transferDecorator = new ContentsFilteringTransferDecorator( transferDecorator );
 
-//        final PartyLineCacheProviderConfig cacheProviderConfig =
-//                new PartyLineCacheProviderConfig( config.getStorageRootDirectory() );
-
         final File storeRoot = config.getStorageRootDirectory();
 
-        final PartyLineCacheProviderFactory partylineFac = new PartyLineCacheProviderFactory( storeRoot );
-
-        try
-        {
-            this.partyline = partylineFac.create( pathGenerator, transferDecorator, fileEventManager );
-        }
-        catch ( GalleyInitException e )
-        {
-            final Logger logger = LoggerFactory.getLogger( this.getClass() );
-            logger.error( "[Indy] Can not create CacheProvider for some error.", e );
-        }
+        cacheProviderFactory = new PartyLineCacheProviderFactory( storeRoot );
 
         final File nfsBasedir = config.getNFSStorageRootDirectory();
         if ( nfsBasedir != null )
@@ -150,31 +138,25 @@ public class DefaultGalleyStorageProvider
             {
                 nfsBasedir.mkdirs();
             }
+
             // nfs root can not be created due to some security reason(like permission), will bypass FastLocal provider and use PartyLine
             if ( nfsBasedir.exists() )
             {
                 final FastLocalCacheProviderFactory fastLocalFac =
-                        new FastLocalCacheProviderFactory( storeRoot, nfsBasedir, nfsOwnerCache.getCache(), fastLocalExecutors );
+                        new FastLocalCacheProviderFactory( storeRoot, nfsBasedir,
+                                                           new CacheInstanceAdapter( nfsOwnerCache ),
+                                                           fastLocalExecutors );
 
-                this.cacheProviderFactory = new RoutingCacheProviderFactory( new RouteSelector()
-                {
-                    final Pattern localPattern = Pattern.compile( "^indy:hosted:.*$" );
-
-                    @Override
-                    public boolean isDisposable( ConcreteResource resource )
+                cacheProviderFactory = new RoutingCacheProviderFactory( ( resource ) -> {
+                    if ( resource != null )
                     {
-                        if ( resource != null )
-                        {
-                            final Location loc = resource.getLocation();
-                            if ( loc != null )
-                            {
-                                final String uri = loc.getUri();
-                                return uri != null && localPattern.matcher( uri ).matches();
-                            }
-                        }
-                        return false;
+                        final Location loc = resource.getLocation();
+
+                        // looking for KeyedLocation and StoreType.hosted should be faster than regex on the URI.
+                        return ( (loc instanceof KeyedLocation) && hosted == ((KeyedLocation)loc).getKey().getType());
                     }
-                }, fastLocalFac, partylineFac );
+                    return false;
+                }, fastLocalFac, cacheProviderFactory );
             }
             else
             {
@@ -193,23 +175,17 @@ public class DefaultGalleyStorageProvider
     }
 
 
-    private CacheProvider getPartyLineCacheProvider()
-    {
-        return partyline;
-    }
-
     @Produces
     @Default
-    public CacheProvider getCacheProvider()
+    public synchronized CacheProvider getCacheProvider()
     {
-        CacheProvider routed;
-        if ( cacheProviderFactory != null )
+        if ( cacheProvider == null )
         {
             try
             {
-                routed = cacheProviderFactory.create( pathGenerator, transferDecorator, fileEventManager );
-                logger.debug( "Using routed cache provider {}", routed );
-                return routed;
+                cacheProvider = cacheProviderFactory.create( pathGenerator, transferDecorator, fileEventManager );
+                logger.debug( "Using cache provider {}", cacheProvider );
+                return cacheProvider;
             }
             catch ( GalleyInitException e )
             {
@@ -217,7 +193,6 @@ public class DefaultGalleyStorageProvider
             }
         }
 
-        routed = getPartyLineCacheProvider();
-        return routed;
+        return cacheProvider;
     }
 }
