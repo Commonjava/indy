@@ -13,12 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.core.content;
+package org.commonjava.indy.pkg.maven.content;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
-import static org.commonjava.maven.galley.util.PathUtils.normalize;
-import static org.commonjava.maven.galley.util.PathUtils.parentPath;
+import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.content.DirectContentAccess;
+import org.commonjava.indy.content.StoreResource;
+import org.commonjava.indy.core.content.AbstractMergedContentGenerator;
+import org.commonjava.indy.core.content.group.GroupMergeHelper;
+import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.model.core.ArtifactStore;
+import org.commonjava.indy.model.core.Group;
+import org.commonjava.indy.pkg.maven.content.group.ArchetypeCatalogMerger;
+import org.commonjava.indy.util.LocationUtils;
+import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.model.TransferOperation;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Paths;
@@ -28,23 +39,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.inject.Inject;
-
-import org.commonjava.indy.IndyWorkflowException;
-import org.commonjava.indy.content.DirectContentAccess;
-import org.commonjava.indy.content.StoreResource;
-import org.commonjava.indy.core.content.group.ArchetypeCatalogMerger;
-import org.commonjava.indy.core.content.group.GroupMergeHelper;
-import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.model.core.ArtifactStore;
-import org.commonjava.indy.model.core.Group;
-import org.commonjava.indy.util.LocationUtils;
-import org.commonjava.maven.galley.event.EventMetadata;
-import org.commonjava.maven.galley.model.Transfer;
-import org.commonjava.maven.galley.model.TransferOperation;
+import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.commonjava.maven.galley.util.PathUtils.normalize;
+import static org.commonjava.maven.galley.util.PathUtils.parentPath;
 
 public class ArchetypeCatalogGenerator
-    extends AbstractMergedContentGenerator
+        extends AbstractMergedContentGenerator
 {
 
     private static final Set<String> HANDLED_FILENAMES = Collections.unmodifiableSet( new HashSet<String>()

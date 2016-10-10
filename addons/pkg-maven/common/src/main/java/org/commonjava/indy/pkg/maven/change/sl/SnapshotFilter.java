@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.core.change.sl;
+package org.commonjava.indy.pkg.maven.change.sl;
+
+import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 
 import java.io.File;
 import java.io.FilenameFilter;
-
-import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 
 public class SnapshotFilter
     implements FilenameFilter

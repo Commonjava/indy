@@ -13,26 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.core.content;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-
-import java.util.Collections;
-import java.util.List;
+package org.commonjava.indy.pkg.maven.content;
 
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.audit.ChangeSummary;
-import org.commonjava.indy.content.IndyLocationExpander;
 import org.commonjava.indy.content.DownloadManager;
+import org.commonjava.indy.content.IndyLocationExpander;
 import org.commonjava.indy.content.StoreResource;
+import org.commonjava.indy.core.content.DefaultDirectContentAccess;
+import org.commonjava.indy.core.content.DefaultDownloadManager;
 import org.commonjava.indy.core.content.group.GroupMergeHelper;
-import org.commonjava.indy.core.content.group.MavenMetadataMerger;
 import org.commonjava.indy.mem.data.MemoryStoreDataManager;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.galley.KeyedLocation;
+import org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.atlas.ident.ref.SimpleProjectVersionRef;
 import org.commonjava.maven.atlas.ident.util.SnapshotUtils;
@@ -57,6 +51,14 @@ import org.commonjava.maven.galley.testing.maven.GalleyMavenFixture;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.util.Collections;
+import java.util.List;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 public class MavenMetadataGeneratorTest
 {
