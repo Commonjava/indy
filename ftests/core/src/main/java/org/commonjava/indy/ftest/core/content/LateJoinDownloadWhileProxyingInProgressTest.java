@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 
 import org.commonjava.indy.client.core.helper.PathInfo;
+import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.ftest.core.fixture.DelayedDownload;
 import org.commonjava.indy.ftest.core.fixture.InputTimer;
@@ -36,7 +37,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 public class LateJoinDownloadWhileProxyingInProgressTest
-    extends AbstractContentManagementTest
+        extends AbstractContentManagementTest
 {
 
     @Rule

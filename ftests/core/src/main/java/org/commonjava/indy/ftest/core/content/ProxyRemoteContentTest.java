@@ -24,13 +24,14 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import org.commonjava.indy.client.core.helper.PathInfo;
+import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
 import org.junit.Test;
 
 public class ProxyRemoteContentTest
-    extends AbstractContentManagementTest
+        extends AbstractContentManagementTest
 {
 
     @Rule

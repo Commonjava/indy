@@ -24,10 +24,11 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import org.commonjava.indy.client.core.helper.PathInfo;
+import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.junit.Test;
 
 public class StoreFileAndVerifyPathInfoResultExistsTest
-    extends AbstractContentManagementTest
+        extends AbstractContentManagementTest
 {
 
     @Test

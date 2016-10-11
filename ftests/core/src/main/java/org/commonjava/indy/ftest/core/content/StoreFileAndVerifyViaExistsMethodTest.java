@@ -22,10 +22,11 @@ import static org.junit.Assert.assertThat;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
+import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.junit.Test;
 
 public class StoreFileAndVerifyViaExistsMethodTest
-    extends AbstractContentManagementTest
+        extends AbstractContentManagementTest
 {
 
     @Test

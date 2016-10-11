@@ -21,6 +21,7 @@ import static org.junit.Assert.assertThat;
 
 import org.apache.http.HttpStatus;
 import org.commonjava.indy.client.core.IndyClientException;
+import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.test.http.expect.ExpectationServer;
@@ -28,7 +29,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 public class RemoteRepoHeadErrorTest
-    extends AbstractContentManagementTest
+        extends AbstractContentManagementTest
 {
 
     @Rule

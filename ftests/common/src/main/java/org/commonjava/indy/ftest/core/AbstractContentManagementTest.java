@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.pkg.maven.content;
+package org.commonjava.indy.ftest.core;
+
+import static org.commonjava.indy.model.core.StoreType.group;
+import static org.commonjava.indy.model.core.StoreType.remote;
+
+import java.util.Arrays;
 
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.model.core.Group;
@@ -22,11 +27,6 @@ import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
 import org.junit.Rule;
-
-import java.util.Arrays;
-
-import static org.commonjava.indy.model.core.StoreType.group;
-import static org.commonjava.indy.model.core.StoreType.remote;
 
 public class AbstractContentManagementTest
     extends AbstractIndyFunctionalTest

@@ -23,10 +23,11 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.junit.Test;
 
 public class StoreAndVerifyViaClientContentDownloadTest
-    extends AbstractContentManagementTest
+        extends AbstractContentManagementTest
 {
 
     @Test

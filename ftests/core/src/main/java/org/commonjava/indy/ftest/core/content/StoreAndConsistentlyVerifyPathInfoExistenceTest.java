@@ -25,11 +25,12 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.commonjava.indy.client.core.helper.PathInfo;
+import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.junit.Test;
 
 public class StoreAndConsistentlyVerifyPathInfoExistenceTest
-    extends AbstractContentManagementTest
+        extends AbstractContentManagementTest
 {
     private final int PASSTHROUGH_TIMEOUT_SECONDS = 9;
 

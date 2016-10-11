@@ -17,6 +17,7 @@ package org.commonjava.indy.ftest.core.content;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.test.http.expect.ExpectationServer;
@@ -31,7 +32,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 public class GroupIgnoresDisabledRemoteRepositoryTest
-    extends AbstractContentManagementTest
+        extends AbstractContentManagementTest
 {
 
     @Rule

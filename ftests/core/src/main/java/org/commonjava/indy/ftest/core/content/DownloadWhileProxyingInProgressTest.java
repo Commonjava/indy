@@ -20,20 +20,19 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 
 import org.commonjava.indy.client.core.helper.PathInfo;
+import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.ftest.core.fixture.DelayedDownload;
 import org.commonjava.indy.ftest.core.fixture.InputTimer;
 import org.commonjava.indy.ftest.core.fixture.ReluctantInputStream;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
-import org.junit.Rule;
 import org.junit.Test;
 
 public class DownloadWhileProxyingInProgressTest
-    extends AbstractContentManagementTest
+        extends AbstractContentManagementTest
 {
 
     @Override

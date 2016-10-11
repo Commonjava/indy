@@ -21,12 +21,13 @@ import static org.junit.Assert.assertThat;
 
 import java.util.concurrent.CountDownLatch;
 
+import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.ftest.core.fixture.DelayedDownload;
 import org.commonjava.indy.model.core.StoreKey;
 import org.junit.Test;
 
 public class ConcurrentMissingMetadataChecksumAndFileDownloadTest
-    extends AbstractContentManagementTest
+        extends AbstractContentManagementTest
 {
 
     @Test

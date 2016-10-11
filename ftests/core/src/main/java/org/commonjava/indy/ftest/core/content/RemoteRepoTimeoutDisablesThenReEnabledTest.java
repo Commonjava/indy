@@ -17,6 +17,7 @@ package org.commonjava.indy.ftest.core.content;
 
 import org.apache.http.HttpStatus;
 import org.commonjava.indy.client.core.IndyClientException;
+import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.commonjava.maven.galley.model.Location;
@@ -32,7 +33,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 public class RemoteRepoTimeoutDisablesThenReEnabledTest
-    extends AbstractContentManagementTest
+        extends AbstractContentManagementTest
 {
 
     public class DelayInputStream

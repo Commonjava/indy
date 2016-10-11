@@ -16,6 +16,7 @@
 package org.commonjava.indy.ftest.core.content;
 
 import org.apache.commons.io.IOUtils;
+import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.junit.Test;
 

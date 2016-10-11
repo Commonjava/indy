@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.lang.StringUtils;
+import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
@@ -33,7 +34,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 public class MetadataMergeRepoNoMetaListingTimeoutTest
-    extends AbstractContentManagementTest
+        extends AbstractContentManagementTest
 {
 
     public class DelayInputStream
