@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.ftest.core.content;
+package org.commonjava.indy.pkg.maven.content;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -23,7 +23,6 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.test.http.expect.ExpectationServer;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -53,7 +52,7 @@ import static org.junit.Assert.assertThat;
  * </ul>
  *
  */
-public class GroupMetadataOverlappingWithoutMetadataOfHostedReposTest
+public class GroupMetaOverlapWithoutMetaOfHostedReposTest
         extends AbstractContentManagementTest
 {
     @Rule

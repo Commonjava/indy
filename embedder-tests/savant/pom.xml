@@ -74,6 +74,11 @@
       <artifactId>indy-ftests-common</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-pkg-maven</artifactId>
+      <scope>test</scope>
+    </dependency>
 
     <dependency>
       <groupId>org.jboss.logging</groupId>
@@ -94,6 +99,7 @@
               <dependency>org.commonjava.indy:indy-ftests-httprox</dependency>
               <dependency>org.commonjava.indy:indy-ftests-implied-repos</dependency>
               <dependency>org.commonjava.indy:indy-ftests-promote</dependency>
+              <dependency>org.commonjava.indy:indy-ftests-pkg-maven</dependency>
             </dependenciesToScan> 
           </configuration>
       </plugin>

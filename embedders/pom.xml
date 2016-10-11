@@ -167,6 +167,11 @@
       <artifactId>indy-ftests-httprox</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-pkg-maven</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   
   <build>
