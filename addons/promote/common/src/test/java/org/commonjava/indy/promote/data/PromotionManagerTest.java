@@ -39,6 +39,7 @@ import org.commonjava.indy.promote.validate.ValidationRuleParser;
 import org.commonjava.indy.subsys.datafile.DataFileManager;
 import org.commonjava.indy.subsys.datafile.change.DataFileEventManager;
 import org.commonjava.indy.subsys.template.ScriptEngine;
+import org.commonjava.indy.test.fixture.core.MockContentAdvisor;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.maven.rel.MavenModelProcessor;
 import org.commonjava.maven.galley.model.Transfer;
@@ -102,7 +103,7 @@ public class PromotionManagerTest
         storeManager = new MemoryStoreDataManager( true );
 
         downloadManager = new DefaultDownloadManager( storeManager, galleyParts.getTransferManager(),
-                                                      new IndyLocationExpander( storeManager ) );
+                                                      new IndyLocationExpander( storeManager ), new MockContentAdvisor() );
 
         contentManager = new DefaultContentManager( storeManager, downloadManager, new IndyObjectMapper( true ),
                                                     Collections.<ContentGenerator>emptySet() );

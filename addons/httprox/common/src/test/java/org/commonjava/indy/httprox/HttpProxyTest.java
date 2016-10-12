@@ -50,6 +50,7 @@ import org.commonjava.indy.subsys.datafile.change.DataFileEventManager;
 import org.commonjava.indy.subsys.keycloak.conf.KeycloakConfig;
 import org.commonjava.indy.subsys.template.ScriptEngine;
 import org.commonjava.indy.subsys.template.TemplatingEngine;
+import org.commonjava.indy.test.fixture.core.MockContentAdvisor;
 import org.commonjava.indy.util.MimeTyper;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.galley.auth.MemoryPasswordManager;
@@ -132,7 +133,7 @@ public class HttpProxyTest
         final IndyObjectMapper mapper = new IndyObjectMapper( true );
 
         final DownloadManager downloadManager =
-                new DefaultDownloadManager( storeManager, core.getTransferManager(), core.getLocationExpander() );
+                new DefaultDownloadManager( storeManager, core.getTransferManager(), core.getLocationExpander(), new MockContentAdvisor() );
         final ContentManager contentManager = new DefaultContentManager( storeManager, downloadManager, mapper,
                                                                          Collections.<ContentGenerator>emptySet() );
 
