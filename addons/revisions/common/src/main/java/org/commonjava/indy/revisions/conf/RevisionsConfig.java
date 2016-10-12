@@ -30,7 +30,7 @@ public class RevisionsConfig
     implements IndyConfigInfo
 {
 
-    private boolean enabled = true;
+    private boolean enabled = false;
 
     private boolean pushEnabled = false;
 
