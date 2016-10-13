@@ -16,6 +16,7 @@
 package org.commonjava.indy.model.core;
 
 import io.swagger.annotations.ApiModel;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @ApiModel( description = "Hosts artifact content on the local system", parent = ArtifactStore.class )
 public class HostedRepository
@@ -27,6 +28,9 @@ public class HostedRepository
     private String storage;
 
     private int snapshotTimeoutSeconds;
+
+    @JsonProperty( "repo_timeout" )
+    private int repoTimeoutSeconds;
 
     HostedRepository()
     {
@@ -53,6 +57,16 @@ public class HostedRepository
     public void setSnapshotTimeoutSeconds( final int snapshotTimeoutSeconds )
     {
         this.snapshotTimeoutSeconds = snapshotTimeoutSeconds;
+    }
+
+    public int getRepoTimeoutSeconds()
+    {
+        return repoTimeoutSeconds;
+    }
+
+    public void setRepoTimeoutSeconds( final int repoTimeoutSeconds )
+    {
+        this.repoTimeoutSeconds = repoTimeoutSeconds;
     }
 
     public String getStorage()
