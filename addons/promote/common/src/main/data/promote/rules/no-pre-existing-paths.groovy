@@ -1,6 +1,7 @@
 package org.commonjava.indy.promote.rules
 
 import org.commonjava.indy.model.core.StoreKey
+import org.commonjava.indy.model.galley.KeyedLocation
 import org.commonjava.indy.promote.validate.model.ValidationRequest
 import org.commonjava.indy.promote.validate.model.ValidationRule
 import org.slf4j.LoggerFactory
