@@ -146,10 +146,12 @@ public class TimeoutEventListener
                 try
                 {
                     scheduleManager.setSnapshotTimeouts( key, transfer.getPath() );
+                    scheduleManager.setRepoTimeouts( key, transfer.getPath() );
                 }
                 catch ( final IndySchedulerException e )
                 {
-                    logger.error( "Failed to clean up metadata / set snapshot timeouts related to: " + transfer, e );
+                    logger.error( "Failed to clean up metadata / set snapshot or repo timeouts related to: " + transfer,
+                                  e );
                 }
 
                 break;
@@ -193,10 +195,11 @@ public class TimeoutEventListener
                     try
                     {
                         scheduleManager.setSnapshotTimeouts( key, transfer.getPath() );
+                        scheduleManager.setRepoTimeouts( key, transfer.getPath() );
                     }
                     catch ( final IndySchedulerException e )
                     {
-                        logger.error( "Failed to set snapshot timeouts related to: " + transfer, e );
+                        logger.error( "Failed to set snapshot / repo timeouts related to: " + transfer, e );
                     }
                 }
                 else if ( type == StoreType.remote )
@@ -266,10 +269,11 @@ public class TimeoutEventListener
                     try
                     {
                         scheduleManager.rescheduleSnapshotTimeouts( (HostedRepository) store );
+                        scheduleManager.rescheduleRepoTimeouts( (HostedRepository) store );
                     }
                     catch ( final IndySchedulerException e )
                     {
-                        logger.error( "Failed to update snapshot timeouts in: " + store.getKey(), e );
+                        logger.error( "Failed to update snapshot / repo timeouts in: " + store.getKey(), e );
                     }
                 }
                 else if ( type == StoreType.remote )
