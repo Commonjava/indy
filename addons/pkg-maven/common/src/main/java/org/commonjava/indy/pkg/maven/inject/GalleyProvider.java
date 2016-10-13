@@ -13,12 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.core.inject;
-
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
+package org.commonjava.indy.pkg.maven.inject;
 
 import org.commonjava.maven.galley.config.TransportManagerConfig;
 import org.commonjava.maven.galley.maven.internal.defaults.StandardMaven304PluginDefaults;
@@ -26,11 +21,12 @@ import org.commonjava.maven.galley.maven.internal.defaults.StandardMavenPluginIm
 import org.commonjava.maven.galley.maven.parse.XMLInfrastructure;
 import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginDefaults;
 import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginImplications;
-import org.commonjava.maven.galley.model.FilePatternMatcher;
-import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 
-import java.util.Arrays;
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Produces;
+import javax.inject.Inject;
 
 @ApplicationScoped
 public class GalleyProvider

@@ -21,8 +21,10 @@ import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 
 import javax.enterprise.inject.Default;
 
-/**
- */
+//TODO: This provider is fully duplicated with org.commonjava.indy.test.fixture.core.MockContentAdvisor in
+//      test/fixture-core for some dependency reasons in addons. Should be refactored in another common
+//      test module in the future.
+
 @Default
 public class MockContentAdvisor
         implements ContentAdvisor

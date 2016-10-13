@@ -16,6 +16,13 @@
 package org.commonjava.indy.core.conf;
 
 import org.commonjava.indy.conf.IndyConfigInfo;
+import org.commonjava.maven.atlas.ident.ref.ProjectRef;
+import org.commonjava.maven.galley.config.TransportManagerConfig;
+import org.commonjava.maven.galley.maven.GalleyMavenException;
+import org.commonjava.maven.galley.maven.model.view.PluginDependencyView;
+import org.commonjava.maven.galley.maven.model.view.PluginView;
+import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginDefaults;
+import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginImplications;
 import org.commonjava.web.config.ConfigUtils;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.section.ConfigurationSectionListener;
@@ -25,10 +32,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import javax.enterprise.inject.Produces;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -78,4 +87,5 @@ public class DefaultIndyConfigFactoryTest
 
         assertThat( new File( dir, "main.conf" ).exists(), equalTo( true ) );
     }
+
 }
