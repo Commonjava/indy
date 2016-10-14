@@ -225,14 +225,11 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public Set<Group> getGroupsContaining( final StoreKey repo )
+    public synchronized Set<Group> getGroupsContaining( final StoreKey repo )
             throws IndyDataException
     {
-        synchronized ( StoreKey.dedupe( repo ) )
-        {
-            Set<Group> groups = reverseGroupMemberships.get( repo );
-            return groups == null ? Collections.emptySet() : Collections.unmodifiableSet( groups );
-        }
+        Set<Group> groups = reverseGroupMemberships.get( repo );
+        return groups == null ? Collections.emptySet() : Collections.unmodifiableSet( groups );
     }
 
     private boolean groupContains( final Group g, final StoreKey key )
@@ -342,14 +339,10 @@ public class MemoryStoreDataManager
                     if ( memberIn == null )
                     {
                         memberIn = new HashSet<>();
-                    }
-                    else
-                    {
-                        memberIn = new HashSet<>( memberIn );
+                        reverseGroupMemberships.put( memberKey, memberIn );
                     }
 
                     memberIn.add( g );
-                    reverseGroupMemberships.put( memberKey, memberIn );
                 } );
             }
             else if ( store instanceof RemoteRepository )

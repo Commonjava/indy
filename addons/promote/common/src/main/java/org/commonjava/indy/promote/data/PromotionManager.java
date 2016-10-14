@@ -43,9 +43,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 
@@ -72,6 +75,8 @@ public class PromotionManager
 
     @Inject
     private PromotionValidator validator;
+
+    private Map<StoreKey, ReentrantLock> byPathTargetLocks = new HashMap<>();
 
     protected PromotionManager()
     {
@@ -297,9 +302,22 @@ public class PromotionManager
     public PathsPromoteResult rollbackPathsPromote( final PathsPromoteResult result )
             throws PromotionException, IndyWorkflowException
     {
-        StoreKey targetKey = StoreKey.dedupe( result.getRequest().getTarget() );
-        synchronized ( targetKey )
+        StoreKey targetKey = result.getRequest().getTarget();
+
+        ReentrantLock lock;
+        synchronized ( byPathTargetLocks )
         {
+            lock = byPathTargetLocks.get( targetKey );
+            if ( lock == null )
+            {
+                lock = new ReentrantLock();
+                byPathTargetLocks.put( targetKey, lock );
+            }
+        }
+
+        try
+        {
+            lock.lock();
             final List<Transfer> contents = getTransfersForPaths( targetKey, result.getCompletedPaths() );
             final Set<String> completed = result.getCompletedPaths();
             final Set<String> skipped = result.getSkippedPaths();
@@ -366,6 +384,10 @@ public class PromotionManager
 
             return new PathsPromoteResult( result.getRequest(), pending, completed, skipped, error );
         }
+        finally
+        {
+            lock.unlock();
+        }
     }
 
     private PathsPromoteResult runPathPromotions( final PathsPromoteRequest request, final Set<String> pending,
@@ -377,9 +399,20 @@ public class PromotionManager
             return new PathsPromoteResult( request, pending, prevComplete, prevSkipped, new ValidationResult() );
         }
 
-        StoreKey targetKey = StoreKey.dedupe( request.getTarget() );
-        synchronized ( targetKey )
+        ReentrantLock lock;
+        synchronized ( byPathTargetLocks )
         {
+            lock = byPathTargetLocks.get( request.getTarget() );
+            if ( lock == null )
+            {
+                lock = new ReentrantLock();
+                byPathTargetLocks.put( request.getTarget(), lock );
+            }
+        }
+
+        try
+        {
+            lock.lock();
             final Set<String> complete = prevComplete == null ? new HashSet<>() : new HashSet<>( prevComplete );
             final Set<String> skipped = prevSkipped == null ? new HashSet<>() : new HashSet<>( prevSkipped );
 
@@ -412,44 +445,44 @@ public class PromotionManager
                         final String path = transfer.getPath();
 
                         Transfer target = contentManager.getTransfer( targetStore, path, TransferOperation.UPLOAD );
-//                        synchronized ( target )
-//                        {
-                            // TODO: Should the request object have an overwrite attribute? Is that something the user is qualified to decide?
-                            if ( target != null && target.exists() )
+                        //                        synchronized ( target )
+                        //                        {
+                        // TODO: Should the request object have an overwrite attribute? Is that something the user is qualified to decide?
+                        if ( target != null && target.exists() )
+                        {
+                            logger.warn( "NOT promoting: {} from: {} to: {}. Target file already exists.", path,
+                                         request.getSource(), request.getTarget() );
+
+                            // TODO: There's no guarantee that the pre-existing content is the same!
+                            pending.remove( path );
+                            skipped.add( path );
+
+                            continue;
+                        }
+
+                        try (InputStream stream = transfer.openInputStream( true ))
+                        {
+                            contentManager.store( targetStore, path, stream, TransferOperation.UPLOAD,
+                                                  new EventMetadata() );
+
+                            pending.remove( path );
+                            complete.add( path );
+
+                            stream.close();
+
+                            if ( purgeSource )
                             {
-                                logger.warn( "NOT promoting: {} from: {} to: {}. Target file already exists.", path,
-                                             request.getSource(), request.getTarget() );
-
-                                // TODO: There's no guarantee that the pre-existing content is the same!
-                                pending.remove( path );
-                                skipped.add( path );
-
-                                continue;
+                                contentManager.delete( sourceStore, path, new EventMetadata() );
                             }
-
-                            try (InputStream stream = transfer.openInputStream( true ))
-                            {
-                                contentManager.store( targetStore, path, stream, TransferOperation.UPLOAD,
-                                                      new EventMetadata() );
-
-                                pending.remove( path );
-                                complete.add( path );
-
-                                stream.close();
-
-                                if ( purgeSource )
-                                {
-                                    contentManager.delete( sourceStore, path, new EventMetadata() );
-                                }
-                            }
-                            catch ( final IOException e )
-                            {
-                                String msg = String.format( "Failed to open input stream for: %s. Reason: %s", transfer,
-                                                            e.getMessage() );
-                                errors.add( msg );
-                                logger.error( msg, e );
-                            }
-//                        }
+                        }
+                        catch ( final IOException e )
+                        {
+                            String msg = String.format( "Failed to open input stream for: %s. Reason: %s", transfer,
+                                                        e.getMessage() );
+                            errors.add( msg );
+                            logger.error( msg, e );
+                        }
+                        //                        }
                     }
                     catch ( final IndyWorkflowException e )
                     {
@@ -469,6 +502,10 @@ public class PromotionManager
             }
 
             return new PathsPromoteResult( request, pending, complete, skipped, error );
+        }
+        finally
+        {
+            lock.unlock();
         }
     }
 
