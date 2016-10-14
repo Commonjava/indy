@@ -25,6 +25,7 @@ import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.promote.conf.PromoteConfig;
 import org.commonjava.indy.promote.model.GroupPromoteRequest;
 import org.commonjava.indy.promote.model.GroupPromoteResult;
 import org.commonjava.indy.promote.model.PathsPromoteRequest;
@@ -43,9 +44,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 
@@ -62,6 +67,9 @@ public class PromotionManager
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
+    private PromoteConfig config;
+
+    @Inject
     private ContentManager contentManager;
 
     @Inject
@@ -73,17 +81,20 @@ public class PromotionManager
     @Inject
     private PromotionValidator validator;
 
+    private Map<StoreKey, ReentrantLock> byPathTargetLocks = new HashMap<>();
+
     protected PromotionManager()
     {
     }
 
     public PromotionManager( PromotionValidator validator, final ContentManager contentManager,
-                             final DownloadManager downloadManager, final StoreDataManager storeManager )
+                             final DownloadManager downloadManager, final StoreDataManager storeManager, PromoteConfig config )
     {
         this.validator = validator;
         this.contentManager = contentManager;
         this.downloadManager = downloadManager;
         this.storeManager = storeManager;
+        this.config = config;
     }
 
     public GroupPromoteResult promoteToGroup( GroupPromoteRequest request, String user )
@@ -297,35 +308,58 @@ public class PromotionManager
     public PathsPromoteResult rollbackPathsPromote( final PathsPromoteResult result )
             throws PromotionException, IndyWorkflowException
     {
-        StoreKey targetKey = StoreKey.dedupe( result.getRequest().getTarget() );
-        synchronized ( targetKey )
+        StoreKey targetKey = result.getRequest().getTarget();
+
+        ReentrantLock lock;
+        synchronized ( byPathTargetLocks )
         {
-            final List<Transfer> contents = getTransfersForPaths( targetKey, result.getCompletedPaths() );
-            final Set<String> completed = result.getCompletedPaths();
-            final Set<String> skipped = result.getSkippedPaths();
-
-            if ( completed == null || completed.isEmpty() )
+            lock = byPathTargetLocks.get( targetKey );
+            if ( lock == null )
             {
-                result.setError( null );
-                return result;
+                lock = new ReentrantLock();
+                byPathTargetLocks.put( targetKey, lock );
             }
+        }
 
-            Set<String> pending = result.getPendingPaths();
-            pending = pending == null ? new HashSet<String>() : new HashSet<String>( pending );
+        final List<Transfer> contents = getTransfersForPaths( targetKey, result.getCompletedPaths() );
+        final Set<String> completed = result.getCompletedPaths();
+        final Set<String> skipped = result.getSkippedPaths();
 
-            String error = null;
-            final boolean copyToSource = result.getRequest().isPurgeSource();
+        if ( completed == null || completed.isEmpty() )
+        {
+            result.setError( null );
+            return result;
+        }
 
-            ArtifactStore source = null;
-            try
+        Set<String> pending = result.getPendingPaths();
+        pending = pending == null ? new HashSet<String>() : new HashSet<String>( pending );
+
+        String error = null;
+        final boolean copyToSource = result.getRequest().isPurgeSource();
+
+        ArtifactStore source = null;
+        try
+        {
+            source = storeManager.getArtifactStore( result.getRequest().getSource() );
+        }
+        catch ( final IndyDataException e )
+        {
+            error = String.format( "Failed to retrieve artifact store: %s. Reason: %s",
+                                   result.getRequest().getSource(), e.getMessage() );
+            logger.error( error, e );
+        }
+
+        try
+        {
+            if ( error == null )
             {
-                source = storeManager.getArtifactStore( result.getRequest().getSource() );
-            }
-            catch ( final IndyDataException e )
-            {
-                error = String.format( "Failed to retrieve artifact store: %s. Reason: %s",
-                                       result.getRequest().getSource(), e.getMessage() );
-                logger.error( error, e );
+                boolean locked= lock.tryLock( config.getLockTimeoutSeconds(), TimeUnit.SECONDS );
+                if ( !locked )
+                {
+                    error = String.format( "Failed to acquire promotion lock on target: %s in %d seconds.", targetKey,
+                                           config.getLockTimeoutSeconds() );
+                    logger.warn( error );
+                }
             }
 
             if ( error == null )
@@ -363,9 +397,18 @@ public class PromotionManager
                     }
                 }
             }
-
-            return new PathsPromoteResult( result.getRequest(), pending, completed, skipped, error );
         }
+        catch ( InterruptedException e )
+        {
+            error = String.format( "Interrupted waiting for promotion lock on target: %s", targetKey );
+            logger.warn( error );
+        }
+        finally
+        {
+            lock.unlock();
+        }
+
+        return new PathsPromoteResult( result.getRequest(), pending, completed, skipped, error );
     }
 
     private PathsPromoteResult runPathPromotions( final PathsPromoteRequest request, final Set<String> pending,
@@ -377,33 +420,58 @@ public class PromotionManager
             return new PathsPromoteResult( request, pending, prevComplete, prevSkipped, new ValidationResult() );
         }
 
-        StoreKey targetKey = StoreKey.dedupe( request.getTarget() );
-        synchronized ( targetKey )
+        StoreKey targetKey= request.getTarget();
+
+        ReentrantLock lock;
+        synchronized ( byPathTargetLocks )
         {
-            final Set<String> complete = prevComplete == null ? new HashSet<>() : new HashSet<>( prevComplete );
-            final Set<String> skipped = prevSkipped == null ? new HashSet<>() : new HashSet<>( prevSkipped );
-
-            List<String> errors = new ArrayList<>();
-            ArtifactStore sourceStore = null;
-            ArtifactStore targetStore = null;
-            try
+            lock = byPathTargetLocks.get( targetKey );
+            if ( lock == null )
             {
-                sourceStore = storeManager.getArtifactStore( request.getSource() );
-                targetStore = storeManager.getArtifactStore( request.getTarget() );
+                lock = new ReentrantLock();
+                byPathTargetLocks.put( targetKey, lock );
             }
-            catch ( final IndyDataException e )
-            {
-                String msg = String.format( "Failed to retrieve artifact store: %s. Reason: %s", request.getSource(),
-                                            e.getMessage() );
-                errors.add( msg );
-                logger.error( msg, e );
-            }
+        }
 
-            logger.info( "Running promotions from: {} (key: {})\n  to: {} (key: {})", sourceStore, request.getSource(),
-                         targetStore, request.getTarget() );
+        final Set<String> complete = prevComplete == null ? new HashSet<>() : new HashSet<>( prevComplete );
+        final Set<String> skipped = prevSkipped == null ? new HashSet<>() : new HashSet<>( prevSkipped );
+
+        List<String> errors = new ArrayList<>();
+        ArtifactStore sourceStore = null;
+        ArtifactStore targetStore = null;
+        try
+        {
+            sourceStore = storeManager.getArtifactStore( request.getSource() );
+            targetStore = storeManager.getArtifactStore( request.getTarget() );
+        }
+        catch ( final IndyDataException e )
+        {
+            String msg = String.format( "Failed to retrieve artifact store: %s. Reason: %s", request.getSource(),
+                                        e.getMessage() );
+            errors.add( msg );
+            logger.error( msg, e );
+        }
+
+        try
+        {
+            if ( errors.isEmpty() )
+            {
+                boolean locked= lock.tryLock( config.getLockTimeoutSeconds(), TimeUnit.SECONDS );
+                if ( !locked )
+                {
+                    String error= String.format( "Failed to acquire promotion lock on target: %s in %d seconds.", targetKey,
+                                                 config.getLockTimeoutSeconds() );
+
+                    errors.add( error );
+                    logger.warn( error );
+                }
+            }
 
             if ( errors.isEmpty() )
             {
+                logger.info( "Running promotions from: {} (key: {})\n  to: {} (key: {})", sourceStore, request.getSource(),
+                             targetStore, request.getTarget() );
+
                 final boolean purgeSource = request.isPurgeSource();
                 for ( final Transfer transfer : contents )
                 {
@@ -462,14 +530,26 @@ public class PromotionManager
                 }
             }
 
-            String error = null;
-            if ( !errors.isEmpty() )
-            {
-                error = StringUtils.join( errors, "\n" );
-            }
-
-            return new PathsPromoteResult( request, pending, complete, skipped, error );
         }
+        catch ( InterruptedException e )
+        {
+            String error = String.format( "Interrupted waiting for promotion lock on target: %s", targetKey );
+            errors.add( error );
+            logger.warn( error );
+        }
+        finally
+        {
+            lock.unlock();
+        }
+
+        String error = null;
+
+        if ( !errors.isEmpty() )
+        {
+            error = StringUtils.join( errors, "\n" );
+        }
+
+        return new PathsPromoteResult( request, pending, complete, skipped, error );
     }
 
     private List<Transfer> getTransfersForPaths( final StoreKey source, final Set<String> paths )
