@@ -14,9 +14,7 @@
   <modules>
     <module>model-java</module>
     <module>common</module>
-    <module>client-java</module>
     <module>ftests</module>
-    <module>jaxrs</module>
   </modules>
 
 
