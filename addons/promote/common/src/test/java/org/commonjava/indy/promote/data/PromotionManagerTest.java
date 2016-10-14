@@ -119,7 +119,10 @@ public class PromotionManagerTest
                                                                           galleyParts.getMavenMetadataReader(),
                                                                           modelProcessor, galleyParts.getTypeMapper(),
                                                                           galleyParts.getTransferManager() ) );
-        manager = new PromotionManager( validator, contentManager, downloadManager, storeManager );
+
+        PromoteConfig config = new PromoteConfig();
+
+        manager = new PromotionManager( validator, contentManager, downloadManager, storeManager, config );
 
         executor = Executors.newCachedThreadPool();
     }
