@@ -480,44 +480,44 @@ public class PromotionManager
                         final String path = transfer.getPath();
 
                         Transfer target = contentManager.getTransfer( targetStore, path, TransferOperation.UPLOAD );
-//                        synchronized ( target )
-//                        {
-                            // TODO: Should the request object have an overwrite attribute? Is that something the user is qualified to decide?
-                            if ( target != null && target.exists() )
+                        //                        synchronized ( target )
+                        //                        {
+                        // TODO: Should the request object have an overwrite attribute? Is that something the user is qualified to decide?
+                        if ( target != null && target.exists() )
+                        {
+                            logger.warn( "NOT promoting: {} from: {} to: {}. Target file already exists.", path,
+                                         request.getSource(), request.getTarget() );
+
+                            // TODO: There's no guarantee that the pre-existing content is the same!
+                            pending.remove( path );
+                            skipped.add( path );
+
+                            continue;
+                        }
+
+                        try (InputStream stream = transfer.openInputStream( true ))
+                        {
+                            contentManager.store( targetStore, path, stream, TransferOperation.UPLOAD,
+                                                  new EventMetadata() );
+
+                            pending.remove( path );
+                            complete.add( path );
+
+                            stream.close();
+
+                            if ( purgeSource )
                             {
-                                logger.warn( "NOT promoting: {} from: {} to: {}. Target file already exists.", path,
-                                             request.getSource(), request.getTarget() );
-
-                                // TODO: There's no guarantee that the pre-existing content is the same!
-                                pending.remove( path );
-                                skipped.add( path );
-
-                                continue;
+                                contentManager.delete( sourceStore, path, new EventMetadata() );
                             }
-
-                            try (InputStream stream = transfer.openInputStream( true ))
-                            {
-                                contentManager.store( targetStore, path, stream, TransferOperation.UPLOAD,
-                                                      new EventMetadata() );
-
-                                pending.remove( path );
-                                complete.add( path );
-
-                                stream.close();
-
-                                if ( purgeSource )
-                                {
-                                    contentManager.delete( sourceStore, path, new EventMetadata() );
-                                }
-                            }
-                            catch ( final IOException e )
-                            {
-                                String msg = String.format( "Failed to open input stream for: %s. Reason: %s", transfer,
-                                                            e.getMessage() );
-                                errors.add( msg );
-                                logger.error( msg, e );
-                            }
-//                        }
+                        }
+                        catch ( final IOException e )
+                        {
+                            String msg = String.format( "Failed to open input stream for: %s. Reason: %s", transfer,
+                                                        e.getMessage() );
+                            errors.add( msg );
+                            logger.error( msg, e );
+                        }
+                        //                        }
                     }
                     catch ( final IndyWorkflowException e )
                     {
