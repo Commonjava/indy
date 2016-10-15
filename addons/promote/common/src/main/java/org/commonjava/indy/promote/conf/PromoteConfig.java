@@ -35,9 +35,15 @@ public class PromoteConfig
 
     public static final String ENABLED_PARAM = "enabled";
 
+    private static final String LOCK_TIMEOUT_SECONDS_PARAM = "lock.timeout.seconds";
+
+    public static final long DEFAULT_LOCK_TIMEOUT_SECONDS = 30;
+
     private String basedir;
 
     private boolean enabled = true;
+
+    private Long lockTimeoutSeconds;
 
     public PromoteConfig()
     {
@@ -69,6 +75,17 @@ public class PromoteConfig
     public void setEnabled( final boolean enabled )
     {
         this.enabled = enabled;
+    }
+
+    public Long getLockTimeoutSeconds()
+    {
+        return lockTimeoutSeconds == null ? DEFAULT_LOCK_TIMEOUT_SECONDS : lockTimeoutSeconds;
+    }
+
+    @ConfigName( PromoteConfig.LOCK_TIMEOUT_SECONDS_PARAM )
+    public void setLockTimeoutSeconds( Long lockTimeoutSeconds )
+    {
+        this.lockTimeoutSeconds = lockTimeoutSeconds;
     }
 
     @Override
