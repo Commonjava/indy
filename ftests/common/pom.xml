@@ -47,6 +47,11 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.util</groupId>
+      <artifactId>http-testserver</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-bindings-jaxrs</artifactId>
       <scope>provided</scope>

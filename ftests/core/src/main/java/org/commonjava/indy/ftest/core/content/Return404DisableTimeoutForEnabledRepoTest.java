@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.ftest.core.content;
 
+import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
@@ -29,7 +30,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 public class Return404DisableTimeoutForEnabledRepoTest
-    extends AbstractContentManagementTest
+        extends AbstractContentManagementTest
 {
 
     public class DelayInputStream

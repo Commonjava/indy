@@ -13,10 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.core.content.group;
+package org.commonjava.indy.pkg.maven.content.group;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
-import static org.commonjava.indy.util.LocationUtils.getKey;
+import org.apache.commons.io.IOUtils;
+import org.apache.maven.artifact.repository.metadata.Metadata;
+import org.apache.maven.artifact.repository.metadata.SnapshotVersion;
+import org.apache.maven.artifact.repository.metadata.Versioning;
+import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
+import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.commonjava.indy.core.content.group.MetadataMerger;
+import org.commonjava.indy.model.core.Group;
+import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.maven.galley.model.Transfer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
@@ -28,19 +39,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.maven.artifact.repository.metadata.Metadata;
-import org.apache.maven.artifact.repository.metadata.SnapshotVersion;
-import org.apache.maven.artifact.repository.metadata.Versioning;
-import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
-import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
-import org.codehaus.plexus.util.IOUtil;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.commonjava.indy.model.core.Group;
-import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.maven.galley.model.Transfer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.commonjava.indy.util.LocationUtils.getKey;
 
 @javax.enterprise.context.ApplicationScoped
 public class MavenMetadataMerger

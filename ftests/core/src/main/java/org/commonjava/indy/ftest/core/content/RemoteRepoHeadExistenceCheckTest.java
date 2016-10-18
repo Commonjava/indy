@@ -15,35 +15,26 @@
  */
 package org.commonjava.indy.ftest.core.content;
 
-import org.apache.http.HttpStatus;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.client.core.helper.PathInfo;
-import org.commonjava.indy.client.core.module.IndyContentClientModule;
+import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.RemoteRepository;
-import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.model.core.dto.DirectoryListingDTO;
-import org.commonjava.indy.model.core.dto.DirectoryListingEntryDTO;
-import org.commonjava.maven.galley.model.Location;
 import org.commonjava.test.http.expect.ExpectationServer;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.util.List;
 
 import static org.commonjava.indy.model.core.StoreType.remote;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 public class RemoteRepoHeadExistenceCheckTest
-    extends AbstractContentManagementTest
+        extends AbstractContentManagementTest
 {
 
     @Rule

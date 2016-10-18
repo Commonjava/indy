@@ -31,10 +31,11 @@ import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.galley.KeyedLocation;
+import org.commonjava.indy.spi.pkg.ContentAdvisor;
+import org.commonjava.indy.spi.pkg.ContentQuality;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.indy.util.PathUtils;
-import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 import org.commonjava.maven.galley.BadGatewayException;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferLocationException;
@@ -53,17 +54,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.event.Event;
+import javax.enterprise.inject.Any;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.StreamSupport;
 
 import static org.commonjava.indy.util.ContentUtils.dedupeListing;
 
@@ -97,6 +103,10 @@ public class DefaultDownloadManager
     @Inject
     private StoreDataManager storeManager;
 
+    @Inject
+    @Any
+    private Instance<ContentAdvisor> contentAdvisor;
+
     protected DefaultDownloadManager()
     {
     }
@@ -109,6 +119,13 @@ public class DefaultDownloadManager
         this.locationExpander = locationExpander;
         this.fileEventManager = new IndyFileEventManager();
         executor = Executors.newFixedThreadPool( 10 );
+    }
+
+    public DefaultDownloadManager( final StoreDataManager storeManager, final TransferManager transfers,
+                                   final LocationExpander locationExpander, Instance<ContentAdvisor> contentAdvisor )
+    {
+        this(storeManager, transfers, locationExpander);
+        this.contentAdvisor = contentAdvisor;
     }
 
     @Override
@@ -537,8 +554,9 @@ public class DefaultDownloadManager
         {
             final HostedRepository deploy = (HostedRepository) store;
 
-            final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
-            if ( pathInfo != null && pathInfo.isSnapshot() )
+//            final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
+            final ContentQuality quality = getQuality( path );
+            if ( quality != null && quality == ContentQuality.SNAPSHOT )
             {
                 if ( !deploy.isAllowSnapshots() )
                 {
@@ -635,12 +653,13 @@ public class DefaultDownloadManager
                            final TransferOperation op, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
-        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
+//        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
+        final ContentQuality quality = getQuality( path );
 
         HostedRepository selected = null;
         for ( final ArtifactStore store : stores )
         {
-            if ( storeIsSuitableFor( store, pathInfo, op ) )
+            if ( storeIsSuitableFor( store, quality, op ) )
             {
                 selected = (HostedRepository) store;
                 break;
@@ -694,14 +713,15 @@ public class DefaultDownloadManager
                                          final TransferOperation op )
             throws IndyWorkflowException
     {
-        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
+//        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
+        final ContentQuality quality = getQuality( path );
 
         Transfer transfer = null;
 
         logger.debug( "Checking {} stores to find one suitable for {} of: {}", stores.size(), op, path );
         for ( final ArtifactStore store : stores )
         {
-            if ( storeIsSuitableFor( store, pathInfo, op ) )
+            if ( storeIsSuitableFor( store, quality, op ) )
             {
                 logger.info( "Attempting to retrieve storage reference in: {} for: {} (operation: {})", store, path,
                              op );
@@ -725,7 +745,7 @@ public class DefaultDownloadManager
         return transfer;
     }
 
-    private boolean storeIsSuitableFor( final ArtifactStore store, final ArtifactPathInfo pathInfo,
+    private boolean storeIsSuitableFor( final ArtifactStore store, final ContentQuality pathQuality,
                                         final TransferOperation op )
     {
         if ( TransferOperation.UPLOAD == op )
@@ -734,13 +754,13 @@ public class DefaultDownloadManager
             {
                 //                logger.info( "Found deploy point: %s", store.getName() );
                 final HostedRepository dp = (HostedRepository) store;
-                if ( pathInfo == null )
+                if ( pathQuality == null )
                 {
                     // probably not an artifact, most likely metadata instead...
                     //                    logger.info( "Selecting it for non-artifact storage: {}", path );
                     return true;
                 }
-                else if ( pathInfo.isSnapshot() )
+                else if (  ContentQuality.SNAPSHOT == pathQuality )
                 {
                     if ( dp.isAllowSnapshots() )
                     {
@@ -781,8 +801,9 @@ public class DefaultDownloadManager
     public Transfer getStorageReference( final ArtifactStore store, final String path, final TransferOperation op )
             throws IndyWorkflowException
     {
-        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
-        if ( storeIsSuitableFor( store, pathInfo, op ) )
+//        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
+        final ContentQuality quality = getQuality( path );
+        if ( storeIsSuitableFor( store, quality, op ) )
         {
             return getStorageReference( store, path );
         }
@@ -1030,6 +1051,16 @@ public class DefaultDownloadManager
         {
             result.add( transfer );
         }
+    }
+
+    private ContentQuality getQuality( String path )
+    {
+        final ContentAdvisor advisor = StreamSupport.stream(
+                Spliterators.spliteratorUnknownSize( contentAdvisor.iterator(), Spliterator.ORDERED ), false )
+                                                    .filter( Objects::nonNull )
+                                                    .findFirst()
+                                                    .orElse( null );
+        return advisor == null ? null : advisor.getContentQuality( path );
     }
 
 }

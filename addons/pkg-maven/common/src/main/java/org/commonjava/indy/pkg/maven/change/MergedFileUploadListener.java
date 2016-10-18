@@ -13,27 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.core.change;
+package org.commonjava.indy.pkg.maven.change;
 
-import static org.commonjava.indy.util.LocationUtils.getKey;
-
-import java.io.IOException;
-import java.util.Set;
-import java.util.concurrent.Executor;
-
-import javax.inject.Inject;
-
+import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
-import org.commonjava.indy.core.change.event.IndyFileEventManager;
 import org.commonjava.indy.content.DownloadManager;
-import org.commonjava.indy.core.content.group.ArchetypeCatalogMerger;
+import org.commonjava.indy.core.change.event.IndyFileEventManager;
 import org.commonjava.indy.core.content.group.GroupMergeHelper;
-import org.commonjava.indy.core.content.group.MavenMetadataMerger;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.indy.pkg.maven.content.group.ArchetypeCatalogMerger;
+import org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
@@ -41,6 +33,13 @@ import org.commonjava.maven.galley.event.FileEvent;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+import java.io.IOException;
+import java.util.Set;
+import java.util.concurrent.Executor;
+
+import static org.commonjava.indy.util.LocationUtils.getKey;
 
 @javax.enterprise.context.ApplicationScoped
 public class MergedFileUploadListener

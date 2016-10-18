@@ -24,12 +24,13 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import org.apache.commons.lang.StringUtils;
+import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.junit.Test;
 
 public class StoreFileAndVerifyExistenceInGroupTest
-    extends AbstractContentManagementTest
+        extends AbstractContentManagementTest
 {
 
     @Test

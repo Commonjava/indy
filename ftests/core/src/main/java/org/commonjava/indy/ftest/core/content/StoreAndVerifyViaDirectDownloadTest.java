@@ -24,10 +24,11 @@ import java.io.InputStream;
 import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
+import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.junit.Test;
 
 public class StoreAndVerifyViaDirectDownloadTest
-    extends AbstractContentManagementTest
+        extends AbstractContentManagementTest
 {
 
     @Test

@@ -17,6 +17,7 @@ package org.commonjava.indy.ftest.core.content;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;

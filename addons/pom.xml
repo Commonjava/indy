@@ -41,5 +41,6 @@
     <module>promote</module>
     <module>revisions</module>
     <module>setback</module>
+    <module>pkg-maven</module>
   </modules>
 </project>

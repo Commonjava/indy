@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.ftest.core.content;
+package org.commonjava.indy.ftest.core;
 
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.remote;

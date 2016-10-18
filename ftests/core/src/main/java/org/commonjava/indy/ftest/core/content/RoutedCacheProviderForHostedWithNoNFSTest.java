@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.ftest.core.content;
 
+import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;

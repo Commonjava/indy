@@ -19,12 +19,18 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.concurrent.Executor;
+import java.util.stream.StreamSupport;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
+import javax.enterprise.inject.Any;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import org.commonjava.cdi.util.weft.WeftManaged;
@@ -43,8 +49,9 @@ import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.indy.spi.pkg.ContentAdvisor;
+import org.commonjava.indy.spi.pkg.ContentQuality;
 import org.commonjava.indy.util.LocationUtils;
-import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
@@ -104,6 +111,10 @@ public class ScheduleManager
     private SpecialPathManager specialPathManager;
 
     private Scheduler scheduler;
+
+    @Inject
+    @Any
+    private Instance<ContentAdvisor> contentAdvisor;
 
     @Override
     public void init()
@@ -403,13 +414,19 @@ public class ScheduleManager
             return;
         }
 
-        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
-        if ( pathInfo == null )
+//        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
+        final ContentAdvisor advisor = StreamSupport.stream(
+                Spliterators.spliteratorUnknownSize( contentAdvisor.iterator(), Spliterator.ORDERED ), false )
+                                                    .filter( Objects::nonNull )
+                                                    .findFirst()
+                                                    .orElse( null );
+        final ContentQuality quality = advisor == null ? null : advisor.getContentQuality( path );
+        if ( quality == null )
         {
             return;
         }
 
-        if ( pathInfo.isSnapshot() && deploy.getSnapshotTimeoutSeconds() > 0 )
+        if ( ContentQuality.SNAPSHOT == quality  && deploy.getSnapshotTimeoutSeconds() > 0 )
         {
             final int timeout = deploy.getSnapshotTimeoutSeconds();
 

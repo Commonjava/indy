@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.core.content;
+package org.commonjava.indy.pkg.maven.content;
 
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.StoreResource;
+import org.commonjava.indy.core.content.AbstractMergedContentGenerator;
 import org.commonjava.indy.core.content.group.GroupMergeHelper;
-import org.commonjava.indy.core.content.group.MavenMetadataMerger;
+import org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
