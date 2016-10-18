@@ -15,21 +15,11 @@
  */
 package org.commonjava.indy.core.expire;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.Executor;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
-import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.BootupAction;
+import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.core.conf.IndySchedulerConfig;
@@ -42,7 +32,6 @@ import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
-import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 import org.commonjava.maven.galley.model.ConcreteResource;
@@ -63,7 +52,16 @@ import org.quartz.impl.matchers.GroupMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.Executor;
 
 @ApplicationScoped
 public class ScheduleManager
@@ -188,16 +186,43 @@ public class ScheduleManager
 
         if ( timeout > 0 )
         {
-            final Set<TriggerKey> canceled =
+            rescheduleTimeouts( deploy, timeout );
+        }
+    }
+
+    public synchronized void rescheduleRepoTimeouts( final HostedRepository deploy )
+            throws IndySchedulerException
+    {
+        if ( !schedulerConfig.isEnabled() )
+        {
+            logger.debug( "Scheduler disabled." );
+            return;
+        }
+
+        int timeout = -1;
+        if ( deploy.getRepoTimeoutSeconds() > 0 )
+        {
+            timeout = deploy.getRepoTimeoutSeconds();
+        }
+
+        if ( timeout > 0 )
+        {
+            rescheduleTimeouts( deploy, timeout );
+        }
+    }
+
+    private synchronized void rescheduleTimeouts( final HostedRepository deploy, final int timeout )
+            throws IndySchedulerException
+    {
+        final Set<TriggerKey> canceled =
                 cancelAllBefore( new StoreKeyMatcher( deploy.getKey(), CONTENT_JOB_TYPE ), timeout );
 
-            for ( final TriggerKey key : canceled )
-            {
-                final String path = key.getName();
-                final StoreKey sk = storeKeyFrom( key.getGroup() );
+        for ( final TriggerKey key : canceled )
+        {
+            final String path = key.getName();
+            final StoreKey sk = storeKeyFrom( key.getGroup() );
 
-                scheduleContentExpiration( sk, path, timeout );
-            }
+            scheduleContentExpiration( sk, path, timeout );
         }
     }
 
@@ -373,30 +398,7 @@ public class ScheduleManager
             return;
         }
 
-        HostedRepository deploy = null;
-        try
-        {
-            final ArtifactStore store = dataManager.getArtifactStore( key );
-            if ( store == null )
-            {
-                return;
-            }
-
-            if ( store instanceof HostedRepository )
-            {
-                deploy = (HostedRepository) store;
-            }
-            else if ( store instanceof Group )
-            {
-                final Group group = (Group) store;
-                deploy = findDeployPoint( group );
-            }
-        }
-        catch ( final IndyDataException e )
-        {
-            logger.error( String.format( "Failed to retrieve deploy point for: %s. Reason: %s", key, e.getMessage() ),
-                          e );
-        }
+        HostedRepository deploy = getHostedRepository( key );
 
         if ( deploy == null )
         {
@@ -418,6 +420,63 @@ public class ScheduleManager
 
             scheduleContentExpiration( key, path, timeout );
         }
+    }
+
+    public synchronized void setRepoTimeouts( final StoreKey key, final String path )
+            throws IndySchedulerException
+    {
+        if ( !schedulerConfig.isEnabled() )
+        {
+            logger.debug( "Scheduler disabled." );
+            return;
+        }
+
+        HostedRepository deploy = getHostedRepository( key );
+
+        if ( deploy == null )
+        {
+            return;
+        }
+
+        if ( deploy.getRepoTimeoutSeconds() > 0 )
+        {
+            final int timeout = deploy.getRepoTimeoutSeconds();
+
+            cancel( new StoreKeyMatcher( key, CONTENT_JOB_TYPE ), path );
+
+            scheduleContentExpiration( key, path, timeout );
+        }
+    }
+
+    private synchronized HostedRepository getHostedRepository( final StoreKey key )
+            throws IndySchedulerException
+    {
+        HostedRepository deploy = null;
+        try
+        {
+            final ArtifactStore store = dataManager.getArtifactStore( key );
+            if ( store == null )
+            {
+                return null;
+            }
+
+            if ( store instanceof HostedRepository )
+            {
+                deploy = (HostedRepository) store;
+            }
+            else if ( store instanceof Group )
+            {
+                final Group group = (Group) store;
+                deploy = findDeployPoint( group );
+            }
+        }
+        catch ( final IndyDataException e )
+        {
+            logger.error( String.format( "Failed to retrieve deploy point for: %s. Reason: %s", key, e.getMessage() ),
+                          e );
+        }
+
+        return deploy;
     }
 
     private HostedRepository findDeployPoint( final Group group )
