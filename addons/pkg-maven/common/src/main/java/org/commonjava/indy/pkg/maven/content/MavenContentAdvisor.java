@@ -39,21 +39,20 @@ public class MavenContentAdvisor
         final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
         if ( pathInfo != null )
         {
-            if ( pathInfo.isSnapshot() )
-            {
-                return ContentQuality.SNAPSHOT;
-            }
-
             final SpecialPathInfo info = specialPathManager.getSpecialPathInfo( path );
             if ( info != null && info.isMetadata() )
             {
                 return ContentQuality.METADATA;
             }
 
-            //FIXME: if any flag to identify a path is a RELEASE quality?
+            if ( pathInfo.isSnapshot() )
+            {
+                return ContentQuality.SNAPSHOT;
+            }
+
             return ContentQuality.RELEASE;
         }
-        //FIXME: what should do if pathInfo is null?
+        //FIXME: needs further think here if null and RELEASE have the same meaning?
         return null;
     }
 }

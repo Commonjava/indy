@@ -19,12 +19,13 @@ import org.commonjava.indy.spi.pkg.ContentAdvisor;
 import org.commonjava.indy.spi.pkg.ContentQuality;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 
+import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.Default;
 
 //TODO: This provider is fully duplicated with org.commonjava.indy.fixture.MockContentAdvisor in core/test
 //      for some dependency reasons in addons. Should be refactored in another common test module in the future.
 
-@Default
+@Alternative
 public class MockContentAdvisor
         implements ContentAdvisor
 {
