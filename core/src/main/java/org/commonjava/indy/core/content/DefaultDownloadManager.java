@@ -54,6 +54,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.event.Event;
+import javax.enterprise.inject.Any;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,9 +63,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.StreamSupport;
 
 import static org.commonjava.indy.util.ContentUtils.dedupeListing;
 
@@ -98,7 +104,8 @@ public class DefaultDownloadManager
     private StoreDataManager storeManager;
 
     @Inject
-    private ContentAdvisor contentAdvisor;
+    @Any
+    private Instance<ContentAdvisor> contentAdvisor;
 
     protected DefaultDownloadManager()
     {
@@ -115,7 +122,7 @@ public class DefaultDownloadManager
     }
 
     public DefaultDownloadManager( final StoreDataManager storeManager, final TransferManager transfers,
-                                   final LocationExpander locationExpander, ContentAdvisor contentAdvisor )
+                                   final LocationExpander locationExpander, Instance<ContentAdvisor> contentAdvisor )
     {
         this(storeManager, transfers, locationExpander);
         this.contentAdvisor = contentAdvisor;
@@ -548,7 +555,7 @@ public class DefaultDownloadManager
             final HostedRepository deploy = (HostedRepository) store;
 
 //            final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
-            final ContentQuality quality = contentAdvisor.getContentQuality( path );
+            final ContentQuality quality = getQuality( path );
             if ( quality != null && quality == ContentQuality.SNAPSHOT )
             {
                 if ( !deploy.isAllowSnapshots() )
@@ -647,7 +654,7 @@ public class DefaultDownloadManager
             throws IndyWorkflowException
     {
 //        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
-        final ContentQuality quality = contentAdvisor.getContentQuality( path );
+        final ContentQuality quality = getQuality( path );
 
         HostedRepository selected = null;
         for ( final ArtifactStore store : stores )
@@ -707,7 +714,7 @@ public class DefaultDownloadManager
             throws IndyWorkflowException
     {
 //        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
-        final ContentQuality quality = contentAdvisor.getContentQuality( path );
+        final ContentQuality quality = getQuality( path );
 
         Transfer transfer = null;
 
@@ -795,7 +802,7 @@ public class DefaultDownloadManager
             throws IndyWorkflowException
     {
 //        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
-        final ContentQuality quality = contentAdvisor.getContentQuality( path );
+        final ContentQuality quality = getQuality( path );
         if ( storeIsSuitableFor( store, quality, op ) )
         {
             return getStorageReference( store, path );
@@ -1044,6 +1051,16 @@ public class DefaultDownloadManager
         {
             result.add( transfer );
         }
+    }
+
+    private ContentQuality getQuality( String path )
+    {
+        final ContentAdvisor advisor = StreamSupport.stream(
+                Spliterators.spliteratorUnknownSize( contentAdvisor.iterator(), Spliterator.ORDERED ), false )
+                                                    .filter( Objects::nonNull )
+                                                    .findFirst()
+                                                    .orElse( null );
+        return advisor == null ? null : advisor.getContentQuality( path );
     }
 
 }

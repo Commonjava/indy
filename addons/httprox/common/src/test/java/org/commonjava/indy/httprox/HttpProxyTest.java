@@ -45,12 +45,14 @@ import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.indy.spi.pkg.ContentAdvisor;
 import org.commonjava.indy.subsys.datafile.DataFileManager;
 import org.commonjava.indy.subsys.datafile.change.DataFileEventManager;
 import org.commonjava.indy.subsys.keycloak.conf.KeycloakConfig;
 import org.commonjava.indy.subsys.template.ScriptEngine;
 import org.commonjava.indy.subsys.template.TemplatingEngine;
 import org.commonjava.indy.test.fixture.core.MockContentAdvisor;
+import org.commonjava.indy.test.fixture.core.MockInstance;
 import org.commonjava.indy.util.MimeTyper;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.galley.auth.MemoryPasswordManager;
@@ -133,7 +135,7 @@ public class HttpProxyTest
         final IndyObjectMapper mapper = new IndyObjectMapper( true );
 
         final DownloadManager downloadManager =
-                new DefaultDownloadManager( storeManager, core.getTransferManager(), core.getLocationExpander(), new MockContentAdvisor() );
+                new DefaultDownloadManager( storeManager, core.getTransferManager(), core.getLocationExpander(), new MockInstance<>( new MockContentAdvisor() ) );
         final ContentManager contentManager = new DefaultContentManager( storeManager, downloadManager, mapper,
                                                                          Collections.<ContentGenerator>emptySet() );
 

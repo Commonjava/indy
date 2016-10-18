@@ -19,12 +19,18 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.concurrent.Executor;
+import java.util.stream.StreamSupport;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
+import javax.enterprise.inject.Any;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import org.commonjava.cdi.util.weft.WeftManaged;
@@ -107,7 +113,8 @@ public class ScheduleManager
     private Scheduler scheduler;
 
     @Inject
-    private ContentAdvisor contentAdvisor;
+    @Any
+    private Instance<ContentAdvisor> contentAdvisor;
 
     @Override
     public void init()
@@ -408,7 +415,12 @@ public class ScheduleManager
         }
 
 //        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
-        final ContentQuality quality = contentAdvisor.getContentQuality( path );
+        final ContentAdvisor advisor = StreamSupport.stream(
+                Spliterators.spliteratorUnknownSize( contentAdvisor.iterator(), Spliterator.ORDERED ), false )
+                                                    .filter( Objects::nonNull )
+                                                    .findFirst()
+                                                    .orElse( null );
+        final ContentQuality quality = advisor == null ? null : advisor.getContentQuality( path );
         if ( quality == null )
         {
             return;
