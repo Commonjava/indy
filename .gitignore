@@ -1,2 +1,16 @@
 Gemfile.lock
 _site
+target
+embedders/*
+
+# eclipse
+.classpath
+.project
+.settings
+
+# idea
+.idea
+*.iml
+*.iws
+*.ipr
+

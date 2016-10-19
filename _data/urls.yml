@@ -1,4 +1,4 @@
-savantUrl: http://repo.maven.apache.org/maven2/org/commonjava/indy/launch/indy-launcher-savant/0.19.2/indy-launcher-savant-0.19.2-launcher.tar.gz
+savantUrl: http://repo.maven.apache.org/maven2/org/commonjava/indy/launch/indy-launcher-savant/1.0.1/indy-launcher-savant-1.0.1-launcher.tar.gz
 centralUrl: http://repo.maven.apache.org/maven2/
 centralProxyUrl: http://localhost:8080/api/remote/central/
 localDeployUrl: http://localhost:8080/api/hosted/local-deployments/

@@ -13,7 +13,7 @@ If you're using Apache Maven to build, you can add the client API to your projec
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-client-core-java</artifactId>
-      <version>0.20.0</version>
+      <version>1.0.1</version>
     </dependency>
 
 Once you have the dependency added to your project, you'll need to setup a new instance of `org.commonjava.indy.client.core.Indy` in order to talk to your Indy server. Something like this should get you started:

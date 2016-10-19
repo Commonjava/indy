@@ -13,7 +13,7 @@ First, [download]({{site.data.urls.savantUrl}}) the Indy savant distribution tar
 
 When the download completes, the following commands will unpack the Indy Savant distribution, change into the unpacked directory, and launch it.
 
-    $ tar -zxvf indy-launcher-savant-0.19.2-launcher.tar.gz
+    $ tar -zxvf indy-launcher-savant-1.0.1-launcher.tar.gz
     $ cd indy
     $ ./bin/indy.sh
 
