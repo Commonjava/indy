@@ -15,6 +15,10 @@
  */
 package org.commonjava.indy.bind.jaxrs;
 
+import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import io.swagger.jaxrs.config.BeanConfig;
+import io.swagger.jaxrs.listing.ApiListingResource;
+import io.swagger.jaxrs.listing.SwaggerSerializers;
 import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.FilterInfo;
@@ -44,14 +48,6 @@ import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.spi.ResteasyDeployment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.wordnik.swagger.jaxrs.config.BeanConfig;
-import com.wordnik.swagger.jaxrs.filter.JaxrsFilter;
-import com.wordnik.swagger.jaxrs.json.JacksonJsonProvider;
-import com.wordnik.swagger.jaxrs.listing.ApiDeclarationProvider;
-import com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON;
-import com.wordnik.swagger.jaxrs.listing.ResourceListingProvider;
-import com.wordnik.swagger.model.SwaggerSerializers;
 
 @ApplicationScoped
 public class IndyDeployment
@@ -148,10 +144,10 @@ public class IndyDeployment
                                                     .addMapping( "/api*" )
                                                     .addMapping( "/api/*" )
                                                     .addMapping( "/api-docs*" )
-                                                    .addMapping( "/api-docs/*" );
+                                                    .addMapping( "/api-docs/*" )
+                .addMapping( "/swagger.json" ).addMapping( "/swagger.yaml" );
 
         final BeanConfig beanConfig = new BeanConfig();
-        beanConfig.setFilterClass( JaxrsFilter.class.getName() );
         beanConfig.setResourcePackage( "org.commonjava.indy" );
         beanConfig.setBasePath( "/" );
         beanConfig.setLicense( "ASLv2" );
@@ -226,9 +222,8 @@ public class IndyDeployment
         final Set<Class<?>> classes = new LinkedHashSet<>();
         classes.addAll( providerClasses );
         classes.addAll( resourceClasses );
-        classes.addAll( Arrays.asList( ApiListingResourceJSON.class, SwaggerSerializers.class ) );
-        classes.addAll( Arrays.asList( JacksonJsonProvider.class, ApiDeclarationProvider.class,
-                                       ResourceListingProvider.class ) );
+        classes.addAll( Arrays.asList( ApiListingResource.class, SwaggerSerializers.class ) );
+        classes.addAll( Arrays.asList( JacksonJsonProvider.class ) );
         return classes;
     }
 

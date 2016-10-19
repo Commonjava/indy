@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import org.xnio.ChannelListener;
 import org.xnio.conduits.ConduitStreamSinkChannel;
 import org.xnio.conduits.ConduitStreamSourceChannel;
-import scala.App;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

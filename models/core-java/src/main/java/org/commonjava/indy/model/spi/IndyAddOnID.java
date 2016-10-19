@@ -15,11 +15,11 @@
  */
 package org.commonjava.indy.model.spi;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import com.wordnik.swagger.annotations.ApiModel;
-import com.wordnik.swagger.annotations.ApiModelProperty;
 
 @ApiModel( description = "Description of an add-on" )
 public final class IndyAddOnID

@@ -21,10 +21,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import org.commonjava.indy.IndyException;
-
-import com.wordnik.swagger.annotations.ApiModel;
-import com.wordnik.swagger.annotations.ApiModelProperty;
 
 @ApiModel( description = "Configuration for replicating the content stores on a remote Indy system" )
 public class ReplicationDTO

@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.model.spi;
 
-import com.wordnik.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModel;
 
 /**
  * Describes a "route" in the UI, mainly useful for add-ons to register UI additions. This specifies a route (path) and template href, which corresponds

@@ -16,9 +16,7 @@
 package org.commonjava.indy.model.core;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.wordnik.swagger.annotations.ApiModel;
 
-@ApiModel( description = "Hosts artifact content on the local system", parent = ArtifactStore.class )
 public abstract class AbstractRepository
     extends ArtifactStore
 {
