@@ -120,7 +120,7 @@ Now, let's try the same example using Java:
         "commonjava-4.pom";
 
     final String uploadPath = "/org/commonjava/indy/indy-parent/" + 
-        "0.20.0/indy-parent-0.20.0.pom";
+        "0.20.0/indy-parent-1.0.1.pom";
     
     IndyFoloContentClientModule content = new IndyFoloContentClientModule();
     IndyFoloAdminClientModule admin = new IndyFoloAdminClientModule();

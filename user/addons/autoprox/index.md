@@ -186,11 +186,11 @@ Most of the real work done by Autoprox is automatic, and decorates existing func
 
 In most deployments, it won't be all that simple to login to the Indy server and inspect your Autoprox templates directly. While you can get your own copy - and even branch and modify them - if you're using the [Revisions Data-Versioning Add-On](revisions-addon.html), it's often simpler to just go look at the templates (aka rules) through your Indy web UI's Autoprox Rule Browser, located under the `More > AutoProx Rules` menu at the top.
 
-[![AutoProx Rule Browser Menu](grabs/autoprox-rule-browser-menu.png)](grabs/autoprox-rule-browser-menu.png)
+[![AutoProx Rule Browser Menu]({{ site.baseurl }}/user/grabs/autoprox-rule-browser-menu.png)]({{ site.baseurl }}/user/grabs/autoprox-rule-browser-menu.png)
 
 The rule browser gives you a selectable view of all the templates available on your Indy instance. Currently, this feature is restricted to read-only access, but a full CRUD-enabled version is [planned](https://github.com/Commonjava/indy/issues/120).
 
-[![AutoProx Rule Browser](grabs/autoprox-rule-browser.png)](grabs/autoprox-rule-browser.png)
+[![AutoProx Rule Browser]({{ site.baseurl }}/user/grabs/autoprox-rule-browser.png)]({{ site.baseurl }}/user/grabs/autoprox-rule-browser.png)
 
 #### Autoprox Calculator
 
@@ -198,22 +198,22 @@ Whenever you have string-matching of any sort, it's a good idea to have some way
 
 To help users understand how their templates are actually used, Autoprox adds a calculator function to the web UI. The Autoprox Calculator is located under `More > AutoProx Calculator` menu at the top.
 
-[![AutoProx Calculator Menu](grabs/autoprox-calc-menu.png)](grabs/autoprox-calc-menu.png)
+[![AutoProx Calculator Menu]({{ site.baseurl }}/user/grabs/autoprox-calc-menu.png)]({{ site.baseurl }}/user/grabs/autoprox-calc-menu.png)
 
 The first thing you'll be presented with in this calculator is its control panel, on the right. You can select what type of store you want to test, and enter the name you want to check.
 
-[![AutoProx Calculator Control Panel](grabs/autoprox-calc-ctl.png)](grabs/autoprox-calc-ctl.png)
+[![AutoProx Calculator Control Panel]({{ site.baseurl }}/user/grabs/autoprox-calc-ctl.png)]({{ site.baseurl }}/user/grabs/autoprox-calc-ctl.png)
 
 
 Having entered this information, the next step is to click `Calculate`. If one of your templates matched on the name given and returned a non-null result, that result will be displayed. Otherwise, you'll get a message saying `Nothing was created`.
 
 If you're testing group creation, you might see something like this:
 
-[![AutoProx Calculator Collapsed Group Result](grabs/autoprox-calc-result-collapsed.png)](grabs/autoprox-calc-result-collapsed.png)
+[![AutoProx Calculator Collapsed Group Result]({{ site.baseurl }}/user/grabs/autoprox-calc-result-collapsed.png)]({{ site.baseurl }}/user/grabs/autoprox-calc-result-collapsed.png)
 
 If the creation of that group would trigger any further groups or repositories to be created, those are listed at the bottom. If you want to see details about these additional stores, you can click on each of these to expand them:
 
-[![AutoProx Calculator Expanded Group Result](grabs/autoprox-calc-result-expanded.png)](grabs/autoprox-calc-result-collapsed.png)
+[![AutoProx Calculator Expanded Group Result]({{ site.baseurl }}/user/grabs/autoprox-calc-result-expanded.png)]({{ site.baseurl }}/user/grabs/autoprox-calc-result-collapsed.png)
 
 From here, you have the option to create the resulting structure using the `Create` button. This functions as a sort of save button for the tested store name, and will have the same effect as if you had simply started using a URL to that store name. Autoprox will create the stores, and they will be available for immediate use.
 
