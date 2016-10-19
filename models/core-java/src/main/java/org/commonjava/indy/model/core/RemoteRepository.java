@@ -19,12 +19,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.wordnik.swagger.annotations.ApiModel;
-import com.wordnik.swagger.annotations.ApiModelProperty;
 
 @ApiModel( description = "Proxy to a remote server's artifact content, with local cache storage.",
            parent = ArtifactStore.class )

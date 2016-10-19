@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.model.core;
 
-import com.wordnik.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModel;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -15,11 +15,11 @@
  */
 package org.commonjava.indy.model.core.dto;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-
-import com.wordnik.swagger.annotations.ApiModel;
 
 /**
  * DTO used to wrap a listing of available {@link EndpointView} instances (read: artifact-stores) installed in the system.

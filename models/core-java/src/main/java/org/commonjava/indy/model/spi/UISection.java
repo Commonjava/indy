@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.model.spi;
 
-import com.wordnik.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModel;
 
 /**
  * Describes a section of the UI, to allow add-ons to auto-register UI additions. This corresponds to a menu title (name) and a UI route (path) for

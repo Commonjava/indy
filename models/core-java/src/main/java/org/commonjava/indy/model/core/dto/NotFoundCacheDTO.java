@@ -19,10 +19,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import org.commonjava.indy.model.core.StoreKey;
-
-import com.wordnik.swagger.annotations.ApiModel;
-import com.wordnik.swagger.annotations.ApiModelProperty;
 
 @ApiModel( description = "Listing of artifact store paths that could not be retrieved.", value = "not-found cache" )
 public class NotFoundCacheDTO

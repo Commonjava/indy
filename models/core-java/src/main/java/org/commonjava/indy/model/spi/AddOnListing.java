@@ -15,10 +15,10 @@
  */
 package org.commonjava.indy.model.spi;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.Collections;
 import java.util.List;
-
-import com.wordnik.swagger.annotations.ApiModel;
 
 /**
  * DTO used to wrap a listing of available add-ons installed in the system. Wrapper embeds these id's in an "items" list, to work around a known

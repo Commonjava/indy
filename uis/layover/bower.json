@@ -1,0 +1,23 @@
+{
+  "name": "indy-ui-layover",
+  "description": "Indy's Main UI",
+  "version": "1.0.0",
+  "homepage": "https://github.com/Commonjava/indy",
+  "license": "ASLv2",
+  "private": true,
+  "dependencies": {
+    "angular": "1.5.8",
+    "angular-bootstrap": "0.13.x",
+    "angular-patternfly": "3.9.0",
+    "angular-route": "1.5.8",
+    "angular-loader": "1.5.8",
+    "angular-resource": "1.5.8",
+    "html5-boilerplate": "~4.3.0",
+    "ngDialog": "~0.6.4",
+    "components-font-awesome": "4.2.0",
+    "bootstrap": "3.3.x",
+    "keycloak": "1.9.8",
+    "swagger-ui": "2.2.x"
+  },
+  "appPath": "app"
+}

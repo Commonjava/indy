@@ -22,8 +22,6 @@ import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 
-import javax.annotation.Nonnull;
-
 /**
  * Created by jdcasey on 3/8/16.
  */
@@ -46,7 +44,7 @@ public class AffectedStoreRecordKey
     @Field
     private long index = System.currentTimeMillis();
 
-    public AffectedStoreRecordKey( @Nonnull TrackingKey key, @Nonnull StoreKey storeKey, @Nonnull String path, @Nonnull StoreEffect effect )
+    public AffectedStoreRecordKey( TrackingKey key, StoreKey storeKey, String path, StoreEffect effect )
     {
         this.key = key;
         this.storeKey = storeKey;
