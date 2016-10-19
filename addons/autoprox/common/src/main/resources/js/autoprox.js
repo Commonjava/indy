@@ -46,6 +46,9 @@ indyAddons.factory('AutoProxCalculatorSvc', ['$resource', function($resource){
 indyServices.factory('AutoProxCatalogSvc', ['$resource', function($resource){
   return $resource(appPath('/api/autoprox/catalog'), {}, {
     query: {method:'GET', params:{}, isArray:false},
+    remove: {method:'DELETE', url: '/api/autoprox/catalog/:name'},
+    create: {method:'POST'},
+    update: {method:'PUT', url: '/api/autoprox/catalog/:name'}
   });
 }]);
 
@@ -199,8 +202,8 @@ indyAddons.controller('AutoProxCalcConstituentCtl', ['$scope', 'StoreUtilSvc', f
   $scope.storeUtils = StoreUtilSvc;
 }]);
 
-indyAddons.controller( 'AutoProxRulesCtl', ['$scope', '$routeParams', '$location', 'AutoProxCatalogSvc', 'AutoProxUtilsSvc', 'StoreUtilSvc',
-                                                        function($scope, $routeParams, $location, AutoProxCatalogSvc, AutoProxUtilsSvc, StoreUtilSvc){
+indyAddons.controller( 'AutoProxRulesCtl', ['$scope', '$routeParams', '$location', '$window', 'AutoProxCatalogSvc', 'AutoProxUtilsSvc', 'StoreUtilSvc',
+                                                        function($scope, $routeParams, $location, $window, AutoProxCatalogSvc, AutoProxUtilsSvc, StoreUtilSvc){
   
   $scope.currentName = $routeParams.name;
   
@@ -227,6 +230,13 @@ indyAddons.controller( 'AutoProxRulesCtl', ['$scope', '$routeParams', '$location
   $scope.showRule = function(){
     $location.path(AutoProxUtilsSvc.viewRulePath($scope.currentName));
   };
+
+  $scope.deleteRule = function(){
+    if($window.confirm('Are you sure to delete this rule?')){
+      AutoProxCatalogSvc.remove({name: $scope.currentName});
+      $location.path("/autoprox/rules");
+    }
+  }
   
   $scope.storeUtils = StoreUtilSvc;
 }]);
