@@ -43,20 +43,20 @@
     </appender>
 
   <logger name="org.jboss" level="ERROR"/>
-  <logger name="org.jboss.resteasy" level="DEBUG"/>
+  <!-- <logger name="org.jboss.resteasy" level="DEBUG"/> -->
   
   <!--
   <logger name="org.commonjava" level="DEBUG" />
   -->
   
-  <logger name="org.commonjava" level="INFO" />
+  <logger name="org.commonjava" level="WARN" />
   <logger name="org.commonjava.indy.action.IndyLifecycleManager" level="INFO" />
   <logger name="org.commonjava.indy.subsys.infinispan.CacheProducer" level="INFO" />
 
   <!-- <logger name="org.commonjava.maven.galley.transport" level="DEBUG" /> -->
 
   <root level="INFO">
-    <appender-ref ref="STDOUT" />
+    <!-- <appender-ref ref="STDOUT" /> -->
     <appender-ref ref="FILE" />
   </root>
   

@@ -92,7 +92,7 @@ class Launcher
       
       mv( uibase, "#{uibase}.bak" )
       mkdir(uibase)
-      Dir["#{BASEDIR}/uis/layover/src/main/js/app/*"].each{|file|
+      Dir["#{BASEDIR}/uis/layover/app/*"].each{|file|
         fname = File.basename(file)
         ln_s( file, File.join(uibase, fname) )
       }
