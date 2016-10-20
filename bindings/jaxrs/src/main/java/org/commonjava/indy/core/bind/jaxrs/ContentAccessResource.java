@@ -42,7 +42,7 @@ import javax.ws.rs.core.UriInfo;
 
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 
-@Api( value = "/<type>/<name>",
+@Api( value = "Content Access and Storage",
       description = "Handles retrieval and management of file/artifact content. This is the main point of access for most users." )
 @Path( "/api/{type: (hosted|group|remote)}/{name}" )
 public class ContentAccessResource

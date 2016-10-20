@@ -42,7 +42,7 @@ import org.commonjava.indy.util.ApplicationContent;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@Api( description = "REST resource that manages the not-found cache", value = "/api/nfc" )
+@Api( description = "REST resource that manages the not-found cache", value = "Not-Found Cache" )
 @Path( "/api/nfc" )
 public class NfcResource
     implements IndyResources
