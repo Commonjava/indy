@@ -44,6 +44,14 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-folo-model-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-content-index</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-koji-client-java</artifactId>
     </dependency>
     <dependency>
