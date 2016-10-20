@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="chrome=1" />
     <meta name="description" content="{{page.tagline}}" />
 
-    <link rel="stylesheet" type="text/css" media="screen" href="{{base}}/stylesheets/stylesheet.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="{{site.baseurl}}/stylesheets/stylesheet.css">
 
     <title>{{site.title}}</title>
   </head>
@@ -20,7 +20,7 @@
             <a title="Back to Commonjava Projects Page" id="home_banner" href="http://commonjava.github.io/">Home</a>
             <a id="forkme_banner" href="{{site.github.repository_url}}">View on GitHub</a>
           </div>
-          <div id="project_title" class="header_text"><a href="{{base}}">Indy</a></div>
+          <div id="project_title" class="header_text"><a href="{{site.baseurl}}">Indy</a></div>
           <div id="project_tagline" class="header_text">An Artifact Management Platform</div>
         </header>
     </div>
@@ -29,10 +29,10 @@
         <div id="navlinks_inner" class="inner">
           <ul id="navlinks">
             {% for link in site.data.navlinks %}
-              <li class="navlink"><a href="{{base}}/{{link.url}}">{{link.name}}</a></li>
+              <li class="navlink"><a href="{{site.baseurl}}/{{link.url}}">{{link.name}}</a></li>
               <!--
               {% if link.nav != page.nav %}
-              <span class="headerlink inactive"><a href="{{base}}/{{link.url}}">{{link.name}}</a></span>
+              <span class="headerlink inactive"><a href="{{site.baseurl}}/{{link.url}}">{{link.name}}</a></span>
               {% else %}
               <span class="headerlink active">{{link.name}}</span>
               {% endif %}
@@ -61,4 +61,3 @@
       <h3 id="pagetitle" class="inner">{{page.title}}</h3>
     </div>
     {% endif %}
-
