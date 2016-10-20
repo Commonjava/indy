@@ -40,7 +40,7 @@ import javax.ws.rs.core.Response;
 
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
 
-@Api( value = "Schedules / Expirations",
+@Api( value = "Schedules and Expirations",
       description = "Retrieve and manipulate scheduled expirations for various parts of Indy" )
 @Path( "/api/admin/schedule" )
 @Produces( ApplicationContent.application_json )

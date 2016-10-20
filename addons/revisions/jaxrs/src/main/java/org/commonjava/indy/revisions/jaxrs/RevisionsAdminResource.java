@@ -15,20 +15,10 @@
  */
 package org.commonjava.indy.revisions.jaxrs;
 
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
-
-import java.util.List;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.ResponseUtils;
@@ -39,12 +29,24 @@ import org.commonjava.indy.util.ApplicationContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
+import java.util.List;
 
+import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
+import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
+
+@Api( "Data-Directory Revisions" )
 @Path( "/api/admin/revisions" )
 @ApplicationScoped
 public class RevisionsAdminResource
-    implements IndyResources
+        implements IndyResources
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -55,6 +57,9 @@ public class RevisionsAdminResource
     @Inject
     private ObjectMapper objectMapper;
 
+    @ApiOperation(
+            "Pull from the configured remote Git repository, updating the Indy data directory with files (merged according to configuration in the [revisions] section)" )
+    @ApiResponse( code = 200, message = "Pull complete" )
     @Path( "/data/pull" )
     @GET
     public Response pullDataGitUpdates()
@@ -65,19 +70,20 @@ public class RevisionsAdminResource
             revisionsManager.pullDataUpdates();
 
             // FIXME: Return some status
-            response = Response.ok()
-                               .build();
+            response = Response.ok().build();
         }
         catch ( final GitSubsystemException e )
         {
             logger.error( "Failed to pull git updates for data dir: " + e.getMessage(), e );
-            response =
-                ResponseUtils.formatResponse( e, "Failed to pull git updates for data dir: " + e.getMessage() );
+            response = ResponseUtils.formatResponse( e, "Failed to pull git updates for data dir: " + e.getMessage() );
         }
 
         return response;
     }
 
+    @ApiOperation(
+            "Push Indy data directory content to the configured remote Git repository (if configured in the [revisions] section)" )
+    @ApiResponse( code = 200, message = "Push complete, or not configured" )
     @Path( "/data/push" )
     @GET
     public Response pushDataGitUpdates()
@@ -88,19 +94,20 @@ public class RevisionsAdminResource
             revisionsManager.pushDataUpdates();
 
             // FIXME: Return some status
-            response = Response.ok()
-                               .build();
+            response = Response.ok().build();
         }
         catch ( final GitSubsystemException e )
         {
             logger.error( "Failed to push git updates for data dir: " + e.getMessage(), e );
-            response =
-                ResponseUtils.formatResponse( e, "Failed to push git updates for data dir: " + e.getMessage() );
+            response = ResponseUtils.formatResponse( e, "Failed to push git updates for data dir: " + e.getMessage() );
         }
 
         return response;
     }
 
+    @ApiOperation(
+            "Retrieve the changelog for the Indy data directory content with the specified path, start-index, and number of results" )
+    @ApiResponse( code = 200, message = "JSON containing changelog entries", response = ChangeSummaryDTO.class )
     @Path( "/data/changelog{path: /.*}" )
     @GET
     @Produces( ApplicationContent.application_json )

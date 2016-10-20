@@ -15,19 +15,11 @@
  */
 package org.commonjava.indy.revisions.jaxrs;
 
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
-
-import java.util.Date;
-import java.util.List;
-
-import javax.inject.Inject;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.model.core.StoreKey;
@@ -38,11 +30,21 @@ import org.commonjava.indy.subsys.git.GitSubsystemException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.inject.Inject;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import java.util.Date;
+import java.util.List;
+
+import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
+import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 
 @Path( "/api/revisions/changelog" )
 public class ChangelogResource
-    implements IndyResources
+        implements IndyResources
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -55,17 +57,21 @@ public class ChangelogResource
     @Inject
     private ObjectMapper objectMapper;
 
+    @ApiOperation(
+            "Retrieve the changelog for the Indy group/repository definition with the start-index and number of results" )
+    @ApiResponses( { @ApiResponse( code = 200, message = "JSON containing changelog entries",
+                                   response = ChangeSummaryDTO.class ), @ApiResponse( code = 400,
+                                                                                      message = "Requested group/repository type is not one of: {remote, hosted, group}" ) } )
     @Path( "/store/{type}/{name}" )
-    public Response getStoreChangelog( final @PathParam( "type" ) String t,
-                                       @PathParam( "name" ) final String storeName, @QueryParam( "start" ) int start,
-                                       @QueryParam( "count" ) int count )
+    public Response getStoreChangelog(
+            @ApiParam( allowableValues = "hosted,group,remote", required = true ) final @PathParam( "type" ) String t,
+            @PathParam( "name" ) final String storeName, @QueryParam( "start" ) int start,
+            @QueryParam( "count" ) int count )
     {
         final StoreType storeType = StoreType.get( t );
         if ( storeType == null )
         {
-            return Response.status( Status.BAD_REQUEST )
-                           .entity( "Invalid store type: '" + t + "'" )
-                           .build();
+            return Response.status( Status.BAD_REQUEST ).entity( "Invalid store type: '" + t + "'" ).build();
         }
 
         final StoreKey key = new StoreKey( storeType, storeName );
@@ -91,7 +97,7 @@ public class ChangelogResource
         catch ( final GitSubsystemException e )
         {
             final String message =
-                String.format( "Failed to lookup changelog for: %s. Reason: %s", key, e.getMessage() );
+                    String.format( "Failed to lookup changelog for: %s. Reason: %s", key, e.getMessage() );
             logger.error( message, e );
 
             response = formatResponse( e );
