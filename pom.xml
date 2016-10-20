@@ -65,8 +65,8 @@
     <webdavVersion>3.2.1</webdavVersion>
     <partylineVersion>1.9-SNAPSHOT</partylineVersion>
     <jhttpcVersion>1.3</jhttpcVersion>
-    <kojijiVersion>1.1</kojijiVersion>
-    <rwxVersion>1.1-SNAPSHOT</rwxVersion>
+    <kojijiVersion>1.2</kojijiVersion>
+    <rwxVersion>1.1</rwxVersion>
     <weftVersion>1.2</weftVersion>
     
     <!-- <enforceBestPractices>false</enforceBestPractices> -->
