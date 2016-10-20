@@ -19,6 +19,11 @@ import static org.commonjava.indy.util.ApplicationContent.application_indy_star_
 import static org.commonjava.indy.util.ApplicationContent.application_json;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
@@ -48,6 +53,7 @@ import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponse
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
 
+@Api( value="Content Promotion", description = "Promote content from a source repository to a target repository or group." )
 @Path( "/api/promotion" )
 @Produces( { application_json, application_indy_star_json } )
 public class PromoteResource
@@ -65,6 +71,13 @@ public class PromoteResource
     @Inject
     private SecurityManager securityManager;
 
+    @ApiOperation( "Promote a source repository into the membership of a target group (subject to validation)." )
+    @ApiResponse( code = 200, message = "Promotion operation finished (consult response content for success/failure).",
+                  response = GroupPromoteResult.class )
+    @ApiImplicitParam( name = "body", paramType = "body",
+                       value = "JSON request specifying source and target, with other configuration options",
+                       allowMultiple = false, required = true,
+                       dataType = "org.commonjava.indy.promote.model.GroupPromoteRequest" )
     @Path( "/groups/promote" )
     @POST
     @Consumes( ApplicationContent.application_json )
@@ -87,6 +100,12 @@ public class PromoteResource
         return null;
     }
 
+    @ApiOperation( "Rollback (remove) a previously promoted source repository from the membership of a target group." )
+    @ApiResponse( code=200, message = "Promotion operation finished (consult response content for success/failure).", response=GroupPromoteResult.class )
+    @ApiImplicitParam( name = "body", paramType = "body",
+                       value = "JSON result from previous call, specifying source and target, with other configuration options",
+                       allowMultiple = false, required = true,
+                       dataType = "org.commonjava.indy.promote.model.GroupPromoteResult" )
     @Path( "/groups/rollback" )
     @POST
     @Consumes( ApplicationContent.application_json )
@@ -108,6 +127,12 @@ public class PromoteResource
         return null;
     }
 
+    @ApiOperation( "Promote paths from a source repository into a target repository/group (subject to validation)." )
+    @ApiResponse( code=200, message = "Promotion operation finished (consult response content for success/failure).", response=PathsPromoteResult.class )
+    @ApiImplicitParam( name = "body", paramType = "body",
+                       value = "JSON request specifying source and target, with other configuration options",
+                       allowMultiple = false, required = true,
+                       dataType = "org.commonjava.indy.promote.model.PathsPromoteRequest" )
     @Path( "/paths/promote" )
     @POST
     @Consumes( ApplicationContent.application_json )
@@ -147,6 +172,12 @@ public class PromoteResource
         return response;
     }
 
+    @ApiOperation( "RESUME promotion of paths from a source repository into a target repository/group (subject to validation), presumably after a previous failure condition has been corrected." )
+    @ApiResponse( code=200, message = "Promotion operation finished (consult response content for success/failure).", response=PathsPromoteResult.class )
+    @ApiImplicitParam( name = "body", paramType = "body",
+                       value = "JSON result from previous attempt, specifying source and target, with other configuration options",
+                       allowMultiple = false, required = true,
+                       dataType = "org.commonjava.indy.promote.model.PathsPromoteResult" )
     @Path( "/paths/resume" )
     @POST
     @Consumes( ApplicationContent.application_json )
@@ -184,6 +215,12 @@ public class PromoteResource
         return response;
     }
 
+    @ApiOperation( "Rollback promotion of any completed paths to a source repository from a target repository/group." )
+    @ApiResponse( code=200, message = "Promotion operation finished (consult response content for success/failure).", response=PathsPromoteResult.class )
+    @ApiImplicitParam( name = "body", paramType = "body",
+                       value = "JSON result from previous attempt, specifying source and target, with other configuration options",
+                       allowMultiple = false, required = true,
+                       dataType = "org.commonjava.indy.promote.model.PathsPromoteResult" )
     @Path( "/paths/rollback" )
     @POST
     @Consumes( ApplicationContent.application_json )

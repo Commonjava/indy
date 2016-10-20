@@ -15,6 +15,8 @@
  */
 package org.commonjava.indy.promote.model;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * Contains the result of a promotion attempt. If the promotion is a success, the pending paths and error will be <b>null</b>. Otherwise, these are
  * populated to support the resume feature (for transient or correctable errors).
@@ -25,10 +27,13 @@ package org.commonjava.indy.promote.model;
 public class GroupPromoteResult
 {
 
+    @ApiModelProperty( "Original request" )
     private GroupPromoteRequest request;
 
+    @ApiModelProperty( "Result of validation rule executions, if applicable" )
     private ValidationResult validations;
 
+    @ApiModelProperty( "Error message, if promomotion failed" )
     private String error;
 
     public GroupPromoteResult()

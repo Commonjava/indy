@@ -15,6 +15,8 @@
  */
 package org.commonjava.indy.promote.model;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import java.util.Collections;
 import java.util.Set;
 
@@ -28,16 +30,22 @@ import java.util.Set;
 public class PathsPromoteResult
 {
 
+    @ApiModelProperty( "Original request (useful for resuming promotion after an error has been corrected)" )
     private PathsPromoteRequest request;
 
+    @ApiModelProperty( value="List of paths that could NOT be promoted, in the event of an error" )
     private Set<String> pendingPaths;
 
+    @ApiModelProperty( "List of paths that were successfully promoted" )
     private Set<String> completedPaths;
 
+    @ApiModelProperty( "List of paths that were skipped (path already exists in target location)" )
     private Set<String> skippedPaths;
 
+    @ApiModelProperty( "Result of validation rule executions, if applicable" )
     private ValidationResult validations;
 
+    @ApiModelProperty( "Error message, if promomotion failed" )
     private String error;
 
     public PathsPromoteResult()

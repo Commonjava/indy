@@ -21,6 +21,7 @@ import static org.apache.commons.lang.StringUtils.join;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -109,6 +110,11 @@ public class RevisionsManager
 
     public void onLifecycleEvent( @Observes final IndyLifecycleEvent event )
     {
+        if ( !revisionsConfig.isEnabled() )
+        {
+            return;
+        }
+
         if ( IndyLifecycleEvent.Type.started == event.getType() )
         {
             started = true;
@@ -135,6 +141,11 @@ public class RevisionsManager
 
     public void onDataFileEvent( @Observes final DataFileEvent event )
     {
+        if ( !revisionsConfig.isEnabled() )
+        {
+            return;
+        }
+
         if ( !started )
         {
             logger.debug( "Indy system is not marked as started. Skipping data file events in revisions manager." );
@@ -171,6 +182,11 @@ public class RevisionsManager
     public void pullDataUpdates()
         throws GitSubsystemException
     {
+        if ( !revisionsConfig.isEnabled() )
+        {
+            return;
+        }
+
         dataFileGit.pullUpdates( revisionsConfig.getConflictStrategy() );
 
         // FIXME: fire events to signal data owners to reload...
@@ -180,6 +196,11 @@ public class RevisionsManager
     public void pushDataUpdates()
         throws GitSubsystemException
     {
+        if ( !revisionsConfig.isEnabled() )
+        {
+            return;
+        }
+
         dataFileGit.pushUpdates();
         // FIXME: Return some sort of status
     }
@@ -187,6 +208,11 @@ public class RevisionsManager
     public List<ChangeSummary> getDataChangeLog( final StoreKey key, final int start, final int count )
         throws GitSubsystemException
     {
+        if ( !revisionsConfig.isEnabled() )
+        {
+            return Collections.emptyList();
+        }
+
         final DataFile dataFile = storeManager.getDataFile( key );
         return dataFileGit.getChangelog( dataFile.getDetachedFile(), start, count );
     }
@@ -194,6 +220,11 @@ public class RevisionsManager
     public List<ChangeSummary> getDataChangeLog( String path, final int start, final int length )
         throws GitSubsystemException
     {
+        if ( !revisionsConfig.isEnabled() )
+        {
+            return Collections.emptyList();
+        }
+
         final File basedir = dataFileManager.getDetachedDataBasedir();
         if ( new File( path ).isAbsolute() )
         {
@@ -224,6 +255,11 @@ public class RevisionsManager
     public List<ChangeSummary> getDataChangeLog( final File f, final int start, final int count )
         throws GitSubsystemException
     {
+        if ( !revisionsConfig.isEnabled() )
+        {
+            return Collections.emptyList();
+        }
+
         return dataFileGit.getChangelog( f, start, count );
     }
 

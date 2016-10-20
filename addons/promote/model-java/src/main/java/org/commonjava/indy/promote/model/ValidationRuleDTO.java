@@ -15,12 +15,15 @@
  */
 package org.commonjava.indy.promote.model;
 
+import io.swagger.annotations.ApiModelProperty;
 
 public class ValidationRuleDTO
 {
 
+    @ApiModelProperty(value="Script name for this rule, used for reference in rule-set specifications", required=true)
     private String name;
 
+    @ApiModelProperty( value="Content of validation script", required=true )
     private String spec;
 
     public ValidationRuleDTO()

@@ -15,6 +15,8 @@
  */
 package org.commonjava.indy.promote.model;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,10 +25,13 @@ import java.util.Map;
  */
 public class ValidationResult
 {
+    @ApiModelProperty( value="Whether validation succeeded", required=true )
     private boolean valid = true;
 
+    @ApiModelProperty( "Mapping of rule name to error message for any failing validations" )
     private Map<String, String> validatorErrors = new HashMap<>();
 
+    @ApiModelProperty( "Name of validation rule-set applied" )
     private String ruleSet;
 
     public void addValidatorError( String validatorName, String message )

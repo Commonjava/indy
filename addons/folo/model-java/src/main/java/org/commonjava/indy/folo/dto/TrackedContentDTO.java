@@ -17,11 +17,13 @@ package org.commonjava.indy.folo.dto;
 
 import java.util.Set;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.commonjava.indy.folo.model.TrackingKey;
 
 public class TrackedContentDTO
 {
 
+    @ApiModelProperty( "Session key (specified by the user) to track this record." )
     private TrackingKey key;
 
     private Set<TrackedContentEntryDTO> uploads;

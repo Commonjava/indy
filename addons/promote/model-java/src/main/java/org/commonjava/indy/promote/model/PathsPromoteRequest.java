@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.promote.model;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.commonjava.indy.model.core.StoreKey;
 
 import java.util.Arrays;
@@ -33,14 +34,19 @@ public class PathsPromoteRequest
         implements PromoteRequest<PathsPromoteRequest>
 {
 
+    @ApiModelProperty( value="Indy store/repository key to promote FROM (formatted as: '{remote,hosted,group}:name')", required=true )
     private StoreKey source;
 
+    @ApiModelProperty( value="Indy store/repository key to promote TO (formatted as: '{remote,hosted,group}:name')", required=true )
     private StoreKey target;
 
+    @ApiModelProperty( "Set of paths (Strings) to promote, or ALL if no paths are specified" )
     private Set<String> paths;
 
+    @ApiModelProperty( "Whether to delete content from source repository once it has been promoted" )
     private boolean purgeSource;
 
+    @ApiModelProperty( value="Run validations, verify source and target locations ONLY, do not modify anything!" )
     private boolean dryRun;
 
     public PathsPromoteRequest()

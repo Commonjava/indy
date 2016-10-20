@@ -15,9 +15,13 @@
  */
 package org.commonjava.indy.folo.bind.jaxrs;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
-import org.commonjava.indy.bind.jaxrs.util.ResponseUtils;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.folo.ctl.FoloAdminController;
 import org.commonjava.indy.folo.data.FoloContentException;
@@ -46,10 +50,12 @@ import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
 import static org.commonjava.indy.util.ApplicationContent.application_zip;
 
+@Api( value = "FOLO Tracking Record Access",
+      description = "Manages FOLO tracking records." )
 @Path( "/api/folo/admin" )
 @ApplicationScoped
 public class FoloAdminResource
-    implements IndyResources
+        implements IndyResources
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -63,20 +69,24 @@ public class FoloAdminResource
     @Inject
     private ContentController contentController;
 
+    @ApiOperation(
+            "Retrieve the content referenced in a tracking record as a ZIP-compressed Maven repository directory." )
+    @ApiResponses( { @ApiResponse( code = 200, response = File.class, message = "ZIP repository content" ),
+                           @ApiResponse( code = 404, message = "No such tracking record" ) } )
     @Path( "/{id}/repo/zip" )
     @GET
     @Produces( application_zip )
-    public File getZipRepository( @PathParam( "id" ) String id )
+    public File getZipRepository( @ApiParam( "User-assigned tracking session key" ) @PathParam( "id" ) String id )
     {
         try
         {
             File zip = controller.renderRepositoryZip( id );
             return zip;
-//
-//            final Response.ResponseBuilder builder = Response.ok( zip );
-//            return setInfoHeaders( builder, zip, false, application_zip ).build();
+            //
+            //            final Response.ResponseBuilder builder = Response.ok( zip );
+            //            return setInfoHeaders( builder, zip, false, application_zip ).build();
         }
-        catch ( IndyWorkflowException e )
+        catch ( IndyWorkflowException e)
         {
             throwError( e );
         }
@@ -84,28 +94,29 @@ public class FoloAdminResource
         return null;
     }
 
+    @ApiOperation( "Alias of /{id}/record, returns the tracking record for the specified key" )
+    @ApiResponses( { @ApiResponse( code = 404, message = "No such tracking record exists." ),
+                           @ApiResponse( code = 200, message = "Tracking record",
+                                         response = TrackedContentDTO.class ), } )
     @Path( "/{id}/report" )
     @GET
-    public Response getReport( final @PathParam( "id" ) String id, @Context final UriInfo uriInfo )
+    public Response getReport( @ApiParam( "User-assigned tracking session key" ) final @PathParam( "id" ) String id,
+                               @Context final UriInfo uriInfo )
     {
         Response response;
         try
         {
             //            final String baseUrl = uriInfo.getAbsolutePathBuilder()
-            final String baseUrl = uriInfo.getBaseUriBuilder()
-                                          .path( "api" )
-                                          .build()
-                                          .toString();
+            final String baseUrl = uriInfo.getBaseUriBuilder().path( "api" ).build().toString();
             //                                          .path( ContentAccessHandler.class )
             //                                          .build( st.singularEndpointName(), name )
             //                                          .toString();
-            
+
             final TrackedContentDTO report = controller.renderReport( id, baseUrl );
 
             if ( report == null )
             {
-                response = Response.status( Status.NOT_FOUND )
-                                   .build();
+                response = Response.status( Status.NOT_FOUND ).build();
             }
             else
             {
@@ -114,9 +125,8 @@ public class FoloAdminResource
         }
         catch ( final IndyWorkflowException e )
         {
-            logger.error( String.format( "Failed to serialize tracking report for: %s. Reason: %s", id,
-                                         e.getMessage() ),
-                          e );
+            logger.error(
+                    String.format( "Failed to serialize tracking report for: %s. Reason: %s", id, e.getMessage() ), e );
 
             response = formatResponse( e );
         }
@@ -124,24 +134,35 @@ public class FoloAdminResource
         return response;
     }
 
+    @ApiOperation(
+            "Explicitly setup a new tracking record for the specified key, to prevent 404 if the record is never used." )
+    @ApiResponses( { @ApiResponse( code = 201, message = "Tracking record was created",
+                                   response = TrackedContentDTO.class ), } )
     @Path( "/{id}/record" )
     @PUT
-    public Response initRecord( final @PathParam( "id" ) String id, @Context final UriInfo uriInfo )
+    public Response initRecord( @ApiParam( "User-assigned tracking session key" ) final @PathParam( "id" ) String id,
+                                @Context final UriInfo uriInfo )
     {
-        Response.ResponseBuilder rb = Response.created( uriInfo.getRequestUri() ).entity( "Tracking records no longer require initialization." );
-        ResponseUtils.markDeprecated( rb, "NONE" );
+        Response.ResponseBuilder rb = Response.created( uriInfo.getRequestUri() );
+        // [jdcasey] I think there are still use cases where this makes sense...un-deprecating it.
+        //                                              .entity( "Tracking records no longer require initialization." );
+        //        ResponseUtils.markDeprecated( rb, "NONE" );
         return rb.build();
     }
 
+    @ApiOperation( "Seal the tracking record for the specified key, to prevent further content logging" )
+    @ApiResponses( { @ApiResponse( code = 404, message = "No such tracking record exists." ),
+                           @ApiResponse( code = 200, message = "Tracking record",
+                                         response = TrackedContentDTO.class ), } )
     @Path( "/{id}/record" )
     @POST
-    public Response sealRecord( final @PathParam( "id" ) String id, @Context final UriInfo uriInfo )
+    public Response sealRecord( @ApiParam( "User-assigned tracking session key" ) final @PathParam( "id" ) String id,
+                                @Context final UriInfo uriInfo )
     {
         TrackedContentDTO record = controller.seal( id );
         if ( record == null )
         {
-            return Response.status( Status.NOT_FOUND )
-                               .build();
+            return Response.status( Status.NOT_FOUND ).build();
         }
         else
         {
@@ -149,9 +170,13 @@ public class FoloAdminResource
         }
     }
 
+    @ApiOperation( "Alias of /{id}/record, returns the tracking record for the specified key" )
+    @ApiResponses( { @ApiResponse( code = 404, message = "No such tracking record exists." ),
+                           @ApiResponse( code = 200, message = "Tracking record",
+                                         response = TrackedContentDTO.class ), } )
     @Path( "/{id}/record" )
     @GET
-    public Response getRecord( final @PathParam( "id" ) String id )
+    public Response getRecord( @ApiParam( "User-assigned tracking session key" ) final @PathParam( "id" ) String id )
     {
         Response response;
         try
@@ -159,8 +184,7 @@ public class FoloAdminResource
             final TrackedContentDTO record = controller.getRecord( id );
             if ( record == null )
             {
-                response = Response.status( Status.NOT_FOUND )
-                                   .build();
+                response = Response.status( Status.NOT_FOUND ).build();
             }
             else
             {
@@ -180,14 +204,13 @@ public class FoloAdminResource
 
     @Path( "/{id}/record" )
     @DELETE
-    public Response clearRecord( final @PathParam( "id" ) String id )
+    public Response clearRecord( @ApiParam( "User-assigned tracking session key" ) final @PathParam( "id" ) String id )
     {
         Response response;
         try
         {
             controller.clearRecord( id );
-            response = Response.status( Status.NO_CONTENT )
-                           .build();
+            response = Response.status( Status.NO_CONTENT ).build();
         }
         catch ( FoloContentException e )
         {

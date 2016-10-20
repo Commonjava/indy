@@ -16,6 +16,7 @@
 package org.commonjava.indy.promote.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 
@@ -30,10 +31,13 @@ public class GroupPromoteRequest
     implements PromoteRequest<GroupPromoteRequest>
 {
 
+    @ApiModelProperty( value="Indy store/repository key to promote FROM (formatted as: '{remote,hosted,group}:name')", required=true )
     private StoreKey source;
 
+    @ApiModelProperty( value="Name of the Indy target group to promote TO (MUST be pre-existing)", required=true )
     private String targetGroup;
 
+    @ApiModelProperty( value="Run validations, verify source and target locations ONLY, do not modify anything!" )
     private boolean dryRun;
 
     public GroupPromoteRequest()
