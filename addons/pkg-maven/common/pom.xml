@@ -10,6 +10,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>indy-pkg-maven-common</artifactId>
+
+  <name>Indy :: Add-Ons :: Package-Maven :: Common</name>
+
   <dependencies>
     <dependency>
       <groupId>org.commonjava.indy</groupId>

@@ -4,6 +4,11 @@ dependency-reduced-pom.xml
 scratch
 target
 
+# ui build
+uis/layover/bower_components/
+uis/layover/node/
+uis/layover/node_modules/
+
 # eclipse
 .classpath
 .project

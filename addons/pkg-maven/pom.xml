@@ -11,6 +11,9 @@
 
   <artifactId>indy-pkg-maven</artifactId>
   <packaging>pom</packaging>
+
+  <name>Indy :: Add-Ons :: Package-Maven :: Parent</name>
+
   <modules>
     <module>model-java</module>
     <module>common</module>
