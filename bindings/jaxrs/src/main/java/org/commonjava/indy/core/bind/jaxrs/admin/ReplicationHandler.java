@@ -48,10 +48,11 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@Api( description = "Replicate the artifact stores on a remote Indy instance, either by proxying the remote system's stores or by cloning the store definitions", value = "/api/admin/replicate" )
+@Api( description = "Replicate the artifact stores on a remote Indy instance, either by proxying the remote system's stores or by cloning the store definitions",
+      value = "Indy Repository Replication" )
 @Path( "/api/admin/replicate" )
 public class ReplicationHandler
-    implements IndyResources
+        implements IndyResources
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -66,10 +67,14 @@ public class ReplicationHandler
     private SecurityManager securityManager;
 
     @ApiOperation( "Replicate the stores of a remote Indy" )
-    @ApiImplicitParams( { @ApiImplicitParam( paramType = "body", name = "body", dataType = "org.commonjava.indy.model.core.dto.ReplicationDTO", required = true, value = "The configuration determining how replication should be handled, and what remote site to replicate." ) } )
+    @ApiImplicitParams( { @ApiImplicitParam( paramType = "body", name = "body",
+                                             dataType = "org.commonjava.indy.model.core.dto.ReplicationDTO",
+                                             required = true,
+                                             value = "The configuration determining how replication should be handled, and what remote site to replicate." ) } )
     @POST
     @Produces( ApplicationContent.application_json )
-    public Response replicate( @Context final HttpServletRequest request, final @Context SecurityContext securityContext )
+    public Response replicate( @Context final HttpServletRequest request,
+                               final @Context SecurityContext securityContext )
     {
         Response response;
         try

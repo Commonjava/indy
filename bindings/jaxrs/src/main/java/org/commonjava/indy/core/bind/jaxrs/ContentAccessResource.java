@@ -42,7 +42,7 @@ import javax.ws.rs.core.UriInfo;
 
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 
-@Api( value = "/<type>/<name>",
+@Api( value = "Content Access and Storage",
       description = "Handles retrieval and management of file/artifact content. This is the main point of access for most users." )
 @Path( "/api/{type: (hosted|group|remote)}/{name}" )
 public class ContentAccessResource
@@ -81,7 +81,7 @@ public class ContentAccessResource
     }
 
     @ApiOperation( "Delete file/artifact content under the given artifact store (type/name) and path." )
-    @ApiResponses( { @ApiResponse( code = 204, message = "Content was deleted successfully" ) } )
+    @ApiResponses( { @ApiResponse( code=404, message = "Content is not available" ), @ApiResponse( code = 204, message = "Content was deleted successfully" ) } )
     @DELETE
     @Path( "/{path: (.*)}" )
     public Response doDelete(
@@ -93,7 +93,7 @@ public class ContentAccessResource
     }
 
     @ApiOperation( "Store file/artifact content under the given artifact store (type/name) and path." )
-    @ApiResponses( { @ApiResponse( code = 200,
+    @ApiResponses( { @ApiResponse( code=404, message = "Content is not available" ), @ApiResponse( code = 200,
                                    message = "Header metadata for content (or rendered listing when path ends with '/index.html' or '/'" ), } )
     @HEAD
     @Path( "/{path: (.*)}" )
@@ -111,7 +111,7 @@ public class ContentAccessResource
     }
 
     @ApiOperation( "Retrieve file/artifact content under the given artifact store (type/name) and path." )
-    @ApiResponses( { @ApiResponse( code = 200, response = String.class,
+    @ApiResponses( { @ApiResponse( code=404, message = "Content is not available" ), @ApiResponse( code = 200, response = String.class,
                                    message = "Rendered content listing (when path ends with '/index.html' or '/')" ),
                            @ApiResponse( code = 200, response = StreamingOutput.class, message = "Content stream" ), } )
     @GET

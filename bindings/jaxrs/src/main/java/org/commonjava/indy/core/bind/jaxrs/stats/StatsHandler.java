@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@Api( description = "Various read-only operations for retrieving information about the system.", value = "/api/stats" )
+@Api( description = "Various read-only operations for retrieving information about the system.", value = "Generic Infrastructure Queries (UI Support)" )
 @Path( "/api/stats" )
 public class StatsHandler
     implements IndyResources

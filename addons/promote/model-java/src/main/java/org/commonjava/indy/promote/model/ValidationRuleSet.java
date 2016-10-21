@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.promote.model;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,12 +27,16 @@ import java.util.Map;
  */
 public class ValidationRuleSet
 {
+    @ApiModelProperty( value="Name of this validation rule-set, which will be used in validation results for promotion responses", required=true )
     private String name;
 
+    @ApiModelProperty( value="Regular expression specifying which TARGET stores this rule-set applies to", required=true )
     private String storeKeyPattern;
 
+    @ApiModelProperty( value="List of rule script names to execute for this rule-set (assumed to correspond to files in the promote/rules/ data directory)", required=true )
     private List<String> ruleNames;
 
+    @ApiModelProperty( "Key-value mapping of extra parameters that MAY be required for certain validation rules" )
     private Map<String, String> validationParameters;
 
     public ValidationRuleSet(){}

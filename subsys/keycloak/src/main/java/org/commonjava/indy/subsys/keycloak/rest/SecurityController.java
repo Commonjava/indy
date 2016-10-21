@@ -128,6 +128,11 @@ public class SecurityController
     public synchronized String getKeycloakUiJson()
         throws IndyWorkflowException
     {
+        if ( !config.isEnabled() )
+        {
+            return null;
+        }
+
         if ( keycloakUiJson == null )
         {
             final String raw = loadFileContent( config.getKeycloakUiJson() );

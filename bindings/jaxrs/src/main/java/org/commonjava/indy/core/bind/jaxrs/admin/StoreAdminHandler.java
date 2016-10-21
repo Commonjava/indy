@@ -70,7 +70,7 @@ import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Api( description = "Resource for accessing and managing artifact store definitions", value = "/api/admin/<type>" )
+@Api( description = "Resource for accessing and managing artifact store definitions", value = "Store Administration" )
 @Path( "/api/admin/{type: (hosted|group|remote)}" )
 public class StoreAdminHandler
     implements IndyResources

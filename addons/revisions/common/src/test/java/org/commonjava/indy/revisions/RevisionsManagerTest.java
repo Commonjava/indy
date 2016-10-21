@@ -29,6 +29,7 @@ import javax.enterprise.event.Observes;
 
 import org.commonjava.indy.action.IndyLifecycleEventManager;
 import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.revisions.conf.RevisionsConfig;
 import org.commonjava.indy.revisions.testutil.TestProvider;
 import org.commonjava.indy.subsys.datafile.DataFile;
 import org.commonjava.indy.subsys.datafile.DataFileManager;
@@ -47,6 +48,8 @@ public class RevisionsManagerTest
     public TemporaryFolder temp = new TemporaryFolder();
 
     private RevisionsManager revManager;
+
+    private RevisionsConfig config;
 
     private DataFileManager dfManager;
 
@@ -69,6 +72,9 @@ public class RevisionsManagerTest
         dfManager = container.instance()
                              .select( DataFileManager.class )
                              .get();
+
+        config = container.instance().select( RevisionsConfig.class ).get();
+        config.setEnabled( true );
 
         revManager = container.instance()
                               .select( RevisionsManager.class )

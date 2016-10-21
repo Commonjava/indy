@@ -24,6 +24,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.ResponseUtils;
@@ -33,6 +38,7 @@ import org.commonjava.indy.setback.rest.SetBackController;
 import org.commonjava.indy.subsys.datafile.DataFile;
 import org.commonjava.indy.util.ApplicationContent;
 
+@Api( value="SetBack Backup settings.xml Access", description="Offline-Capable settings.xml Indy Simulation for use in case Indy is inaccessible" )
 @Path( "/api/setback" )
 public class SetBackSettingsResource
         implements IndyResources
@@ -41,11 +47,21 @@ public class SetBackSettingsResource
     @Inject
     private SetBackController controller;
 
+    @ApiOperation(
+            "Return settings.xml that approximates the behavior of the specified Indy group/repository (CAUTION: Indy-hosted content will be unavailable!)" )
+    @ApiResponses( { @ApiResponse( code = 400,
+                                   message = "Requested repository is hosted on Indy and cannot be simulated via settings.xml" ),
+                           @ApiResponse( code = 404,
+                                         message = "No such repository or group, or the settings.xml has not been generated." ),
+                           @ApiResponse( code = 200, message = "Maven settings.xml content" ) } )
     @Path( "/{type: (remote|group)}/{name}" )
     @GET
     @Produces( ApplicationContent.application_xml )
-    public Response get( final @PathParam( "type" ) String t, final @PathParam( "name" ) String n )
+    public Response get(
+            @ApiParam( allowableValues = "hosted,group,remote", required = true ) final @PathParam( "type" ) String t,
+            final @PathParam( "name" ) String n )
     {
+
         final StoreType type = StoreType.get( t );
 
         if ( StoreType.hosted == type )
@@ -78,9 +94,17 @@ public class SetBackSettingsResource
         return response;
     }
 
+    @ApiOperation( "DELETE the settings.xml simulation corresponding to the specified Indy group/repository" )
+    @ApiResponses( {
+                           @ApiResponse( code = 400,
+                                         message = "Requested repository is hosted on Indy and cannot be simulated via settings.xml" ),
+                           @ApiResponse( code = 404,
+                                         message = "No such repository or group, or the settings.xml has not been generated." ),
+                           @ApiResponse( code = 204, message = "Deletion succeeded" )
+                   } )
     @Path( "/{type: (remote|group)}/{name}" )
     @DELETE
-    public Response delete( final @PathParam( "type" ) String t, final @PathParam( "name" ) String n )
+    public Response delete( @ApiParam( allowableValues = "hosted,group,remote", required = true ) final @PathParam( "type" ) String t, final @PathParam( "name" ) String n )
     {
         final StoreType type = StoreType.get( t );
 

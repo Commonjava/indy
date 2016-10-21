@@ -15,6 +15,8 @@
  */
 package org.commonjava.indy.folo.dto;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
 import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.indy.model.core.StoreKey;
 
@@ -22,14 +24,20 @@ public class TrackedContentEntryDTO
     implements Comparable<TrackedContentEntryDTO>
 {
 
+    @ApiModelProperty( value = "The Indy key for the repository/group this where content was stored.",
+                       allowableValues = "remote:<name>, hosted:<name>, group:<name>" )
     private StoreKey storeKey;
 
+    @ApiModelProperty( value = "Type of content access, whether \"normal\" content API or generic HTTP proxy.",
+                       allowableValues = "GENERIC_PROXY, MAVEN" )
     private AccessChannel accessChannel;
 
     private String path;
 
+    @ApiModelProperty( value = "If resolved from a remote repository, this is the origin URL, otherwise empty/null." )
     private String originUrl;
 
+    @ApiModelProperty( value = "URL to this path on the local Indy instance." )
     private String localUrl;
 
     private String md5;
