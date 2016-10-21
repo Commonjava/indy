@@ -432,7 +432,7 @@ public class MemoryStoreDataManager
         Optional<RemoteRepository> found = copy.stream()
                                                .filter( e -> ( ( remote == e.getValue().getKey().getType() )
                                                        && ( (RemoteRepository) e.getValue() ).getUrl().equals( url ) ) )
-                                               .map( ( store ) -> (RemoteRepository) store )
+                                               .map( ( e ) -> (RemoteRepository) e.getValue() )
                                                .findFirst();
         return found.isPresent() ? found.get() : null;
     }
