@@ -272,7 +272,7 @@ public class UIServlet
                 response.setStatus( ApplicationStatus.OK.code() );
                 response.addHeader( ApplicationHeader.last_modified.key(), formatDateHeader( resource.lastModified() ) );
 
-                response.addHeader( ApplicationHeader.content_type.key(), mimeTyper.getContentType( resource ) );
+                response.addHeader( ApplicationHeader.content_type.key(), mimeTyper.getContentType( resource.getPath() ) );
                 response.addHeader( ApplicationHeader.content_length.key(), Long.toString( resource.length() ) );
             }
         }
