@@ -57,6 +57,8 @@
     <xnioVersion>3.3.0.Final</xnioVersion>
     <keycloakVersion>1.9.8.Final</keycloakVersion>
     <bouncycastleVersion>1.53</bouncycastleVersion>
+    <bytemanVersion>3.0.6</bytemanVersion>
+
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>0.16.2</atlasVersion>
@@ -1095,6 +1097,31 @@
             <artifactId>jsr311-api</artifactId>
           </exclusion>
         </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jboss.byteman</groupId>
+        <artifactId>byteman</artifactId>
+        <scope>test</scope>
+        <version>${bytemanVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.byteman</groupId>
+        <artifactId>byteman-submit</artifactId>
+        <scope>test</scope>
+        <version>${bytemanVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.byteman</groupId>
+        <artifactId>byteman-install</artifactId>
+        <scope>test</scope>
+        <version>${bytemanVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.byteman</groupId>
+        <artifactId>byteman-bmunit</artifactId>
+        <scope>test</scope>
+        <version>${bytemanVersion}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
