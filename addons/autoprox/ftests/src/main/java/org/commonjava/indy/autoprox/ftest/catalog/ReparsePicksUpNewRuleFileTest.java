@@ -22,6 +22,7 @@ import java.io.File;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.commonjava.indy.autoprox.rest.dto.CatalogDTO;
 import org.commonjava.indy.autoprox.rest.dto.RuleDTO;
 import org.junit.Test;
@@ -55,7 +56,7 @@ public class ReparsePicksUpNewRuleFileTest
         assertThat( rules.size(), equalTo( 1 ) );
 
         final RuleDTO dto = rules.get( 0 );
-        assertThat( dto.getName(), equalTo( rule.getName() ) );
+        assertThat( dto.getName(), equalTo( FilenameUtils.removeExtension( rule.getName() ) ) );
         assertThat( dto.getSpec(), equalTo( rule.getSpec() ) );
     }
 

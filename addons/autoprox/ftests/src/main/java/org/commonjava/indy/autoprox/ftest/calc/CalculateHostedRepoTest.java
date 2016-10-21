@@ -34,7 +34,7 @@ public class CalculateHostedRepoTest
         final String name = "test";
         final AutoProxCalculation calculation = module.calculateRuleOutput( StoreType.hosted, name );
 
-        assertThat( calculation.getRuleName(), equalTo( "0001-simple-rule.groovy" ) );
+        assertThat( calculation.getRuleName(), equalTo( "0001-simple-rule" ) );
         assertThat( calculation.getSupplementalStores()
                                .isEmpty(), equalTo( true ) );
 

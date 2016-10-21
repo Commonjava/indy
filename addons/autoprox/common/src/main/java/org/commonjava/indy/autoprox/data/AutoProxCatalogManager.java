@@ -385,7 +385,7 @@ public class AutoProxCatalogManager
             dataDir.mkdirs();
         }
 
-        final DataFile scriptFile = dataDir.getChild( name );
+        final DataFile scriptFile = dataDir.getChild( name + ".groovy" );
         if ( scriptFile.exists() )
         {
             try

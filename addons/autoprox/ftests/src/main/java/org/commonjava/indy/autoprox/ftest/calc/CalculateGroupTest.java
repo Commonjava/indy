@@ -39,7 +39,7 @@ public class CalculateGroupTest
         final String name = "test";
         final AutoProxCalculation calculation = module.calculateRuleOutput( StoreType.group, name );
 
-        assertThat( calculation.getRuleName(), equalTo( "0001-simple-rule.groovy" ) );
+        assertThat( calculation.getRuleName(), equalTo( "0001-simple-rule" ) );
 
         final List<ArtifactStore> supplemental = calculation.getSupplementalStores();
         assertThat( supplemental.size(), equalTo( 4 ) );
