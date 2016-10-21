@@ -22,6 +22,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.commonjava.indy.autoprox.data.AutoProxRule;
 import org.commonjava.indy.autoprox.data.AutoProxRuleException;
 import org.commonjava.indy.autoprox.data.RuleMapping;
@@ -107,7 +108,7 @@ public class ScriptRuleParser
 
         if ( rule != null )
         {
-            return new RuleMapping( scriptName, spec, rule );
+            return new RuleMapping( FilenameUtils.removeExtension( scriptName ), spec, rule );
         }
 
         logger.warn( "Rule named: {} parsed to null AutoProxRule instance. Spec was:\n\n{}\n\n", scriptName, spec );

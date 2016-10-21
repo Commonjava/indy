@@ -18,6 +18,9 @@
 <div ng-controller="AutoProxRulesCtl">
   <div class="container-fluid">
     <div class="control-panel">
+      <div ng-if="!error && currentRule" class="cp-row">
+        <button ng-click="deleteRule()">delete</button>
+      </div>
       <div class="cp-row">
         Available Rules:
         <select ng-model="currentName" ng-change="showRule()" ng-options="rule.name as rule.name for rule in rules">

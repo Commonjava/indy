@@ -11,6 +11,8 @@
 
   <artifactId>indy-pkg-maven-model-java</artifactId>
 
+  <name>Indy :: Add-Ons :: Package-Maven :: Java Domain Model</name>
+
   <dependencies>
     <dependency>
       <groupId>org.commonjava.indy</groupId>

@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.autoprox.data;
 
-import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.autoprox.conf.AutoProxConfig;
 import org.commonjava.indy.autoprox.rest.dto.CatalogDTO;
@@ -368,6 +367,7 @@ public class AutoProxCatalogManager
             final RuleMapping m = mappingIt.next();
             if ( m.getScriptName().equals( name ) )
             {
+                logger.info( "Found rule {} in rule Mappings, delete it now.", name );
                 mappingIt.remove();
                 mapping = m;
                 break;
@@ -390,6 +390,7 @@ public class AutoProxCatalogManager
         {
             try
             {
+                logger.info("Found rule file {} in flat file storage, begin to delete", scriptFile);
                 scriptFile.delete( changelog );
 
                 return mapping;

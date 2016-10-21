@@ -11,6 +11,8 @@
 
   <artifactId>indy-ftests-pkg-maven</artifactId>
 
+  <name>Indy :: Add-Ons :: Package-Maven :: Functional Tests</name>
+
   <dependencies>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
