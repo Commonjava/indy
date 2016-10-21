@@ -15,14 +15,13 @@
  */
 package org.commonjava.indy.util;
 
-import java.io.IOException;
-import java.io.InputStream;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.LoggerFactory;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.enterprise.context.ApplicationScoped;
-
-import org.apache.commons.io.IOUtils;
-import org.slf4j.LoggerFactory;
+import java.io.IOException;
+import java.io.InputStream;
 
 @ApplicationScoped
 public class MimeTyper
@@ -54,7 +53,7 @@ public class MimeTyper
 
     public String getContentType( final String path )
     {
-        return new MimetypesFileTypeMap().getContentType( path );
+        return typeMap.getContentType( path );
     }
 
 }

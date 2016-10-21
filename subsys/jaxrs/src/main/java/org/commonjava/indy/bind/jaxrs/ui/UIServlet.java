@@ -15,8 +15,22 @@
  */
 package org.commonjava.indy.bind.jaxrs.ui;
 
-import static org.commonjava.indy.model.util.HttpUtils.formatDateHeader;
+import org.apache.commons.io.IOUtils;
+import org.commonjava.indy.conf.UIConfiguration;
+import org.commonjava.indy.util.ApplicationContent;
+import org.commonjava.indy.util.ApplicationHeader;
+import org.commonjava.indy.util.ApplicationStatus;
+import org.commonjava.indy.util.MimeTyper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.spi.CDI;
+import javax.inject.Inject;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -29,23 +43,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
-import javax.activation.FileTypeMap;
-import javax.activation.MimetypesFileTypeMap;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.spi.CDI;
-import javax.inject.Inject;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.io.IOUtils;
-import org.commonjava.indy.conf.UIConfiguration;
-import org.commonjava.indy.util.ApplicationContent;
-import org.commonjava.indy.util.ApplicationHeader;
-import org.commonjava.indy.util.ApplicationStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.commonjava.indy.model.util.HttpUtils.formatDateHeader;
 
 @ApplicationScoped
 public class UIServlet
@@ -68,7 +66,8 @@ public class UIServlet
     @Inject
     private UIConfiguration config;
 
-    private final FileTypeMap typeMap = MimetypesFileTypeMap.getDefaultFileTypeMap();
+    @Inject
+    private MimeTyper mimeTyper;
 
     @Override
     protected void service( final HttpServletRequest request, final HttpServletResponse response )
@@ -182,7 +181,7 @@ public class UIServlet
                 logger.debug( "sending OK" );
                 response.setStatus( ApplicationStatus.OK.code() );
                 response.addHeader( ApplicationHeader.content_type.key(),
-                                    typeMap.getContentType( resource.toExternalForm() ) );
+                                    mimeTyper.getContentType( resource.toExternalForm() ) );
                 response.addHeader( ApplicationHeader.content_length.key(), Long.toString( data.length ) );
 
                 logger.debug( "sending file" );
@@ -213,7 +212,7 @@ public class UIServlet
                 logger.debug( "sending OK" );
                 response.setStatus( ApplicationStatus.OK.code() );
                 response.addHeader( ApplicationHeader.content_type.key(),
-                                    typeMap.getContentType( resource.toExternalForm() ) );
+                                    mimeTyper.getContentType( resource.toExternalForm() ) );
                 response.addHeader( ApplicationHeader.content_length.key(), Long.toString( data.length ) );
             }
         }
@@ -273,7 +272,7 @@ public class UIServlet
                 response.setStatus( ApplicationStatus.OK.code() );
                 response.addHeader( ApplicationHeader.last_modified.key(), formatDateHeader( resource.lastModified() ) );
 
-                response.addHeader( ApplicationHeader.content_type.key(), typeMap.getContentType( resource ) );
+                response.addHeader( ApplicationHeader.content_type.key(), mimeTyper.getContentType( resource ) );
                 response.addHeader( ApplicationHeader.content_length.key(), Long.toString( resource.length() ) );
             }
         }
@@ -299,6 +298,6 @@ public class UIServlet
             return ApplicationContent.application_javascript;
         }
 
-        return typeMap.getContentType( resource );
+        return mimeTyper.getContentType( resource );
     }
 }
