@@ -325,13 +325,8 @@ public class ImpliedRepoMaintainer
     private List<ArtifactStore> loadMemberStores( final Group group, final ImpliedRepoMaintJob job )
         throws IndyDataException
     {
-        final List<ArtifactStore> members = new ArrayList<>( group.getConstituents().size() );
-
-        List<StoreKey> constituents;
-        synchronized ( group )
-        {
-            constituents = group.getConstituents();
-        }
+        final List<StoreKey> constituents = new ArrayList<>( group.getConstituents() );
+        final List<ArtifactStore> members = new ArrayList<>( constituents.size() );
 
         for ( final StoreKey memberKey : constituents )
         {
