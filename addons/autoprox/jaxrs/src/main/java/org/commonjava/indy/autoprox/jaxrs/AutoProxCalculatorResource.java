@@ -27,6 +27,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.autoprox.conf.AutoProxConfig;
 import org.commonjava.indy.autoprox.rest.AutoProxCalculatorController;
@@ -39,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@Api( value="AutoProx Calculator", description="Calculate results of applying existing AutoProx rules without making modifications" )
 @Path( "/api/autoprox/eval" )
 public class AutoProxCalculatorResource
     implements IndyResources
@@ -55,6 +60,8 @@ public class AutoProxCalculatorResource
     @Inject
     private AutoProxConfig config;
 
+    @ApiOperation( value = "Calculate the effects of referencing a remote repository with the given name to determine what AutoProx will auto-create", response = AutoProxCalculation.class )
+    @ApiResponse( code=200, message = "Result of calculation" )
     @Path( "/remote/{name}" )
     @GET
     @Consumes( ApplicationContent.application_json )
@@ -101,6 +108,8 @@ public class AutoProxCalculatorResource
         return null;
     }
 
+    @ApiOperation( value = "Calculate the effects of referencing a hosted repository with the given name to determine what AutoProx will auto-create", response = AutoProxCalculation.class )
+    @ApiResponse( code=200, message = "Result of calculation" )
     @Path( "/hosted/{name}" )
     @GET
     @Consumes( ApplicationContent.application_json )
@@ -136,6 +145,8 @@ public class AutoProxCalculatorResource
         return response;
     }
 
+    @ApiOperation( value = "Calculate the effects of referencing a group with the given name to determine what AutoProx will auto-create", response = AutoProxCalculation.class )
+    @ApiResponse( code=200, message = "Result of calculation" )
     @Path( "/group/{name}" )
     @GET
     @Consumes( ApplicationContent.application_json )

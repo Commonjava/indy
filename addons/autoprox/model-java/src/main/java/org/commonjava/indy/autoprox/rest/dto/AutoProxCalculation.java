@@ -18,6 +18,7 @@ package org.commonjava.indy.autoprox.rest.dto;
 import java.util.Collections;
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -26,10 +27,13 @@ import org.commonjava.indy.model.core.RemoteRepository;
 public class AutoProxCalculation
 {
 
+    @ApiModelProperty( "Main Group / repository that was created as a result of the rule firing" )
     private ArtifactStore store;
 
+    @ApiModelProperty( "Groups / repositories that were created as a side effect of the rule firing." )
     private List<ArtifactStore> supplementalStores;
 
+    @ApiModelProperty( "Name of the AutoProx rule that fired to create this effect." )
     private String ruleName;
 
     public AutoProxCalculation()
