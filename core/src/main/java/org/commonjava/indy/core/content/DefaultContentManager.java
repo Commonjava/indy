@@ -30,6 +30,7 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.model.core.AbstractRepository;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.util.ApplicationStatus;
@@ -268,10 +269,38 @@ public class DefaultContentManager
         return item;
     }
 
+    private boolean checkMask( final ArtifactStore store, final String path )
+    {
+        AbstractRepository repo = (AbstractRepository) store;
+        Set<String> maskPatterns = repo.getPathMaskPatterns();
+        logger.debug( "Checking mask in: {}, type: {}, patterns: {}", repo.getName(), repo.getKey().getType(), maskPatterns );
+
+        if (maskPatterns == null || maskPatterns.isEmpty())
+        {
+            logger.debug( "Checking mask in: {}, - NO PATTERNS", repo.getName() );
+            return true;
+        }
+        for (String pattern : maskPatterns)
+        {
+            if (path.startsWith(pattern) || path.matches(pattern))
+            {
+                logger.debug( "Checking mask in: {}, pattern: {} - MATCH", repo.getName(), pattern );
+                return true;
+            }
+        }
+        return false;
+    }
+
     private Transfer doRetrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         logger.info( "Attempting to retrieve: {} from: {}", path, store.getKey() );
+
+        if ( !checkMask(store, path))
+        {
+            return null;
+        }
+
         Transfer item = null;
         try
         {
