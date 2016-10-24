@@ -637,11 +637,12 @@
         <artifactId>indy-koji-jaxrs</artifactId>
         <version>1.0.2-SNAPSHOT</version>
       </dependency>
-      <dependency>
+      <!-- TODO: There aren't any ftests for Koji add-on yet. -->
+<!--       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-koji</artifactId>
         <version>1.0.2-SNAPSHOT</version>
-      </dependency>
+      </dependency> -->
 
       <dependency>
         <groupId>org.commonjava.cdi.util</groupId>

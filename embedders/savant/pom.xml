@@ -193,11 +193,12 @@
       <artifactId>indy-ftests-promote</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
+    <!-- TODO: There aren't any ftests for Koji add-on yet. -->
+<!--     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-koji</artifactId>
       <scope>test</scope>
-    </dependency>
+    </dependency> -->
   </dependencies>
   
   <build>
