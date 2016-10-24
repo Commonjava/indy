@@ -39,14 +39,15 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
-import static org.commonjava.indy.model.core.StoreType.group;
+import static org.commonjava.indy.model.core.StoreType.remote;
 
 @ApplicationScoped
 @Alternative
@@ -57,8 +58,6 @@ public class MemoryStoreDataManager
 
     private final Map<StoreKey, ArtifactStore> stores = new ConcurrentHashMap<>();
 
-    private final Map<String, RemoteRepository> byRemoteUrl = new ConcurrentHashMap<>();
-
     //    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
@@ -66,8 +65,6 @@ public class MemoryStoreDataManager
 
     @Inject
     private IndyConfiguration config;
-
-    private Map<StoreKey, Set<Group>> reverseGroupMemberships = new ConcurrentHashMap<>();
 
     protected MemoryStoreDataManager()
     {
@@ -103,7 +100,7 @@ public class MemoryStoreDataManager
     public RemoteRepository getRemoteRepository( final String name )
             throws IndyDataException
     {
-        final StoreKey key = new StoreKey( StoreType.remote, name );
+        final StoreKey key = new StoreKey( remote, name );
 
         RemoteRepository repo = (RemoteRepository) stores.get( key );
         if ( repo == null )
@@ -137,7 +134,7 @@ public class MemoryStoreDataManager
     public List<RemoteRepository> getAllRemoteRepositories()
             throws IndyDataException
     {
-        return getAll( StoreType.remote, RemoteRepository.class );
+        return getAll( remote, RemoteRepository.class );
     }
 
     @Override
@@ -178,25 +175,14 @@ public class MemoryStoreDataManager
     }
 
     private void recurseGroup( final Group master, final List<ArtifactStore> result, final Set<StoreKey> seen,
-                               final boolean includeGroups, final boolean recurseGroups,
-                               final boolean enabledOnly )
+                               final boolean includeGroups, final boolean recurseGroups, final boolean enabledOnly )
     {
-        if ( master == null )
+        if ( master == null || master.isDisabled() && enabledOnly )
         {
             return;
         }
 
-        List<StoreKey> members = null;
-        synchronized ( master )
-        {
-            if ( master.getConstituents() == null || ( master.isDisabled() && enabledOnly ) )
-            {
-                return;
-            }
-
-            members = new ArrayList<>( master.getConstituents() );
-        }
-
+        List<StoreKey> members = new ArrayList<>( master.getConstituents() );
         if ( includeGroups )
         {
             result.add( master );
@@ -222,47 +208,6 @@ public class MemoryStoreDataManager
                 }
             }
         } );
-    }
-
-    @Override
-    public synchronized Set<Group> getGroupsContaining( final StoreKey repo )
-            throws IndyDataException
-    {
-        Set<Group> groups = reverseGroupMemberships.get( repo );
-        return groups == null ? Collections.emptySet() : Collections.unmodifiableSet( groups );
-    }
-
-    private boolean groupContains( final Group g, final StoreKey key )
-    {
-        List<StoreKey> members = null;
-        synchronized ( g )
-        {
-            if ( g == null || g.getConstituents() == null )
-            {
-                return false;
-            }
-
-            if ( g.getConstituents().contains( key ) )
-            {
-                return true;
-            }
-
-            members = new ArrayList<>( g.getConstituents() );
-        }
-
-        for ( final StoreKey constituent : members )
-        {
-            if ( constituent.getType() == group )
-            {
-                final Group embedded = (Group) stores.get( constituent );
-                if ( embedded != null && groupContains( embedded, key ) )
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     @Override
@@ -331,26 +276,6 @@ public class MemoryStoreDataManager
         {
             preStore( store, original, summary, original != null, fireEvents, eventMetadata );
             final ArtifactStore old = stores.put( store.getKey(), store );
-            if ( StoreType.group == store.getKey().getType() )
-            {
-                Group g = (Group) store;
-                new ArrayList<>( g.getConstituents() ).forEach( ( memberKey ) -> {
-                    Set<Group> memberIn = reverseGroupMemberships.get( memberKey );
-                    if ( memberIn == null )
-                    {
-                        memberIn = new HashSet<>();
-                        reverseGroupMemberships.put( memberKey, memberIn );
-                    }
-
-                    memberIn.add( g );
-                } );
-            }
-            else if ( store instanceof RemoteRepository )
-            {
-                final RemoteRepository repository = (RemoteRepository) store;
-                byRemoteUrl.put( repository.getUrl(), repository );
-            }
-
             try
             {
                 postStore( store, original, summary, original != null, fireEvents, eventMetadata );
@@ -366,11 +291,11 @@ public class MemoryStoreDataManager
         return false;
     }
 
-    protected void preStore( final ArtifactStore store, final ArtifactStore original, final ChangeSummary summary, final boolean exists,
-                             final boolean fireEvents, final EventMetadata eventMetadata )
+    protected void preStore( final ArtifactStore store, final ArtifactStore original, final ChangeSummary summary,
+                             final boolean exists, final boolean fireEvents, final EventMetadata eventMetadata )
             throws IndyDataException
     {
-        if ( isStarted() && fireEvents )
+        if ( dispatcher != null && isStarted() && fireEvents )
         {
             logger.debug( "Firing store pre-update event for: {} (originally: {})", store, original );
             dispatcher.updating( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, eventMetadata,
@@ -390,11 +315,11 @@ public class MemoryStoreDataManager
         }
     }
 
-    protected void postStore( final ArtifactStore store, final ArtifactStore original, final ChangeSummary summary, final boolean exists,
-                              final boolean fireEvents, final EventMetadata eventMetadata )
+    protected void postStore( final ArtifactStore store, final ArtifactStore original, final ChangeSummary summary,
+                              final boolean exists, final boolean fireEvents, final EventMetadata eventMetadata )
             throws IndyDataException
     {
-        if ( isStarted() && fireEvents )
+        if ( dispatcher != null && isStarted() && fireEvents )
         {
             logger.debug( "Firing store post-update event for: {} (originally: {})", store, original );
             dispatcher.updated( exists ? ArtifactStoreUpdateType.UPDATE : ArtifactStoreUpdateType.ADD, eventMetadata,
@@ -418,7 +343,7 @@ public class MemoryStoreDataManager
                               final EventMetadata eventMetadata )
             throws IndyDataException
     {
-        if ( isStarted() && fireEvents )
+        if ( dispatcher != null && isStarted() && fireEvents )
         {
             dispatcher.deleting( eventMetadata, store );
         }
@@ -428,14 +353,14 @@ public class MemoryStoreDataManager
                                final EventMetadata eventMetadata )
             throws IndyDataException
     {
-        if ( isStarted() && fireEvents )
+        if ( dispatcher != null && isStarted() && fireEvents )
         {
             dispatcher.deleted( eventMetadata, store );
         }
     }
 
     @Override
-    public synchronized void deleteArtifactStore( final StoreKey key, final ChangeSummary summary )
+    public void deleteArtifactStore( final StoreKey key, final ChangeSummary summary )
             throws IndyDataException
     {
         deleteArtifactStore( key, summary, new EventMetadata() );
@@ -455,12 +380,6 @@ public class MemoryStoreDataManager
         preDelete( store, summary, true, eventMetadata );
 
         ArtifactStore removed = stores.remove( key );
-        if ( removed instanceof RemoteRepository )
-        {
-            byRemoteUrl.remove( ( (RemoteRepository) removed ).getUrl() );
-        }
-
-        reverseGroupMemberships.remove( key );
 
         postDelete( store, summary, true, eventMetadata );
     }
@@ -472,46 +391,79 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public void clear( final ChangeSummary summary )
+    public synchronized void clear( final ChangeSummary summary )
             throws IndyDataException
     {
         stores.clear();
     }
 
-    private synchronized <T extends ArtifactStore> List<T> getAll( final StoreType storeType, final Class<T> type )
+    @Override
+    public Set<Group> getGroupsContaining( final StoreKey repo )
+            throws IndyDataException
     {
-        final List<T> result = new ArrayList<T>();
-        for ( final Map.Entry<StoreKey, ArtifactStore> store : stores.entrySet() )
-        {
-            if ( store.getValue() == null )
-            {
-                continue;
-            }
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Getting groups containing: {}", repo );
 
-            if ( store.getKey().getType() == storeType )
-            {
-                result.add( type.cast( store.getValue() ) );
-            }
+        Set<ArtifactStore> all;
+        synchronized ( this )
+        {
+            all = new HashSet<>( stores.values() );
         }
+
+        Set<Group> result = all.parallelStream()
+                               .filter( ( store ) -> ( ( store instanceof Group ) && ( (Group) store ).getConstituents()
+                                                                                                      .contains(
+                                                                                                              repo ) ) )
+                               .map( ( store ) -> (Group) store )
+                               .collect( Collectors.toSet() );
 
         return result;
     }
 
-    private synchronized List<ArtifactStore> getAll( final StoreType... storeTypes )
+    @Override
+    public RemoteRepository findRemoteRepository( final String url )
     {
-        final List<ArtifactStore> result = new ArrayList<ArtifactStore>();
-        for ( final Map.Entry<StoreKey, ArtifactStore> store : stores.entrySet() )
+        List<Map.Entry<StoreKey, ArtifactStore>> copy;
+        synchronized ( this )
         {
-            for ( final StoreType type : storeTypes )
-            {
-                if ( store.getKey().getType() == type )
-                {
-                    result.add( store.getValue() );
-                }
-            }
+            copy = new ArrayList<>( stores.entrySet() );
         }
 
-        return result;
+        Optional<RemoteRepository> found = copy.stream()
+                                               .filter( e -> ( ( remote == e.getValue().getKey().getType() )
+                                                       && ( (RemoteRepository) e.getValue() ).getUrl().equals( url ) ) )
+                                               .map( ( e ) -> (RemoteRepository) e.getValue() )
+                                               .findFirst();
+        return found.isPresent() ? found.get() : null;
+    }
+
+    private <T extends ArtifactStore> List<T> getAll( final StoreType storeType, final Class<T> type )
+    {
+        List<Map.Entry<StoreKey, ArtifactStore>> copy;
+        synchronized ( this )
+        {
+            copy = new ArrayList<>( stores.entrySet() );
+        }
+
+        return copy.stream()
+                   .filter( ( entry ) -> storeType == entry.getKey().getType() && type.isAssignableFrom(
+                           entry.getValue().getClass() ) )
+                   .map( ( entry ) -> type.cast( entry.getValue() ) )
+                   .collect( Collectors.toList() );
+    }
+
+    private List<ArtifactStore> getAll( final StoreType... storeTypes )
+    {
+        List<Map.Entry<StoreKey, ArtifactStore>> copy;
+        synchronized ( this )
+        {
+            copy = new ArrayList<>( stores.entrySet() );
+        }
+
+        return copy.stream()
+                   .filter( ( entry ) -> Arrays.binarySearch( storeTypes, entry.getKey().getType() ) > -1 )
+                   .map( ( entry ) -> entry.getValue() )
+                   .collect( Collectors.toList() );
     }
 
     @Override
@@ -524,7 +476,7 @@ public class MemoryStoreDataManager
     @Override
     public List<ArtifactStore> getAllConcreteArtifactStores()
     {
-        return getAll( StoreType.hosted, StoreType.remote );
+        return getAll( StoreType.hosted, remote );
     }
 
     @Override
@@ -537,7 +489,7 @@ public class MemoryStoreDataManager
     @Override
     public boolean hasRemoteRepository( final String name )
     {
-        return hasArtifactStore( new StoreKey( StoreType.remote, name ) );
+        return hasArtifactStore( new StoreKey( remote, name ) );
     }
 
     @Override
@@ -562,12 +514,6 @@ public class MemoryStoreDataManager
     public void reload()
             throws IndyDataException
     {
-    }
-
-    @Override
-    public RemoteRepository findRemoteRepository( final String url )
-    {
-        return byRemoteUrl.get( url );
     }
 
     @Override
