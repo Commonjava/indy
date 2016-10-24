@@ -42,14 +42,4 @@
     <module>revisions</module>
     <module>setback</module>
   </modules>
-
-  <profiles>
-    <profile>
-      <id>decommissioned</id>
-      <modules>
-        <module>indexer</module>
-        <module>depgraph</module>
-      </modules>
-    </profile>
-  </profiles>
 </project>
