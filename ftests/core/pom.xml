@@ -56,5 +56,10 @@
       <artifactId>indy-bindings-jaxrs</artifactId>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-koji-common</artifactId>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 </project>
