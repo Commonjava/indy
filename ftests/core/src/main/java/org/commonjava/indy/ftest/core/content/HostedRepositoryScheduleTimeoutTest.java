@@ -16,6 +16,7 @@
 package org.commonjava.indy.ftest.core.content;
 
 import org.commonjava.indy.client.core.helper.PathInfo;
+import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
