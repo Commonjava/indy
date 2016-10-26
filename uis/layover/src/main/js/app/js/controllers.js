@@ -84,13 +84,14 @@ indyControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 
       save: function(scope){
         if ( scope.is_passthrough ){
           delete scope.store.cache_timeout_seconds;
+          delete scope.store.metadata_timeout_seconds;
         }
         else{
           scope.store.cache_timeout_seconds = StoreUtilSvc.durationToSeconds(scope.raw.cache_timeout_seconds);
+          scope.store.metadata_timeout_seconds = StoreUtilSvc.durationToSeconds(scope.raw.metadata_timeout_seconds);
         }
-    
+
         scope.store.timeout_seconds = StoreUtilSvc.durationToSeconds(scope.raw.timeout_seconds);
-        scope.store.metadata_timeout_seconds = StoreUtilSvc.durationToSeconds(scope.raw.metadata_timeout_seconds);
       },
     });
   };
@@ -128,6 +129,7 @@ indyControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 
       url: '',
       timeout_seconds: 60,
       cache_timeout_seconds: 86400,
+      metadata_timeout_seconds: 86400,
       is_passthrough: false
     };
     
@@ -138,6 +140,10 @@ indyControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 
       $scope.raw.name = StoreUtilSvc.nameFromKey(store.key);
       $scope.raw.storeHref = StoreUtilSvc.storeHref(store.key);
       $scope.raw.description = StoreUtilSvc.defaultDescription(store.description);
+
+      $scope.raw.cache_timeout_seconds = StoreUtilSvc.secondsToDuration(store.cache_timeout_seconds);
+      $scope.raw.timeout_seconds = StoreUtilSvc.secondsToDuration(store.timeout_seconds);
+      $scope.raw.metadata_timeout_seconds = StoreUtilSvc.secondsToDuration(store.metadata_timeout_seconds);
 
       var useX509 = store.server_certificate_pem !== undefined;
       useX509 = store.key_certificate_pem !== undefined || useX509;
