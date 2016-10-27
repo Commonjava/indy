@@ -16,6 +16,7 @@
 package org.commonjava.indy.ftest.core.content;
 
 import org.commonjava.indy.ftest.core.category.EventDependent;
+import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -40,7 +41,7 @@ public class MetadataFirstTimeoutWorkingTest
     private final int CACHE_TIMEOUT_WAITING_MILLISECONDS = getTestTimeoutMultiplier() * 5000;
 
     @Test
-    @Category( EventDependent.class )
+    @Category( TimingDependent.class )
     public void timeout()
             throws Exception
     {
