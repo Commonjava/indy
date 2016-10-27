@@ -17,26 +17,19 @@ package org.commonjava.indy.koji.content;
 
 import com.redhat.red.build.koji.KojiClient;
 import com.redhat.red.build.koji.KojiClientException;
-import com.redhat.red.build.koji.model.util.ValueHolder;
-import com.redhat.red.build.koji.model.xmlrpc.KojiArchiveInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildArchiveCollection;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
 
-import org.commonjava.cdi.util.weft.ExecutorConfig;
-import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.ContentManager;
-import org.commonjava.indy.content.DirectContentAccess;
-import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
-import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.subsys.template.IndyGroovyException;
@@ -54,15 +47,12 @@ import javax.decorator.Decorator;
 import javax.decorator.Delegate;
 import javax.inject.Inject;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * {@link ContentManager} decorator that watches the retrieve() methods. If the result is going to be a null {@link Transfer}
@@ -91,13 +81,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created by jdcasey on 5/20/16.
  */
 @Decorator
-//@ApplicationScoped
 public abstract class KojiContentManagerDecorator
         implements ContentManager
 {
-    public static final String CREATION_TRIGGER_GAV = "creation-trigger-GAV";
+    private static final String CREATION_TRIGGER_GAV = "creation-trigger-GAV";
 
-    public static final String NVR = "koji-NVR";
+    private static final String NVR = "koji-NVR";
 
     public static final String KOJI_ORIGIN = "koji";
 
@@ -106,12 +95,6 @@ public abstract class KojiContentManagerDecorator
     @Delegate
     @Inject
     private ContentManager delegate;
-
-    @Inject
-    private ContentController contentController;
-
-    @Inject
-    private DirectContentAccess directContentAccess;
 
     @Inject
     private StoreDataManager storeDataManager;
@@ -123,21 +106,13 @@ public abstract class KojiContentManagerDecorator
     private IndyKojiConfig config;
 
     @Inject
-    @WeftManaged
-    @ExecutorConfig( named = "koji-downloads", threads = 4, daemon = false )
-    private ExecutorService executorService;
-
-    @Inject
     private ScriptEngine scriptEngine;
-
-    private ExecutorCompletionService<Transfer> executor;
 
     private KojiRepositoryCreator creator;
 
     @PostConstruct
     public void init()
     {
-        executor = new ExecutorCompletionService<Transfer>( executorService );
         try
         {
             creator = scriptEngine.parseStandardScriptInstance( ScriptEngine.StandardScriptType.store_creators,
@@ -170,7 +145,7 @@ public abstract class KojiContentManagerDecorator
             {
                 Logger logger = LoggerFactory.getLogger( getClass() );
                 logger.info( "Koji content-manager decorator is disabled." );
-                return result;
+                return null;
             }
 
             Group group = (Group) store;
@@ -179,7 +154,7 @@ public abstract class KojiContentManagerDecorator
             {
                 Logger logger = LoggerFactory.getLogger( getClass() );
                 logger.info( "Koji content-manager decorator not enabled for: {}.", store.getKey() );
-                return result;
+                return null;
             }
 
             Logger logger = LoggerFactory.getLogger( getClass() );
@@ -191,10 +166,11 @@ public abstract class KojiContentManagerDecorator
                 ArtifactRef artifactRef = pathInfo.getArtifact();
                 logger.info( "Searching for Koji build: {}", artifactRef );
 
-                RepoAndTransfer proxyResult = proxyKojiBuild( artifactRef, path, eventMetadata );
+                RemoteRepository proxyResult = proxyKojiBuild( artifactRef );
                 if ( proxyResult != null )
                 {
-                    result = adjustTargetGroupAndRetrieve( proxyResult, group, path, eventMetadata );
+                    adjustTargetGroup(proxyResult, group);
+                    result = delegate.retrieve( proxyResult, path, eventMetadata );
                 }
             }
             else
@@ -207,8 +183,7 @@ public abstract class KojiContentManagerDecorator
         return result;
     }
 
-    private RepoAndTransfer proxyKojiBuild( final ArtifactRef artifactRef, final String originatingPath,
-                                            final EventMetadata eventMetadata )
+    private RemoteRepository proxyKojiBuild( final ArtifactRef artifactRef )
             throws IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -241,7 +216,7 @@ public abstract class KojiContentManagerDecorator
                         if ( config.isTagAllowed( tag.getName() ) )
                         {
                             logger.info( "Koji tag is on whitelist: {}", tag.getName() );
-                            return transferBuild( build, originatingPath, artifactRef, eventMetadata, session );
+                            return createRemoteRepository(artifactRef, build, session);
                         }
                         else
                         {
@@ -264,8 +239,7 @@ public abstract class KojiContentManagerDecorator
         }
     }
 
-    private RepoAndTransfer transferBuild( final KojiBuildInfo build, final String originatingPath, final ArtifactRef artifactRef,
-                                           final EventMetadata eventMetadata, final KojiSessionInfo session )
+    private RemoteRepository createRemoteRepository(ArtifactRef artifactRef, final KojiBuildInfo build, final KojiSessionInfo session)
             throws KojiClientException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -273,7 +247,7 @@ public abstract class KojiContentManagerDecorator
         {
             KojiBuildArchiveCollection archiveCollection = kojiClient.listArchivesForBuild( build.getId(), session );
 
-            String name = "koji-" + build.getNvr();
+            String name = KOJI_ORIGIN + "-" + build.getNvr();
 
             // Using a RemoteRepository allows us to use the higher-level APIs in Indy, as opposed to TransferManager
             RemoteRepository remote = creator.createRemoteRepository( name, formatStorageUrl( build ),
@@ -282,88 +256,21 @@ public abstract class KojiContentManagerDecorator
             remote.setServerCertPem( config.getServerPemContent() );
             remote.setMetadata( ArtifactStore.METADATA_ORIGIN, KOJI_ORIGIN );
             storeDataManager.storeArtifactStore( remote, new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                            "Creating TEMPORARY remote repository for Koji build: "
+                                                                            "Creating remote repository for Koji build: "
                                                                                     + build.getNvr() ) );
+            // set pathMaskPatterns using build output paths
+            Set<String> patterns = new HashSet<>();
+            patterns.addAll(archiveCollection.getArchives()
+                    .stream()
+                    .map(a -> a.getGroupId().replace('.','/') + "/" + a.getArtifactId() + "/" + a.getVersion())
+                    .collect(Collectors.toSet()));
+            remote.setPathMaskPatterns(patterns);
+            remote.setMetadata( CREATION_TRIGGER_GAV, artifactRef.toString());
+            remote.setMetadata( NVR, build.getNvr() );
 
-            HostedRepository hosted = creator.createHostedRepository( name, artifactRef, build.getNvr(), eventMetadata );
+            logger.debug("Koji {}, add pathMaskPatterns: {}", name, patterns);
 
-            hosted.setMetadata( ArtifactStore.METADATA_ORIGIN, KOJI_ORIGIN );
-            storeDataManager.storeArtifactStore( hosted, new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                            "Creating hosted repository for Koji build: "
-                                                                                    + build.getNvr() ) );
-
-            if ( archiveCollection != null )
-            {
-                RepoAndTransfer result = new RepoAndTransfer();
-                result.repo = hosted;
-
-                AtomicInteger counter = new AtomicInteger( 0 );
-                ValueHolder<Throwable> requestedTransferError = new ValueHolder<>();
-                archiveCollection.stream()
-                                 .filter( ( archive ) -> artifactRef.equals( archive.asArtifact() ) )
-                                 .findFirst()
-                                 .ifPresent( ( archive ) -> result.transfer =
-                                         transferBuildArtifact( archive, remote, hosted, build, eventMetadata, counter,
-                                                                true,
-                                                                ( path, error, e ) -> requestedTransferError.setValue(
-                                                                        e ) ) );
-
-                Throwable error = requestedTransferError.getValue();
-                if ( error != null )
-                {
-                    throw new KojiClientException( "Failed to transfer requested path: %s from build: %s. Reason: %s",
-                                                   error, originatingPath, build.getNvr(), error.getMessage() );
-                }
-
-                executorService.execute( () -> {
-                    try
-                    {
-                        archiveCollection.stream()
-                                         .filter( ( archive ) -> !artifactRef.equals( archive.asArtifact() ) )
-                                         .forEach( ( archive ) -> transferBuildArtifact( archive, remote, hosted, build,
-                                                                                         eventMetadata, counter, false,
-                                                                                         ( path, message, e ) -> logger.error(
-                                                                                                 message.toString(),
-                                                                                                 e ) ) );
-
-                        for ( int i = 0; i < counter.get(); i++ )
-                        {
-                            Future<Transfer> future = executor.take();
-                            future.get();
-                        }
-                    }
-                    catch ( InterruptedException e )
-                    {
-                        logger.warn(
-                                "WARNING! Local copy of build may be INCOMPLETE: {}\n  The thread was interrupted while awaiting transfers from Koji build.",
-                                build.getNvr() );
-                    }
-                    catch ( ExecutionException e )
-                    {
-                        logger.error( "Failed to retrieve Transfer from Koji build-transfer future.", e );
-                    }
-                    finally
-                    {
-                        try
-                        {
-                            storeDataManager.deleteArtifactStore( remote.getKey(),
-                                                                  new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                                     "Removing temporary remote repository for: "
-                                                                                             + build.getNvr() ) );
-                        }
-                        catch ( IndyDataException e )
-                        {
-                            logger.error( String.format(
-                                    "Failed to remove temporary transfer remote repository for build: %s. Reason: %s",
-                                    build.getName(), e.getMessage() ), e );
-                        }
-                    }
-
-                    logger.info( "Transfer of Koji build: {} is finished.", build.getNvr() );
-                } );
-
-                return result;
-            }
+            return remote;
         }
         catch ( MalformedURLException e )
         {
@@ -381,90 +288,14 @@ public abstract class KojiContentManagerDecorator
         {
             throw new KojiClientException( "Failed to store temporary remote repo: %s", e, e.getMessage() );
         }
-
-        return null;
     }
 
-    private Transfer transferBuildArtifact( final KojiArchiveInfo archive, final RemoteRepository remote, final HostedRepository hosted,
-                                            final KojiBuildInfo build, final EventMetadata eventMetadata, final AtomicInteger counter,
-                                            final boolean wait, final ErrorHandler errorHandler )
-    {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-        String path = String.format( "%s/%s/%s/%s", archive.getGroupId().replace( '.', '/' ), archive.getArtifactId(),
-                                     archive.getVersion(), archive.getFilename() );
-
-        // download manager get path from remote
-        Transfer transfer = null;
-        try
-        {
-            remote.setDisabled( false );
-            logger.info( "Retrieving {} from Koji build: {}", path, build.getNvr() );
-            transfer = directContentAccess.retrieveRaw( remote, path, eventMetadata );
-        }
-        catch ( IndyWorkflowException e )
-        {
-            errorHandler.error( path, new StringFormatter( "Failed to retrieve: %s from Koji build: %s.", e, path,
-                                                           build.getNvr(), e.getMessage() ), e );
-        }
-
-        // copy download to hosted
-        if ( transfer != null )
-        {
-            try
-            {
-                ValueHolder<Transfer> target = new ValueHolder<>();
-                Transfer source = transfer;
-
-                counter.incrementAndGet();
-
-                // We thread this off so we can make maximum use of partyline to read while the transfer is still in
-                // progress, and so we can execute multiple downloads in parallel.
-                //
-                // If we're not waiting on this transfer, then don't worry about synchronizing to watch for the start of
-                // the transfer.
-                executor.submit( () -> {
-                    try (InputStream in = source.openInputStream( true, eventMetadata ))
-                    {
-                        target.setValue( contentController.store( hosted.getKey(), path, in, eventMetadata ) );
-                        if ( wait )
-                        {
-                            synchronized ( target )
-                            {
-                                target.notifyAll();
-                            }
-                        }
-                    }
-                    return target.getValue();
-                } );
-
-                if ( wait )
-                {
-                    synchronized ( target )
-                    {
-                        logger.debug( "Waiting for {} download to start for Koji build: {}", path, build.getNvr() );
-                        target.wait();
-                    }
-                }
-
-                transfer = target.getValue();
-            }
-            catch ( InterruptedException e )
-            {
-                logger.info( "Interrupted while waiting for transfer: {} of Koji build: {} to start", path,
-                             build.getNvr() );
-            }
-        }
-
-        return transfer;
-    }
-
-    private Transfer adjustTargetGroupAndRetrieve( final RepoAndTransfer proxyResult, final Group group, final String path,
-                                                   final EventMetadata eventMetadata )
+    private Group adjustTargetGroup( final RemoteRepository buildRepo, final Group group )
             throws IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
 
-        // Then, try to lookup the group -> targetGroup mapping in config, using the
+        // try to lookup the group -> targetGroup mapping in config, using the
         // entry-point group as the lookup key. If that returns null, the targetGroup is
         // the entry-point group.
         Group targetGroup = group;
@@ -484,7 +315,6 @@ public abstract class KojiContentManagerDecorator
             }
         }
 
-        HostedRepository buildRepo = proxyResult.repo;
         logger.info( "Adding Koji build proxy: {} to group: {}", buildRepo.getKey(), targetGroup.getKey() );
 
         // Append the new remote repo as a member of the targetGroup.
@@ -492,7 +322,7 @@ public abstract class KojiContentManagerDecorator
         try
         {
             storeDataManager.storeArtifactStore( targetGroup, new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                                 "Adding hosted repository for Koji build: "
+                                                                                 "Adding remote repository for Koji build: "
                                                                                          + buildRepo.getMetadata(
                                                                                          NVR ) ) );
         }
@@ -504,7 +334,7 @@ public abstract class KojiContentManagerDecorator
 
         logger.info( "Retrieving GAV: {} from: {}", buildRepo.getMetadata( CREATION_TRIGGER_GAV ), buildRepo );
 
-        return proxyResult.transfer;
+        return targetGroup;
 
         // TODO: how to index it for the group...?
     }
@@ -520,37 +350,6 @@ public abstract class KojiContentManagerDecorator
         logger.info( "Using Koji URL: {}", url );
 
         return url;
-    }
-
-    interface ErrorHandler
-    {
-        void error( String path, Object error, Throwable e );
-    }
-
-    private static final class StringFormatter
-    {
-        private String format;
-
-        private Object[] params;
-
-        public StringFormatter( final String format, final Object... params )
-        {
-            this.format = format;
-            this.params = params;
-        }
-
-        @Override
-        public String toString()
-        {
-            return String.format( format, params );
-        }
-    }
-
-    private static final class RepoAndTransfer
-    {
-        private HostedRepository repo;
-
-        private Transfer transfer;
     }
 
 }
