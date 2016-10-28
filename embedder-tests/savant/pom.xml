@@ -80,6 +80,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>io.swagger</groupId>
+      <artifactId>swagger-annotations</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-pkg-maven</artifactId>
       <scope>test</scope>
