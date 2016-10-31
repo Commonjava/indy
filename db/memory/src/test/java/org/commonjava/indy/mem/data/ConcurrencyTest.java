@@ -28,6 +28,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -51,7 +52,7 @@ public class ConcurrencyTest
             throws IndyDataException, InterruptedException, ExecutionException
     {
         ExecutorService executor = Executors.newFixedThreadPool( 2 );
-        ExecutorCompletionService<Void> completionService = new ExecutorCompletionService<Void>( executor );
+        ExecutorCompletionService<String> completionService = new ExecutorCompletionService<>( executor );
         AtomicInteger count = new AtomicInteger( 0 );
 
         RemoteRepository repo = new RemoteRepository( "central", "http://repo.maven.apache.org/maven2" );
@@ -81,23 +82,27 @@ public class ConcurrencyTest
 
         for ( int i = 0; i < count.get(); i++ )
         {
-            Future<Void> future = completionService.take();
-            future.get();
+            Future<String> future = completionService.take();
+            assertThat( future.get(), nullValue() );
         }
     }
 
     private static final class TestStoreEventDispatcher
             extends NoOpStoreEventDispatcher
     {
+        static int counter = 0;
+
         private RemoteRepository repo;
 
-        private final ExecutorCompletionService<Void> completionService;
+        private final ExecutorCompletionService<String> completionService;
+
+        private final int idx = counter++;
 
         private final AtomicInteger count;
 
         private StoreDataManager dataManager;
 
-        public TestStoreEventDispatcher( RemoteRepository repo, ExecutorCompletionService<Void> completionService,
+        public TestStoreEventDispatcher( RemoteRepository repo, ExecutorCompletionService<String> completionService,
                                          AtomicInteger count )
         {
             this.repo = repo;
@@ -118,15 +123,21 @@ public class ConcurrencyTest
                     logger.debug( "Grabbing groups containing: {}", repo.getKey() );
                     try
                     {
-                        assertThat( dataManager.getGroupsContaining( repo.getKey() ).isEmpty(), equalTo( false ) );
+                        if (!dataManager.getGroupsContaining( repo.getKey() ).isEmpty())
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            return Thread.currentThread().getName() + "[execution: " + idx + "] cannot find any groups containing: " + repo.getKey();
+                        }
                     }
                     catch ( IndyDataException e )
                     {
                         e.printStackTrace();
-                        fail( "Failed to retrieve groups containing: " + repo.getKey() );
                     }
 
-                    return null;
+                    return "Failed to retrieve groups containing: " + repo.getKey();
                 } );
             }
         }
