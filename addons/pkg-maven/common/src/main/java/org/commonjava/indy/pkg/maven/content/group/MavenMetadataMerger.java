@@ -22,6 +22,7 @@ import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.core.content.group.MetadataMerger;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
@@ -29,6 +30,9 @@ import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
+import javax.inject.Inject;
 import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -42,10 +46,13 @@ import java.util.List;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.indy.util.LocationUtils.getKey;
 
-@javax.enterprise.context.ApplicationScoped
+@ApplicationScoped
 public class MavenMetadataMerger
     implements MetadataMerger
 {
+
+    @Inject
+    private Instance<MavenMetadataProvider> metadataProviders;
 
     public class SnapshotVersionComparator
         implements Comparator<SnapshotVersion>
@@ -173,6 +180,29 @@ public class MavenMetadataMerger
             {
                 closeQuietly( fr );
                 closeQuietly( stream );
+            }
+        }
+
+        Versioning versioning = master.getVersioning();
+        if ( versioning != null && versioning.getVersions() != null )
+        {
+            if ( metadataProviders != null )
+            {
+                for ( MavenMetadataProvider provider : metadataProviders )
+                {
+                    try
+                    {
+                        Metadata toMerge = provider.getMetadata( group.getKey(), path );
+                        if ( toMerge != null )
+                        {
+                            merged = master.merge( toMerge ) || merged;
+                        }
+                    }
+                    catch ( IndyWorkflowException e )
+                    {
+                        logger.error( String.format( "Cannot read metadata: %s from metadata provider: %s. Reason: %s", path, provider.getClass().getSimpleName(), e.getMessage() ), e );
+                    }
+                }
             }
         }
 
