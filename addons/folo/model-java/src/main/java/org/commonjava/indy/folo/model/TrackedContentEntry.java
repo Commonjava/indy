@@ -18,55 +18,35 @@ package org.commonjava.indy.folo.model;
 import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
-import org.hibernate.search.annotations.Analyze;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.FieldBridge;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.IndexedEmbedded;
-import org.infinispan.query.Transformable;
 
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-@Indexed
-@Transformable( transformer = TrackedContentEntryTransformer.class )
 public class TrackedContentEntry
         implements Comparable<TrackedContentEntry>,Externalizable
 {
-    @IndexedEmbedded
     private TrackingKey trackingKey;
 
-    @Field
-    @FieldBridge(impl = StoreKeyFieldBridge.class)
     private StoreKey storeKey;
 
-    @Field
     private AccessChannel accessChannel;
 
-    @Field
     private String path;
 
-    @Field
     private String originUrl;
 
-    @Field
     private StoreEffect effect;
 
-    @Field
     private String md5;
 
-    @Field
     private String sha256;
 
-    @Field
     private String sha1;
 
-    @Field
     private Long size;
 
-    @Field( analyze = Analyze.NO )
     private long index = System.currentTimeMillis();
 
     public TrackedContentEntry()

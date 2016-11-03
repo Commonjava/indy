@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.folo.model;
+package org.commonjava.indy.folo.data.idxmodel;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.commonjava.indy.folo.model.TrackedContentEntry;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.infinispan.query.Transformer;
 
@@ -24,10 +25,11 @@ import javax.inject.Inject;
 import java.io.IOException;
 
 /**
- * A customized infinispan {@link org.infinispan.query.Transformer} used for {@link TrackedContentEntry}
+ * A customized infinispan {@link Transformer} used for {@link TrackedContentEntry}
  * to support it to be used as infinispan cache key in indexing.
  */
-public class TrackedContentEntryTransformer implements Transformer
+public class TrackedContentEntryTransformer
+        implements Transformer
 {
     @Inject
     private IndyObjectMapper objectMapper;
