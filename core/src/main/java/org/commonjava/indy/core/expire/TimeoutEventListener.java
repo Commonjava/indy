@@ -16,6 +16,7 @@
 package org.commonjava.indy.core.expire;
 
 import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.AbstractStoreDeleteEvent;
 import org.commonjava.indy.change.event.ArtifactStorePostUpdateEvent;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
@@ -76,55 +77,101 @@ public class TimeoutEventListener
     public void onExpirationEvent( @Observes final SchedulerEvent event )
     {
         if ( event.getEventType() != SchedulerEventType.TRIGGER || !event.getJobType()
-                                                                         .equals( ScheduleManager.CONTENT_JOB_TYPE ) )
+                                                                         .equals( ScheduleManager.CONTENT_JOB_TYPE )
+                || !event.getJobType().equals( ScheduleManager.STORE_JOB_TYPE ) )
         {
             return;
         }
 
-        ContentExpiration expiration;
-        try
+        if ( event.getJobType().equals( ScheduleManager.STORE_JOB_TYPE ) )
         {
-            expiration = objectMapper.readValue( event.getPayload(), ContentExpiration.class );
-        }
-        catch ( final IOException e )
-        {
-            logger.error( "Failed to read ContentExpiration from event payload.", e );
-            return;
-        }
-
-        final StoreKey key = expiration.getKey();
-        final String path = expiration.getPath();
-
-        boolean deleted = false;
-        try
-        {
-            final ArtifactStore store = storeManager.getArtifactStore( key );
-
-            logger.info( "[EXPIRED; DELETE] {}:{}", key, path );
-            deleted = fileManager.delete( store, path, new EventMetadata() );
-        }
-        catch ( final IndyWorkflowException | IndyDataException e )
-        {
-            logger.error(
-                    String.format( "Failed to delete expired file for: %s, %s. Reason: %s", key, path, e.getMessage() ),
-                    e );
-
-            return;
-        }
-
-        if ( deleted )
-        {
+            StoreKey key;
             try
             {
-                scheduleManager.deleteJob( scheduleManager.groupName( key, ScheduleManager.CONTENT_JOB_TYPE ), path );
+                key = objectMapper.readValue( event.getPayload(), StoreKey.class );
             }
-            catch ( final IndySchedulerException e )
+            catch ( final IOException e )
             {
-                logger.error(
-                        String.format( "Failed to clean metadata related to expired: %s in: %s. Reason: %s", path, key,
-                                       e.getMessage() ), e );
+                logger.error( "Failed to read StoreKey from event payload.", e );
+                return;
             }
 
+            boolean deleted = false;
+            try
+            {
+                final ArtifactStore store = storeManager.getArtifactStore( key );
+                storeManager.deleteArtifactStore( key, new ChangeSummary( "admin", store.getMetadata(
+                        ArtifactStore.METADATA_CHANGELOG ) ), new EventMetadata() );
+                deleted = true;
+            }
+            catch ( final IndyDataException e )
+            {
+                logger.error(
+                        String.format( "Failed to delete expired store for: %s. Reason: %s", key, e.getMessage() ), e );
+
+                return;
+            }
+            if ( deleted )
+            {
+                try
+                {
+                    scheduleManager.deleteJob( scheduleManager.groupName( key, ScheduleManager.STORE_JOB_TYPE ),
+                                               ScheduleManager.STORE_JOB_TYPE );
+                }
+                catch ( final IndySchedulerException e )
+                {
+                    logger.error( String.format( "Failed to clean metadata related to expired: %s. Reason: %s", key,
+                                                 e.getMessage() ), e );
+                }
+            }
+        }
+
+        else
+        {
+            ContentExpiration expiration;
+            try
+            {
+                expiration = objectMapper.readValue( event.getPayload(), ContentExpiration.class );
+            }
+            catch ( final IOException e )
+            {
+                logger.error( "Failed to read ContentExpiration from event payload.", e );
+                return;
+            }
+
+            final StoreKey key = expiration.getKey();
+            final String path = expiration.getPath();
+
+            boolean deleted = false;
+
+            try
+            {
+                final ArtifactStore store = storeManager.getArtifactStore( key );
+                logger.info( "[EXPIRED; DELETE] {}:{}", key, path );
+                deleted = fileManager.delete( store, path, new EventMetadata() );
+            }
+            catch ( final IndyWorkflowException | IndyDataException e )
+            {
+                logger.error( String.format( "Failed to delete expired file for: %s, %s. Reason: %s", key, path,
+                                             e.getMessage() ), e );
+                return;
+            }
+
+            if ( deleted )
+            {
+                try
+                {
+                    scheduleManager.deleteJob( scheduleManager.groupName( key, ScheduleManager.CONTENT_JOB_TYPE ),
+                                               path );
+                }
+                catch ( final IndySchedulerException e )
+                {
+                    logger.error(
+                            String.format( "Failed to clean metadata related to expired: %s in: %s. Reason: %s", path,
+                                           key, e.getMessage() ), e );
+                }
+
+            }
         }
     }
 

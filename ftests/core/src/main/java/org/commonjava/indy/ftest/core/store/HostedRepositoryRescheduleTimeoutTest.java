@@ -13,74 +13,62 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.ftest.core.content;
+package org.commonjava.indy.ftest.core.store;
 
-import org.commonjava.indy.client.core.helper.PathInfo;
-import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.HostedRepository;
-import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.junit.Test;
 
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 public class HostedRepositoryRescheduleTimeoutTest
-        extends AbstractContentManagementTest
+        extends AbstractStoreManagementTest
 {
-
     @Test
     public void repoTimeout()
             throws Exception
     {
-
         final int REPO_TIMEOUT_SECONDS = 6;
         final int TIMEOUT_WAITING_MILLISECONDS = 3000;
 
+        final String content = "This is a test: " + System.nanoTime();
+        final InputStream stream = new ByteArrayInputStream( content.getBytes() );
+
         final String path = "/path/to/foo.class";
+        final String hostedRepo = "hostedRepo";
 
-        final String hostedName = "test";
-
-        final HostedRepository repo = new HostedRepository( hostedName );
+        HostedRepository repo = new HostedRepository( hostedRepo );
         repo.setRepoTimeoutSeconds( REPO_TIMEOUT_SECONDS );
 
-        final HostedRepository result = client.stores().create( repo, name.getMethodName(), HostedRepository.class );
+        repo = client.stores().create( repo, "adding hosted", HostedRepository.class );
 
-        assertNotNull( result );
+        assertThat( client.stores().exists( hosted, repo.getName() ), equalTo( true ) );
+        assertThat( client.content().exists( hosted, repo.getName(), path ), equalTo( false ) );
 
-        PathInfo pomResult = client.content().getInfo( hosted, hostedName, path );
-        client.content().get( hosted, hostedName, path );
-
-        assertNotNull( pomResult );
-        assertThat( pomResult.exists(), equalTo( true ) );
-        assertThat( client.stores().exists( StoreType.hosted, hostedName ), equalTo( true ) );
+        client.content().store( hosted, repo.getName(), path, stream );
+        assertThat( client.stores().exists( hosted, repo.getName() ), equalTo( true ) );
+        assertThat( client.content().exists( hosted, repo.getName(), path ), equalTo( true ) );
 
         // wait for first 3s
         Thread.sleep( TIMEOUT_WAITING_MILLISECONDS );
 
         // as the normal content re-request, the timeout interval should be re-scheduled
-        client.content().get( hosted, hostedName, path );
+        client.content().get( repo.getKey(), path );
 
         // will wait another 3.5s
         Thread.sleep( TIMEOUT_WAITING_MILLISECONDS + 500 );
         // as rescheduled in 3s, the new timeout should be 3+6=9s, so the artifact should not be deleted
-        assertThat( pomResult.exists(), equalTo( true ) );
-        assertThat( client.stores().exists( StoreType.hosted, hostedName ), equalTo( true ) );
+        assertThat( client.stores().exists( hosted, repo.getName() ), equalTo( true ) );
+        assertThat( client.content().exists( hosted, repo.getName(), path ), equalTo( true ) );
 
         // another round wait for 3.5s
         Thread.sleep( TIMEOUT_WAITING_MILLISECONDS + 500 );
-        assertThat( pomResult.exists(), equalTo( false ) );
-        assertThat( client.stores().exists( StoreType.hosted, hostedName ), equalTo( false ) );
-    }
 
-    @Override
-    protected void initTestConfig( CoreServerFixture fixture )
-            throws IOException
-    {
-        writeConfigFile( "main.conf", readTestResource( "default-test-main.conf" ) );
+        assertThat( client.stores().exists( hosted, repo.getName() ), equalTo( false ) );
+        assertThat( client.content().exists( hosted, repo.getName(), path ), equalTo( false ) );
     }
 }
