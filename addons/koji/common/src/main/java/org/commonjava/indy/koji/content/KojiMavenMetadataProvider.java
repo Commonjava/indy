@@ -15,6 +15,7 @@ import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.maven.atlas.ident.ref.InvalidRefException;
 import org.commonjava.maven.atlas.ident.ref.ProjectRef;
 import org.commonjava.maven.atlas.ident.ref.SimpleProjectRef;
+import org.commonjava.maven.atlas.ident.util.VersionUtils;
 import org.commonjava.maven.atlas.ident.version.InvalidVersionSpecificationException;
 import org.commonjava.maven.atlas.ident.version.SingleVersion;
 import org.slf4j.Logger;
@@ -29,8 +30,10 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
@@ -58,7 +61,17 @@ public class KojiMavenMetadataProvider
     @Inject
     private IndyKojiConfig kojiConfig;
 
-    private Map<ProjectRef, ReentrantLock> versionMetadataLocks = new HashMap<>();
+    private final Map<ProjectRef, ReentrantLock> versionMetadataLocks = new HashMap<>();
+
+    protected KojiMavenMetadataProvider(){}
+
+    public KojiMavenMetadataProvider( CacheHandle<ProjectRef, Metadata> versionMetadata, KojiClient kojiClient,
+                                      IndyKojiConfig kojiConfig )
+    {
+        this.versionMetadata = versionMetadata;
+        this.kojiClient = kojiClient;
+        this.kojiConfig = kojiConfig;
+    }
 
     public Metadata getMetadata( StoreKey targetKey, String path )
             throws IndyWorkflowException
@@ -139,7 +152,7 @@ public class KojiMavenMetadataProvider
 
                         List<KojiArchiveInfo> archives = kojiClient.listArchivesMatching( ref, session );
 
-                        List<SingleVersion> versions = new ArrayList<>();
+                        Set<SingleVersion> versions = new HashSet<>();
                         for ( KojiArchiveInfo archive : archives )
                         {
                             if ( !archive.getFilename().endsWith( ".pom" ) )
@@ -156,7 +169,7 @@ public class KojiMavenMetadataProvider
                                 {
                                     try
                                     {
-                                        versions.add( new SingleVersion( archive.getVersion() ) );
+                                        versions.add( VersionUtils.createSingleVersion( archive.getVersion() ) );
                                     }
                                     catch ( InvalidVersionSpecificationException e )
                                     {
@@ -173,17 +186,18 @@ public class KojiMavenMetadataProvider
                             return null;
                         }
 
-                        Collections.sort( versions );
+                        List<SingleVersion> sortedVersions = new ArrayList<>( versions );
+                        Collections.sort( sortedVersions );
 
                         Metadata md = new Metadata();
                         md.setGroupId( ref.getGroupId() );
                         md.setArtifactId( ref.getArtifactId() );
 
                         Versioning versioning = new Versioning();
-                        versioning.setRelease( versions.get( versions.size() - 1 ).renderStandard() );
-                        versioning.setLatest( versions.get( versions.size() - 1 ).renderStandard() );
+                        versioning.setRelease( sortedVersions.get( versions.size() - 1 ).renderStandard() );
+                        versioning.setLatest( sortedVersions.get( versions.size() - 1 ).renderStandard() );
                         versioning.setVersions(
-                                versions.stream().map( ( v ) -> v.renderStandard() ).collect( Collectors.toList() ) );
+                                sortedVersions.stream().map( ( v ) -> v.renderStandard() ).collect( Collectors.toList() ) );
 
                         Date lastUpdated = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) ).getTime();
                         versioning.setLastUpdated( new SimpleDateFormat( LAST_UPDATED_FORMAT ).format( lastUpdated ) );
@@ -202,14 +216,12 @@ public class KojiMavenMetadataProvider
 
                 Metadata md = metadata;
 
-                // FIXME: Need a way to listen for cache expiration and re-request this?
-                versionMetadata.execute( ( cache ) -> cache.getAdvancedCache()
-                                                           .put( ref, md, kojiConfig.getMetadataTimeoutSeconds(),
-                                                                 TimeUnit.SECONDS ) );
-
                 if ( metadata != null )
                 {
-                    versionMetadata.put( ga, metadata );
+                    // FIXME: Need a way to listen for cache expiration and re-request this?
+                    versionMetadata.execute( ( cache ) -> cache.getAdvancedCache()
+                                                               .put( ref, md, kojiConfig.getMetadataTimeoutSeconds(),
+                                                                     TimeUnit.SECONDS ) );
                 }
             }
 
