@@ -59,7 +59,7 @@ public class FoloCacheProducer
     public void initIndexing()
     {
         registerIndexableEntities();
-        regesterTransformer();
+        registerTransformer();
     }
 
     private void registerIndexableEntities()
@@ -101,7 +101,7 @@ public class FoloCacheProducer
         }
     }
 
-    private void regesterTransformer(){
+    private void registerTransformer(){
         final CacheHandle<TrackingKey, TrackedContent> handler =
                 cacheProducer.getCache( SEALED_NAME, TrackingKey.class, TrackedContent.class );
 
