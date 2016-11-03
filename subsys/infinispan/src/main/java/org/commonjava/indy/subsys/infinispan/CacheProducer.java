@@ -28,6 +28,7 @@ import org.commonjava.indy.subsys.infinispan.conf.InfinispanSubsystemConfig;
 import org.commonjava.indy.subsys.infinispan.inject.qualifer.IndyCache;
 import org.infinispan.Cache;
 import org.infinispan.commons.marshall.MarshallableTypeHints;
+import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.io.GridFile;
 import org.infinispan.io.GridFilesystem;
 import org.infinispan.manager.DefaultCacheManager;
@@ -153,6 +154,24 @@ public class CacheProducer
         CacheHandle<K, V> handle = new CacheHandle( named, cache );
         caches.put( named, handle );
         return handle;
+    }
+
+    public synchronized Configuration getCacheConfiguration( String name )
+    {
+        if ( cacheManager == null )
+        {
+            throw new IllegalStateException( "Cannot access CacheManager. Indy seems to be in a state of shutdown." );
+        }
+        return cacheManager.getCacheConfiguration( name );
+    }
+
+    public synchronized Configuration setCacheConfiguration( String name, Configuration config )
+    {
+        if ( cacheManager == null )
+        {
+            throw new IllegalStateException( "Cannot access CacheManager. Indy seems to be in a state of shutdown." );
+        }
+        return cacheManager.defineConfiguration( name, config );
     }
 
     @Override
