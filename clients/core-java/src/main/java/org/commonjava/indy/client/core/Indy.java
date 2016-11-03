@@ -28,6 +28,7 @@ import org.commonjava.indy.client.core.module.IndyStatsClientModule;
 import org.commonjava.indy.client.core.module.IndyStoresClientModule;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.stats.IndyVersioning;
+import org.commonjava.util.jhttpc.model.SiteConfig;
 
 public class Indy
     implements Closeable
@@ -94,8 +95,15 @@ public class Indy
                   final Collection<IndyClientModule> modules )
         throws IndyClientException
     {
+        this( baseUrl, authenticator, mapper, modules, null );
+    }
+
+    public Indy( final String baseUrl, final IndyClientAuthenticator authenticator, final IndyObjectMapper mapper,
+                 final Collection<IndyClientModule> modules, SiteConfig location )
+            throws IndyClientException
+    {
         this.http =
-            new IndyClientHttp( baseUrl, authenticator, mapper == null ? new IndyObjectMapper( true ) : mapper );
+            new IndyClientHttp( baseUrl, authenticator, mapper == null ? new IndyObjectMapper( true ) : mapper, location );
         this.moduleRegistry = new HashSet<>();
 
         setupStandardModules();

@@ -15,23 +15,28 @@
  */
 package org.commonjava.indy.client.core.auth;
 
-import java.net.URL;
-
+import org.apache.http.auth.AuthScope;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.commonjava.indy.client.core.IndyClientException;
+import org.commonjava.util.jhttpc.JHttpCException;
+import org.commonjava.util.jhttpc.auth.ClientAuthenticator;
+import org.commonjava.util.jhttpc.auth.PasswordType;
+import org.commonjava.util.jhttpc.model.SiteConfig;
 
-public abstract class IndyClientAuthenticator
+import java.net.URL;
+
+public abstract class IndyClientAuthenticator extends ClientAuthenticator
 {
-
-    public HttpClientContext decoratePrototypeContext( final URL url, final HttpClientContext ctx )
-        throws IndyClientException
+    @Override
+    public HttpClientContext decoratePrototypeContext(AuthScope scope, SiteConfig location, PasswordType type, HttpClientContext ctx)
+            throws JHttpCException
     {
         return ctx;
     }
 
-    public HttpClientBuilder decorateClientBuilder( final URL url, final HttpClientBuilder builder )
-        throws IndyClientException
+    @Override
+    public HttpClientBuilder decorateClientBuilder(HttpClientBuilder builder)
+            throws JHttpCException
     {
         return builder;
     }

@@ -34,8 +34,8 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
+import org.apache.http.auth.AuthScope;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.AbstractExecutionAwareRequest;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -57,6 +57,9 @@ import org.commonjava.indy.client.core.helper.CloseBlockingConnectionManager;
 import org.commonjava.indy.client.core.helper.HttpResources;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.util.jhttpc.HttpFactory;
+import org.commonjava.util.jhttpc.JHttpCException;
+import org.commonjava.util.jhttpc.model.SiteConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,9 +76,13 @@ public class IndyClientHttp
 
     private final IndyObjectMapper objectMapper;
 
+    private final SiteConfig location;
+
     private CloseBlockingConnectionManager connectionManager;
 
     private HttpClientContext prototypeCtx;
+
+    private HttpFactory factory;
 
     private final IndyClientAuthenticator authenticator;
 
@@ -85,9 +92,17 @@ public class IndyClientHttp
                             final IndyObjectMapper mapper )
             throws IndyClientException
     {
+        this( baseUrl, authenticator, mapper, null);
+    }
+
+    public IndyClientHttp(final String baseUrl, final IndyClientAuthenticator authenticator,
+                          final IndyObjectMapper mapper, SiteConfig location )
+            throws IndyClientException
+    {
         this.baseUrl = baseUrl;
         this.authenticator = authenticator;
         this.objectMapper = mapper;
+        this.location = location;
 
         initPrototypeContext();
     }
@@ -104,18 +119,41 @@ public class IndyClientHttp
             throw new IndyClientException( "Invalid base-url: {}", e, baseUrl );
         }
 
-        HttpClientContext ctx = HttpClientContext.create();
-        if ( authenticator != null )
-        {
-            ctx = authenticator.decoratePrototypeContext( url, ctx );
-        }
+        try {
+            HttpClientContext ctx = null;
 
-        this.prototypeCtx = ctx;
+            if ( location != null )
+            {
+                factory = new HttpFactory(authenticator);
+                ctx = factory.createContext( location );
+            }
+            else
+            {
+                ctx = HttpClientContext.create();
+                if (authenticator != null)
+                {
+                    final AuthScope as =
+                            new AuthScope( url.getHost(), url.getPort() < 0 ? url.getDefaultPort() : url.getPort() );
+
+                    ctx = authenticator.decoratePrototypeContext(as, null, null, ctx);
+                }
+            }
+            this.prototypeCtx = ctx;
+        }
+        catch (JHttpCException e)
+        {
+            throw new IndyClientException( "Create context error: {}", e, baseUrl, location );
+        }
     }
 
     public void connect( final HttpClientConnectionManager connectionManager )
             throws IndyClientException
     {
+        if ( location != null )
+        {
+            return;
+        }
+
         if ( this.connectionManager != null )
         {
             throw new IndyClientException( "Already connected! (Possibly when you called a client "
@@ -127,6 +165,11 @@ public class IndyClientHttp
 
     public synchronized void connect()
     {
+        if ( location != null )
+        {
+            return;
+        }
+
         if ( this.connectionManager == null )
         {
             final PoolingHttpClientConnectionManager pcm = new PoolingHttpClientConnectionManager();
@@ -607,7 +650,21 @@ public class IndyClientHttp
     public void close()
     {
         logger.debug( "Shutting down indy client HTTP manager" );
-        connectionManager.reallyShutdown();
+        if ( location != null )
+        {
+            try
+            {
+                factory.close();
+            }
+            catch (IOException e)
+            {
+                logger.debug( "Shutting down indy client HTTP factory error", e ); // log and return quietly
+            }
+        }
+        else
+        {
+            connectionManager.reallyShutdown();
+        }
     }
 
     public void delete( final String path )
@@ -758,18 +815,47 @@ public class IndyClientHttp
     public CloseableHttpClient newClient()
             throws IndyClientException
     {
-        HttpClientBuilder builder = HttpClients.custom().setConnectionManager( connectionManager );
-
-        if ( authenticator != null )
+        try
         {
-            builder = authenticator.decorateClientBuilder( url, builder );
+            if ( location != null )
+            {
+                return factory.createClient(location);
+            }
+            else
+            {
+                HttpClientBuilder builder = HttpClients.custom().setConnectionManager(connectionManager);
+
+                if (authenticator != null)
+                {
+                    builder = authenticator.decorateClientBuilder( builder );
+                }
+                return builder.build();
+            }
         }
-        return builder.build();
+        catch (JHttpCException e)
+        {
+            throw new IndyClientException( "Indy request failed: %s", e, e.getMessage() );
+        }
     }
 
     public HttpClientContext newContext()
     {
-        return new HttpClientContext( prototypeCtx );
+        if ( location != null )
+        {
+            try
+            {
+                return factory.createContext(location);
+            }
+            catch (JHttpCException e)
+            {
+                logger.debug( "Indy request failed: %s", e, e.getMessage() );
+                return null;
+            }
+        }
+        else
+        {
+            return new HttpClientContext(prototypeCtx);
+        }
     }
 
     public HttpGet newRawGet( final String url )

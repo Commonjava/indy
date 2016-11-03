@@ -22,6 +22,8 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.commonjava.util.jhttpc.auth.PasswordType;
+import org.commonjava.util.jhttpc.model.SiteConfig;
 
 public class BasicAuthenticator
     extends IndyClientAuthenticator
@@ -37,19 +39,22 @@ public class BasicAuthenticator
         this.pass = pass;
     }
 
-    @Override
     public HttpClientContext decoratePrototypeContext( final URL url, final HttpClientContext ctx )
+    {
+        final AuthScope as =
+                new AuthScope( url.getHost(), url.getPort() < 0 ? url.getDefaultPort() : url.getPort() );
+        return decoratePrototypeContext(as, null, null, ctx);
+    }
+
+    @Override
+    public HttpClientContext decoratePrototypeContext(AuthScope scope, SiteConfig location, PasswordType type, HttpClientContext ctx)
     {
         if ( user != null )
         {
-            final AuthScope as =
-                new AuthScope( url.getHost(), url.getPort() < 0 ? url.getDefaultPort() : url.getPort() );
-
             final CredentialsProvider credProvider = new BasicCredentialsProvider();
-            credProvider.setCredentials( as, new UsernamePasswordCredentials( user, pass ) );
+            credProvider.setCredentials( scope, new UsernamePasswordCredentials( user, pass ) );
             ctx.setCredentialsProvider( credProvider );
         }
-
         return ctx;
     }
 
