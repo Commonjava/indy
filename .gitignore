@@ -19,3 +19,6 @@ uis/layover/node_modules/
 *.iml
 *.iws
 *.ipr
+
+embedders/savant/org.commonjava.indy.folo.model.TrackedContentEntry/segments*
+embedders/savant/org.commonjava.indy.folo.model.TrackingKey/*
