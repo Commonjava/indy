@@ -60,6 +60,7 @@ import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.util.jhttpc.HttpFactory;
 import org.commonjava.util.jhttpc.JHttpCException;
 import org.commonjava.util.jhttpc.model.SiteConfig;
+import org.commonjava.util.jhttpc.model.SiteConfigBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,19 +73,15 @@ public class IndyClientHttp
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private final String baseUrl;
-
     private final IndyObjectMapper objectMapper;
 
     private final SiteConfig location;
 
-    private CloseBlockingConnectionManager connectionManager;
-
-    private HttpClientContext prototypeCtx;
-
     private HttpFactory factory;
 
     private final IndyClientAuthenticator authenticator;
+
+    private String baseUrl;
 
     private URL url;
 
@@ -92,24 +89,25 @@ public class IndyClientHttp
                             final IndyObjectMapper mapper )
             throws IndyClientException
     {
-        this( baseUrl, authenticator, mapper, null);
+        this( authenticator, mapper, new SiteConfigBuilder( "indy", baseUrl ).build() );
     }
 
-    public IndyClientHttp(final String baseUrl, final IndyClientAuthenticator authenticator,
+    public IndyClientHttp(final IndyClientAuthenticator authenticator,
                           final IndyObjectMapper mapper, SiteConfig location )
             throws IndyClientException
     {
-        this.baseUrl = baseUrl;
         this.authenticator = authenticator;
         this.objectMapper = mapper;
         this.location = location;
 
-        initPrototypeContext();
+        init();
     }
 
-    private void initPrototypeContext()
+    private void init()
             throws IndyClientException
     {
+        baseUrl = location.getUri();
+
         try
         {
             url = new URL( baseUrl );
@@ -119,64 +117,18 @@ public class IndyClientHttp
             throw new IndyClientException( "Invalid base-url: {}", e, baseUrl );
         }
 
-        try {
-            HttpClientContext ctx = null;
-
-            if ( location != null )
-            {
-                factory = new HttpFactory(authenticator);
-                ctx = factory.createContext( location );
-            }
-            else
-            {
-                ctx = HttpClientContext.create();
-                if (authenticator != null)
-                {
-                    final AuthScope as =
-                            new AuthScope( url.getHost(), url.getPort() < 0 ? url.getDefaultPort() : url.getPort() );
-
-                    ctx = authenticator.decoratePrototypeContext(as, null, null, ctx);
-                }
-            }
-            this.prototypeCtx = ctx;
-        }
-        catch (JHttpCException e)
-        {
-            throw new IndyClientException( "Create context error: {}", e, baseUrl, location );
-        }
+        factory = new HttpFactory( authenticator );
     }
 
     public void connect( final HttpClientConnectionManager connectionManager )
             throws IndyClientException
     {
-        if ( location != null )
-        {
-            return;
-        }
-
-        if ( this.connectionManager != null )
-        {
-            throw new IndyClientException( "Already connected! (Possibly when you called a client "
-                                                    + "API method previously.) Call close before connecting again." );
-        }
-
-        this.connectionManager = new CloseBlockingConnectionManager( connectionManager );
+        // NOP, now that we've moved to HttpFactory.
     }
 
     public synchronized void connect()
     {
-        if ( location != null )
-        {
-            return;
-        }
-
-        if ( this.connectionManager == null )
-        {
-            final PoolingHttpClientConnectionManager pcm = new PoolingHttpClientConnectionManager();
-            pcm.setDefaultMaxPerRoute( GLOBAL_MAX_CONNECTIONS );
-
-            this.connectionManager = new CloseBlockingConnectionManager( pcm );
-        }
+        // NOP, now that we've moved to HttpFactory.
     }
 
     public Map<String, String> head( final String path )
@@ -650,20 +602,13 @@ public class IndyClientHttp
     public void close()
     {
         logger.debug( "Shutting down indy client HTTP manager" );
-        if ( location != null )
+        try
         {
-            try
-            {
-                factory.close();
-            }
-            catch (IOException e)
-            {
-                logger.debug( "Shutting down indy client HTTP factory error", e ); // log and return quietly
-            }
+            factory.close();
         }
-        else
+        catch (IOException e)
         {
-            connectionManager.reallyShutdown();
+            logger.debug( "Shutting down indy client HTTP factory error", e ); // log and return quietly
         }
     }
 
@@ -817,20 +762,7 @@ public class IndyClientHttp
     {
         try
         {
-            if ( location != null )
-            {
-                return factory.createClient(location);
-            }
-            else
-            {
-                HttpClientBuilder builder = HttpClients.custom().setConnectionManager(connectionManager);
-
-                if (authenticator != null)
-                {
-                    builder = authenticator.decorateClientBuilder( builder );
-                }
-                return builder.build();
-            }
+            return factory.createClient(location);
         }
         catch (JHttpCException e)
         {
@@ -839,22 +771,15 @@ public class IndyClientHttp
     }
 
     public HttpClientContext newContext()
+            throws IndyClientException
     {
-        if ( location != null )
+        try
         {
-            try
-            {
-                return factory.createContext(location);
-            }
-            catch (JHttpCException e)
-            {
-                logger.debug( "Indy request failed: %s", e, e.getMessage() );
-                return null;
-            }
+            return factory.createContext(location);
         }
-        else
+        catch (JHttpCException e)
         {
-            return new HttpClientContext(prototypeCtx);
+            throw new IndyClientException( "Indy request failed: %s", e, e.getMessage() );
         }
     }
 
