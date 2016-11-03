@@ -83,37 +83,31 @@ public class FoloCacheProducer
         Properties properties = new Properties();
         properties.put( Environment.MODEL_MAPPING, entryMapping);
 
-        for ( String name : Arrays.asList( SEALED_NAME, IN_PROGRESS_NAME ) )
+        Configuration sealedConfig=
+                cacheProducer.getCacheConfiguration( SEALED_NAME );
+
+        if ( sealedConfig == null )
         {
-            Configuration sealedConfig=
-                    cacheProducer.getCacheConfiguration( name );
+            sealedConfig = cacheProducer.getDefaultCacheConfiguration();
+        }
 
-            if ( sealedConfig == null )
-            {
-                sealedConfig = cacheProducer.getDefaultCacheConfiguration();
-            }
+        if ( sealedConfig != null )
+        {
+            final Configuration indexingConfig =
+                    new ConfigurationBuilder().read( sealedConfig ).indexing().withProperties( properties ).index(
+                            Index.LOCAL ).build();
 
-            if ( sealedConfig != null )
-            {
-                final Configuration indexingConfig =
-                        new ConfigurationBuilder().read( sealedConfig ).indexing().withProperties( properties ).index(
-                                Index.LOCAL ).build();
-
-                cacheProducer.setCacheConfiguration( name, indexingConfig );
-            }
+            cacheProducer.setCacheConfiguration( SEALED_NAME, indexingConfig );
         }
     }
 
     private void regesterTransformer(){
-        for ( String name : Arrays.asList( SEALED_NAME, IN_PROGRESS_NAME ) )
-        {
-            final CacheHandle<TrackingKey, TrackedContent> handler =
-                    cacheProducer.getCache( name, TrackingKey.class, TrackedContent.class );
+        final CacheHandle<TrackingKey, TrackedContent> handler =
+                cacheProducer.getCache( SEALED_NAME, TrackingKey.class, TrackedContent.class );
 
-            SearchManagerImplementor searchManager = handler.execute( cache -> (SearchManagerImplementor) Search.getSearchManager( cache ) );
+        SearchManagerImplementor searchManager = handler.execute( cache -> (SearchManagerImplementor) Search.getSearchManager( cache ) );
 
-            searchManager.registerKeyTransformer( TrackedContentEntry.class, TrackedContentEntryTransformer.class );
-        }
+        searchManager.registerKeyTransformer( TrackedContentEntry.class, TrackedContentEntryTransformer.class );
     }
 
     @FoloInprogressCache
