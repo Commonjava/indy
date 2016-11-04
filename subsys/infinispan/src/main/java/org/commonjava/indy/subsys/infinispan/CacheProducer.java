@@ -23,14 +23,10 @@ import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.conf.IndyConfiguration;
-import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.conf.InfinispanSubsystemConfig;
-import org.commonjava.indy.subsys.infinispan.inject.qualifer.IndyCache;
 import org.infinispan.Cache;
 import org.infinispan.commons.marshall.MarshallableTypeHints;
 import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.io.GridFile;
-import org.infinispan.io.GridFilesystem;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.slf4j.Logger;
@@ -38,20 +34,15 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.Produces;
-import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.commons.lang.StringUtils.isEmpty;
 import static org.commonjava.indy.subsys.infinispan.conf.InfinispanSubsystemConfig.ISPN_XML;
 
 /**
@@ -143,6 +134,9 @@ public class CacheProducer
         }
     }
 
+    /**
+     * Retrieve a cache with a pre-defined configuration (from infinispan.xml) or using the default cache config.
+     */
     public synchronized <K,V> CacheHandle<K,V> getCache(String named, Class<K> keyClass, Class<V> valueClass )
     {
         if ( cacheManager == null )
@@ -163,6 +157,16 @@ public class CacheProducer
             throw new IllegalStateException( "Cannot access CacheManager. Indy seems to be in a state of shutdown." );
         }
         return cacheManager.getCacheConfiguration( name );
+    }
+
+    public synchronized Configuration getDefaultCacheConfiguration()
+    {
+        if ( cacheManager == null )
+        {
+            throw new IllegalStateException( "Cannot access CacheManager. Indy seems to be in a state of shutdown." );
+        }
+
+        return cacheManager.getDefaultCacheConfiguration();
     }
 
     public synchronized Configuration setCacheConfiguration( String name, Configuration config )
