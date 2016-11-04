@@ -130,6 +130,7 @@ public class GroupMetaOverlapWithNestedGroupOfHostRepoMetaTest
         assertThat( stream, notNullValue() );
 
         String metadata = IOUtils.toString( stream );
+        stream.close();
 
         /* @formatter:off */
         final String groupContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -197,6 +198,8 @@ public class GroupMetaOverlapWithNestedGroupOfHostRepoMetaTest
         assertThat( stream, notNullValue() );
 
         metadata = IOUtils.toString( stream );
+        stream.close();
+
         /* @formatter:off */
         final String updGroupContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<metadata>\n" +

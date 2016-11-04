@@ -76,6 +76,7 @@ public class GroupIgnoresDisabledRemoteRepositoryTest
 
         final String content = IOUtils.toString( stream );
         assertThat( content, equalTo( enabledContent ) );
+        stream.close();
     }
 
     @Override

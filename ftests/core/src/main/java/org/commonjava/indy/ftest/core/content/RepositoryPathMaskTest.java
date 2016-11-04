@@ -79,6 +79,7 @@ public class RepositoryPathMaskTest
 
         final String str = IOUtils.toString( stream );
         assertThat( str, equalTo( content ) );
+        stream.close();
 
         // get stream for path_2 via group (null)
         stream = client.content()
@@ -91,6 +92,7 @@ public class RepositoryPathMaskTest
                 .get( remote, remote1.getName(), path_1 );
 
         assertThat( stream, notNullValue() );
+        stream.close();
 
         // get stream for path_2 via concrete repo (null)
         stream = client.content()

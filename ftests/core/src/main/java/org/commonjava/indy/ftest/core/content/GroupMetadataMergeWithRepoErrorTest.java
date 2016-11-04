@@ -90,6 +90,7 @@ public class GroupMetadataMergeWithRepoErrorTest
 
         final String metadata = IOUtils.toString( stream );
         assertThat( metadata, equalTo( repo1Content ) );
+        stream.close();
     }
 
     @Override

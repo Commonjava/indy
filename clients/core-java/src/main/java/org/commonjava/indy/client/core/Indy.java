@@ -15,11 +15,6 @@
  */
 package org.commonjava.indy.client.core;
 
-import java.io.Closeable;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
 import com.fasterxml.jackson.databind.Module;
 import org.commonjava.indy.client.core.auth.IndyClientAuthenticator;
 import org.commonjava.indy.client.core.module.IndyContentClientModule;
@@ -31,8 +26,14 @@ import org.commonjava.indy.stats.IndyVersioning;
 import org.commonjava.util.jhttpc.model.SiteConfig;
 import org.commonjava.util.jhttpc.model.SiteConfigBuilder;
 
+import java.io.Closeable;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 public class Indy
-    implements Closeable
+        implements Closeable
 {
 
     private final IndyClientHttp http;
@@ -40,63 +41,54 @@ public class Indy
     private final Set<IndyClientModule> moduleRegistry;
 
     public Indy( final String baseUrl, final IndyClientModule... modules )
-        throws IndyClientException
+            throws IndyClientException
     {
-        this( baseUrl, null, null, modules );
+        this( null, null, Arrays.asList( modules ), IndyClientHttp.defaultSiteConfig( baseUrl ));
     }
 
-    public Indy( final String baseUrl, final IndyClientAuthenticator authenticator,
-                  final IndyClientModule... modules )
-        throws IndyClientException
+    public Indy( final String baseUrl, final IndyClientAuthenticator authenticator, final IndyClientModule... modules )
+            throws IndyClientException
     {
-        this( baseUrl, authenticator, null, modules );
+        this( authenticator, null, Arrays.asList( modules ), IndyClientHttp.defaultSiteConfig( baseUrl ) );
     }
 
     public Indy( final String baseUrl, final IndyObjectMapper mapper, final IndyClientModule... modules )
-        throws IndyClientException
+            throws IndyClientException
     {
-        this( baseUrl, null, mapper, modules );
+        this( null, mapper, Arrays.asList( modules ), IndyClientHttp.defaultSiteConfig( baseUrl ) );
     }
 
     public Indy( final String baseUrl, final IndyClientAuthenticator authenticator, final IndyObjectMapper mapper,
-                  final IndyClientModule... modules )
-        throws IndyClientException
+                 final IndyClientModule... modules )
+            throws IndyClientException
     {
-        this.http =
-            new IndyClientHttp( baseUrl, authenticator, mapper == null ? new IndyObjectMapper( true ) : mapper );
-        this.moduleRegistry = new HashSet<>();
-
-        setupStandardModules();
-        for ( final IndyClientModule module : modules )
-        {
-            setup( module );
-        }
+        this( authenticator, mapper, Arrays.asList( modules ), IndyClientHttp.defaultSiteConfig( baseUrl ) );
     }
 
     public Indy( final String baseUrl, final Collection<IndyClientModule> modules )
-        throws IndyClientException
+            throws IndyClientException
     {
-        this( baseUrl, null, null, modules );
+        this( null, null, modules, IndyClientHttp.defaultSiteConfig( baseUrl ) );
     }
 
     public Indy( final String baseUrl, final IndyClientAuthenticator authenticator,
-                  final Collection<IndyClientModule> modules )
-        throws IndyClientException
+                 final Collection<IndyClientModule> modules )
+            throws IndyClientException
     {
-        this( baseUrl, authenticator, null, modules );
+        this( authenticator, null, modules, IndyClientHttp.defaultSiteConfig( baseUrl ) );
     }
 
     public Indy( final String baseUrl, final IndyObjectMapper mapper, final Collection<IndyClientModule> modules )
-        throws IndyClientException
+            throws IndyClientException
     {
-        this( baseUrl, null, mapper, modules );
+        this( null, mapper, modules, IndyClientHttp.defaultSiteConfig( baseUrl ) );
     }
 
     public Indy( final String baseUrl, final IndyClientAuthenticator authenticator, final IndyObjectMapper mapper,
-                  final Collection<IndyClientModule> modules )
-        throws IndyClientException
+                 final Collection<IndyClientModule> modules )
+            throws IndyClientException
     {
-        this( authenticator, mapper, modules, new SiteConfigBuilder( "indy", baseUrl ).build() );
+        this( authenticator, mapper, modules, IndyClientHttp.defaultSiteConfig( baseUrl ) );
     }
 
     public Indy( final IndyClientAuthenticator authenticator, final IndyObjectMapper mapper,
@@ -104,7 +96,7 @@ public class Indy
             throws IndyClientException
     {
         this.http =
-            new IndyClientHttp( authenticator, mapper == null ? new IndyObjectMapper( true ) : mapper, location );
+                new IndyClientHttp( authenticator, mapper == null ? new IndyObjectMapper( true ) : mapper, location );
         this.moduleRegistry = new HashSet<>();
 
         setupStandardModules();
@@ -133,13 +125,13 @@ public class Indy
     }
 
     public IndyVersioning getVersionInfo()
-        throws IndyClientException
+            throws IndyClientException
     {
         return http.get( "/stats/version-info", IndyVersioning.class );
     }
 
     public IndyStoresClientModule stores()
-        throws IndyClientException
+            throws IndyClientException
     {
         return module( IndyStoresClientModule.class );
     }
@@ -151,19 +143,19 @@ public class Indy
     }
 
     public IndyContentClientModule content()
-        throws IndyClientException
+            throws IndyClientException
     {
         return module( IndyContentClientModule.class );
     }
 
     public IndyStatsClientModule stats()
-        throws IndyClientException
+            throws IndyClientException
     {
         return module( IndyStatsClientModule.class );
     }
 
     public <T extends IndyClientModule> T module( final Class<T> type )
-        throws IndyClientException
+            throws IndyClientException
     {
         for ( final IndyClientModule module : moduleRegistry )
         {

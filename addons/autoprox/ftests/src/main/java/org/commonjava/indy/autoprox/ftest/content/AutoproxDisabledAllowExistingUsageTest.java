@@ -59,6 +59,7 @@ public class AutoproxDisabledAllowExistingUsageTest
 
         String result = IOUtils.toString( stream );
         assertThat( result, equalTo( content ) );
+        stream.close();
     }
 
     @Override

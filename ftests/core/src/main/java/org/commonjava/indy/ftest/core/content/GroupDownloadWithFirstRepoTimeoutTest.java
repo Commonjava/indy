@@ -24,6 +24,8 @@ import org.commonjava.maven.galley.model.Location;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,25 +38,6 @@ import static org.junit.Assert.assertThat;
 public class GroupDownloadWithFirstRepoTimeoutTest
         extends AbstractContentManagementTest
 {
-
-    public class DelayInputStream
-        extends InputStream
-    {
-        @Override
-        public int read()
-            throws IOException
-        {
-            try
-            {
-                Thread.sleep( 5000 );
-            }
-            catch ( final InterruptedException e )
-            {
-            }
-
-            return 0;
-        }
-    }
 
     @Rule
     public ExpectationServer server = new ExpectationServer();
@@ -83,10 +66,25 @@ public class GroupDownloadWithFirstRepoTimeoutTest
             "</metadata>\n";
         /* @formatter:on */
 
-        server.expect( server.formatUrl( repo1, path ), 200, new DelayInputStream() );
+        server.expect( "GET", server.formatUrl( repo1, path ), (request, response)->{
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.info( "DELAY 5s..." );
+            try
+            {
+                Thread.sleep( 5000 );
+            }
+            catch ( final InterruptedException e )
+            {
+            }
+
+            logger.info( "...WAKE and return" );
+            response.setStatus( 404 );
+        } );
+
         server.expect( server.formatUrl( repo2, path ), 200, repo2Content );
 
         RemoteRepository remote1 = new RemoteRepository( repo1, server.formatUrl( repo1 ) );
+        remote1.setTimeoutSeconds( 2 );
 
         remote1 = client.stores()
                         .create( remote1, "adding remote", RemoteRepository.class );
@@ -110,6 +108,7 @@ public class GroupDownloadWithFirstRepoTimeoutTest
 
         final String metadata = IOUtils.toString( stream );
         assertThat( metadata, equalTo( repo2Content ) );
+        stream.close();
     }
 
     @Override

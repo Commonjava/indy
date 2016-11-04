@@ -66,7 +66,7 @@ public class ContentRescheduleTimeoutTest
 
         // first time trigger normal content storage with timeout, should be 6s
         PathInfo pomResult = client.content().getInfo( remote, repoId, pomPath );
-        client.content().get(remote, repoId, pomPath); // force storage
+        client.content().get(remote, repoId, pomPath).close(); // force storage
         assertThat( "no pom result", pomResult, notNullValue() );
         assertThat( "pom doesn't exist", pomResult.exists(), equalTo( true ) );
         String pomFilePath = String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(),
