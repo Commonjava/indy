@@ -58,7 +58,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-koji-common</artifactId>
+      <artifactId>indy-content-index</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
