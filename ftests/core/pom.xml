@@ -61,5 +61,15 @@
       <artifactId>indy-koji-common</artifactId>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-content-index</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-folo-model-java</artifactId>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 </project>
