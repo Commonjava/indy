@@ -178,6 +178,15 @@ public class CacheProducer
         return cacheManager.defineConfiguration( name, config );
     }
 
+    public synchronized Configuration getDefaultCacheConfiguration()
+    {
+        if ( cacheManager == null )
+        {
+            throw new IllegalStateException( "Cannot access CacheManager. Indy seems to be in a state of shutdown." );
+        }
+        return cacheManager.getDefaultCacheConfiguration();
+    }
+
     @Override
     public synchronized void stop()
             throws IndyLifecycleException
