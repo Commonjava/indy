@@ -18,11 +18,6 @@ package org.commonjava.indy.content.index;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
-import org.hibernate.search.annotations.Analyze;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.Store;
-import org.infinispan.query.Transformable;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -32,25 +27,18 @@ import java.io.ObjectOutput;
 /**
  * Created by jdcasey on 3/15/16.
  */
-@Indexed( index = "indexedStorePath" )
-@Transformable( transformer = IndexedStorePathTransformer.class )
 public class IndexedStorePath
         implements Externalizable
 {
 
-    @Field( name = "storeType", store = Store.YES, analyze = Analyze.NO )
     private StoreType storeType;
 
-    @Field( name = "storeName", store = Store.YES, analyze = Analyze.NO )
     private String storeName;
 
-    @Field( name = "originStoreType", store = Store.YES, analyze = Analyze.NO )
     private StoreType originStoreType;
 
-    @Field( name = "originStoreName", store = Store.YES, analyze = Analyze.NO )
     private String originStoreName;
 
-    @Field( name = "path", store = Store.YES, analyze = Analyze.NO )
     private String path;
 
     // this needs to be public for Infinispan to not throw InvalidClassException with the first httprox request
