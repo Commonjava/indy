@@ -63,7 +63,7 @@ public class DownloadWhileProxyingInProgressTest
         final InputTimer input = new InputTimer( stream, 10000 / data.length, latch );
         newThread( "input", input ).start();
 
-        final DelayedDownload download = new DelayedDownload( client, new StoreKey( remote, STORE ), path, 5, latch );
+        final DelayedDownload download = new DelayedDownload( client, new StoreKey( remote, STORE ), path, 5000, latch );
         newThread( "download", download ).start();
 
         System.out.println( "Waiting for content transfers to complete." );

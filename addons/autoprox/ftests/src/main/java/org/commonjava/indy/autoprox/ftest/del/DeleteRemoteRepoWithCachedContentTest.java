@@ -48,6 +48,7 @@ public class DeleteRemoteRepoWithCachedContentTest
                                          .get( StoreType.remote, named, path );
 
         final String retrieved = IOUtils.toString( stream );
+        stream.close();
 
         assertThat( retrieved, equalTo( content ) );
 

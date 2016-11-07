@@ -15,26 +15,12 @@
  */
 package org.commonjava.indy.client.core;
 
-import static org.commonjava.indy.client.core.helper.HttpResources.cleanupResources;
-import static org.commonjava.indy.client.core.helper.HttpResources.entityToString;
-import static org.commonjava.indy.client.core.util.UrlUtils.buildUrl;
-
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Supplier;
-
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
-import org.apache.http.auth.AuthScope;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -49,67 +35,57 @@ import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.commonjava.indy.client.core.auth.IndyClientAuthenticator;
-import org.commonjava.indy.client.core.helper.CloseBlockingConnectionManager;
 import org.commonjava.indy.client.core.helper.HttpResources;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.util.jhttpc.HttpFactory;
 import org.commonjava.util.jhttpc.JHttpCException;
 import org.commonjava.util.jhttpc.model.SiteConfig;
+import org.commonjava.util.jhttpc.model.SiteConfigBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.type.TypeReference;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Supplier;
+
+import static org.commonjava.indy.client.core.helper.HttpResources.cleanupResources;
+import static org.commonjava.indy.client.core.helper.HttpResources.entityToString;
+import static org.commonjava.indy.client.core.util.UrlUtils.buildUrl;
 
 public class IndyClientHttp
         implements Closeable
 {
-    private static final int GLOBAL_MAX_CONNECTIONS = 20;
+    public static final int GLOBAL_MAX_CONNECTIONS = 20;
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
-
-    private final String baseUrl;
 
     private final IndyObjectMapper objectMapper;
 
     private final SiteConfig location;
 
-    private CloseBlockingConnectionManager connectionManager;
+    private final HttpFactory factory;
 
-    private HttpClientContext prototypeCtx;
+    private final String baseUrl;
 
-    private HttpFactory factory;
+    private final URL url;
 
-    private final IndyClientAuthenticator authenticator;
-
-    private URL url;
-
-    public IndyClientHttp( final String baseUrl, final IndyClientAuthenticator authenticator,
-                            final IndyObjectMapper mapper )
+    public IndyClientHttp( final IndyClientAuthenticator authenticator, final IndyObjectMapper mapper,
+                           SiteConfig location )
             throws IndyClientException
     {
-        this( baseUrl, authenticator, mapper, null);
-    }
-
-    public IndyClientHttp(final String baseUrl, final IndyClientAuthenticator authenticator,
-                          final IndyObjectMapper mapper, SiteConfig location )
-            throws IndyClientException
-    {
-        this.baseUrl = baseUrl;
-        this.authenticator = authenticator;
         this.objectMapper = mapper;
         this.location = location;
 
-        initPrototypeContext();
-    }
+        baseUrl = location.getUri();
 
-    private void initPrototypeContext()
-            throws IndyClientException
-    {
         try
         {
             url = new URL( baseUrl );
@@ -119,64 +95,26 @@ public class IndyClientHttp
             throw new IndyClientException( "Invalid base-url: {}", e, baseUrl );
         }
 
-        try {
-            HttpClientContext ctx = null;
-
-            if ( location != null )
-            {
-                factory = new HttpFactory(authenticator);
-                ctx = factory.createContext( location );
-            }
-            else
-            {
-                ctx = HttpClientContext.create();
-                if (authenticator != null)
-                {
-                    final AuthScope as =
-                            new AuthScope( url.getHost(), url.getPort() < 0 ? url.getDefaultPort() : url.getPort() );
-
-                    ctx = authenticator.decoratePrototypeContext(as, null, null, ctx);
-                }
-            }
-            this.prototypeCtx = ctx;
-        }
-        catch (JHttpCException e)
-        {
-            throw new IndyClientException( "Create context error: {}", e, baseUrl, location );
-        }
+        factory = new HttpFactory( authenticator );
     }
 
+    /**
+     * Not used since migration to jHTTPc library
+     */
+    @Deprecated
     public void connect( final HttpClientConnectionManager connectionManager )
             throws IndyClientException
     {
-        if ( location != null )
-        {
-            return;
-        }
-
-        if ( this.connectionManager != null )
-        {
-            throw new IndyClientException( "Already connected! (Possibly when you called a client "
-                                                    + "API method previously.) Call close before connecting again." );
-        }
-
-        this.connectionManager = new CloseBlockingConnectionManager( connectionManager );
+        // NOP, now that we've moved to HttpFactory.
     }
 
+    /**
+     * Not used since migration to jHTTPc library
+     */
+    @Deprecated
     public synchronized void connect()
     {
-        if ( location != null )
-        {
-            return;
-        }
-
-        if ( this.connectionManager == null )
-        {
-            final PoolingHttpClientConnectionManager pcm = new PoolingHttpClientConnectionManager();
-            pcm.setDefaultMaxPerRoute( GLOBAL_MAX_CONNECTIONS );
-
-            this.connectionManager = new CloseBlockingConnectionManager( pcm );
-        }
+        // NOP, now that we've moved to HttpFactory.
     }
 
     public Map<String, String> head( final String path )
@@ -198,7 +136,7 @@ public class IndyClientHttp
         {
             request = newJsonHead( buildUrl( baseUrl, path ) );
             client = newClient();
-            response = client.execute( request );
+            response = client.execute( request, newContext() );
 
             final StatusLine sl = response.getStatusLine();
             if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
@@ -209,8 +147,8 @@ public class IndyClientHttp
                 }
 
                 throw new IndyClientException( sl.getStatusCode(), "Error executing HEAD: %s. Status was: %d %s (%s)",
-                                                path, sl.getStatusCode(), sl.getReasonPhrase(),
-                                                sl.getProtocolVersion() );
+                                               path, sl.getStatusCode(), sl.getReasonPhrase(),
+                                               sl.getProtocolVersion() );
             }
 
             final Map<String, String> headers = new HashMap<>();
@@ -248,7 +186,7 @@ public class IndyClientHttp
         {
             client = newClient();
             request = newJsonGet( buildUrl( baseUrl, path ) );
-            response = client.execute( request );
+            response = client.execute( request, newContext() );
 
             final StatusLine sl = response.getStatusLine();
 
@@ -260,7 +198,7 @@ public class IndyClientHttp
                 }
 
                 throw new IndyClientException( sl.getStatusCode(), "Error retrieving %s from: %s.\n%s",
-                                                type.getSimpleName(), path, new IndyResponseErrorDetails( response ) );
+                                               type.getSimpleName(), path, new IndyResponseErrorDetails( response ) );
             }
 
             final String json = entityToString( response );
@@ -293,7 +231,7 @@ public class IndyClientHttp
         {
             client = newClient();
             request = newJsonGet( buildUrl( baseUrl, path ) );
-            response = client.execute( request );
+            response = client.execute( request, newContext() );
             final StatusLine sl = response.getStatusLine();
             if ( sl.getStatusCode() != 200 )
             {
@@ -303,7 +241,7 @@ public class IndyClientHttp
                 }
 
                 throw new IndyClientException( sl.getStatusCode(), "Error retrieving %s from: %s.\n%s",
-                                                typeRef.getType(), path, new IndyResponseErrorDetails( response ) );
+                                               typeRef.getType(), path, new IndyResponseErrorDetails( response ) );
             }
 
             final String json = entityToString( response );
@@ -331,7 +269,7 @@ public class IndyClientHttp
         {
             final CloseableHttpClient client = newClient();
 
-            response = client.execute( req );
+            response = client.execute( req, newContext() );
             return new HttpResources( req, response, client );
         }
         catch ( final IOException e )
@@ -362,7 +300,7 @@ public class IndyClientHttp
             final HttpGet req = newRawGet( buildUrl( baseUrl, path ) );
             final CloseableHttpClient client = newClient();
 
-            response = client.execute( req );
+            response = client.execute( req, newContext() );
             return new HttpResources( req, response, client );
         }
         catch ( final IOException e )
@@ -394,13 +332,13 @@ public class IndyClientHttp
         {
             put.setEntity( new InputStreamEntity( stream ) );
 
-            response = client.execute( put );
+            response = client.execute( put, newContext() );
             final StatusLine sl = response.getStatusLine();
             if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
                 throw new ClientProtocolException(
                         new IndyClientException( sl.getStatusCode(), "Error in response from: %s.\n%s", path,
-                                                  new IndyResponseErrorDetails( response ) ) );
+                                                 new IndyResponseErrorDetails( response ) ) );
             }
 
         }
@@ -447,12 +385,12 @@ public class IndyClientHttp
 
             put.setEntity( new StringEntity( objectMapper.writeValueAsString( value ) ) );
 
-            response = client.execute( put );
+            response = client.execute( put, newContext() );
             final StatusLine sl = response.getStatusLine();
             if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
                 throw new IndyClientException( sl.getStatusCode(), "Error in response from: %s.\n%s", path,
-                                                new IndyResponseErrorDetails( response ) );
+                                               new IndyResponseErrorDetails( response ) );
             }
         }
         catch ( final IOException e )
@@ -477,7 +415,7 @@ public class IndyClientHttp
         {
             final CloseableHttpClient client = newClient();
 
-            response = client.execute( request );
+            response = client.execute( request, newContext() );
             return new HttpResources( request, response, client );
         }
         catch ( final IOException e )
@@ -519,7 +457,7 @@ public class IndyClientHttp
 
             final CloseableHttpClient client = newClient();
 
-            response = client.execute( req );
+            response = client.execute( req, newContext() );
             return new HttpResources( req, response, client );
         }
         catch ( final IOException e )
@@ -566,13 +504,13 @@ public class IndyClientHttp
 
             post.setEntity( new StringEntity( objectMapper.writeValueAsString( value ) ) );
 
-            response = client.execute( post );
+            response = client.execute( post, newContext() );
 
             final StatusLine sl = response.getStatusLine();
             if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
                 throw new IndyClientException( sl.getStatusCode(), "Error retrieving %s from: %s.\n%s",
-                                                type.getSimpleName(), path, new IndyResponseErrorDetails( response ) );
+                                               type.getSimpleName(), path, new IndyResponseErrorDetails( response ) );
             }
 
             final String json = entityToString( response );
@@ -624,13 +562,13 @@ public class IndyClientHttp
 
             post.setEntity( new StringEntity( objectMapper.writeValueAsString( value ) ) );
 
-            response = client.execute( post );
+            response = client.execute( post, newContext() );
 
             final StatusLine sl = response.getStatusLine();
             if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
                 throw new IndyClientException( sl.getStatusCode(), "Error retrieving %s from: %s.\n%s",
-                                                typeRef.getType(), path, new IndyResponseErrorDetails( response ) );
+                                               typeRef.getType(), path, new IndyResponseErrorDetails( response ) );
             }
 
             final String json = entityToString( response );
@@ -650,20 +588,13 @@ public class IndyClientHttp
     public void close()
     {
         logger.debug( "Shutting down indy client HTTP manager" );
-        if ( location != null )
+        try
         {
-            try
-            {
-                factory.close();
-            }
-            catch (IOException e)
-            {
-                logger.debug( "Shutting down indy client HTTP factory error", e ); // log and return quietly
-            }
+            factory.close();
         }
-        else
+        catch ( IOException e )
         {
-            connectionManager.reallyShutdown();
+            logger.debug( "Shutting down indy client HTTP factory error", e ); // log and return quietly
         }
     }
 
@@ -686,12 +617,12 @@ public class IndyClientHttp
             client = newClient();
             delete = newDelete( buildUrl( baseUrl, path ) );
 
-            response = client.execute( delete );
+            response = client.execute( delete, newContext() );
             final StatusLine sl = response.getStatusLine();
             if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
                 throw new IndyClientException( sl.getStatusCode(), "Error deleting: %s.\n%s", path,
-                                                new IndyResponseErrorDetails( response ) );
+                                               new IndyResponseErrorDetails( response ) );
             }
         }
         catch ( final IOException e )
@@ -724,12 +655,12 @@ public class IndyClientHttp
             delete = newDelete( buildUrl( baseUrl, path ) );
             delete.setHeader( ArtifactStore.METADATA_CHANGELOG, changelog );
 
-            response = client.execute( delete );
+            response = client.execute( delete, newContext() );
             final StatusLine sl = response.getStatusLine();
             if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
                 throw new IndyClientException( sl.getStatusCode(), "Error deleting: %s.\n%s", path,
-                                                new IndyResponseErrorDetails( response ) );
+                                               new IndyResponseErrorDetails( response ) );
             }
         }
         catch ( final IOException e )
@@ -773,7 +704,7 @@ public class IndyClientHttp
             client = newClient();
             request = newJsonHead( buildUrl( baseUrl, querySupplier, path ) );
 
-            response = client.execute( request );
+            response = client.execute( request, newContext() );
             final StatusLine sl = response.getStatusLine();
             if ( validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
@@ -785,7 +716,7 @@ public class IndyClientHttp
             }
 
             throw new IndyClientException( sl.getStatusCode(), "Error checking existence of: %s.\n%s", path,
-                                            new IndyResponseErrorDetails( response ) );
+                                           new IndyResponseErrorDetails( response ) );
         }
         catch ( final IOException e )
         {
@@ -817,44 +748,24 @@ public class IndyClientHttp
     {
         try
         {
-            if ( location != null )
-            {
-                return factory.createClient(location);
-            }
-            else
-            {
-                HttpClientBuilder builder = HttpClients.custom().setConnectionManager(connectionManager);
-
-                if (authenticator != null)
-                {
-                    builder = authenticator.decorateClientBuilder( builder );
-                }
-                return builder.build();
-            }
+            return factory.createClient( location );
         }
-        catch (JHttpCException e)
+        catch ( JHttpCException e )
         {
             throw new IndyClientException( "Indy request failed: %s", e, e.getMessage() );
         }
     }
 
     public HttpClientContext newContext()
+            throws IndyClientException
     {
-        if ( location != null )
+        try
         {
-            try
-            {
-                return factory.createContext(location);
-            }
-            catch (JHttpCException e)
-            {
-                logger.debug( "Indy request failed: %s", e, e.getMessage() );
-                return null;
-            }
+            return factory.createContext( location );
         }
-        else
+        catch ( JHttpCException e )
         {
-            return new HttpClientContext(prototypeCtx);
+            throw new IndyClientException( "Indy request failed: %s", e, e.getMessage() );
         }
     }
 
@@ -922,4 +833,10 @@ public class IndyClientHttp
         return objectMapper;
     }
 
+    public static SiteConfig defaultSiteConfig( String baseUrl )
+    {
+        return new SiteConfigBuilder( "indy", baseUrl ).withRequestTimeoutSeconds( 30 )
+                                                       .withMaxConnections( IndyClientHttp.GLOBAL_MAX_CONNECTIONS )
+                                                       .build();
+    }
 }

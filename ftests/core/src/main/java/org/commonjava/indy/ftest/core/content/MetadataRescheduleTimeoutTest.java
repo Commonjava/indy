@@ -69,7 +69,7 @@ public class MetadataRescheduleTimeoutTest
 
         // first time trigger normal content storage with timeout, should be 4s
         PathInfo pomResult = client.content().getInfo( remote, repoId, metadataPath );
-        client.content().get( remote, repoId, metadataPath ); // force storage
+        client.content().get( remote, repoId, metadataPath ).close(); // force storage
 
         assertThat( "no metadata result", pomResult, notNullValue() );
         assertThat( "metadata doesn't exist", pomResult.exists(), equalTo( true ) );
@@ -83,7 +83,7 @@ public class MetadataRescheduleTimeoutTest
         Thread.sleep( METADATA_TIMEOUT_WAITING_MILLISECONDS );
 
         // as the metadata content re-request, the metadata timeout interval should NOT be re-scheduled
-        client.content().get( remote, repoId, metadataPath );
+        client.content().get( remote, repoId, metadataPath ).close();
 
         // will wait another 2.5s
         Thread.sleep( METADATA_TIMEOUT_WAITING_MILLISECONDS );

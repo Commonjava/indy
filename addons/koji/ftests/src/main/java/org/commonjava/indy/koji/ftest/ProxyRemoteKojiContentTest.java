@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.ftest.core.content;
+package org.commonjava.indy.koji.ftest;
 
 import org.commonjava.indy.client.core.Indy;
 import org.commonjava.indy.model.core.RemoteRepository;

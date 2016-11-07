@@ -28,6 +28,8 @@ import org.hibernate.search.cfg.SearchMapping;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.Index;
+import org.infinispan.query.Search;
+import org.infinispan.query.SearchManager;
 import org.infinispan.query.spi.SearchManagerImplementor;
 
 import javax.annotation.PostConstruct;
@@ -35,6 +37,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import java.lang.annotation.ElementType;
+import java.util.Arrays;
 import java.util.Properties;
 
 /**
@@ -44,6 +47,11 @@ import java.util.Properties;
  */
 public class FoloCacheProducer
 {
+
+    private static final String SEALED_NAME = "folo-sealed";
+
+    private static final String IN_PROGRESS_NAME = "folo-in-progress";
+
     @Inject
     private CacheProducer cacheProducer;
 
@@ -51,7 +59,7 @@ public class FoloCacheProducer
     public void initIndexing()
     {
         registerIndexableEntities();
-        regesterTransformer();
+        registerTransformer();
     }
 
     private void registerIndexableEntities()
@@ -75,24 +83,30 @@ public class FoloCacheProducer
         Properties properties = new Properties();
         properties.put( Environment.MODEL_MAPPING, entryMapping);
 
-        final Configuration sealedConfig=
-                cacheProducer.getCacheConfiguration( "folo-sealed" );
+        Configuration sealedConfig=
+                cacheProducer.getCacheConfiguration( SEALED_NAME );
+
+        if ( sealedConfig == null )
+        {
+            sealedConfig = cacheProducer.getDefaultCacheConfiguration();
+        }
 
         if ( sealedConfig != null )
         {
             final Configuration indexingConfig =
                     new ConfigurationBuilder().read( sealedConfig ).indexing().withProperties( properties ).index(
                             Index.LOCAL ).build();
-            cacheProducer.setCacheConfiguration( "folo-sealed", indexingConfig );
-        }
 
+            cacheProducer.setCacheConfiguration( SEALED_NAME, indexingConfig );
+        }
     }
 
-    private void regesterTransformer(){
+    private void registerTransformer(){
         final CacheHandle<TrackingKey, TrackedContent> handler =
-                cacheProducer.getCache( "folo-sealed", TrackingKey.class, TrackedContent.class );
-        final SearchManagerImplementor searchManager =
-                (SearchManagerImplementor) org.infinispan.query.Search.getSearchManager( handler.getCache() );
+                cacheProducer.getCache( SEALED_NAME, TrackingKey.class, TrackedContent.class );
+
+        SearchManagerImplementor searchManager = handler.execute( cache -> (SearchManagerImplementor) Search.getSearchManager( cache ) );
+
         searchManager.registerKeyTransformer( TrackedContentEntry.class, TrackedContentEntryTransformer.class );
     }
 
@@ -101,7 +115,7 @@ public class FoloCacheProducer
     @ApplicationScoped
     public CacheHandle<TrackedContentEntry, TrackedContentEntry> inProgressFoloRecordCacheCfg()
     {
-        return cacheProducer.getCache( "folo-in-progress", TrackedContentEntry.class, TrackedContentEntry.class );
+        return cacheProducer.getCache( IN_PROGRESS_NAME, TrackedContentEntry.class, TrackedContentEntry.class );
     }
 
     @FoloSealedCache
@@ -109,6 +123,6 @@ public class FoloCacheProducer
     @ApplicationScoped
     public CacheHandle<TrackingKey, TrackedContent> sealedFoloRecordCacheCfg()
     {
-        return cacheProducer.getCache( "folo-sealed", TrackingKey.class, TrackedContent.class );
+        return cacheProducer.getCache( SEALED_NAME, TrackingKey.class, TrackedContent.class );
     }
 }

@@ -94,6 +94,8 @@ public class RepositoryPathMaskExtTest
 
         // return content from the repo with mask
         str = IOUtils.toString( stream );
+        stream.close();
+
         assertThat( str, equalTo( content2 ) );
 
         // Case 2. multiple repositories with same mask, use what can supply the real artifact
@@ -101,12 +103,14 @@ public class RepositoryPathMaskExtTest
         // get stream for path-2 via group (success)
         stream = client.content().get( group, g.getName(), path_2 );
         assertThat( stream, notNullValue() );
+        stream.close();
 
         // Case 3. test direct access hosted repo with regex mask
 
         // direct access for path-2 (success)
         stream = client.content().get( hosted, hostedRepo1.getName(), path_2 );
         assertThat( stream, notNullValue() );
+        stream.close();
 
     }
 

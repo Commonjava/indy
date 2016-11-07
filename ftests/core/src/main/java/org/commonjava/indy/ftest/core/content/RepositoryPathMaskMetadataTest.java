@@ -119,6 +119,7 @@ public class RepositoryPathMaskMetadataTest
 
         str = IOUtils.toString( stream );
         System.out.println("hosted1.metadata >>>> " + str);
+        stream.close();
 
         // get metadata from remote1
         stream = client.content().get( remote, remoteRepo1.getName(), path_metadata );
@@ -126,6 +127,7 @@ public class RepositoryPathMaskMetadataTest
 
         str = IOUtils.toString( stream );
         System.out.println("remote1.metadata >>>> " + str);
+        stream.close();
 
         // get metadata from group1
         stream = client.content().get( group, g.getName(), path_metadata );
@@ -136,6 +138,7 @@ public class RepositoryPathMaskMetadataTest
         System.out.println("group1.metadata >>>> " + str);
 
         assertThat( str.trim(), equalTo( aggregatedMeta ));
+        stream.close();
     }
 
     @Override

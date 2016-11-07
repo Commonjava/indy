@@ -19,11 +19,11 @@
       <persistence passivation="true">
         <file-store shared="false" preload="false" fetch-state="true" path="${indy.data}/folo"/>
       </persistence>
-      <indexing index="ALL">
-        <indexed-entities>
-          <indexed-entity>org.commonjava.indy.folo.model.TrackedContentEntry</indexed-entity>
-        </indexed-entities>
-      </indexing>
+      <!--<indexing index="ALL">-->
+        <!--<indexed-entities>-->
+          <!--<indexed-entity>org.commonjava.indy.folo.model.TrackedContentEntry</indexed-entity>-->
+        <!--</indexed-entities>-->
+      <!--</indexing>-->
     </local-cache>
     
     <local-cache name="content-index">
