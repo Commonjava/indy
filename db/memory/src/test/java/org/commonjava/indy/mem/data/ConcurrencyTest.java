@@ -9,6 +9,7 @@ import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.jboss.byteman.contrib.bmunit.BMRule;
 import org.jboss.byteman.contrib.bmunit.BMRules;
@@ -27,7 +28,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -57,8 +57,8 @@ public class ConcurrencyTest
 
         RemoteRepository repo = new RemoteRepository( "central", "http://repo.maven.apache.org/maven2" );
 
-        TestStoreEventDispatcher dispatcher =
-                new TestStoreEventDispatcher( repo, completionService, count );
+        TestUpdatingEventDispatcher dispatcher =
+                new TestUpdatingEventDispatcher( repo, completionService, count );
 
         MemoryStoreDataManager dataManager =
                 new MemoryStoreDataManager( dispatcher,
@@ -87,7 +87,45 @@ public class ConcurrencyTest
         }
     }
 
-    private static final class TestStoreEventDispatcher
+    @BMRules( rules = { @BMRule( name = "init rendezvous", targetClass = "MemoryStoreDataManager",
+                                 targetMethod = "<init>",
+                                 targetLocation = "ENTRY",
+                                 action = "createRendezvous($0, 2)" ),
+            @BMRule( name = "delete call", targetClass = "MemoryStoreDataManager",
+                     targetMethod = "deleteArtifactStore",
+                     targetLocation = "EXIT", action = "rendezvous($0); debug(Thread.currentThread().getName() + \": deletion thread proceeding.\")" ),
+            @BMRule( name = "getAll call", targetClass = "MemoryStoreDataManager",
+                     targetMethod = "getAll",
+                     targetLocation = "ENTRY", action = "rendezvous($0); debug(Thread.currentThread().getName() + \": getAll thread proceeding.\")" ), } )
+    @Test
+    public void deadlockOnListAllDuringDelete()
+            throws IndyDataException, InterruptedException, ExecutionException
+    {
+        ExecutorService executor = Executors.newFixedThreadPool( 2 );
+        ExecutorCompletionService<String> completionService = new ExecutorCompletionService<>( executor );
+
+        RemoteRepository repo = new RemoteRepository( "central", "http://repo.maven.apache.org/maven2" );
+
+        TestDeletingEventDispatcher dispatcher =
+                new TestDeletingEventDispatcher( completionService );
+
+        MemoryStoreDataManager dataManager =
+                new MemoryStoreDataManager( dispatcher,
+                                            new DefaultIndyConfiguration() );
+
+        dispatcher.setDataManager( dataManager );
+
+        ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, "Test init" );
+        dataManager.storeArtifactStore( repo, summary );
+
+        dataManager.deleteArtifactStore( repo.getKey(),
+                                         new ChangeSummary( ChangeSummary.SYSTEM_USER, "Test deletion" ) );
+
+        Future<String> future = completionService.take();
+        assertThat( future.get(), nullValue() );
+    }
+
+    private static final class TestUpdatingEventDispatcher
             extends NoOpStoreEventDispatcher
     {
         static int counter = 0;
@@ -102,8 +140,8 @@ public class ConcurrencyTest
 
         private StoreDataManager dataManager;
 
-        public TestStoreEventDispatcher( RemoteRepository repo, ExecutorCompletionService<String> completionService,
-                                         AtomicInteger count )
+        public TestUpdatingEventDispatcher( RemoteRepository repo, ExecutorCompletionService<String> completionService,
+                                            AtomicInteger count )
         {
             this.repo = repo;
             this.completionService = completionService;
@@ -140,6 +178,44 @@ public class ConcurrencyTest
                     return "Failed to retrieve groups containing: " + repo.getKey();
                 } );
             }
+        }
+
+        public void setDataManager( StoreDataManager dataManager )
+        {
+            this.dataManager = dataManager;
+        }
+    }
+
+    private static final class TestDeletingEventDispatcher
+            extends NoOpStoreEventDispatcher
+    {
+        private final ExecutorCompletionService<String> completionService;
+
+        private StoreDataManager dataManager;
+
+        public TestDeletingEventDispatcher( ExecutorCompletionService<String> completionService )
+        {
+            this.completionService = completionService;
+        }
+
+        @Override
+        public void deleting( EventMetadata eventMetadata, ArtifactStore... stores )
+        {
+            completionService.submit( ()->{
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.debug( "Grabbing all artifact stores" );
+                try
+                {
+                    dataManager.getAllArtifactStores( StoreType.group );
+                    return null;
+                }
+                catch ( IndyDataException e )
+                {
+                    e.printStackTrace();
+                }
+
+                return "Failed to list all artifact stores.";
+            } );
         }
 
         public void setDataManager( StoreDataManager dataManager )
