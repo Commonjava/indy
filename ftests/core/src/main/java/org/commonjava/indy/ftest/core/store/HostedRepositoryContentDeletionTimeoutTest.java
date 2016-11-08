@@ -25,7 +25,7 @@ import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-public class HostedRepositoryScheduleTimeoutTest
+public class HostedRepositoryContentDeletionTimeoutTest
         extends AbstractStoreManagementTest
 {
 
@@ -34,7 +34,7 @@ public class HostedRepositoryScheduleTimeoutTest
             throws Exception
     {
         final int REPO_TIMEOUT_SECONDS = 6;
-        final int TIMEOUT_WAITING_MILLISECONDS = 8000;
+        final int TIMEOUT_WAITING_MILLISECONDS = 3000;
 
         final String content = "This is a test: " + System.nanoTime();
         final InputStream stream = new ByteArrayInputStream( content.getBytes() );
@@ -51,11 +51,16 @@ public class HostedRepositoryScheduleTimeoutTest
         assertThat( client.stores().exists( hosted, hostedRepo ), equalTo( true ) );
 
         client.content().store( hosted, hostedRepo, path, stream );
-        assertThat( client.content().exists( hosted, hostedRepo, path ), equalTo( true ) );
 
-        // wait for 8s
+        // wait for 3s
         Thread.sleep( TIMEOUT_WAITING_MILLISECONDS );
+        assertThat( client.content().exists( hosted, hostedRepo, path ), equalTo( true ) );
+        assertThat( client.stores().exists( hosted, hostedRepo ), equalTo( true ) );
+
+        client.content().delete( hosted, hostedRepo, path );
         assertThat( client.content().exists( hosted, hostedRepo, path ), equalTo( false ) );
-        assertThat( client.stores().exists( hosted, hostedRepo ), equalTo( false ) );
+        assertThat( client.stores().exists( hosted, hostedRepo ), equalTo( true ) );
+        HostedRepository result = client.stores().load( hosted, hostedRepo, HostedRepository.class );
+        assertThat( result.getRepoTimeoutSeconds(), equalTo( REPO_TIMEOUT_SECONDS ) );
     }
 }

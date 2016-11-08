@@ -46,12 +46,12 @@ public class HostedRepositoryRescheduleTimeoutTest
 
         repo = client.stores().create( repo, "adding hosted", HostedRepository.class );
 
-        assertThat( client.stores().exists( hosted, repo.getName() ), equalTo( true ) );
-        assertThat( client.content().exists( hosted, repo.getName(), path ), equalTo( false ) );
+        assertThat( client.content().exists( hosted, hostedRepo, path ), equalTo( false ) );
+        assertThat( client.stores().exists( hosted, hostedRepo ), equalTo( true ) );
 
-        client.content().store( hosted, repo.getName(), path, stream );
-        assertThat( client.stores().exists( hosted, repo.getName() ), equalTo( true ) );
-        assertThat( client.content().exists( hosted, repo.getName(), path ), equalTo( true ) );
+        client.content().store( hosted, hostedRepo, path, stream );
+        assertThat( client.content().exists( hosted, hostedRepo, path ), equalTo( true ) );
+        assertThat( client.stores().exists( hosted, hostedRepo ), equalTo( true ) );
 
         // wait for first 3s
         Thread.sleep( TIMEOUT_WAITING_MILLISECONDS );
@@ -62,13 +62,13 @@ public class HostedRepositoryRescheduleTimeoutTest
         // will wait another 3.5s
         Thread.sleep( TIMEOUT_WAITING_MILLISECONDS + 500 );
         // as rescheduled in 3s, the new timeout should be 3+6=9s, so the artifact should not be deleted
-        assertThat( client.stores().exists( hosted, repo.getName() ), equalTo( true ) );
-        assertThat( client.content().exists( hosted, repo.getName(), path ), equalTo( true ) );
+        assertThat( client.content().exists( hosted, hostedRepo, path ), equalTo( true ) );
+        assertThat( client.stores().exists( hosted, hostedRepo ), equalTo( true ) );
 
-        // another round wait for 3.5s
-        Thread.sleep( TIMEOUT_WAITING_MILLISECONDS + 500 );
+        // another round wait for 4.5s
+        Thread.sleep( TIMEOUT_WAITING_MILLISECONDS + 1500 );
 
-        assertThat( client.stores().exists( hosted, repo.getName() ), equalTo( false ) );
-        assertThat( client.content().exists( hosted, repo.getName(), path ), equalTo( false ) );
+        assertThat( client.content().exists( hosted, hostedRepo, path ), equalTo( false ) );
+        assertThat( client.stores().exists( hosted, hostedRepo ), equalTo( false ) );
     }
 }

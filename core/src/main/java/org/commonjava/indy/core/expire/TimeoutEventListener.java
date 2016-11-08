@@ -76,9 +76,10 @@ public class TimeoutEventListener
 
     public void onExpirationEvent( @Observes final SchedulerEvent event )
     {
-        if ( event.getEventType() != SchedulerEventType.TRIGGER || !event.getJobType()
-                                                                         .equals( ScheduleManager.CONTENT_JOB_TYPE )
-                || !event.getJobType().equals( ScheduleManager.STORE_JOB_TYPE ) )
+        if ( event.getEventType() != SchedulerEventType.TRIGGER || (
+                !event.getJobType().equals( ScheduleManager.CONTENT_JOB_TYPE ) && !event.getJobType()
+                                                                                        .equals(
+                                                                                                ScheduleManager.STORE_JOB_TYPE ) ) )
         {
             return;
         }
