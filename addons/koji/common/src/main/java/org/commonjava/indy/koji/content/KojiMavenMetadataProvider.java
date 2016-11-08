@@ -29,12 +29,12 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -61,7 +61,7 @@ public class KojiMavenMetadataProvider
     @Inject
     private IndyKojiConfig kojiConfig;
 
-    private final Map<ProjectRef, ReentrantLock> versionMetadataLocks = new HashMap<>();
+    private final Map<ProjectRef, ReentrantLock> versionMetadataLocks = new WeakHashMap<>();
 
     protected KojiMavenMetadataProvider(){}
 

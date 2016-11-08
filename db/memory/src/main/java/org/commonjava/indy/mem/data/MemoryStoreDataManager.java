@@ -39,12 +39,15 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import static org.commonjava.indy.model.core.StoreType.remote;
@@ -57,6 +60,8 @@ public class MemoryStoreDataManager
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private final Map<StoreKey, ArtifactStore> stores = new ConcurrentHashMap<>();
+
+    private final Map<StoreKey, ReentrantLock> opLocks = new WeakHashMap<>();
 
     //    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -158,58 +163,6 @@ public class MemoryStoreDataManager
         return getGroupOrdering( groupName, true, false, enabledOnly );
     }
 
-    private List<ArtifactStore> getGroupOrdering( final String groupName, final boolean includeGroups,
-                                                  final boolean recurseGroups, final boolean enabledOnly )
-            throws IndyDataException
-    {
-        final Group master = (Group) stores.get( new StoreKey( StoreType.group, groupName ) );
-        if ( master == null )
-        {
-            return Collections.emptyList();
-        }
-
-        final List<ArtifactStore> result = new ArrayList<ArtifactStore>();
-        recurseGroup( master, result, new HashSet<>(), includeGroups, recurseGroups, enabledOnly );
-
-        return result;
-    }
-
-    private void recurseGroup( final Group master, final List<ArtifactStore> result, final Set<StoreKey> seen,
-                               final boolean includeGroups, final boolean recurseGroups, final boolean enabledOnly )
-    {
-        if ( master == null || master.isDisabled() && enabledOnly )
-        {
-            return;
-        }
-
-        List<StoreKey> members = new ArrayList<>( master.getConstituents() );
-        if ( includeGroups )
-        {
-            result.add( master );
-        }
-
-        members.forEach( ( key ) -> {
-            if ( !seen.contains( key ) )
-            {
-                seen.add( key );
-                final StoreType type = key.getType();
-                if ( recurseGroups && type == StoreType.group )
-                {
-                    // if we're here, we're definitely recursing groups...
-                    recurseGroup( (Group) stores.get( key ), result, seen, includeGroups, true, enabledOnly );
-                }
-                else
-                {
-                    final ArtifactStore store = stores.get( key );
-                    if ( store != null && !( store.isDisabled() && enabledOnly ) )
-                    {
-                        result.add( store );
-                    }
-                }
-            }
-        } );
-    }
-
     @Override
     public boolean storeArtifactStore( final ArtifactStore store, final ChangeSummary summary )
             throws IndyDataException
@@ -256,39 +209,6 @@ public class MemoryStoreDataManager
             throws IndyDataException
     {
         return store( store, summary, skipIfExists, fireEvents, eventMetadata );
-    }
-
-    private synchronized boolean store( final ArtifactStore store, final ChangeSummary summary,
-                                        final boolean skipIfExists, final boolean fireEvents,
-                                        final EventMetadata eventMetadata )
-            throws IndyDataException
-    {
-        ArtifactStore original = stores.get( store.getKey() );
-        if ( original == store )
-        {
-            // if they're the same instance, warn that preUpdate events may not work correctly!
-            logger.warn(
-                    "Storing changes on existing instance of: {}! You forgot to call {}.copyOf(), so preUpdate events may not accurately reflect before/after differences for this change!",
-                    store, store.getClass().getSimpleName() );
-        }
-
-        if ( !skipIfExists || original == null )
-        {
-            preStore( store, original, summary, original != null, fireEvents, eventMetadata );
-            final ArtifactStore old = stores.put( store.getKey(), store );
-            try
-            {
-                postStore( store, original, summary, original != null, fireEvents, eventMetadata );
-                return true;
-            }
-            catch ( final IndyDataException e )
-            {
-                logger.error( "postStore() failed for: {}. Rolling back to old value: {}", store, old );
-                stores.put( old.getKey(), old );
-            }
-        }
-
-        return false;
     }
 
     protected void preStore( final ArtifactStore store, final ArtifactStore original, final ChangeSummary summary,
@@ -367,21 +287,31 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public synchronized void deleteArtifactStore( final StoreKey key, final ChangeSummary summary,
+    public void deleteArtifactStore( final StoreKey key, final ChangeSummary summary,
                                                   final EventMetadata eventMetadata )
             throws IndyDataException
     {
-        final ArtifactStore store = stores.get( key );
-        if ( store == null )
+        ReentrantLock opLock = getOpLock( key );
+        try
         {
-            return;
+            opLock.lock();
+
+            final ArtifactStore store = stores.get( key );
+            if ( store == null )
+            {
+                return;
+            }
+
+            preDelete( store, summary, true, eventMetadata );
+
+            ArtifactStore removed = stores.remove( key );
+
+            postDelete( store, summary, true, eventMetadata );
         }
-
-        preDelete( store, summary, true, eventMetadata );
-
-        ArtifactStore removed = stores.remove( key );
-
-        postDelete( store, summary, true, eventMetadata );
+        finally
+        {
+            opLock.unlock();
+        }
     }
 
     @Override
@@ -391,7 +321,7 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public synchronized void clear( final ChangeSummary summary )
+    public void clear( final ChangeSummary summary )
             throws IndyDataException
     {
         stores.clear();
@@ -404,11 +334,7 @@ public class MemoryStoreDataManager
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "Getting groups containing: {}", repo );
 
-        Set<ArtifactStore> all;
-        synchronized ( this )
-        {
-            all = new HashSet<>( stores.values() );
-        }
+        Set<ArtifactStore> all = new HashSet<>( stores.values() );
 
         Set<Group> result = all.parallelStream()
                                .filter( ( store ) -> ( ( store instanceof Group ) && ( (Group) store ).getConstituents()
@@ -423,11 +349,7 @@ public class MemoryStoreDataManager
     @Override
     public RemoteRepository findRemoteRepository( final String url )
     {
-        List<Map.Entry<StoreKey, ArtifactStore>> copy;
-        synchronized ( this )
-        {
-            copy = new ArrayList<>( stores.entrySet() );
-        }
+        List<Map.Entry<StoreKey, ArtifactStore>> copy = new ArrayList<>( stores.entrySet() );
 
         Optional<RemoteRepository> found = copy.stream()
                                                .filter( e -> ( ( remote == e.getValue().getKey().getType() )
@@ -435,35 +357,6 @@ public class MemoryStoreDataManager
                                                .map( ( e ) -> (RemoteRepository) e.getValue() )
                                                .findFirst();
         return found.isPresent() ? found.get() : null;
-    }
-
-    private <T extends ArtifactStore> List<T> getAll( final StoreType storeType, final Class<T> type )
-    {
-        List<Map.Entry<StoreKey, ArtifactStore>> copy;
-        synchronized ( this )
-        {
-            copy = new ArrayList<>( stores.entrySet() );
-        }
-
-        return copy.stream()
-                   .filter( ( entry ) -> storeType == entry.getKey().getType() && type.isAssignableFrom(
-                           entry.getValue().getClass() ) )
-                   .map( ( entry ) -> type.cast( entry.getValue() ) )
-                   .collect( Collectors.toList() );
-    }
-
-    private List<ArtifactStore> getAll( final StoreType... storeTypes )
-    {
-        List<Map.Entry<StoreKey, ArtifactStore>> copy;
-        synchronized ( this )
-        {
-            copy = new ArrayList<>( stores.entrySet() );
-        }
-
-        return copy.stream()
-                   .filter( ( entry ) -> Arrays.binarySearch( storeTypes, entry.getKey().getType() ) > -1 )
-                   .map( ( entry ) -> entry.getValue() )
-                   .collect( Collectors.toList() );
     }
 
     @Override
@@ -520,6 +413,138 @@ public class MemoryStoreDataManager
     public boolean isStarted()
     {
         return true;
+    }
+
+    private boolean store( final ArtifactStore store, final ChangeSummary summary,
+                           final boolean skipIfExists, final boolean fireEvents,
+                           final EventMetadata eventMetadata )
+            throws IndyDataException
+    {
+        ReentrantLock opLock = getOpLock( store.getKey() );
+        try
+        {
+            opLock.lock();
+
+            ArtifactStore original = stores.get( store.getKey() );
+            if ( original == store )
+            {
+                // if they're the same instance, warn that preUpdate events may not work correctly!
+                logger.warn(
+                        "Storing changes on existing instance of: {}! You forgot to call {}.copyOf(), so preUpdate events may not accurately reflect before/after differences for this change!",
+                        store, store.getClass().getSimpleName() );
+            }
+
+            if ( !skipIfExists || original == null )
+            {
+                preStore( store, original, summary, original != null, fireEvents, eventMetadata );
+                final ArtifactStore old = stores.put( store.getKey(), store );
+                try
+                {
+                    postStore( store, original, summary, original != null, fireEvents, eventMetadata );
+                    return true;
+                }
+                catch ( final IndyDataException e )
+                {
+                    logger.error( "postStore() failed for: {}. Rolling back to old value: {}", store, old );
+                    stores.put( old.getKey(), old );
+                }
+            }
+
+            return false;
+        }
+        finally
+        {
+            opLock.unlock();
+        }
+    }
+
+    private ReentrantLock getOpLock( StoreKey key )
+    {
+        ReentrantLock opLock;
+        synchronized ( opLocks )
+        {
+            opLock = opLocks.get( key );
+            if ( opLock == null )
+            {
+                opLock = new ReentrantLock();
+                opLocks.put( key, opLock );
+            }
+        }
+
+        return opLock;
+    }
+
+    private List<ArtifactStore> getGroupOrdering( final String groupName, final boolean includeGroups,
+                                                  final boolean recurseGroups, final boolean enabledOnly )
+            throws IndyDataException
+    {
+        final Group master = (Group) stores.get( new StoreKey( StoreType.group, groupName ) );
+        if ( master == null )
+        {
+            return Collections.emptyList();
+        }
+
+        final List<ArtifactStore> result = new ArrayList<ArtifactStore>();
+        recurseGroup( master, result, new HashSet<>(), includeGroups, recurseGroups, enabledOnly );
+
+        return result;
+    }
+
+    private void recurseGroup( final Group master, final List<ArtifactStore> result, final Set<StoreKey> seen,
+                               final boolean includeGroups, final boolean recurseGroups, final boolean enabledOnly )
+    {
+        if ( master == null || master.isDisabled() && enabledOnly )
+        {
+            return;
+        }
+
+        List<StoreKey> members = new ArrayList<>( master.getConstituents() );
+        if ( includeGroups )
+        {
+            result.add( master );
+        }
+
+        members.forEach( ( key ) -> {
+            if ( !seen.contains( key ) )
+            {
+                seen.add( key );
+                final StoreType type = key.getType();
+                if ( recurseGroups && type == StoreType.group )
+                {
+                    // if we're here, we're definitely recursing groups...
+                    recurseGroup( (Group) stores.get( key ), result, seen, includeGroups, true, enabledOnly );
+                }
+                else
+                {
+                    final ArtifactStore store = stores.get( key );
+                    if ( store != null && !( store.isDisabled() && enabledOnly ) )
+                    {
+                        result.add( store );
+                    }
+                }
+            }
+        } );
+    }
+
+    private <T extends ArtifactStore> List<T> getAll( final StoreType storeType, final Class<T> type )
+    {
+        List<Map.Entry<StoreKey, ArtifactStore>> copy = new ArrayList<>( stores.entrySet() );
+
+        return copy.stream()
+                   .filter( ( entry ) -> storeType == entry.getKey().getType() && type.isAssignableFrom(
+                           entry.getValue().getClass() ) )
+                   .map( ( entry ) -> type.cast( entry.getValue() ) )
+                   .collect( Collectors.toList() );
+    }
+
+    private List<ArtifactStore> getAll( final StoreType... storeTypes )
+    {
+        List<Map.Entry<StoreKey, ArtifactStore>> copy = new ArrayList<>( stores.entrySet() );
+
+        return copy.stream()
+                   .filter( ( entry ) -> Arrays.binarySearch( storeTypes, entry.getKey().getType() ) > -1 )
+                   .map( ( entry ) -> entry.getValue() )
+                   .collect( Collectors.toList() );
     }
 
 }

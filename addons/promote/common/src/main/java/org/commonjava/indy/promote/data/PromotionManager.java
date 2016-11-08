@@ -44,11 +44,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -81,7 +81,7 @@ public class PromotionManager
     @Inject
     private PromotionValidator validator;
 
-    private Map<StoreKey, ReentrantLock> byPathTargetLocks = new HashMap<>();
+    private Map<StoreKey, ReentrantLock> byPathTargetLocks = new WeakHashMap<>();
 
     protected PromotionManager()
     {

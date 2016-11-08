@@ -22,3 +22,5 @@ uis/layover/node_modules/
 
 embedders/savant/org.commonjava.indy.folo.model.TrackedContentEntry/segments*
 embedders/savant/org.commonjava.indy.folo.model.TrackingKey/*
+embedders/savant/indexedStorePath/*
+
