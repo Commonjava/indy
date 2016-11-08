@@ -82,9 +82,10 @@ class IndyScheduleListener
                 {
                     eventDispatcher.fire( ScheduleManager.createEvent( SchedulerEventType.CANCEL, detail ) );
                 }
-            } else
+            }
+            else
             {
-                logger.error( "Cannot produce job key for trigger key: {}. Unknown job type." + triggerKey );
+                logger.error( "Cannot produce job key for trigger key: {}. Unknown job type.", triggerKey );
             }
         }
         catch ( final SchedulerException e )
