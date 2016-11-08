@@ -509,7 +509,7 @@ public class IndyClientHttp
             final StatusLine sl = response.getStatusLine();
             if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
-                throw new IndyClientException( sl.getStatusCode(), "Error retrieving %s from: %s.\n%s",
+                throw new IndyClientException( sl.getStatusCode(), "Error POSTING with %s result from: %s.\n%s",
                                                type.getSimpleName(), path, new IndyResponseErrorDetails( response ) );
             }
 
