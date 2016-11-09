@@ -83,6 +83,8 @@ public class ScheduleManager
 
     public static final String CONTENT_JOB_TYPE = "CONTENT";
 
+    public static final String STORE_JOB_TYPE = "SOTRE";
+
     private static final String JOB_TYPE = "JOB_TYPE";
 
     @Inject
@@ -197,7 +199,16 @@ public class ScheduleManager
 
         if ( timeout > 0 )
         {
-            rescheduleTimeouts( deploy, timeout );
+            final Set<TriggerKey> canceled =
+                    cancelAllBefore( new StoreKeyMatcher( deploy.getKey(), CONTENT_JOB_TYPE ), timeout );
+
+            for ( final TriggerKey key : canceled )
+            {
+                final String path = key.getName();
+                final StoreKey sk = storeKeyFrom( key.getGroup() );
+
+                scheduleContentExpiration( sk, path, timeout );
+            }
         }
     }
 
@@ -218,22 +229,15 @@ public class ScheduleManager
 
         if ( timeout > 0 )
         {
-            rescheduleTimeouts( deploy, timeout );
-        }
-    }
+            final Set<TriggerKey> canceled =
+                    cancelAllBefore( new StoreKeyMatcher( deploy.getKey(), STORE_JOB_TYPE ), timeout );
 
-    private synchronized void rescheduleTimeouts( final HostedRepository deploy, final int timeout )
-            throws IndySchedulerException
-    {
-        final Set<TriggerKey> canceled =
-                cancelAllBefore( new StoreKeyMatcher( deploy.getKey(), CONTENT_JOB_TYPE ), timeout );
+            for ( final TriggerKey key : canceled )
+            {
+                final StoreKey sk = storeKeyFrom( key.getGroup() );
 
-        for ( final TriggerKey key : canceled )
-        {
-            final String path = key.getName();
-            final StoreKey sk = storeKeyFrom( key.getGroup() );
-
-            scheduleContentExpiration( sk, path, timeout );
+                scheduleStoreExpiration( sk, timeout );
+            }
         }
     }
 
@@ -400,6 +404,21 @@ public class ScheduleManager
         scheduleForStore( key, CONTENT_JOB_TYPE, path, new ContentExpiration( key, path ), timeoutSeconds, -1 );
     }
 
+    public synchronized void scheduleStoreExpiration( final StoreKey key, final int timeoutSeconds )
+            throws IndySchedulerException
+    {
+        if ( !schedulerConfig.isEnabled() )
+        {
+            logger.debug( "Scheduler disabled." );
+            return;
+        }
+
+        logger.info( "Scheduling timeout for: {} in: {} seconds (at: {}).", key, timeoutSeconds,
+                     new Date( System.currentTimeMillis() + ( timeoutSeconds * 1000 ) ) );
+
+        scheduleForStore( key, STORE_JOB_TYPE, STORE_JOB_TYPE, key, timeoutSeconds, -1 );
+    }
+
     public synchronized void setSnapshotTimeouts( final StoreKey key, final String path )
         throws IndySchedulerException
     {
@@ -410,11 +429,6 @@ public class ScheduleManager
         }
 
         HostedRepository deploy = getHostedRepository( key );
-
-        if ( deploy == null )
-        {
-            return;
-        }
 
         if ( deploy == null )
         {
@@ -464,9 +478,9 @@ public class ScheduleManager
         {
             final int timeout = deploy.getRepoTimeoutSeconds();
 
-            cancel( new StoreKeyMatcher( key, CONTENT_JOB_TYPE ), path );
+            cancel( new StoreKeyMatcher( key, STORE_JOB_TYPE ), path );
 
-            scheduleContentExpiration( key, path, timeout );
+            scheduleStoreExpiration( key, timeout );
         }
     }
 
