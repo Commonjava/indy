@@ -47,7 +47,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.net.URI;
 
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
@@ -83,13 +85,14 @@ public class PromoteResource
     @Consumes( ApplicationContent.application_json )
     public GroupPromoteResult promoteToGroup( final GroupPromoteRequest request,
                                               final @Context HttpServletRequest servletRequest,
-                                              final @Context SecurityContext securityContext )
+                                              final @Context SecurityContext securityContext,
+                                              final @Context UriInfo uriInfo)
     {
         Response response = null;
         try
         {
             String user = securityManager.getUser( securityContext, servletRequest );
-            return manager.promoteToGroup( request, user );
+            return manager.promoteToGroup( request, user, uriInfo.getBaseUri().getPath() );
         }
         catch ( PromotionException e )
         {
@@ -136,7 +139,7 @@ public class PromoteResource
     @Path( "/paths/promote" )
     @POST
     @Consumes( ApplicationContent.application_json )
-    public Response promotePaths( final @Context HttpServletRequest request )
+    public Response promotePaths( final @Context HttpServletRequest request, final @Context UriInfo uriInfo )
     {
         PathsPromoteRequest req = null;
         Response response = null;
@@ -158,7 +161,7 @@ public class PromoteResource
 
         try
         {
-            final PathsPromoteResult result = manager.promotePaths( req );
+            final PathsPromoteResult result = manager.promotePaths( req, uriInfo.getBaseUri().getPath() );
 
             // TODO: Amend response status code based on presence of error? This would have consequences for client API...
             response = formatOkResponseWithJsonEntity( result, mapper );
@@ -224,7 +227,7 @@ public class PromoteResource
     @Path( "/paths/rollback" )
     @POST
     @Consumes( ApplicationContent.application_json )
-    public Response rollbackPaths( @Context final HttpServletRequest request )
+    public Response rollbackPaths( @Context final HttpServletRequest request, @Context final UriInfo uriInfo  )
     {
         PathsPromoteResult result = null;
         Response response = null;

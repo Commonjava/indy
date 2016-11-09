@@ -16,6 +16,13 @@
 package org.commonjava.indy.promote.validate;
 
 import org.apache.commons.lang.StringUtils;
+import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.data.IndyDataException;
+import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.model.core.ArtifactStore;
+import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.promote.model.GroupPromoteRequest;
+import org.commonjava.indy.promote.model.PathsPromoteRequest;
 import org.commonjava.indy.promote.model.PromoteRequest;
 import org.commonjava.indy.promote.model.ValidationRuleSet;
 import org.commonjava.indy.promote.validate.model.ValidationRequest;
@@ -27,29 +34,36 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.io.File;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by jdcasey on 9/11/15.
  */
 public class PromotionValidator
 {
+    private static final String PROMOTE_REPO_PREFIX = "Promote_";
+
     @Inject
     private PromoteValidationsManager validationsManager;
 
     @Inject
     private PromotionValidationTools validationTools;
 
+    @Inject
+    private StoreDataManager storeDataMgr;
+
     protected PromotionValidator()
     {
     }
 
-    public PromotionValidator( PromoteValidationsManager validationsManager, PromotionValidationTools validationTools )
+    public PromotionValidator( PromoteValidationsManager validationsManager, PromotionValidationTools validationTools, StoreDataManager storeDataMgr )
     {
         this.validationsManager = validationsManager;
         this.validationTools = validationTools;
+        this.storeDataMgr = storeDataMgr;
     }
 
-    public void validate( PromoteRequest request, ValidationResult result )
+    public void validate( PromoteRequest request, ValidationResult result, String baseUrl )
             throws PromotionValidationException
     {
         ValidationRuleSet set = validationsManager.getRuleSetMatching( request.getTargetKey() );
@@ -63,43 +77,114 @@ public class PromotionValidator
             List<String> ruleNames = set.getRuleNames();
             if ( ruleNames != null && !ruleNames.isEmpty() )
             {
-                ValidationRequest req = new ValidationRequest( request, set, validationTools );
-
-                for ( String ruleRef : ruleNames )
+                final ArtifactStore store = getRequestStore( request, baseUrl );
+                try
                 {
-                    String ruleName = new File( ruleRef ).getName(); // flatten in case some path fragment leaks in...
+                    final ValidationRequest req = new ValidationRequest( request, set, validationTools, store );
+                    for ( String ruleRef : ruleNames )
+                    {
+                        String ruleName = new File( ruleRef ).getName(); // flatten in case some path fragment leaks in...
 
-                    ValidationRuleMapping rule = validationsManager.getRuleMappingNamed( ruleName );
-                    if ( rule != null )
+                        ValidationRuleMapping rule = validationsManager.getRuleMappingNamed( ruleName );
+                        if ( rule != null )
+                        {
+                            try
+                            {
+                                logger.debug( "Running promotion validation rule: {}", rule.getName() );
+                                String error = rule.getRule().validate( req );
+                                if ( StringUtils.isNotEmpty( error ) )
+                                {
+                                    logger.debug( "{} failed", rule.getName() );
+                                    result.addValidatorError( rule.getName(), error );
+                                }
+                                else
+                                {
+                                    logger.debug( "{} succeeded", rule.getName() );
+                                }
+                            }
+                            catch ( Exception e )
+                            {
+                                if ( e instanceof PromotionValidationException )
+                                {
+                                    throw (PromotionValidationException) e;
+                                }
+
+                                throw new PromotionValidationException(
+                                        "Failed to run validation rule: {} for request: {}. Reason: {}", e, rule.getName(),
+                                        request, e );
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    if ( needTempRepo( request ) )
                     {
                         try
                         {
-                            logger.debug( "Running promotion validation rule: {}", rule.getName() );
-                            String error = rule.getRule().validate( req );
-                            if ( StringUtils.isNotEmpty( error ) )
-                            {
-                                logger.debug( "{} failed", rule.getName() );
-                                result.addValidatorError( rule.getName(), error );
-                            }
-                            else
-                            {
-                                logger.debug( "{} succeeded", rule.getName() );
-                            }
+                            storeDataMgr.deleteArtifactStore( store.getKey(), new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                                                 "remove the temp remote repo" ) );
                         }
-                        catch ( Exception e )
+                        catch ( IndyDataException e )
                         {
-                            if ( e instanceof PromotionValidationException )
-                            {
-                                throw (PromotionValidationException) e;
-                            }
-
-                            throw new PromotionValidationException(
-                                    "Failed to run validation rule: {} for request: {}. Reason: {}", e, rule.getName(),
-                                    request, e );
+                            logger.warn( "StoreDataManager can not remove artifact stores correctly.", e );
                         }
                     }
                 }
             }
         }
+    }
+
+    private boolean needTempRepo(PromoteRequest promoteRequest) throws PromotionValidationException{
+        if ( promoteRequest instanceof GroupPromoteRequest )
+        {
+            return false;
+        }
+        else if ( promoteRequest instanceof PathsPromoteRequest )
+        {
+            final Set<String> reqPaths = ( (PathsPromoteRequest) promoteRequest ).getPaths();
+            return reqPaths != null && !reqPaths.isEmpty();
+        }
+        else
+        {
+            throw new PromotionValidationException( "The promote request is not a valid request, should not happen" );
+        }
+    }
+
+    private ArtifactStore getRequestStore( PromoteRequest promoteRequest, String baseUrl )
+            throws PromotionValidationException
+    {
+        final ArtifactStore srcStore;
+        try
+        {
+            srcStore = storeDataMgr.getArtifactStore( promoteRequest.getSource() );
+        }
+        catch ( IndyDataException e )
+        {
+            throw new PromotionValidationException( "Failed to retrieve source ArtifactStore: {}. Reason: {}", e,
+                                                    promoteRequest.getSource(), e.getMessage() );
+        }
+        final ArtifactStore store;
+        if ( needTempRepo( promoteRequest ) )
+        {
+            final PathsPromoteRequest pathsReq = (PathsPromoteRequest) promoteRequest;
+            final RemoteRepository tempRemote =
+                    new RemoteRepository( PROMOTE_REPO_PREFIX + "tmp_" + pathsReq.getSource().getName(), baseUrl );
+            tempRemote.setPathMaskPatterns( pathsReq.getPaths() );
+            store = tempRemote;
+            try
+            {
+                storeDataMgr.storeArtifactStore( store, new ChangeSummary( ChangeSummary.SYSTEM_USER, "create temp remote repository" ) );
+            }
+            catch ( IndyDataException e )
+            {
+                throw new PromotionValidationException( "Can not store the temp remote repository correctly", e );
+            }
+        }
+        else
+        {
+            store = srcStore;
+        }
+        return store;
     }
 }

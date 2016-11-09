@@ -95,6 +95,8 @@ public class PromotionManagerTest
 
     private Executor executor;
 
+    private static final String FAKE_BASE_URL = "";
+
     @Before
     public void setup()
             throws Exception
@@ -121,7 +123,8 @@ public class PromotionManagerTest
                                                                           galleyParts.getPomReader(),
                                                                           galleyParts.getMavenMetadataReader(),
                                                                           modelProcessor, galleyParts.getTypeMapper(),
-                                                                          galleyParts.getTransferManager() ) );
+                                                                          galleyParts.getTransferManager() ),
+                                            storeManager );
 
         PromoteConfig config = new PromoteConfig();
 
@@ -161,7 +164,7 @@ public class PromotionManagerTest
                                          new EventMetadata() );
 
         PathsPromoteResult result =
-                manager.promotePaths( new PathsPromoteRequest( source1.getKey(), target.getKey(), path ) );
+                manager.promotePaths( new PathsPromoteRequest( source1.getKey(), target.getKey(), path ), FAKE_BASE_URL );
 
         assertThat( result.getRequest().getSource(), equalTo( source1.getKey() ) );
         assertThat( result.getRequest().getTarget(), equalTo( target.getKey() ) );
@@ -186,7 +189,7 @@ public class PromotionManagerTest
             assertThat( value, equalTo( originalString ) );
         }
 
-        result = manager.promotePaths( new PathsPromoteRequest( source1.getKey(), target.getKey(), path ) );
+        result = manager.promotePaths( new PathsPromoteRequest( source1.getKey(), target.getKey(), path ), FAKE_BASE_URL );
 
         assertThat( result.getRequest().getSource(), equalTo( source1.getKey() ) );
         assertThat( result.getRequest().getTarget(), equalTo( target.getKey() ) );
@@ -261,7 +264,7 @@ public class PromotionManagerTest
                 try
                 {
                     results[idx] =
-                            manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey(), paths ) );
+                            manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey(), paths ), FAKE_BASE_URL );
                 }
                 catch ( Exception e )
                 {
@@ -372,7 +375,7 @@ public class PromotionManagerTest
                                          new EventMetadata() );
 
         final PathsPromoteResult result =
-                manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey() ) );
+                manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey() ), FAKE_BASE_URL );
 
         assertThat( result.getRequest().getSource(), equalTo( source.getKey() ) );
         assertThat( result.getRequest().getTarget(), equalTo( target.getKey() ) );
@@ -414,7 +417,7 @@ public class PromotionManagerTest
                                          new EventMetadata() );
 
         final PathsPromoteResult result =
-                manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey() ).setDryRun( true ) );
+                manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey() ).setDryRun( true ), FAKE_BASE_URL );
 
         assertThat( result.getRequest().getSource(), equalTo( source.getKey() ) );
         assertThat( result.getRequest().getTarget(), equalTo( target.getKey() ) );
@@ -456,7 +459,7 @@ public class PromotionManagerTest
                                          new EventMetadata() );
 
         final PathsPromoteResult result = manager.promotePaths(
-                new PathsPromoteRequest( source.getKey(), target.getKey() ).setPurgeSource( true ) );
+                new PathsPromoteRequest( source.getKey(), target.getKey() ).setPurgeSource( true ), FAKE_BASE_URL );
 
         assertThat( result.getRequest().getSource(), equalTo( source.getKey() ) );
         assertThat( result.getRequest().getTarget(), equalTo( target.getKey() ) );
@@ -504,7 +507,7 @@ public class PromotionManagerTest
         storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
                                          new EventMetadata() );
 
-        PathsPromoteResult result = manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey() ) );
+        PathsPromoteResult result = manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey() ), FAKE_BASE_URL );
 
         assertThat( result.getRequest().getSource(), equalTo( source.getKey() ) );
         assertThat( result.getRequest().getTarget(), equalTo( target.getKey() ) );
@@ -560,7 +563,7 @@ public class PromotionManagerTest
                                          new EventMetadata() );
 
         PathsPromoteResult result = manager.promotePaths(
-                new PathsPromoteRequest( source.getKey(), target.getKey() ).setPurgeSource( true ) );
+                new PathsPromoteRequest( source.getKey(), target.getKey() ).setPurgeSource( true ), FAKE_BASE_URL );
 
         assertThat( result.getRequest().getSource(), equalTo( source.getKey() ) );
         assertThat( result.getRequest().getTarget(), equalTo( target.getKey() ) );
