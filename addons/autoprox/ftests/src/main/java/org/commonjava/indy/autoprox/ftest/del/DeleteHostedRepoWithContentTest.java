@@ -49,6 +49,7 @@ public class DeleteHostedRepoWithContentTest
                                          .get( StoreType.hosted, named, path );
 
         final String retrieved = IOUtils.toString( stream );
+        stream.close();
 
         assertThat( retrieved, equalTo( content ) );
 

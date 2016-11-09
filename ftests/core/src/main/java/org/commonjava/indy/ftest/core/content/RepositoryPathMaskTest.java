@@ -17,18 +17,14 @@ package org.commonjava.indy.ftest.core.content;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.commonjava.indy.client.core.IndyClientException;
-import org.commonjava.indy.client.core.helper.PathInfo;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
-import org.commonjava.maven.galley.model.Location;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
@@ -83,6 +79,7 @@ public class RepositoryPathMaskTest
 
         final String str = IOUtils.toString( stream );
         assertThat( str, equalTo( content ) );
+        stream.close();
 
         // get stream for path_2 via group (null)
         stream = client.content()
@@ -95,6 +92,7 @@ public class RepositoryPathMaskTest
                 .get( remote, remote1.getName(), path_1 );
 
         assertThat( stream, notNullValue() );
+        stream.close();
 
         // get stream for path_2 via concrete repo (null)
         stream = client.content()

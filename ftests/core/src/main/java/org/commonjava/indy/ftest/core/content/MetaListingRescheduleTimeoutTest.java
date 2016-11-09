@@ -18,6 +18,7 @@ package org.commonjava.indy.ftest.core.content;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.ftest.core.category.EventDependent;
+import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
@@ -45,7 +46,7 @@ public class MetaListingRescheduleTimeoutTest
     public ExpectationServer server = new ExpectationServer( "repos" );
 
     @Test
-    @Category( EventDependent.class )
+    @Category( TimingDependent.class )
     public void timeout()
             throws Exception
     {
@@ -82,14 +83,15 @@ public class MetaListingRescheduleTimeoutTest
         repository.setMetadataTimeoutSeconds( METADATA_TIMEOUT_SECONDS );
         client.stores().create( repository, changelog, RemoteRepository.class );
 
-        client.content().get( remote, repoId, repoSubPath1 );
-        client.content().get( remote, repoId, repoSubPath2 );
+        try(InputStream is = client.content().get( remote, repoId, repoSubPath1 )){}
+        try(InputStream is = client.content().get( remote, repoId, repoSubPath2 )){}
 
         // first time trigger normal content storage with timeout, should be 4s
         InputStream content = client.content().get( remote, repoId, repoRootPath );
         assertThat( "no metadata result", content, notNullValue() );
         logger.debug("### will begin to get content");
         IOUtils.readLines( content ).forEach( logger::info );
+        content.close();
 
         final String listingMetaPath = "org/foo/bar/.listing.txt";
         String listingMetaFilePath =
@@ -102,7 +104,7 @@ public class MetaListingRescheduleTimeoutTest
         Thread.sleep( METADATA_TIMEOUT_WAITING_MILLISECONDS );
 
         // as the metadata content re-request, the metadata timeout interval should NOT be re-scheduled
-        client.content().get( remote, repoId, repoRootPath );
+        client.content().get( remote, repoId, repoRootPath ).close();
 
         // will wait another 2.5s
         Thread.sleep( METADATA_TIMEOUT_WAITING_MILLISECONDS );

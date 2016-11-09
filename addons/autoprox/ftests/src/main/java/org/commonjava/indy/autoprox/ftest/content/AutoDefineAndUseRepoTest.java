@@ -46,5 +46,7 @@ public class AutoDefineAndUseRepoTest
 
         String result = IOUtils.toString( stream );
         assertThat( result, equalTo( content ) );
+
+        stream.close();
     }
 }

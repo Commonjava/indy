@@ -18,6 +18,7 @@ package org.commonjava.indy.ftest.core.content;
 import org.commonjava.indy.client.core.helper.PathInfo;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.ftest.core.category.EventDependent;
+import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
@@ -44,7 +45,7 @@ public class MetadataRescheduleTimeoutTest
     public ExpectationServer server = new ExpectationServer( "repos" );
 
     @Test
-    @Category( EventDependent.class )
+    @Category( TimingDependent.class )
     public void timeout()
             throws Exception
     {
@@ -68,7 +69,7 @@ public class MetadataRescheduleTimeoutTest
 
         // first time trigger normal content storage with timeout, should be 4s
         PathInfo pomResult = client.content().getInfo( remote, repoId, metadataPath );
-        client.content().get( remote, repoId, metadataPath ); // force storage
+        client.content().get( remote, repoId, metadataPath ).close(); // force storage
 
         assertThat( "no metadata result", pomResult, notNullValue() );
         assertThat( "metadata doesn't exist", pomResult.exists(), equalTo( true ) );
@@ -82,7 +83,7 @@ public class MetadataRescheduleTimeoutTest
         Thread.sleep( METADATA_TIMEOUT_WAITING_MILLISECONDS );
 
         // as the metadata content re-request, the metadata timeout interval should NOT be re-scheduled
-        client.content().get( remote, repoId, metadataPath );
+        client.content().get( remote, repoId, metadataPath ).close();
 
         // will wait another 2.5s
         Thread.sleep( METADATA_TIMEOUT_WAITING_MILLISECONDS );

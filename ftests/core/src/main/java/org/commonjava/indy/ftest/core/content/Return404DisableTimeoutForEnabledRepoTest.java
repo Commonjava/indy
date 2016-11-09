@@ -42,7 +42,7 @@ public class Return404DisableTimeoutForEnabledRepoTest
         {
             try
             {
-                Thread.sleep( 5 );
+                Thread.sleep( 5000 );
             }
             catch ( final InterruptedException e )
             {

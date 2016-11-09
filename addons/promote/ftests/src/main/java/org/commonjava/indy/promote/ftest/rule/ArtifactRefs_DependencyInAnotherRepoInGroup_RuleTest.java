@@ -68,11 +68,13 @@ public class ArtifactRefs_DependencyInAnotherRepoInGroup_RuleTest
 
         InputStream stream = client.content().get( other.getKey(), validDepPom );
         String retrieved = IOUtils.toString( stream );
+        stream.close();
 
         assertThat( validDepPom + " invalid from: " + other.getKey(), retrieved, equalTo( content ) );
 
         stream = client.content().get( other.getKey(), validDepJar );
         retrieved = IOUtils.toString( stream );
+        stream.close();
 
         assertThat( validDepJar + " invalid from: " + other.getKey(), retrieved, equalTo( content ) );
 

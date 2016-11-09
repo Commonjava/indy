@@ -64,6 +64,10 @@ public class IndyKojiConfig
 
     private static final Integer DEFAULT_DOWNLOAD_TIMEOUT_SECONDS = 600;
 
+    public static final long DEFAULT_LOCK_TIMEOUT_SECONDS = 30;
+
+    public static final long DEFAULT_METADATA_TIMEOUT_SECONDS = 86400;
+
     private Boolean enabled;
 
     private String url;
@@ -95,6 +99,10 @@ public class IndyKojiConfig
     private Map<String, String> targetGroups;
 
     private Integer downloadTimeoutSeconds;
+
+    private Long lockTimeoutSeconds;
+
+    private Long metadataTimeoutSeconds;
 
     @Override
     public SiteConfig getKojiSiteConfig()
@@ -357,6 +365,16 @@ public class IndyKojiConfig
                 this.tagPatterns.add( value );
                 break;
             }
+            case "lock.timeout.seconds":
+            {
+                this.lockTimeoutSeconds = Long.parseLong( value );
+                break;
+            }
+            case "metadata.timeout.seconds":
+            {
+                this.metadataTimeoutSeconds = Long.parseLong( value );
+                break;
+            }
             case "storage.root.url":
             {
                 this.storageRootUrl = value;
@@ -491,5 +509,25 @@ public class IndyKojiConfig
 
         logger.warn( "No target group found for: {}", name );
         return false;
+    }
+
+    public Long getLockTimeoutSeconds()
+    {
+        return lockTimeoutSeconds == null ? DEFAULT_LOCK_TIMEOUT_SECONDS : lockTimeoutSeconds;
+    }
+
+    public void setLockTimeoutSeconds( long lockTimeoutSeconds )
+    {
+        this.lockTimeoutSeconds = lockTimeoutSeconds;
+    }
+
+    public Long getMetadataTimeoutSeconds()
+    {
+        return metadataTimeoutSeconds == null ? DEFAULT_METADATA_TIMEOUT_SECONDS : metadataTimeoutSeconds;
+    }
+
+    public void setMetadataTimeoutSeconds( long metadataTimeoutSeconds )
+    {
+        this.metadataTimeoutSeconds = metadataTimeoutSeconds;
     }
 }

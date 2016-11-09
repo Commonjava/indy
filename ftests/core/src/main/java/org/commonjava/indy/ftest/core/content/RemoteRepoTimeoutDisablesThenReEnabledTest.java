@@ -18,12 +18,14 @@ package org.commonjava.indy.ftest.core.content;
 import org.apache.http.HttpStatus;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
+import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,25 +37,6 @@ import static org.junit.Assert.assertThat;
 public class RemoteRepoTimeoutDisablesThenReEnabledTest
         extends AbstractContentManagementTest
 {
-
-    public class DelayInputStream
-        extends InputStream
-    {
-        @Override
-        public int read()
-            throws IOException
-        {
-            try
-            {
-                Thread.sleep( 5 );
-            }
-            catch ( final InterruptedException e )
-            {
-            }
-
-            return 0;
-        }
-    }
 
     @Rule
     public ExpectationServer server = new ExpectationServer();
@@ -73,24 +56,32 @@ public class RemoteRepoTimeoutDisablesThenReEnabledTest
     }
 
     @Test
+    @Category( TimingDependent.class )
     public void run()
         throws Exception
     {
         final String repo1 = "repo1";
         final String path = "org/foo/bar/maven-metadata.xml";
 
-        server.expect( server.formatUrl( repo1, path ), 200, new DelayInputStream() );
+        server.expect( "GET", server.formatUrl( repo1, path ), (req,resp)->{
+            try
+            {
+                Thread.sleep( 5000 );
+            }
+            catch ( final InterruptedException e )
+            {
+            }
+            resp.setStatus( 404 );
+        } );
 
         RemoteRepository remote1 = new RemoteRepository( repo1, server.formatUrl( repo1 ) );
-        remote1.setMetadata( Location.CONNECTION_TIMEOUT_SECONDS, Integer.toString( 1 ) );
+        remote1.setTimeoutSeconds( 1 );
 
         remote1 = client.stores()
                         .create( remote1, "adding remote", RemoteRepository.class );
 
-        try
+        try (InputStream is = client.content().get( remote, repo1, path ))
         {
-            client.content()
-                  .get( remote, repo1, path );
         }
         catch ( final IndyClientException e )
         {

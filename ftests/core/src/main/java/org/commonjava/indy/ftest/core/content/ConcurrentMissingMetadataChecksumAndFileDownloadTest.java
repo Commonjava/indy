@@ -38,11 +38,11 @@ public class ConcurrentMissingMetadataChecksumAndFileDownloadTest
 
         final CountDownLatch latch = new CountDownLatch( 2 );
 
-        final DelayedDownload download = new DelayedDownload( client, new StoreKey( group, PUBLIC ), path, 5, latch );
+        final DelayedDownload download = new DelayedDownload( client, new StoreKey( group, PUBLIC ), path, 5000, latch );
         newThread( "download", download ).start();
 
         final DelayedDownload download2 =
-            new DelayedDownload( client, new StoreKey( group, PUBLIC ), path + ".sha1", 1, latch );
+            new DelayedDownload( client, new StoreKey( group, PUBLIC ), path + ".sha1", 1000, latch );
         newThread( "download2", download2 ).start();
 
         System.out.println( "Waiting for content transfers to complete." );

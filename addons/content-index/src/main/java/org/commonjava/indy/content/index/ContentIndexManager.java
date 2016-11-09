@@ -18,8 +18,6 @@ package org.commonjava.indy.content.index;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
-import org.commonjava.indy.action.IndyLifecycleException;
-import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.Group;
@@ -28,7 +26,6 @@ import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
-import org.infinispan.Cache;
 import org.infinispan.cdi.ConfigureCache;
 import org.infinispan.query.Search;
 import org.infinispan.query.dsl.Query;
@@ -44,7 +41,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 /**

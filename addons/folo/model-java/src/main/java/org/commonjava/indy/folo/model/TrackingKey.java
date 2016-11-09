@@ -15,20 +15,14 @@
  */
 package org.commonjava.indy.folo.model;
 
-import org.hibernate.search.annotations.Analyze;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Indexed;
-
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-@Indexed
 public class TrackingKey implements Externalizable
 {
 
-    @Field( analyze = Analyze.NO )
     private String id;
 
     public TrackingKey()

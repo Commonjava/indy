@@ -49,7 +49,7 @@ public class RemoteRepoTimeoutDisablesStoreAndShowsInDisabledTimeoutsMapTest
         {
             try
             {
-                Thread.sleep( 5 );
+                Thread.sleep( 5000 );
             }
             catch ( final InterruptedException e )
             {
@@ -77,10 +77,8 @@ public class RemoteRepoTimeoutDisablesStoreAndShowsInDisabledTimeoutsMapTest
         remote1 = client.stores()
                         .create( remote1, "adding remote", RemoteRepository.class );
 
-        try
+        try(InputStream is = client.content().get( remote, repo1, path ))
         {
-            client.content()
-                  .get( remote, repo1, path );
         }
         catch ( final IndyClientException e )
         {
