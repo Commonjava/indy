@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<methodResponse>
+  <params>
+    <param>
+      <value>
+        <struct>
+          <member>
+            <name>session-id</name>
+            <value>
+              <int>16912790</int>
+            </value>
+          </member>
+          <member>
+            <name>session-key</name>
+            <value>
+              <string>3600-THMonFLunbyuR564341</string>
+            </value>
+          </member>
+        </struct>
+      </value>
+    </param>
+  </params>
+</methodResponse>

@@ -22,33 +22,42 @@ import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.core.content.group.MetadataMerger;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.maven.atlas.ident.util.VersionUtils;
+import org.commonjava.maven.atlas.ident.version.SingleVersion;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
+import javax.inject.Inject;
 import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.indy.util.LocationUtils.getKey;
 
-@javax.enterprise.context.ApplicationScoped
+@ApplicationScoped
 public class MavenMetadataMerger
     implements MetadataMerger
 {
 
-    public class SnapshotVersionComparator
-        implements Comparator<SnapshotVersion>
+    public static final class SnapshotVersionComparator
+            implements Comparator<SnapshotVersion>
     {
         @Override
         public int compare( final SnapshotVersion first, final SnapshotVersion second )
@@ -73,7 +82,28 @@ public class MavenMetadataMerger
 
     public static final String METADATA_MD5_NAME = METADATA_NAME + ".md5";
 
-    private final Logger logger = LoggerFactory.getLogger( getClass() );
+    @Inject
+    private Instance<MavenMetadataProvider> metadataProviderInstances;
+
+    private List<MavenMetadataProvider> metadataProviders;
+
+    protected MavenMetadataMerger(){}
+
+    public MavenMetadataMerger( Iterable<MavenMetadataProvider> providers )
+    {
+        metadataProviders = new ArrayList<>();
+        providers.forEach( provider -> metadataProviders.add( provider ) );
+    }
+
+    @PostConstruct
+    public void setupCDI()
+    {
+        metadataProviders = new ArrayList<>();
+        if ( metadataProviderInstances != null )
+        {
+            metadataProviderInstances.forEach( provider -> metadataProviders.add( provider ) );
+        }
+    }
 
     @Override
     public byte[] merge( final Collection<Transfer> sources, final Group group, final String path )
@@ -90,6 +120,11 @@ public class MavenMetadataMerger
         Transfer snapshotProvider = null;
         for ( final Transfer src : sources )
         {
+            if ( !src.exists() )
+            {
+                continue;
+            }
+
             try
             {
                 stream = src.openInputStream();
@@ -174,6 +209,37 @@ public class MavenMetadataMerger
                 closeQuietly( fr );
                 closeQuietly( stream );
             }
+        }
+
+        Versioning versioning = master.getVersioning();
+        if ( versioning != null && versioning.getVersions() != null )
+        {
+            if ( metadataProviders != null )
+            {
+                for ( MavenMetadataProvider provider : metadataProviders )
+                {
+                    try
+                    {
+                        Metadata toMerge = provider.getMetadata( group.getKey(), path );
+                        if ( toMerge != null )
+                        {
+                            merged = master.merge( toMerge ) || merged;
+                        }
+                    }
+                    catch ( IndyWorkflowException e )
+                    {
+                        logger.error( String.format( "Cannot read metadata: %s from metadata provider: %s. Reason: %s", path, provider.getClass().getSimpleName(), e.getMessage() ), e );
+                    }
+                }
+            }
+
+            List<SingleVersion> versionObjects =
+                    versioning.getVersions().stream().map( v -> VersionUtils.createSingleVersion( v ) ).collect( Collectors.toList() );
+
+            Collections.sort( versionObjects );
+
+            versioning.setVersions(
+                    versionObjects.stream().map( sv -> sv.renderStandard() ).collect( Collectors.toList() ) );
         }
 
         if ( merged )

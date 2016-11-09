@@ -119,6 +119,7 @@ public class GroupMetaOverlapWithoutMetaOfHostedReposTest
         assertThat( stream, notNullValue() );
 
         String metadata = IOUtils.toString( stream );
+        stream.close();
 
         /* @formatter:off */
         final String groupContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -171,6 +172,7 @@ public class GroupMetaOverlapWithoutMetaOfHostedReposTest
         assertThat( stream, notNullValue() );
 
         metadata = IOUtils.toString( stream );
+        stream.close();
 
         assertThat( metadata, equalTo( groupContent ) );
 

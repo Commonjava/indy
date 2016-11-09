@@ -44,7 +44,7 @@ public class RemoteRepoHeadTimeoutTest
         {
             try
             {
-                Thread.sleep( 5 );
+                Thread.sleep( 5000 );
             }
             catch ( final InterruptedException e )
             {

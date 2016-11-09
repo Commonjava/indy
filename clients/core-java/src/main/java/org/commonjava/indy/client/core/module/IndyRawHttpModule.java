@@ -40,6 +40,7 @@ public class IndyRawHttpModule
     }
 
     public HttpClientContext newContext()
+            throws IndyClientException
     {
         return getHttp().newContext();
     }

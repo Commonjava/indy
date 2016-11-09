@@ -22,6 +22,7 @@ import org.apache.http.Header;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
 import org.commonjava.indy.client.core.IndyClientException;
+import org.commonjava.util.jhttpc.JHttpCException;
 
 public class OAuth20BearerTokenAuthenticator
     extends IndyClientAuthenticator
@@ -38,9 +39,21 @@ public class OAuth20BearerTokenAuthenticator
         this.token = token;
     }
 
-    @Override
     public HttpClientBuilder decorateClientBuilder( final URL url, final HttpClientBuilder builder )
         throws IndyClientException
+    {
+        try {
+            return decorateClientBuilder(builder);
+        }
+        catch (JHttpCException e)
+        {
+            throw new IndyClientException( "Create context error: {}", e );
+        }
+    }
+
+    @Override
+    public HttpClientBuilder decorateClientBuilder(HttpClientBuilder builder)
+            throws JHttpCException
     {
         final Header header = new BasicHeader( AUTHORIZATION_HEADER, String.format( BEARER_FORMAT, token ) );
         return builder.setDefaultHeaders( Collections.<Header> singleton( header ) );

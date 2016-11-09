@@ -37,25 +37,6 @@ public class GroupMetadataMergeWithRepoTimeoutTest
         extends AbstractContentManagementTest
 {
 
-    public class DelayInputStream
-        extends InputStream
-    {
-        @Override
-        public int read()
-            throws IOException
-        {
-            try
-            {
-                Thread.sleep( 5000 );
-            }
-            catch ( final InterruptedException e )
-            {
-            }
-
-            return 0;
-        }
-    }
-
     @Rule
     public ExpectationServer server = new ExpectationServer();
 
@@ -84,7 +65,17 @@ public class GroupMetadataMergeWithRepoTimeoutTest
         /* @formatter:on */
 
         server.expect( server.formatUrl( repo1, path ), 200, repo1Content );
-        server.expect( server.formatUrl( repo2, path ), 200, new DelayInputStream() );
+        server.expect( "GET", server.formatUrl( repo2, path ), (request, response)->{
+            try
+            {
+                Thread.sleep( 5000 );
+            }
+            catch ( final InterruptedException e )
+            {
+            }
+
+            response.setStatus( 404 );
+        } );
 
         RemoteRepository remote1 = new RemoteRepository( repo1, server.formatUrl( repo1 ) );
 
@@ -92,6 +83,8 @@ public class GroupMetadataMergeWithRepoTimeoutTest
                         .create( remote1, "adding remote", RemoteRepository.class );
 
         RemoteRepository remote2 = new RemoteRepository( repo2, server.formatUrl( repo2 ) );
+        remote2.setTimeoutSeconds( 2 );
+
         remote2.setMetadata( Location.CONNECTION_TIMEOUT_SECONDS, Integer.toString( 1 ) );
 
         remote2 = client.stores()
@@ -110,6 +103,7 @@ public class GroupMetadataMergeWithRepoTimeoutTest
 
         final String metadata = IOUtils.toString( stream );
         assertThat( metadata, equalTo( repo1Content ) );
+        stream.close();
     }
 
     @Override

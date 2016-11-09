@@ -85,7 +85,7 @@ public abstract class AbstractMetadataTimeoutWorkingTest
 
         // ensure the pom exist before the timeout checking
         final PathInfo pomResult = client.content().getInfo( remote, repoId, pomPath );
-        client.content().get( remote, repoId, pomPath ); // force storage
+        client.content().get( remote, repoId, pomPath ).close(); // force storage
         assertThat( "no pom result", pomResult, notNullValue() );
         assertThat( "pom doesn't exist", pomResult.exists(), equalTo( true ) );
         String pomFilePath = String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(),
@@ -95,7 +95,7 @@ public abstract class AbstractMetadataTimeoutWorkingTest
 
         // ensure the metadata exist before the timeout checking
         final PathInfo metadataResult = client.content().getInfo( remote, repoId, metadataPath );
-        client.content().get( remote, repoId, metadataPath ); // force storage
+        client.content().get( remote, repoId, metadataPath ).close(); // force storage
         assertThat( "no metadata result", metadataResult, notNullValue() );
         assertThat( "metadata doesn't exist", metadataResult.exists(), equalTo( true ) );
         String metadataFilePath = String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(),
@@ -105,7 +105,7 @@ public abstract class AbstractMetadataTimeoutWorkingTest
 
         // ensure the archetype exist before the timeout checking
         final PathInfo archetypeResult = client.content().getInfo( remote, repoId, archetypePath );
-        client.content().get( remote, repoId, archetypePath ); // force storage
+        client.content().get( remote, repoId, archetypePath ).close(); // force storage
         assertThat( "no archetype result", archetypeResult, notNullValue() );
         assertThat( "archetype doesn't exist", archetypeResult.exists(), equalTo( true ) );
         String archetypeFilePath = String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(),

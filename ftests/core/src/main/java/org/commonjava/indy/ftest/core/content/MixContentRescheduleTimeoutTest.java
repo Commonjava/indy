@@ -18,6 +18,7 @@ package org.commonjava.indy.ftest.core.content;
 import org.commonjava.indy.client.core.helper.PathInfo;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.ftest.core.category.EventDependent;
+import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
@@ -44,7 +45,7 @@ public class MixContentRescheduleTimeoutTest
     public ExpectationServer server = new ExpectationServer( "repos" );
 
     @Test
-    @Category( EventDependent.class )
+    @Category( TimingDependent.class )
     public void timeout()
             throws Exception
     {
@@ -71,7 +72,7 @@ public class MixContentRescheduleTimeoutTest
 
         // first time trigger normal content storage with timeout, should be 8s
         PathInfo pomResult = client.content().getInfo( remote, repoId, pomPath );
-        client.content().get( remote, repoId, pomPath ); // force storage
+        client.content().get( remote, repoId, pomPath ).close(); // force storage
         assertThat( "no pom result", pomResult, notNullValue() );
         assertThat( "pom doesn't exist", pomResult.exists(), equalTo( true ) );
         String pomFilePath = String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(),
@@ -81,7 +82,7 @@ public class MixContentRescheduleTimeoutTest
 
         // first time trigger metadata storage with timeout, should be 4s
         PathInfo metadataResult = client.content().getInfo( remote, repoId, metadataPath );
-        client.content().get( remote, repoId, metadataPath ); // force storage
+        client.content().get( remote, repoId, metadataPath ).close(); // force storage
         assertThat( "no metadata result", metadataResult, notNullValue() );
         assertThat( "metadata doesn't exist", metadataResult.exists(), equalTo( true ) );
         String metadataFilePath =
@@ -94,7 +95,7 @@ public class MixContentRescheduleTimeoutTest
         Thread.sleep( CACHE_TIMEOUT_WAITING_MILLISECONDS );
 
         // as the metadata re-request, the timeout interval should NOT be re-scheduled
-        client.content().get( remote, repoId, metadataPath );
+        client.content().get( remote, repoId, metadataPath ).close();
 
         // will wait another 4.5s
         Thread.sleep( CACHE_TIMEOUT_WAITING_MILLISECONDS + 500 );

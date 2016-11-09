@@ -159,6 +159,7 @@ public abstract class AbstractIndyFunctionalTest
     {
         final CoreServerFixture fixture = new CoreServerFixture();
 
+        logger.info( "Setting up configuration using indy.home == '{}'", fixture.getBootOptions().getIndyHome() );
         etcDir = new File( fixture.getBootOptions().getIndyHome(), "etc/indy" );
         dataDir = new File( fixture.getBootOptions().getIndyHome(), "var/lib/indy/data" );
 
@@ -182,6 +183,7 @@ public abstract class AbstractIndyFunctionalTest
     protected void initBaseTestConfig( CoreServerFixture fixture )
             throws IOException
     {
+        writeConfigFile( "conf.d/storage.conf", "[storage-default]\nstorage.dir=" + fixture.getBootOptions().getIndyHome() + "/var/lib/indy/storage" );
         if ( isSchedulerEnabled() )
         {
             writeConfigFile( "conf.d/scheduler.conf", readTestResource( "default-test-scheduler.conf" ) );

@@ -46,7 +46,7 @@ public class RemoteRepoTimeoutDisablesStoreAndRetreiveTimeoutScheduleTest
         {
             try
             {
-                Thread.sleep( 5 );
+                Thread.sleep( 5000 );
             }
             catch ( final InterruptedException e )
             {
@@ -69,15 +69,13 @@ public class RemoteRepoTimeoutDisablesStoreAndRetreiveTimeoutScheduleTest
         server.expect( server.formatUrl( repo1, path ), 200, new DelayInputStream() );
 
         RemoteRepository remote1 = new RemoteRepository( repo1, server.formatUrl( repo1 ) );
-        remote1.setMetadata( Location.CONNECTION_TIMEOUT_SECONDS, Integer.toString( 1 ) );
+        remote1.setTimeoutSeconds( 1 );
 
         remote1 = client.stores()
                         .create( remote1, "adding remote", RemoteRepository.class );
 
-        try
+        try(InputStream is = client.content().get( remote, repo1, path ))
         {
-            client.content()
-                  .get( remote, repo1, path );
         }
         catch ( final IndyClientException e )
         {

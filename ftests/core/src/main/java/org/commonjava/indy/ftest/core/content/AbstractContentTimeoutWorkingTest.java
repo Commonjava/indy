@@ -76,7 +76,7 @@ public abstract class AbstractContentTimeoutWorkingTest
         assertThat( "no result", result, notNullValue() );
         assertThat( "doesn't exist", result.exists(), equalTo( true ) );
 
-        client.content().get(remote, repoId, pomPath); // force storage
+        client.content().get(remote, repoId, pomPath).close(); // force storage
         String pomFilePath = String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(),
                                      remote.name(), repoId, pomPath );
 

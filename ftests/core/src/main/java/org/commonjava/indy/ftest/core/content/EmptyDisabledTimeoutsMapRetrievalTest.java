@@ -43,7 +43,7 @@ public class EmptyDisabledTimeoutsMapRetrievalTest
         {
             try
             {
-                Thread.sleep( 5 );
+                Thread.sleep( 5000 );
             }
             catch ( final InterruptedException e )
             {

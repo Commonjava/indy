@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.folo.model;
+package org.commonjava.indy.folo.data.idxmodel;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.commonjava.indy.folo.model.TrackedContentEntry;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.hibernate.search.bridge.TwoWayStringBridge;
@@ -29,12 +30,14 @@ import java.io.IOException;
  * A FieldBridge used for {@link TrackedContentEntry} storeKey field when do indexing by hibernate search.
  * Used json as the ser/de-ser way
  */
-public class StoreKeyFieldBridge implements TwoWayStringBridge
+public class StoreKeyFieldBridge
+        implements TwoWayStringBridge
 {
     @Inject
     private ObjectMapper objMapper;
 
-    public StoreKeyFieldBridge(){
+    public StoreKeyFieldBridge()
+    {
         initMapper();
     }
 
@@ -50,11 +53,12 @@ public class StoreKeyFieldBridge implements TwoWayStringBridge
     @Override
     public Object stringToObject( String stringValue )
     {
-        if("".equals( stringValue ))
+        if ( "".equals( stringValue ) )
         {
             return null;
         }
-        else{
+        else
+        {
             try
             {
                 return objMapper.readValue( stringValue, TrackedContentEntry.class );
@@ -69,7 +73,8 @@ public class StoreKeyFieldBridge implements TwoWayStringBridge
     @Override
     public String objectToString( Object object )
     {
-        if(object instanceof StoreKey ){
+        if ( object instanceof StoreKey )
+        {
             try
             {
                 return objMapper.writeValueAsString( object );
@@ -81,4 +86,5 @@ public class StoreKeyFieldBridge implements TwoWayStringBridge
         }
         return "";
     }
+
 }

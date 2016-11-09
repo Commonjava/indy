@@ -28,6 +28,8 @@ import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.io.InputStream;
+
 public class RemoteRepoHeadErrorTest
         extends AbstractContentManagementTest
 {
@@ -50,10 +52,8 @@ public class RemoteRepoHeadErrorTest
         remote1 = client.stores()
                         .create( remote1, "adding remote", RemoteRepository.class );
 
-        try
+        try(InputStream is = client.content().get( remote, repo1, path ))
         {
-            client.content()
-                  .exists( remote, repo1, path );
         }
         catch ( final IndyClientException e )
         {

@@ -16,6 +16,7 @@
 package org.commonjava.indy.ftest.core.content;
 
 import org.commonjava.indy.ftest.core.category.EventDependent;
+import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.junit.Test;
@@ -27,7 +28,7 @@ public class ContentPassthroughTimeoutWorkingTest
         extends AbstractContentTimeoutWorkingTest
 {
     @Test
-    @Category( EventDependent.class )
+    @Category( TimingDependent.class )
     public void quartzBasedTimeoutArtifact()
             throws Exception
     {
