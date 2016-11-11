@@ -44,11 +44,14 @@ public class ValidationRequest
 
     private Set<String> requestPaths;
 
-    public ValidationRequest( PromoteRequest promoteRequest, ValidationRuleSet ruleSet, PromotionValidationTools tools )
+    private ArtifactStore sourceRepository;
+
+    public ValidationRequest( PromoteRequest promoteRequest, ValidationRuleSet ruleSet, PromotionValidationTools tools, ArtifactStore sourceRepository )
     {
         this.promoteRequest = promoteRequest;
         this.ruleSet = ruleSet;
         this.tools = tools;
+        this.sourceRepository = sourceRepository;
     }
 
     public synchronized Set<String> getSourcePaths()
@@ -150,5 +153,10 @@ public class ValidationRequest
     public StoreKey getTarget()
     {
         return promoteRequest.getTargetKey();
+    }
+
+    public ArtifactStore getSourceRepository()
+    {
+        return sourceRepository;
     }
 }

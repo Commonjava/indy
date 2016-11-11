@@ -97,7 +97,7 @@ public class PromotionManager
         this.config = config;
     }
 
-    public GroupPromoteResult promoteToGroup( GroupPromoteRequest request, String user )
+    public GroupPromoteResult promoteToGroup( GroupPromoteRequest request, String user, String baseUrl )
             throws PromotionException
     {
         if ( !storeManager.hasArtifactStore( request.getSource() ) )
@@ -131,7 +131,7 @@ public class PromotionManager
         logger.info( "Running validations for promotion of: {} to group: {}", request.getSource(),
                      request.getTargetGroup() );
 
-        validator.validate( request, validation );
+        validator.validate( request, validation, baseUrl );
         if ( validation.isValid() )
         {
             if ( !request.isDryRun() && !target.getConstituents().contains( request.getSource() ) )
@@ -226,7 +226,7 @@ public class PromotionManager
      * @throws PromotionException
      * @throws IndyWorkflowException
      */
-    public PathsPromoteResult promotePaths( final PathsPromoteRequest request )
+    public PathsPromoteResult promotePaths( final PathsPromoteRequest request, final String baseUrl )
             throws PromotionException, IndyWorkflowException
     {
         final Set<String> paths = request.getPaths();
@@ -250,7 +250,7 @@ public class PromotionManager
         }
 
         ValidationResult validation = new ValidationResult();
-        validator.validate( request, validation );
+        validator.validate( request, validation, baseUrl );
         if ( request.isDryRun() )
         {
             return new PathsPromoteResult( request, pending, Collections.emptySet(), Collections.emptySet(),
