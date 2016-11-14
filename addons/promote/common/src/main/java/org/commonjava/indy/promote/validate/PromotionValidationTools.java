@@ -28,6 +28,7 @@ import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.promote.model.PromoteRequest;
+import org.commonjava.indy.promote.validate.model.ValidationRequest;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
@@ -62,6 +63,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.commonjava.indy.promote.validate.util.ReadOnlyTransfer.readOnlyWrapper;
 import static org.commonjava.indy.promote.validate.util.ReadOnlyTransfer.readOnlyWrappers;
@@ -71,6 +74,11 @@ import static org.commonjava.indy.promote.validate.util.ReadOnlyTransfer.readOnl
  */
 public class PromotionValidationTools
 {
+    public static final String AVAILABLE_IN_STORES = "availableInStores";
+
+    @Deprecated
+    public static final String AVAILABLE_IN_STORE_KEY = "availableInStoreKey";
+
     @Inject
     private ContentManager contentManager;
 
@@ -98,8 +106,7 @@ public class PromotionValidationTools
 
     public PromotionValidationTools( ContentManager manager, StoreDataManager storeDataManager,
                                      MavenPomReader pomReader, MavenMetadataReader metadataReader,
-                                     MavenModelProcessor modelProcessor,
-                                     TypeMapper typeMapper,
+                                     MavenModelProcessor modelProcessor, TypeMapper typeMapper,
                                      TransferManager transferManager )
     {
         contentManager = manager;
@@ -109,6 +116,53 @@ public class PromotionValidationTools
         this.modelProcessor = modelProcessor;
         this.typeMapper = typeMapper;
         this.transferManager = transferManager;
+    }
+
+    public StoreKey[] getValidationStoreKeys( ValidationRequest request, boolean includeSource )
+            throws PromotionValidationException
+    {
+        String verifyStores = request.getValidationParameter( PromotionValidationTools.AVAILABLE_IN_STORES );
+        if ( verifyStores == null )
+        {
+            verifyStores = request.getValidationParameter( PromotionValidationTools.AVAILABLE_IN_STORE_KEY );
+        }
+
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Got extra validation keys string: '{}'", verifyStores );
+
+        List<StoreKey> verifyStoreKeys = new ArrayList<>();
+        if ( includeSource )
+        {
+            verifyStoreKeys.add( request.getSourceRepository().getKey() );
+        }
+
+        verifyStoreKeys.add( request.getTarget() );
+        if ( verifyStores == null )
+        {
+            logger.warn(
+                    "No external store (availableInStoreKey parameter) specified for validating path availability in rule-set: {}. Using target: {} instead.",
+                    request.getRuleSet().getName(), request.getTarget() );
+        }
+        else
+        {
+            List<StoreKey> extras = Stream.of( verifyStores.split( "\\s*,\\s*" ) )
+                  .map( StoreKey::fromString )
+                  .filter( item -> item != null ).collect( Collectors.toList());
+
+            if ( extras.isEmpty() )
+            {
+                throw new PromotionValidationException( "No valid StoreKey instances could be parsed from '%s'",
+                                                        verifyStores );
+            }
+            else
+            {
+                verifyStoreKeys.addAll( extras );
+            }
+        }
+
+        logger.debug( "Using validation StoreKeys: {}", verifyStoreKeys );
+
+        return verifyStoreKeys.toArray( new StoreKey[verifyStoreKeys.size()] );
     }
 
     public String toArtifactPath( ProjectVersionRef ref )
@@ -129,8 +183,8 @@ public class PromotionValidationTools
         return ArtifactPathUtils.formatMetadataPath( groupId, filename );
     }
 
-    public Set<ProjectRelationship<?, ?>> getRelationshipsForPom( String path, ModelProcessorConfig config, PromoteRequest request,
-                                                                  StoreKey... extraLocations )
+    public Set<ProjectRelationship<?, ?>> getRelationshipsForPom( String path, ModelProcessorConfig config,
+                                                                  PromoteRequest request, StoreKey... extraLocations )
             throws IndyWorkflowException, GalleyMavenException, IndyDataException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -162,14 +216,14 @@ public class PromotionValidationTools
 
         try
         {
-            URI source = new URI( "indy:" + key.getType()
-                                                 .name() + ":" + key.getName() );
+            URI source = new URI( "indy:" + key.getType().name() + ":" + key.getName() );
 
             return modelProcessor.readRelationships( pomView, source, config ).getAllRelationships();
         }
         catch ( final URISyntaxException e )
         {
-            throw new IllegalStateException( "Failed to construct URI for ArtifactStore: " + key + ". Reason: " + e.getMessage(), e );
+            throw new IllegalStateException(
+                    "Failed to construct URI for ArtifactStore: " + key + ". Reason: " + e.getMessage(), e );
         }
     }
 
@@ -208,7 +262,8 @@ public class PromotionValidationTools
         ArtifactRef artifactRef = getArtifact( path );
         if ( artifactRef == null )
         {
-            throw new IndyWorkflowException( "Invalid artifact path: %s. Could not parse ArtifactRef from path.", path );
+            throw new IndyWorkflowException( "Invalid artifact path: %s. Could not parse ArtifactRef from path.",
+                                             path );
         }
 
         StoreKey key = request.getSource();

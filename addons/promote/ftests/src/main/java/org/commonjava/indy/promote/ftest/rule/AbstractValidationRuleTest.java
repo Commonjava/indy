@@ -16,20 +16,25 @@
 package org.commonjava.indy.promote.ftest.rule;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.promote.client.IndyPromoteClientModule;
 import org.commonjava.indy.promote.model.ValidationRuleSet;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
+
+import static org.junit.Assert.fail;
 
 public abstract class AbstractValidationRuleTest<T extends ArtifactStore> extends AbstractIndyFunctionalTest
 {
@@ -72,6 +77,48 @@ public abstract class AbstractValidationRuleTest<T extends ArtifactStore> extend
         else
         {
             throw new IllegalStateException( targetCls.getName() + " is not currently supported as promotion targets." );
+        }
+    }
+
+    protected String resourceToString( String resource )
+            throws IOException
+    {
+        try (InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream( resource ))
+        {
+            if ( stream == null )
+            {
+                fail( "Cannot find classpath resource: " + resource );
+            }
+
+            return IOUtils.toString( stream );
+        }
+    }
+
+    protected void deployResource( String path, String resource )
+            throws IOException, IndyClientException
+    {
+        try (InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream( resource ))
+        {
+            if ( stream == null )
+            {
+                fail( "Cannot find classpath resource: " + resource );
+            }
+
+            client.content().store( source.getKey(), path, stream );
+        }
+    }
+
+    protected void deployResource( StoreKey target, String path, String resource )
+            throws IOException, IndyClientException
+    {
+        try (InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream( resource ))
+        {
+            if ( stream == null )
+            {
+                fail( "Cannot find classpath resource: " + resource );
+            }
+
+            client.content().store( target, path, stream );
         }
     }
 

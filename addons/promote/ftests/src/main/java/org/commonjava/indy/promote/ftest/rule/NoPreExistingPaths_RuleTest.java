@@ -37,18 +37,14 @@ import java.util.Map;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
-/**
- * Created by jdcasey on 9/23/15.
- */
-public class ArtifactRefs_DependencyInAnotherRepoInGroup_RuleTest
+public class NoPreExistingPaths_RuleTest
         extends AbstractValidationRuleTest<Group>
 {
 
-    private static final String RULE = "artifact-refs-via.groovy";
+    private static final String RULE = "no-pre-existing-paths.groovy";
 
-    private static final String PREFIX = "artifact-refs-via/";
+    private static final String PREFIX = "no-pre-existing-paths/";
 
     private HostedRepository otherSource;
 
@@ -62,27 +58,19 @@ public class ArtifactRefs_DependencyInAnotherRepoInGroup_RuleTest
         String invalid = "org/foo/invalid/1/invalid-1.pom";
         String valid = "org/foo/valid/1.1/valid-1.1.pom";
 
-        String validDepPom = "org/bar/dep/1.0/dep-1.0.pom";
-        String validDepJar = "org/bar/dep/1.0/dep-1.0.jar";
         String content = "this is some content";
 
-        client.content().store( otherSource.getKey(), validDepPom, new ByteArrayInputStream( content.getBytes() ) );
-        client.content().store( otherSource.getKey(), validDepJar, new ByteArrayInputStream( content.getBytes() ) );
+        deployResource( other.getKey(), invalid, PREFIX + "invalid.pom.xml");
 
-        InputStream stream = client.content().get( other.getKey(), validDepPom );
-        String retrieved = IOUtils.toString( stream );
-        stream.close();
+        try(InputStream stream = client.content().get( other.getKey(), invalid ))
+        {
+            String retrieved = IOUtils.toString( stream );
+            assertThat( invalid + " invalid from: " + other.getKey(), retrieved,
+                        equalTo( resourceToString( PREFIX + "invalid.pom.xml" ) ) );
+        }
 
-        assertThat( validDepPom + " invalid from: " + other.getKey(), retrieved, equalTo( content ) );
-
-        stream = client.content().get( other.getKey(), validDepJar );
-        retrieved = IOUtils.toString( stream );
-        stream.close();
-
-        assertThat( validDepJar + " invalid from: " + other.getKey(), retrieved, equalTo( content ) );
-
-        deployResource( invalid, PREFIX + "invalid-external-dep.pom.xml");
-        deployResource( valid, PREFIX + "valid-single-external-dep.pom.xml" );
+        deployResource( invalid, PREFIX + "invalid.pom.xml");
+        deployResource( valid, PREFIX + "valid.pom.xml" );
 
         waitForEventPropagation();
 
@@ -106,7 +94,7 @@ public class ArtifactRefs_DependencyInAnotherRepoInGroup_RuleTest
         assertThat( errors.contains( invalid ), equalTo( true ) );
     }
 
-    public ArtifactRefs_DependencyInAnotherRepoInGroup_RuleTest()
+    public NoPreExistingPaths_RuleTest()
     {
         super( Group.class );
     }
@@ -147,7 +135,7 @@ public class ArtifactRefs_DependencyInAnotherRepoInGroup_RuleTest
         otherSource = new HostedRepository( "otherSource" );
         otherSource = client.stores().create( otherSource, "Creating secondary content source", HostedRepository.class );
 
-        other = new Group( "other", source.getKey(), otherSource.getKey() );
+        other = new Group( "other", otherSource.getKey() );
         other = client.stores().create( other, "Creating secondary content group", Group.class );
 
         Logger logger = LoggerFactory.getLogger( getClass() );

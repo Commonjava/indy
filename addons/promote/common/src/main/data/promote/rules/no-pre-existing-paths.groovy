@@ -2,25 +2,16 @@ package org.commonjava.indy.promote.rules
 
 import org.commonjava.indy.model.core.StoreKey
 import org.commonjava.indy.model.galley.KeyedLocation
+import org.commonjava.indy.promote.validate.PromotionValidationException
+import org.commonjava.indy.promote.validate.PromotionValidationTools
 import org.commonjava.indy.promote.validate.model.ValidationRequest
 import org.commonjava.indy.promote.validate.model.ValidationRule
 import org.slf4j.LoggerFactory
 
 class NoPreExistingPaths implements ValidationRule {
 
-    String validate(ValidationRequest request) {
-        def verifyStore = request.getValidationParameter("availableInStoreKey")
-        StoreKey verifyStoreKey = null
-        if (verifyStore == null) {
-            def logger = LoggerFactory.getLogger(getClass())
-            logger.warn("No external store (availableInStoreKey parameter) specified for validating path availability in rule-set: {}. Using target: {} instead.", request.getRuleSet().getName(), request.getTarget())
-            verifyStoreKey = request.getTarget()
-        } else {
-            verifyStoreKey = StoreKey.fromString(verifyStore)
-            if (verifyStoreKey == null) {
-                return "Invalid target: ${verifyStore} is not a StoreKey"
-            }
-        }
+    String validate(ValidationRequest request) throws PromotionValidationException {
+        def verifyStoreKeys = request.getTools().getValidationStoreKeys(request, false);
 
         def builder = new StringBuilder()
         def tools = request.getTools()
@@ -28,10 +19,15 @@ class NoPreExistingPaths implements ValidationRule {
         request.getSourcePaths().each { it ->
             def aref = tools.getArtifact(it);
             if (aref != null) {
-                def transfer = tools.getTransfer(verifyStoreKey, it);
-                if (transfer.exists()) {
-                    def kl = (KeyedLocation) transfer.getLocation();
-                    builder.append(it).append(" is already available in: ").append(kl.getKey());
+                verifyStoreKeys.each { verifyStoreKey ->
+                    def transfer = tools.getTransfer(verifyStoreKey, it);
+                    if (transfer != null && transfer.exists()) {
+                        def kl = (KeyedLocation) transfer.getLocation();
+                        if (builder.length() > 0) {
+                            builder.append("\n")
+                        }
+                        builder.append(it).append(" is already available in: ").append(kl.getKey());
+                    }
                 }
             }
         }
