@@ -133,8 +133,7 @@ public class PromotionValidationTools
         List<StoreKey> verifyStoreKeys = new ArrayList<>();
         if ( includeSource )
         {
-            // TODO: If we're doing by-path promotion this might not be safe...pending: path-masked source creation.
-            verifyStoreKeys.add( request.getSource() );
+            verifyStoreKeys.add( request.getSourceRepository().getKey() );
         }
 
         verifyStoreKeys.add( request.getTarget() );

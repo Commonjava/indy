@@ -43,27 +43,29 @@ class ArtifactRefAvailability implements ValidationRule {
                         if (!skip) {
                             def target = rel.getTarget()
                             def path = tools.toArtifactPath(target)
-                            def searchPom = (target instanceof ArtifactRef) && !pomTC.equals(((ArtifactRef) target).getTypeAndClassifier())
+                            def pomPath = tools.toArtifactPath(target.asPomArtifact())
 
                             def found = false
                             def foundPom = false
 
                             verifyStoreKeys.each{ verifyStoreKey ->
-                                def txfr = tools.getTransfer(verifyStoreKey, path)
-                                logger.info("{} in {}: {}. Exists? {}", target, verifyStoreKey, txfr, txfr == null ? false : txfr.exists())
-                                if (txfr != null  && txfr.exists()) {
-                                    found = true
+                                if( !found ){
+                                    def txfr = tools.getTransfer(verifyStoreKey, path)
+                                    logger.info("{} in {}: {}. Exists? {}", target, verifyStoreKey, txfr, txfr == null ? false : txfr.exists())
+                                    if (txfr != null  && txfr.exists()) {
+                                        logger.info("Marking as found: {}", target.asPomArtifact());
+                                        found = true
+                                    }
                                 }
 
-                                if (searchPom) {
-                                    path = tools.toArtifactPath(target.asPomArtifact())
-                                    txfr = tools.getTransfer(verifyStoreKey, path)
+                                if (!foundPom) {
+                                    def txfr = tools.getTransfer(verifyStoreKey, pomPath)
                                     logger.info("POM {} in {}: {}. Exists? {}", target.asPomArtifact(), verifyStoreKey, txfr, txfr == null ? false : txfr.exists())
                                     if (txfr != null && txfr.exists()) {
+                                        logger.info("Marking as found: {}", target.asPomArtifact());
                                         foundPom = true
                                     }
                                 }
-                                builder.append(it).append(" is invalid: ").append(path).append(" is not available via: ").append(verifyStoreKey)
                             }
 
                             if ( !found ) {
@@ -77,7 +79,7 @@ class ArtifactRefAvailability implements ValidationRule {
                                         .append(StringUtils.join(verifyStoreKeys, ", " ))
                             }
 
-                            if ( searchPom && !foundPom ) {
+                            if ( !foundPom ) {
                                 if (builder.length() > 0) {
                                     builder.append("\n")
                                 }
