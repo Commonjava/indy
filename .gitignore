@@ -20,7 +20,11 @@ uis/layover/node_modules/
 *.iws
 *.ipr
 
+# temp ISPN indexing generates
 embedders/savant/org.commonjava.indy.folo.model.TrackedContentEntry/segments*
 embedders/savant/org.commonjava.indy.folo.model.TrackingKey/*
 embedders/savant/indexedStorePath/*
+embedder-tests/savant/org.commonjava.indy.folo.model.TrackedContentEntry/segments*
+embedder-tests/savant/org.commonjava.indy.folo.model.TrackingKey/*
+embedder-tests/savant/indexedStorePath/*
 
