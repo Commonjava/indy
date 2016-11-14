@@ -77,15 +77,15 @@ public class ScheduleManager
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private static final String PAYLOAD = "payload";
+    public static final String PAYLOAD = "payload";
 
     private static final String ANY = "__ANY__";
 
     public static final String CONTENT_JOB_TYPE = "CONTENT";
 
-    public static final String STORE_JOB_TYPE = "SOTRE";
+    public static final String STORE_JOB_TYPE = "STORE";
 
-    private static final String JOB_TYPE = "JOB_TYPE";
+    public static final String JOB_TYPE = "JOB_TYPE";
 
     @Inject
     @WeftManaged
@@ -221,23 +221,25 @@ public class ScheduleManager
             return;
         }
 
-        int timeout = -1;
-        if ( deploy.getRepoTimeoutSeconds() > 0 )
+        if ( deploy == null )
         {
-            timeout = deploy.getRepoTimeoutSeconds();
+            return;
         }
 
-        if ( timeout > 0 )
+        Integer timeout = deploy.getRepoTimeoutSeconds();
+        if ( timeout == null || timeout <= 0 )
         {
-            final Set<TriggerKey> canceled =
-                    cancelAllBefore( new StoreKeyMatcher( deploy.getKey(), STORE_JOB_TYPE ), timeout );
+            cancel( new StoreKeyMatcher( deploy.getKey(), STORE_JOB_TYPE ), STORE_JOB_TYPE );
+            return;
+        }
 
-            for ( final TriggerKey key : canceled )
-            {
-                final StoreKey sk = storeKeyFrom( key.getGroup() );
+        final Set<TriggerKey> canceled =
+                cancelAllBefore( new StoreKeyMatcher( deploy.getKey(), STORE_JOB_TYPE ), timeout );
 
-                scheduleStoreExpiration( sk, timeout );
-            }
+        for ( final TriggerKey key : canceled )
+        {
+            final StoreKey sk = storeKeyFrom( key.getGroup() );
+            scheduleStoreExpiration( sk, timeout );
         }
     }
 
@@ -458,7 +460,7 @@ public class ScheduleManager
         }
     }
 
-    public synchronized void setRepoTimeouts( final StoreKey key, final String path )
+    public synchronized void setRepoTimeouts( final StoreKey key )
             throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
@@ -474,14 +476,16 @@ public class ScheduleManager
             return;
         }
 
-        if ( deploy.getRepoTimeoutSeconds() > 0 )
+        Integer timeout = deploy.getRepoTimeoutSeconds();
+
+        cancel( new StoreKeyMatcher( key, STORE_JOB_TYPE ), STORE_JOB_TYPE );
+
+        if ( timeout == null || timeout <= 0 )
         {
-            final int timeout = deploy.getRepoTimeoutSeconds();
-
-            cancel( new StoreKeyMatcher( key, STORE_JOB_TYPE ), path );
-
-            scheduleStoreExpiration( key, timeout );
+            return;
         }
+
+        scheduleStoreExpiration( key, timeout );
     }
 
     private synchronized HostedRepository getHostedRepository( final StoreKey key )
