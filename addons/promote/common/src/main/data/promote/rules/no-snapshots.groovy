@@ -9,18 +9,7 @@ import org.slf4j.LoggerFactory
 class NoSnapshots implements ValidationRule {
 
     String validate(ValidationRequest request) {
-        def verifyStore = request.getValidationParameter("availableInStoreKey")
-        StoreKey verifyStoreKey = null
-        if (verifyStore == null) {
-            def logger = LoggerFactory.getLogger(getClass())
-            logger.warn("No external store (availableInStoreKey parameter) specified for validating path availability in rule-set: {}. Using target: {} instead.", request.getRuleSet().getName(), request.getTarget())
-            verifyStoreKey = request.getTarget()
-        } else {
-            verifyStoreKey = StoreKey.fromString(verifyStore)
-            if (verifyStoreKey == null) {
-                return "Invalid target: ${verifyStore} is not a StoreKey"
-            }
-        }
+        def verifyStoreKeys = request.getTools().getValidationStoreKeys(request, true)
 
         def builder = new StringBuilder()
         def tools = request.getTools()
@@ -30,8 +19,7 @@ class NoSnapshots implements ValidationRule {
             if (it.endsWith(".pom")) {
                 def ref = tools.getArtifact(it)
                 if (ref != null) {
-                    if ( !ref.getVersionSpec().isRelease() )
-                    {
+                    if (!ref.getVersionSpec().isRelease()) {
                         if (builder.length() > 0) {
                             builder.append("\n")
                         }
@@ -39,7 +27,7 @@ class NoSnapshots implements ValidationRule {
                     }
                 }
 
-                def relationships = tools.getRelationshipsForPom(it, dc, request.getPromoteRequest(), verifyStoreKey)
+                def relationships = tools.getRelationshipsForPom(it, dc, request.getPromoteRequest(), verifyStoreKeys)
                 if (relationships != null) {
                     relationships.each { rel ->
                         def target = rel.getTarget()

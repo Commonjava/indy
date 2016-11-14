@@ -1,5 +1,6 @@
 package org.commonjava.indy.promote.rules
 
+import org.apache.commons.lang.StringUtils
 import org.commonjava.indy.model.core.StoreKey
 import org.commonjava.indy.promote.validate.model.ValidationRequest
 import org.commonjava.indy.promote.validate.model.ValidationRule
@@ -14,18 +15,7 @@ import org.slf4j.LoggerFactory
 class ArtifactRefAvailability implements ValidationRule {
 
     String validate(ValidationRequest request) {
-        def verifyStore = request.getValidationParameter("availableInStoreKey")
-        StoreKey verifyStoreKey = null
-        if (verifyStore == null) {
-            def logger = LoggerFactory.getLogger(getClass())
-            logger.warn("No external store (availableInStoreKey parameter) specified for validating path availability in rule-set: {}. Using target: {} instead.", request.getRuleSet().getName(), request.getTarget())
-            verifyStoreKey = request.getTarget()
-        } else {
-            verifyStoreKey = StoreKey.fromString(verifyStore)
-            if (verifyStoreKey == null) {
-                return "Invalid target: ${verifyStore} is not a StoreKey"
-            }
-        }
+        def verifyStoreKeys = request.getTools().getValidationStoreKeys(request, true);
 
         def builder = new StringBuilder()
         def tools = request.getTools()
@@ -39,7 +29,7 @@ class ArtifactRefAvailability implements ValidationRule {
         def pomTC = new SimpleTypeAndClassifier("pom")
         request.getSourcePaths().each { it ->
             if (it.endsWith(".pom")) {
-                def relationships = tools.getRelationshipsForPom(it, dc, request.getPromoteRequest(), verifyStoreKey)
+                def relationships = tools.getRelationshipsForPom(it, dc, request.getPromoteRequest(), verifyStoreKeys)
                 if (relationships != null) {
                     relationships.each { rel ->
                         def skip = false
@@ -53,41 +43,49 @@ class ArtifactRefAvailability implements ValidationRule {
                         if (!skip) {
                             def target = rel.getTarget()
                             def path = tools.toArtifactPath(target)
-                            def txfr = tools.getTransfer(verifyStoreKey, path)
-                            logger.info("{} in {}: {}. Exists? {}", target, verifyStoreKey, txfr, txfr == null ? false : txfr.exists())
-                            if (txfr == null || !txfr.exists()) {
-                                txfr = tools.getTransfer(request.getSource(), path)
-                                logger.info("{} in {}: {}. Exists? {}", target, request.getSource(), txfr, txfr == null ? false : txfr.exists())
-                            }
-                            if (txfr == null || !txfr.exists()) {
-                                txfr = tools.getTransfer(request.getSourceRepository(), path)
-                                logger.info("{} in {}: {}. Exists? {}", target, request.getSourceRepository(), txfr, txfr == null ? false : txfr.exists())
-                            }
-                            if (txfr == null || !txfr.exists()) {
-                                if (builder.length() > 0) {
-                                    builder.append("\n")
+                            def searchPom = (target instanceof ArtifactRef) && !pomTC.equals(((ArtifactRef) target).getTypeAndClassifier())
+
+                            def found = false
+                            def foundPom = false
+
+                            verifyStoreKeys.each{ verifyStoreKey ->
+                                def txfr = tools.getTransfer(verifyStoreKey, path)
+                                logger.info("{} in {}: {}. Exists? {}", target, verifyStoreKey, txfr, txfr == null ? false : txfr.exists())
+                                if (txfr != null  && txfr.exists()) {
+                                    found = true
+                                }
+
+                                if (searchPom) {
+                                    path = tools.toArtifactPath(target.asPomArtifact())
+                                    txfr = tools.getTransfer(verifyStoreKey, path)
+                                    logger.info("POM {} in {}: {}. Exists? {}", target.asPomArtifact(), verifyStoreKey, txfr, txfr == null ? false : txfr.exists())
+                                    if (txfr != null && txfr.exists()) {
+                                        foundPom = true
+                                    }
                                 }
                                 builder.append(it).append(" is invalid: ").append(path).append(" is not available via: ").append(verifyStoreKey)
                             }
 
-                            if ((target instanceof ArtifactRef) && !pomTC.equals(((ArtifactRef) target).getTypeAndClassifier())) {
-                                path = tools.toArtifactPath(target.asPomArtifact())
-                                txfr = tools.getTransfer(verifyStoreKey, path)
-                                logger.info("POM {} in {}: {}. Exists? {}", target.asPomArtifact(), verifyStoreKey, txfr, txfr == null ? false : txfr.exists())
-                                if (txfr == null || !txfr.exists()) {
-                                    txfr = tools.getTransfer(request.getSource(), path)
-                                    logger.info("{} in {}: {}. Exists? {}", target, request.getSource(), txfr, txfr == null ? false : txfr.exists())
+                            if ( !found ) {
+                                if (builder.length() > 0) {
+                                    builder.append("\n")
                                 }
-                                if (txfr == null || !txfr.exists()) {
-                                    txfr = tools.getTransfer(request.getSourceRepository(), path)
-                                    logger.info("{} in {}: {}. Exists? {}", target, request.getSourceRepository(), txfr, txfr == null ? false : txfr.exists())
+                                builder.append(it)
+                                        .append(" is invalid: ")
+                                        .append(path)
+                                        .append(" is not available via: ")
+                                        .append(StringUtils.join(verifyStoreKeys, ", " ))
+                            }
+
+                            if ( searchPom && !foundPom ) {
+                                if (builder.length() > 0) {
+                                    builder.append("\n")
                                 }
-                                if (txfr == null || !txfr.exists()) {
-                                    if (builder.length() > 0) {
-                                        builder.append("\n")
-                                    }
-                                    builder.append(it).append(" is invalid: ").append(path).append(" is not available via: ").append(verifyStoreKey)
-                                }
+                                builder.append(it)
+                                        .append(" is invalid: ")
+                                        .append(tools.toArtifactPath(target.asPomArtifact()))
+                                        .append(" is not available via: ")
+                                        .append(StringUtils.join(verifyStoreKeys, ", " ))
                             }
                         }
                     }

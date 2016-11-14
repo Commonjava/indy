@@ -37,12 +37,11 @@ import java.util.Map;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
 /**
  * Created by jdcasey on 9/23/15.
  */
-public class ArtifactRefs_DependencyInAnotherRepoInGroup_RuleTest
+public class ArtifactRefs_DependencyTwoExtraGroups_RuleTest
         extends AbstractValidationRuleTest<Group>
 {
 
@@ -54,6 +53,10 @@ public class ArtifactRefs_DependencyInAnotherRepoInGroup_RuleTest
 
     private Group other;
 
+    private HostedRepository thirdSource;
+
+    private Group third;
+
     @Test
     @Category( EventDependent.class )
     public void run()
@@ -62,27 +65,34 @@ public class ArtifactRefs_DependencyInAnotherRepoInGroup_RuleTest
         String invalid = "org/foo/invalid/1/invalid-1.pom";
         String valid = "org/foo/valid/1.1/valid-1.1.pom";
 
-        String validDepPom = "org/bar/dep/1.0/dep-1.0.pom";
-        String validDepJar = "org/bar/dep/1.0/dep-1.0.jar";
+        String dep1Pom = "org/bar/dep/1.0/dep-1.0.pom";
+        String dep1Jar = "org/bar/dep/1.0/dep-1.0.jar";
+
+        String dep2Pom = "org/blat/dep2/1.0/dep2-1.0.pom";
+        String dep2Jar = "org/blat/dep2/1.0/dep2-1.0.jar";
+
         String content = "this is some content";
 
-        client.content().store( otherSource.getKey(), validDepPom, new ByteArrayInputStream( content.getBytes() ) );
-        client.content().store( otherSource.getKey(), validDepJar, new ByteArrayInputStream( content.getBytes() ) );
+        client.content().store( otherSource.getKey(), dep1Pom, new ByteArrayInputStream( content.getBytes() ) );
+        client.content().store( otherSource.getKey(), dep1Jar, new ByteArrayInputStream( content.getBytes() ) );
 
-        InputStream stream = client.content().get( other.getKey(), validDepPom );
+        client.content().store( thirdSource.getKey(), dep2Pom, new ByteArrayInputStream( content.getBytes() ) );
+        client.content().store( thirdSource.getKey(), dep2Jar, new ByteArrayInputStream( content.getBytes() ) );
+
+        InputStream stream = client.content().get( other.getKey(), dep1Pom );
         String retrieved = IOUtils.toString( stream );
         stream.close();
 
-        assertThat( validDepPom + " invalid from: " + other.getKey(), retrieved, equalTo( content ) );
+        assertThat( dep1Pom + " invalid from: " + other.getKey(), retrieved, equalTo( content ) );
 
-        stream = client.content().get( other.getKey(), validDepJar );
+        stream = client.content().get( other.getKey(), dep1Jar );
         retrieved = IOUtils.toString( stream );
         stream.close();
 
-        assertThat( validDepJar + " invalid from: " + other.getKey(), retrieved, equalTo( content ) );
+        assertThat( dep1Jar + " invalid from: " + other.getKey(), retrieved, equalTo( content ) );
 
         deployResource( invalid, PREFIX + "invalid-external-dep.pom.xml");
-        deployResource( valid, PREFIX + "valid-single-external-dep.pom.xml" );
+        deployResource( valid, PREFIX + "valid-two-external-deps.pom.xml" );
 
         waitForEventPropagation();
 
@@ -106,7 +116,7 @@ public class ArtifactRefs_DependencyInAnotherRepoInGroup_RuleTest
         assertThat( errors.contains( invalid ), equalTo( true ) );
     }
 
-    public ArtifactRefs_DependencyInAnotherRepoInGroup_RuleTest()
+    public ArtifactRefs_DependencyTwoExtraGroups_RuleTest()
     {
         super( Group.class );
     }
@@ -133,7 +143,7 @@ public class ArtifactRefs_DependencyInAnotherRepoInGroup_RuleTest
         ruleSet.setStoreKeyPattern( "group:target" );
         ruleSet.setRuleNames( Collections.singletonList( getRuleScriptFile() ) );
 
-        ruleSet.setValidationParameters( Collections.singletonMap( "availableInStores", "group:other" ) );
+        ruleSet.setValidationParameters( Collections.singletonMap( "availableInStores", "group:other,group:third" ) );
 
         return ruleSet;
     }
@@ -147,10 +157,18 @@ public class ArtifactRefs_DependencyInAnotherRepoInGroup_RuleTest
         otherSource = new HostedRepository( "otherSource" );
         otherSource = client.stores().create( otherSource, "Creating secondary content source", HostedRepository.class );
 
-        other = new Group( "other", source.getKey(), otherSource.getKey() );
+        other = new Group( "other", otherSource.getKey() );
         other = client.stores().create( other, "Creating secondary content group", Group.class );
 
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.info( "{} contains members: {}", other, other.getConstituents() );
+
+        thirdSource = new HostedRepository( "thirdSource" );
+        thirdSource = client.stores().create( thirdSource, "Creating tertiary content source", HostedRepository.class );
+
+        third = new Group( "third", thirdSource.getKey() );
+        third = client.stores().create( third, "Creating tertiary content group", Group.class );
+
+        logger.info( "{} contains members: {}", third, third.getConstituents() );
     }
 }

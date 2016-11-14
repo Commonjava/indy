@@ -166,7 +166,16 @@ public abstract class IndexingContentManagerDecorator
             return transfer;
         }
 
-        if ( StoreType.group == store.getKey().getType() )
+        StoreType type = store.getKey().getType();
+//        if ( StoreType.hosted == type )
+//        {
+//            // hosted repos are completely indexed, since the store() method maintains the index
+//            // So, if it wasn't found in the index (above), and we're looking at a hosted repo, it's not here.
+//            logger.debug( "HOSTED / Not-Indexed: {}/{}", store.getKey(), path );
+//            return null;
+//        }
+//        else if ( StoreType.group == type )
+        if ( StoreType.group == type )
         {
             ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
             if ( nfc.isMissing( resource ) )
@@ -255,10 +264,11 @@ public abstract class IndexingContentManagerDecorator
             return transfer;
         }
 
+        ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
         StoreType type = store.getKey().getType();
+
         if ( StoreType.group == type )
         {
-            ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
             if ( !nfc.isMissing( resource ) )
             {
                 logger.debug( "No group index hits. Devolving to member store indexes." );
@@ -269,10 +279,6 @@ public abstract class IndexingContentManagerDecorator
                     {
                         return transfer;
                     }
-                    else
-                    {
-                        nfc.addMissing( resource );
-                    }
                 }
             }
         }
@@ -282,6 +288,10 @@ public abstract class IndexingContentManagerDecorator
         if ( transfer.exists() )
         {
             indexManager.indexTransferIn( transfer, store.getKey() );
+        }
+        else
+        {
+            nfc.addMissing( resource );
         }
 
         return transfer;
@@ -340,28 +350,29 @@ public abstract class IndexingContentManagerDecorator
             return transfer;
         }
 
-        StoreType type = storeKey.getType();
-        if ( StoreType.hosted == type )
+        ArtifactStore store;
+        try
         {
-            // hosted repos are completely indexed, since the store() method maintains the index
-            // So, if it wasn't found in the index (above), and we're looking at a hosted repo, it's not here.
-            logger.debug( "HOSTED / Not-Indexed: {}/{}", storeKey, path );
-            return null;
+            store = storeDataManager.getGroup( storeKey.getName() );
         }
-        else if ( StoreType.group == type )
+        catch ( IndyDataException e )
         {
-            Group g;
-            try
+            throw new IndyWorkflowException( "Failed to lookup ArtifactStore: %s for NFC handling. Reason: %s", e,
+                                             storeKey, e.getMessage() );
+        }
+
+        ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
+        StoreType type = storeKey.getType();
+
+        if ( StoreType.group == type )
+        {
+            Group g= (Group) store;
+
+            if ( g == null )
             {
-                g= storeDataManager.getGroup( storeKey.getName() );
-            }
-            catch ( IndyDataException e )
-            {
-                throw new IndyWorkflowException( "Failed to lookup ArtifactStore: %s for NFC handling. Reason: %s", e,
-                                                 storeKey, e.getMessage() );
+                throw new IndyWorkflowException( "Cannot find requested group: %s", storeKey );
             }
 
-            ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( g ), path );
             if ( nfc.isMissing( resource ) )
             {
                 logger.debug( "NFC / MISSING: {}", resource );
@@ -377,10 +388,6 @@ public abstract class IndexingContentManagerDecorator
                     logger.debug( "Returning indexed transfer: {} from member: {}", transfer, key );
                     return transfer;
                 }
-                else
-                {
-                    nfc.addMissing( resource );
-                }
             }
         }
 
@@ -389,6 +396,10 @@ public abstract class IndexingContentManagerDecorator
         {
             logger.debug( "Indexing transfer: {}", transfer );
             indexManager.indexTransferIn( transfer, storeKey );
+        }
+        else
+        {
+            nfc.addMissing( resource );
         }
 
         return transfer;
