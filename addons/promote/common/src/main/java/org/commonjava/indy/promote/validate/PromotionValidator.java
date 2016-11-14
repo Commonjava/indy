@@ -124,6 +124,8 @@ public class PromotionValidator
                         {
                             storeDataMgr.deleteArtifactStore( store.getKey(), new ChangeSummary( ChangeSummary.SYSTEM_USER,
                                                                                                  "remove the temp remote repo" ) );
+                            logger.info( "Promotion temporary repo {} has been deleted for {}", store.getKey(),
+                                         request.getSource() );
                         }
                         catch ( IndyDataException e )
                         {
@@ -132,6 +134,10 @@ public class PromotionValidator
                     }
                 }
             }
+        }
+        else
+        {
+            logger.info( "No validation rule-sets are defined for: {}", request.getTargetKey() );
         }
     }
 
@@ -154,19 +160,11 @@ public class PromotionValidator
     private ArtifactStore getRequestStore( PromoteRequest promoteRequest, String baseUrl )
             throws PromotionValidationException
     {
-        final ArtifactStore srcStore;
-        try
-        {
-            srcStore = storeDataMgr.getArtifactStore( promoteRequest.getSource() );
-        }
-        catch ( IndyDataException e )
-        {
-            throw new PromotionValidationException( "Failed to retrieve source ArtifactStore: {}. Reason: {}", e,
-                                                    promoteRequest.getSource(), e.getMessage() );
-        }
         final ArtifactStore store;
+        final Logger logger = LoggerFactory.getLogger( getClass() );
         if ( needTempRepo( promoteRequest ) )
         {
+            logger.info( "Promotion temporary repo is needed for {} ", promoteRequest.getSource() );
             final PathsPromoteRequest pathsReq = (PathsPromoteRequest) promoteRequest;
             final RemoteRepository tempRemote =
                     new RemoteRepository( PROMOTE_REPO_PREFIX + "tmp_" + pathsReq.getSource().getName(), baseUrl );
@@ -183,7 +181,16 @@ public class PromotionValidator
         }
         else
         {
-            store = srcStore;
+            logger.info( "Promotion temporary repo is not needed for {} ", promoteRequest.getSource() );
+            try
+            {
+                store = storeDataMgr.getArtifactStore( promoteRequest.getSource() );
+            }
+            catch ( IndyDataException e )
+            {
+                throw new PromotionValidationException( "Failed to retrieve source ArtifactStore: {}. Reason: {}", e,
+                                                        promoteRequest.getSource(), e.getMessage() );
+            }
         }
         return store;
     }

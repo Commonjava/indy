@@ -58,12 +58,16 @@ class ArtifactRefAvailability implements ValidationRule {
                             if (txfr == null || !txfr.exists()) {
                                 txfr = tools.getTransfer(request.getSource(), path)
                                 logger.info("{} in {}: {}. Exists? {}", target, request.getSource(), txfr, txfr == null ? false : txfr.exists())
-                                if (txfr == null || !txfr.exists()) {
-                                    if (builder.length() > 0) {
-                                        builder.append("\n")
-                                    }
-                                    builder.append(it).append(" is invalid: ").append(path).append(" is not available via: ").append(verifyStoreKey)
+                            }
+                            if (txfr == null || !txfr.exists()) {
+                                txfr = tools.getTransfer(request.getSourceRepository(), path)
+                                logger.info("{} in {}: {}. Exists? {}", target, request.getSourceRepository(), txfr, txfr == null ? false : txfr.exists())
+                            }
+                            if (txfr == null || !txfr.exists()) {
+                                if (builder.length() > 0) {
+                                    builder.append("\n")
                                 }
+                                builder.append(it).append(" is invalid: ").append(path).append(" is not available via: ").append(verifyStoreKey)
                             }
 
                             if ((target instanceof ArtifactRef) && !pomTC.equals(((ArtifactRef) target).getTypeAndClassifier())) {
@@ -73,12 +77,16 @@ class ArtifactRefAvailability implements ValidationRule {
                                 if (txfr == null || !txfr.exists()) {
                                     txfr = tools.getTransfer(request.getSource(), path)
                                     logger.info("{} in {}: {}. Exists? {}", target, request.getSource(), txfr, txfr == null ? false : txfr.exists())
-                                    if (txfr == null || !txfr.exists()) {
-                                        if (builder.length() > 0) {
-                                            builder.append("\n")
-                                        }
-                                        builder.append(it).append(" is invalid: ").append(path).append(" is not available via: ").append(verifyStoreKey)
+                                }
+                                if (txfr == null || !txfr.exists()) {
+                                    txfr = tools.getTransfer(request.getSourceRepository(), path)
+                                    logger.info("{} in {}: {}. Exists? {}", target, request.getSourceRepository(), txfr, txfr == null ? false : txfr.exists())
+                                }
+                                if (txfr == null || !txfr.exists()) {
+                                    if (builder.length() > 0) {
+                                        builder.append("\n")
                                     }
+                                    builder.append(it).append(" is invalid: ").append(path).append(" is not available via: ").append(verifyStoreKey)
                                 }
                             }
                         }
