@@ -194,7 +194,7 @@ public class TimeoutEventListener
                 try
                 {
                     scheduleManager.setSnapshotTimeouts( key, transfer.getPath() );
-                    scheduleManager.setRepoTimeouts( key, transfer.getPath() );
+                    scheduleManager.setRepoTimeouts( key );
                 }
                 catch ( final IndySchedulerException e )
                 {
@@ -243,7 +243,7 @@ public class TimeoutEventListener
                     try
                     {
                         scheduleManager.setSnapshotTimeouts( key, transfer.getPath() );
-                        scheduleManager.setRepoTimeouts( key, transfer.getPath() );
+                        scheduleManager.setRepoTimeouts( key );
                     }
                     catch ( final IndySchedulerException e )
                     {

@@ -24,6 +24,7 @@ import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
+import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.promote.conf.PromoteConfig;
 import org.commonjava.indy.promote.model.GroupPromoteRequest;
@@ -142,6 +143,15 @@ public class PromotionManager
                 target.addConstituent( request.getSource() );
                 try
                 {
+                    ArtifactStore store = storeManager.getArtifactStore( request.getSource() );
+
+                    if ( store instanceof HostedRepository )
+                    {
+                        ( (HostedRepository) store ).setRepoTimeoutSeconds( null );
+                        storeManager.storeArtifactStore( store, new ChangeSummary( user, "update host repo: "
+                                + store.getKey() ) );
+                    }
+
                     storeManager.storeArtifactStore( target, new ChangeSummary( user, "Promoting " + request.getSource()
                             + " into membership of group: " + target.getKey() ), false, new EventMetadata() );
                 }
