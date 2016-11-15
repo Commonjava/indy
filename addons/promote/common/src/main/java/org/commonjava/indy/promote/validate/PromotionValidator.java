@@ -164,7 +164,7 @@ public class PromotionValidator
         final Logger logger = LoggerFactory.getLogger( getClass() );
         if ( needTempRepo( promoteRequest ) )
         {
-            logger.info( "Promotion temporary repo is needed for {} ", promoteRequest.getSource() );
+            logger.info( "Promotion temporary repo is needed for {}, points to {} ", promoteRequest.getSource(), baseUrl );
             final PathsPromoteRequest pathsReq = (PathsPromoteRequest) promoteRequest;
             final RemoteRepository tempRemote =
                     new RemoteRepository( PROMOTE_REPO_PREFIX + "tmp_" + pathsReq.getSource().getName(), baseUrl );
