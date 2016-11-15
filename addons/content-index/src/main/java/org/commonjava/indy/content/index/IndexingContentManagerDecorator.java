@@ -285,7 +285,7 @@ public abstract class IndexingContentManagerDecorator
 
         transfer = delegate.getTransfer( store, path, op );
         // index the transfer only if it exists, it cannot be null at this point
-        if ( transfer.exists() )
+        if ( transfer != null && transfer.exists() )
         {
             indexManager.indexTransferIn( transfer, store.getKey() );
         }
