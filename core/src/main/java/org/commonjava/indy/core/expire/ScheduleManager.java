@@ -480,12 +480,10 @@ public class ScheduleManager
 
         cancel( new StoreKeyMatcher( key, STORE_JOB_TYPE ), STORE_JOB_TYPE );
 
-        if ( timeout == null || timeout <= 0 )
+        if ( timeout != null && timeout > 0 )
         {
-            return;
+            scheduleStoreExpiration( key, timeout );
         }
-
-        scheduleStoreExpiration( key, timeout );
     }
 
     private synchronized HostedRepository getHostedRepository( final StoreKey key )

@@ -26,7 +26,6 @@ import org.junit.Test;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 public class GroupPromoteThenHostedRepoTimeoutTest
@@ -44,19 +43,18 @@ public class GroupPromoteThenHostedRepoTimeoutTest
         final HostedRepository repo = new HostedRepository( hostedRepo );
         repo.setRepoTimeoutSeconds( REPO_TIMEOUT_SECONDS );
 
-        client.stores().create( repo, "adding hosted", HostedRepository.class );
-        HostedRepository loaded = client.stores().load( hosted, hostedRepo, HostedRepository.class );
+        HostedRepository created = client.stores().create( repo, "adding hosted", HostedRepository.class );
 
-        assertThat( loaded.getRepoTimeoutSeconds(), equalTo( REPO_TIMEOUT_SECONDS ) );
+        assertThat( created.getRepoTimeoutSeconds(), equalTo( REPO_TIMEOUT_SECONDS ) );
 
         final GroupPromoteResult result = client.module( IndyPromoteClientModule.class )
                                                 .promoteToGroup(
                                                         new GroupPromoteRequest( repo.getKey(), target.getName() ) );
 
-        HostedRepository reloaded = client.stores().load( hosted, hostedRepo, HostedRepository.class );
+        HostedRepository loaded = client.stores().load( hosted, hostedRepo, HostedRepository.class );
 
         assertThat( result.getRequest().getSource(), equalTo( repo.getKey() ) );
-        assertNull( reloaded.getRepoTimeoutSeconds() );
+        assertThat( loaded.getRepoTimeoutSeconds(), nullValue() );
         assertThat( result.getError(), nullValue() );
 
         // wait for timeout which is beyond the original timeout seconds, verify the original expiration schedule jobs are cancelled if no repo is deleted.
