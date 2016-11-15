@@ -23,11 +23,11 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.SecurityManager;
+import org.commonjava.indy.core.bind.jaxrs.ContentAccessResource;
 import org.commonjava.indy.promote.data.PromotionException;
 import org.commonjava.indy.promote.data.PromotionManager;
 import org.commonjava.indy.promote.model.GroupPromoteRequest;
@@ -49,7 +49,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.net.URI;
 
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
@@ -92,7 +91,12 @@ public class PromoteResource
         try
         {
             String user = securityManager.getUser( securityContext, servletRequest );
-            return manager.promoteToGroup( request, user, uriInfo.getBaseUri().getPath() );
+            final String baseUrl = uriInfo.getBaseUriBuilder()
+                                          .path( ContentAccessResource.class )
+                                          .build( request.getSource().getType().singularEndpointName(),
+                                                  request.getSource().getName() )
+                                          .toString();
+            return manager.promoteToGroup( request, user, baseUrl );
         }
         catch ( PromotionException e )
         {
@@ -161,7 +165,12 @@ public class PromoteResource
 
         try
         {
-            final PathsPromoteResult result = manager.promotePaths( req, uriInfo.getBaseUri().getPath() );
+            final String baseUrl = uriInfo.getBaseUriBuilder()
+                                          .path( ContentAccessResource.class )
+                                          .build( req.getSource().getType().singularEndpointName(),
+                                                  req.getSource().getName() )
+                                          .toString();
+            final PathsPromoteResult result = manager.promotePaths( req, baseUrl );
 
             // TODO: Amend response status code based on presence of error? This would have consequences for client API...
             response = formatOkResponseWithJsonEntity( result, mapper );
