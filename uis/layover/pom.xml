@@ -107,26 +107,38 @@
           </execution>
         </executions>
       </plugin>
-
-      <plugin>
-        <artifactId>maven-clean-plugin</artifactId>
-        <configuration>
-          <filesets>
-            <fileset>
-              <directory>${project.basedir}</directory>
-              <includes>
-                <include>bower_components</include>
-                <include>node</include>
-                <include>node_modules</include>
-                <include>bower_components/**</include>
-                <include>node/**</include>
-                <include>node_modules/**</include>
-              </includes>
-              <followSymlinks>false</followSymlinks>
-            </fileset>
-          </filesets>
-        </configuration>
-      </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>ci</id>
+
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <artifactId>maven-clean-plugin</artifactId>
+              <configuration>
+                <filesets>
+                  <fileset>
+                    <directory>${project.basedir}</directory>
+                    <includes>
+                      <include>bower_components</include>
+                      <include>node</include>
+                      <include>node_modules</include>
+                      <include>bower_components/**</include>
+                      <include>node/**</include>
+                      <include>node_modules/**</include>
+                    </includes>
+                    <followSymlinks>false</followSymlinks>
+                  </fileset>
+                </filesets>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+  </profiles>
 </project>
