@@ -21,7 +21,6 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiBuildArchiveCollection;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
-
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.ContentManager;
