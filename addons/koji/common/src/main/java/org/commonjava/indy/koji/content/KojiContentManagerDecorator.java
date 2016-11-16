@@ -255,18 +255,22 @@ public abstract class KojiContentManagerDecorator
 
             remote.setServerCertPem( config.getServerPemContent() );
             remote.setMetadata( ArtifactStore.METADATA_ORIGIN, KOJI_ORIGIN );
+            // set pathMaskPatterns using build output paths
+            Set<String> patterns = new HashSet<>();
+            patterns.addAll( archiveCollection.getArchives()
+                                              .stream()
+                                              .map( a -> a.getGroupId().replace( '.', '/' ) + "/" + a.getArtifactId()
+                                                      + "/" + a.getVersion() + "/" + a.getFilename() )
+                                              .collect( Collectors.toSet() ) );
+
+            remote.setPathMaskPatterns(patterns);
+
+            remote.setMetadata( CREATION_TRIGGER_GAV, artifactRef.toString());
+            remote.setMetadata( NVR, build.getNvr() );
+
             storeDataManager.storeArtifactStore( remote, new ChangeSummary( ChangeSummary.SYSTEM_USER,
                                                                             "Creating remote repository for Koji build: "
                                                                                     + build.getNvr() ) );
-            // set pathMaskPatterns using build output paths
-            Set<String> patterns = new HashSet<>();
-            patterns.addAll(archiveCollection.getArchives()
-                    .stream()
-                    .map(a -> a.getGroupId().replace('.','/') + "/" + a.getArtifactId() + "/" + a.getVersion())
-                    .collect(Collectors.toSet()));
-            remote.setPathMaskPatterns(patterns);
-            remote.setMetadata( CREATION_TRIGGER_GAV, artifactRef.toString());
-            remote.setMetadata( NVR, build.getNvr() );
 
             logger.debug("Koji {}, add pathMaskPatterns: {}", name, patterns);
 
