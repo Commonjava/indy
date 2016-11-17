@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 @ApplicationScoped
 public class ScriptEngine
@@ -225,6 +226,10 @@ public class ScriptEngine
         {
             final Class<?> clazz = groovyClassloader.parseClass( script );
             instance = clazz.newInstance();
+
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.info( "Parsed: {} (type: {}, interfaces: {})", instance, instance.getClass(),
+                         Arrays.asList( instance.getClass().getInterfaces() ) );
 
             T result = type.cast( instance );
             return processCdiInjections ? inject( result ) : result ;
