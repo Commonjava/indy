@@ -151,7 +151,7 @@ public abstract class IndexingContentManagerDecorator
     public Transfer retrieve( final ArtifactStore store, final String path )
             throws IndyWorkflowException
     {
-        return retrieve( store, path );
+        return retrieve( store, path, new EventMetadata() );
     }
 
     @Override

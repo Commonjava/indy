@@ -53,13 +53,14 @@ public class PathsPromoteResult
     }
 
     public PathsPromoteResult( final PathsPromoteRequest request, final Set<String> pending, final Set<String> complete,
-                               final Set<String> skipped, final String error )
+                               final Set<String> skipped, final String error, ValidationResult validations )
     {
         this.request = request;
         this.pendingPaths = pending;
         this.completedPaths = complete;
         this.skippedPaths = skipped;
         this.error = error;
+        this.validations = validations;
     }
 
     public PathsPromoteResult( final PathsPromoteRequest request, final Set<String> pending, final Set<String> complete,

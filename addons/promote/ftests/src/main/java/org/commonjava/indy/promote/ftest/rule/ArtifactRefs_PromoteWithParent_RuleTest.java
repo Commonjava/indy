@@ -1,6 +1,7 @@
 package org.commonjava.indy.promote.ftest.rule;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -17,8 +18,11 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -59,12 +63,15 @@ public class ArtifactRefs_PromoteWithParent_RuleTest
         logger.debug( "promote with parent in source: parent content: {}", parentRetrived );
         assertThat( parentRetrived, containsString( "<artifactId>parent</artifactId>" ) );
 
-        PathsPromoteRequest request = new PathsPromoteRequest( source.getKey(), target.getKey(), ".*" );
+        PathsPromoteRequest request = new PathsPromoteRequest( source.getKey(), target.getKey(), child, parent );
         PathsPromoteResult result = module.promoteByPath( request );
         assertThat( result, notNullValue() );
 
         ValidationResult validations = result.getValidations();
-        assertThat( validations, nullValue() );
+        System.out.println(validations);
+
+        assertThat( validations, notNullValue() );
+        assertThat( validations.isValid(), equalTo( true ) );
 
         stream = client.content().get( target.getKey(), child );
         childRerived = IOUtils.toString( stream );

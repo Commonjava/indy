@@ -169,10 +169,13 @@ public class PromotionValidator
             final RemoteRepository tempRemote =
                     new RemoteRepository( PROMOTE_REPO_PREFIX + "tmp_" + pathsReq.getSource().getName(), baseUrl );
             tempRemote.setPathMaskPatterns( pathsReq.getPaths() );
+
+
+
             store = tempRemote;
             try
             {
-                storeDataMgr.storeArtifactStore( store, new ChangeSummary( ChangeSummary.SYSTEM_USER, "create temp remote repository" ) );
+                storeDataMgr.storeArtifactStore( tempRemote, new ChangeSummary( ChangeSummary.SYSTEM_USER, "create temp remote repository" ) );
             }
             catch ( IndyDataException e )
             {

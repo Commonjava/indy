@@ -80,6 +80,7 @@
     <test-redirectOutput>true</test-redirectOutput>
     <testEnvTimeoutMultiplier>2</testEnvTimeoutMultiplier>
 
+    <skipSurefire>false</skipSurefire>
     <skipITs>true</skipITs>
     <quickITs>true</quickITs>
     <skipTimingFTests>${skipITs}</skipTimingFTests>
@@ -1256,6 +1257,7 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.19.1</version>
           <configuration>
+            <skipTests>${skipSurefire}</skipTests>
             <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
             <forkCount>${test-forkCount}</forkCount>
           </configuration>

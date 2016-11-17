@@ -258,7 +258,7 @@ public class PromotionManager
         }
         else if ( validation.isValid() )
         {
-            return runPathPromotions( request, pending, Collections.emptySet(), Collections.emptySet(), contents );
+            return runPathPromotions( request, pending, Collections.emptySet(), Collections.emptySet(), contents, validation );
         }
         else
         {
@@ -269,7 +269,7 @@ public class PromotionManager
 
     /**
      * Attempt to resumePathsPromote from a previously failing {@link PathsPromoteResult}. This is meant to handle cases where a transient (or correctable) error
-     * occurs on the server side, and promotion can proceed afterward. It works much like the {@link #promotePaths(PathsPromoteRequest)} call, using the pending
+     * occurs on the server side, and promotion can proceed afterward. It works much like the {@link #promotePaths(PathsPromoteRequest, String)} call, using the pending
      * paths list from the input result as the list of paths to process. The output {@link PathsPromoteResult} contains all previous completed paths PLUS
      * any additional completed transfers when it is returned, thus providing a cumulative result to the user.
      *
@@ -288,7 +288,7 @@ public class PromotionManager
                 getTransfersForPaths( result.getRequest().getSource(), result.getPendingPaths() );
 
         return runPathPromotions( result.getRequest(), result.getPendingPaths(), result.getCompletedPaths(),
-                                  result.getSkippedPaths(), contents );
+                                  result.getSkippedPaths(), contents, result.getValidations() );
     }
 
     /**
@@ -408,16 +408,16 @@ public class PromotionManager
             lock.unlock();
         }
 
-        return new PathsPromoteResult( result.getRequest(), pending, completed, skipped, error );
+        return new PathsPromoteResult( result.getRequest(), pending, completed, skipped, error, new ValidationResult() );
     }
 
     private PathsPromoteResult runPathPromotions( final PathsPromoteRequest request, final Set<String> pending,
                                                   final Set<String> prevComplete, final Set<String> prevSkipped,
-                                                  final List<Transfer> contents )
+                                                  final List<Transfer> contents, ValidationResult validation )
     {
         if ( pending == null || pending.isEmpty() )
         {
-            return new PathsPromoteResult( request, pending, prevComplete, prevSkipped, new ValidationResult() );
+            return new PathsPromoteResult( request, pending, prevComplete, prevSkipped, validation );
         }
 
         StoreKey targetKey= request.getTarget();
@@ -549,7 +549,7 @@ public class PromotionManager
             error = StringUtils.join( errors, "\n" );
         }
 
-        return new PathsPromoteResult( request, pending, complete, skipped, error );
+        return new PathsPromoteResult( request, pending, complete, skipped, error, validation );
     }
 
     private List<Transfer> getTransfersForPaths( final StoreKey source, final Set<String> paths )

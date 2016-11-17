@@ -147,7 +147,7 @@ public class ValidationRequest
 
     public StoreKey getSource()
     {
-        return promoteRequest.getSource();
+        return sourceRepository.getKey();
     }
 
     public StoreKey getTarget()

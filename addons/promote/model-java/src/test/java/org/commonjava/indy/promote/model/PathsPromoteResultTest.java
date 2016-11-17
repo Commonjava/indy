@@ -64,8 +64,9 @@ public class PathsPromoteResultTest
         final PathsPromoteResult in =
             new PathsPromoteResult( new PathsPromoteRequest( new StoreKey( StoreType.hosted, "source" ),
                                                    new StoreKey( StoreType.hosted, "target" ) ),
-                               new HashSet<>( Arrays.asList( "/path/one", "/path/two" ) ),
-                               Collections.emptySet(), Collections.emptySet(), "Something stupid happened" );
+                                    new HashSet<>( Arrays.asList( "/path/one", "/path/two" ) ),
+                                    Collections.emptySet(), Collections.emptySet(), "Something stupid happened",
+                                    new ValidationResult() );
 
         final String json = mapper.writeValueAsString( in );
 
@@ -88,8 +89,9 @@ public class PathsPromoteResultTest
         final PathsPromoteResult in =
             new PathsPromoteResult( new PathsPromoteRequest( new StoreKey( StoreType.hosted, "source" ),
                                                    new StoreKey( StoreType.hosted, "target" ) ),
-                               new HashSet<>( Arrays.asList( "/path/one", "/path/two" ) ),
-                               new HashSet<>( Collections.singletonList( "/path/three" ) ), Collections.emptySet(), "Something stupid happened" );
+                                    new HashSet<>( Arrays.asList( "/path/one", "/path/two" ) ),
+                                    new HashSet<>( Collections.singletonList( "/path/three" ) ), Collections.emptySet(), "Something stupid happened",
+                                    new ValidationResult() );
 
         final String json = mapper.writeValueAsString( in );
 
