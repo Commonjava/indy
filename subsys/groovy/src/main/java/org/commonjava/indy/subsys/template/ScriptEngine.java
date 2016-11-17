@@ -24,12 +24,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.AnnotatedType;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.InjectionTarget;
 import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 @ApplicationScoped
 public class ScriptEngine
@@ -83,6 +88,22 @@ public class ScriptEngine
                                               final Class<T> type )
             throws IndyGroovyException
     {
+        return parseStandardScriptInstance( scriptType, name, type, false );
+    }
+
+    /**
+     * Provide a standard set of places to store common types of scripts used throughout Indy, such as
+     * {@link org.commonjava.indy.model.core.ArtifactStore} creators. This is better from a config maintenance
+     * perspective than having these spread out across the whole data/ subdirectory structure, particularly since it's
+     * likely if one script needs to be revised, they all will.
+     *
+     * If the script doesn't exist in the data/scripts directory structure, this method will search the classpath
+     * for the same path (scripts/[type]/[name]).
+     */
+    public <T> T parseStandardScriptInstance( final StandardScriptType scriptType, final String name,
+                                              final Class<T> type, boolean processCdiInjections )
+            throws IndyGroovyException
+    {
         DataFile dataFile = dataFileManager.getDataFile( SCRIPTS_SUBDIR, scriptType.subdir(), name );
         String script = null;
         if ( dataFile == null || !dataFile.exists() || dataFile.isDirectory() )
@@ -130,7 +151,9 @@ public class ScriptEngine
             final Class<?> clazz = groovyClassloader.parseClass( script );
             instance = clazz.newInstance();
 
-            return type.cast( instance );
+            T result = type.cast( instance );
+
+            return processCdiInjections ? inject( result ) : result;
         }
         catch ( final CompilationFailedException e )
         {
@@ -152,13 +175,20 @@ public class ScriptEngine
     public <T> T parseScriptInstance( final File script, final Class<T> type )
             throws IndyGroovyException
     {
+        return parseScriptInstance( script, type, false );
+    }
+
+    public <T> T parseScriptInstance( final File script, final Class<T> type, boolean processCdiInjections )
+            throws IndyGroovyException
+    {
         Object instance = null;
         try
         {
             final Class<?> clazz = groovyClassloader.parseClass( script );
             instance = clazz.newInstance();
 
-            return type.cast( instance );
+            T result = type.cast( instance );
+            return processCdiInjections ? inject( result ) : result;
         }
         catch ( final CompilationFailedException e )
         {
@@ -170,12 +200,7 @@ public class ScriptEngine
             throw new IndyGroovyException( "Failed to read groovy script: '%s'. Reason: %s", e, script,
                                            e.getMessage() );
         }
-        catch ( final InstantiationException e )
-        {
-            throw new IndyGroovyException( "Cannot instantiate class parsed from script: '%s'. Reason: %s", e, script,
-                                           e.getMessage() );
-        }
-        catch ( final IllegalAccessException e )
+        catch ( final InstantiationException | IllegalAccessException e )
         {
             throw new IndyGroovyException( "Cannot instantiate class parsed from script: '%s'. Reason: %s", e, script,
                                            e.getMessage() );
@@ -190,25 +215,31 @@ public class ScriptEngine
     public <T> T parseScriptInstance( final String script, final Class<T> type )
             throws IndyGroovyException
     {
+        return parseScriptInstance( script, type, false );
+    }
+
+    public <T> T parseScriptInstance( final String script, final Class<T> type, boolean processCdiInjections )
+            throws IndyGroovyException
+    {
         Object instance = null;
         try
         {
             final Class<?> clazz = groovyClassloader.parseClass( script );
             instance = clazz.newInstance();
 
-            return type.cast( instance );
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.info( "Parsed: {} (type: {}, interfaces: {})", instance, instance.getClass(),
+                         Arrays.asList( instance.getClass().getInterfaces() ) );
+
+            T result = type.cast( instance );
+            return processCdiInjections ? inject( result ) : result ;
         }
         catch ( final CompilationFailedException e )
         {
             throw new IndyGroovyException( "Failed to compile groovy script: '%s'. Reason: %s", e, script,
                                            e.getMessage() );
         }
-        catch ( final InstantiationException e )
-        {
-            throw new IndyGroovyException( "Cannot instantiate class parsed from script: '%s'. Reason: %s", e, script,
-                                           e.getMessage() );
-        }
-        catch ( final IllegalAccessException e )
+        catch ( final InstantiationException | IllegalAccessException e )
         {
             throw new IndyGroovyException( "Cannot instantiate class parsed from script: '%s'. Reason: %s", e, script,
                                            e.getMessage() );
@@ -218,6 +249,25 @@ public class ScriptEngine
             throw new IndyGroovyException( "Script: '%s' instance: %s cannot be cast as: %s", e, script, instance,
                                            type.getName() );
         }
+    }
+
+    // TODO: scripts that can use CDI injection will need to use this method to inject their fields.
+    @Inject
+    private BeanManager beanManager;
+
+    private <T> T inject( T bean )
+    {
+        CreationalContext<T> ctx = beanManager.createCreationalContext( null );
+
+        AnnotatedType<T> annotatedType =
+                beanManager.createAnnotatedType( (Class<T>) bean.getClass() );
+
+        InjectionTarget<T> injectionTarget =
+                beanManager.createInjectionTarget( annotatedType );
+
+        injectionTarget.inject( bean, ctx );
+
+        return bean;
     }
 
 }
