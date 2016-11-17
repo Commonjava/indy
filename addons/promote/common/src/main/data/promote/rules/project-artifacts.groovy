@@ -29,6 +29,7 @@ class ProjectArtifacts implements ValidationRule {
             def projectTCs = [:]
             request.getSourcePaths().each {
                 def ref = tools.getArtifact(it)
+//                if (ref != null && ref.getType() != "pom") {
                 if (ref != null) {
                     def gav = ref.asProjectVersionRef()
                     def found = projectTCs[gav]
@@ -41,12 +42,14 @@ class ProjectArtifacts implements ValidationRule {
             }
 
             projectTCs.each { entry ->
-                tcs.each { tc ->
-                    if (!entry.value.contains(tc)) {
-                        if (builder.length() > 0) {
-                            builder.append("\n")
+                if ( entry.value.size > 1 || !entry.value.contains(new SimpleTypeAndClassifier("pom"))) {
+                    tcs.each { tc ->
+                        if (!entry.value.contains(tc)) {
+                            if (builder.length() > 0) {
+                                builder.append("\n")
+                            }
+                            builder.append(entry.key).append(": missing artifact with type/classifier: ").append(tc)
                         }
-                        builder.append(entry.key).append(": missing artifact with type/classifier: ").append(tc)
                     }
                 }
             }
