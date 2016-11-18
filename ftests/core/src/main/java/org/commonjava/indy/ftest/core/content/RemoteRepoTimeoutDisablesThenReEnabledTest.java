@@ -63,6 +63,8 @@ public class RemoteRepoTimeoutDisablesThenReEnabledTest
         final String repo1 = "repo1";
         final String path = "org/foo/bar/maven-metadata.xml";
 
+        server.expect( server.formatUrl( "repo1/" ), 200, "OK" );
+
         server.expect( "GET", server.formatUrl( repo1, path ), (req,resp)->{
             try
             {
