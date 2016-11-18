@@ -25,7 +25,6 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
-
 import org.commonjava.indy.stats.IndyVersioning;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +58,9 @@ public class IndyLifecycleManager
 
     @Inject
     private IndyLifecycleEventManager lifecycleEvents;
+
+    @Inject
+    UserLifecycleManager userLifecycleManager;
 
     private List<BootupAction> bootupActions;
 
@@ -98,6 +100,8 @@ public class IndyLifecycleManager
             {
                 bootupActions.add( action );
             }
+            bootupActions.addAll(userLifecycleManager.getUserLifecycleActions("boot",
+                    BootupAction.class));
             Collections.sort( bootupActions, BOOT_PRIORITY_COMPARATOR );
 
             migrationActions = new ArrayList<>();
@@ -105,6 +109,8 @@ public class IndyLifecycleManager
             {
                 migrationActions.add( action );
             }
+            migrationActions.addAll(userLifecycleManager.getUserLifecycleActions("migrate",
+                    MigrationAction.class));
             Collections.sort( migrationActions, MIGRATION_PRIORITY_COMPARATOR );
 
             startupActions = new ArrayList<>();
@@ -112,6 +118,8 @@ public class IndyLifecycleManager
             {
                 startupActions.add( action );
             }
+            startupActions.addAll(userLifecycleManager.getUserLifecycleActions("start",
+                    StartupAction.class));
             Collections.sort( startupActions, START_PRIORITY_COMPARATOR );
 
             shutdownActions = new ArrayList<>();
@@ -119,6 +127,8 @@ public class IndyLifecycleManager
             {
                 shutdownActions.add( action );
             }
+            shutdownActions.addAll(userLifecycleManager.getUserLifecycleActions("shutdown",
+                    ShutdownAction.class));
             Collections.sort( shutdownActions, SHUTDOWN_PRIORITY_COMPARATOR );
         }
         catch ( Throwable e )
