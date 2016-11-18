@@ -27,7 +27,6 @@ import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.promote.model.PromoteRequest;
 import org.commonjava.indy.promote.validate.model.ValidationRequest;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
@@ -184,7 +183,7 @@ public class PromotionValidationTools
     }
 
     public Set<ProjectRelationship<?, ?>> getRelationshipsForPom( String path, ModelProcessorConfig config,
-                                                                  PromoteRequest request, StoreKey... extraLocations )
+                                                                  ValidationRequest request, StoreKey... extraLocations )
             throws IndyWorkflowException, GalleyMavenException, IndyDataException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -198,8 +197,8 @@ public class PromotionValidationTools
             return null;
         }
 
-        StoreKey key = request.getSource();
-        Transfer transfer = getTransfer( key, path );
+        StoreKey key = request.getSourceRepository().getKey();
+        Transfer transfer = retrieve( request.getSourceRepository(), path );
         if ( transfer == null )
         {
             logger.trace( "Could not retrieve Transfer instance for: {} (path: {}, extra locations: {})", key, path,
@@ -237,7 +236,7 @@ public class PromotionValidationTools
         }
     }
 
-    public MavenPomView readPom( String path, PromoteRequest request, StoreKey... extraLocations )
+    public MavenPomView readPom( String path, ValidationRequest request, StoreKey... extraLocations )
             throws IndyWorkflowException, GalleyMavenException, IndyDataException
     {
         ArtifactRef artifactRef = getArtifact( path );
@@ -246,8 +245,7 @@ public class PromotionValidationTools
             return null;
         }
 
-        StoreKey key = request.getSource();
-        Transfer transfer = getTransfer( key, path );
+        Transfer transfer = retrieve( request.getSourceRepository(), path );
 
         List<Location> locations = new ArrayList<>( extraLocations.length + 1 );
         locations.add( transfer.getLocation() );
@@ -256,7 +254,7 @@ public class PromotionValidationTools
         return pomReader.read( artifactRef.asProjectVersionRef(), transfer, locations, MavenPomView.ALL_PROFILES );
     }
 
-    public MavenPomView readLocalPom( String path, PromoteRequest request )
+    public MavenPomView readLocalPom( String path, ValidationRequest request )
             throws IndyWorkflowException, GalleyMavenException
     {
         ArtifactRef artifactRef = getArtifact( path );
@@ -266,8 +264,7 @@ public class PromotionValidationTools
                                              path );
         }
 
-        StoreKey key = request.getSource();
-        Transfer transfer = getTransfer( key, path );
+        Transfer transfer = retrieve( request.getSourceRepository(), path );
 
         return pomReader.readLocalPom( artifactRef.asProjectVersionRef(), transfer, MavenPomView.ALL_PROFILES );
     }

@@ -18,7 +18,7 @@ class NoVersionRanges implements ValidationRule {
 
         request.getSourcePaths().each { it ->
             if (it.endsWith(".pom")) {
-                def relationships = tools.getRelationshipsForPom(it, dc, request.getPromoteRequest(), verifyStoreKeys)
+                def relationships = tools.getRelationshipsForPom(it, dc, request, verifyStoreKeys)
                 if (relationships != null) {
                     relationships.each { rel ->
                         def target = rel.getTarget()

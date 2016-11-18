@@ -106,4 +106,14 @@ public class ValidationResult
         result = 31 * result + ( getRuleSet() != null ? getRuleSet().hashCode() : 0 );
         return result;
     }
+
+    @Override
+    public String toString()
+    {
+        return "ValidationResult{" +
+                "valid=" + valid +
+                ", validatorErrors=" + validatorErrors +
+                ", ruleSet='" + ruleSet + '\'' +
+                '}';
+    }
 }

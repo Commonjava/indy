@@ -59,9 +59,11 @@ public abstract class AbstractValidationRuleTest<T extends ArtifactStore> extend
 
         module = client.module( IndyPromoteClientModule.class );
 
-        HostedRepository shr = new HostedRepository( "target" );
+        HostedRepository shr = new HostedRepository( "source" );
         shr.setAllowSnapshots( true );
 
+        System.out.println("Validation rule test client:"+ client);
+        System.out.println("Validation rule test client store:"+client.stores());
         source = client.stores().create( shr, "creating test source", HostedRepository.class );
         if ( Group.class.equals( targetCls ) )
         {
