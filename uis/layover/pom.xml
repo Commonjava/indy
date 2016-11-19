@@ -63,6 +63,9 @@
               <exclude>**/LICENSE*</exclude>
               <exclude>app/docs/**</exclude>
               <exclude>**/*.groovy</exclude>
+              <exclude>bower_components/**</exclude>
+              <exclude>node/**</exclude>
+              <exclude>node_modules/**</exclude>
             </excludes>
             <mapping>
               <service>SCRIPT_STYLE</service>
