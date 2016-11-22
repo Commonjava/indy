@@ -15,25 +15,17 @@
  */
 package org.commonjava.indy.core.expire;
 
-public class SchedulerEvent
+public abstract class SchedulerEvent
 {
-    
-    private final SchedulerEventType eventType;
     
     private final String jobType;
     
     private final String payload;
     
-    public SchedulerEvent( final SchedulerEventType eventType, final String jobType, final String payload )
+    public SchedulerEvent( final String jobType, final String payload )
     {
-        this.eventType = eventType;
         this.jobType = jobType;
         this.payload = payload;
-    }
-
-    public SchedulerEventType getEventType()
-    {
-        return eventType;
     }
 
     public String getJobType()
@@ -49,7 +41,7 @@ public class SchedulerEvent
     @Override
     public String toString()
     {
-        return String.format( "SchedulerEvent [eventType=%s, jobType=%s, payload=%s]", eventType, jobType, payload );
+        return String.format( "SchedulerEvent [eventType=%s, jobType=%s, payload=%s]", getClass().getName(), jobType, payload );
     }
 
 }

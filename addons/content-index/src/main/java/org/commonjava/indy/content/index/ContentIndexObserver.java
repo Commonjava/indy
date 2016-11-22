@@ -27,7 +27,7 @@ import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.core.expire.ContentExpiration;
 import org.commonjava.indy.core.expire.ScheduleManager;
 import org.commonjava.indy.core.expire.SchedulerEvent;
-import org.commonjava.indy.core.expire.SchedulerEventType;
+import org.commonjava.indy.core.expire.SchedulerTriggerEvent;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -193,8 +193,8 @@ public class ContentIndexObserver
 
     public void invalidateExpiredContent( @Observes final SchedulerEvent event )
     {
-        if ( event.getEventType() != SchedulerEventType.TRIGGER || !event.getJobType()
-                                                                         .equals( ScheduleManager.CONTENT_JOB_TYPE ) )
+        if ( !( event instanceof SchedulerTriggerEvent ) || !event.getJobType()
+                                                             .equals( ScheduleManager.CONTENT_JOB_TYPE ) )
         {
             return;
         }

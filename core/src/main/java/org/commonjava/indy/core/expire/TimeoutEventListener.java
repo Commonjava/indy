@@ -75,7 +75,7 @@ public class TimeoutEventListener
 
     public void onExpirationEvent( @Observes final SchedulerEvent event )
     {
-        if ( event.getEventType() != SchedulerEventType.TRIGGER || !event.getJobType()
+        if ( !(event instanceof SchedulerTriggerEvent) || !event.getJobType()
                                                                          .equals( ScheduleManager.CONTENT_JOB_TYPE ) )
         {
             return;
@@ -114,17 +114,7 @@ public class TimeoutEventListener
 
         if ( deleted )
         {
-            try
-            {
-                scheduleManager.deleteJob( scheduleManager.groupName( key, ScheduleManager.CONTENT_JOB_TYPE ), path );
-            }
-            catch ( final IndySchedulerException e )
-            {
-                logger.error(
-                        String.format( "Failed to clean metadata related to expired: %s in: %s. Reason: %s", path, key,
-                                       e.getMessage() ), e );
-            }
-
+            scheduleManager.deleteJob( scheduleManager.groupName( key, ScheduleManager.CONTENT_JOB_TYPE ), path );
         }
     }
 

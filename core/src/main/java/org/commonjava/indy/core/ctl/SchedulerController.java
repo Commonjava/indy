@@ -19,17 +19,17 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.core.change.StoreEnablementManager;
 import org.commonjava.indy.core.expire.Expiration;
 import org.commonjava.indy.core.expire.ExpirationSet;
-import org.commonjava.indy.core.expire.IndySchedulerException;
 import org.commonjava.indy.core.expire.ScheduleManager;
 import org.commonjava.indy.core.expire.StoreKeyMatcher;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
-import org.quartz.impl.matchers.GroupMatcher;
+import org.infinispan.Cache;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class SchedulerController
@@ -69,10 +69,6 @@ public class SchedulerController
 
             return expiration;
         }
-        catch ( IndySchedulerException e )
-        {
-            throw new IndyWorkflowException( "Failed to load disable-timeout schedule for: %s. Reason: %s", e, storeKey, e.getMessage() );
-        }
         catch ( IndyDataException e )
         {
             throw new IndyWorkflowException( "Failed to load store: %s to check for indefinite disable. Reason: %s", e, storeKey, e.getMessage() );
@@ -84,8 +80,14 @@ public class SchedulerController
     {
         try
         {
-            ExpirationSet expirations = scheduleManager.findMatchingExpirations(
-                    GroupMatcher.groupEndsWith( StoreEnablementManager.DISABLE_TIMEOUT ) );
+            // This key matcher will compare with the cache key group to see if the group ends with the "Disable-Timeout"(jobtype)
+            ExpirationSet expirations = scheduleManager.findMatchingExpirations( cacheHandle -> {
+                cacheHandle.execute( Cache::keySet )
+                           .stream()
+                           .filter( key -> ScheduleManager.getGroup( key ).endsWith( StoreEnablementManager.DISABLE_TIMEOUT ))
+                           .collect( Collectors.toSet() );
+                return null;
+            } );
 
             // TODO: This seems REALLY inefficient...
             storeDataManager.getAllArtifactStores().forEach( (store)->{
@@ -96,10 +98,6 @@ public class SchedulerController
             });
 
             return expirations;
-        }
-        catch ( IndySchedulerException e )
-        {
-            throw new IndyWorkflowException( "Failed to load disable-timeout schedules. Reason: %s", e, e.getMessage() );
         }
         catch ( IndyDataException e )
         {
