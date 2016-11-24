@@ -18,7 +18,7 @@ class ProjectArtifacts implements ValidationRule {
                 def parts = ctString.split(":")
                 if (parts.length > 0) {
                     if (parts.length < 2) {
-                        parts << ""
+                        parts += ""
                     }
 
                     tcs << new SimpleTypeAndClassifier(parts[1], parts[0])
