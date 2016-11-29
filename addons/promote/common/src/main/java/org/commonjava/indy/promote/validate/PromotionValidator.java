@@ -171,7 +171,7 @@ public class PromotionValidator
             logger.info( "Promotion temporary repo is needed for {}, points to {} ", promoteRequest.getSource(), baseUrl );
             final PathsPromoteRequest pathsReq = (PathsPromoteRequest) promoteRequest;
 
-            String tempName = PROMOTE_REPO_PREFIX + "tmp_" + pathsReq.getSource().getName() + new SimpleDateFormat( "yyyyMMdd.hhmmssZ" ).format(
+            String tempName = PROMOTE_REPO_PREFIX + "tmp_" + pathsReq.getSource().getName() + new SimpleDateFormat( "yyyyMMdd.hhmmss.SSSZ" ).format(
                     new Date() );
 
             final RemoteRepository tempRemote = new RemoteRepository( tempName, baseUrl );
