@@ -33,8 +33,12 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.TimeZone;
 
 /**
  * Created by jdcasey on 9/11/15.
@@ -166,8 +170,12 @@ public class PromotionValidator
         {
             logger.info( "Promotion temporary repo is needed for {}, points to {} ", promoteRequest.getSource(), baseUrl );
             final PathsPromoteRequest pathsReq = (PathsPromoteRequest) promoteRequest;
-            final RemoteRepository tempRemote =
-                    new RemoteRepository( PROMOTE_REPO_PREFIX + "tmp_" + pathsReq.getSource().getName(), baseUrl );
+
+            String tempName = PROMOTE_REPO_PREFIX + "tmp_" + pathsReq.getSource().getName() + new SimpleDateFormat( "yyyyMMdd.hhmmssZ" ).format(
+                    new Date() );
+
+            final RemoteRepository tempRemote = new RemoteRepository( tempName, baseUrl );
+
             tempRemote.setPathMaskPatterns( pathsReq.getPaths() );
 
 
