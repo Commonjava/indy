@@ -28,8 +28,10 @@ import java.util.stream.Collectors;
  *
  */
 public class StoreKeyMatcher
-        implements CacheKeyMatcher<String>
+        implements CacheKeyMatcher<ScheduleKey>
 {
+
+    //TODO: will have a thought to replace this type of matcher with a ISPN query API in the future to get better performance.
 
     private final StoreKey storeKey;
 
@@ -41,12 +43,12 @@ public class StoreKeyMatcher
         this.eventType = eventType;
     }
 
-    public Set<String> matches( CacheHandle<String, ?> cacheHandle )
+    @Override
+    public Set<ScheduleKey> matches( CacheHandle<ScheduleKey, ?> cacheHandle )
     {
         return cacheHandle.execute( Cache::keySet )
                           .stream()
-                          .filter( key -> key.startsWith( ScheduleManager.groupName( storeKey, eventType ) ) )
+                          .filter( key -> key.groupName().equals( ScheduleManager.groupName( storeKey, eventType ) ) )
                           .collect( Collectors.toSet() );
     }
-
 }

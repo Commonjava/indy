@@ -51,7 +51,7 @@ public abstract class AbstractContentTimeoutWorkingTest
 
     protected static final int TIMEOUT_SECONDS = 1;
 
-    protected static final int TIMEOUT_WAITING_MILLISECONDS = 2000;
+    protected static final int TIMEOUT_WAITING_MILLISECONDS = 2500;
 
     @Before
     public void setupRepo()

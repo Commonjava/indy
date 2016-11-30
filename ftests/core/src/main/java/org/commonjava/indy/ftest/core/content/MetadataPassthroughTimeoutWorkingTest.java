@@ -46,7 +46,7 @@ public class MetadataPassthroughTimeoutWorkingTest
 
     private final int PASSTHROUGH_TIMEOUT_SECONDS = 9;
 
-    private final int PASSTHROUGH_TIMEOUT_WAITING_MILLISECONDS = getTestTimeoutMultiplier() * 2000;
+    private final int PASSTHROUGH_TIMEOUT_WAITING_MILLISECONDS = getTestTimeoutMultiplier() * 2500;
 
     @Override
     protected void initTestConfig( CoreServerFixture fixture )

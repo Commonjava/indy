@@ -26,6 +26,8 @@ import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.infinispan.Cache;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -80,14 +82,15 @@ public class SchedulerController
     {
         try
         {
+
             // This key matcher will compare with the cache key group to see if the group ends with the "Disable-Timeout"(jobtype)
-            ExpirationSet expirations = scheduleManager.findMatchingExpirations( cacheHandle -> {
-                cacheHandle.execute( Cache::keySet )
-                           .stream()
-                           .filter( key -> ScheduleManager.getGroup( key ).endsWith( StoreEnablementManager.DISABLE_TIMEOUT ))
-                           .collect( Collectors.toSet() );
-                return null;
-            } );
+            ExpirationSet expirations = scheduleManager.findMatchingExpirations(
+                    cacheHandle -> cacheHandle.execute( Cache::keySet )
+                                              .stream()
+                                              .filter( key -> key.getType()
+                                                                 .equals( StoreEnablementManager.DISABLE_TIMEOUT ) )
+                                              .collect( Collectors.toSet() ) );
+
 
             // TODO: This seems REALLY inefficient...
             storeDataManager.getAllArtifactStores().forEach( (store)->{

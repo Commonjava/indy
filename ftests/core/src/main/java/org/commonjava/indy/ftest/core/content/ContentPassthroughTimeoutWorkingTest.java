@@ -29,7 +29,7 @@ public class ContentPassthroughTimeoutWorkingTest
 {
     @Test
     @Category( TimingDependent.class )
-    public void quartzBasedTimeoutArtifact()
+    public void timeoutArtifact()
             throws Exception
     {
         fileCheckingAfterTimeout();
