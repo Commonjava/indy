@@ -30,13 +30,18 @@ import org.commonjava.indy.koji.conf.IndyKojiConfig;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.subsys.template.IndyGroovyException;
 import org.commonjava.indy.subsys.template.ScriptEngine;
+import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.model.TransferOperation;
+import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.commonjava.maven.galley.util.UrlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +56,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 /**
@@ -107,6 +114,9 @@ public abstract class KojiContentManagerDecorator
     @Inject
     private ScriptEngine scriptEngine;
 
+    @Inject
+    private NotFoundCache nfc;
+
     private KojiRepositoryCreator creator;
 
     @PostConstruct
@@ -127,6 +137,26 @@ public abstract class KojiContentManagerDecorator
     }
 
     @Override
+    public boolean exists(ArtifactStore store, String path)
+            throws IndyWorkflowException
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.info( "KOJI: Delegating initial existence check for: {}/{}", store.getKey(), path );
+        boolean result = delegate.exists( store, path );
+        if ( !result && StoreType.group == store.getKey().getType() )
+        {
+            logger.info( "KOJI: Checking whether Koji contains a build matching: {}", path );
+            if ( findKojiBuildAnd( store, path, false, ( artifactRef, build, session ) -> true ) )
+            {
+                nfc.clearMissing( new ConcreteResource( LocationUtils.toLocation( store ), path ) );
+                return true;
+            }
+        }
+
+        return result;
+    }
+
+    @Override
     public Transfer retrieve( final ArtifactStore store, final String path )
             throws IndyWorkflowException
     {
@@ -137,44 +167,24 @@ public abstract class KojiContentManagerDecorator
     public Transfer retrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.info( "KOJI: Delegating initial retrieval attempt for: {}/{}", store.getKey(), path );
         Transfer result = delegate.retrieve( store, path, eventMetadata );
         if ( result == null && StoreType.group == store.getKey().getType() )
         {
-            if ( !config.getEnabled() )
-            {
-                Logger logger = LoggerFactory.getLogger( getClass() );
-                logger.info( "Koji content-manager decorator is disabled." );
-                return null;
-            }
-
+            logger.info( "KOJI: Checking for Koji build matching: {}", path );
             Group group = (Group) store;
 
-            if ( !config.isEnabledFor( group.getName() ) )
+            RemoteRepository kojiProxy = findKojiBuildAnd( store, path, null, (artifactRef, build, session)-> createRemoteRepository(artifactRef, build, session) );
+            if ( kojiProxy != null )
             {
-                Logger logger = LoggerFactory.getLogger( getClass() );
-                logger.info( "Koji content-manager decorator not enabled for: {}.", store.getKey() );
-                return null;
+                adjustTargetGroup(kojiProxy, group);
+                result = delegate.retrieve( kojiProxy, path, eventMetadata );
             }
 
-            Logger logger = LoggerFactory.getLogger( getClass() );
-
-            // TODO: This won't work for maven-metadata.xml files! We need to hit a POM or jar or something first.
-            ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
-            if ( pathInfo != null )
+            if ( result != null )
             {
-                ArtifactRef artifactRef = pathInfo.getArtifact();
-                logger.info( "Searching for Koji build: {}", artifactRef );
-
-                RemoteRepository proxyResult = proxyKojiBuild( artifactRef );
-                if ( proxyResult != null )
-                {
-                    adjustTargetGroup(proxyResult, group);
-                    result = delegate.retrieve( proxyResult, path, eventMetadata );
-                }
-            }
-            else
-            {
-                logger.info( "Path is not a maven artifact reference: {}", path );
+                nfc.clearMissing( new ConcreteResource( LocationUtils.toLocation( store ), path ) );
             }
         }
 
@@ -182,7 +192,99 @@ public abstract class KojiContentManagerDecorator
         return result;
     }
 
-    private RemoteRepository proxyKojiBuild( final ArtifactRef artifactRef )
+    @Override
+    public Transfer getTransfer( StoreKey storeKey, String path, TransferOperation op )
+            throws IndyWorkflowException
+    {
+        ArtifactStore store;
+        try
+        {
+            store = storeDataManager.getArtifactStore( storeKey );
+        }
+        catch ( IndyDataException e )
+        {
+            throw new IndyWorkflowException( "Cannot retrieve artifact store definition for: %s. Reason: %s", e,
+                                             storeKey, e.getMessage() );
+        }
+
+        if ( store == null )
+        {
+            return null;
+        }
+
+        return getTransfer( store, path, op );
+    }
+
+    @Override
+    public Transfer getTransfer( final ArtifactStore store, final String path, final TransferOperation operation )
+            throws IndyWorkflowException
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.info( "KOJI: Delegating initial getTransfer() attempt for: {}/{}", store.getKey(), path );
+        Transfer result = delegate.getTransfer( store, path, operation );
+        if ( result == null && TransferOperation.DOWNLOAD == operation && StoreType.group == store.getKey().getType() )
+        {
+            logger.info( "KOJI: Checking for Koji build matching: {}", path );
+            Group group = (Group) store;
+
+            RemoteRepository kojiProxy = findKojiBuildAnd( store, path, null, (artifactRef, build, session)-> createRemoteRepository(artifactRef, build, session) );
+            if ( kojiProxy != null )
+            {
+                adjustTargetGroup(kojiProxy, group);
+
+                EventMetadata eventMetadata = new EventMetadata().set( ContentManager.ENTRY_POINT_STORE, store.getKey() );
+                result = delegate.retrieve( kojiProxy, path, eventMetadata );
+            }
+
+            if ( result != null )
+            {
+                nfc.clearMissing( new ConcreteResource( LocationUtils.toLocation( store ), path ) );
+            }
+        }
+
+        // Finally, pass the Transfer back.
+        return result;
+    }
+
+    private <T> T findKojiBuildAnd( ArtifactStore store, String path, T defValue, KojiBuildAction<T> action )
+            throws IndyWorkflowException
+    {
+        if ( !config.getEnabled() )
+        {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.info( "Koji content-manager decorator is disabled." );
+            return defValue;
+        }
+
+        Group group = (Group) store;
+
+        if ( !config.isEnabledFor( group.getName() ) )
+        {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.info( "Koji content-manager decorator not enabled for: {}.", store.getKey() );
+            return defValue;
+        }
+
+        Logger logger = LoggerFactory.getLogger( getClass() );
+
+        // TODO: This won't work for maven-metadata.xml files! We need to hit a POM or jar or something first.
+        ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
+        if ( pathInfo != null )
+        {
+            ArtifactRef artifactRef = pathInfo.getArtifact();
+            logger.info( "Searching for Koji build: {}", artifactRef );
+
+            return proxyKojiBuild( artifactRef, defValue, action );
+        }
+        else
+        {
+            logger.info( "Path is not a maven artifact reference: {}", path );
+        }
+
+        return defValue;
+    }
+
+    private <T> T proxyKojiBuild( final ArtifactRef artifactRef, T defValue, KojiBuildAction<T> consumer )
             throws IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -215,7 +317,7 @@ public abstract class KojiContentManagerDecorator
                         if ( config.isTagAllowed( tag.getName() ) )
                         {
                             logger.info( "Koji tag is on whitelist: {}", tag.getName() );
-                            return createRemoteRepository(artifactRef, build, session);
+                            return consumer.execute( artifactRef, build, session );
                         }
                         else
                         {
@@ -228,7 +330,7 @@ public abstract class KojiContentManagerDecorator
 
                 logger.debug( "No builds were found that matched the restrictions." );
 
-                return null;
+                return defValue;
             } );
         }
         catch ( KojiClientException e )
@@ -353,6 +455,11 @@ public abstract class KojiContentManagerDecorator
         logger.info( "Using Koji URL: {}", url );
 
         return url;
+    }
+
+    private interface KojiBuildAction<T>
+    {
+        T execute( ArtifactRef artifactRef, KojiBuildInfo build, KojiSessionInfo session ) throws KojiClientException;
     }
 
 }

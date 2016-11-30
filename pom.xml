@@ -80,7 +80,7 @@
     <test-redirectOutput>true</test-redirectOutput>
     <testEnvTimeoutMultiplier>2</testEnvTimeoutMultiplier>
 
-    <skipSurefire>false</skipSurefire>
+    <skipSurefire>${skipTests}</skipSurefire>
     <skipITs>true</skipITs>
     <quickITs>true</quickITs>
     <skipTimingFTests>${skipITs}</skipTimingFTests>
