@@ -179,9 +179,9 @@ public abstract class KojiContentManagerDecorator
             if ( kojiProxy != null )
             {
                 adjustTargetGroup(kojiProxy, group);
+                result = delegate.retrieve( kojiProxy, path, eventMetadata );
             }
 
-            result = delegate.retrieve( kojiProxy, path, eventMetadata );
             if ( result != null )
             {
                 nfc.clearMissing( new ConcreteResource( LocationUtils.toLocation( store ), path ) );
@@ -231,10 +231,11 @@ public abstract class KojiContentManagerDecorator
             if ( kojiProxy != null )
             {
                 adjustTargetGroup(kojiProxy, group);
+
+                EventMetadata eventMetadata = new EventMetadata().set( ContentManager.ENTRY_POINT_STORE, store.getKey() );
+                result = delegate.retrieve( kojiProxy, path, eventMetadata );
             }
 
-            EventMetadata eventMetadata = new EventMetadata().set( ContentManager.ENTRY_POINT_STORE, store.getKey() );
-            result = delegate.retrieve( kojiProxy, path, eventMetadata );
             if ( result != null )
             {
                 nfc.clearMissing( new ConcreteResource( LocationUtils.toLocation( store ), path ) );
