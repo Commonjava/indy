@@ -849,11 +849,6 @@
         <artifactId>atlas-identities</artifactId>
         <version>${atlasVersion}</version>
       </dependency>
-      <dependency>
-        <groupId>org.commonjava.maven.atlas</groupId>
-        <artifactId>atlas-driver-neo4j-embedded</artifactId>
-        <version>${atlasVersion}</version>
-      </dependency>
 
       <dependency>
         <groupId>org.commonjava.util</groupId>
@@ -913,13 +908,6 @@
         <groupId>org.apache.maven.indexer</groupId>
         <artifactId>indexer-artifact</artifactId>
         <version>5.1.1</version>
-      </dependency>
-      
-      <dependency>
-        <groupId>org.commonjava.maven.atlas</groupId>
-        <artifactId>atlas-driver-jung</artifactId>
-        <version>${atlasVersion}</version>
-        <scope>test</scope>
       </dependency>
 
       <dependency>
