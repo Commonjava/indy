@@ -33,8 +33,8 @@ public class DefaultStorageProviderConfiguration
 
     public static final File DEFAULT_BASEDIR = new File( "/var/lib/indy/storage" );
 
-    //FIXME: need to discuss if this default is reasonable or needed
-    public static final File DEFAULT_NFS_BASEDIR = new File("/mnt/nfs/var/lib/indy/storage");
+    // NOTE: Providing a default value negates the detection of whether the NFS CacheProvider should be used or not, in DefaultGalleyStorageProvider.
+//    public static final File DEFAULT_NFS_BASEDIR = new File("/mnt/nfs/var/lib/indy/storage");
 
     public static final String STORAGE_DIR = "indy.storage.dir";
 
@@ -66,7 +66,8 @@ public class DefaultStorageProviderConfiguration
 
     public File getNFSStorageRootDirectory()
     {
-        return nfsStoreBasedir == null ? DEFAULT_NFS_BASEDIR : nfsStoreBasedir;
+//        return nfsStoreBasedir == null ? DEFAULT_NFS_BASEDIR : nfsStoreBasedir;
+        return nfsStoreBasedir;
     }
 
     @ConfigName( "storage.dir" )
