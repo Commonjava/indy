@@ -105,7 +105,7 @@ public class DefaultDownloadManager
 
     @Inject
     @Any
-    private Instance<ContentAdvisor> contentAdvisor;
+    private Instance<ContentAdvisor> contentAdvisors;
 
     protected DefaultDownloadManager()
     {
@@ -122,10 +122,10 @@ public class DefaultDownloadManager
     }
 
     public DefaultDownloadManager( final StoreDataManager storeManager, final TransferManager transfers,
-                                   final LocationExpander locationExpander, Instance<ContentAdvisor> contentAdvisor )
+                                   final LocationExpander locationExpander, Instance<ContentAdvisor> contentAdvisors )
     {
         this(storeManager, transfers, locationExpander);
-        this.contentAdvisor = contentAdvisor;
+        this.contentAdvisors = contentAdvisors;
     }
 
     @Override
@@ -719,24 +719,29 @@ public class DefaultDownloadManager
         Transfer transfer = null;
 
         logger.debug( "Checking {} stores to find one suitable for {} of: {}", stores.size(), op, path );
+        boolean suitableFound = false;
         for ( final ArtifactStore store : stores )
         {
             if ( storeIsSuitableFor( store, quality, op ) )
             {
+                suitableFound = true;
+
                 logger.info( "Attempting to retrieve storage reference in: {} for: {} (operation: {})", store, path,
                              op );
 
                 transfer = getStorageReference( store, path );
-                if ( transfer != null && ( ( op != TransferOperation.DOWNLOAD && op != TransferOperation.LISTING )
-                        || transfer.exists() ) )
+                if ( transfer != null && !transfer.exists() && ( op == TransferOperation.DOWNLOAD
+                        || op == TransferOperation.LISTING ) )
                 {
-                    logger.info( "Using transfer: {}", transfer );
-                    break;
+                    transfer = null;
                 }
+
+                logger.info( "Using transfer: {}", transfer );
+                break;
             }
         }
 
-        if ( !stores.isEmpty() && transfer == null )
+        if ( !stores.isEmpty() && !suitableFound )
         {
             logger.warn( "No suitable stores in list." );
             throw new IndyWorkflowException( ApplicationStatus.BAD_REQUEST.code(), "No suitable store available." );
@@ -1055,12 +1060,17 @@ public class DefaultDownloadManager
 
     private ContentQuality getQuality( String path )
     {
-        final ContentAdvisor advisor = StreamSupport.stream(
-                Spliterators.spliteratorUnknownSize( contentAdvisor.iterator(), Spliterator.ORDERED ), false )
-                                                    .filter( Objects::nonNull )
-                                                    .findFirst()
-                                                    .orElse( null );
-        return advisor == null ? null : advisor.getContentQuality( path );
+        if ( contentAdvisors != null )
+        {
+            final ContentAdvisor advisor = StreamSupport.stream(
+                    Spliterators.spliteratorUnknownSize( contentAdvisors.iterator(), Spliterator.ORDERED ), false )
+                                                        .filter( Objects::nonNull )
+                                                        .findFirst()
+                                                        .orElse( null );
+            return advisor == null ? null : advisor.getContentQuality( path );
+        }
+
+        return null;
     }
 
 }

@@ -15,20 +15,16 @@
  */
 package org.commonjava.indy.core.inject;
 
+import com.fasterxml.jackson.databind.Module;
+import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.indy.model.core.io.ModuleSet;
+
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
-
-import org.commonjava.indy.inject.Production;
-import org.commonjava.indy.model.core.io.IndyObjectMapper;
-
-import com.fasterxml.jackson.databind.Module;
-import org.commonjava.indy.model.core.io.ModuleSet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class CoreProvider
@@ -57,8 +53,8 @@ public class CoreProvider
 //    @Production
     public IndyObjectMapper getIndyObjectMapper()
     {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.info( "Core mapper is: {}", objectMapper );
+//        Logger logger = LoggerFactory.getLogger( getClass() );
+//        logger.info( "Core mapper is: {}", objectMapper );
         return objectMapper;
     }
 
