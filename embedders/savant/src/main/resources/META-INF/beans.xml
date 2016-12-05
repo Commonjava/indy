@@ -24,13 +24,13 @@
   <decorators>
     <!-- ContentManager decorators -->
     <class>org.commonjava.indy.koji.content.KojiContentManagerDecorator</class>
-    <class>org.commonjava.indy.autoprox.data.AutoProxDataManagerDecorator</class>
     <class>org.commonjava.indy.content.index.IndexingContentManagerDecorator</class>
 
     <!-- ContentManagerDirectAccess decorators -->
     <class>org.commonjava.indy.content.index.IndexingDirectContentAccessDecorator</class>
 
     <!-- StoreDataManager decorators -->
+    <class>org.commonjava.indy.autoprox.data.AutoProxDataManagerDecorator</class>
     <class>org.commonjava.indy.implrepo.data.ImpliedReposStoreDataManagerDecorator</class>
     <class>org.commonjava.indy.implrepo.data.ValidRemoteStoreDataManagerDecorator</class>
   </decorators>
