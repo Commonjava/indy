@@ -90,21 +90,28 @@ public class NoPreExistingPaths_GroupWithOneOfTwoHosts_RuleTest
                         equalTo( resourceToString( PREFIX + "valid.pom.xml" ) ) );
         }
 
-        target.addConstituent( hostTarget1 );
-        client.stores().update( target, "update target" );
-        try (InputStream stream = client.content().get( target.getKey(), deploy ))
-        {
-            String retrieved = IOUtils.toString( stream );
-            assertThat( deploy + " invalid from: " + target.getKey(), retrieved,
-                        equalTo( resourceToString( PREFIX + "valid.pom.xml" ) ) );
-        }
+        GroupPromoteRequest request = new GroupPromoteRequest( hostTarget1.getKey(), target.getName() );
+        GroupPromoteResult result = module.promoteToGroup( request );
 
-        deployResource( deploy, PREFIX + "valid.pom.xml" );
+        assertThat( result, notNullValue() );
+        assertThat( result.getValidations(), notNullValue() );
+        assertThat( result.getValidations().isValid(), equalTo( true ) );
+
+//        target.addConstituent( hostTarget1 );
+//        client.stores().update( target, "update target" );
+//        try (InputStream stream = client.content().get( target.getKey(), deploy ))
+//        {
+//            String retrieved = IOUtils.toString( stream );
+//            assertThat( deploy + " invalid from: " + target.getKey(), retrieved,
+//                        equalTo( resourceToString( PREFIX + "valid.pom.xml" ) ) );
+//        }
+//
+//        deployResource( deploy, PREFIX + "valid.pom.xml" );
 
         waitForEventPropagation();
 
-        GroupPromoteRequest request = new GroupPromoteRequest( source.getKey(), target.getName() );
-        GroupPromoteResult result = module.promoteToGroup( request );
+        request = new GroupPromoteRequest( hostTarget2.getKey(), target.getName() );
+        result = module.promoteToGroup( request );
         assertThat( result, notNullValue() );
 
         ValidationResult validations = result.getValidations();
