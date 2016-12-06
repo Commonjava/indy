@@ -111,6 +111,8 @@ public class FoloPomDownloadListener
         }
         try
         {
+            logger.debug( "Downloading POM as automatic response to associated artifact download: {}/{}", storeKey,
+                          pomResource.getPath() );
             contentManager.retrieve( store, pomResource.getPath(), event.getEventMetadata() );
         }
         catch ( final IndyWorkflowException ex )
