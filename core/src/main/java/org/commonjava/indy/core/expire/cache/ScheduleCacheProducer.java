@@ -45,16 +45,6 @@ public class ScheduleCacheProducer
 
     private static final String SCHEDULE_EXPIRE = "schedule-expire-cache";
 
-    @PostConstruct
-    public void initExpireConfig()
-    {
-        //TODO: this wakeUpInterval is used to trigger the purge threads of ISPN to let it purge the cache, which will
-        //      trigger the cache expire event to happen. Did not find a way to let the expire event automatically happen
-        //      without this. See http://infinispan.org/docs/stable/faqs/faqs.html#eviction_and_expiration_questions for more
-        final Configuration c = new ConfigurationBuilder().expiration().wakeUpInterval( 1, TimeUnit.SECONDS ).build();
-        cacheProducer.setCacheConfiguration( SCHEDULE_EXPIRE, c );
-    }
-
     @ScheduleCache
     @Produces
     @ApplicationScoped

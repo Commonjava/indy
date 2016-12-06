@@ -230,7 +230,7 @@ public class StoreEnablementManager
         logger.warn( "Disabling: {} for {} seconds.", key, timeoutSeconds );
 
         scheduleManager.scheduleForStore( key, DISABLE_TIMEOUT, DISABLE_TIMEOUT, key,
-                                          timeoutSeconds, 99999 );
+                                          timeoutSeconds );
     }
 
 }

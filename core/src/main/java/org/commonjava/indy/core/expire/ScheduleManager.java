@@ -281,7 +281,7 @@ public class ScheduleManager
     }
 
     public synchronized void scheduleForStore( final StoreKey key, final String jobType, final String jobName,
-                                               final Object payload, final int startSeconds, final int repeatSeconds )
+                                               final Object payload, final int startSeconds )
             throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
@@ -323,7 +323,7 @@ public class ScheduleManager
         logger.info( "Scheduling timeout for: {} in: {} in: {} seconds (at: {}).", path, key, timeoutSeconds,
                      new Date( System.currentTimeMillis() + ( timeoutSeconds * 1000 ) ) );
 
-        scheduleForStore( key, CONTENT_JOB_TYPE, path, new ContentExpiration( key, path ), timeoutSeconds, -1 );
+        scheduleForStore( key, CONTENT_JOB_TYPE, path, new ContentExpiration( key, path ), timeoutSeconds );
     }
 
     public synchronized void setSnapshotTimeouts( final StoreKey key, final String path )
