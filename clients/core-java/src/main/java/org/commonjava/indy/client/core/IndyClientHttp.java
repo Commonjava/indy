@@ -41,6 +41,7 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.util.jhttpc.HttpFactory;
 import org.commonjava.util.jhttpc.JHttpCException;
+import org.commonjava.util.jhttpc.auth.PasswordManager;
 import org.commonjava.util.jhttpc.model.SiteConfig;
 import org.commonjava.util.jhttpc.model.SiteConfigBuilder;
 import org.slf4j.Logger;
@@ -96,6 +97,27 @@ public class IndyClientHttp
         }
 
         factory = new HttpFactory( authenticator );
+    }
+
+    public IndyClientHttp( final PasswordManager passwordManager, final IndyObjectMapper mapper,
+                           SiteConfig location )
+            throws IndyClientException
+    {
+        this.objectMapper = mapper;
+        this.location = location;
+
+        baseUrl = location.getUri();
+
+        try
+        {
+            url = new URL( baseUrl );
+        }
+        catch ( final MalformedURLException e )
+        {
+            throw new IndyClientException( "Invalid base-url: {}", e, baseUrl );
+        }
+
+        factory = new HttpFactory( passwordManager );
     }
 
     /**

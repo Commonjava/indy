@@ -163,6 +163,7 @@ public abstract class IndexingContentManagerDecorator
         Transfer transfer = getIndexedTransfer( store.getKey(), null, path, TransferOperation.DOWNLOAD );
         if ( transfer != null )
         {
+            logger.debug( "Found indexed transfer: {}. Returning.", transfer );
             return transfer;
         }
 
@@ -180,6 +181,7 @@ public abstract class IndexingContentManagerDecorator
             ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
             if ( nfc.isMissing( resource ) )
             {
+                logger.debug( "{} is marked as missing. Returning null.", resource );
                 return null;
             }
 
@@ -281,6 +283,11 @@ public abstract class IndexingContentManagerDecorator
                     }
                 }
             }
+            else
+            {
+                logger.debug( "NFC marks {} as missing. Returning null.", resource );
+                return null;
+            }
         }
 
         transfer = delegate.getTransfer( store, path, op );
@@ -289,11 +296,8 @@ public abstract class IndexingContentManagerDecorator
         {
             indexManager.indexTransferIn( transfer, store.getKey() );
         }
-        else
-        {
-            nfc.addMissing( resource );
-        }
 
+        logger.debug( "Returning transfer: {}", transfer );
         return transfer;
     }
 
@@ -396,10 +400,6 @@ public abstract class IndexingContentManagerDecorator
         {
             logger.debug( "Indexing transfer: {}", transfer );
             indexManager.indexTransferIn( transfer, storeKey );
-        }
-        else
-        {
-            nfc.addMissing( resource );
         }
 
         return transfer;

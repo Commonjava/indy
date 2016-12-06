@@ -192,6 +192,7 @@ public class KojiMavenMetadataProvider
                                                 "Encountered invalid version: %s for archive: %s. Reason: %s",
                                                 archive.getVersion(), archive.getArchiveId(), e.getMessage() ), e );
                                     }
+                                    break;
                                 }
                             }
                         }
@@ -212,7 +213,7 @@ public class KojiMavenMetadataProvider
                         versioning.setRelease( sortedVersions.get( versions.size() - 1 ).renderStandard() );
                         versioning.setLatest( sortedVersions.get( versions.size() - 1 ).renderStandard() );
                         versioning.setVersions(
-                                sortedVersions.stream().map( ( v ) -> v.renderStandard() ).collect( Collectors.toList() ) );
+                                sortedVersions.stream().map( SingleVersion::renderStandard ).collect( Collectors.toList() ) );
 
                         Date lastUpdated = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) ).getTime();
                         versioning.setLastUpdated( new SimpleDateFormat( LAST_UPDATED_FORMAT ).format( lastUpdated ) );

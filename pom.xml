@@ -1372,7 +1372,7 @@
       <id>ci</id>
       <properties>
         <skipTests>false</skipTests>
-        <skipTimingFTests>true</skipTimingFTests>
+        <skipTimingFTests>false</skipTimingFTests>
 
         <test-forkCount>8</test-forkCount>
         <it-forkCount>2</it-forkCount>

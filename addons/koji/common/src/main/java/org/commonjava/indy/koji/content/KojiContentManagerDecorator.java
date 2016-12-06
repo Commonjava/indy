@@ -175,7 +175,7 @@ public abstract class KojiContentManagerDecorator
             logger.info( "KOJI: Checking for Koji build matching: {}", path );
             Group group = (Group) store;
 
-            RemoteRepository kojiProxy = findKojiBuildAnd( store, path, null, (artifactRef, build, session)-> createRemoteRepository(artifactRef, build, session) );
+            RemoteRepository kojiProxy = findKojiBuildAnd( store, path, null, this::createRemoteRepository );
             if ( kojiProxy != null )
             {
                 adjustTargetGroup(kojiProxy, group);

@@ -19,12 +19,18 @@
 
     <class>org.commonjava.indy.flat.data.DataFileStoreDataManager</class>
   </alternatives>
-  
+
+  <!-- NOTE: In the decorators below, the FIRST listed will be invoked FIRST (outer-most in the stack) -->
   <decorators>
-    <class>org.commonjava.indy.autoprox.data.AutoProxDataManagerDecorator</class>
-    <class>org.commonjava.indy.content.index.IndexingContentManagerDecorator</class>
-    <class>org.commonjava.indy.content.index.IndexingDirectContentAccessDecorator</class>
+    <!-- ContentManager decorators -->
     <class>org.commonjava.indy.koji.content.KojiContentManagerDecorator</class>
+    <class>org.commonjava.indy.content.index.IndexingContentManagerDecorator</class>
+
+    <!-- ContentManagerDirectAccess decorators -->
+    <class>org.commonjava.indy.content.index.IndexingDirectContentAccessDecorator</class>
+
+    <!-- StoreDataManager decorators -->
+    <class>org.commonjava.indy.autoprox.data.AutoProxDataManagerDecorator</class>
     <class>org.commonjava.indy.implrepo.data.ImpliedReposStoreDataManagerDecorator</class>
     <class>org.commonjava.indy.implrepo.data.ValidRemoteStoreDataManagerDecorator</class>
   </decorators>
