@@ -23,6 +23,7 @@ import org.commonjava.indy.client.core.module.IndyStatsClientModule;
 import org.commonjava.indy.client.core.module.IndyStoresClientModule;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.stats.IndyVersioning;
+import org.commonjava.util.jhttpc.auth.PasswordManager;
 import org.commonjava.util.jhttpc.model.SiteConfig;
 import org.commonjava.util.jhttpc.model.SiteConfigBuilder;
 
@@ -97,6 +98,22 @@ public class Indy
     {
         this.http =
                 new IndyClientHttp( authenticator, mapper == null ? new IndyObjectMapper( true ) : mapper, location );
+        this.moduleRegistry = new HashSet<>();
+
+        setupStandardModules();
+        for ( final IndyClientModule module : modules )
+        {
+            module.setup( this, http );
+            moduleRegistry.add( module );
+        }
+    }
+
+    public Indy( SiteConfig location, PasswordManager passwordManager, IndyClientModule... modules )
+            throws IndyClientException
+    {
+        this.http =
+                new IndyClientHttp( passwordManager, new IndyObjectMapper( true ), location );
+
         this.moduleRegistry = new HashSet<>();
 
         setupStandardModules();
