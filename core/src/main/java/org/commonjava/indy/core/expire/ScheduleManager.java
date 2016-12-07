@@ -65,7 +65,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -132,25 +131,6 @@ public class ScheduleManager
             return;
         }
 
-        final Properties props = new Properties();
-        final Map<String, String> configuration = schedulerConfig.getConfiguration();
-        if ( configuration != null )
-        {
-            props.putAll( configuration );
-        }
-
-        final StringBuilder sb = new StringBuilder();
-        for ( final String key : props.stringPropertyNames() )
-        {
-            if ( sb.length() > 0 )
-            {
-                sb.append( '\n' );
-            }
-
-            sb.append( key ).append( " = " ).append( props.getProperty( key ) );
-        }
-
-        logger.info( "Scheduler properties:\n\n{}\n\n", sb );
         // register this producer as schedule cache listener
         scheduleCache.execute( cache -> {
             cache.addListener( ScheduleManager.this );

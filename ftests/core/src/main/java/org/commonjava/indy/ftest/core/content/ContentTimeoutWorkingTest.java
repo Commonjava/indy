@@ -26,7 +26,7 @@ public class ContentTimeoutWorkingTest
 {
     @Test
     @Category( TimingDependent.class )
-    public void quartzBasedTimeoutArtifact()
+    public void timeoutArtifact()
             throws Exception
     {
         fileCheckingAfterTimeout();
