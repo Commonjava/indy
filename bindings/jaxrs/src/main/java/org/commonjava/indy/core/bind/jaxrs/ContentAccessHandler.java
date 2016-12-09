@@ -178,7 +178,7 @@ public class ContentAccessHandler
                 Transfer item = null;
                 logger.info( "Checking existence of: {}:{}", sk, path );
 
-                if (StoreType.remote == st && !Boolean.TRUE.equals(cacheOnly)) {
+                if (StoreType.hosted != st && !Boolean.TRUE.equals(cacheOnly)) {
                     // Use exists for remote repo to avoid downloading file. Use getTransfer for everything else (hosted, cache-only).
                     // Response will be composed of metadata by getHttpMetadata which get metadata from .http-metadata.json (because HTTP transport always writes a .http-metadata.json
                     // file when it makes a request). This file stores the HTTP response status code and headers regardless exist returning true or false.
