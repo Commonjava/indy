@@ -72,9 +72,9 @@ public class KeycloakProxyAuthenticator
             throws IOException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
-        if ( !keycloakConfig.isEnabled() )
+        if ( !keycloakConfig.isEnabled() || !httproxConfig.isSecured() )
         {
-            logger.debug( "Keycloak httprox translation authenticator is disabled. Skipping authentication." );
+            logger.debug( "Keycloak httprox translation authenticator is disabled OR httprox is running in unsecured mode. Skipping authentication." );
             return true;
         }
 
