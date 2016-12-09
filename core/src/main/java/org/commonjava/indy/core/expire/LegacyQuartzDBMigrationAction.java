@@ -1,0 +1,81 @@
+package org.commonjava.indy.core.expire;
+
+import org.commonjava.indy.action.IndyLifecycleException;
+import org.commonjava.indy.action.MigrationAction;
+import org.commonjava.indy.subsys.datafile.conf.DataFileConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.stream.Stream;
+
+/**
+ * Used to remove legacy quartz db data file as it is not used in new ISPN timeout way.
+ */
+@Named( "legacy-quartzdb-migration" )
+public class LegacyQuartzDBMigrationAction
+        implements MigrationAction
+{
+    @Inject
+    private DataFileConfiguration fileConfig;
+
+    private static final String SCHEDULE_DB_NAME = "scheduler";
+
+    LegacyQuartzDBMigrationAction( DataFileConfiguration fileConfig )
+    {
+        this.fileConfig = fileConfig;
+    }
+
+    @Override
+    public boolean migrate()
+            throws IndyLifecycleException
+    {
+        final Logger logger = LoggerFactory.getLogger( LegacyQuartzDBMigrationAction.class );
+        Path path = Paths.get( fileConfig.getDataBasedir().toURI() );
+        final Stream<Path> listFiles;
+        try
+        {
+            listFiles = Files.list( path );
+        }
+        catch ( IOException e )
+        {
+            logger.warn( "IOException happened when list path {}", path );
+            return false;
+        }
+        if ( listFiles != null )
+        {
+            listFiles.filter( filePath -> Files.isRegularFile( filePath ) && filePath.getFileName()
+                                                                                     .toString()
+                                                                                     .startsWith( SCHEDULE_DB_NAME ) )
+                     .forEach( file -> {
+                         try
+                         {
+                             Files.delete( file );
+                         }
+                         catch ( IOException e )
+                         {
+                             logger.warn( "IOException happened when delete file {}", file );
+                         }
+                     } );
+
+        }
+        return true;
+    }
+
+    @Override
+    public int getMigrationPriority()
+    {
+        return 90;
+    }
+
+    @Override
+    public String getId()
+    {
+        return "Legacy quartz db data remove";
+    }
+}
