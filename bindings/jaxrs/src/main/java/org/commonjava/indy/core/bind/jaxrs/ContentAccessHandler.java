@@ -176,20 +176,32 @@ public class ContentAccessHandler
             try
             {
                 Transfer item = null;
-                logger.info( "Checking existence of: {}:{}", sk, path );
+                logger.info( "Checking existence of: {}:{} (cache only? {})", sk, path, cacheOnly );
 
-                if (StoreType.hosted != st && !Boolean.TRUE.equals(cacheOnly)) {
+                boolean exists = false;
+                if (Boolean.TRUE.equals(cacheOnly)) {
+                    logger.debug( "Calling getTransfer()" );
+                    item = contentController.getTransfer( sk, path, TransferOperation.DOWNLOAD );
+                    exists = item != null && item.exists();
+                    logger.debug( "Got transfer reference: {}", item );
+                } else {
                     // Use exists for remote repo to avoid downloading file. Use getTransfer for everything else (hosted, cache-only).
                     // Response will be composed of metadata by getHttpMetadata which get metadata from .http-metadata.json (because HTTP transport always writes a .http-metadata.json
                     // file when it makes a request). This file stores the HTTP response status code and headers regardless exist returning true or false.
-                    boolean exists = contentController.exists(sk, path);
+                    logger.debug( "Calling exists()" );
+                    exists = contentController.exists(sk, path);
                     logger.debug("Got exists: {}", exists);
-                } else {
-                    item = contentController.getTransfer( sk, path, TransferOperation.DOWNLOAD );
-                    logger.debug( "Got transfer reference: {}", item );
                 }
 
-                if ( item == null || !item.exists() )
+                if ( exists )
+                {
+                    final ResponseBuilder builder = Response.ok();
+                    setInfoHeaders( builder, item, sk, path, true, contentController.getContentType( path ),
+                                    contentController.getHttpMetadata( sk, path ) );
+
+                    response = builder.build();
+                }
+                else
                 {
                     if ( StoreType.remote == st )
                     {
@@ -204,14 +216,6 @@ public class ContentAccessHandler
                     {
                         response = Response.status( Status.NOT_FOUND ).build();
                     }
-                }
-                else
-                {
-                    final ResponseBuilder builder = Response.ok();
-                    setInfoHeaders( builder, item, sk, path, true, contentController.getContentType( path ),
-                                    contentController.getHttpMetadata( sk, path ) );
-
-                    response = builder.build();
                 }
             }
             catch ( final IndyWorkflowException e )

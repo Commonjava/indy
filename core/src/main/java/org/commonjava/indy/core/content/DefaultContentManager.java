@@ -58,6 +58,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.commonjava.indy.util.ContentUtils.dedupeListing;
 
@@ -772,11 +773,39 @@ public class DefaultContentManager
     }
 
     @Override
+    // TODO: to add content generation handling here, for things like merged metadata, checksum files, etc.
     public boolean exists(ArtifactStore store, String path)
         throws IndyWorkflowException
     {
-        // TODO: to add content generation handling here, for things like merged metadata, checksum files, etc.
-        return downloadManager.exists(store, path);
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Checking existence of: {} in: {}", path, store.getKey() );
+        if ( store instanceof Group )
+        {
+            try
+            {
+                final List<ArtifactStore> allMembers = storeManager.getOrderedConcreteStoresInGroup( store.getName(), true );
+
+                logger.debug( "Trying to retrieve suitable transfer for: {} in group: {} members:\n{}", path, allMembers, store.getName() );
+                for ( ArtifactStore member : allMembers )
+                {
+                    if ( exists( member, path ) )
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            catch ( final IndyDataException e )
+            {
+                throw new IndyWorkflowException( "Failed to lookup concrete members of: %s. Reason: %s", e, store,
+                                                 e.getMessage() );
+            }
+        }
+        else
+        {
+            return downloadManager.exists(store, path);
+        }
     }
 
     private HttpExchangeMetadata readExchangeMetadata( final Transfer meta )
