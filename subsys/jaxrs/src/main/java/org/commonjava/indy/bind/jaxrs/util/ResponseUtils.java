@@ -165,17 +165,20 @@ public final class ResponseUtils
             }
         }
 
-        if ( !lastModSet )
+        if ( item != null && item.exists() )
         {
-            builder.header( ApplicationHeader.last_modified.key(), HttpUtils.formatDateHeader( item.lastModified() ) );
-        }
+            if ( !lastModSet )
+            {
+                builder.header( ApplicationHeader.last_modified.key(), HttpUtils.formatDateHeader( item.lastModified() ) );
+            }
 
-        if ( includeContentLength && !lenSet )
-        {
-            Logger logger = LoggerFactory.getLogger( ResponseUtils.class );
-            logger.debug( "Adding Content-Length header: {}", item.length() );
+            if ( includeContentLength && !lenSet )
+            {
+                Logger logger = LoggerFactory.getLogger( ResponseUtils.class );
+                logger.debug( "Adding Content-Length header: {}", item.length() );
 
-            builder.header( ApplicationHeader.content_length.key(), item.length() );
+                builder.header( ApplicationHeader.content_length.key(), item.length() );
+            }
         }
 
         return builder;
