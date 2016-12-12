@@ -18,13 +18,12 @@ package org.commonjava.indy.core.change;
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreEnablementEvent;
-import org.commonjava.indy.change.event.ArtifactStorePostUpdateEvent;
 import org.commonjava.indy.change.event.IndyStoreErrorEvent;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.core.expire.IndySchedulerException;
 import org.commonjava.indy.core.expire.ScheduleManager;
 import org.commonjava.indy.core.expire.SchedulerEvent;
-import org.commonjava.indy.core.expire.SchedulerEventType;
+import org.commonjava.indy.core.expire.SchedulerTriggerEvent;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -171,9 +170,9 @@ public class StoreEnablementManager
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "Checking for store-reenable event in: {} (trigger? {} Disable-Timeout? {})", evt,
-                      evt.getEventType() == SchedulerEventType.TRIGGER, DISABLE_TIMEOUT.equals( evt.getJobType() ) );
+                      evt instanceof SchedulerTriggerEvent, DISABLE_TIMEOUT.equals( evt.getJobType() ) );
 
-        if ( evt.getEventType() == SchedulerEventType.TRIGGER && DISABLE_TIMEOUT.equals( evt.getJobType() ) )
+        if ( (evt instanceof SchedulerTriggerEvent) && DISABLE_TIMEOUT.equals( evt.getJobType() ) )
         {
             String keystr = evt.getPayload();
             StoreKey key = null;
@@ -231,7 +230,7 @@ public class StoreEnablementManager
         logger.warn( "Disabling: {} for {} seconds.", key, timeoutSeconds );
 
         scheduleManager.scheduleForStore( key, DISABLE_TIMEOUT, DISABLE_TIMEOUT, key,
-                                          timeoutSeconds, 99999 );
+                                          timeoutSeconds );
     }
 
 }

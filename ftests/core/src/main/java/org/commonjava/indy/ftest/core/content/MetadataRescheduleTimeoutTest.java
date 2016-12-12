@@ -85,8 +85,8 @@ public class MetadataRescheduleTimeoutTest
         // as the metadata content re-request, the metadata timeout interval should NOT be re-scheduled
         client.content().get( remote, repoId, metadataPath ).close();
 
-        // will wait another 2.5s
-        Thread.sleep( METADATA_TIMEOUT_WAITING_MILLISECONDS );
+        // will wait another 4s
+        Thread.sleep( METADATA_TIMEOUT_WAITING_MILLISECONDS + 1500 );
         // as rescheduled, the artifact should not be deleted
         assertThat( "artifact should be removed as the rescheduled of metadata should not succeed",
                     metadataFile.exists(), equalTo( false ) );

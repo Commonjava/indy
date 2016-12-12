@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011 Red Hat, Inc. (jdcasey@commonjava.org)
+ * Copyright (C) 2013 Red Hat, Inc. (jdcasey@commonjava.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,23 +15,11 @@
  */
 package org.commonjava.indy.core.expire;
 
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-public class ExpirationJob
-    implements Job
+public class SchedulerCancelEvent
+        extends SchedulerEvent
 {
-
-    private final Logger logger = LoggerFactory.getLogger( getClass() );
-
-    @Override
-    public void execute( final JobExecutionContext context )
-        throws JobExecutionException
+    public SchedulerCancelEvent( final String jobType, final String payload )
     {
-        logger.info( "Executing dummy job for Indy ScheduleManager. Actual changes flow through job/scheduler listeners." );
+        super( jobType, payload );
     }
-
 }

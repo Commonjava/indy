@@ -15,30 +15,13 @@
  */
 package org.commonjava.indy.core.expire;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.concurrent.Executor;
-import java.util.stream.StreamSupport;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Event;
-import javax.enterprise.inject.Any;
-import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
-
-import org.commonjava.cdi.util.weft.WeftManaged;
-import org.commonjava.indy.action.IndyLifecycleException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.commonjava.indy.action.BootupAction;
+import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.core.conf.IndySchedulerConfig;
+import org.commonjava.indy.core.expire.cache.ScheduleCache;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -48,49 +31,69 @@ import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
-import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.indy.spi.pkg.ContentAdvisor;
 import org.commonjava.indy.spi.pkg.ContentQuality;
+import org.commonjava.indy.subsys.infinispan.CacheHandle;
+import org.commonjava.indy.subsys.infinispan.CacheKeyMatcher;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
-import org.quartz.JobBuilder;
-import org.quartz.JobDataMap;
-import org.quartz.JobDetail;
-import org.quartz.JobKey;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.SimpleScheduleBuilder;
-import org.quartz.Trigger;
-import org.quartz.TriggerBuilder;
-import org.quartz.TriggerKey;
-import org.quartz.impl.StdSchedulerFactory;
-import org.quartz.impl.matchers.GroupMatcher;
+import org.infinispan.container.entries.CacheEntry;
+import org.infinispan.metadata.Metadata;
+import org.infinispan.notifications.Listener;
+import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
+import org.infinispan.notifications.cachelistener.annotation.CacheEntryExpired;
+import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
+import org.infinispan.notifications.cachelistener.event.CacheEntryCreatedEvent;
+import org.infinispan.notifications.cachelistener.event.CacheEntryExpiredEvent;
+import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Event;
+import javax.enterprise.inject.Any;
+import javax.enterprise.inject.Instance;
+import javax.inject.Inject;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.StreamSupport;
 
+/**
+ * A ScheduleManager is used to do the schedule time out jobs for the {@link ArtifactStore} to do some time-related jobs, like
+ * removing useless artifacts. It used ISPN cache timeout mechanism to implement this type of function.
+ * This class is also acted as a cache listener to handle the cache expiration job event to distribute the expiration
+ * info through CDI event for the real actor to do the expiration work.
+ */
 @ApplicationScoped
+@Listener
 public class ScheduleManager
-    implements BootupAction, ShutdownAction
+        implements BootupAction, ShutdownAction
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private static final String PAYLOAD = "payload";
+    public static final String PAYLOAD = "payload";
 
-    private static final String ANY = "__ANY__";
+    public static final String ANY = "__ANY__";
 
     public static final String CONTENT_JOB_TYPE = "CONTENT";
 
-    private static final String JOB_TYPE = "JOB_TYPE";
+    public static final String JOB_TYPE = "JOB_TYPE";
 
-    @Inject
-    @WeftManaged
-    @ExecutorConfig( daemon = true, priority = 7, named = "indy-events" )
-    private Executor executor;
+    public static final String SCHEDULE_TIME = "SCHEDULE_TIME";
 
     @Inject
     private StoreDataManager dataManager;
@@ -105,85 +108,38 @@ public class ScheduleManager
     private IndySchedulerConfig schedulerConfig;
 
     @Inject
-    private Event<SchedulerEvent> eventDispatcher;
-
-    @Inject
     private SpecialPathManager specialPathManager;
 
-    private Scheduler scheduler;
+    @Inject
+    @ScheduleCache
+    private CacheHandle<ScheduleKey, Map> scheduleCache;
 
     @Inject
     @Any
     private Instance<ContentAdvisor> contentAdvisor;
 
+    @Inject
+    private Event<SchedulerEvent> eventDispatcher;
+
     @Override
     public void init()
-        throws IndyLifecycleException
+            throws IndyLifecycleException
     {
         if ( !schedulerConfig.isEnabled() )
         {
-            logger.info( "Scheduler disabled. Skipping Quartz initialization" );
+            logger.info( "Scheduler disabled. Skipping initialization" );
             return;
         }
 
-        try
-        {
-            final Properties props = new Properties();
-            final Map<String, String> configuration = schedulerConfig.getConfiguration();
-            if ( configuration != null )
-            {
-                props.putAll( configuration );
-            }
-
-            final StringBuilder sb = new StringBuilder();
-            for ( final String key : props.stringPropertyNames() )
-            {
-                if ( sb.length() > 0 )
-                {
-                    sb.append( '\n' );
-                }
-
-                sb.append( key )
-                  .append( " = " )
-                  .append( props.getProperty( key ) );
-            }
-
-            logger.info( "Scheduler properties:\n\n{}\n\n", sb );
-
-            final StdSchedulerFactory fac = new StdSchedulerFactory( props );
-            scheduler = fac.getScheduler();
-
-            if ( eventDispatcher != null )
-            {
-                scheduler.getListenerManager()
-                         .addSchedulerListener( new IndyScheduleListener( scheduler, eventDispatcher ) );
-
-                scheduler.getListenerManager()
-                         .addTriggerListener( new IndyTriggerListener( eventDispatcher ) );
-
-                scheduler.getListenerManager().addJobListener( new IndyJobListener() );
-            }
-
-            scheduler.start();
-        }
-        catch ( final SchedulerException e )
-        {
-            throw new IndyLifecycleException( "Failed to start scheduler", e );
-        }
-    }
-
-    public static SchedulerEvent createEvent( final SchedulerEventType eventType, final JobDetail jobDetail )
-    {
-        final JobDataMap dataMap = jobDetail.getJobDataMap();
-        final String type = dataMap.getString( JOB_TYPE );
-
-        final String data = dataMap.getString( PAYLOAD );
-
-        return new SchedulerEvent( eventType, type, data );
+        // register this producer as schedule cache listener
+        scheduleCache.execute( cache -> {
+            cache.addListener( ScheduleManager.this );
+            return null;
+        } );
     }
 
     public synchronized void rescheduleSnapshotTimeouts( final HostedRepository deploy )
-        throws IndySchedulerException
+            throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -199,13 +155,13 @@ public class ScheduleManager
 
         if ( timeout > 0 )
         {
-            final Set<TriggerKey> canceled =
-                cancelAllBefore( new StoreKeyMatcher( deploy.getKey(), CONTENT_JOB_TYPE ), timeout );
+            final Set<ScheduleKey> canceled =
+                    cancelAllBefore( new StoreKeyMatcher( deploy.getKey(), CONTENT_JOB_TYPE ), timeout );
 
-            for ( final TriggerKey key : canceled )
+            for ( final ScheduleKey key : canceled )
             {
                 final String path = key.getName();
-                final StoreKey sk = storeKeyFrom( key.getGroup() );
+                final StoreKey sk = storeKeyFrom( key.groupName() );
 
                 scheduleContentExpiration( sk, path, timeout );
             }
@@ -213,7 +169,7 @@ public class ScheduleManager
     }
 
     public synchronized void rescheduleProxyTimeouts( final RemoteRepository repo )
-        throws IndySchedulerException
+            throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -233,12 +189,12 @@ public class ScheduleManager
 
         if ( timeout > 0 )
         {
-            final Set<TriggerKey> canceled =
-                cancelAllBefore( new StoreKeyMatcher( repo.getKey(), CONTENT_JOB_TYPE ), timeout );
-            for ( final TriggerKey key : canceled )
+            final Set<ScheduleKey> canceled =
+                    cancelAllBefore( new StoreKeyMatcher( repo.getKey(), CONTENT_JOB_TYPE ), timeout );
+            for ( final ScheduleKey key : canceled )
             {
                 final String path = key.getName();
-                final StoreKey sk = storeKeyFrom( key.getGroup() );
+                final StoreKey sk = storeKeyFrom( key.groupName() );
 
                 scheduleContentExpiration( sk, path, timeout );
             }
@@ -246,7 +202,7 @@ public class ScheduleManager
     }
 
     public synchronized void setProxyTimeouts( final StoreKey key, final String path )
-        throws IndySchedulerException
+            throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -274,7 +230,7 @@ public class ScheduleManager
         final SpecialPathInfo info = specialPathManager.getSpecialPathInfo( resource );
         if ( !repo.isPassthrough() )
         {
-            if ( (info != null && info.isMetadata()) && repo.getMetadataTimeoutSeconds() > 0 )
+            if ( ( info != null && info.isMetadata() ) && repo.getMetadataTimeoutSeconds() > 0 )
             {
                 logger.debug( "Using metadata timeout for: {}", resource );
                 timeout = repo.getMetadataTimeoutSeconds();
@@ -304,9 +260,9 @@ public class ScheduleManager
         }
     }
 
-    public synchronized void scheduleForStore( final StoreKey key, final String jobType, final String jobName, final Object payload,
-                                  final int startSeconds, final int repeatSeconds )
-        throws IndySchedulerException
+    public synchronized void scheduleForStore( final StoreKey key, final String jobType, final String jobName,
+                                               final Object payload, final int startSeconds )
+            throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -314,7 +270,7 @@ public class ScheduleManager
             return;
         }
 
-        final JobDataMap dataMap = new JobDataMap();
+        final Map<String, Object> dataMap = new HashMap<>( 3 );
         dataMap.put( JOB_TYPE, jobType );
         try
         {
@@ -325,43 +281,18 @@ public class ScheduleManager
             throw new IndySchedulerException( "Failed to serialize JSON payload: " + payload, e );
         }
 
-        final JobKey jk = new JobKey( jobName, groupName( key, jobType ) );
-        try
-        {
-            JobDetail detail = scheduler.getJobDetail( jk );
-            if ( detail == null )
-            {
-                detail = JobBuilder.newJob( ExpirationJob.class )
-                                   .withIdentity( jk )
-                                   .storeDurably()
-                                   .requestRecovery()
-                                   .setJobData( dataMap )
-                                   .build();
-            }
+        dataMap.put( SCHEDULE_TIME, System.currentTimeMillis() );
 
-            final long startMillis = System.currentTimeMillis() + ( startSeconds * 1000 );
 
-            final TriggerBuilder<Trigger> tb = TriggerBuilder.newTrigger()
-                                                             .withIdentity( jk.getName(), jk.getGroup() )
-                                                             .forJob( detail )
-                                                             .startAt( new Date( startMillis ) );
+        final ScheduleKey cacheKey = new ScheduleKey( key, jobType, jobName );
 
-            if ( repeatSeconds > -1 )
-            {
-                tb.withSchedule( SimpleScheduleBuilder.repeatSecondlyForever( repeatSeconds ) );
-            }
-
-            final Trigger trigger = tb.build();
-            scheduler.scheduleJob( detail, Collections.singleton( trigger ), true );
-        }
-        catch ( final SchedulerException e )
-        {
-            throw new IndySchedulerException( "Failed to schedule content-expiration job.", e );
-        }
+        scheduleCache.execute( cache -> cache.put( cacheKey, dataMap, startSeconds, TimeUnit.SECONDS ) );
+        logger.debug( "Scheduled for the key {} with timeout: {} seconds", cacheKey, startSeconds );
     }
 
-    public synchronized void scheduleContentExpiration( final StoreKey key, final String path, final int timeoutSeconds )
-        throws IndySchedulerException
+    public synchronized void scheduleContentExpiration( final StoreKey key, final String path,
+                                                        final int timeoutSeconds )
+            throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -372,11 +303,11 @@ public class ScheduleManager
         logger.info( "Scheduling timeout for: {} in: {} in: {} seconds (at: {}).", path, key, timeoutSeconds,
                      new Date( System.currentTimeMillis() + ( timeoutSeconds * 1000 ) ) );
 
-        scheduleForStore( key, CONTENT_JOB_TYPE, path, new ContentExpiration( key, path ), timeoutSeconds, -1 );
+        scheduleForStore( key, CONTENT_JOB_TYPE, path, new ContentExpiration( key, path ), timeoutSeconds );
     }
 
     public synchronized void setSnapshotTimeouts( final StoreKey key, final String path )
-        throws IndySchedulerException
+            throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -414,7 +345,6 @@ public class ScheduleManager
             return;
         }
 
-//        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
         final ContentAdvisor advisor = StreamSupport.stream(
                 Spliterators.spliteratorUnknownSize( contentAdvisor.iterator(), Spliterator.ORDERED ), false )
                                                     .filter( Objects::nonNull )
@@ -426,19 +356,19 @@ public class ScheduleManager
             return;
         }
 
-        if ( ContentQuality.SNAPSHOT == quality  && deploy.getSnapshotTimeoutSeconds() > 0 )
+        if ( ContentQuality.SNAPSHOT == quality && deploy.getSnapshotTimeoutSeconds() > 0 )
         {
             final int timeout = deploy.getSnapshotTimeoutSeconds();
 
-            //            logger.info( "[SNAPSHOT TIMEOUT SET] {}/{}; {}", deploy.getKey(), path, new Date( timeout ) );
-            cancel( new StoreKeyMatcher( key, CONTENT_JOB_TYPE ), path );
+            //            //            logger.info( "[SNAPSHOT TIMEOUT SET] {}/{}; {}", deploy.getKey(), path, new Date( timeout ) );
+            //            cancel( new StoreKeyMatcher( key, CONTENT_JOB_TYPE ), path );
 
             scheduleContentExpiration( key, path, timeout );
         }
     }
 
     private HostedRepository findDeployPoint( final Group group )
-        throws IndyDataException
+            throws IndyDataException
     {
         for ( final StoreKey key : group.getConstituents() )
         {
@@ -460,8 +390,9 @@ public class ScheduleManager
         return null;
     }
 
-    public synchronized Set<TriggerKey> cancelAllBefore( final GroupMatcher<TriggerKey> matcher, final long timeout )
-        throws IndySchedulerException
+    public synchronized Set<ScheduleKey> cancelAllBefore( final CacheKeyMatcher<ScheduleKey> matcher,
+                                                          final long timeout )
+            throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -469,43 +400,32 @@ public class ScheduleManager
             return Collections.emptySet();
         }
 
-        final Set<TriggerKey> canceled = new HashSet<>();
-        try
-        {
-            final Set<TriggerKey> keys = scheduler.getTriggerKeys( matcher );
-            final Date to = new Date( System.currentTimeMillis() + ( timeout * 1000 ) );
-            for ( final TriggerKey key : keys )
-            {
-                final Trigger trigger = scheduler.getTrigger( key );
-                if ( trigger == null )
-                {
-                    continue;
-                }
+        final Set<ScheduleKey> canceled = new HashSet<>();
 
-                final Date nextFire = trigger.getFireTimeAfter( new Date() );
-                if ( nextFire == null || !nextFire.after( to ) )
-                {
-                    scheduler.unscheduleJob( key );
-                    canceled.add( key );
-                }
+        final Date to = new Date( System.currentTimeMillis() + ( timeout * 1000 ) );
+        matcher.matches( scheduleCache ).forEach( key -> {
+            final Date nextFire = getNextExpireTime( key );
+            if ( nextFire == null || !nextFire.after( to ) )
+            {
+                // former impl uses quartz and here use the unscheduleJob method, but ISPN does not have similar
+                // op, so directly did a remove here.
+                removeCache( key );
+                logger.debug( "Removed cache job for key: {}, before {}", key, to );
+                canceled.add( key );
             }
-        }
-        catch ( final SchedulerException e )
-        {
-            throw new IndySchedulerException( "Failed to cancel jobs that timeout after " + timeout + " seconds.", e );
-        }
+        } );
 
         return canceled;
     }
 
-    public synchronized Set<TriggerKey> cancelAll( final GroupMatcher<TriggerKey> matcher )
-        throws IndySchedulerException
+    public synchronized Set<ScheduleKey> cancelAll( final CacheKeyMatcher<ScheduleKey> matcher )
+            throws IndySchedulerException
     {
         return cancel( matcher, ANY );
     }
 
-    public synchronized Set<TriggerKey> cancel( final GroupMatcher<TriggerKey> matcher, final String name )
-        throws IndySchedulerException
+    public synchronized Set<ScheduleKey> cancel( final CacheKeyMatcher<ScheduleKey> matcher, final String name )
+            throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -513,59 +433,42 @@ public class ScheduleManager
             return Collections.emptySet();
         }
 
-        Set<TriggerKey> canceled = new HashSet<>();
-        try
+        Set<ScheduleKey> canceled = new HashSet<>();
+        final Set<ScheduleKey> keys = matcher.matches( scheduleCache );
+        if ( keys != null && !keys.isEmpty() )
         {
-            final Set<TriggerKey> keys = scheduler.getTriggerKeys( matcher );
-            if ( keys != null && !keys.isEmpty() )
+            Set<ScheduleKey> unscheduled = null;
+            if ( name == ANY )
             {
-                Set<TriggerKey> unscheduled = null;
-                if ( name == ANY )
+                for ( final ScheduleKey k : keys )
                 {
-                    for ( final TriggerKey tk : keys )
-                    {
-                        final Trigger trigger = scheduler.getTrigger( tk );
-                        if ( trigger != null )
-                        {
-                            scheduler.deleteJob( trigger.getJobKey() );
-                        }
-                    }
-                    unscheduled = keys;
+                    removeCache( k );
                 }
-                else
+                unscheduled = keys;
+            }
+            else
+            {
+                for ( final ScheduleKey k : keys )
                 {
-                    for ( final TriggerKey key : keys )
+                    if ( k.getName().equals( name ) )
                     {
-                        if ( key.getName()
-                                .equals( name ) )
-                        {
-                            final Trigger trigger = scheduler.getTrigger( key );
-                            if ( trigger != null )
-                            {
-                                scheduler.deleteJob( trigger.getJobKey() );
-                            }
-                            unscheduled = Collections.singleton( key );
-                            break;
-                        }
+                        removeCache( k );
+                        unscheduled = Collections.singleton( k );
+                        break;
                     }
-                }
-
-                if ( unscheduled != null )
-                {
-                    canceled = unscheduled;
                 }
             }
-        }
-        catch ( final SchedulerException e )
-        {
-            throw new IndySchedulerException( "Failed to cancel all triggers matching: " + matcher, e );
+
+            if ( unscheduled != null )
+            {
+                canceled = unscheduled;
+            }
         }
 
         return canceled;
     }
 
-    public synchronized Expiration findSingleExpiration( final GroupMatcher<TriggerKey> matcher )
-            throws IndySchedulerException
+    public synchronized Expiration findSingleExpiration( final StoreKeyMatcher matcher )
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -573,25 +476,17 @@ public class ScheduleManager
             return null;
         }
 
-        try
+        final Set<ScheduleKey> keys = matcher.matches( scheduleCache );
+        if ( keys != null && !keys.isEmpty() )
         {
-            final Set<TriggerKey> keys = scheduler.getTriggerKeys( matcher );
-            if ( keys != null && !keys.isEmpty() )
-            {
-                TriggerKey triggerKey = keys.iterator().next();
-                return toExpiration( triggerKey );
-            }
-        }
-        catch ( final SchedulerException e )
-        {
-            throw new IndySchedulerException( "Failed to find trigger matching: " + matcher, e );
+            ScheduleKey triggerKey = keys.iterator().next();
+            return toExpiration( triggerKey );
         }
 
         return null;
     }
 
-    public synchronized ExpirationSet findMatchingExpirations( final GroupMatcher<TriggerKey> matcher )
-            throws IndySchedulerException
+    public synchronized ExpirationSet findMatchingExpirations( final CacheKeyMatcher<ScheduleKey> matcher )
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -599,37 +494,58 @@ public class ScheduleManager
             return null;
         }
 
-        try
+        final Set<ScheduleKey> keys = matcher.matches( scheduleCache );
+        Set<Expiration> expirations = new HashSet<>( keys.size() );
+        if ( keys != null && !keys.isEmpty() )
         {
-            final Set<TriggerKey> keys = scheduler.getTriggerKeys( matcher );
-            Set<Expiration> expirations = new HashSet<>( keys.size() );
-            if ( keys != null && !keys.isEmpty() )
+            for ( ScheduleKey key : keys )
             {
-                for ( TriggerKey key : keys )
-                {
-                    expirations.add( toExpiration( key ) );
-                }
+                expirations.add( toExpiration( key ) );
             }
+        }
 
-            return new ExpirationSet( expirations );
-        }
-        catch ( final SchedulerException e )
-        {
-            throw new IndySchedulerException( "Failed to find trigger matching: " + matcher, e );
-        }
+        return new ExpirationSet( expirations );
     }
 
-    private Expiration toExpiration( final TriggerKey key )
-            throws SchedulerException
+    private Expiration toExpiration( final ScheduleKey cacheKey )
     {
-        Trigger trigger = scheduler.getTrigger( key );
-
-        return new Expiration( trigger.getJobKey().getGroup(), trigger.getJobKey().getName(),
-                               trigger.getNextFireTime() );
+        return new Expiration( cacheKey.groupName(), cacheKey.getName(), getNextExpireTime( cacheKey ) );
     }
 
-    public synchronized TriggerKey findFirstMatchingTrigger( final GroupMatcher<TriggerKey> matcher )
-        throws IndySchedulerException
+    private Date getNextExpireTime( final ScheduleKey cacheKey )
+    {
+
+        return scheduleCache.execute( cache -> {
+            final CacheEntry entry = cache.getAdvancedCache().getCacheEntry( cacheKey );
+            if ( entry != null )
+            {
+                final Metadata metadata = entry.getMetadata();
+                long expire = metadata.lifespan();
+                final long startTimeInMillis = (Long)scheduleCache.get( cacheKey ).get( SCHEDULE_TIME );
+                return calculateNextExpireTime( expire, startTimeInMillis );
+            }
+            return null;
+        } );
+
+    }
+
+    static Date calculateNextExpireTime( final long expire, final long start )
+    {
+        if ( expire > 1 )
+        {
+            final long duration = System.currentTimeMillis() - start;
+            if ( duration < expire )
+            {
+                final long nextTimeInMillis = expire - duration + System.currentTimeMillis();
+                final LocalDateTime time =
+                        Instant.ofEpochMilli( nextTimeInMillis ).atZone( ZoneId.systemDefault() ).toLocalDateTime();
+                return Date.from( time.atZone( ZoneId.systemDefault() ).toInstant() );
+            }
+        }
+        return null;
+    }
+
+    public synchronized ScheduleKey findFirstMatchingTrigger( final CacheKeyMatcher<ScheduleKey> matcher )
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -637,18 +553,10 @@ public class ScheduleManager
             return null;
         }
 
-        try
+        final Set<ScheduleKey> keys = matcher.matches( scheduleCache );
+        if ( keys != null && !keys.isEmpty() )
         {
-            final Set<TriggerKey> keys = scheduler.getTriggerKeys( matcher );
-            if ( keys != null && !keys.isEmpty() )
-            {
-                return keys.iterator()
-                           .next();
-            }
-        }
-        catch ( final SchedulerException e )
-        {
-            throw new IndySchedulerException( "Failed to find all triggers matching: " + matcher, e );
+            return keys.iterator().next();
         }
 
         return null;
@@ -679,8 +587,7 @@ public class ScheduleManager
         return null;
     }
 
-    public synchronized boolean deleteJobs( final Set<TriggerKey> keys )
-        throws IndySchedulerException
+    public synchronized boolean deleteJob( final String group, final String name )
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -688,40 +595,14 @@ public class ScheduleManager
             return false;
         }
 
-        for ( final TriggerKey key : keys )
+        final ScheduleKey cacheKey = ScheduleKey.fromGroupWithName( group, name );
+        if ( scheduleCache.containsKey( cacheKey ) )
         {
-            try
-            {
-                final JobKey jk = new JobKey( key.getName(), key.getGroup() );
-                return scheduler.deleteJob( jk );
-            }
-            catch ( final SchedulerException e )
-            {
-                throw new IndySchedulerException( "Failed to delete job corresponding to: %s", e, key, e.getMessage() );
-            }
+            removeCache( cacheKey );
+            return true;
         }
 
         return false;
-    }
-
-    public synchronized boolean deleteJob( final String group, final String name )
-        throws IndySchedulerException
-    {
-        if ( !schedulerConfig.isEnabled() )
-        {
-            logger.debug( "Scheduler disabled." );
-            return false;
-        }
-
-        final JobKey jk = new JobKey( name, group );
-        try
-        {
-            return scheduler.deleteJob( jk );
-        }
-        catch ( final SchedulerException e )
-        {
-            throw new IndySchedulerException( "Failed to delete job: %s/%s", e, group, name );
-        }
     }
 
     @Override
@@ -744,7 +625,7 @@ public class ScheduleManager
 
     @Override
     public void stop()
-        throws IndyLifecycleException
+            throws IndyLifecycleException
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -752,17 +633,49 @@ public class ScheduleManager
             return;
         }
 
-        if ( scheduler != null )
+        scheduleCache.stop();
+    }
+
+    private synchronized void removeCache( final ScheduleKey cacheKey )
+    {
+        if ( scheduleCache.containsKey( cacheKey ) )
         {
-            try
-            {
-                scheduler.shutdown();
-            }
-            catch ( final SchedulerException e )
-            {
-                throw new IndyLifecycleException( "Failed to shutdown scheduler: %s", e, e.getMessage() );
-            }
+            scheduleCache.remove( cacheKey );
         }
+    }
+
+    @CacheEntryCreated
+    public void scheduled( final CacheEntryCreatedEvent<ScheduleKey, Map> e )
+    {
+        final ScheduleKey expiredKey = e.getKey();
+        final Map expiredContent = e.getValue();
+        if ( expiredKey != null && expiredContent != null )
+        {
+            logger.debug( "Expiration Created: {}", expiredKey );
+            final String type = (String) expiredContent.get( ScheduleManager.JOB_TYPE );
+            final String data = (String) expiredContent.get( ScheduleManager.PAYLOAD );
+            eventDispatcher.fire( new SchedulerScheduleEvent( type, data ) );
+        }
+    }
+
+    @CacheEntryExpired
+    public void expired( CacheEntryExpiredEvent<ScheduleKey, Map> e )
+    {
+        final ScheduleKey expiredKey = e.getKey();
+        final Map expiredContent = e.getValue();
+        if ( expiredKey != null && expiredContent != null )
+        {
+            logger.debug( "EXPIRED: {}", expiredKey );
+            final String type = (String) expiredContent.get( ScheduleManager.JOB_TYPE );
+            final String data = (String) expiredContent.get( ScheduleManager.PAYLOAD );
+            eventDispatcher.fire( new SchedulerTriggerEvent( type, data ) );
+        }
+    }
+
+    @CacheEntryRemoved
+    public void cancelled( CacheEntryRemovedEvent<ScheduleKey, Map> e )
+    {
+        logger.info( "Cache removed to cancel scheduling, Key is {}, Value is {}", e.getKey(), e.getValue() );
     }
 
 }

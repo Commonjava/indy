@@ -16,18 +16,39 @@
 package org.commonjava.indy.core.expire;
 
 import org.commonjava.indy.model.core.StoreKey;
-import org.quartz.TriggerKey;
-import org.quartz.impl.matchers.GroupMatcher;
+import org.commonjava.indy.subsys.infinispan.CacheHandle;
+import org.commonjava.indy.subsys.infinispan.CacheKeyMatcher;
+import org.infinispan.Cache;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
+/**
+ * A key matcher which is used to match the cache key with store key.
+ *
+ */
 public class StoreKeyMatcher
-    extends GroupMatcher<TriggerKey>
+        implements CacheKeyMatcher<ScheduleKey>
 {
 
-    private static final long serialVersionUID = 1L;
+    //TODO: will have a thought to replace this type of matcher with a ISPN query API in the future to get better performance.
+
+    private final StoreKey storeKey;
+
+    private final String eventType;
 
     public StoreKeyMatcher( final StoreKey key, final String eventType )
     {
-        super( ScheduleManager.groupName( key, eventType ), StringOperatorName.EQUALS );
+        this.storeKey = key;
+        this.eventType = eventType;
     }
 
+    @Override
+    public Set<ScheduleKey> matches( CacheHandle<ScheduleKey, ?> cacheHandle )
+    {
+        return cacheHandle.execute( Cache::keySet )
+                          .stream()
+                          .filter( key -> key.groupName().equals( ScheduleManager.groupName( storeKey, eventType ) ) )
+                          .collect( Collectors.toSet() );
+    }
 }

@@ -28,10 +28,14 @@ import java.util.Properties;
 
 @ApplicationScoped
 @SectionName( IndySchedulerConfig.SECTION_NAME )
+@Deprecated
 public class IndySchedulerConfig
     extends MapSectionListener
         implements IndyConfigInfo
 {
+
+    //TODO: this class is quartz related function for content expiration, which has been
+    //      replaced by ISPN cache timeout way. Will be removed in future
 
     public static final String SECTION_NAME = "scheduler";
 

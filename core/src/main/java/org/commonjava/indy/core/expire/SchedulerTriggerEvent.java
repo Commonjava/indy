@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011 Red Hat, Inc. (jdcasey@commonjava.org)
+ * Copyright (C) 2013 Red Hat, Inc. (jdcasey@commonjava.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,11 @@
  */
 package org.commonjava.indy.core.expire;
 
-public enum SchedulerEventType
+public class SchedulerTriggerEvent
+        extends SchedulerEvent
 {
-    SCHEDULE, CANCEL, TRIGGER
+    public SchedulerTriggerEvent( final String jobType, final String payload )
+    {
+        super( jobType, payload );
+    }
 }

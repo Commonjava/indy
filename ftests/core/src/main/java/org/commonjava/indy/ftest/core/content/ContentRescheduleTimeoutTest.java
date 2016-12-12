@@ -86,8 +86,8 @@ public class ContentRescheduleTimeoutTest
         assertThat( "artifact should not be removed as it is rescheduled with new request", pomFile.exists(),
                     equalTo( true ) );
 
-        // another round wait for 3.5s
-        Thread.sleep( CACHE_TIMEOUT_WAITING_MILLISECONDS + 500 );
+        // another round wait for 4.5s
+        Thread.sleep( CACHE_TIMEOUT_WAITING_MILLISECONDS + 4500 );
         assertThat( "artifact should be removed when new scheduled cache timeout", pomFile.exists(), equalTo( false ) );
     }
 

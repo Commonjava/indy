@@ -37,6 +37,14 @@
       <artifactId>indy-subsys-groovy</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-infinispan</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-flatfile</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.maven.archetype</groupId>
       <artifactId>archetype-catalog</artifactId>
     </dependency>

@@ -91,5 +91,14 @@
       <transaction transaction-manager-lookup="org.infinispan.transaction.lookup.DummyTransactionManagerLookup"
                    locking="PESSIMISTIC"/>
     </local-cache>
+
+    <local-cache name="schedule-expire-cache">
+      <!--
+          this expiration interval is used to trigger the purge threads of ISPN to let it purge the cache, which will
+          trigger the cache expire event to happen. Did not find a way to let the expire event automatically happen
+          without this. See http://infinispan.org/docs/stable/faqs/faqs.html#eviction_and_expiration_questions for more
+       -->
+      <expiration interval="300" />
+    </local-cache>
   </cache-container>
 </infinispan>
