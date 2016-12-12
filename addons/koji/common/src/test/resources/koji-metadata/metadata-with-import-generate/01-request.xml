@@ -1,10 +1,10 @@
-<?xml version="1.0" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <methodCall>
-  <methodName>getBuild</methodName>
+  <methodName>sslLogin</methodName>
   <params>
     <param>
       <value>
-        <int>422953</int>
+        <nil/>
       </value>
     </param>
   </params>

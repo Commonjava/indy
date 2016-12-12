@@ -7,25 +7,25 @@
           <member>
             <name>build_id</name>
             <value>
-              <int>422953</int>
+              <int>196927</int>
             </value>
           </member>
           <member>
             <name>group_id</name>
             <value>
-              <string>commons-io</string>
+              <string>apache-commons-io</string>
             </value>
           </member>
           <member>
             <name>artifact_id</name>
             <value>
-              <string>commons-io</string>
+              <string>apache-commons-io-repolib</string>
             </value>
           </member>
           <member>
             <name>version</name>
             <value>
-              <string>2.4.0.redhat-1</string>
+              <string>2.1-0.2_redhat_1.ep6.el6</string>
             </value>
           </member>
         </struct>
