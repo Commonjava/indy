@@ -145,11 +145,19 @@ public abstract class KojiContentManagerDecorator
         boolean result = delegate.exists( store, path );
         if ( !result && StoreType.group == store.getKey().getType() )
         {
+            Group group = (Group) store;
+
             logger.info( "KOJI: Checking whether Koji contains a build matching: {}", path );
-            Transfer transfer = getTransfer( store, path, TransferOperation.DOWNLOAD );
-            if ( transfer != null && transfer.exists() )
+            RemoteRepository kojiProxy = findKojiBuildAnd( store, path, null, this::createRemoteRepository );
+            if ( kojiProxy != null )
             {
-                return true;
+                adjustTargetGroup(kojiProxy, group);
+                result = delegate.exists( kojiProxy, path );
+            }
+
+            if ( result )
+            {
+                nfc.clearMissing( new ConcreteResource( LocationUtils.toLocation( store ), path ) );
             }
         }
 
