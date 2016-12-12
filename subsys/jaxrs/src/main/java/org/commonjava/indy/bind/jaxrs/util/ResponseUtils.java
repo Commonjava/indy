@@ -130,6 +130,8 @@ public final class ResponseUtils
                                                   final HttpExchangeMetadata exchangeMetadata )
             throws IndyWorkflowException
     {
+        Logger logger = LoggerFactory.getLogger( ResponseUtils.class );
+
         // I don't think we want to use the result from upstream; it's often junk...we should retain control of this.
         builder.header( ApplicationHeader.content_type.key(), contentType );
 
@@ -143,14 +145,17 @@ public final class ResponseUtils
                 final String key = headerSet.getKey();
                 if ( ApplicationHeader.content_type.upperKey().equals( key ) )
                 {
+                    logger.debug( "Skipping set for header: {}", ApplicationHeader.content_type.upperKey() );
                     continue;
                 }
                 else if ( ApplicationHeader.last_modified.upperKey().equals( key ) )
                 {
+                    logger.debug( "Marking {} as already set.", ApplicationHeader.last_modified.upperKey() );
                     lastModSet = true;
                 }
                 else if ( ApplicationHeader.content_length.upperKey().equals( key ) )
                 {
+                    logger.debug( "Marking {} as already set.", ApplicationHeader.content_length.upperKey() );
                     lenSet = true;
                     if ( !includeContentLength )
                     {
@@ -160,6 +165,7 @@ public final class ResponseUtils
 
                 for ( final String value : headerSet.getValue() )
                 {
+                    logger.debug( "Setting header: '{}'= '{}'", key, value );
                     builder.header( key, value );
                 }
             }
@@ -174,7 +180,6 @@ public final class ResponseUtils
 
             if ( includeContentLength && !lenSet )
             {
-                Logger logger = LoggerFactory.getLogger( ResponseUtils.class );
                 logger.debug( "Adding Content-Length header: {}", item.length() );
 
                 builder.header( ApplicationHeader.content_length.key(), item.length() );
