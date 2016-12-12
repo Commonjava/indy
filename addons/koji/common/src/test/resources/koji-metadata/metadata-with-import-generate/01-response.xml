@@ -1,24 +1,23 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<methodCall>
-  <methodName>listTags</methodName>
+<?xml version="1.0" ?>
+<methodResponse>
   <params>
     <param>
       <value>
         <struct>
           <member>
-            <name>build</name>
+            <name>session-id</name>
             <value>
-              <int>422953</int>
+              <int>16912790</int>
             </value>
           </member>
           <member>
-            <name>__starstar</name>
+            <name>session-key</name>
             <value>
-              <boolean>1</boolean>
+              <string>3600-THMonFLunbyuR564341</string>
             </value>
           </member>
         </struct>
       </value>
     </param>
   </params>
-</methodCall>
+</methodResponse>
