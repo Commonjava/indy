@@ -469,6 +469,7 @@ public class ContentController
     public HttpExchangeMetadata getHttpMetadata( final StoreKey storeKey, final String path )
         throws IndyWorkflowException
     {
+        logger.debug( "Getting HTTP metadata for: {}/{}", storeKey, path );
         return contentManager.getHttpMetadata( storeKey, path );
     }
 

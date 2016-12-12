@@ -146,9 +146,9 @@ public abstract class KojiContentManagerDecorator
         if ( !result && StoreType.group == store.getKey().getType() )
         {
             logger.info( "KOJI: Checking whether Koji contains a build matching: {}", path );
-            if ( findKojiBuildAnd( store, path, false, ( artifactRef, build, session ) -> true ) )
+            Transfer transfer = getTransfer( store, path, TransferOperation.DOWNLOAD );
+            if ( transfer != null && transfer.exists() )
             {
-                nfc.clearMissing( new ConcreteResource( LocationUtils.toLocation( store ), path ) );
                 return true;
             }
         }
@@ -209,6 +209,8 @@ public abstract class KojiContentManagerDecorator
 
         if ( store == null )
         {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.warn( "No such store: {} (while retrieving transfer for path: {} (op: {})", storeKey, path, op );
             return null;
         }
 
@@ -227,7 +229,7 @@ public abstract class KojiContentManagerDecorator
             logger.info( "KOJI: Checking for Koji build matching: {}", path );
             Group group = (Group) store;
 
-            RemoteRepository kojiProxy = findKojiBuildAnd( store, path, null, (artifactRef, build, session)-> createRemoteRepository(artifactRef, build, session) );
+            RemoteRepository kojiProxy = findKojiBuildAnd( store, path, null, this::createRemoteRepository );
             if ( kojiProxy != null )
             {
                 adjustTargetGroup(kojiProxy, group);
@@ -236,7 +238,7 @@ public abstract class KojiContentManagerDecorator
                 result = delegate.retrieve( kojiProxy, path, eventMetadata );
             }
 
-            if ( result != null )
+            if ( result != null && result.exists() )
             {
                 nfc.clearMissing( new ConcreteResource( LocationUtils.toLocation( store ), path ) );
             }

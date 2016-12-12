@@ -43,9 +43,11 @@ import org.commonjava.indy.subsys.template.ScriptEngine;
 import org.commonjava.indy.test.fixture.core.MockContentAdvisor;
 import org.commonjava.indy.test.fixture.core.MockInstance;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.io.SpecialPathManagerImpl;
 import org.commonjava.maven.galley.maven.rel.MavenModelProcessor;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
+import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
 import org.commonjava.maven.galley.testing.maven.GalleyMavenFixture;
 import org.junit.Assert;
 import org.junit.Before;
@@ -110,7 +112,7 @@ public class PromotionManagerTest
                                                       new IndyLocationExpander( storeManager ), new MockInstance<>(new MockContentAdvisor()  ));
 
         contentManager = new DefaultContentManager( storeManager, downloadManager, new IndyObjectMapper( true ),
-                                                    Collections.<ContentGenerator>emptySet() );
+                                                    new SpecialPathManagerImpl(), new MemoryNotFoundCache(), Collections.<ContentGenerator>emptySet() );
 
         dataManager = new DataFileManager( temp.newFolder( "data" ), new DataFileEventManager() );
         validationsManager = new PromoteValidationsManager( dataManager, new PromoteConfig(),
