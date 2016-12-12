@@ -18,6 +18,7 @@ package org.commonjava.indy.koji.content;
 import com.redhat.red.build.koji.KojiClient;
 import com.redhat.red.build.koji.KojiClientException;
 import com.redhat.red.build.koji.model.xmlrpc.KojiArchiveInfo;
+import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Versioning;
@@ -175,6 +176,20 @@ public class KojiMavenMetadataProvider
                                 continue;
                             }
 
+                            KojiBuildInfo build = kojiClient.getBuildInfo( archive.getBuildId(), session );
+                            if ( build == null )
+                            {
+                                continue;
+                            }
+
+                            if ( build.getTaskId() == null )
+                            {
+                                logger.debug( "Build: {} is not a real build. It looks like a binary import. Skipping.",
+                                              build.getNvr() );
+                                // This is not a real build, it's a binary import.
+                                continue;
+                            }
+
                             logger.debug( "Checking for builds/tags of: {}", archive );
                             List<KojiTagInfo> tags = kojiClient.listTags( archive.getBuildId(), session );
 
@@ -184,6 +199,9 @@ public class KojiMavenMetadataProvider
                                 {
                                     try
                                     {
+                                        logger.debug( "Koji tag: {} is allowed for proxying. Including version: '{}'",
+                                                      tag.getName(), archive.getVersion() );
+
                                         versions.add( VersionUtils.createSingleVersion( archive.getVersion() ) );
                                     }
                                     catch ( InvalidVersionSpecificationException e )
@@ -193,6 +211,10 @@ public class KojiMavenMetadataProvider
                                                 archive.getVersion(), archive.getArchiveId(), e.getMessage() ), e );
                                     }
                                     break;
+                                }
+                                else
+                                {
+                                    logger.debug( "Koji tag: {} is not allowed for proxying.", tag.getName() );
                                 }
                             }
                         }

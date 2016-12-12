@@ -69,6 +69,36 @@ public class KojiMavenMetadataProviderTest
     private KojiMavenMetadataProvider provider;
 
     @Test
+    public void excludeBinaryImportsFromVersionMetadata()
+            throws Exception
+    {
+        initKojiClient( "metadata-with-import-generate" );
+
+        Metadata metadata =
+                provider.getMetadata( new StoreKey( group, "public" ), "commons-io/commons-io/maven-metadata.xml" );
+
+        assertThat( metadata, notNullValue() );
+
+        StringWriter sw = new StringWriter();
+        new MetadataXpp3Writer().write( sw, metadata );
+        System.out.println( sw.toString() );
+
+        Versioning versioning = metadata.getVersioning();
+        assertThat( versioning, notNullValue() );
+
+        assertThat( versioning.getLatest(), equalTo( "2.4.0.redhat-1" ) );
+        assertThat( versioning.getRelease(), equalTo( "2.4.0.redhat-1" ) );
+
+        List<String> versions = versioning.getVersions();
+        assertThat( versions, notNullValue() );
+        assertThat( versions.size(), equalTo( 1 ) );
+
+        int idx = 0;
+        assertThat( versions.get( idx ), equalTo( "2.4.0.redhat-1" ) );
+
+    }
+
+    @Test
     public void retrieveVersionMetadata()
             throws Exception
     {
