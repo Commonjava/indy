@@ -787,46 +787,17 @@ public class DefaultContentManager
     public HttpExchangeMetadata getHttpMetadata( final StoreKey key, final String path )
             throws IndyWorkflowException
     {
-        String metaPath = path + HttpExchangeMetadata.FILE_EXTENSION;
-        if ( group == key.getType() )
+        Transfer transfer = getTransfer( key, path, TransferOperation.DOWNLOAD );
+        if ( transfer != null && transfer.exists() )
         {
-            List<ArtifactStore> stores;
-            try
+            Transfer meta = transfer.getSiblingMeta( HttpExchangeMetadata.FILE_EXTENSION );
+            if ( meta != null && meta.exists() )
             {
-                stores = storeManager.getOrderedConcreteStoresInGroup( key.getName(), true );
-                if ( stores != null )
-                {
-                    for ( ArtifactStore store : stores )
-                    {
-                        if ( nfc.isMissing( new ConcreteResource( LocationUtils.toLocation( store ), path ) ) )
-                        {
-                            logger.debug(
-                                    "{} is marked as missing in {}. Skipping HTTP metadata retrieval attempt for this store", path, store.getKey() );
-                            continue;
-                        }
-
-                        Transfer meta = getTransfer( store, metaPath, TransferOperation.DOWNLOAD );
-                        logger.debug( "In store: {}, HTTP metadata: {} resolves to: {}", store.getKey(), metaPath, meta );
-                        if ( meta != null && meta.exists() )
-                        {
-                            return readExchangeMetadata( meta );
-                        }
-                    }
-                }
-
-                logger.debug( "In group: {}, no stores were found that contain HTTP metadata for: {}", key, path );
-                return null;
-            }
-            catch ( IndyDataException e )
-            {
-                throw new IndyWorkflowException( "Failed to lookup concrete members of: %s. Reason: %s", e, key,
-                                                 e.getMessage() );
+                return readExchangeMetadata( meta );
             }
         }
 
-        final Transfer meta =
-                getTransfer( key, metaPath, TransferOperation.DOWNLOAD );
-        return readExchangeMetadata( meta );
+        return null;
     }
 
     @Override
