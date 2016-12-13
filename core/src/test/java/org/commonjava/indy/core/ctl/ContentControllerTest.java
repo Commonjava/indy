@@ -15,14 +15,7 @@
  */
 package org.commonjava.indy.core.ctl;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
 import groovy.text.GStringTemplateEngine;
-
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.util.Collections;
-
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.content.ContentGenerator;
 import org.commonjava.indy.content.ContentManager;
@@ -36,14 +29,23 @@ import org.commonjava.indy.subsys.datafile.DataFileManager;
 import org.commonjava.indy.subsys.datafile.change.DataFileEventManager;
 import org.commonjava.indy.subsys.template.TemplatingEngine;
 import org.commonjava.indy.util.MimeTyper;
+import org.commonjava.maven.galley.io.SpecialPathManagerImpl;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.SimpleLocation;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
+import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
 import org.commonjava.maven.galley.testing.core.CoreFixture;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.util.Collections;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 public class ContentControllerTest
 {
@@ -65,7 +67,7 @@ public class ContentControllerTest
 
         final ContentManager contentManager =
             new DefaultContentManager( storeManager, fileManager, new IndyObjectMapper( true ),
-                                       Collections.<ContentGenerator> emptySet() );
+                                       new SpecialPathManagerImpl(), new MemoryNotFoundCache(), Collections.<ContentGenerator> emptySet() );
 
         final TemplatingEngine templates =
             new TemplatingEngine( new GStringTemplateEngine(), new DataFileManager( fixture.getTemp()
