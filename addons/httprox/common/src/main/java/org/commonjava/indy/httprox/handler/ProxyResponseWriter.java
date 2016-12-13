@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.httprox.handler;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpRequest;
 import org.apache.http.RequestLine;
 import org.commonjava.indy.IndyWorkflowException;
@@ -83,8 +84,8 @@ public final class ProxyResponseWriter
 
     public ProxyResponseWriter( final HttproxConfig config, final StoreDataManager storeManager,
                                 final ContentController contentController,
-                                KeycloakProxyAuthenticator proxyAuthenticator, CacheProvider cacheProvider,
-                                ProxyRepositoryCreator repoCreator )
+                                final KeycloakProxyAuthenticator proxyAuthenticator, final CacheProvider cacheProvider,
+                                final ProxyRepositoryCreator repoCreator )
     {
         this.config = config;
         this.contentController = contentController;
@@ -311,7 +312,7 @@ public final class ProxyResponseWriter
                         // TODO: Will this always be non-null here? Can we have an unsecured proxy?
                         if ( user.endsWith( TRACKED_USER_SUFFIX ) && user.length() > TRACKED_USER_SUFFIX.length() )
                         {
-                            tk = new TrackingKey( user );
+                            tk = new TrackingKey( StringUtils.substring( user, 0, - TRACKED_USER_SUFFIX.length() ) );
                         }
                     }
 
