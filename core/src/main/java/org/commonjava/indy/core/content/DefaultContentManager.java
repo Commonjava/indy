@@ -36,10 +36,12 @@ import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
+import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +61,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
+import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.util.ContentUtils.dedupeListing;
 
 public class DefaultContentManager
@@ -83,6 +87,9 @@ public class DefaultContentManager
     private SpecialPathManager specialPathManager;
 
     @Inject
+    private NotFoundCache nfc;
+
+    @Inject
     private IndyObjectMapper mapper;
 
     protected DefaultContentManager()
@@ -90,11 +97,14 @@ public class DefaultContentManager
     }
 
     public DefaultContentManager( final StoreDataManager storeManager, final DownloadManager downloadManager,
-                                  final IndyObjectMapper mapper, final Set<ContentGenerator> contentProducers )
+                                  final IndyObjectMapper mapper, final SpecialPathManager specialPathManager,
+                                  final NotFoundCache nfc, final Set<ContentGenerator> contentProducers )
     {
         this.storeManager = storeManager;
         this.downloadManager = downloadManager;
         this.mapper = mapper;
+        this.specialPathManager = specialPathManager;
+        this.nfc = nfc;
         this.contentGenerators = contentProducers == null ? new HashSet<ContentGenerator>() : contentProducers;
     }
 
@@ -151,7 +161,7 @@ public class DefaultContentManager
         final List<Transfer> txfrs = new ArrayList<Transfer>();
         for ( final ArtifactStore store : stores )
         {
-            if ( StoreType.group == store.getKey().getType() )
+            if ( group == store.getKey().getType() )
             {
                 List<ArtifactStore> members;
                 try
@@ -218,7 +228,7 @@ public class DefaultContentManager
             throws IndyWorkflowException
     {
         Transfer item;
-        if ( StoreType.group == store.getKey().getType() )
+        if ( group == store.getKey().getType() )
         {
             List<ArtifactStore> members;
             try
@@ -342,7 +352,7 @@ public class DefaultContentManager
                            final TransferOperation op, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
-        if ( StoreType.group == store.getKey().getType() )
+        if ( group == store.getKey().getType() )
         {
             try
             {
@@ -443,7 +453,7 @@ public class DefaultContentManager
             throws IndyWorkflowException
     {
         boolean result = false;
-        if ( StoreType.group == store.getKey().getType() )
+        if ( group == store.getKey().getType() )
         {
             List<ArtifactStore> members;
             try
@@ -552,7 +562,7 @@ public class DefaultContentManager
             throws IndyWorkflowException
     {
         List<StoreResource> listed;
-        if ( StoreType.group == store.getKey().getType() )
+        if ( group == store.getKey().getType() )
         {
             List<ArtifactStore> members;
             try
@@ -723,7 +733,8 @@ public class DefaultContentManager
     public Transfer getTransfer( final ArtifactStore store, final String path, final TransferOperation op )
             throws IndyWorkflowException
     {
-        if ( StoreType.group == store.getKey().getType() )
+        logger.debug( "Getting transfer for: {}/{} (op: {})", store.getKey(), path, op );
+        if ( group == store.getKey().getType() )
         {
             KeyedLocation location = LocationUtils.toLocation( store );
             SpecialPathInfo spInfo = specialPathManager.getSpecialPathInfo( location, path );
@@ -743,8 +754,13 @@ public class DefaultContentManager
                                                       e.getMessage() );
                 }
             }
+            else
+            {
+                logger.debug( "Detected mergable special path: {}/{}.", store.getKey(), path );
+            }
         }
 
+        logger.debug( "Retrieving storage reference (Transfer) directly for: {}/{}", store.getKey(), path );
         return downloadManager.getStorageReference( store, path, op );
     }
 
@@ -752,6 +768,10 @@ public class DefaultContentManager
     public Transfer getTransfer( final List<ArtifactStore> stores, final String path, final TransferOperation op )
             throws IndyWorkflowException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Looking for path: '{}' in stores: {}", path,
+                      stores.stream().map( ( store ) -> store.getKey() ).collect( Collectors.toList() ) );
+
         return downloadManager.getStorageReference( stores, path, op );
     }
 
@@ -767,9 +787,17 @@ public class DefaultContentManager
     public HttpExchangeMetadata getHttpMetadata( final StoreKey key, final String path )
             throws IndyWorkflowException
     {
-        final Transfer meta =
-                getTransfer( key, path + HttpExchangeMetadata.FILE_EXTENSION, TransferOperation.DOWNLOAD );
-        return readExchangeMetadata( meta );
+        Transfer transfer = getTransfer( key, path, TransferOperation.DOWNLOAD );
+        if ( transfer != null && transfer.exists() )
+        {
+            Transfer meta = transfer.getSiblingMeta( HttpExchangeMetadata.FILE_EXTENSION );
+            if ( meta != null && meta.exists() )
+            {
+                return readExchangeMetadata( meta );
+            }
+        }
+
+        return null;
     }
 
     @Override
@@ -814,20 +842,17 @@ public class DefaultContentManager
         logger.trace( "Reading HTTP exchange metadata from: {}", meta );
         if ( meta != null && meta.exists() )
         {
-            InputStream stream = null;
-            try
+            try(InputStream stream = meta.openInputStream( false ))
             {
-                stream = meta.openInputStream( false );
-                return mapper.readValue( stream, HttpExchangeMetadata.class );
+                String raw = IOUtils.toString( stream );
+                logger.debug( "HTTP Metadata string is:\n\n{}\n\n", raw );
+
+                return mapper.readValue( raw, HttpExchangeMetadata.class );
             }
             catch ( final IOException e )
             {
                 throw new IndyWorkflowException( "HTTP exchange metadata appears to be damaged: %s. Reason: %s", e,
                                                   meta, e.getMessage() );
-            }
-            finally
-            {
-                IOUtils.closeQuietly( stream );
             }
         }
         else

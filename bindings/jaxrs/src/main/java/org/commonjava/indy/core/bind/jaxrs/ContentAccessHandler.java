@@ -195,25 +195,32 @@ public class ContentAccessHandler
 
                 if ( exists )
                 {
+                    HttpExchangeMetadata httpMetadata = contentController.getHttpMetadata( sk, path );
+
+                    logger.debug( "Building 200 response. Using HTTP metadata: {}", httpMetadata );
+
                     final ResponseBuilder builder = Response.ok();
                     setInfoHeaders( builder, item, sk, path, true, contentController.getContentType( path ),
-                                    contentController.getHttpMetadata( sk, path ) );
+                                    httpMetadata );
 
                     response = builder.build();
                 }
                 else
                 {
+                    logger.debug( "Building 404 (or error) response..." );
                     if ( StoreType.remote == st )
                     {
                         final HttpExchangeMetadata metadata = contentController.getHttpMetadata( sk, path );
                         if ( metadata != null )
                         {
+                            logger.debug( "Using HTTP metadata to build negative response." );
                             response = formatResponseFromMetadata( metadata );
                         }
                     }
 
                     if ( response == null )
                     {
+                        logger.debug( "No HTTP metadata; building generic 404 response." );
                         response = Response.status( Status.NOT_FOUND ).build();
                     }
                 }

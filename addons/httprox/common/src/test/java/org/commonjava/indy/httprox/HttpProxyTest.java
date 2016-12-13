@@ -45,7 +45,6 @@ import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
-import org.commonjava.indy.spi.pkg.ContentAdvisor;
 import org.commonjava.indy.subsys.datafile.DataFileManager;
 import org.commonjava.indy.subsys.datafile.change.DataFileEventManager;
 import org.commonjava.indy.subsys.keycloak.conf.KeycloakConfig;
@@ -56,7 +55,9 @@ import org.commonjava.indy.test.fixture.core.MockInstance;
 import org.commonjava.indy.util.MimeTyper;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.galley.auth.MemoryPasswordManager;
+import org.commonjava.maven.galley.io.SpecialPathManagerImpl;
 import org.commonjava.maven.galley.maven.parse.PomPeek;
+import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
 import org.commonjava.maven.galley.spi.transport.TransportManager;
 import org.commonjava.maven.galley.testing.core.CoreFixture;
 import org.commonjava.maven.galley.transport.TransportManagerImpl;
@@ -135,9 +136,11 @@ public class HttpProxyTest
         final IndyObjectMapper mapper = new IndyObjectMapper( true );
 
         final DownloadManager downloadManager =
-                new DefaultDownloadManager( storeManager, core.getTransferManager(), core.getLocationExpander(), new MockInstance<>( new MockContentAdvisor() ) );
-        final ContentManager contentManager = new DefaultContentManager( storeManager, downloadManager, mapper,
-                                                                         Collections.<ContentGenerator>emptySet() );
+                new DefaultDownloadManager( storeManager, core.getTransferManager(), core.getLocationExpander(),
+                                            new MockInstance<>( new MockContentAdvisor() ) );
+        final ContentManager contentManager =
+                new DefaultContentManager( storeManager, downloadManager, mapper, new SpecialPathManagerImpl(),
+                                           new MemoryNotFoundCache(), Collections.<ContentGenerator>emptySet() );
 
         DataFileManager dfm = new DataFileManager( temp.newFolder(), new DataFileEventManager() );
         final TemplatingEngine templates = new TemplatingEngine( new GStringTemplateEngine(), dfm );
