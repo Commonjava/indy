@@ -32,6 +32,8 @@ public class TrackedContent
 
     private Set<TrackedContentEntry> downloads;
 
+    public TrackedContent(){}
+
     public TrackedContent( final TrackingKey key, final Set<TrackedContentEntry> uploads,
                            final Set<TrackedContentEntry> downloads )
     {
