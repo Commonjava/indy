@@ -26,6 +26,12 @@ public class LegacyQuartzDBMigrationAction
 
     private static final String SCHEDULE_DB_NAME = "scheduler";
 
+    public LegacyQuartzDBMigrationAction()
+    {
+
+    }
+
+    // Used for unit test only
     LegacyQuartzDBMigrationAction( DataFileConfiguration fileConfig )
     {
         this.fileConfig = fileConfig;
