@@ -39,7 +39,9 @@ public class RetrievedPomInSuffixTrackingReportTest
     extends AbstractHttproxTrackingFunctionalTest
 {
 
-    private static final String USER = "user+tracking";
+    private static final String TRACKING_ID = "user";
+
+    private static final String USER = TRACKING_ID + "+tracking";
 
     private static final String PASS = "password";
 
@@ -76,11 +78,11 @@ public class RetrievedPomInSuffixTrackingReportTest
             HttpResources.cleanupResources( get, response, client );
         }
 
-        assertThat( this.client.module( IndyFoloAdminClientModule.class ).sealTrackingRecord( USER ),
+        assertThat( this.client.module( IndyFoloAdminClientModule.class ).sealTrackingRecord( TRACKING_ID ),
                     equalTo( true ) );
 
         final TrackedContentDTO content = this.client.module( IndyFoloAdminClientModule.class )
-                                                     .getRawTrackingContent( USER );
+                                                     .getRawTrackingContent( TRACKING_ID );
         assertThat( content, notNullValue() );
 
         final Set<TrackedContentEntryDTO> downloads = content.getDownloads();
