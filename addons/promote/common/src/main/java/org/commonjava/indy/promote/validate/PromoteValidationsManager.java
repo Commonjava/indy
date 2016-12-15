@@ -116,15 +116,27 @@ public class PromoteValidationsManager
                                    .endsWith( ".groovy" );
             } );
 
-            for ( final DataFile script : scripts )
+            if ( scripts != null && scripts.length > 0 )
             {
-                logger.info( "Reading promotion validation rule from: {}", script );
-                final ValidationRuleMapping rule = ruleParser.parseRule( script );
-                if ( rule != null )
+                for ( final DataFile script : scripts )
                 {
-                    ruleMappings.put( rule.getName(), rule );
+                    logger.info( "Reading promotion validation rule from: {}", script );
+                    final ValidationRuleMapping rule = ruleParser.parseRule( script );
+                    if ( rule != null )
+                    {
+                        ruleMappings.put( rule.getName(), rule );
+                    }
                 }
             }
+            else
+            {
+                logger.warn( "No rule script file was defined for promotion: no rule script found in {} directory",
+                             RULES_DIR );
+            }
+        }
+        else
+        {
+            logger.warn( "No rule script file was defined for promotion: {} directory not exists", RULES_DIR );
         }
 
         this.ruleMappings = ruleMappings;
@@ -142,15 +154,26 @@ public class PromoteValidationsManager
                                                                              .endsWith( ".json" );
                                                           } );
 
-            for ( final DataFile script : scripts )
+            if ( scripts != null && scripts.length > 0 )
             {
-                logger.info( "Reading promotion validation rule-set from: {}", script );
-                final ValidationRuleSet set = ruleParser.parseRuleSet( script );
-                if ( set != null )
+
+                for ( final DataFile script : scripts )
                 {
-                    ruleSets.put( script.getName(), set );
+                    logger.info( "Reading promotion validation rule-set from: {}", script );
+                    final ValidationRuleSet set = ruleParser.parseRuleSet( script );
+                    if ( set != null )
+                    {
+                        ruleSets.put( script.getName(), set );
+                    }
                 }
             }
+            else
+            {
+                logger.warn( "No rule-set json file was defined for promotion: no json file found in {} directory",
+                             RULES_SETS_DIR );
+            }
+        } else {
+            logger.warn( "No rule-set json file was defined for promotion: {} directory not exists", RULES_SETS_DIR );
         }
 
         this.ruleSets = ruleSets;
