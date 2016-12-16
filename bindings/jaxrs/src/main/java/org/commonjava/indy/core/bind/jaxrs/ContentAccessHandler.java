@@ -197,6 +197,14 @@ public class ContentAccessHandler
                 {
                     HttpExchangeMetadata httpMetadata = contentController.getHttpMetadata( sk, path );
 
+                    // TODO: For hosted repo, artifacts do not have metadata generated. Fall to get(). But we need a better fix later on.
+                    if ( httpMetadata == null )
+                    {
+                        logger.info( "Retrieving: {}:{} for existence test", sk, path );
+                        item = contentController.get( sk, path, eventMetadata );
+                        logger.debug( "Got retrieved transfer reference: {}", item );
+                    }
+
                     logger.debug( "Building 200 response. Using HTTP metadata: {}", httpMetadata );
 
                     final ResponseBuilder builder = Response.ok();
