@@ -36,11 +36,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class GitManagerTest
+public class GitManagerTest extends AbstractGitManagerTest
 {
-
-    @Rule
-    public TemporaryFolder temp = new TemporaryFolder();
 
     @Test
     public void cloneRepoOnStart()
@@ -91,47 +88,6 @@ public class GitManagerTest
                              .getSummary(), equalTo( log ) );
     }
 
-    private File unpackRepo( final String resource )
-        throws Exception
-    {
-        final URL url = Thread.currentThread()
-                              .getContextClassLoader()
-                              .getResource( resource );
 
-        final InputStream stream = url.openStream();
-        final ZipInputStream zstream = new ZipInputStream( stream );
-
-        final File dir = temp.newFolder();
-
-        ZipEntry entry = null;
-        while ( ( entry = zstream.getNextEntry() ) != null )
-        {
-            final File f = new File( dir, entry.getName() );
-            if ( entry.isDirectory() )
-            {
-                f.mkdirs();
-            }
-            else
-            {
-                f.getParentFile()
-                 .mkdirs();
-                final OutputStream out = new FileOutputStream( f );
-
-                copy( zstream, out );
-
-                closeQuietly( out );
-            }
-
-            zstream.closeEntry();
-        }
-
-        closeQuietly( zstream );
-
-        final File root = new File( dir, "test-indy-data/.git" );
-        assertThat( root.exists(), equalTo( true ) );
-        assertThat( root.isDirectory(), equalTo( true ) );
-
-        return root;
-    }
 
 }
