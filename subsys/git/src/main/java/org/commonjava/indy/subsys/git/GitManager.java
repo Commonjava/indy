@@ -15,27 +15,6 @@
  */
 package org.commonjava.indy.subsys.git;
 
-import static org.apache.commons.lang.StringUtils.isEmpty;
-import static org.apache.commons.lang.StringUtils.join;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import javax.enterprise.context.ApplicationScoped;
-
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.eclipse.jgit.api.AddCommand;
@@ -71,6 +50,26 @@ import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.context.ApplicationScoped;
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang.StringUtils.join;
+
 @ApplicationScoped
 public class GitManager
 {
@@ -88,7 +87,7 @@ public class GitManager
     private final GitConfig config;
 
     public GitManager( final GitConfig config )
-        throws GitSubsystemException
+            throws GitSubsystemException
     {
         this.config = config;
         rootDir = config.getContentDir();
@@ -109,16 +108,12 @@ public class GitManager
                              rootDir.isDirectory(), join( rootDir.listFiles(), "\n  " ) );
                 try
                 {
-                    Git.cloneRepository()
-                       .setURI( cloneUrl )
-                       .setDirectory( rootDir )
-                       .setRemote( "origin" )
-                       .call();
+                    Git.cloneRepository().setURI( cloneUrl ).setDirectory( rootDir ).setRemote( "origin" ).call();
                 }
                 catch ( final GitAPIException e )
                 {
-                    throw new GitSubsystemException( "Failed to clone remote URL: {} into: {}. Reason: {}", e,
-                                                     cloneUrl, rootDir, e.getMessage() );
+                    throw new GitSubsystemException( "Failed to clone remote URL: {} into: {}. Reason: {}", e, cloneUrl,
+                                                     rootDir, e.getMessage() );
                 }
             }
         }
@@ -128,9 +123,7 @@ public class GitManager
         logger.info( "Setting up git manager for: {}", dotGitDir );
         try
         {
-            repo = new FileRepositoryBuilder().readEnvironment()
-                                              .setGitDir( dotGitDir )
-                                              .build();
+            repo = new FileRepositoryBuilder().readEnvironment().setGitDir( dotGitDir ).build();
         }
         catch ( final IOException e )
         {
@@ -154,22 +147,18 @@ public class GitManager
             }
         }
 
-        String originUrl = repo.getConfig()
-                               .getString( "remote", "origin", "url" );
+        String originUrl = repo.getConfig().getString( "remote", "origin", "url" );
         if ( originUrl == null )
         {
             originUrl = cloneUrl;
             logger.info( "Setting origin URL: {}", originUrl );
 
-            repo.getConfig()
-                .setString( "remote", "origin", "url", originUrl );
+            repo.getConfig().setString( "remote", "origin", "url", originUrl );
 
-            repo.getConfig()
-                .setString( "remote", "origin", "fetch", "+refs/heads/*:refs/remotes/origin/*" );
+            repo.getConfig().setString( "remote", "origin", "fetch", "+refs/heads/*:refs/remotes/origin/*" );
         }
 
-        String email = repo.getConfig()
-                           .getString( "user", null, "email" );
+        String email = repo.getConfig().getString( "user", null, "email" );
 
         if ( email == null )
         {
@@ -180,8 +169,7 @@ public class GitManager
         {
             try
             {
-                email = "indy@" + InetAddress.getLocalHost()
-                                              .getCanonicalHostName();
+                email = "indy@" + InetAddress.getLocalHost().getCanonicalHostName();
 
             }
             catch ( final UnknownHostException e )
@@ -190,11 +178,9 @@ public class GitManager
             }
         }
 
-        if ( repo.getConfig()
-                 .getString( "user", null, "email" ) == null )
+        if ( repo.getConfig().getString( "user", null, "email" ) == null )
         {
-            repo.getConfig()
-                .setString( "user", null, "email", email );
+            repo.getConfig().setString( "user", null, "email", email );
         }
 
         this.email = email;
@@ -214,13 +200,13 @@ public class GitManager
     }
 
     public GitManager addAndCommitFiles( final ChangeSummary summary, final File... files )
-        throws GitSubsystemException
+            throws GitSubsystemException
     {
         return addAndCommitFiles( summary, Arrays.asList( files ) );
     }
 
     public GitManager addAndCommitFiles( final ChangeSummary summary, final Collection<File> files )
-        throws GitSubsystemException
+            throws GitSubsystemException
     {
         final Set<String> paths = new HashSet<>();
         for ( final File f : files )
@@ -239,19 +225,17 @@ public class GitManager
 
     private String relativize( final File f )
     {
-        return Paths.get( rootDir.toURI() )
-                    .relativize( Paths.get( f.toURI() ) )
-                    .toString();
+        return Paths.get( rootDir.toURI() ).relativize( Paths.get( f.toURI() ) ).toString();
     }
 
     public GitManager addAndCommitPaths( final ChangeSummary summary, final String... paths )
-        throws GitSubsystemException
+            throws GitSubsystemException
     {
         return addAndCommitPaths( summary, Arrays.asList( paths ) );
     }
 
     public GitManager addAndCommitPaths( final ChangeSummary summary, final Collection<String> paths )
-        throws GitSubsystemException
+            throws GitSubsystemException
     {
         if ( !verifyChangesExist( paths ) )
         {
@@ -261,20 +245,21 @@ public class GitManager
 
         try
         {
-            final AddCommand add = git.add();
-            final CommitCommand commit = git.commit();
-            for ( final String filepath : paths )
+            synchronized ( git )
             {
-                add.addFilepattern( filepath );
+                final AddCommand add = git.add();
+                final CommitCommand commit = git.commit();
+                for ( final String filepath : paths )
+                {
+                    add.addFilepattern( filepath );
+                }
+
+                logger.info( "Adding:\n  " + join( paths, "\n  " ) + "\n\nSummary: " + summary );
+
+                add.call();
+
+                commit.setMessage( buildMessage( summary, paths ) ).setAuthor( summary.getUser(), email ).call();
             }
-
-            logger.info( "Adding:\n  " + join( paths, "\n  " ) + "\n\nSummary: " + summary );
-
-            add.call();
-
-            commit.setMessage( buildMessage( summary, paths ) )
-                  .setAuthor( summary.getUser(), email )
-                  .call();
         }
         catch ( final NoFilepatternException e )
         {
@@ -289,7 +274,7 @@ public class GitManager
     }
 
     private boolean verifyChangesExist( final Collection<String> paths )
-        throws GitSubsystemException
+            throws GitSubsystemException
     {
         try
         {
@@ -356,8 +341,7 @@ public class GitManager
         final StringBuilder message = new StringBuilder().append( summary.getSummary() );
         if ( config.isCommitFileManifestsEnabled() )
         {
-            message.append( "\n\nFiles changed:\n" )
-                   .append( join( paths, "\n" ) );
+            message.append( "\n\nFiles changed:\n" ).append( join( paths, "\n" ) );
 
         }
 
@@ -365,13 +349,13 @@ public class GitManager
     }
 
     public GitManager deleteAndCommit( final ChangeSummary summary, final File... deleted )
-        throws GitSubsystemException
+            throws GitSubsystemException
     {
         return deleteAndCommit( summary, Arrays.asList( deleted ) );
     }
 
     public GitManager deleteAndCommit( final ChangeSummary summary, final Collection<File> files )
-        throws GitSubsystemException
+            throws GitSubsystemException
     {
         final Set<String> paths = new HashSet<>();
         for ( final File f : files )
@@ -389,32 +373,33 @@ public class GitManager
     }
 
     public GitManager deleteAndCommitPaths( final ChangeSummary summary, final String... paths )
-        throws GitSubsystemException
+            throws GitSubsystemException
     {
         return deleteAndCommitPaths( summary, Arrays.asList( paths ) );
     }
 
     public GitManager deleteAndCommitPaths( final ChangeSummary summary, final Collection<String> paths )
-        throws GitSubsystemException
+            throws GitSubsystemException
     {
         try
         {
-            RmCommand rm = git.rm();
-            CommitCommand commit = git.commit();
-
-            for ( final String path : paths )
+            synchronized ( git )
             {
-                rm = rm.addFilepattern( path );
-                commit = commit.setOnly( path );
+                RmCommand rm = git.rm();
+                CommitCommand commit = git.commit();
+
+                for ( final String path : paths )
+                {
+                    rm = rm.addFilepattern( path );
+                    commit = commit.setOnly( path );
+                }
+
+                logger.info( "Deleting:\n  " + join( paths, "\n  " ) + "\n\nSummary: " + summary );
+
+                rm.call();
+
+                commit.setMessage( buildMessage( summary, paths ) ).setAuthor( summary.getUser(), email ).call();
             }
-
-            logger.info( "Deleting:\n  " + join( paths, "\n  " ) + "\n\nSummary: " + summary );
-
-            rm.call();
-
-            commit.setMessage( buildMessage( summary, paths ) )
-                  .setAuthor( summary.getUser(), email )
-                  .call();
         }
         catch ( final NoFilepatternException e )
         {
@@ -429,7 +414,7 @@ public class GitManager
     }
 
     public ChangeSummary getHeadCommit( final File f )
-        throws GitSubsystemException
+            throws GitSubsystemException
     {
         try
         {
@@ -453,12 +438,13 @@ public class GitManager
         }
         catch ( RevisionSyntaxException | IOException e )
         {
-            throw new GitSubsystemException( "Failed to resolve HEAD commit for: %s. Reason: %s", e, f, e.getMessage() );
+            throw new GitSubsystemException( "Failed to resolve HEAD commit for: %s. Reason: %s", e, f,
+                                             e.getMessage() );
         }
     }
 
     public List<ChangeSummary> getChangelog( final File f, final int start, final int length )
-        throws GitSubsystemException
+            throws GitSubsystemException
     {
         if ( length == 0 )
         {
@@ -516,7 +502,8 @@ public class GitManager
         }
         catch ( RevisionSyntaxException | IOException e )
         {
-            throw new GitSubsystemException( "Failed to resolve HEAD commit for: %s. Reason: %s", e, f, e.getMessage() );
+            throw new GitSubsystemException( "Failed to resolve HEAD commit for: %s. Reason: %s", e, f,
+                                             e.getMessage() );
         }
     }
 
@@ -556,18 +543,17 @@ public class GitManager
     {
         final PersonIdent who = commit.getAuthorIdent();
         final Date when = new Date( TimeUnit.MILLISECONDS.convert( commit.getCommitTime(), TimeUnit.SECONDS ) );
-        return new ChangeSummary( who.getName(), commit.getFullMessage(), when, commit.getId()
-                                                                                      .name() );
+        return new ChangeSummary( who.getName(), commit.getFullMessage(), when, commit.getId().name() );
     }
 
     public GitManager pullUpdates()
-        throws GitSubsystemException
+            throws GitSubsystemException
     {
         return pullUpdates( ConflictStrategy.merge );
     }
 
     public GitManager pullUpdates( final ConflictStrategy strategy )
-        throws GitSubsystemException
+            throws GitSubsystemException
     {
         try
         {
@@ -586,12 +572,11 @@ public class GitManager
     }
 
     public GitManager pushUpdates()
-        throws GitSubsystemException
+            throws GitSubsystemException
     {
         try
         {
-            git.push()
-               .call();
+            git.push().call();
         }
         catch ( final GitAPIException e )
         {
@@ -603,23 +588,21 @@ public class GitManager
 
     public String getOriginUrl()
     {
-        return git.getRepository()
-                  .getConfig()
-                  .getString( "remote", "origin", "url" );
+        return git.getRepository().getConfig().getString( "remote", "origin", "url" );
     }
 
     public GitManager commitModifiedFiles( final ChangeSummary changeSummary )
-        throws GitSubsystemException
+            throws GitSubsystemException
     {
         Status status;
         try
         {
-            status = git.status()
-                        .call();
+            status = git.status().call();
         }
         catch ( NoWorkTreeException | GitAPIException e )
         {
-            throw new GitSubsystemException( "Failed to retrieve status of: %s. Reason: %s", e, rootDir, e.getMessage() );
+            throw new GitSubsystemException( "Failed to retrieve status of: %s. Reason: %s", e, rootDir,
+                                             e.getMessage() );
         }
 
         final Map<String, StageState> css = status.getConflictingStageState();
