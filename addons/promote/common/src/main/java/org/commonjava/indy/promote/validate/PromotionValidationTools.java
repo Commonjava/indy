@@ -426,6 +426,18 @@ public class PromotionValidationTools
         return readOnlyWrapper( contentManager.retrieveFirst( stores, path ) );
     }
 
+    public boolean exists( final StoreKey storeKey, final String path )
+            throws IndyWorkflowException, IndyDataException
+    {
+        return contentManager.exists( getArtifactStore( storeKey ), path );
+    }
+
+    public boolean exists( final ArtifactStore store, final String path )
+            throws IndyWorkflowException
+    {
+        return contentManager.exists( store, path );
+    }
+
     public List<StoreResource> list( ArtifactStore store, String path )
             throws IndyWorkflowException
     {
