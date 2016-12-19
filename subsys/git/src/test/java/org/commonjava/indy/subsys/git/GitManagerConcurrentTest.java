@@ -22,7 +22,6 @@ import org.jboss.byteman.contrib.bmunit.BMRules;
 import org.jboss.byteman.contrib.bmunit.BMUnitConfig;
 import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -73,7 +72,6 @@ public class GitManagerConcurrentTest
                      targetLocation = "ENTRY",
                      action = "rendezvous($0); debug(Thread.currentThread().getName() + \": thread proceeding.\")" ), } )
     @Test
-    @Ignore( "need to fix the concurrent problems later" )
     public void concurrentAddToRepo()
             throws Exception
     {
@@ -124,7 +122,6 @@ public class GitManagerConcurrentTest
                      targetLocation = "ENTRY",
                      action = "rendezvous($0); debug(Thread.currentThread().getName() + \": thread proceeding.\")" ), } )
     @Test
-    @Ignore( "need to fix the concurrent problems later" )
     public void concurrentDeleteFromRepo()
             throws Exception
     {

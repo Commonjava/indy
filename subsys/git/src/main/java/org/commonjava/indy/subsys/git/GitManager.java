@@ -15,27 +15,6 @@
  */
 package org.commonjava.indy.subsys.git;
 
-import static org.apache.commons.lang.StringUtils.isEmpty;
-import static org.apache.commons.lang.StringUtils.join;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import javax.enterprise.context.ApplicationScoped;
-
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.eclipse.jgit.api.AddCommand;
@@ -70,6 +49,26 @@ import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.enterprise.context.ApplicationScoped;
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang.StringUtils.join;
 
 @ApplicationScoped
 public class GitManager
@@ -261,20 +260,21 @@ public class GitManager
 
         try
         {
-            final AddCommand add = git.add();
-            final CommitCommand commit = git.commit();
-            for ( final String filepath : paths )
+            synchronized ( repo )
             {
-                add.addFilepattern( filepath );
+                final AddCommand add = git.add();
+                final CommitCommand commit = git.commit();
+                for ( final String filepath : paths )
+                {
+                    add.addFilepattern( filepath );
+                }
+
+                logger.info( "Adding:\n  " + join( paths, "\n  " ) + "\n\nSummary: " + summary );
+
+                add.call();
+
+                commit.setMessage( buildMessage( summary, paths ) ).setAuthor( summary.getUser(), email ).call();
             }
-
-            logger.info( "Adding:\n  " + join( paths, "\n  " ) + "\n\nSummary: " + summary );
-
-            add.call();
-
-            commit.setMessage( buildMessage( summary, paths ) )
-                  .setAuthor( summary.getUser(), email )
-                  .call();
         }
         catch ( final NoFilepatternException e )
         {
@@ -399,22 +399,23 @@ public class GitManager
     {
         try
         {
-            RmCommand rm = git.rm();
-            CommitCommand commit = git.commit();
-
-            for ( final String path : paths )
+            synchronized ( repo )
             {
-                rm = rm.addFilepattern( path );
-                commit = commit.setOnly( path );
+                RmCommand rm = git.rm();
+                CommitCommand commit = git.commit();
+
+                for ( final String path : paths )
+                {
+                    rm = rm.addFilepattern( path );
+                    commit = commit.setOnly( path );
+                }
+
+                logger.info( "Deleting:\n  " + join( paths, "\n  " ) + "\n\nSummary: " + summary );
+
+                rm.call();
+
+                commit.setMessage( buildMessage( summary, paths ) ).setAuthor( summary.getUser(), email ).call();
             }
-
-            logger.info( "Deleting:\n  " + join( paths, "\n  " ) + "\n\nSummary: " + summary );
-
-            rm.call();
-
-            commit.setMessage( buildMessage( summary, paths ) )
-                  .setAuthor( summary.getUser(), email )
-                  .call();
         }
         catch ( final NoFilepatternException e )
         {
