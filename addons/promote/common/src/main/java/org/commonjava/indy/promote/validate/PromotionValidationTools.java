@@ -103,10 +103,10 @@ public class PromotionValidationTools
     {
     }
 
-    public PromotionValidationTools( ContentManager manager, StoreDataManager storeDataManager,
-                                     MavenPomReader pomReader, MavenMetadataReader metadataReader,
-                                     MavenModelProcessor modelProcessor, TypeMapper typeMapper,
-                                     TransferManager transferManager )
+    public PromotionValidationTools( final ContentManager manager, final StoreDataManager storeDataManager,
+                                     final MavenPomReader pomReader, final MavenMetadataReader metadataReader,
+                                     final MavenModelProcessor modelProcessor, final TypeMapper typeMapper,
+                                     final TransferManager transferManager )
     {
         contentManager = manager;
         this.storeDataManager = storeDataManager;
@@ -117,7 +117,7 @@ public class PromotionValidationTools
         this.transferManager = transferManager;
     }
 
-    public StoreKey[] getValidationStoreKeys( ValidationRequest request, boolean includeSource )
+    public StoreKey[] getValidationStoreKeys( final ValidationRequest request, final boolean includeSource )
             throws PromotionValidationException
     {
         String verifyStores = request.getValidationParameter( PromotionValidationTools.AVAILABLE_IN_STORES );
@@ -164,26 +164,26 @@ public class PromotionValidationTools
         return verifyStoreKeys.toArray( new StoreKey[verifyStoreKeys.size()] );
     }
 
-    public String toArtifactPath( ProjectVersionRef ref )
+    public String toArtifactPath( final ProjectVersionRef ref )
             throws TransferException
     {
         return ArtifactPathUtils.formatArtifactPath( ref, typeMapper );
     }
 
-    public String toMetadataPath( ProjectRef ref, String filename )
+    public String toMetadataPath( final ProjectRef ref, final String filename )
             throws TransferException
     {
         return ArtifactPathUtils.formatMetadataPath( ref, filename );
     }
 
-    public String toMetadataPath( String groupId, String filename )
+    public String toMetadataPath( final String groupId, final String filename )
             throws TransferException
     {
         return ArtifactPathUtils.formatMetadataPath( groupId, filename );
     }
 
-    public Set<ProjectRelationship<?, ?>> getRelationshipsForPom( String path, ModelProcessorConfig config,
-                                                                  ValidationRequest request, StoreKey... extraLocations )
+    public Set<ProjectRelationship<?, ?>> getRelationshipsForPom( final String path, final ModelProcessorConfig config,
+                                                                  final ValidationRequest request, final StoreKey... extraLocations )
             throws IndyWorkflowException, GalleyMavenException, IndyDataException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -226,7 +226,7 @@ public class PromotionValidationTools
         }
     }
 
-    public void addLocations( List<Location> locations, StoreKey... extraLocations )
+    public void addLocations( final List<Location> locations, final StoreKey... extraLocations )
             throws IndyDataException
     {
         for ( StoreKey extra : extraLocations )
@@ -236,7 +236,7 @@ public class PromotionValidationTools
         }
     }
 
-    public MavenPomView readPom( String path, ValidationRequest request, StoreKey... extraLocations )
+    public MavenPomView readPom( final String path, final ValidationRequest request, final StoreKey... extraLocations )
             throws IndyWorkflowException, GalleyMavenException, IndyDataException
     {
         ArtifactRef artifactRef = getArtifact( path );
@@ -254,7 +254,7 @@ public class PromotionValidationTools
         return pomReader.read( artifactRef.asProjectVersionRef(), transfer, locations, MavenPomView.ALL_PROFILES );
     }
 
-    public MavenPomView readLocalPom( String path, ValidationRequest request )
+    public MavenPomView readLocalPom( final String path, final ValidationRequest request )
             throws IndyWorkflowException, GalleyMavenException
     {
         ArtifactRef artifactRef = getArtifact( path );
@@ -269,112 +269,112 @@ public class PromotionValidationTools
         return pomReader.readLocalPom( artifactRef.asProjectVersionRef(), transfer, MavenPomView.ALL_PROFILES );
     }
 
-    public ArtifactRef getArtifact( String path )
+    public ArtifactRef getArtifact( final String path )
     {
         ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
         return pathInfo == null ? null : pathInfo.getArtifact();
     }
 
-    public MavenMetadataView getMetadata( ProjectRef ref, List<? extends Location> locations )
+    public MavenMetadataView getMetadata( final ProjectRef ref, final List<? extends Location> locations )
             throws GalleyMavenException
     {
         return metadataReader.getMetadata( ref, locations );
     }
 
-    public MavenMetadataView readMetadata( ProjectRef ref, List<Transfer> transfers )
+    public MavenMetadataView readMetadata( final ProjectRef ref, final List<Transfer> transfers )
             throws GalleyMavenException
     {
         return metadataReader.readMetadata( ref, transfers );
     }
 
-    public MavenMetadataView getMetadata( ProjectRef ref, List<? extends Location> locations,
-                                          EventMetadata eventMetadata )
+    public MavenMetadataView getMetadata( final ProjectRef ref, final List<? extends Location> locations,
+                                          final EventMetadata eventMetadata )
             throws GalleyMavenException
     {
         return metadataReader.getMetadata( ref, locations, eventMetadata );
     }
 
-    public MavenMetadataView readMetadata( ProjectRef ref, List<Transfer> transfers, EventMetadata eventMetadata )
+    public MavenMetadataView readMetadata( final ProjectRef ref, final List<Transfer> transfers, final EventMetadata eventMetadata )
             throws GalleyMavenException
     {
         return metadataReader.readMetadata( ref, transfers, eventMetadata );
     }
 
-    public MavenPomView read( ProjectVersionRef ref, Transfer pom, List<? extends Location> locations,
-                              String... activeProfileLocations )
+    public MavenPomView read( final ProjectVersionRef ref, final Transfer pom, final List<? extends Location> locations,
+                              final String... activeProfileLocations )
             throws GalleyMavenException
     {
         return pomReader.read( ref, pom, locations, activeProfileLocations );
     }
 
-    public MavenPomView read( ProjectVersionRef ref, List<? extends Location> locations, boolean cache,
-                              EventMetadata eventMetadata, String... activeProfileIds )
+    public MavenPomView read( final ProjectVersionRef ref, final List<? extends Location> locations, final boolean cache,
+                              final EventMetadata eventMetadata, final String... activeProfileIds )
             throws GalleyMavenException
     {
         return pomReader.read( ref, locations, cache, eventMetadata, activeProfileIds );
     }
 
-    public MavenPomView read( ProjectVersionRef ref, List<? extends Location> locations, boolean cache,
-                              String... activeProfileIds )
+    public MavenPomView read( final ProjectVersionRef ref, final List<? extends Location> locations, final boolean cache,
+                              final String... activeProfileIds )
             throws GalleyMavenException
     {
         return pomReader.read( ref, locations, cache, activeProfileIds );
     }
 
-    public MavenPomView readLocalPom( ProjectVersionRef ref, Transfer transfer, String... activeProfileIds )
+    public MavenPomView readLocalPom( final ProjectVersionRef ref, final Transfer transfer, final String... activeProfileIds )
             throws GalleyMavenException
     {
         return pomReader.readLocalPom( ref, transfer, activeProfileIds );
     }
 
-    public MavenPomView read( ProjectVersionRef ref, List<? extends Location> locations, String... activeProfileIds )
+    public MavenPomView read( final ProjectVersionRef ref, final List<? extends Location> locations, final String... activeProfileIds )
             throws GalleyMavenException
     {
         return pomReader.read( ref, locations, activeProfileIds );
     }
 
-    public MavenPomView readLocalPom( ProjectVersionRef ref, Transfer transfer, boolean cache,
-                                      EventMetadata eventMetadata, String... activeProfileIds )
+    public MavenPomView readLocalPom( final ProjectVersionRef ref, final Transfer transfer, final boolean cache,
+                                      final EventMetadata eventMetadata, final String... activeProfileIds )
             throws GalleyMavenException
     {
         return pomReader.readLocalPom( ref, transfer, cache, eventMetadata, activeProfileIds );
     }
 
-    public MavenPomView readLocalPom( ProjectVersionRef ref, Transfer transfer, EventMetadata eventMetadata,
-                                      String... activeProfileIds )
+    public MavenPomView readLocalPom( final ProjectVersionRef ref, final Transfer transfer, final EventMetadata eventMetadata,
+                                      final String... activeProfileIds )
             throws GalleyMavenException
     {
         return pomReader.readLocalPom( ref, transfer, eventMetadata, activeProfileIds );
     }
 
-    public MavenPomView read( ProjectVersionRef ref, List<? extends Location> locations, EventMetadata eventMetadata,
-                              String... activeProfileIds )
+    public MavenPomView read( final ProjectVersionRef ref, final List<? extends Location> locations, final EventMetadata eventMetadata,
+                              final String... activeProfileIds )
             throws GalleyMavenException
     {
         return pomReader.read( ref, locations, eventMetadata, activeProfileIds );
     }
 
-    public MavenPomView readLocalPom( ProjectVersionRef ref, Transfer transfer, boolean cache,
-                                      String... activeProfileIds )
+    public MavenPomView readLocalPom( final ProjectVersionRef ref, final Transfer transfer, final boolean cache,
+                                      final String... activeProfileIds )
             throws GalleyMavenException
     {
         return pomReader.readLocalPom( ref, transfer, cache, activeProfileIds );
     }
 
-    public MavenPomView read( ProjectVersionRef ref, Transfer pom, List<? extends Location> locations,
-                              EventMetadata eventMetadata, String... activeProfileLocations )
+    public MavenPomView read( final ProjectVersionRef ref, final Transfer pom, final List<? extends Location> locations,
+                              final EventMetadata eventMetadata, final String... activeProfileLocations )
             throws GalleyMavenException
     {
         return pomReader.read( ref, pom, locations, eventMetadata, activeProfileLocations );
     }
 
-    public Transfer getTransfer( List<ArtifactStore> stores, String path )
+    public Transfer getTransfer( final List<ArtifactStore> stores, final String path )
             throws IndyWorkflowException
     {
         return readOnlyWrapper( contentManager.getTransfer( stores, path, TransferOperation.DOWNLOAD ) );
     }
 
-    public Transfer getTransfer( StoreKey storeKey, String path )
+    public Transfer getTransfer( final StoreKey storeKey, final String path )
             throws IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -384,43 +384,43 @@ public class PromotionValidationTools
         return result;
     }
 
-    public Transfer getTransfer( ArtifactStore store, String path )
+    public Transfer getTransfer( final ArtifactStore store, final String path )
             throws IndyWorkflowException
     {
         return readOnlyWrapper( contentManager.getTransfer( store, path, TransferOperation.DOWNLOAD ) );
     }
 
-    public Transfer retrieve( ArtifactStore store, String path, EventMetadata eventMetadata )
+    public Transfer retrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         return readOnlyWrapper( contentManager.retrieve( store, path, eventMetadata ) );
     }
 
-    public Transfer retrieve( ArtifactStore store, String path )
+    public Transfer retrieve( final ArtifactStore store, final String path )
             throws IndyWorkflowException
     {
         return readOnlyWrapper( contentManager.retrieve( store, path ) );
     }
 
-    public List<Transfer> retrieveAll( List<? extends ArtifactStore> stores, String path, EventMetadata eventMetadata )
+    public List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         return readOnlyWrappers( contentManager.retrieveAll( stores, path, eventMetadata ) );
     }
 
-    public List<Transfer> retrieveAll( List<? extends ArtifactStore> stores, String path )
+    public List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path )
             throws IndyWorkflowException
     {
         return readOnlyWrappers( contentManager.retrieveAll( stores, path ) );
     }
 
-    public Transfer retrieveFirst( List<? extends ArtifactStore> stores, String path, EventMetadata eventMetadata )
+    public Transfer retrieveFirst( final List<? extends ArtifactStore> stores, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         return readOnlyWrapper( contentManager.retrieveFirst( stores, path, eventMetadata ) );
     }
 
-    public Transfer retrieveFirst( List<? extends ArtifactStore> stores, String path )
+    public Transfer retrieveFirst( final List<? extends ArtifactStore> stores, final String path )
             throws IndyWorkflowException
     {
         return readOnlyWrapper( contentManager.retrieveFirst( stores, path ) );
@@ -429,7 +429,12 @@ public class PromotionValidationTools
     public boolean exists( final StoreKey storeKey, final String path )
             throws IndyWorkflowException, IndyDataException
     {
-        return contentManager.exists( getArtifactStore( storeKey ), path );
+        ArtifactStore store = getArtifactStore( storeKey );
+        if ( store == null )
+        {
+            throw new IndyDataException( "Artifact store with key " + storeKey + " was not found." );
+        }
+        return contentManager.exists( store, path );
     }
 
     public boolean exists( final ArtifactStore store, final String path )
@@ -438,61 +443,61 @@ public class PromotionValidationTools
         return contentManager.exists( store, path );
     }
 
-    public List<StoreResource> list( ArtifactStore store, String path )
+    public List<StoreResource> list( final ArtifactStore store, final String path )
             throws IndyWorkflowException
     {
         return contentManager.list( store, path );
     }
 
-    public List<StoreResource> list( ArtifactStore store, String path, EventMetadata eventMetadata )
+    public List<StoreResource> list( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         return contentManager.list( store, path, eventMetadata );
     }
 
-    public List<StoreResource> list( List<? extends ArtifactStore> stores, String path )
+    public List<StoreResource> list( final List<? extends ArtifactStore> stores, final String path )
             throws IndyWorkflowException
     {
         return contentManager.list( stores, path );
     }
 
-    public Map<ContentDigest, String> digest( StoreKey key, String path, ContentDigest... types )
+    public Map<ContentDigest, String> digest( final StoreKey key, final String path, final ContentDigest... types )
             throws IndyWorkflowException
     {
         return contentManager.digest( key, path, types ).getDigests();
     }
 
-    public HttpExchangeMetadata getHttpMetadata( Transfer txfr )
+    public HttpExchangeMetadata getHttpMetadata( final Transfer txfr )
             throws IndyWorkflowException
     {
         return contentManager.getHttpMetadata( txfr );
     }
 
-    public HttpExchangeMetadata getHttpMetadata( StoreKey storeKey, String path )
+    public HttpExchangeMetadata getHttpMetadata( final StoreKey storeKey, final String path )
             throws IndyWorkflowException
     {
         return contentManager.getHttpMetadata( storeKey, path );
     }
 
-    public HostedRepository getHostedRepository( String name )
+    public HostedRepository getHostedRepository( final String name )
             throws IndyDataException
     {
         return storeDataManager.getHostedRepository( name );
     }
 
-    public RemoteRepository getRemoteRepository( String name )
+    public RemoteRepository getRemoteRepository( final String name )
             throws IndyDataException
     {
         return storeDataManager.getRemoteRepository( name );
     }
 
-    public Group getGroup( String name )
+    public Group getGroup( final String name )
             throws IndyDataException
     {
         return storeDataManager.getGroup( name );
     }
 
-    public ArtifactStore getArtifactStore( StoreKey key )
+    public ArtifactStore getArtifactStore( final StoreKey key )
             throws IndyDataException
     {
         return storeDataManager.getArtifactStore( key );
@@ -504,7 +509,7 @@ public class PromotionValidationTools
         return storeDataManager.getAllArtifactStores();
     }
 
-    public List<? extends ArtifactStore> getAllArtifactStores( StoreType type )
+    public List<? extends ArtifactStore> getAllArtifactStores( final StoreType type )
             throws IndyDataException
     {
         return storeDataManager.getAllArtifactStores( type );
@@ -534,50 +539,50 @@ public class PromotionValidationTools
         return storeDataManager.getAllConcreteArtifactStores();
     }
 
-    public List<ArtifactStore> getOrderedConcreteStoresInGroup( String groupName )
+    public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
             throws IndyDataException
     {
         return storeDataManager.getOrderedConcreteStoresInGroup( groupName, false );
     }
 
-    public List<ArtifactStore> getOrderedStoresInGroup( String groupName )
+    public List<ArtifactStore> getOrderedStoresInGroup( final String groupName )
             throws IndyDataException
     {
         return storeDataManager.getOrderedStoresInGroup( groupName, false );
     }
 
-    public Set<Group> getGroupsContaining( StoreKey repo )
+    public Set<Group> getGroupsContaining( final StoreKey repo )
             throws IndyDataException
     {
         return storeDataManager.getGroupsContaining( repo );
     }
 
-    public boolean hasRemoteRepository( String name )
+    public boolean hasRemoteRepository( final String name )
     {
         return storeDataManager.hasRemoteRepository( name );
     }
 
-    public boolean hasGroup( String name )
+    public boolean hasGroup( final String name )
     {
         return storeDataManager.hasGroup( name );
     }
 
-    public boolean hasHostedRepository( String name )
+    public boolean hasHostedRepository( final String name )
     {
         return storeDataManager.hasHostedRepository( name );
     }
 
-    public boolean hasArtifactStore( StoreKey key )
+    public boolean hasArtifactStore( final StoreKey key )
     {
         return storeDataManager.hasArtifactStore( key );
     }
 
-    public RemoteRepository findRemoteRepository( String url )
+    public RemoteRepository findRemoteRepository( final String url )
     {
         return storeDataManager.findRemoteRepository( url );
     }
 
-    public Transfer getTransfer( StoreResource resource )
+    public Transfer getTransfer( final StoreResource resource )
     {
         return transferManager.getCacheReference( resource );
     }
