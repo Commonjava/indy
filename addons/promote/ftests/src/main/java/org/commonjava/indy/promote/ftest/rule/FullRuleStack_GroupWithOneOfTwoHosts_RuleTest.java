@@ -194,7 +194,7 @@ public class FullRuleStack_GroupWithOneOfTwoHosts_RuleTest
     }
 
     @Override
-    protected void initTestData( CoreServerFixture fixture )
+    protected void initTestData( final CoreServerFixture fixture )
             throws IOException
     {
         writeDataFile( "promote/rules/" + getRuleScriptFile(), getRuleScriptContent() );
@@ -216,6 +216,7 @@ public class FullRuleStack_GroupWithOneOfTwoHosts_RuleTest
         super.initTestData( fixture );
     }
 
+    @Override
     protected ValidationRuleSet getRuleSet()
     {
         ValidationRuleSet ruleSet = new ValidationRuleSet();
@@ -225,7 +226,7 @@ public class FullRuleStack_GroupWithOneOfTwoHosts_RuleTest
         ruleSet.setRuleNames( Arrays.asList( RULES ) );
 
         Map<String, String> params = new HashMap<>();
-        params.put( "availableInStores", "group:public, group:test" );
+        params.put( "availableInStores", "group:public, group:target" );
         params.put( "classifierAndTypeSet", "javadoc:jar, sources:jar" );
         params.put( "versionPattern", "\\d+\\.\\d+\\.\\d+[.-]redhat-\\d+" );
 

@@ -1,6 +1,5 @@
 package org.commonjava.indy.promote.rules
 
-import org.commonjava.indy.model.galley.KeyedLocation
 import org.commonjava.indy.promote.validate.PromotionValidationException
 import org.commonjava.indy.promote.validate.model.ValidationRequest
 import org.commonjava.indy.promote.validate.model.ValidationRule
@@ -17,13 +16,11 @@ class NoPreExistingPaths implements ValidationRule {
             def aref = tools.getArtifact(it);
             if (aref != null) {
                 verifyStoreKeys.each { verifyStoreKey ->
-                    def transfer = tools.getTransfer(verifyStoreKey, it);
-                    if (transfer != null && transfer.exists()) {
-                        def kl = (KeyedLocation) transfer.getLocation();
+                    if (tools.exists(verifyStoreKey, it)) {
                         if (builder.length() > 0) {
                             builder.append("\n")
                         }
-                        builder.append(it).append(" is already available in: ").append(kl.getKey());
+                        builder.append(it).append(" is already available in: ").append(verifyStoreKey);
                     }
                 }
             }
