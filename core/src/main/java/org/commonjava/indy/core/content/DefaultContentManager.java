@@ -26,17 +26,15 @@ import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.model.core.AbstractRepository;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.model.core.AbstractRepository;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.event.EventMetadata;
-import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
@@ -60,7 +58,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static org.commonjava.indy.model.core.StoreType.group;
@@ -333,7 +330,15 @@ public class DefaultContentManager
         }
         catch ( IndyWorkflowException e )
         {
-            e.filterLocationErrors();
+            if ( group.equals( store.getKey().getType() ) )
+            {
+                logger.error("Failed to retrieve path: {} from: {}. Reason: {}", e, path, store,
+                             e.getMessage() );
+            }
+            else
+            {
+                e.filterLocationErrors();
+            }
         }
 
         return item;
