@@ -262,7 +262,15 @@ public class DefaultContentManager
             {
                 for ( final ArtifactStore member : members )
                 {
-                    item = doRetrieve( member, path, eventMetadata );
+                    try
+                    {
+                        item = doRetrieve( member, path, eventMetadata );
+                    }
+                    catch ( IndyWorkflowException e )
+                    {
+                        logger.error( "Failed to retrieve artifact from for path {} from {} in group {}, error is: {}",
+                                      path, member, store, e.getMessage() );
+                    }
                     if ( item != null )
                     {
                         break;
