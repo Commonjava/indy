@@ -161,7 +161,7 @@ public class MavenMetadataMerger
                     Versioning mdVersioning = md.getVersioning();
 
                     // FIXME: Should we try to merge snapshot lists instead of using the first one we encounter??
-                    if ( versioning.getSnapshot() == null )
+                    if ( versioning.getSnapshot() == null && mdVersioning != null )
                     {
                         logger.info( "INCLUDING snapshot information from: {} in: {}:{}", src, group.getKey(), path );
                         snapshotProvider = src;
