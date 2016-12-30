@@ -23,6 +23,7 @@ NPEP->PVT:getArtifact(path)
 PVT->API:parse(path)
 PVT<-API:<<ArtifactRef>>artifactRef
 NPEP<-PVT:<<ArtifactRef>>aref
+alt aref exists
 loop storeKey in verifyStoreKeys
 
 NPEP->PVT:exists(storeKey, path)
@@ -30,6 +31,7 @@ NPEP<-PVT:exists
 
 rbox over NPEP:add error log in logBuilder if exists is true
 
+end
 end
 end
 
