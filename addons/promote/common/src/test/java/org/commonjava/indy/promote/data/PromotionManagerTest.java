@@ -18,6 +18,7 @@ package org.commonjava.indy.promote.data;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentGenerator;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DownloadManager;
@@ -111,8 +112,9 @@ public class PromotionManagerTest
         downloadManager = new DefaultDownloadManager( storeManager, galleyParts.getTransferManager(),
                                                       new IndyLocationExpander( storeManager ), new MockInstance<>(new MockContentAdvisor()  ));
 
+        ContentDigester contentDigester = new ContentDigester( downloadManager );
         contentManager = new DefaultContentManager( storeManager, downloadManager, new IndyObjectMapper( true ),
-                                                    new SpecialPathManagerImpl(), new MemoryNotFoundCache(), Collections.<ContentGenerator>emptySet() );
+                                                    new SpecialPathManagerImpl(), new MemoryNotFoundCache(), contentDigester, Collections.<ContentGenerator>emptySet() );
 
         dataManager = new DataFileManager( temp.newFolder( "data" ), new DataFileEventManager() );
         validationsManager = new PromoteValidationsManager( dataManager, new PromoteConfig(),
@@ -125,7 +127,8 @@ public class PromotionManagerTest
                                                                           galleyParts.getPomReader(),
                                                                           galleyParts.getMavenMetadataReader(),
                                                                           modelProcessor, galleyParts.getTypeMapper(),
-                                                                          galleyParts.getTransferManager() ),
+                                                                          galleyParts.getTransferManager(),
+                                                                          contentDigester ),
                                             storeManager );
 
         PromoteConfig config = new PromoteConfig();

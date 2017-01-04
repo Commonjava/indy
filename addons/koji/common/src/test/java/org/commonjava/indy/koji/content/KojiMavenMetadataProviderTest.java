@@ -19,10 +19,26 @@ import com.redhat.red.build.koji.KojiClient;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
+import org.commonjava.indy.content.ContentDigester;
+import org.commonjava.indy.content.DirectContentAccess;
+import org.commonjava.indy.content.DownloadManager;
+import org.commonjava.indy.content.IndyLocationExpander;
+import org.commonjava.indy.core.content.DefaultDirectContentAccess;
+import org.commonjava.indy.core.content.DefaultDownloadManager;
+import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
+import org.commonjava.indy.mem.data.MemoryStoreDataManager;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.pkg.maven.content.MavenContentAdvisor;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.maven.atlas.ident.ref.ProjectRef;
+import org.commonjava.maven.galley.GalleyCore;
+import org.commonjava.maven.galley.GalleyCoreBuilder;
+import org.commonjava.maven.galley.GalleyInitException;
+import org.commonjava.maven.galley.cache.FileCacheProviderFactory;
+import org.commonjava.maven.galley.io.SpecialPathManagerImpl;
+import org.commonjava.maven.galley.maven.internal.type.StandardTypeMapper;
+import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.commonjava.rwx.binding.error.BindException;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
@@ -32,7 +48,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
+import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Collections;
 import java.util.List;
@@ -197,12 +215,28 @@ public class KojiMavenMetadataProviderTest
                     CoreMatchers.not( CoreMatchers.equalTo( originalLastUpdated ) ) );
     }
 
+    @Rule
+    public TemporaryFolder temp = new TemporaryFolder();
+
     private void initKojiClient( String exchangeName )
-            throws BindException
+            throws BindException, IOException, GalleyInitException
     {
         configureKojiServer( server, KOJI_BASEPATH, counter, "koji-metadata/" + exchangeName );
         kojiClient = new KojiClient( kojiConfig, new MemoryPasswordManager(), Executors.newCachedThreadPool() );
-        provider = new KojiMavenMetadataProvider( cache, kojiClient, kojiConfig );
+        StoreDataManager storeDataManager = new MemoryStoreDataManager( true );
+
+        GalleyCore galley = new GalleyCoreBuilder( new FileCacheProviderFactory( temp.newFolder( "cache" ) ) ).build();
+
+        DownloadManager downloadManager = new DefaultDownloadManager( storeDataManager, galley.getTransferManager(),
+                                                                      new IndyLocationExpander( storeDataManager ) );
+
+        DirectContentAccess directContentAccess = new DefaultDirectContentAccess( downloadManager );
+
+        KojiBuildAuthority buildAuthority =
+                new KojiBuildAuthority( kojiConfig, new StandardTypeMapper(), kojiClient, storeDataManager,
+                                        new ContentDigester( downloadManager ), directContentAccess );
+
+        provider = new KojiMavenMetadataProvider( this.cache, kojiClient, buildAuthority, kojiConfig );
     }
 
     @Before

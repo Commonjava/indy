@@ -17,6 +17,7 @@ package org.commonjava.indy.promote.validate;
 
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentDigest;
+import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.data.IndyDataException;
@@ -99,6 +100,9 @@ public class PromotionValidationTools
     @Inject
     private TransferManager transferManager;
 
+    @Inject
+    private ContentDigester contentDigester;
+
     protected PromotionValidationTools()
     {
     }
@@ -106,7 +110,7 @@ public class PromotionValidationTools
     public PromotionValidationTools( final ContentManager manager, final StoreDataManager storeDataManager,
                                      final MavenPomReader pomReader, final MavenMetadataReader metadataReader,
                                      final MavenModelProcessor modelProcessor, final TypeMapper typeMapper,
-                                     final TransferManager transferManager )
+                                     final TransferManager transferManager, final ContentDigester contentDigester )
     {
         contentManager = manager;
         this.storeDataManager = storeDataManager;
@@ -115,6 +119,7 @@ public class PromotionValidationTools
         this.modelProcessor = modelProcessor;
         this.typeMapper = typeMapper;
         this.transferManager = transferManager;
+        this.contentDigester = contentDigester;
     }
 
     public StoreKey[] getValidationStoreKeys( final ValidationRequest request, final boolean includeSource )
@@ -464,7 +469,7 @@ public class PromotionValidationTools
     public Map<ContentDigest, String> digest( final StoreKey key, final String path, final ContentDigest... types )
             throws IndyWorkflowException
     {
-        return contentManager.digest( key, path, types ).getDigests();
+        return contentDigester.digest( key, path, types ).getDigests();
     }
 
     public HttpExchangeMetadata getHttpMetadata( final Transfer txfr )

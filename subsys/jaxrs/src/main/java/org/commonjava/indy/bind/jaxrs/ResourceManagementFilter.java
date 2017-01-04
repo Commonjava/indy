@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.bind.jaxrs;
 
+import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,12 @@ public class ResourceManagementFilter
         implements Filter
 {
 
+    public static final String HTTP_REQUEST = "http-request";
+
+    public static final String ORIGINAL_THREAD_NAME = "original-thread-name";
+
+    public static final String METHOD_PATH_TIME = "method-path-time";
+
     @Inject
     private CacheProvider cacheProvider;
 
@@ -54,13 +61,21 @@ public class ResourceManagementFilter
     public void doFilter( final ServletRequest request, final ServletResponse response, final FilterChain chain )
             throws IOException, ServletException
     {
-        final HttpServletRequest hsr = (HttpServletRequest) request;
         String name = Thread.currentThread().getName();
-
-        String tn = hsr.getMethod() + " " + hsr.getPathInfo() + " (" + System.currentTimeMillis() + "." + System.nanoTime() + ")";
         String clientAddr = request.getRemoteAddr();
+
+        final HttpServletRequest hsr = (HttpServletRequest) request;
+        String tn = hsr.getMethod() + " " + hsr.getPathInfo() + " (" + System.currentTimeMillis() + "." + System.nanoTime() + ")";
         try
         {
+            ThreadContext.clearContext();
+            ThreadContext threadContext = ThreadContext.getContext( true );
+            threadContext.put( ORIGINAL_THREAD_NAME, name );
+
+            threadContext.put( HTTP_REQUEST, hsr );
+
+            threadContext.put( METHOD_PATH_TIME, tn );
+
             logger.info( "START request: {} (from: {})", tn, clientAddr );
 
             Thread.currentThread().setName( tn );
@@ -78,6 +93,8 @@ public class ResourceManagementFilter
             {
                 logger.error( "Failed to cleanup resources", e );
             }
+
+            ThreadContext.clearContext();
 
             logger.info( "END request: {} (from: {})", tn, clientAddr );
         }
