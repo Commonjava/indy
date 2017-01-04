@@ -223,7 +223,7 @@ public class IndyDeployment
         classes.addAll( providerClasses );
         classes.addAll( resourceClasses );
         classes.addAll( Arrays.asList( ApiListingResource.class, SwaggerSerializers.class ) );
-        classes.addAll( Arrays.asList( JacksonJsonProvider.class ) );
+        classes.addAll( Arrays.asList( JacksonJsonProvider.class, UnhandledIOExceptionHandler.class ) );
         return classes;
     }
 
