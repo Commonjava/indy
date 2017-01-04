@@ -104,6 +104,8 @@ public class IndyKojiConfig
 
     private Long metadataTimeoutSeconds;
 
+    private String buildAuthorityStore;
+
     @Override
     public SiteConfig getKojiSiteConfig()
             throws IOException
@@ -435,6 +437,11 @@ public class IndyKojiConfig
                 this.maxConnections = Integer.valueOf( value );
                 break;
             }
+            case "build.authStore":
+            {
+                this.buildAuthorityStore = value;
+                break;
+            }
             default:
             {
                 if ( name.startsWith( TARGET_KEY_PREFIX ) && name.length() > TARGET_KEY_PREFIX.length() )
@@ -529,5 +536,15 @@ public class IndyKojiConfig
     public void setMetadataTimeoutSeconds( long metadataTimeoutSeconds )
     {
         this.metadataTimeoutSeconds = metadataTimeoutSeconds;
+    }
+
+    public String getBuildAuthorityStore()
+    {
+        return buildAuthorityStore;
+    }
+
+    public void setBuildAuthorityStore( String buildAuthorityStore )
+    {
+        this.buildAuthorityStore = buildAuthorityStore;
     }
 }
