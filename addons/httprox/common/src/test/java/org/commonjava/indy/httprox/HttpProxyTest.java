@@ -31,6 +31,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.commonjava.indy.boot.BootOptions;
+import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentGenerator;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DownloadManager;
@@ -140,7 +141,7 @@ public class HttpProxyTest
                                             new MockInstance<>( new MockContentAdvisor() ) );
         final ContentManager contentManager =
                 new DefaultContentManager( storeManager, downloadManager, mapper, new SpecialPathManagerImpl(),
-                                           new MemoryNotFoundCache(), Collections.<ContentGenerator>emptySet() );
+                                           new MemoryNotFoundCache(), new ContentDigester( downloadManager ), Collections.<ContentGenerator>emptySet() );
 
         DataFileManager dfm = new DataFileManager( temp.newFolder(), new DataFileEventManager() );
         final TemplatingEngine templates = new TemplatingEngine( new GStringTemplateEngine(), dfm );

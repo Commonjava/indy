@@ -17,16 +17,12 @@ package org.commonjava.indy.koji.content;
 
 import com.redhat.red.build.koji.KojiClient;
 import com.redhat.red.build.koji.KojiClientException;
-import com.redhat.red.build.koji.model.xmlrpc.KojiArchiveInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildArchiveCollection;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
-import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
-import org.commonjava.indy.content.ArtifactData;
-import org.commonjava.indy.content.ContentDigest;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -56,7 +52,6 @@ import javax.decorator.Delegate;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -120,6 +115,9 @@ public abstract class KojiContentManagerDecorator
     @Inject
     private NotFoundCache nfc;
 
+    @Inject
+    private KojiBuildAuthority buildAuthority;
+
     private KojiRepositoryCreator creator;
 
     @PostConstruct
@@ -151,7 +149,7 @@ public abstract class KojiContentManagerDecorator
             Group group = (Group) store;
 
             logger.info( "KOJI: Checking whether Koji contains a build matching: {}", path );
-            RemoteRepository kojiProxy = findKojiBuildAnd( store, path, null, this::createRemoteRepository );
+            RemoteRepository kojiProxy = findKojiBuildAnd( store, path, new EventMetadata(), null, this::createRemoteRepository );
             if ( kojiProxy != null )
             {
                 adjustTargetGroup( kojiProxy, group );
@@ -186,7 +184,7 @@ public abstract class KojiContentManagerDecorator
             logger.info( "KOJI: Checking for Koji build matching: {}", path );
             Group group = (Group) store;
 
-            RemoteRepository kojiProxy = findKojiBuildAnd( store, path, null, this::createRemoteRepository );
+            RemoteRepository kojiProxy = findKojiBuildAnd( store, path, eventMetadata, null, this::createRemoteRepository );
             if ( kojiProxy != null )
             {
                 adjustTargetGroup( kojiProxy, group );
@@ -240,7 +238,7 @@ public abstract class KojiContentManagerDecorator
             logger.info( "KOJI: Checking for Koji build matching: {}", path );
             Group group = (Group) store;
 
-            RemoteRepository kojiProxy = findKojiBuildAnd( store, path, null, this::createRemoteRepository );
+            RemoteRepository kojiProxy = findKojiBuildAnd( store, path, new EventMetadata(), null, this::createRemoteRepository );
             if ( kojiProxy != null )
             {
                 adjustTargetGroup( kojiProxy, group );
@@ -260,7 +258,7 @@ public abstract class KojiContentManagerDecorator
         return result;
     }
 
-    private <T> T findKojiBuildAnd( ArtifactStore store, String path, T defValue, KojiBuildAction<T> action )
+    private <T> T findKojiBuildAnd( ArtifactStore store, String path, EventMetadata eventMetadata, T defValue, KojiBuildAction<T> action )
             throws IndyWorkflowException
     {
         if ( !config.getEnabled() )
@@ -288,7 +286,7 @@ public abstract class KojiContentManagerDecorator
             ArtifactRef artifactRef = pathInfo.getArtifact();
             logger.info( "Searching for Koji build: {}", artifactRef );
 
-            return proxyKojiBuild( artifactRef, defValue, action, path );
+            return proxyKojiBuild( artifactRef, path, eventMetadata, defValue, action );
         }
         else
         {
@@ -298,8 +296,7 @@ public abstract class KojiContentManagerDecorator
         return defValue;
     }
 
-    private <T> T proxyKojiBuild( final ArtifactRef artifactRef, T defValue, KojiBuildAction<T> consumer,
-                                  final String path )
+    private <T> T proxyKojiBuild( final ArtifactRef artifactRef, final String path, EventMetadata eventMetadata, T defValue, KojiBuildAction<T> consumer )
             throws IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -313,8 +310,6 @@ public abstract class KojiContentManagerDecorator
 
                 logger.debug( "Got {} builds from koji. Looking for best match.", builds.size() );
 
-                ArtifactStore authStore = getAuthStore();
-
                 for ( KojiBuildInfo build : builds )
                 {
                     if ( build.getTaskId() == null )
@@ -325,70 +320,19 @@ public abstract class KojiContentManagerDecorator
                         continue;
                     }
 
-                    List<KojiArchiveInfo> jars = new ArrayList<>();
-                    List<KojiArchiveInfo> poms = new ArrayList<>();
-                    List<KojiArchiveInfo> others = new ArrayList<>();
-                    for ( KojiArchiveInfo archive : kojiClient.listArchivesForBuild( build.getId(), session )
-                                                              .getArchives() )
-                    {
-                        if ( "jar".equals( archive.getTypeName().toLowerCase() ) )
-                        {
-                            jars.add( archive );
-                        }
-                        else if ( "pom".equals( archive.getTypeName().toLowerCase() ) )
-                        {
-                            poms.add( archive );
-                        }
-                        else if ( !archive.getFilename().toLowerCase().endsWith( "scm-sources.zip" )
-                                && !archive.getFilename().toLowerCase().endsWith( "patches.zip" ) )
-                        {
-                            others.add( archive );
-                        }
-                    }
-
                     logger.info( "Trying build: {} with id: {}", build.getNvr(), build.getId() );
                     List<KojiTagInfo> tags = kojiClient.listTags( build.getId(), session );
                     logger.debug( "Build is in {} tags...", tags.size() );
+
+                    boolean buildAllowed = false;
                     for ( KojiTagInfo tag : tags )
                     {
                         // If the tags match patterns configured in whitelist, construct a new remote repo.
                         if ( config.isTagAllowed( tag.getName() ) )
                         {
                             logger.info( "Koji tag is on whitelist: {}", tag.getName() );
-
-                            if ( authStore != null )
-                            {
-                                final String md5 = checksumArtifact( authStore, path );
-                                //FIXME: not sure if all koji archives are using md5 as checksum type for maven build
-                                if ( StringUtils.isNotBlank( md5 ) )
-                                {
-                                    //if artifact in auth store, will check the md5 signature with koji one.
-                                    String kojiMd5 = null;
-                                    if ( !jars.isEmpty() )
-                                    {
-                                        kojiMd5 = jars.get( 0 ).getChecksum();
-                                    }
-                                    else if ( !others.isEmpty() )
-                                    {
-                                        kojiMd5 = others.get( 0 ).getChecksum();
-                                    }
-                                    else if ( !poms.isEmpty() )
-                                    {
-                                        kojiMd5 = poms.get( 0 ).getChecksum();
-                                    }
-                                    logger.info(
-                                            "Checking checksum for artifact {} in auth store {}, auth store checksum:{}, koji build check sum:{}",
-                                            artifactRef, authStore, md5, kojiMd5 );
-                                    if ( md5.equals( kojiMd5 ) )
-                                    {
-                                        // if checksum same, means the artifact in koji is valid with auth store, so go on the normal koji build
-                                        return consumer.execute( artifactRef, build, session );
-                                    }
-                                    continue;
-                                }
-                            }
-                            //If auth store not configured or artifact not in auth store, continue on normal koji build
-                            return consumer.execute( artifactRef, build, session );
+                            buildAllowed = true;
+                            break;
                         }
                         else
                         {
@@ -396,7 +340,19 @@ public abstract class KojiContentManagerDecorator
                         }
                     }
 
-                    logger.debug( "No whitelisted tags found for: {}", build.getNvr() );
+                    if ( buildAllowed )
+                    {
+                        // If the authoritative store is not configured, one or both systems is missing MD5 information,
+                        // or the artifact matches the one in the authoritative store, go ahead.
+                        if ( buildAuthority.isAuthorized(path, eventMetadata, artifactRef, build, session ) )
+                        {
+                            return consumer.execute( artifactRef, build, session );
+                        }
+                    }
+                    else
+                    {
+                        logger.debug( "No whitelisted tags found for: {}", build.getNvr() );
+                    }
                 }
 
                 logger.debug( "No builds were found that matched the restrictions." );
@@ -411,45 +367,6 @@ public abstract class KojiContentManagerDecorator
         }
     }
 
-    private ArtifactStore getAuthStore(){
-        if ( config.getBuildAuthorityStore() != null )
-        {
-            final StoreKey authStoreKey = StoreKey.fromString( config.getBuildAuthorityStore() );
-            try
-            {
-                return storeDataManager.getArtifactStore( authStoreKey );
-            }
-            catch ( IndyDataException e )
-            {
-                Logger logger = LoggerFactory.getLogger( getClass() );
-                logger.warn( "Error occurred when finding authoritative store for {}, error message: {}",
-                             authStoreKey, e.getMessage() );
-            }
-        }
-        return null;
-    }
-
-    private String checksumArtifact( ArtifactStore store, String path )
-    {
-        final Logger logger = LoggerFactory.getLogger( getClass() );
-        try
-        {
-            if ( delegate.exists( store, path ) )
-            {
-                final ArtifactData artifactData = delegate.digest( store.getKey(), path, ContentDigest.MD5 );
-                if ( artifactData != null )
-                {
-                    return artifactData.getDigests().get( ContentDigest.MD5 );
-                }
-            }
-        }
-        catch ( IndyWorkflowException e )
-        {
-            logger.warn( "Error happened when calculate md5 checksum for transfer of path {} in store {}, error is {}",
-                         path, store, e.getMessage() );
-        }
-        return "";
-    }
 
     private RemoteRepository createRemoteRepository( ArtifactRef artifactRef, final KojiBuildInfo build,
                                                      final KojiSessionInfo session )
