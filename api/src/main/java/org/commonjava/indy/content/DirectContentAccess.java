@@ -75,6 +75,10 @@ public interface DirectContentAccess
     Transfer getTransfer( StoreKey storeKey, String path )
             throws IndyWorkflowException;
 
+    boolean exists( ArtifactStore store, String path )
+            throws IndyWorkflowException;
+
     List<StoreResource> listRaw( ArtifactStore store, String parentPath )
             throws IndyWorkflowException;
+
 }

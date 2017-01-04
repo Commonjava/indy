@@ -98,6 +98,13 @@ public class DefaultDirectContentAccess
     }
 
     @Override
+    public boolean exists( ArtifactStore store, String path )
+            throws IndyWorkflowException
+    {
+        return downloadManager.exists( store, path );
+    }
+
+    @Override
     public List<StoreResource> listRaw( ArtifactStore store, String path )
             throws IndyWorkflowException
     {
