@@ -18,6 +18,7 @@ package org.commonjava.indy.folo.change;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ArtifactData;
 import org.commonjava.indy.content.ContentDigest;
+import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.data.IndyDataException;
@@ -65,7 +66,7 @@ public class FoloTrackingListener
     private DownloadManager downloadManager;
 
     @Inject
-    private ContentManager contentManager;
+    private ContentDigester contentDigester;
 
     public void onFileAccess( @Observes final FileAccessEvent event )
     {
@@ -195,7 +196,7 @@ public class FoloTrackingListener
 
 
                 ArtifactData artifactData =
-                        contentManager.digest( affectedStore, path, ContentDigest.MD5, ContentDigest.SHA_1,
+                        contentDigester.digest( affectedStore, path, ContentDigest.MD5, ContentDigest.SHA_1,
                                                ContentDigest.SHA_256 );
                 Map<ContentDigest, String> digests = artifactData.getDigests();
                 //TODO: As localUrl needs a apiBaseUrl which is from REST service context, to avoid deep propagate

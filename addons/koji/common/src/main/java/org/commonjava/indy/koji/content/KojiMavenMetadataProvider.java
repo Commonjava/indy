@@ -34,6 +34,7 @@ import org.commonjava.maven.atlas.ident.ref.SimpleProjectRef;
 import org.commonjava.maven.atlas.ident.util.VersionUtils;
 import org.commonjava.maven.atlas.ident.version.InvalidVersionSpecificationException;
 import org.commonjava.maven.atlas.ident.version.SingleVersion;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,15 +78,19 @@ public class KojiMavenMetadataProvider
     @Inject
     private IndyKojiConfig kojiConfig;
 
+    @Inject
+    private KojiBuildAuthority buildAuthority;
+
     private final Map<ProjectRef, ReentrantLock> versionMetadataLocks = new WeakHashMap<>();
 
     protected KojiMavenMetadataProvider(){}
 
     public KojiMavenMetadataProvider( CacheHandle<ProjectRef, Metadata> versionMetadata, KojiClient kojiClient,
-                                      IndyKojiConfig kojiConfig )
+                                      KojiBuildAuthority buildAuthority, IndyKojiConfig kojiConfig )
     {
         this.versionMetadata = versionMetadata;
         this.kojiClient = kojiClient;
+        this.buildAuthority = buildAuthority;
         this.kojiConfig = kojiConfig;
     }
 
@@ -193,28 +198,33 @@ public class KojiMavenMetadataProvider
                             logger.debug( "Checking for builds/tags of: {}", archive );
                             List<KojiTagInfo> tags = kojiClient.listTags( archive.getBuildId(), session );
 
+                            boolean buildAllowed = false;
                             for ( KojiTagInfo tag : tags )
                             {
                                 if ( kojiConfig.isTagAllowed( tag.getName() ) )
                                 {
-                                    try
-                                    {
-                                        logger.debug( "Koji tag: {} is allowed for proxying. Including version: '{}'",
-                                                      tag.getName(), archive.getVersion() );
-
-                                        versions.add( VersionUtils.createSingleVersion( archive.getVersion() ) );
-                                    }
-                                    catch ( InvalidVersionSpecificationException e )
-                                    {
-                                        logger.warn( String.format(
-                                                "Encountered invalid version: %s for archive: %s. Reason: %s",
-                                                archive.getVersion(), archive.getArchiveId(), e.getMessage() ), e );
-                                    }
+                                    logger.debug( "Koji tag: {} is allowed for proxying.", tag.getName() );
+                                    buildAllowed = true;
                                     break;
                                 }
                                 else
                                 {
                                     logger.debug( "Koji tag: {} is not allowed for proxying.", tag.getName() );
+                                }
+                            }
+
+                            if ( buildAllowed && buildAuthority.isAuthorized( path, new EventMetadata(), ref, build, session ) )
+                            {
+                                try
+                                {
+
+                                    versions.add( VersionUtils.createSingleVersion( archive.getVersion() ) );
+                                }
+                                catch ( InvalidVersionSpecificationException e )
+                                {
+                                    logger.warn( String.format(
+                                            "Encountered invalid version: %s for archive: %s. Reason: %s",
+                                            archive.getVersion(), archive.getArchiveId(), e.getMessage() ), e );
                                 }
                             }
                         }
