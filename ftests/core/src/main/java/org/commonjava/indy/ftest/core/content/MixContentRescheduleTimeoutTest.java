@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.Date;
 
 import static org.commonjava.indy.model.core.StoreType.remote;
@@ -95,7 +96,7 @@ public class MixContentRescheduleTimeoutTest
         Thread.sleep( CACHE_TIMEOUT_WAITING_MILLISECONDS );
 
         // as the metadata re-request, the timeout interval should NOT be re-scheduled
-        client.content().get( remote, repoId, metadataPath ).close();
+        try(InputStream is = client.content().get( remote, repoId, metadataPath )){}
 
         // will wait another 4.5s
         Thread.sleep( CACHE_TIMEOUT_WAITING_MILLISECONDS + 500 );
