@@ -26,17 +26,15 @@ import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.model.core.AbstractRepository;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.model.core.AbstractRepository;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.event.EventMetadata;
-import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
@@ -60,7 +58,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static org.commonjava.indy.model.core.StoreType.group;
@@ -290,6 +287,11 @@ public class DefaultContentManager
 
     private boolean checkMask( final ArtifactStore store, final String path )
     {
+        if ( !( store instanceof AbstractRepository ) )
+        {
+            return true;
+        }
+
         AbstractRepository repo = (AbstractRepository) store;
         Set<String> maskPatterns = repo.getPathMaskPatterns();
         logger.debug( "Checking mask in: {}, type: {}, patterns: {}", repo.getName(), repo.getKey().getType(), maskPatterns );
@@ -476,7 +478,7 @@ public class DefaultContentManager
 
             for ( final ArtifactStore member : members )
             {
-                if ( downloadManager.delete( member, path, eventMetadata ) )
+                if ( checkMask(member, path) && downloadManager.delete( member, path, eventMetadata ) )
                 {
                     result = true;
                     for ( final ContentGenerator generator : contentGenerators )
@@ -496,7 +498,7 @@ public class DefaultContentManager
         }
         else
         {
-            if ( downloadManager.delete( store, path, eventMetadata ) )
+            if ( checkMask(store, path) && downloadManager.delete( store, path, eventMetadata ) )
             {
                 result = true;
                 for ( final ContentGenerator generator : contentGenerators )
@@ -569,6 +571,11 @@ public class DefaultContentManager
     public List<StoreResource> list( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
+        if ( !checkMask( store, path ) )
+        {
+            return Collections.emptyList();
+        }
+
         List<StoreResource> listed;
         if ( group == store.getKey().getType() )
         {
@@ -813,6 +820,11 @@ public class DefaultContentManager
     public boolean exists(ArtifactStore store, String path)
         throws IndyWorkflowException
     {
+        if ( !checkMask(store, path))
+        {
+            return false;
+        }
+
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "Checking existence of: {} in: {}", path, store.getKey() );
         if ( store instanceof Group )
