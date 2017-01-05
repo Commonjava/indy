@@ -478,7 +478,7 @@ public class DefaultContentManager
 
             for ( final ArtifactStore member : members )
             {
-                if ( checkMask(member, path) && downloadManager.delete( member, path, eventMetadata ) )
+                if ( downloadManager.delete( member, path, eventMetadata ) )
                 {
                     result = true;
                     for ( final ContentGenerator generator : contentGenerators )
@@ -498,7 +498,7 @@ public class DefaultContentManager
         }
         else
         {
-            if ( checkMask(store, path) && downloadManager.delete( store, path, eventMetadata ) )
+            if ( downloadManager.delete( store, path, eventMetadata ) )
             {
                 result = true;
                 for ( final ContentGenerator generator : contentGenerators )
@@ -571,11 +571,6 @@ public class DefaultContentManager
     public List<StoreResource> list( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
-        if ( !checkMask( store, path ) )
-        {
-            return Collections.emptyList();
-        }
-
         List<StoreResource> listed;
         if ( group == store.getKey().getType() )
         {
