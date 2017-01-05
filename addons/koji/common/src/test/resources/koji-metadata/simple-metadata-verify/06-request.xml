@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<methodCall>
+  <methodName>listTags</methodName>
+  <params>
+    <param>
+      <value>
+        <struct>
+          <member>
+            <name>build</name>
+            <value>
+              <int>422953</int>
+            </value>
+          </member>
+          <member>
+            <name>__starstar</name>
+            <value>
+              <boolean>1</boolean>
+            </value>
+          </member>
+        </struct>
+      </value>
+    </param>
+  </params>
+</methodCall>

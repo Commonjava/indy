@@ -23,12 +23,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Paths;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.Assert.fail;
 
@@ -41,11 +43,31 @@ public final class KojiMockHandlers
     {
     }
 
-    public static void configureKojiServer( ExpectationServer server, String urlBase,
-                                                                   AtomicInteger exchangeCounter, String resourceBase )
+    public static void configureKojiServer( ExpectationServer server, String urlBase, AtomicInteger exchangeCounter,
+                                            String resourceBase, boolean verifyArtifacts, String verifyBasepath )
     {
         try
         {
+            if ( verifyArtifacts )
+            {
+                Properties checksums = new Properties();
+                String checksumsProperties = resourceBase + "/checksums.properties";
+                try(InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream( checksumsProperties ) )
+                {
+                    if ( in == null )
+                    {
+                        fail( "Cannot find checksums resource in classpath: '" + checksumsProperties + "'" );
+                    }
+
+                    checksums.load( in );
+                }
+
+                for ( String path: checksums.stringPropertyNames() )
+                {
+                    server.expect("GET", server.formatUrl( verifyBasepath, path ), 200, checksums.getProperty( path ) );
+                }
+            }
+
             server.expect( "POST", server.formatUrl( urlBase ), kojiMessageHandler( exchangeCounter, resourceBase ) );
             server.expect( "POST", server.formatUrl( urlBase, "ssllogin" ),
                            kojiMessageHandler( exchangeCounter, resourceBase ) );

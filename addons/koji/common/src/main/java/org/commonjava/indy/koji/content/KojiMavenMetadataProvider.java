@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -175,6 +176,8 @@ public class KojiMavenMetadataProvider
                 {
                     metadata = kojiClient.withKojiSession( ( session ) -> {
 
+                        Map<Integer, KojiBuildInfo> seenBuilds = new HashMap<>();
+                        Map<Integer, List<KojiTagInfo>> seenBuildTags = new HashMap<>();
                         List<KojiArchiveInfo> archives = kojiClient.listArchivesMatching( ref, session );
 
                         Set<SingleVersion> versions = new HashSet<>();
@@ -182,12 +185,20 @@ public class KojiMavenMetadataProvider
                         {
                             if ( !archive.getFilename().endsWith( ".pom" ) )
                             {
+                                logger.debug( "Skipping non-POM: {}", archive.getFilename() );
                                 continue;
                             }
 
-                            KojiBuildInfo build = kojiClient.getBuildInfo( archive.getBuildId(), session );
+                            KojiBuildInfo build = seenBuilds.get(archive.getBuildId());
+                            if( build == null ){
+                                build = kojiClient.getBuildInfo( archive.getBuildId(), session );
+                                seenBuilds.put( archive.getBuildId(), build );
+                            }
+
                             if ( build == null )
                             {
+                                logger.debug( "Cannot retrieve build info: {}. Skipping: {}", archive.getBuildId(),
+                                              archive.getFilename() );
                                 continue;
                             }
 
@@ -200,7 +211,12 @@ public class KojiMavenMetadataProvider
                             }
 
                             logger.debug( "Checking for builds/tags of: {}", archive );
-                            List<KojiTagInfo> tags = kojiClient.listTags( archive.getBuildId(), session );
+                            List<KojiTagInfo> tags = seenBuildTags.get( archive.getBuildId() );
+                            if ( tags == null )
+                            {
+                                tags = kojiClient.listTags( archive.getBuildId(), session );
+                                seenBuildTags.put( archive.getBuildId(), tags );
+                            }
 
                             boolean buildAllowed = false;
                             for ( KojiTagInfo tag : tags )
@@ -217,11 +233,14 @@ public class KojiMavenMetadataProvider
                                 }
                             }
 
+                            logger.debug(
+                                    "Checking if build passed tag whitelist check and doesn't collide with something in authority store (if configured)..." );
+
                             if ( buildAllowed && buildAuthority.isAuthorized( path, new EventMetadata(), ref, build, session ) )
                             {
                                 try
                                 {
-
+                                    logger.debug( "Adding version: {} for: {}", archive.getVersion(), path );
                                     versions.add( VersionUtils.createSingleVersion( archive.getVersion() ) );
                                 }
                                 catch ( InvalidVersionSpecificationException e )

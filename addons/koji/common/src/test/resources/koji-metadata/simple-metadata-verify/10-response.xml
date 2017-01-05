@@ -1,0 +1,35 @@
+<?xml version="1.0" ?>
+<methodResponse>
+  <params>
+    <param>
+      <value>
+        <struct>
+          <member>
+            <name>build_id</name>
+            <value>
+              <int>196927</int>
+            </value>
+          </member>
+          <member>
+            <name>group_id</name>
+            <value>
+              <string>apache-commons-io</string>
+            </value>
+          </member>
+          <member>
+            <name>artifact_id</name>
+            <value>
+              <string>apache-commons-io-repolib</string>
+            </value>
+          </member>
+          <member>
+            <name>version</name>
+            <value>
+              <string>2.1-0.2_redhat_1.ep6.el6</string>
+            </value>
+          </member>
+        </struct>
+      </value>
+    </param>
+  </params>
+</methodResponse>

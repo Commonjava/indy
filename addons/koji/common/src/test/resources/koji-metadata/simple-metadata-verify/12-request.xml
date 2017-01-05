@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<methodCall>
+  <methodName>getBuild</methodName>
+  <params>
+    <param>
+      <value>
+        <int>196927</int>
+      </value>
+    </param>
+  </params>
+</methodCall>
