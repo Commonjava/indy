@@ -58,7 +58,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -120,6 +119,13 @@ public class PromotionValidationTools
     public StoreKey[] getValidationStoreKeys( final ValidationRequest request, final boolean includeSource )
             throws PromotionValidationException
     {
+        return getValidationStoreKeys( request, includeSource, true );
+    }
+
+    public StoreKey[] getValidationStoreKeys( final ValidationRequest request, final boolean includeSource,
+                                              final boolean includeTarget )
+            throws PromotionValidationException
+    {
         String verifyStores = request.getValidationParameter( PromotionValidationTools.AVAILABLE_IN_STORES );
         if ( verifyStores == null )
         {
@@ -135,7 +141,10 @@ public class PromotionValidationTools
             verifyStoreKeys.add( request.getSourceRepository().getKey() );
         }
 
-        verifyStoreKeys.add( request.getTarget() );
+        if ( includeTarget )
+        {
+            verifyStoreKeys.add( request.getTarget() );
+        }
         if ( verifyStores == null )
         {
             logger.warn(
