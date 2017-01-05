@@ -32,7 +32,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -110,11 +112,22 @@ public class KojiBuildAuthority
                                  KojiSessionInfo session )
             throws KojiClientException
     {
+        return isAuthorized( path, eventMetadata, ref, build, session, new HashMap<>() );
+    }
+
+    public boolean isAuthorized( String path, EventMetadata eventMetadata, ProjectRef ref, KojiBuildInfo build,
+                                 KojiSessionInfo session, Map<Integer, KojiBuildArchiveCollection> seenBuildArchives )
+            throws KojiClientException
+    {
         ArtifactStore authoritativeStore = getAuthoritativeStore();
 
         if ( authoritativeStore != null )
         {
-            KojiBuildArchiveCollection archiveCollection = kojiClient.listArchivesForBuild( build.getId(), session );
+            KojiBuildArchiveCollection archiveCollection = seenBuildArchives.get(build.getId());
+            if ( archiveCollection == null ){
+                archiveCollection = kojiClient.listArchivesForBuild( build.getId(), session );
+                seenBuildArchives.put( build.getId(), archiveCollection );
+            }
 
             // @formatter:off
             Predicate<KojiArchiveInfo> archiveInfoFilter = ( archive ) -> EXLUDED_FILE_ENDINGS.parallelStream()
