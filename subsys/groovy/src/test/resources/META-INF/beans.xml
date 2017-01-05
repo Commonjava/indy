@@ -17,6 +17,7 @@
   <alternatives>
     <stereotype>org.commonjava.indy.inject.TestData</stereotype>
     <class>org.commonjava.indy.action.fixture.AlternativeUserLifecycleManager</class>
+    <class>org.commonjava.indy.subsys.template.fixture.MockDownloadManager</class>
   </alternatives>
   
 </beans>
