@@ -18,6 +18,7 @@ package org.commonjava.indy.koji.content;
 import com.redhat.red.build.koji.KojiClient;
 import com.redhat.red.build.koji.KojiClientException;
 import com.redhat.red.build.koji.model.xmlrpc.KojiArchiveInfo;
+import com.redhat.red.build.koji.model.xmlrpc.KojiBuildArchiveCollection;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
 import org.apache.maven.artifact.repository.metadata.Metadata;
@@ -176,8 +177,11 @@ public class KojiMavenMetadataProvider
                 {
                     metadata = kojiClient.withKojiSession( ( session ) -> {
 
+                        // short-term caches to help improve performance a bit by avoiding xml-rpc calls.
+                        Map<Integer, KojiBuildArchiveCollection> seenBuildArchives = new HashMap<>();
                         Map<Integer, KojiBuildInfo> seenBuilds = new HashMap<>();
                         Map<Integer, List<KojiTagInfo>> seenBuildTags = new HashMap<>();
+
                         List<KojiArchiveInfo> archives = kojiClient.listArchivesMatching( ref, session );
 
                         Set<SingleVersion> versions = new HashSet<>();
@@ -236,7 +240,7 @@ public class KojiMavenMetadataProvider
                             logger.debug(
                                     "Checking if build passed tag whitelist check and doesn't collide with something in authority store (if configured)..." );
 
-                            if ( buildAllowed && buildAuthority.isAuthorized( path, new EventMetadata(), ref, build, session ) )
+                            if ( buildAllowed && buildAuthority.isAuthorized( path, new EventMetadata(), ref, build, session, seenBuildArchives ) )
                             {
                                 try
                                 {

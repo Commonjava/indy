@@ -53,8 +53,10 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -344,7 +346,7 @@ public abstract class KojiContentManagerDecorator
                     {
                         // If the authoritative store is not configured, one or both systems is missing MD5 information,
                         // or the artifact matches the one in the authoritative store, go ahead.
-                        if ( buildAuthority.isAuthorized(path, eventMetadata, artifactRef, build, session ) )
+                        if ( buildAuthority.isAuthorized( path, eventMetadata, artifactRef, build, session ) )
                         {
                             return consumer.execute( artifactRef, build, session );
                         }
