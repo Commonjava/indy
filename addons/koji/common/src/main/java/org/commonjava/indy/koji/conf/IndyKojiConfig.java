@@ -502,7 +502,7 @@ public class IndyKojiConfig
             logger.debug( "Checking target pattern '{}' against group name: '{}'", key, name );
             if ( name.equals(key) || name.matches( key ) )
             {
-                logger.info( "Target group for {} is {}", name, key );
+                logger.info( "Target group for {} is {}", name, targetGroups.get( key ) );
                 return true;
             }
         }

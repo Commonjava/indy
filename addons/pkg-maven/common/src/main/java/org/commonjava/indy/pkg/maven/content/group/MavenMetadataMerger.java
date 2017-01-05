@@ -112,6 +112,8 @@ public class MavenMetadataMerger
         logger.debug( "Generating merged metadata in: {}:{}", group.getKey(), path );
 
         final Metadata master = new Metadata();
+        master.setVersioning( new Versioning() );
+
         final MetadataXpp3Reader reader = new MetadataXpp3Reader();
         final FileReader fr = null;
         InputStream stream = null;
@@ -152,44 +154,37 @@ public class MavenMetadataMerger
                 master.merge( md );
 
                 Versioning versioning = master.getVersioning();
-                if ( versioning == null )
+                Versioning mdVersioning = md.getVersioning();
+
+                // FIXME: Should we try to merge snapshot lists instead of using the first one we encounter??
+                if ( versioning.getSnapshot() == null && mdVersioning != null )
                 {
-                    master.setVersioning( new Versioning() );
+                    logger.info( "INCLUDING snapshot information from: {} in: {}:{}", src, group.getKey(), path );
+                    snapshotProvider = src;
+
+                    versioning.setSnapshot( mdVersioning.getSnapshot() );
+
+                    final List<SnapshotVersion> snapshotVersions = versioning
+                            .getSnapshotVersions();
+                    boolean added = false;
+                    for ( final SnapshotVersion snap : mdVersioning
+                            .getSnapshotVersions() )
+                    {
+                        if ( !snapshotVersions.contains( snap ) )
+                        {
+                            snapshotVersions.add( snap );
+                            added = true;
+                        }
+                    }
+
+                    if ( added )
+                    {
+                        Collections.sort( snapshotVersions, new SnapshotVersionComparator() );
+                    }
                 }
                 else
                 {
-                    Versioning mdVersioning = md.getVersioning();
-
-                    // FIXME: Should we try to merge snapshot lists instead of using the first one we encounter??
-                    if ( versioning.getSnapshot() == null && mdVersioning != null )
-                    {
-                        logger.info( "INCLUDING snapshot information from: {} in: {}:{}", src, group.getKey(), path );
-                        snapshotProvider = src;
-
-                        versioning.setSnapshot( mdVersioning.getSnapshot() );
-
-                        final List<SnapshotVersion> snapshotVersions = versioning
-                                .getSnapshotVersions();
-                        boolean added = false;
-                        for ( final SnapshotVersion snap : mdVersioning
-                                .getSnapshotVersions() )
-                        {
-                            if ( !snapshotVersions.contains( snap ) )
-                            {
-                                snapshotVersions.add( snap );
-                                added = true;
-                            }
-                        }
-
-                        if ( added )
-                        {
-                            Collections.sort( snapshotVersions, new SnapshotVersionComparator() );
-                        }
-                    }
-                    else
-                    {
-                        logger.warn( "SKIPPING snapshot information from: {} in: {}:{} (obscured by: {})", src, group.getKey(), path, snapshotProvider );
-                    }
+                    logger.warn( "SKIPPING snapshot information from: {} in: {}:{} (obscured by: {})", src, group.getKey(), path, snapshotProvider );
                 }
 
                 merged = true;
