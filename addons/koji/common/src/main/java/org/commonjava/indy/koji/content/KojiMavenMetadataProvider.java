@@ -92,18 +92,23 @@ public class KojiMavenMetadataProvider
     public Metadata getMetadata( StoreKey targetKey, String path )
             throws IndyWorkflowException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+
         if ( group != targetKey.getType() )
         {
+            logger.debug( "Not a group. Cannot supplement with metadata from Koji builds" );
             return null;
         }
 
         if ( !kojiConfig.isEnabled() )
         {
+            logger.debug( "Koji add-on is disabled." );
             return null;
         }
 
         if ( !kojiConfig.isEnabledFor( targetKey.getName() ) )
         {
+            logger.debug( "Koji integration is not enabled for group: {}", targetKey );
             return null;
         }
 
@@ -113,6 +118,7 @@ public class KojiMavenMetadataProvider
 
         if ( artifactDir == null || groupDir == null )
         {
+            logger.debug( "Invalid groupId / artifactId directory structure: '{}' / '{}'", groupDir, artifactDir );
             return null;
         }
 
@@ -126,12 +132,12 @@ public class KojiMavenMetadataProvider
         }
         catch ( InvalidRefException e )
         {
-            Logger logger = LoggerFactory.getLogger( getClass() );
             logger.debug( "Not a valid Maven GA: {}:{}. Skipping Koji metadata retrieval.", groupId, artifactId );
         }
 
         if ( ga == null )
         {
+            logger.debug( "Could not render a valid Maven GA for path: '{}'", path );
             return null;
         }
 
@@ -160,8 +166,6 @@ public class KojiMavenMetadataProvider
             ProjectRef ref = ga;
             if ( metadata == null )
             {
-                Logger logger = LoggerFactory.getLogger( getClass() );
-
                 try
                 {
                     metadata = kojiClient.withKojiSession( ( session ) -> {
@@ -221,6 +225,7 @@ public class KojiMavenMetadataProvider
 
                         if ( versions.isEmpty() )
                         {
+                            logger.debug( "No versions found in Koji builds for metadata: {}", path );
                             return null;
                         }
 
@@ -267,7 +272,6 @@ public class KojiMavenMetadataProvider
         }
         catch ( InterruptedException e )
         {
-            Logger logger = LoggerFactory.getLogger( getClass() );
             logger.warn( "Interrupted waiting for Koji GA version metadata lock on target: {}", ga );
         }
         finally
@@ -275,6 +279,7 @@ public class KojiMavenMetadataProvider
             lock.unlock();
         }
 
+        logger.debug( "Returning null metadata result for unknown reason (path: '{}')", path );
         return null;
     }
 }
