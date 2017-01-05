@@ -19,26 +19,30 @@ import com.redhat.red.build.koji.KojiClient;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
+import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.IndyLocationExpander;
 import org.commonjava.indy.core.content.DefaultDirectContentAccess;
 import org.commonjava.indy.core.content.DefaultDownloadManager;
+import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
 import org.commonjava.indy.mem.data.MemoryStoreDataManager;
+import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.pkg.maven.content.MavenContentAdvisor;
+import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.maven.atlas.ident.ref.ProjectRef;
 import org.commonjava.maven.galley.GalleyCore;
 import org.commonjava.maven.galley.GalleyCoreBuilder;
 import org.commonjava.maven.galley.GalleyInitException;
 import org.commonjava.maven.galley.cache.FileCacheProviderFactory;
-import org.commonjava.maven.galley.io.SpecialPathManagerImpl;
 import org.commonjava.maven.galley.maven.internal.type.StandardTypeMapper;
-import org.commonjava.maven.galley.spi.io.SpecialPathManager;
+import org.commonjava.maven.galley.transport.htcli.HttpClientTransport;
+import org.commonjava.maven.galley.transport.htcli.HttpImpl;
+import org.commonjava.maven.galley.transport.htcli.conf.GlobalHttpConfiguration;
 import org.commonjava.rwx.binding.error.BindException;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
@@ -49,6 +53,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -59,6 +64,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.commonjava.indy.koji.content.testutil.KojiMockHandlers.configureKojiServer;
 import static org.commonjava.indy.model.core.StoreType.group;
+import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -71,7 +77,14 @@ public class KojiMavenMetadataProviderTest
 {
     private static final String KOJI_BASEPATH = "koji";
 
+    private static final String VERIFY_BASEPATH = "verify";
+
+    private static final String VERIFY_REPO = "verify-server";
+
     private AtomicInteger counter = new AtomicInteger( 0 );
+
+    @Rule
+    public TestName named = new TestName();
 
     @Rule
     public ExpectationServer server = new ExpectationServer();
@@ -90,7 +103,7 @@ public class KojiMavenMetadataProviderTest
     public void excludeBinaryImportsFromVersionMetadata()
             throws Exception
     {
-        initKojiClient( "metadata-with-import-generate" );
+        initKojiClient( "metadata-with-import-generate", false );
 
         Metadata metadata =
                 provider.getMetadata( new StoreKey( group, "public" ), "commons-io/commons-io/maven-metadata.xml" );
@@ -120,7 +133,39 @@ public class KojiMavenMetadataProviderTest
     public void retrieveVersionMetadata()
             throws Exception
     {
-        initKojiClient( "simple-metadata-generate" );
+        initKojiClient( "simple-metadata-generate", false );
+
+        Metadata metadata =
+                provider.getMetadata( new StoreKey( group, "public" ), "commons-io/commons-io/maven-metadata.xml" );
+
+        assertThat( metadata, notNullValue() );
+
+        StringWriter sw = new StringWriter();
+        new MetadataXpp3Writer().write( sw, metadata );
+        System.out.println( sw.toString() );
+
+        Versioning versioning = metadata.getVersioning();
+        assertThat( versioning, notNullValue() );
+
+        assertThat( versioning.getLatest(), equalTo( "2.4.0.redhat-1" ) );
+        assertThat( versioning.getRelease(), equalTo( "2.4.0.redhat-1" ) );
+
+        List<String> versions = versioning.getVersions();
+        assertThat( versions, notNullValue() );
+        assertThat( versions.size(), equalTo( 2 ) );
+
+        int idx = 0;
+        assertThat( versions.get( idx ), equalTo( "2.1-redhat-1" ) );
+        idx++;
+        assertThat( versions.get( idx ), equalTo( "2.4.0.redhat-1" ) );
+
+    }
+
+    @Test
+    public void retrieveVersionMetadataWithVerification()
+            throws Exception
+    {
+        initKojiClient( "simple-metadata-verify", true );
 
         Metadata metadata =
                 provider.getMetadata( new StoreKey( group, "public" ), "commons-io/commons-io/maven-metadata.xml" );
@@ -152,7 +197,7 @@ public class KojiMavenMetadataProviderTest
     public void metadataNullWhenNoVersionsFound()
             throws Exception
     {
-        initKojiClient( "no-metadata-generate" );
+        initKojiClient( "no-metadata-generate", false );
 
         Metadata metadata =
                 provider.getMetadata( new StoreKey( group, "public" ), "commons-io/commons-io/maven-metadata.xml" );
@@ -164,7 +209,7 @@ public class KojiMavenMetadataProviderTest
     public void allowVersionMetadataToExpire()
             throws Exception
     {
-        initKojiClient( "simple-metadata-generate" );
+        initKojiClient( "simple-metadata-generate", false );
 
         StoreKey sk = new StoreKey( group, "public" );
         String path = "commons-io/commons-io/maven-metadata.xml";
@@ -218,14 +263,29 @@ public class KojiMavenMetadataProviderTest
     @Rule
     public TemporaryFolder temp = new TemporaryFolder();
 
-    private void initKojiClient( String exchangeName )
-            throws BindException, IOException, GalleyInitException
+    private void initKojiClient( String exchangeName, boolean verifyArtifacts )
+            throws BindException, IOException, GalleyInitException, IndyDataException
     {
-        configureKojiServer( server, KOJI_BASEPATH, counter, "koji-metadata/" + exchangeName );
-        kojiClient = new KojiClient( kojiConfig, new MemoryPasswordManager(), Executors.newCachedThreadPool() );
         StoreDataManager storeDataManager = new MemoryStoreDataManager( true );
 
-        GalleyCore galley = new GalleyCoreBuilder( new FileCacheProviderFactory( temp.newFolder( "cache" ) ) ).build();
+        if ( verifyArtifacts )
+        {
+            RemoteRepository verifyRepo = new RemoteRepository( VERIFY_REPO, server.formatUrl( VERIFY_BASEPATH ) );
+
+            storeDataManager.storeArtifactStore( verifyRepo, new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                                "Adding verification repo" ) );
+
+            kojiConfig.setArtifactAuthorityStore( new StoreKey( remote, VERIFY_REPO ).toString() );
+        }
+
+        String resourceBase = "koji-metadata/" + exchangeName;
+        configureKojiServer( server, KOJI_BASEPATH, counter, resourceBase, verifyArtifacts, VERIFY_BASEPATH );
+        kojiClient = new KojiClient( kojiConfig, new MemoryPasswordManager(), Executors.newCachedThreadPool() );
+
+        GalleyCore galley = new GalleyCoreBuilder(
+                new FileCacheProviderFactory( temp.newFolder( "cache" ) ) ).withEnabledTransports(
+                new HttpClientTransport( new HttpImpl( new org.commonjava.maven.galley.auth.MemoryPasswordManager() ),
+                                         new IndyObjectMapper( true ), new GlobalHttpConfiguration() ) ).build();
 
         DownloadManager downloadManager = new DefaultDownloadManager( storeDataManager, galley.getTransferManager(),
                                                                       new IndyLocationExpander( storeDataManager ) );
@@ -243,6 +303,7 @@ public class KojiMavenMetadataProviderTest
     public void setup()
             throws Throwable
     {
+        Thread.currentThread().setName( named.getMethodName() );
         cacheMgr = new DefaultCacheManager();
         String mdCacheName = "koji-maven-metadata";
 
