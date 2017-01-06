@@ -74,7 +74,7 @@ public class ContentAccessHandler
     }
 
     public ContentAccessHandler( final ContentController controller, final UriFormatter uriFormatter,
-                                 JaxRsRequestHelper jaxRsRequestHelper )
+                                 final JaxRsRequestHelper jaxRsRequestHelper )
     {
         this.contentController = controller;
         this.uriFormatter = uriFormatter;
@@ -82,7 +82,7 @@ public class ContentAccessHandler
     }
 
     public Response doCreate( final String type, final String name, final String path, final HttpServletRequest request,
-                              EventMetadata eventMetadata, Supplier<URI> uriBuilder )
+                              EventMetadata eventMetadata, final Supplier<URI> uriBuilder )
     {
         final StoreType st = StoreType.get( type );
         StoreKey sk = new StoreKey( st, name );
@@ -113,7 +113,7 @@ public class ContentAccessHandler
         return response;
     }
 
-    public Response doDelete( String type, String name, String path, EventMetadata eventMetadata )
+    public Response doDelete( final String type, final String name, final String path, EventMetadata eventMetadata )
     {
         final StoreType st = StoreType.get( type );
         StoreKey sk = new StoreKey( st, name );
@@ -136,8 +136,8 @@ public class ContentAccessHandler
         return response;
     }
 
-    public Response doHead( String type, String name, String path, Boolean cacheOnly, String baseUri,
-                            HttpServletRequest request, EventMetadata eventMetadata )
+    public Response doHead( final String type, final String name, final String path, final Boolean cacheOnly, final String baseUri,
+                            final HttpServletRequest request, EventMetadata eventMetadata )
     {
         final StoreType st = StoreType.get( type );
         final StoreKey sk = new StoreKey( st, name );
@@ -243,7 +243,7 @@ public class ContentAccessHandler
         return response;
     }
 
-    public Response doGet( String type, String name, String path, String baseUri, HttpServletRequest request,
+    public Response doGet( final String type, final String name, final String path, final String baseUri, final HttpServletRequest request,
                            EventMetadata eventMetadata )
     {
         final StoreType st = StoreType.get( type );
@@ -357,7 +357,7 @@ public class ContentAccessHandler
         return response;
     }
 
-    private Response handleMissingContentQuery( StoreKey sk, String path )
+    private Response handleMissingContentQuery( final StoreKey sk, final String path )
     {
         Response response = null;
 
@@ -388,7 +388,8 @@ public class ContentAccessHandler
 
         if ( response == null )
         {
-            response = Response.status( Status.NOT_FOUND ).build();
+            response = formatResponse( ApplicationStatus.NOT_FOUND, null,
+                                       "Path " + path + " is not available in store " + sk + "." );
         }
 
         return response;
