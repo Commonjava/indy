@@ -33,6 +33,13 @@ public class MavenContentAdvisor
     @Inject
     private SpecialPathManager specialPathManager;
 
+    protected MavenContentAdvisor(){}
+
+    public MavenContentAdvisor( SpecialPathManager specialPathManager )
+    {
+        this.specialPathManager = specialPathManager;
+    }
+
     @Override
     public ContentQuality getContentQuality( String path )
     {

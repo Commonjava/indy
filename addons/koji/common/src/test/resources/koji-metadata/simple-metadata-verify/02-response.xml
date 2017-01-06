@@ -1,0 +1,47 @@
+<?xml version="1.0" ?>
+<methodResponse>
+  <params>
+    <param>
+      <value>
+        <struct>
+          <member>
+            <name>status</name>
+            <value>
+              <int>0</int>
+            </value>
+          </member>
+          <member>
+            <name>authtype</name>
+            <value>
+              <int>2</int>
+            </value>
+          </member>
+          <member>
+            <name>name</name>
+            <value>
+              <string>newcastle-demo-ose</string>
+            </value>
+          </member>
+          <member>
+            <name>usertype</name>
+            <value>
+              <int>0</int>
+            </value>
+          </member>
+          <member>
+            <name>krb_principal</name>
+            <value>
+              <nil/>
+            </value>
+          </member>
+          <member>
+            <name>id</name>
+            <value>
+              <int>3600</int>
+            </value>
+          </member>
+        </struct>
+      </value>
+    </param>
+  </params>
+</methodResponse>

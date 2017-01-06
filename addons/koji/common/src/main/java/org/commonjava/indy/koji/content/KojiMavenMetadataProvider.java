@@ -18,6 +18,7 @@ package org.commonjava.indy.koji.content;
 import com.redhat.red.build.koji.KojiClient;
 import com.redhat.red.build.koji.KojiClientException;
 import com.redhat.red.build.koji.model.xmlrpc.KojiArchiveInfo;
+import com.redhat.red.build.koji.model.xmlrpc.KojiBuildArchiveCollection;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
 import org.apache.maven.artifact.repository.metadata.Metadata;
@@ -34,6 +35,7 @@ import org.commonjava.maven.atlas.ident.ref.SimpleProjectRef;
 import org.commonjava.maven.atlas.ident.util.VersionUtils;
 import org.commonjava.maven.atlas.ident.version.InvalidVersionSpecificationException;
 import org.commonjava.maven.atlas.ident.version.SingleVersion;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -77,15 +80,19 @@ public class KojiMavenMetadataProvider
     @Inject
     private IndyKojiConfig kojiConfig;
 
+    @Inject
+    private KojiBuildAuthority buildAuthority;
+
     private final Map<ProjectRef, ReentrantLock> versionMetadataLocks = new WeakHashMap<>();
 
     protected KojiMavenMetadataProvider(){}
 
     public KojiMavenMetadataProvider( CacheHandle<ProjectRef, Metadata> versionMetadata, KojiClient kojiClient,
-                                      IndyKojiConfig kojiConfig )
+                                      KojiBuildAuthority buildAuthority, IndyKojiConfig kojiConfig )
     {
         this.versionMetadata = versionMetadata;
         this.kojiClient = kojiClient;
+        this.buildAuthority = buildAuthority;
         this.kojiConfig = kojiConfig;
     }
 
@@ -170,6 +177,11 @@ public class KojiMavenMetadataProvider
                 {
                     metadata = kojiClient.withKojiSession( ( session ) -> {
 
+                        // short-term caches to help improve performance a bit by avoiding xml-rpc calls.
+                        Map<Integer, KojiBuildArchiveCollection> seenBuildArchives = new HashMap<>();
+                        Map<Integer, KojiBuildInfo> seenBuilds = new HashMap<>();
+                        Map<Integer, List<KojiTagInfo>> seenBuildTags = new HashMap<>();
+
                         List<KojiArchiveInfo> archives = kojiClient.listArchivesMatching( ref, session );
 
                         Set<SingleVersion> versions = new HashSet<>();
@@ -177,12 +189,20 @@ public class KojiMavenMetadataProvider
                         {
                             if ( !archive.getFilename().endsWith( ".pom" ) )
                             {
+                                logger.debug( "Skipping non-POM: {}", archive.getFilename() );
                                 continue;
                             }
 
-                            KojiBuildInfo build = kojiClient.getBuildInfo( archive.getBuildId(), session );
+                            KojiBuildInfo build = seenBuilds.get(archive.getBuildId());
+                            if( build == null ){
+                                build = kojiClient.getBuildInfo( archive.getBuildId(), session );
+                                seenBuilds.put( archive.getBuildId(), build );
+                            }
+
                             if ( build == null )
                             {
+                                logger.debug( "Cannot retrieve build info: {}. Skipping: {}", archive.getBuildId(),
+                                              archive.getFilename() );
                                 continue;
                             }
 
@@ -195,30 +215,43 @@ public class KojiMavenMetadataProvider
                             }
 
                             logger.debug( "Checking for builds/tags of: {}", archive );
-                            List<KojiTagInfo> tags = kojiClient.listTags( archive.getBuildId(), session );
+                            List<KojiTagInfo> tags = seenBuildTags.get( archive.getBuildId() );
+                            if ( tags == null )
+                            {
+                                tags = kojiClient.listTags( archive.getBuildId(), session );
+                                seenBuildTags.put( archive.getBuildId(), tags );
+                            }
 
+                            boolean buildAllowed = false;
                             for ( KojiTagInfo tag : tags )
                             {
                                 if ( kojiConfig.isTagAllowed( tag.getName() ) )
                                 {
-                                    try
-                                    {
-                                        logger.debug( "Koji tag: {} is allowed for proxying. Including version: '{}'",
-                                                      tag.getName(), archive.getVersion() );
-
-                                        versions.add( VersionUtils.createSingleVersion( archive.getVersion() ) );
-                                    }
-                                    catch ( InvalidVersionSpecificationException e )
-                                    {
-                                        logger.warn( String.format(
-                                                "Encountered invalid version: %s for archive: %s. Reason: %s",
-                                                archive.getVersion(), archive.getArchiveId(), e.getMessage() ), e );
-                                    }
+                                    logger.debug( "Koji tag: {} is allowed for proxying.", tag.getName() );
+                                    buildAllowed = true;
                                     break;
                                 }
                                 else
                                 {
                                     logger.debug( "Koji tag: {} is not allowed for proxying.", tag.getName() );
+                                }
+                            }
+
+                            logger.debug(
+                                    "Checking if build passed tag whitelist check and doesn't collide with something in authority store (if configured)..." );
+
+                            if ( buildAllowed && buildAuthority.isAuthorized( path, new EventMetadata(), ref, build, session, seenBuildArchives ) )
+                            {
+                                try
+                                {
+                                    logger.debug( "Adding version: {} for: {}", archive.getVersion(), path );
+                                    versions.add( VersionUtils.createSingleVersion( archive.getVersion() ) );
+                                }
+                                catch ( InvalidVersionSpecificationException e )
+                                {
+                                    logger.warn( String.format(
+                                            "Encountered invalid version: %s for archive: %s. Reason: %s",
+                                            archive.getVersion(), archive.getArchiveId(), e.getMessage() ), e );
                                 }
                             }
                         }
