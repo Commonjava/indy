@@ -17,6 +17,7 @@ package org.commonjava.indy.core.ctl;
 
 import groovy.text.GStringTemplateEngine;
 import org.apache.commons.io.IOUtils;
+import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentGenerator;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DownloadManager;
@@ -57,42 +58,40 @@ public class ContentControllerTest
 
     @Before
     public void setup()
-        throws Exception
+            throws Exception
     {
         fixture.initMissingComponents();
 
         final StoreDataManager storeManager = new MemoryStoreDataManager( true );
         final DownloadManager fileManager =
-            new DefaultDownloadManager( storeManager, fixture.getTransferManager(), fixture.getLocationExpander() );
+                new DefaultDownloadManager( storeManager, fixture.getTransferManager(), fixture.getLocationExpander() );
 
         final ContentManager contentManager =
-            new DefaultContentManager( storeManager, fileManager, new IndyObjectMapper( true ),
-                                       new SpecialPathManagerImpl(), new MemoryNotFoundCache(), Collections.<ContentGenerator> emptySet() );
+                new DefaultContentManager( storeManager, fileManager, new IndyObjectMapper( true ),
+                                           new SpecialPathManagerImpl(), new MemoryNotFoundCache(),
+                                           new ContentDigester( fileManager ),
+                                           Collections.<ContentGenerator>emptySet() );
 
-        final TemplatingEngine templates =
-            new TemplatingEngine( new GStringTemplateEngine(), new DataFileManager( fixture.getTemp()
-                                                                                           .newFolder( "indy-home" ),
-                                                                                    new DataFileEventManager() ) );
+        final TemplatingEngine templates = new TemplatingEngine( new GStringTemplateEngine(), new DataFileManager(
+                fixture.getTemp().newFolder( "indy-home" ), new DataFileEventManager() ) );
 
-        content =
-            new ContentController( storeManager, contentManager, templates, new IndyObjectMapper( true ),
-                                   new MimeTyper() );
+        content = new ContentController( storeManager, contentManager, templates, new IndyObjectMapper( true ),
+                                         new MimeTyper() );
     }
 
     @Test
     public void detectHtml_HtmlDoctypeDeclaration()
-        throws Exception
+            throws Exception
     {
         final ConcreteResource res = new ConcreteResource( new SimpleLocation( "test:uri" ), "file.html" );
-        final Transfer tx = fixture.getCache()
-                                   .getTransfer( res );
+        final Transfer tx = fixture.getCache().getTransfer( res );
 
         PrintWriter writer = null;
         try
         {
             writer = new PrintWriter( new OutputStreamWriter( tx.openOutputStream( TransferOperation.GENERATE ) ) );
             writer.print( "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n"
-                + "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">" );
+                                  + "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">" );
 
             writer.flush();
         }
@@ -106,11 +105,10 @@ public class ContentControllerTest
 
     @Test
     public void detectHtml_SingleHtmlElementLine()
-        throws Exception
+            throws Exception
     {
         final ConcreteResource res = new ConcreteResource( new SimpleLocation( "test:uri" ), "file.html" );
-        final Transfer tx = fixture.getCache()
-                                   .getTransfer( res );
+        final Transfer tx = fixture.getCache().getTransfer( res );
 
         PrintWriter writer = null;
         try
@@ -130,11 +128,10 @@ public class ContentControllerTest
 
     @Test
     public void detectHtml_SingleHtmlElementBeginsOnLine()
-        throws Exception
+            throws Exception
     {
         final ConcreteResource res = new ConcreteResource( new SimpleLocation( "test:uri" ), "file.html" );
-        final Transfer tx = fixture.getCache()
-                                   .getTransfer( res );
+        final Transfer tx = fixture.getCache().getTransfer( res );
 
         PrintWriter writer = null;
         try
@@ -154,11 +151,10 @@ public class ContentControllerTest
 
     @Test
     public void detectHtml_SingleHtmlElementLineWithPrecedingWhitespace()
-        throws Exception
+            throws Exception
     {
         final ConcreteResource res = new ConcreteResource( new SimpleLocation( "test:uri" ), "file.html" );
-        final Transfer tx = fixture.getCache()
-                                   .getTransfer( res );
+        final Transfer tx = fixture.getCache().getTransfer( res );
 
         PrintWriter writer = null;
         try
@@ -178,11 +174,10 @@ public class ContentControllerTest
 
     @Test
     public void detectHtml_MultipleHtmlElementsOnALine()
-        throws Exception
+            throws Exception
     {
         final ConcreteResource res = new ConcreteResource( new SimpleLocation( "test:uri" ), "file.html" );
-        final Transfer tx = fixture.getCache()
-                                   .getTransfer( res );
+        final Transfer tx = fixture.getCache().getTransfer( res );
 
         PrintWriter writer = null;
         try

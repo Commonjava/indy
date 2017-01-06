@@ -17,7 +17,6 @@ package org.commonjava.indy.koji.conf;
 
 import com.redhat.red.build.koji.config.KojiConfig;
 import org.commonjava.indy.conf.IndyConfigInfo;
-import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.util.jhttpc.model.SiteConfig;
 import org.commonjava.util.jhttpc.model.SiteConfigBuilder;
 import org.commonjava.util.jhttpc.model.SiteTrustType;
@@ -32,7 +31,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,6 +101,8 @@ public class IndyKojiConfig
     private Long lockTimeoutSeconds;
 
     private Long metadataTimeoutSeconds;
+
+    private String artifactAuthorityStore;
 
     @Override
     public SiteConfig getKojiSiteConfig()
@@ -435,6 +435,11 @@ public class IndyKojiConfig
                 this.maxConnections = Integer.valueOf( value );
                 break;
             }
+            case "artifact.authorityStore":
+            {
+                this.artifactAuthorityStore = value;
+                break;
+            }
             default:
             {
                 if ( name.startsWith( TARGET_KEY_PREFIX ) && name.length() > TARGET_KEY_PREFIX.length() )
@@ -529,5 +534,15 @@ public class IndyKojiConfig
     public void setMetadataTimeoutSeconds( long metadataTimeoutSeconds )
     {
         this.metadataTimeoutSeconds = metadataTimeoutSeconds;
+    }
+
+    public String getArtifactAuthorityStore()
+    {
+        return artifactAuthorityStore;
+    }
+
+    public void setArtifactAuthorityStore( String artifactAuthorityStore )
+    {
+        this.artifactAuthorityStore = artifactAuthorityStore;
     }
 }
