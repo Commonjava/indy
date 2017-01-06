@@ -750,7 +750,17 @@ public class DefaultContentManager
             {
                 try
                 {
-                    final List<ArtifactStore> allMembers = storeManager.getOrderedConcreteStoresInGroup( store.getName(), true );
+                    List<ArtifactStore> allMembers = storeManager.getOrderedConcreteStoresInGroup( store.getName(), true );
+
+                    if ( allMembers != null && !allMembers.isEmpty() )
+                    {
+                        // only group child or the repository with the correct path mask can have further retrieve, which avoid
+                        // meaningless further time consuming actions like remote repo check.
+                        allMembers = allMembers.stream()
+                                               .filter( a -> a.getKey().getType() == StoreType.group || checkMask( a,
+                                                                                                                   path ) )
+                                               .collect( Collectors.toList() );
+                    }
 
                     logger.debug( "Trying to retrieve suitable transfer for: {} in group: {} members:\n{}", path, allMembers, store.getName() );
 
@@ -769,7 +779,7 @@ public class DefaultContentManager
         }
 
         logger.debug( "Retrieving storage reference (Transfer) directly for: {}/{}", store.getKey(), path );
-        return downloadManager.getStorageReference( store, path, op );
+        return checkMask( store, path ) ? downloadManager.getStorageReference( store, path, op ) : null;
     }
 
     @Override
@@ -815,6 +825,7 @@ public class DefaultContentManager
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "Checking existence of: {} in: {}", path, store.getKey() );
+
         if ( store instanceof Group )
         {
             try
@@ -840,6 +851,13 @@ public class DefaultContentManager
         }
         else
         {
+            // only group or the repository with the correct path mask can have further checking, which avoid
+            // meaningless further time consuming actions like remote repo check.
+            if ( !checkMask( store, path ) )
+            {
+                logger.info( "Path {} is not allowed in this repo {}, marked as not exists.", path, store );
+                return false;
+            }
             return downloadManager.exists(store, path);
         }
     }
