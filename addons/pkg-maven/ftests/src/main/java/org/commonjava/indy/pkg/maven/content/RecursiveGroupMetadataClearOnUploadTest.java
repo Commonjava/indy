@@ -16,35 +16,28 @@
 package org.commonjava.indy.pkg.maven.content;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.client.core.IndyClientException;
-import org.commonjava.indy.client.core.helper.PathInfo;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
-import org.commonjava.indy.model.core.RemoteRepository;
-import org.commonjava.test.http.expect.ExpectationServer;
 import org.custommonkey.xmlunit.XMLUnit;
+import org.jboss.byteman.contrib.bmunit.BMRule;
+import org.jboss.byteman.contrib.bmunit.BMUnitConfig;
+import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 import org.xml.sax.SAXException;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
-import static org.bouncycastle.crypto.tls.CipherType.stream;
-import static org.commonjava.indy.model.core.StoreType.group;
-import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -66,11 +59,15 @@ import static org.junit.Assert.fail;
  *     <li>Group B's maven-metadata.xml file is deleted</li>
  * </ul>
  */
+@RunWith( BMUnitRunner.class )
+@BMUnitConfig( debug = true )
 public class RecursiveGroupMetadataClearOnUploadTest
         extends AbstractContentManagementTest
 {
     private final String hostedName = "hosted";
+
     private final String groupAName = "groupA";
+
     private final String groupBName = "groupB";
 
     private final String path = "org/foo/bar/maven-metadata.xml";
@@ -126,6 +123,13 @@ public class RecursiveGroupMetadataClearOnUploadTest
               .store( hostedRepo.getKey(), path, new ByteArrayInputStream( firstPassContent.getBytes( "UTF-8" ) ) );
     }
 
+    @BMRule( name = "slow_down", targetClass = "org.commonjava.indy.content.index.ContentIndexManager",
+             targetMethod = "clearIndexedPathFrom",
+             targetLocation = "ENTRY",
+             binding = "tctx:org.commonjava.cdi.util.weft.ThreadContext = ThreadContext.getContext(true);"
+                     + "key:StoreKey = (StoreKey) tctx.get(\"ContentIndex:originKey\");"
+                     + "isFlagged:boolean = \"groupA\".equals(key.getName());",
+             condition = "isFlagged", action = "System.out.println(\"Slowing down 4s\");" + "Thread.sleep(4000);" )
     @Test
     @Category( EventDependent.class )
     public void run()
@@ -138,11 +142,13 @@ public class RecursiveGroupMetadataClearOnUploadTest
         client.content()
               .store( hostedRepo.getKey(), path, new ByteArrayInputStream( secondPassContent.getBytes( "UTF-8" ) ) );
 
-//        waitForEventPropagation();
+        //        waitForEventPropagation();
 
-//        assertContent( hostedRepo, secondPassContent );
-//        assertContent( groupA, secondPassContent );
+        //        assertContent( hostedRepo, secondPassContent );
+        //        assertContent( groupA, secondPassContent );
         assertContent( groupB, secondPassContent );
+
+        Thread.currentThread().sleep( 4000 );
     }
 
     private void assertContent( ArtifactStore store, String expectedXml )
@@ -163,8 +169,8 @@ public class RecursiveGroupMetadataClearOnUploadTest
             XMLUnit.setIgnoreAttributeOrder( true );
             XMLUnit.setIgnoreComments( true );
 
-            assertXMLEqual( "Downloaded XML not equal to expected XML from: " + path + " in: " + store.getKey(), downloaded,
-                            expectedXml );
+            assertXMLEqual( "Downloaded XML not equal to expected XML from: " + path + " in: " + store.getKey(),
+                            downloaded, expectedXml );
         }
         catch ( SAXException e )
         {
