@@ -293,7 +293,7 @@ public final class ResponseUtils
         LOGGER.error( "Sending error response: {} {}\n{}", code.getStatusCode(), code.getReasonPhrase(), msg );
 
         Response response = Response.status( code )
-                       .header( ApplicationHeader.content_type.key(), ApplicationContent.text_plain )
+                       .type( MediaType.TEXT_PLAIN )
                        .entity( msg )
                        .build();
 
@@ -330,22 +330,25 @@ public final class ResponseUtils
     public static CharSequence formatEntity( final String id, final Throwable error, final String message )
     {
         final StringWriter sw = new StringWriter();
-        sw.append( "Id: " ).append( id );
+        sw.append( "Id: " ).append( id ).append( "\n" );
         if ( message != null )
         {
-            sw.append( "\nMessage: " ).append( message );
+            sw.append( "Message: " ).append( message ).append( "\n" );
         }
 
-        sw.append( error.getMessage() );
-
-        final Throwable cause = error.getCause();
-        if ( cause != null )
+        if ( error != null )
         {
-            sw.append( "\nError:\n\n" );
-            cause.printStackTrace( new PrintWriter( sw ) );
-        }
+            sw.append( error.getMessage() );
 
-        sw.write( '\n' );
+            final Throwable cause = error.getCause();
+            if ( cause != null )
+            {
+                sw.append( "Error:\n\n" );
+                cause.printStackTrace( new PrintWriter( sw ) );
+            }
+
+            sw.write( '\n' );
+        }
 
         return sw.toString();
     }
