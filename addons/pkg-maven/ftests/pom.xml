@@ -83,6 +83,11 @@
       <artifactId>hamcrest-core</artifactId>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>xmlunit</groupId>
+      <artifactId>xmlunit</artifactId>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
 
 </project>
