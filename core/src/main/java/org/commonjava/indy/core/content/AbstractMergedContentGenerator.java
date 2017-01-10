@@ -124,7 +124,7 @@ public abstract class AbstractMergedContentGenerator
         try
         {
             logger.debug( "Deleting merged file: {}", target );
-            target.delete();
+            target.delete( true );
             helper.deleteChecksumsAndMergeInfo( group, path );
         }
         catch ( final IOException e )
