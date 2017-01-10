@@ -17,6 +17,7 @@ package org.commonjava.indy.content.index;
 
 import infinispan.com.google.common.collect.Sets;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.change.event.ArtifactStoreDeletePreEvent;
@@ -50,15 +51,17 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 /**
@@ -73,6 +76,8 @@ import java.util.function.Consumer;
 @ApplicationScoped
 public class ContentIndexObserver
 {
+    private static final String ORIGIN_KEY = "ContentIndex:originKey";
+
     @Inject
     private StoreDataManager storeDataManager;
 
@@ -91,17 +96,16 @@ public class ContentIndexObserver
     @ExecutorConfig( named = "content-indexer", threads = 8, priority = 2, daemon = true )
     @WeftManaged
     @Inject
-    private Executor executor;
+    private ExecutorService executor;
 
     protected ContentIndexObserver()
     {
     }
 
-    public ContentIndexObserver( final StoreDataManager storeDataManager,
-                                 final ContentIndexManager indexManager,
+    public ContentIndexObserver( final StoreDataManager storeDataManager, final ContentIndexManager indexManager,
                                  final SpecialPathManager specialPathManager,
-                                 final DirectContentAccess directContentAccess,
-                                 final IndyObjectMapper objectMapper, final Executor executor )
+                                 final DirectContentAccess directContentAccess, final IndyObjectMapper objectMapper,
+                                 final ExecutorService executor )
     {
         this.storeDataManager = storeDataManager;
         this.indexManager = indexManager;
@@ -235,7 +239,8 @@ public class ContentIndexObserver
     }
 
     // TODO: If we find points where a new HostedRepository is added, we should be using its comprehensive index to minimize the index damage to the group.
-    private void removeAllSupercededMemberContent( final ArtifactStore store, final Map<ArtifactStore, ArtifactStore> changeMap )
+    private void removeAllSupercededMemberContent( final ArtifactStore store,
+                                                   final Map<ArtifactStore, ArtifactStore> changeMap )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -297,11 +302,14 @@ public class ContentIndexObserver
                 for ( int i = divergencePoint; i < oldMembers.size(); i++ )
                 {
                     StoreKey memberKey = oldMembers.get( i );
-                    indexManager.removeAllOriginIndexedPathsForStore( memberKey, indexedStorePath -> removed.add( indexedStorePath ) );
+                    indexManager.removeAllOriginIndexedPathsForStore( memberKey, indexedStorePath -> removed.add(
+                            indexedStorePath ) );
                 }
 
                 propagatePathRemovals( removed );
-            } else {
+            }
+            else
+            {
                 // for new added members, need to clear the indexed path with this group store for repo metadata merging
                 // See [NOS-128]
                 for ( int i = divergencePoint - 1; i >= commonSize; i-- )
@@ -319,13 +327,20 @@ public class ContentIndexObserver
 
     private void propagatePathlessStoreEvent( final Iterable<ArtifactStore> stores )
     {
-        executor.execute(()->{
-            stores.forEach( (store)->{
+        ExecutorCompletionService<Void> svc = new ExecutorCompletionService<Void>( executor );
+        AtomicInteger count = new AtomicInteger( 0 );
+        stores.forEach( ( store ) -> {
+            count.incrementAndGet();
+            svc.submit( () -> {
                 final StoreKey key = store.getKey();
 
                 Set<String> paths = new HashSet<>();
-                indexManager.removeAllIndexedPathsForStore( key, indexedStorePath ->{paths.add(indexedStorePath.getPath());} );
-                indexManager.removeAllOriginIndexedPathsForStore( key, indexedStorePath ->{paths.add(indexedStorePath.getPath());} );
+                indexManager.removeAllIndexedPathsForStore( key, indexedStorePath -> {
+                    paths.add( indexedStorePath.getPath() );
+                } );
+                indexManager.removeAllOriginIndexedPathsForStore( key, indexedStorePath -> {
+                    paths.add( indexedStorePath.getPath() );
+                } );
 
                 if ( !paths.isEmpty() )
                 {
@@ -333,7 +348,7 @@ public class ContentIndexObserver
                     {
                         Set<Group> groups = storeDataManager.getGroupsContaining( key );
                         Location location = LocationUtils.toLocation( store );
-                        paths.forEach( (path)->{
+                        paths.forEach( ( path ) -> {
                             // here we care if it's mergable or not, since this may be triggered by a new file being stored.
                             SpecialPathInfo specialPathInfo = specialPathManager.getSpecialPathInfo( location, path );
                             if ( specialPathInfo != null && specialPathInfo.isMergable() )
@@ -345,18 +360,43 @@ public class ContentIndexObserver
                     catch ( IndyDataException e )
                     {
                         Logger logger = LoggerFactory.getLogger( getClass() );
-                        logger.error( String.format( "Failed to lookup groups containing: %s. Reason: %s", key, e.getMessage() ),
-                                      e );
+                        logger.error( String.format( "Failed to lookup groups containing: %s. Reason: %s", key,
+                                                     e.getMessage() ), e );
                     }
                 }
+                return null;
             } );
-        });
+        } );
+
+        while ( count.getAndDecrement() > 0 )
+        {
+            try
+            {
+                svc.take().get();
+            }
+            catch ( InterruptedException e )
+            {
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.warn(
+                        "Interrupted while waiting for store enable event to propagate through metadata of containing groups." );
+            }
+            catch ( ExecutionException e )
+            {
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.error(
+                        "Error propagating metadata deletion through groups in response to store enablement event.",
+                        e );
+            }
+        }
     }
 
     private void propagateStoreEnablementEvent( final Iterable<ArtifactStore> stores )
     {
-        executor.execute(()->{
-            stores.forEach( (store)->{
+        ExecutorCompletionService<Void> svc = new ExecutorCompletionService<Void>( executor );
+        AtomicInteger count = new AtomicInteger( 0 );
+        stores.forEach( ( store ) -> {
+            count.incrementAndGet();
+            svc.submit( () -> {
                 final StoreKey key = store.getKey();
                 if ( key.getType() == StoreType.hosted )
                 {
@@ -372,9 +412,11 @@ public class ContentIndexObserver
                         {
                             Set<Group> groups = storeDataManager.getGroupsContaining( key );
                             Location location = LocationUtils.toLocation( store );
-                            indexedStorePaths.forEach( (indexedStorePath)->{
+
+                            indexedStorePaths.forEach( ( indexedStorePath ) -> {
                                 String path = indexedStorePath.getPath();
-                                SpecialPathInfo specialPathInfo = specialPathManager.getSpecialPathInfo( location, path );
+                                SpecialPathInfo specialPathInfo =
+                                        specialPathManager.getSpecialPathInfo( location, path );
                                 if ( specialPathInfo != null && specialPathInfo.isMergable() )
                                 {
                                     indexManager.clearIndexedPathFrom( path, groups, deleteTransfers() );
@@ -384,8 +426,8 @@ public class ContentIndexObserver
                         catch ( IndyDataException e )
                         {
                             Logger logger = LoggerFactory.getLogger( getClass() );
-                            logger.error( String.format( "Failed to lookup groups containing: %s. Reason: %s", key, e.getMessage() ),
-                                          e );
+                            logger.error( String.format( "Failed to lookup groups containing: %s. Reason: %s", key,
+                                                         e.getMessage() ), e );
                         }
                     }
                 }
@@ -399,18 +441,20 @@ public class ContentIndexObserver
                     try
                     {
                         groups = storeDataManager.getGroupsContaining( key );
-                        groups.forEach( (group)->{
+                        groups.forEach( ( group ) -> {
                             List<IndexedStorePath> paths = indexManager.getAllIndexedPathsForStore( group.getKey() );
 
                             if ( !paths.isEmpty() )
                             {
                                 Location location = LocationUtils.toLocation( group );
-                                paths.forEach( (indexedStorePath)->{
+                                paths.forEach( ( indexedStorePath ) -> {
                                     String path = indexedStorePath.getPath();
-                                    SpecialPathInfo specialPathInfo = specialPathManager.getSpecialPathInfo( location, path );
+                                    SpecialPathInfo specialPathInfo =
+                                            specialPathManager.getSpecialPathInfo( location, path );
                                     if ( specialPathInfo != null && specialPathInfo.isMergable() )
                                     {
-                                        indexManager.clearIndexedPathFrom( path, Collections.singleton( group ), deleteTransfers() );
+                                        indexManager.clearIndexedPathFrom( path, Collections.singleton( group ),
+                                                                           deleteTransfers() );
                                     }
                                 } );
                             }
@@ -419,49 +463,73 @@ public class ContentIndexObserver
                     catch ( Exception e )
                     {
                         Logger logger = LoggerFactory.getLogger( getClass() );
-                        logger.error( String.format( "Failed to lookup groups containing: %s. Reason: %s", key, e.getMessage() ),
-                                      e );
+                        logger.error( String.format( "Failed to lookup groups containing: %s. Reason: %s", key,
+                                                     e.getMessage() ), e );
                     }
                 }
+
+                return null;
             } );
-        });
+        } );
+
+        while ( count.getAndDecrement() > 0 )
+        {
+            try
+            {
+                svc.take().get();
+            }
+            catch ( InterruptedException e )
+            {
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.warn(
+                        "Interrupted while waiting for store enable event to propagate through metadata of containing groups." );
+            }
+            catch ( ExecutionException e )
+            {
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.error(
+                        "Error propagating metadata deletion through groups in response to store enablement event.",
+                        e );
+            }
+        }
     }
 
     private void propagatePathRemovals( final Set<IndexedStorePath> removals )
     {
-        executor.execute( ()->{
-            Map<StoreKey, Set<Group>> containersForKey = new HashMap<>();
-            removals.forEach( indexedStorePath -> {
-                StoreKey storeKey = indexedStorePath.getStoreKey();
-                try
+        Map<StoreKey, Set<Group>> containersForKey = new HashMap<>();
+        removals.forEach( indexedStorePath -> {
+            StoreKey storeKey = indexedStorePath.getStoreKey();
+            try
+            {
+                ArtifactStore store = storeDataManager.getArtifactStore( storeKey );
+
+                Set<Group> groups = containersForKey.get( storeKey );
+                if ( groups == null )
                 {
-                    ArtifactStore store = storeDataManager.getArtifactStore( storeKey );
-
-                    Set<Group> groups = containersForKey.get( storeKey );
-                    if ( groups == null )
-                    {
-                        groups = storeDataManager.getGroupsContaining( storeKey );
-                    }
-
-                    Location location = LocationUtils.toLocation( store );
-                    String path = indexedStorePath.getPath();
-
-                    // If the file is stored local to the group, it's merged and must die.
-                    indexManager.clearIndexedPathFrom( path, groups, deleteTransfers() );
+                    groups = storeDataManager.getGroupsContaining( storeKey );
                 }
-                catch ( IndyDataException e )
-                {
-                    Logger logger = LoggerFactory.getLogger( getClass() );
-                    logger.error( String.format( "Failed to lookup store, or groups containing store: %s. Reason: %s", storeKey, e.getMessage() ),
-                                  e );
-                }
-            } );
-        });
+
+                Location location = LocationUtils.toLocation( store );
+                String path = indexedStorePath.getPath();
+
+                // If the file is stored local to the group, it's merged and must die.
+                indexManager.clearIndexedPathFrom( path, groups, deleteTransfers() );
+            }
+            catch ( IndyDataException e )
+            {
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.error(
+                        String.format( "Failed to lookup store, or groups containing store: %s. Reason: %s", storeKey,
+                                       e.getMessage() ), e );
+            }
+        } );
     }
 
     private void propagateClear( final StoreKey key, final String path )
     {
-        executor.execute(()->{
+//        executor.execute(()-> {
+            ThreadContext context = ThreadContext.getContext( true );
+            context.put( ORIGIN_KEY, key );
             try
             {
                 Set<Group> groups = storeDataManager.getGroupsContaining( key );
@@ -476,37 +544,41 @@ public class ContentIndexObserver
                 logger.error( String.format( "Failed to lookup groups containing: %s. Reason: %s", key, e.getMessage() ),
                               e );
             }
-        });
+            finally
+            {
+                context.remove( ORIGIN_KEY );
+            }
+//        });
     }
 
     private Consumer<IndexedStorePath> deleteTransfers()
     {
-        return isp ->{
+        return isp -> {
             StoreKey key = isp.getStoreKey();
             String path = isp.getPath();
 
             try
             {
-//                Logger logger = LoggerFactory.getLogger( getClass() );
+                //                Logger logger = LoggerFactory.getLogger( getClass() );
                 Transfer transfer = directContentAccess.getTransfer( key, path );
-//                logger.trace( "retrieving transfer for deletion: {}", transfer );
+                //                logger.trace( "retrieving transfer for deletion: {}", transfer );
                 if ( transfer != null && transfer.exists() )
                 {
-//                    logger.trace( "DELETE: {}", transfer );
-                    transfer.delete();
+                    //                    logger.trace( "DELETE: {}", transfer );
+                    transfer.delete( true );
                 }
             }
             catch ( IndyWorkflowException e )
             {
                 Logger logger = LoggerFactory.getLogger( getClass() );
-                logger.error( String.format( "Failed to retrieve Transfer for: %s in store: %s. Reason: %s", path,
-                                             key, e.getMessage() ), e );
+                logger.error( String.format( "Failed to retrieve Transfer for: %s in store: %s. Reason: %s", path, key,
+                                             e.getMessage() ), e );
             }
             catch ( IOException e )
             {
                 Logger logger = LoggerFactory.getLogger( getClass() );
-                logger.error( String.format( "Failed to delete Transfer for: %s in store: %s. Reason: %s", path,
-                                             path, e.getMessage() ), e );
+                logger.error( String.format( "Failed to delete Transfer for: %s in store: %s. Reason: %s", path, path,
+                                             e.getMessage() ), e );
             }
         };
     }
